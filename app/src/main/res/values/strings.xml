@@ -1,0 +1,27 @@
+<resources>
+    <string name="app_name">Artist Alley Database</string>
+    <string name="art_entry_image_content_description">Art entry image</string>
+    <string name="art_entry_no_image_content_description">No image available</string>
+    <string name="add_entry_select_image_content_description">Click to select image</string>
+    <string name="save">Save</string>
+    <string name="search">Search</string>
+    <string name="search_add_entry">Add new entry</string>
+    <string name="add_entry_artists_header_zero">Artist</string>
+    <string name="add_entry_artists_header_one">Artist</string>
+    <string name="add_entry_artists_header_many">Artists</string>
+    <string name="add_entry_locations_header_zero">Location</string>
+    <string name="add_entry_locations_header_one">Location</string>
+    <string name="add_entry_locations_header_many">Locations</string>
+    <string name="add_entry_series_header_zero">Series</string>
+    <string name="add_entry_series_header_one">Series</string>
+    <string name="add_entry_series_header_many">Series</string>
+    <string name="add_entry_characters_header_zero">Character</string>
+    <string name="add_entry_characters_header_one">Character</string>
+    <string name="add_entry_characters_header_many">Characters</string>
+    <string name="add_entry_tags_header_zero">Tag</string>
+    <string name="add_entry_tags_header_one">Tag</string>
+    <string name="add_entry_tags_header_many">Tags</string>
+    <string name="error_fail_to_load_image">Failed to load image</string>
+    <string name="error_fail_to_select_image">Failed to select image</string>
+    <string name="error_fail_to_open_file_output">Failed to open file output</string>
+</resources>
