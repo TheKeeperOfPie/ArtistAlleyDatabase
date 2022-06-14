@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase
 
 import android.app.Application
 import androidx.room.Room
+import androidx.work.WorkManager
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -15,4 +16,7 @@ class AppHiltModule {
     fun provideAppDatabase(application: Application) =
         Room.databaseBuilder(application, AppDatabase::class.java, "appDatabase")
             .build()
+
+    @Provides
+    fun provideWorkManager(application: Application) = WorkManager.getInstance(application)
 }

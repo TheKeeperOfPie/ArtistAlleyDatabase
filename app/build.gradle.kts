@@ -69,6 +69,7 @@ ksp {
 }
 
 dependencies {
+    implementation(kotlin("reflect"))
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.1")
 
@@ -79,6 +80,8 @@ dependencies {
     implementation("com.google.dagger:hilt-android:2.38.1")
     kapt("com.google.dagger:hilt-compiler:2.38.1")
     implementation("androidx.hilt:hilt-navigation-compose:1.0.0")
+    implementation("androidx.hilt:hilt-work:1.0.0")
+    kapt("androidx.hilt:hilt-compiler:1.0.0")
 
     implementation("androidx.core:core-ktx:1.8.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.4.1")
@@ -113,4 +116,12 @@ dependencies {
 
     implementation("com.mxalbert.sharedelements:shared-elements:0.1.0-SNAPSHOT")
     implementation("com.google.accompanist:accompanist-drawablepainter:0.23.1")
+
+
+    val workManagerVersion = "2.7.1"
+    implementation("androidx.work:work-runtime:$workManagerVersion")
+    implementation("androidx.work:work-runtime-ktx:$workManagerVersion")
+    androidTestImplementation("androidx.work:work-testing:$workManagerVersion")
+
+    implementation("com.squareup.moshi:moshi:1.13.0")
 }
