@@ -2,7 +2,6 @@ package com.thekeeperofpie.artistalleydatabase.export
 
 import android.content.Context
 import android.net.Uri
-import android.util.Log
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters

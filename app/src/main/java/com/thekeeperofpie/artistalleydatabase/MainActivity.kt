@@ -8,7 +8,6 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -31,9 +30,10 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.mxalbert.sharedelements.SharedElementsRoot
+import com.thekeeperofpie.artistalleydatabase.add.AddEntryScreen
 import com.thekeeperofpie.artistalleydatabase.add.AddEntryViewModel
-import com.thekeeperofpie.artistalleydatabase.add.AddScreen
-import com.thekeeperofpie.artistalleydatabase.detail.DetailScreen
+import com.thekeeperofpie.artistalleydatabase.detail.DetailsScreen
+import com.thekeeperofpie.artistalleydatabase.detail.DetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.export.ExportScreen
 import com.thekeeperofpie.artistalleydatabase.export.ExportViewModel
 import com.thekeeperofpie.artistalleydatabase.search.SearchScreen
@@ -129,7 +129,7 @@ class MainActivity : ComponentActivity() {
 
                 composable(NavDestinations.ADD_ENTRY) {
                     val viewModel = hiltViewModel<AddEntryViewModel>()
-                    AddScreen(
+                    AddEntryScreen(
                         imageUri = viewModel.imageUri,
                         onImageSelected = { viewModel.imageUri = it },
                         onImageSelectError = {
@@ -169,7 +169,29 @@ class MainActivity : ComponentActivity() {
                     val entryId = arguments!!.getString("entry_id")!!
                     val entryImageFile = arguments.getString("entry_image_file")
                     val entryImageRatio = arguments.getFloat("entry_image_ratio", 1f)
-                    DetailScreen(entryId, entryImageFile?.let(::File), entryImageRatio)
+
+                    val viewModel = hiltViewModel<DetailsViewModel>()
+                    viewModel.initialize(entryId)
+
+                    DetailsScreen(
+                        entryId,
+                        entryImageFile?.let(::File),
+                        entryImageRatio,
+                        imageUri = viewModel.imageUri,
+                        onImageSelected = { viewModel.imageUri = it },
+                        onImageSelectError = {
+                            viewModel.errorResource = R.string.error_fail_to_load_image to it
+                        },
+                        areSectionsLoading = viewModel.areSectionsLoading,
+                        artistSection = viewModel.artistSection,
+                        locationSection = viewModel.locationSection,
+                        seriesSection = viewModel.seriesSection,
+                        characterSection = viewModel.characterSection,
+                        tagSection = viewModel.tagSection,
+                        onClickSave = { viewModel.onClickSave(navController) },
+                        errorRes = viewModel.errorResource,
+                        onErrorDismiss = { viewModel.errorResource = null }
+                    )
                 }
             }
         }

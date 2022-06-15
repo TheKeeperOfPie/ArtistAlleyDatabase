@@ -4,6 +4,7 @@ import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.RawQuery
 import androidx.room.Transaction
@@ -13,6 +14,9 @@ import androidx.sqlite.db.SupportSQLiteQuery
 
 @Dao
 interface ArtEntryDao {
+
+    @Query("""SELECT * FROM art_entries WHERE art_entries.id = :id LIMIT 1""")
+    suspend fun getEntry(id: String): ArtEntry
 
     @RawQuery([ArtEntry::class])
     fun getEntries(query: SupportSQLiteQuery): PagingSource<Int, ArtEntry>
@@ -72,7 +76,7 @@ interface ArtEntryDao {
         return getEntries(SimpleSQLiteQuery(statement, arrayOf(orderBy, query)))
     }
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertEntries(vararg entries: ArtEntry)
 
     @Delete

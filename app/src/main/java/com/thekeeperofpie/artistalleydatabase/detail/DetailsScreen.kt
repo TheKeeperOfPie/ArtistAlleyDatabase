@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.add
+package com.thekeeperofpie.artistalleydatabase.detail
 
 import android.net.Uri
 import androidx.compose.foundation.background
@@ -12,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -19,28 +20,35 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.mxalbert.sharedelements.SharedElement
+import com.thekeeperofpie.artistalleydatabase.NavDestinations
 import com.thekeeperofpie.artistalleydatabase.R
 import com.thekeeperofpie.artistalleydatabase.ui.ArtEntryForm
 import com.thekeeperofpie.artistalleydatabase.ui.ArtEntryForm.ImageSelectBox
+import java.io.File
 
-object AddEntryScreen {
+object DetailsScreen {
 
     @Composable
     operator fun invoke(
+        entryId: String = "",
+        entryImageFile: File? = null,
+        entryImageRatio: Float = 1f,
         imageUri: Uri? = null,
         onImageSelected: (Uri?) -> Unit = {},
         onImageSelectError: (Exception?) -> Unit = {},
+        areSectionsLoading: Boolean = false,
         artistSection: ArtEntryForm.FormSection = ArtEntryForm.FormSection(),
         locationSection: ArtEntryForm.FormSection = ArtEntryForm.FormSection(),
         seriesSection: ArtEntryForm.FormSection = ArtEntryForm.FormSection(),
         characterSection: ArtEntryForm.FormSection = ArtEntryForm.FormSection(),
         tagSection: ArtEntryForm.FormSection = ArtEntryForm.FormSection(),
-        onClickSave: () -> Unit = {},
+        onClickSave: () -> Unit,
         errorRes: Pair<Int, Exception?>? = null,
         onErrorDismiss: () -> Unit = {},
     ) {
         ArtEntryForm(
-            false,
+            areSectionsLoading,
             artistSection,
             locationSection,
             seriesSection,
@@ -50,12 +58,22 @@ object AddEntryScreen {
             errorRes,
             onErrorDismiss
         ) {
-            HeaderImage(imageUri, onImageSelected, onImageSelectError)
+            HeaderImage(
+                entryId,
+                entryImageFile,
+                entryImageRatio,
+                imageUri,
+                onImageSelected,
+                onImageSelectError
+            )
         }
     }
 
     @Composable
     private fun HeaderImage(
+        entryId: String,
+        entryImageFile: File?,
+        entryImageRatio: Float,
         imageUri: Uri?,
         onImageSelected: (Uri?) -> Unit,
         onImageSelectError: (Exception?) -> Unit
@@ -74,6 +92,28 @@ object AddEntryScreen {
                     modifier = Modifier
                         .fillMaxWidth()
                 )
+            } else if (entryImageFile != null) {
+                SharedElement(
+                    key = "${entryId}_image",
+                    screenKey = NavDestinations.ENTRY_DETAILS
+                ) {
+                    val configuration = LocalConfiguration.current
+                    val screenWidth = configuration.screenWidthDp.dp
+                    val minimumHeight = screenWidth * entryImageRatio
+                    AsyncImage(
+                        ImageRequest.Builder(LocalContext.current)
+                            .data(entryImageFile)
+                            .placeholderMemoryCacheKey("coil_memory_entry_image_search_$entryId")
+                            .build(),
+                        contentDescription = stringResource(
+                            R.string.art_entry_image_content_description
+                        ),
+                        contentScale = ContentScale.Fit,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = minimumHeight)
+                    )
+                }
             } else {
                 Spacer(
                     Modifier
@@ -82,9 +122,9 @@ object AddEntryScreen {
                         .background(Color.LightGray)
                 )
                 Icon(
-                    painter = painterResource(id = R.drawable.ic_baseline_image_search_24),
+                    painter = painterResource(id = R.drawable.ic_baseline_image_not_supported_24),
                     contentDescription = stringResource(
-                        R.string.add_entry_select_image_content_description
+                        R.string.art_entry_no_image_content_description
                     ),
                     Modifier
                         .size(48.dp)
@@ -98,7 +138,7 @@ object AddEntryScreen {
 @Preview
 @Composable
 fun Preview() {
-    AddEntryScreen(
+    DetailsScreen(
         artistSection = ArtEntryForm.FormSection("Lucidsky"),
         locationSection = ArtEntryForm.FormSection("Fanime 2022"),
         seriesSection = ArtEntryForm.FormSection("Dress Up Darling"),
@@ -107,5 +147,6 @@ fun Preview() {
             contents.addAll(listOf("cute", "portrait"))
             pendingValue = "schoolgirl uniform"
         },
+        onClickSave = {}
     )
 }

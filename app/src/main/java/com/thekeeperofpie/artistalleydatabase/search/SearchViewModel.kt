@@ -1,7 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.search
 
 import android.app.Application
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager

@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.add
+package com.thekeeperofpie.artistalleydatabase.detail
 
 import android.app.Application
 import android.net.Uri
@@ -16,14 +16,16 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
-class AddEntryViewModel @Inject constructor(
+class DetailsViewModel @Inject constructor(
     private val application: Application,
     private val artEntryDao: ArtEntryDao,
 ) : ViewModel() {
+
+    var entryId: String? = null
+    lateinit var entry: ArtEntry
 
     var imageUri by mutableStateOf<Uri?>(null)
 
@@ -35,10 +37,28 @@ class AddEntryViewModel @Inject constructor(
 
     var errorResource by mutableStateOf<Pair<Int, Exception?>?>(null)
 
+    var areSectionsLoading by mutableStateOf(true)
+
+    fun initialize(entryId: String) {
+        if (this.entryId != null) return
+        this.entryId = entryId
+        viewModelScope.launch(Dispatchers.IO) {
+            entry = artEntryDao.getEntry(entryId)
+            withContext(Dispatchers.Main) {
+                artistSection.contents.addAll(entry.artists)
+                locationSection.contents.addAll(entry.locations)
+                seriesSection.contents.addAll(entry.series)
+                characterSection.contents.addAll(entry.characters)
+                tagSection.contents.addAll(entry.tags)
+
+                areSectionsLoading = false
+            }
+        }
+    }
+
     fun onClickSave(navHostController: NavHostController) {
         viewModelScope.launch(Dispatchers.IO) {
-            val id = UUID.randomUUID().toString()
-            val error = ArtEntryUtils.writeEntryImage(application, id, imageUri)
+            val error = ArtEntryUtils.writeEntryImage(application, entryId!!, imageUri)
             if (error != null) {
                 withContext(Dispatchers.Main) {
                     errorResource = error
@@ -47,8 +67,7 @@ class AddEntryViewModel @Inject constructor(
             }
 
             artEntryDao.insertEntries(
-                ArtEntry(
-                    id = id,
+                entry.copy(
                     artists = artistSection.finalContents(),
                     locations = locationSection.finalContents(),
                     series = seriesSection.finalContents(),
