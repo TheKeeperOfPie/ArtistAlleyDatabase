@@ -24,4 +24,9 @@
     <string name="error_fail_to_load_image">Failed to load image</string>
     <string name="error_fail_to_select_image">Failed to select image</string>
     <string name="error_fail_to_open_file_output">Failed to open file output</string>
+    <string name="export_destination">Export destination</string>
+    <string name="content_uri_placeholder">content://</string>
+    <string name="select_export_destination_content_description">Select export destination</string>
+    <string name="export">Export</string>
+    <string name="invalid_export_destination">Invalid export destination</string>
 </resources>

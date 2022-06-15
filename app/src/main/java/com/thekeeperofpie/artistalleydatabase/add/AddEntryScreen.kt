@@ -58,6 +58,8 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.thekeeperofpie.artistalleydatabase.R
+import com.thekeeperofpie.artistalleydatabase.ui.ButtonFooter
+import com.thekeeperofpie.artistalleydatabase.ui.SnackbarErrorText
 import com.thekeeperofpie.artistalleydatabase.ui.theme.ArtistAlleyDatabaseTheme
 
 object AddScreen {
@@ -82,44 +84,9 @@ object AddScreen {
                 modifier = Modifier.fillMaxSize(),
                 color = MaterialTheme.colorScheme.background
             ) {
-                Scaffold(
-                    snackbarHost = {
-                        Box {
-                            if (errorRes != null) {
-                                val dismissState = rememberDismissState()
-                                if (dismissState.currentValue != DismissValue.Default) {
-                                    LaunchedEffect(errorRes) {
-                                        onErrorDismiss()
-                                        dismissState.snapTo(DismissValue.Default)
-                                    }
-                                }
-                                SwipeToDismiss(state = dismissState, background = {
-                                    Surface(
-                                        color = MaterialTheme.colorScheme.background,
-                                        contentColor = contentColorFor(MaterialTheme.colorScheme.background),
-                                        modifier = Modifier.fillMaxSize()
-                                    ) {
-
-                                    }
-                                }) {
-                                    Text(
-                                        text = stringResource(id = errorRes.first),
-                                        color = MaterialTheme.colorScheme.onSecondary,
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .background(color = MaterialTheme.colorScheme.secondary)
-                                            .padding(
-                                                start = 16.dp,
-                                                end = 16.dp,
-                                                top = 12.dp,
-                                                bottom = 12.dp
-                                            )
-                                    )
-                                }
-                            }
-                        }
-                    }
-                ) {
+                Scaffold(snackbarHost = {
+                    SnackbarErrorText(errorRes?.first, onErrorDismiss = onErrorDismiss)
+                }) {
                     Column(Modifier.padding(it)) {
                         Column(
                             modifier = Modifier
@@ -164,7 +131,7 @@ object AddScreen {
                             )
                         }
 
-                        Footer(onClickSave)
+                        ButtonFooter(onClickSave, R.string.save)
                     }
                 }
             }
@@ -306,13 +273,6 @@ object AddScreen {
                     } else false
                 }
         )
-    }
-
-    @Composable
-    private fun ColumnScope.Footer(onClickSave: () -> Unit) {
-        TextButton(onClick = onClickSave, Modifier.align(Alignment.End)) {
-            Text(stringResource(R.string.save))
-        }
     }
 
     class FormSection(initialPendingValue: String = "") {

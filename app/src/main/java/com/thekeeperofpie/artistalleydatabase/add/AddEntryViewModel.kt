@@ -42,11 +42,9 @@ class AddEntryViewModel @Inject constructor(
                 val imageStream = try {
                     application.contentResolver.openInputStream(it)
                 } catch (e: Exception) {
-                    Log.d("AddDebug", "Failed to load image", e)
                     errorResource = R.string.error_fail_to_load_image to e
                     return@launch
                 } ?: run {
-                    Log.d("AddDebug", "Failed to load image")
                     errorResource = R.string.error_fail_to_load_image to null
                     return@launch
                 }
@@ -54,7 +52,6 @@ class AddEntryViewModel @Inject constructor(
                 val output = try {
                     application.filesDir.resolve("entry_images/${id}").outputStream()
                 } catch (e: Exception) {
-                    Log.d("AddDebug", "Failed to open file output", e)
                     errorResource = R.string.error_fail_to_open_file_output to e
                     return@launch
                 }

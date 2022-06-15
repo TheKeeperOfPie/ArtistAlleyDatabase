@@ -2,25 +2,26 @@ package com.thekeeperofpie.artistalleydatabase.export
 
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.squareup.moshi.JsonWriter
+import com.thekeeperofpie.artistalleydatabase.Converters
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntry
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryDao
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
-import kotlinx.serialization.encodeToString
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.serializer
 import okio.buffer
 import okio.sink
 import java.io.File
-import java.text.DateFormat
-import java.time.Instant
-import java.util.Date
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 import kotlin.reflect.full.memberProperties
+import kotlin.reflect.jvm.jvmErasure
 
 @HiltWorker
 class ExportArtEntriesWorker @AssistedInject constructor(
@@ -37,7 +38,7 @@ class ExportArtEntriesWorker @AssistedInject constructor(
         val uriString = params.inputData.getString(KEY_OUTPUT_CONTENT_URI)
             ?: return Result.failure()
 
-        val dateTime = DateFormat.getDateInstance().format(Date.from(Instant.now()))
+        val dateTime = ExportUtils.currentDateTimeFileName()
         val appFilesDir = appContext.filesDir
         val privateExportDir = appFilesDir.resolve("export").apply { mkdirs() }
         val tempJsonFile = privateExportDir.resolve("$dateTime.json")
@@ -72,9 +73,9 @@ class ExportArtEntriesWorker @AssistedInject constructor(
             tempZipFile.inputStream().use { input ->
                 input.copyTo(output)
             }
-        } ?: return Result.Failure()
+        } ?: return Result.failure()
 
-        return Result.Success()
+        return Result.success()
     }
 
     private fun writeEntries(file: File): Boolean {
@@ -93,7 +94,15 @@ class ExportArtEntriesWorker @AssistedInject constructor(
                         jsonWriter.beginObject()
                         for (property in ArtEntry::class.memberProperties) {
                             jsonWriter.name(property.name)
-                            jsonWriter.value(Json.Default.encodeToString(property.get(entry)))
+                            val value = property.get(entry)
+                            val kType = property.returnType
+                            val kClass = kType.jvmErasure
+
+                            @Suppress("UNCHECKED_CAST")
+                            val serializer = Converters.KSERIALIZERS[kClass] as? KSerializer<Any?>
+                                ?: Json.Default.serializersModule.serializer(kType)
+
+                            jsonWriter.value(Json.Default.encodeToString(serializer, value))
                         }
                         jsonWriter.endObject()
                     }

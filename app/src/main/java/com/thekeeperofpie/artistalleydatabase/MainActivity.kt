@@ -3,17 +3,10 @@ package com.thekeeperofpie.artistalleydatabase
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Create
-import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.Face
-import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.DrawerValue
@@ -28,10 +21,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.key.Key.Companion.Home
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavType
@@ -44,6 +34,8 @@ import com.mxalbert.sharedelements.SharedElementsRoot
 import com.thekeeperofpie.artistalleydatabase.add.AddEntryViewModel
 import com.thekeeperofpie.artistalleydatabase.add.AddScreen
 import com.thekeeperofpie.artistalleydatabase.detail.DetailScreen
+import com.thekeeperofpie.artistalleydatabase.export.ExportScreen
+import com.thekeeperofpie.artistalleydatabase.export.ExportViewModel
 import com.thekeeperofpie.artistalleydatabase.search.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.search.SearchViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -84,7 +76,24 @@ class MainActivity : ComponentActivity() {
                     }
                 },
                 content = {
-                    Home()
+                    when (selectedItem.value) {
+                        Icons.Default.Home -> Home()
+                        Icons.Default.Create -> {
+                            val viewModel = hiltViewModel<ExportViewModel>()
+                            ExportScreen(
+                                uriString = viewModel.exportUriString.orEmpty(),
+                                onUriStringEdit = { viewModel.exportUriString = it },
+                                onContentUriSelected = {
+                                    viewModel.exportUriString = it?.toString()
+                                },
+                                onClickExport = viewModel::onClickExport,
+                                errorRes = viewModel.errorResource,
+                                onErrorDismiss = { viewModel.errorResource = null }
+                            )
+                        }
+                        else ->
+                            throw IllegalArgumentException("Invalid navigation drawer selection")
+                    }
                 }
             )
         }
