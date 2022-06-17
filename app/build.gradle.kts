@@ -117,7 +117,6 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-test-manifest:$composeVersion")
 
     implementation("com.mxalbert.sharedelements:shared-elements:0.1.0-SNAPSHOT")
-    implementation("com.google.accompanist:accompanist-drawablepainter:0.23.1")
 
 
     val workManagerVersion = "2.7.1"
@@ -126,4 +125,8 @@ dependencies {
     androidTestImplementation("androidx.work:work-testing:$workManagerVersion")
 
     implementation("com.squareup.moshi:moshi:1.13.0")
+
+    implementation("com.google.accompanist:accompanist-drawablepainter:0.23.1")
+    implementation("com.google.accompanist:accompanist-pager:0.24.10-beta")
+    implementation("com.google.accompanist:accompanist-pager-indicators:0.24.10-beta")
 }

@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.ui
 
 import android.net.Uri
+import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
@@ -222,6 +223,24 @@ object ArtEntryForm {
     }
 
     @Composable
+    fun ImagesSelectBox(
+        onImagesSelected: (List<Uri>) -> Unit,
+        onImageSelectError: (Exception?) -> Unit,
+        content: @Composable BoxScope.() -> Unit,
+    ) {
+        val imageSelectLauncher = rememberLauncherForActivityResult(
+            ActivityResultContracts.GetMultipleContents(),
+            onImagesSelected
+        )
+
+        ImageSelectBoxInner(
+            launcher = imageSelectLauncher,
+            onImageSelectError = onImageSelectError,
+            content
+        )
+    }
+
+    @Composable
     fun ImageSelectBox(
         onImageSelected: (Uri?) -> Unit,
         onImageSelectError: (Exception?) -> Unit,
@@ -231,6 +250,20 @@ object ArtEntryForm {
             ActivityResultContracts.GetContent(),
             onImageSelected
         )
+
+        ImageSelectBoxInner(
+            launcher = imageSelectLauncher,
+            onImageSelectError = onImageSelectError,
+            content
+        )
+    }
+
+    @Composable
+    private fun ImageSelectBoxInner(
+        launcher: ManagedActivityResultLauncher<String, *>,
+        onImageSelectError: (Exception?) -> Unit,
+        content: @Composable BoxScope.() -> Unit,
+    ) {
         Box(
             Modifier
                 .wrapContentHeight()
@@ -238,7 +271,7 @@ object ArtEntryForm {
                 .verticalScroll(rememberScrollState())
                 .clickable(onClick = {
                     try {
-                        imageSelectLauncher.launch("image/*")
+                        launcher.launch("image/*")
                     } catch (e: Exception) {
                         onImageSelectError(e)
                     }

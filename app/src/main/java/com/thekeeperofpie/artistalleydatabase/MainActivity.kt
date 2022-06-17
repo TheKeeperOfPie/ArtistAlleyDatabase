@@ -130,8 +130,11 @@ class MainActivity : ComponentActivity() {
                 composable(NavDestinations.ADD_ENTRY) {
                     val viewModel = hiltViewModel<AddEntryViewModel>()
                     AddEntryScreen(
-                        imageUri = viewModel.imageUri,
-                        onImageSelected = { viewModel.imageUri = it },
+                        imageUris = viewModel.imageUris,
+                        onImagesSelected = {
+                            viewModel.imageUris.clear()
+                            viewModel.imageUris.addAll(it)
+                        },
                         onImageSelectError = {
                             viewModel.errorResource = R.string.error_fail_to_load_image to it
                         },

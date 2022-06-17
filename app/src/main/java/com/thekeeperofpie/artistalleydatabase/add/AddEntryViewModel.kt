@@ -3,6 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.add
 import android.app.Application
 import android.net.Uri
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
@@ -25,7 +26,7 @@ class AddEntryViewModel @Inject constructor(
     private val artEntryDao: ArtEntryDao,
 ) : ViewModel() {
 
-    var imageUri by mutableStateOf<Uri?>(null)
+    val imageUris = mutableStateListOf<Uri>()
 
     val artistSection = ArtEntryForm.FormSection()
     val locationSection = ArtEntryForm.FormSection()
@@ -37,25 +38,27 @@ class AddEntryViewModel @Inject constructor(
 
     fun onClickSave(navHostController: NavHostController) {
         viewModelScope.launch(Dispatchers.IO) {
-            val id = UUID.randomUUID().toString()
-            val error = ArtEntryUtils.writeEntryImage(application, id, imageUri)
-            if (error != null) {
-                withContext(Dispatchers.Main) {
-                    errorResource = error
+            imageUris.forEach {
+                val id = UUID.randomUUID().toString()
+                val error = ArtEntryUtils.writeEntryImage(application, id, it)
+                if (error != null) {
+                    withContext(Dispatchers.Main) {
+                        errorResource = error
+                    }
+                    return@launch
                 }
-                return@launch
-            }
 
-            artEntryDao.insertEntries(
-                ArtEntry(
-                    id = id,
-                    artists = artistSection.finalContents(),
-                    locations = locationSection.finalContents(),
-                    series = seriesSection.finalContents(),
-                    characters = characterSection.finalContents(),
-                    tags = tagSection.finalContents(),
+                artEntryDao.insertEntries(
+                    ArtEntry(
+                        id = id,
+                        artists = artistSection.finalContents(),
+                        locations = locationSection.finalContents(),
+                        series = seriesSection.finalContents(),
+                        characters = characterSection.finalContents(),
+                        tags = tagSection.finalContents(),
+                    )
                 )
-            )
+            }
 
             withContext(Dispatchers.Main) {
                 navHostController.popBackStack()
