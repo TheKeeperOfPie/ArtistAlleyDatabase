@@ -19,7 +19,14 @@ data class ArtEntry(
     val tags: List<String> = emptyList(),
     val price: BigDecimal? = null,
     val date: Date? = null,
-)
+    val imageWidth: Int?,
+    val imageHeight: Int?,
+) {
+    val imageWidthToHeightRatio by lazy {
+        (imageHeight?.toFloat() ?: 1f) /
+                (imageWidth ?: 1).coerceAtLeast(1)
+    }
+}
 
 @Entity(tableName = "art_entries_fts")
 @Fts4(contentEntity = ArtEntry::class)
@@ -35,4 +42,6 @@ data class ArtEntryFts(
     val tags: List<String> = emptyList(),
     val price: BigDecimal? = null,
     val date: Date? = null,
+    val imageWidth: Int?,
+    val imageHeight: Int?,
 )

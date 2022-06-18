@@ -71,7 +71,8 @@ object LazyStaggeredGrid {
                                 }
                             }
                         ) { index ->
-                            itemContent(items[index * columnCount + columnIndex])
+                            val itemIndex = index * columnCount + columnIndex
+                            itemContent(itemIndex, items[itemIndex])
                         }
                     }
                 }
@@ -82,12 +83,12 @@ object LazyStaggeredGrid {
     class LazyStaggeredGridScope<T : Any> {
         var items: LazyPagingItems<T>? = null
         var key: ((item: T) -> Any)? = null
-        var itemContent: @Composable (LazyItemScope.(T?) -> Unit)? = null
+        var itemContent: @Composable (LazyItemScope.(index: Int, T?) -> Unit)? = null
 
         fun items(
             items: LazyPagingItems<T>,
             key: ((item: T) -> Any),
-            itemContent: @Composable LazyItemScope.(value: T?) -> Unit
+            itemContent: @Composable LazyItemScope.(index: Int, value: T?) -> Unit
         ) {
             this.items = items
             this.key = key

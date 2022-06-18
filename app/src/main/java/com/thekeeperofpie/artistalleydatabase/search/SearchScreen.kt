@@ -1,14 +1,21 @@
 package com.thekeeperofpie.artistalleydatabase.search
 
+import androidx.compose.animation.Crossfade
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.ContentAlpha
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -18,19 +25,25 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import coil.size.Dimension
 import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.NavDestinations
 import com.thekeeperofpie.artistalleydatabase.R
@@ -47,7 +60,9 @@ object SearchScreen {
         onQueryChange: (String) -> Unit = {},
         entries: LazyPagingItems<ArtEntryModel> =
             emptyFlow<PagingData<ArtEntryModel>>().collectAsLazyPagingItems(),
-        onClickEntry: (entry: ArtEntryModel, widthToHeightRatio: Float?) -> Unit = { _, _ -> },
+        selectedItems: List<Int> = emptyList(),
+        onClickEntry: (entry: ArtEntryModel) -> Unit = {},
+        onLongClickEntry: (index: Int) -> Unit = {},
         onClickAddFab: () -> Unit = {}
     ) {
         ArtistAlleyDatabaseTheme {
@@ -56,7 +71,13 @@ object SearchScreen {
                 color = MaterialTheme.colorScheme.background
             ) {
                 Chrome(query, onQueryChange, onClickAddFab) {
-                    Content(entries, it, onClickEntry)
+                    Content(
+                        entries = entries,
+                        paddingValues = it,
+                        selectedItems = selectedItems,
+                        onClickEntry = onClickEntry,
+                        onLongClickEntry = onLongClickEntry,
+                    )
                 }
             }
         }
@@ -97,60 +118,99 @@ object SearchScreen {
 
     @Composable
     private fun Content(
+        columnCount: Int = 2,
         entries: LazyPagingItems<ArtEntryModel>,
         paddingValues: PaddingValues,
-        onClickEntry: (entry: ArtEntryModel, widthToHeightRatio: Float?) -> Unit
+        selectedItems: List<Int> = emptyList(),
+        onClickEntry: (entry: ArtEntryModel) -> Unit = {},
+        onLongClickEntry: (index: Int) -> Unit = {},
     ) {
-        LazyStaggeredGrid<ArtEntryModel>(
-            2,
-            Modifier.padding(paddingValues)
-        ) {
-            items(entries, key = { it.value.id }) {
-                ArtEntry(it, onClickEntry)
+        val expectedWidth = LocalDensity.current.run {
+            LocalConfiguration.current.screenWidthDp.dp.roundToPx() / columnCount
+        }.let(::Dimension)
+        LazyStaggeredGrid<ArtEntryModel>(columnCount, Modifier.padding(paddingValues)) {
+            items(entries, key = { it.value.id }) { index, item ->
+                ArtEntry(expectedWidth, index, item, selectedItems, onClickEntry, onLongClickEntry)
             }
         }
     }
 
+    @OptIn(ExperimentalFoundationApi::class)
     @Composable
     private fun ArtEntry(
-        entry: ArtEntryModel?,
-        onClickEntry: (entry: ArtEntryModel, widthToHeightRatio: Float?) -> Unit
+        expectedWidth: Dimension.Pixels,
+        index: Int,
+        entry: ArtEntryModel? = null,
+        selectedItems: List<Int> = emptyList(),
+        onClickEntry: (entry: ArtEntryModel) -> Unit = {},
+        onLongClickEntry: (index: Int) -> Unit = {},
     ) {
-        val imageModifier = Modifier.fillMaxWidth()
+        val entryModifier = Modifier.fillMaxWidth()
         if (entry == null) {
             Spacer(
-                modifier = imageModifier
+                modifier = entryModifier
                     .background(Color.LightGray)
             )
         } else {
-            SharedElement(
-                key = "${entry.value.id}_image",
-                screenKey = NavDestinations.SEARCH
-            ) {
-                val widthToHeightRatio = remember { mutableStateOf<Float?>(null) }
+            Box(Modifier.fillMaxWidth()) {
+                val selected = selectedItems.contains(index)
 
-                AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(entry.localImageFile)
-                        .crossfade(true)
-                        .memoryCacheKey("coil_memory_entry_image_search_${entry.value.id}")
-                        .listener { _, result ->
-                            widthToHeightRatio.value =
-                                result.drawable.intrinsicHeight.coerceAtLeast(0)
-                                    .toFloat() / result.drawable.intrinsicWidth.coerceAtLeast(1)
-                        }
-                        .build(),
-                    contentDescription = stringResource(
-                        R.string.art_entry_image_content_description
-                    ),
-                    contentScale = ContentScale.Fit,
-                    modifier = imageModifier.clickable {
-                        onClickEntry(
-                            entry,
-                            widthToHeightRatio.value
+                SharedElement(
+                    key = "${entry.value.id}_image",
+                    screenKey = NavDestinations.SEARCH
+                ) {
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(entry.localImageFile)
+                            .size(expectedWidth, Dimension.Undefined)
+                            .crossfade(true)
+                            .memoryCacheKey("coil_memory_entry_image_search_${entry.value.id}")
+                            .build(),
+                        contentDescription = stringResource(
+                            R.string.art_entry_image_content_description
+                        ),
+                        contentScale = ContentScale.Fit,
+                        modifier = entryModifier
+                            .fillMaxWidth()
+                            .heightIn(min = LocalDensity.current.run {
+                                if (entry.value.imageWidth != null) {
+                                    (expectedWidth.px * entry.value.imageWidthToHeightRatio).toDp()
+                                } else {
+                                    0.dp
+                                }
+                            })
+                            .alpha(if (selected) ContentAlpha.disabled else 1f)
+                            .semantics { this.selected = selected }
+                            .combinedClickable(
+                                onClick = {
+                                    onClickEntry(entry)
+                                },
+                                onLongClick = {
+                                    onLongClickEntry(index)
+                                },
+                                onLongClickLabel = stringResource(
+                                    R.string.art_entry_long_press_multi_select_label
+                                )
+                            )
+                    )
+                }
+
+                Crossfade(
+                    targetState = selected,
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(16.dp)
+                        .size(24.dp)
+                ) {
+                    if (it) {
+                        Icon(
+                            Icons.Default.CheckCircle,
+                            contentDescription = stringResource(
+                                R.string.art_entry_selected_content_description
+                            ),
                         )
-                    },
-                )
+                    }
+                }
             }
         }
     }

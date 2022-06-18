@@ -1,14 +1,32 @@
 package com.thekeeperofpie.artistalleydatabase.art
 
 import android.app.Application
+import android.graphics.BitmapFactory
 import android.net.Uri
 import com.thekeeperofpie.artistalleydatabase.R
+import java.io.File
 
 object ArtEntryUtils {
 
+    fun getImageFile(application: Application, id: String) =
+        application.filesDir.resolve("entry_images/${id}")
+
+    fun getImageSize(file: File): Pair<Int?, Int?> {
+        val options = BitmapFactory.Options().apply {
+            this.inJustDecodeBounds = true
+        }
+        file.inputStream().use {
+            BitmapFactory.decodeStream(it, null, options)
+        }
+
+        val imageWidth = if (options.outWidth == -1) null else options.outWidth
+        val imageHeight = if (options.outHeight == -1) null else options.outHeight
+        return (imageWidth to imageHeight)
+    }
+
     fun writeEntryImage(
         application: Application,
-        id: String,
+        outputFile: File,
         imageUri: Uri?
     ): Pair<Int, Exception?>? {
         imageUri?.let {
@@ -21,7 +39,7 @@ object ArtEntryUtils {
             }
 
             val output = try {
-                application.filesDir.resolve("entry_images/${id}").outputStream()
+                outputFile.outputStream()
             } catch (e: Exception) {
                 return R.string.error_fail_to_open_file_output to e
             }

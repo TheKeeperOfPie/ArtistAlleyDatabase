@@ -29,9 +29,7 @@ interface ArtEntryDao {
         WHERE art_entries_fts MATCH :query
     """
     )
-    fun getEntries(
-        query: String = "*"
-    ): PagingSource<Int, ArtEntry>
+    fun getEntries(query: String = "'*'"): PagingSource<Int, ArtEntry>
 
     @Query(
         """

@@ -12,7 +12,7 @@ import androidx.navigation.NavHostController
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntry
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryDao
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryUtils
-import com.thekeeperofpie.artistalleydatabase.ui.ArtEntryForm
+import com.thekeeperofpie.artistalleydatabase.ui.ArtEntryFormSection
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -28,11 +28,11 @@ class AddEntryViewModel @Inject constructor(
 
     val imageUris = mutableStateListOf<Uri>()
 
-    val artistSection = ArtEntryForm.FormSection()
-    val locationSection = ArtEntryForm.FormSection()
-    val seriesSection = ArtEntryForm.FormSection()
-    val characterSection = ArtEntryForm.FormSection()
-    val tagSection = ArtEntryForm.FormSection()
+    val artistSection = ArtEntryFormSection()
+    val locationSection = ArtEntryFormSection()
+    val seriesSection = ArtEntryFormSection()
+    val characterSection = ArtEntryFormSection()
+    val tagSection = ArtEntryFormSection()
 
     var errorResource by mutableStateOf<Pair<Int, Exception?>?>(null)
 
@@ -40,13 +40,16 @@ class AddEntryViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             imageUris.forEach {
                 val id = UUID.randomUUID().toString()
-                val error = ArtEntryUtils.writeEntryImage(application, id, it)
+                val outputFile = ArtEntryUtils.getImageFile(application, id)
+                val error = ArtEntryUtils.writeEntryImage(application, outputFile, it)
                 if (error != null) {
                     withContext(Dispatchers.Main) {
                         errorResource = error
                     }
                     return@launch
                 }
+
+                val (imageWidth, imageHeight) = ArtEntryUtils.getImageSize(outputFile)
 
                 artEntryDao.insertEntries(
                     ArtEntry(
@@ -56,6 +59,8 @@ class AddEntryViewModel @Inject constructor(
                         series = seriesSection.finalContents(),
                         characters = characterSection.finalContents(),
                         tags = tagSection.finalContents(),
+                        imageWidth = imageWidth,
+                        imageHeight = imageHeight,
                     )
                 )
             }

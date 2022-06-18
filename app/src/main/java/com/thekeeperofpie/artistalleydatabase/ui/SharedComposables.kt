@@ -2,7 +2,9 @@ package com.thekeeperofpie.artistalleydatabase.ui
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -29,6 +31,23 @@ fun ColumnScope.ButtonFooter(onClick: () -> Unit, @StringRes textRes: Int) {
             stringResource(textRes),
             Modifier.padding(start = 16.dp, end = 16.dp, top = 10.dp, bottom = 10.dp)
         )
+    }
+}
+
+@Composable
+fun ButtonFooter(vararg pairs: Pair<Int, () -> Unit>) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.End,
+    ) {
+        pairs.reversed().forEach { (stringRes, onClick) ->
+            TextButton(onClick = onClick) {
+                Text(
+                    stringResource(stringRes),
+                    Modifier.padding(start = 16.dp, end = 16.dp, top = 10.dp, bottom = 10.dp)
+                )
+            }
+        }
     }
 }
 

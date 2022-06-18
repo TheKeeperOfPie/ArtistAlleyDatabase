@@ -29,4 +29,10 @@
     <string name="select_export_destination_content_description">Select export destination</string>
     <string name="export">Export</string>
     <string name="invalid_export_destination">Invalid export destination</string>
+    <string name="confirm">Confirm</string>
+    <string name="art_entry_delete_dialog_title">Delete entry?</string>
+    <string name="delete">Delete</string>
+    <string name="cancel">Cancel</string>
+    <string name="art_entry_long_press_multi_select_label">Multi select art entry</string>
+    <string name="art_entry_selected_content_description">Selected</string>
 </resources>

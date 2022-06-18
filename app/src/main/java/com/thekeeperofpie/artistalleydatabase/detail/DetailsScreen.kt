@@ -1,12 +1,25 @@
 package com.thekeeperofpie.artistalleydatabase.detail
 
 import android.net.Uri
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -24,11 +37,16 @@ import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.NavDestinations
 import com.thekeeperofpie.artistalleydatabase.R
 import com.thekeeperofpie.artistalleydatabase.ui.ArtEntryForm
-import com.thekeeperofpie.artistalleydatabase.ui.ArtEntryForm.ImageSelectBox
+import com.thekeeperofpie.artistalleydatabase.ui.ArtEntryFormSection
+import com.thekeeperofpie.artistalleydatabase.ui.ButtonFooter
+import com.thekeeperofpie.artistalleydatabase.ui.ImageSelectBox
+import com.thekeeperofpie.artistalleydatabase.ui.SnackbarErrorText
+import com.thekeeperofpie.artistalleydatabase.ui.theme.ArtistAlleyDatabaseTheme
 import java.io.File
 
 object DetailsScreen {
 
+    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     operator fun invoke(
         entryId: String = "",
@@ -38,34 +56,89 @@ object DetailsScreen {
         onImageSelected: (Uri?) -> Unit = {},
         onImageSelectError: (Exception?) -> Unit = {},
         areSectionsLoading: Boolean = false,
-        artistSection: ArtEntryForm.FormSection = ArtEntryForm.FormSection(),
-        locationSection: ArtEntryForm.FormSection = ArtEntryForm.FormSection(),
-        seriesSection: ArtEntryForm.FormSection = ArtEntryForm.FormSection(),
-        characterSection: ArtEntryForm.FormSection = ArtEntryForm.FormSection(),
-        tagSection: ArtEntryForm.FormSection = ArtEntryForm.FormSection(),
-        onClickSave: () -> Unit,
+        artistSection: ArtEntryFormSection = ArtEntryFormSection(),
+        locationSection: ArtEntryFormSection = ArtEntryFormSection(),
+        seriesSection: ArtEntryFormSection = ArtEntryFormSection(),
+        characterSection: ArtEntryFormSection = ArtEntryFormSection(),
+        tagSection: ArtEntryFormSection = ArtEntryFormSection(),
+        onClickSave: () -> Unit = {},
         errorRes: Pair<Int, Exception?>? = null,
         onErrorDismiss: () -> Unit = {},
+        showDeleteDialog: Boolean = false,
+        onDismissDeleteDialog: () -> Unit = {},
+        onClickDelete: () -> Unit = {},
+        onConfirmDelete: () -> Unit = {},
     ) {
-        ArtEntryForm(
-            areSectionsLoading,
-            artistSection,
-            locationSection,
-            seriesSection,
-            characterSection,
-            tagSection,
-            onClickSave,
-            errorRes,
-            onErrorDismiss
-        ) {
-            HeaderImage(
-                entryId,
-                entryImageFile,
-                entryImageRatio,
-                imageUri,
-                onImageSelected,
-                onImageSelectError
-            )
+        ArtistAlleyDatabaseTheme {
+            Surface(
+                modifier = Modifier.fillMaxSize(),
+                color = MaterialTheme.colorScheme.background
+            ) {
+                Scaffold(snackbarHost = {
+                    SnackbarErrorText(errorRes?.first, onErrorDismiss = onErrorDismiss)
+                }) {
+                    Column(
+                        Modifier
+                            .padding(it)
+                            .fillMaxWidth()
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .weight(1f, true)
+                                .fillMaxWidth()
+                                .verticalScroll(rememberScrollState())
+                        ) {
+                            HeaderImage(
+                                entryId,
+                                entryImageFile,
+                                entryImageRatio,
+                                imageUri,
+                                onImageSelected,
+                                onImageSelectError
+                            )
+
+                            ArtEntryForm(
+                                areSectionsLoading,
+                                artistSection,
+                                locationSection,
+                                seriesSection,
+                                characterSection,
+                                tagSection,
+                            )
+                        }
+
+
+                        Crossfade(
+                            targetState = areSectionsLoading,
+                            Modifier.align(Alignment.End)
+                        ) {
+                            if (!it) {
+                                ButtonFooter(
+                                    R.string.save to onClickSave,
+                                    R.string.delete to onClickDelete,
+                                )
+                            }
+                        }
+                    }
+
+                    if (showDeleteDialog) {
+                        AlertDialog(
+                            onDismissRequest = onDismissDeleteDialog,
+                            title = { Text(stringResource(R.string.art_entry_delete_dialog_title)) },
+                            confirmButton = {
+                                TextButton(onClick = onConfirmDelete) {
+                                    Text(stringResource(R.string.confirm))
+                                }
+                            },
+                            dismissButton = {
+                                TextButton(onClick = onDismissDeleteDialog) {
+                                    Text(stringResource(R.string.cancel))
+                                }
+                            },
+                        )
+                    }
+                }
+            }
         }
     }
 
@@ -139,14 +212,13 @@ object DetailsScreen {
 @Composable
 fun Preview() {
     DetailsScreen(
-        artistSection = ArtEntryForm.FormSection("Lucidsky"),
-        locationSection = ArtEntryForm.FormSection("Fanime 2022"),
-        seriesSection = ArtEntryForm.FormSection("Dress Up Darling"),
-        characterSection = ArtEntryForm.FormSection("Marin Kitagawa"),
-        tagSection = ArtEntryForm.FormSection().apply {
+        artistSection = ArtEntryFormSection("Lucidsky"),
+        locationSection = ArtEntryFormSection("Fanime 2022"),
+        seriesSection = ArtEntryFormSection("Dress Up Darling"),
+        characterSection = ArtEntryFormSection("Marin Kitagawa"),
+        tagSection = ArtEntryFormSection().apply {
             contents.addAll(listOf("cute", "portrait"))
             pendingValue = "schoolgirl uniform"
         },
-        onClickSave = {}
     )
 }

@@ -11,7 +11,7 @@ import androidx.navigation.NavHostController
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntry
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryDao
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryUtils
-import com.thekeeperofpie.artistalleydatabase.ui.ArtEntryForm
+import com.thekeeperofpie.artistalleydatabase.ui.ArtEntryFormSection
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -29,15 +29,19 @@ class DetailsViewModel @Inject constructor(
 
     var imageUri by mutableStateOf<Uri?>(null)
 
-    val artistSection = ArtEntryForm.FormSection()
-    val locationSection = ArtEntryForm.FormSection()
-    val seriesSection = ArtEntryForm.FormSection()
-    val characterSection = ArtEntryForm.FormSection()
-    val tagSection = ArtEntryForm.FormSection()
+    val artistSection = ArtEntryFormSection()
+    val locationSection = ArtEntryFormSection()
+    val seriesSection = ArtEntryFormSection()
+    val characterSection = ArtEntryFormSection()
+    val tagSection = ArtEntryFormSection()
 
     var errorResource by mutableStateOf<Pair<Int, Exception?>?>(null)
 
     var areSectionsLoading by mutableStateOf(true)
+
+    var showDeleteDialog by mutableStateOf(false)
+
+    private var deleting = false
 
     fun initialize(entryId: String) {
         if (this.entryId != null) return
@@ -56,15 +60,31 @@ class DetailsViewModel @Inject constructor(
         }
     }
 
+    fun onConfirmDelete(navHostController: NavHostController) {
+        if (deleting) return
+        deleting = true
+
+        viewModelScope.launch(Dispatchers.IO) {
+            artEntryDao.delete(entryId!!)
+
+            withContext(Dispatchers.Main) {
+                navHostController.popBackStack()
+            }
+        }
+    }
+
     fun onClickSave(navHostController: NavHostController) {
         viewModelScope.launch(Dispatchers.IO) {
-            val error = ArtEntryUtils.writeEntryImage(application, entryId!!, imageUri)
+            val outputFile = ArtEntryUtils.getImageFile(application, entryId!!)
+            val error = ArtEntryUtils.writeEntryImage(application, outputFile, imageUri)
             if (error != null) {
                 withContext(Dispatchers.Main) {
                     errorResource = error
                 }
                 return@launch
             }
+
+            val (imageWidth, imageHeight) = ArtEntryUtils.getImageSize(outputFile)
 
             artEntryDao.insertEntries(
                 entry.copy(
@@ -73,6 +93,8 @@ class DetailsViewModel @Inject constructor(
                     series = seriesSection.finalContents(),
                     characters = characterSection.finalContents(),
                     tags = tagSection.finalContents(),
+                    imageWidth = imageWidth,
+                    imageHeight = imageHeight,
                 )
             )
 

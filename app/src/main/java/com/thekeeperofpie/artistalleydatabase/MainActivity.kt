@@ -110,20 +110,23 @@ class MainActivity : ComponentActivity() {
                         viewModel.query.collectAsState().value,
                         viewModel::onQuery,
                         viewModel.results.collectAsLazyPagingItems(),
+                        selectedItems = viewModel.selectedItems,
                         onClickAddFab = {
                             navController.navigate(NavDestinations.ADD_ENTRY)
                         },
-                        onClickEntry = { entry, widthToHeightRatio ->
+                        onClickEntry = { entry ->
                             viewModel.viewModelScope.launch(Dispatchers.Main) {
                                 delay(150)
+                                val entryImageRatio = entry.value.imageWidthToHeightRatio
                                 navController.navigate(
                                     NavDestinations.ENTRY_DETAILS +
                                             "?entry_id=${entry.value.id}" +
                                             "&entry_image_file=${entry.localImageFile.toPath()}" +
-                                            "&entry_image_ratio=${widthToHeightRatio ?: 1f}"
+                                            "&entry_image_ratio=${entryImageRatio}"
                                 )
                             }
                         },
+                        onLongClickEntry = viewModel::selectEntry
                     )
                 }
 
@@ -193,7 +196,11 @@ class MainActivity : ComponentActivity() {
                         tagSection = viewModel.tagSection,
                         onClickSave = { viewModel.onClickSave(navController) },
                         errorRes = viewModel.errorResource,
-                        onErrorDismiss = { viewModel.errorResource = null }
+                        onErrorDismiss = { viewModel.errorResource = null },
+                        showDeleteDialog = viewModel.showDeleteDialog,
+                        onDismissDeleteDialog = { viewModel.showDeleteDialog = false },
+                        onClickDelete = { viewModel.showDeleteDialog = true },
+                        onConfirmDelete = { viewModel.onConfirmDelete(navController) }
                     )
                 }
             }
