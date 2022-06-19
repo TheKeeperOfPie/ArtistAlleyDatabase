@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase
+package com.thekeeperofpie.artistalleydatabase.navigation
 
 object NavDestinations {
 

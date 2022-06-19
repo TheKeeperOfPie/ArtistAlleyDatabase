@@ -40,7 +40,7 @@ class ExportArtEntriesWorker @AssistedInject constructor(
         val dateTime = ExportUtils.currentDateTimeFileName()
         val appFilesDir = appContext.filesDir
         val privateExportDir = appFilesDir.resolve("export").apply { mkdirs() }
-        val tempJsonFile = privateExportDir.resolve("$dateTime.json")
+        val tempJsonFile = privateExportDir.resolve("art_entries.json")
 
         if (!writeEntries(tempJsonFile)) {
             tempJsonFile.delete()

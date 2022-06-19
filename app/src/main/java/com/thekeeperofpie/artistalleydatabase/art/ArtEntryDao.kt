@@ -8,9 +8,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.RawQuery
 import androidx.room.Transaction
-import androidx.sqlite.db.SimpleSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteQuery
-
 
 @Dao
 interface ArtEntryDao {
@@ -29,7 +27,7 @@ interface ArtEntryDao {
         WHERE art_entries_fts MATCH :query
     """
     )
-    fun getEntries(query: String = "'*'"): PagingSource<Int, ArtEntry>
+    fun getEntries(query: String): PagingSource<Int, ArtEntry>
 
     @Query(
         """
@@ -63,19 +61,13 @@ interface ArtEntryDao {
         }
     }
 
-    suspend fun getEntries(
-        orderBy: String = "date",
-        ascending: Boolean = false,
-        query: String = ""
-    ): PagingSource<Int, ArtEntry> {
-        val orderDirection = if (ascending) "ASC" else "DESC"
-        val statement =
-            "SELECT * FROM art_entries ORDER BY :orderBy $orderDirection WHERE * MATCH ':query'"
-        return getEntries(SimpleSQLiteQuery(statement, arrayOf(orderBy, query)))
-    }
-
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertEntries(vararg entries: ArtEntry)
+
+    @Transaction
+    suspend fun insertEntriesDeferred(block: suspend (insert: suspend (ArtEntry) -> Unit) -> Unit) {
+        block { insertEntries(it) }
+    }
 
     @Delete
     suspend fun delete(entry: ArtEntry) = delete(entry.id)

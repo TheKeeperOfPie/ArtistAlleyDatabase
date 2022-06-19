@@ -45,8 +45,8 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import coil.size.Dimension
 import com.mxalbert.sharedelements.SharedElement
-import com.thekeeperofpie.artistalleydatabase.NavDestinations
 import com.thekeeperofpie.artistalleydatabase.R
+import com.thekeeperofpie.artistalleydatabase.navigation.NavDestinations
 import com.thekeeperofpie.artistalleydatabase.ui.LazyStaggeredGrid
 import com.thekeeperofpie.artistalleydatabase.ui.theme.ArtistAlleyDatabaseTheme
 import kotlinx.coroutines.flow.emptyFlow

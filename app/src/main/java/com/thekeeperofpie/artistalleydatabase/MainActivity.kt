@@ -5,9 +5,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Text
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Create
-import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -21,6 +18,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavType
@@ -36,6 +34,10 @@ import com.thekeeperofpie.artistalleydatabase.detail.DetailsScreen
 import com.thekeeperofpie.artistalleydatabase.detail.DetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.export.ExportScreen
 import com.thekeeperofpie.artistalleydatabase.export.ExportViewModel
+import com.thekeeperofpie.artistalleydatabase.importing.ImportScreen
+import com.thekeeperofpie.artistalleydatabase.importing.ImportViewModel
+import com.thekeeperofpie.artistalleydatabase.navigation.NavDestinations
+import com.thekeeperofpie.artistalleydatabase.navigation.NavDrawerItems
 import com.thekeeperofpie.artistalleydatabase.search.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.search.SearchViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -47,29 +49,24 @@ import java.io.File
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-    companion object {
-
-        private val NAV_DRAWER_ITEMS = listOf(Icons.Default.Home, Icons.Default.Create)
-    }
-
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             val drawerState = rememberDrawerState(DrawerValue.Closed)
             val scope = rememberCoroutineScope()
-            val selectedItem = remember { mutableStateOf(NAV_DRAWER_ITEMS[0]) }
+            val selectedItem = remember { mutableStateOf(NavDrawerItems.ITEMS[0]) }
             ModalNavigationDrawer(
                 drawerState = drawerState,
                 drawerContent = {
-                    NAV_DRAWER_ITEMS.forEach { item ->
+                    NavDrawerItems.ITEMS.forEach {
                         NavigationDrawerItem(
-                            icon = { Icon(item, contentDescription = null) },
-                            label = { Text(item.name) },
-                            selected = item == selectedItem.value,
+                            icon = { Icon(it.icon, contentDescription = null) },
+                            label = { Text(stringResource(it.titleRes)) },
+                            selected = it == selectedItem.value,
                             onClick = {
                                 scope.launch { drawerState.close() }
-                                selectedItem.value = item
+                                selectedItem.value = it
                             },
                             modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
                         )
@@ -77,8 +74,25 @@ class MainActivity : ComponentActivity() {
                 },
                 content = {
                     when (selectedItem.value) {
-                        Icons.Default.Home -> Home()
-                        Icons.Default.Create -> {
+                        NavDrawerItems.Home -> HomeScreen()
+                        NavDrawerItems.Import -> {
+                            val viewModel = hiltViewModel<ImportViewModel>()
+                            ImportScreen(
+                                uriString = viewModel.importUriString.orEmpty(),
+                                onUriStringEdit = { viewModel.importUriString = it },
+                                onContentUriSelected = {
+                                    viewModel.importUriString = it?.toString()
+                                },
+                                onClickImport = {
+                                    viewModel.onClickImport {
+                                        selectedItem.value = NavDrawerItems.Home
+                                    }
+                                },
+                                errorRes = viewModel.errorResource,
+                                onErrorDismiss = { viewModel.errorResource = null }
+                            )
+                        }
+                        NavDrawerItems.Export -> {
                             val viewModel = hiltViewModel<ExportViewModel>()
                             ExportScreen(
                                 uriString = viewModel.exportUriString.orEmpty(),
@@ -91,16 +105,14 @@ class MainActivity : ComponentActivity() {
                                 onErrorDismiss = { viewModel.errorResource = null }
                             )
                         }
-                        else ->
-                            throw IllegalArgumentException("Invalid navigation drawer selection")
-                    }
+                    }.run { /* exhaust */ }
                 }
             )
         }
     }
 
     @Composable
-    private fun Home() {
+    private fun HomeScreen() {
         val navController = rememberNavController()
         SharedElementsRoot {
             NavHost(navController = navController, startDestination = NavDestinations.SEARCH) {

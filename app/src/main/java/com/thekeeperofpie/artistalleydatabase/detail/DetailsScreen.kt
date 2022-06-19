@@ -34,8 +34,8 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.mxalbert.sharedelements.SharedElement
-import com.thekeeperofpie.artistalleydatabase.NavDestinations
 import com.thekeeperofpie.artistalleydatabase.R
+import com.thekeeperofpie.artistalleydatabase.navigation.NavDestinations
 import com.thekeeperofpie.artistalleydatabase.ui.ArtEntryForm
 import com.thekeeperofpie.artistalleydatabase.ui.ArtEntryFormSection
 import com.thekeeperofpie.artistalleydatabase.ui.ButtonFooter

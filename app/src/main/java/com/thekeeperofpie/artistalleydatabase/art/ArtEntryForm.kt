@@ -132,9 +132,14 @@ private fun SectionContent(
         .let { SectionHeader(it) }
 
     section.contents.forEachIndexed { index, value ->
-        PrefilledSectionField(value) {
-            section.contents[index] = it
-        }
+        PrefilledSectionField(
+            value,
+            onValueChange = {
+                section.contents[index] = it
+            },
+            onValueDelete = {
+                section.contents.removeAt(index)
+            })
     }
     OpenSectionField(
         section.pendingValue,
@@ -146,10 +151,12 @@ private fun SectionContent(
     )
 }
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun PrefilledSectionField(
     value: String,
-    onValueChange: (value: String) -> Unit
+    onValueChange: (value: String) -> Unit = {},
+    onValueDelete: () -> Unit = {},
 ) {
     TextField(
         value = value,
@@ -157,6 +164,14 @@ private fun PrefilledSectionField(
         Modifier
             .fillMaxWidth()
             .padding(start = 16.dp, end = 16.dp)
+            .onKeyEvent {
+                if (it.type == KeyEventType.KeyUp && it.key == Key.Backspace) {
+                    if (value.isEmpty()) {
+                        onValueDelete()
+                    }
+                    true
+                } else false
+            }
     )
 }
 

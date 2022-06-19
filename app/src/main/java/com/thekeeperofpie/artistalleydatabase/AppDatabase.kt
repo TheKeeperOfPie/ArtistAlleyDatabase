@@ -105,6 +105,12 @@ object Converters {
         fun serializeBigDecimal(value: BigDecimal?) = value?.toPlainString()
 
         @TypeConverter
-        fun deserializeBigDecimal(value: String?) = value?.let(::BigDecimal)
+        fun deserializeBigDecimal(value: String?) = value?.let {
+            try {
+                BigDecimal(it)
+            } catch (e: Exception) {
+                null
+            }
+        }
     }
 }
