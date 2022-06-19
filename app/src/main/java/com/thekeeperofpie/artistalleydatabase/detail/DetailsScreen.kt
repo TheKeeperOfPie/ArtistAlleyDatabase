@@ -30,16 +30,18 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.R
+import com.thekeeperofpie.artistalleydatabase.art.ArtEntryForm
+import com.thekeeperofpie.artistalleydatabase.art.ArtEntrySection
+import com.thekeeperofpie.artistalleydatabase.art.ImageSelectBox
+import com.thekeeperofpie.artistalleydatabase.art.SampleArtEntrySectionsProvider
 import com.thekeeperofpie.artistalleydatabase.navigation.NavDestinations
-import com.thekeeperofpie.artistalleydatabase.ui.ArtEntryForm
-import com.thekeeperofpie.artistalleydatabase.ui.ArtEntryFormSection
 import com.thekeeperofpie.artistalleydatabase.ui.ButtonFooter
-import com.thekeeperofpie.artistalleydatabase.ui.ImageSelectBox
 import com.thekeeperofpie.artistalleydatabase.ui.SnackbarErrorText
 import com.thekeeperofpie.artistalleydatabase.ui.theme.ArtistAlleyDatabaseTheme
 import java.io.File
@@ -56,11 +58,7 @@ object DetailsScreen {
         onImageSelected: (Uri?) -> Unit = {},
         onImageSelectError: (Exception?) -> Unit = {},
         areSectionsLoading: Boolean = false,
-        artistSection: ArtEntryFormSection = ArtEntryFormSection(),
-        locationSection: ArtEntryFormSection = ArtEntryFormSection(),
-        seriesSection: ArtEntryFormSection = ArtEntryFormSection(),
-        characterSection: ArtEntryFormSection = ArtEntryFormSection(),
-        tagSection: ArtEntryFormSection = ArtEntryFormSection(),
+        sections: List<ArtEntrySection> = emptyList(),
         onClickSave: () -> Unit = {},
         errorRes: Pair<Int, Exception?>? = null,
         onErrorDismiss: () -> Unit = {},
@@ -97,14 +95,7 @@ object DetailsScreen {
                                 onImageSelectError
                             )
 
-                            ArtEntryForm(
-                                areSectionsLoading,
-                                artistSection,
-                                locationSection,
-                                seriesSection,
-                                characterSection,
-                                tagSection,
-                            )
+                            ArtEntryForm(areSectionsLoading, sections)
                         }
 
 
@@ -210,15 +201,8 @@ object DetailsScreen {
 
 @Preview
 @Composable
-fun Preview() {
-    DetailsScreen(
-        artistSection = ArtEntryFormSection("Lucidsky"),
-        locationSection = ArtEntryFormSection("Fanime 2022"),
-        seriesSection = ArtEntryFormSection("Dress Up Darling"),
-        characterSection = ArtEntryFormSection("Marin Kitagawa"),
-        tagSection = ArtEntryFormSection().apply {
-            contents.addAll(listOf("cute", "portrait"))
-            pendingValue = "schoolgirl uniform"
-        },
-    )
+fun Preview(
+    @PreviewParameter(SampleArtEntrySectionsProvider::class) sections: List<ArtEntrySection>
+) {
+    DetailsScreen(sections = sections)
 }

@@ -2,17 +2,13 @@ package com.thekeeperofpie.artistalleydatabase.add
 
 import android.app.Application
 import android.net.Uri
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntry
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryDao
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryUtils
-import com.thekeeperofpie.artistalleydatabase.ui.ArtEntryFormSection
+import com.thekeeperofpie.artistalleydatabase.art.ArtEntryViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -24,17 +20,9 @@ import javax.inject.Inject
 class AddEntryViewModel @Inject constructor(
     private val application: Application,
     private val artEntryDao: ArtEntryDao,
-) : ViewModel() {
+) : ArtEntryViewModel() {
 
     val imageUris = mutableStateListOf<Uri>()
-
-    val artistSection = ArtEntryFormSection()
-    val locationSection = ArtEntryFormSection()
-    val seriesSection = ArtEntryFormSection()
-    val characterSection = ArtEntryFormSection()
-    val tagSection = ArtEntryFormSection()
-
-    var errorResource by mutableStateOf<Pair<Int, Exception?>?>(null)
 
     fun onClickSave(navHostController: NavHostController) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -61,6 +49,8 @@ class AddEntryViewModel @Inject constructor(
                         tags = tagSection.finalContents(),
                         imageWidth = imageWidth,
                         imageHeight = imageHeight,
+                        printWidth = printSizeSection.finalWidth(),
+                        printHeight = printSizeSection.finalHeight(),
                     )
                 )
             }

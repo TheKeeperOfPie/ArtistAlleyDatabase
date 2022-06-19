@@ -153,11 +153,7 @@ class MainActivity : ComponentActivity() {
                         onImageSelectError = {
                             viewModel.errorResource = R.string.error_fail_to_load_image to it
                         },
-                        artistSection = viewModel.artistSection,
-                        locationSection = viewModel.locationSection,
-                        seriesSection = viewModel.seriesSection,
-                        characterSection = viewModel.characterSection,
-                        tagSection = viewModel.tagSection,
+                        sections = viewModel.sections,
                         onClickSave = { viewModel.onClickSave(navController) },
                         errorRes = viewModel.errorResource,
                         onErrorDismiss = { viewModel.errorResource = null }
@@ -201,11 +197,7 @@ class MainActivity : ComponentActivity() {
                             viewModel.errorResource = R.string.error_fail_to_load_image to it
                         },
                         areSectionsLoading = viewModel.areSectionsLoading,
-                        artistSection = viewModel.artistSection,
-                        locationSection = viewModel.locationSection,
-                        seriesSection = viewModel.seriesSection,
-                        characterSection = viewModel.characterSection,
-                        tagSection = viewModel.tagSection,
+                        sections = viewModel.sections,
                         onClickSave = { viewModel.onClickSave(navController) },
                         errorRes = viewModel.errorResource,
                         onErrorDismiss = { viewModel.errorResource = null },

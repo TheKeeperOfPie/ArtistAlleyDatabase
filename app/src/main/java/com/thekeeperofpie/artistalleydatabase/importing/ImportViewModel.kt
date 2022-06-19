@@ -110,6 +110,8 @@ class ImportViewModel @Inject constructor(
                         var date: Date? = null
                         var imageWidth: Int? = null
                         var imageHeight: Int? = null
+                        var printWidth: Int? = null
+                        var printHeight: Int? = null
                         reader.beginObject()
                         while (reader.peek() != JsonReader.Token.END_OBJECT) {
                             when (reader.nextName()) {
@@ -141,6 +143,8 @@ class ImportViewModel @Inject constructor(
                                 }
                                 "imageWidth" -> imageWidth = reader.nextInt()
                                 "imageHeight" -> imageHeight = reader.nextInt()
+                                "printWidth" -> printWidth = reader.nextInt()
+                                "printHeight" -> printHeight = reader.nextInt()
                                 else -> reader.skipValue()
                             }
                         }
@@ -161,7 +165,9 @@ class ImportViewModel @Inject constructor(
                                 price = price,
                                 date = date,
                                 imageWidth = imageWidth,
-                                imageHeight = imageHeight
+                                imageHeight = imageHeight,
+                                printWidth = printWidth,
+                                printHeight = printHeight,
                             )
                         )
                     }

@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.ui
+package com.thekeeperofpie.artistalleydatabase.art
 
 import android.content.Context
 import android.content.Intent
@@ -23,6 +23,8 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -32,6 +34,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -43,17 +46,15 @@ import androidx.compose.ui.input.key.type
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import com.thekeeperofpie.artistalleydatabase.R
 
 @Composable
 fun ColumnScope.ArtEntryForm(
     areSectionsLoading: Boolean = false,
-    artistSection: ArtEntryFormSection = ArtEntryFormSection("ArtEntryForm"),
-    locationSection: ArtEntryFormSection = ArtEntryFormSection("ArtEntryForm"),
-    seriesSection: ArtEntryFormSection = ArtEntryFormSection("ArtEntryForm"),
-    characterSection: ArtEntryFormSection = ArtEntryFormSection("ArtEntryForm"),
-    tagSection: ArtEntryFormSection = ArtEntryFormSection("ArtEntryForm"),
+    sections: List<ArtEntrySection> = emptyList(),
 ) {
     Crossfade(
         targetState = areSectionsLoading,
@@ -68,65 +69,36 @@ fun ColumnScope.ArtEntryForm(
             )
         } else {
             Column {
-                SectionContent(
-                    R.string.add_entry_artists_header_zero,
-                    R.string.add_entry_artists_header_one,
-                    R.string.add_entry_artists_header_many,
-                    artistSection,
-                )
 
-                SectionContent(
-                    R.string.add_entry_locations_header_zero,
-                    R.string.add_entry_locations_header_one,
-                    R.string.add_entry_locations_header_many,
-                    locationSection,
-                )
-
-                SectionContent(
-                    R.string.add_entry_series_header_zero,
-                    R.string.add_entry_series_header_one,
-                    R.string.add_entry_series_header_many,
-                    seriesSection,
-                )
-
-                SectionContent(
-                    R.string.add_entry_characters_header_zero,
-                    R.string.add_entry_characters_header_one,
-                    R.string.add_entry_characters_header_many,
-                    characterSection,
-                )
-
-                SectionContent(
-                    R.string.add_entry_tags_header_zero,
-                    R.string.add_entry_tags_header_one,
-                    R.string.add_entry_tags_header_many,
-                    tagSection,
-                )
+                sections.forEach {
+                    when (it) {
+                        is ArtEntrySection.MultiText -> MultiTextSection(it)
+                        is ArtEntrySection.MultiDropdown2<*> -> Dropdown2Section(it)
+                    }
+                }
             }
         }
     }
 }
 
 @Composable
-private fun SectionHeader(text: String) {
+private fun SectionHeader(
+    text: String,
+    modifier: Modifier = Modifier
+) {
     Text(
         text = text,
         style = MaterialTheme.typography.labelMedium,
-        modifier = Modifier.padding(top = 12.dp, bottom = 12.dp, start = 16.dp, end = 16.dp)
+        modifier = modifier.padding(top = 12.dp, bottom = 12.dp, start = 16.dp, end = 16.dp)
     )
 }
 
 @Composable
-private fun SectionContent(
-    @StringRes headerZero: Int,
-    @StringRes headerOne: Int,
-    @StringRes headerMany: Int,
-    section: ArtEntryFormSection,
-) {
+private fun MultiTextSection(section: ArtEntrySection.MultiText) {
     when (section.contents.size) {
-        0 -> headerZero
-        1 -> headerOne
-        else -> headerMany
+        0 -> section.headerZero
+        1 -> section.headerOne
+        else -> section.headerMany
     }
         .let { stringResource(it) }
         .let { SectionHeader(it) }
@@ -186,9 +158,7 @@ private fun OpenSectionField(
         value = value,
         onValueChange = onValueChange,
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-        keyboardActions = KeyboardActions(
-            onDone = { onDone(value) }
-        ),
+        keyboardActions = KeyboardActions(onDone = { onDone(value) }),
         modifier = Modifier
             .fillMaxWidth()
             .padding(start = 16.dp, end = 16.dp)
@@ -199,6 +169,54 @@ private fun OpenSectionField(
                 } else false
             }
     )
+}
+
+@Composable
+private fun <T> Dropdown2Section(section: ArtEntrySection.MultiDropdown2<T>) {
+    SectionHeader(stringResource(section.headerRes))
+
+    Box(
+        Modifier
+            .clickable { section.expanded = true }
+            .fillMaxWidth()
+    ) {
+        val selectedItemText = if (section.selectedOption < section.predefinedOptions.size) {
+            section.textOf(section.predefinedOptions[section.selectedOption])
+        } else {
+            stringResource(R.string.custom)
+        }
+
+        Text(
+            selectedItemText,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 16.dp, end = 16.dp, top = 10.dp, bottom = 10.dp)
+        )
+
+        DropdownMenu(
+            expanded = section.expanded,
+            onDismissRequest = { section.expanded = false },
+            Modifier.fillMaxWidth()
+        ) {
+            section.predefinedOptions.forEachIndexed { index, item ->
+                DropdownMenuItem(
+                    onClick = {
+                        section.expanded = false
+                        section.selectedOption = index
+                    },
+                    text = { Text(section.textOf(item)) }
+                )
+            }
+
+            DropdownMenuItem(
+                onClick = {
+                    section.expanded = false
+                    section.selectedOption = section.predefinedOptions.size
+                },
+                text = { Text(stringResource(R.string.custom)) }
+            )
+        }
+    }
 }
 
 @Composable
@@ -267,26 +285,107 @@ private object GetMultipleContentsChooser : ActivityResultContracts.GetMultipleC
     }
 }
 
-class ArtEntryFormSection(initialPendingValue: String = "") {
-    val contents = mutableStateListOf<String>()
-    var pendingValue by mutableStateOf(initialPendingValue)
+sealed class ArtEntrySection {
 
-    fun finalContents() = (contents + pendingValue).filter { it.isNotEmpty() }
+    class MultiText(
+        @StringRes val headerZero: Int,
+        @StringRes val headerOne: Int,
+        @StringRes val headerMany: Int,
+        initialPendingValue: String = "",
+    ) : ArtEntrySection() {
+        val contents = mutableStateListOf<String>()
+        var pendingValue by mutableStateOf(initialPendingValue)
+
+        fun finalContents() = (contents + pendingValue).filter { it.isNotEmpty() }
+    }
+
+    open class MultiDropdown2<T>(
+        @StringRes val headerRes: Int,
+        var predefinedOptions: SnapshotStateList<T> = mutableStateListOf()
+    ) : ArtEntrySection() {
+        var expanded by mutableStateOf(false)
+        var selectedOption by mutableStateOf(0)
+        var customValue0 by mutableStateOf("")
+        var customValue1 by mutableStateOf("")
+
+        @Composable
+        open fun textOf(value: T) = value.toString()
+    }
+}
+
+class SampleArtEntrySectionsProvider : PreviewParameterProvider<List<ArtEntrySection>> {
+    override val values = sequenceOf(
+        listOf(
+            ArtEntrySection.MultiText(
+                R.string.add_entry_artists_header_zero,
+                R.string.add_entry_artists_header_one,
+                R.string.add_entry_artists_header_many,
+                "Lucidsky"
+            ),
+            ArtEntrySection.MultiText(
+                R.string.add_entry_locations_header_zero,
+                R.string.add_entry_locations_header_one,
+                R.string.add_entry_locations_header_many,
+                "Fanime 2022"
+            ),
+            ArtEntrySection.MultiText(
+                R.string.add_entry_series_header_zero,
+                R.string.add_entry_series_header_one,
+                R.string.add_entry_series_header_many,
+                "Dress Up Darling"
+            ),
+            ArtEntrySection.MultiText(
+                R.string.add_entry_characters_header_zero,
+                R.string.add_entry_characters_header_one,
+                R.string.add_entry_characters_header_many,
+                "Marin Kitagawa"
+            ),
+            ArtEntrySection.MultiText(
+                R.string.add_entry_tags_header_zero,
+                R.string.add_entry_tags_header_one,
+                R.string.add_entry_tags_header_many,
+            ).apply {
+                contents.addAll(listOf("cute", "portrait"))
+                pendingValue = "schoolgirl uniform"
+            },
+            SizeDropdown(
+                predefinedOptions = mutableStateListOf(*PrintSize.PORTRAITS.toTypedArray())
+            )
+        )
+    )
+}
+
+class SizeDropdown(
+    predefinedOptions: SnapshotStateList<PrintSize> = mutableStateListOf(),
+) : ArtEntrySection.MultiDropdown2<PrintSize>(
+    R.string.add_entry_size_header,
+    predefinedOptions
+) {
+
+    @Composable
+    override fun textOf(value: PrintSize) = stringResource(value.textRes)
+
+    fun finalWidth() = if (selectedOption == predefinedOptions.size) {
+        customValue0.toIntOrNull()
+    } else {
+        predefinedOptions[selectedOption].printWidth
+    }
+
+    fun finalHeight() = if (selectedOption == predefinedOptions.size) {
+        customValue0.toIntOrNull()
+    } else {
+        predefinedOptions[selectedOption].printHeight
+    }
 }
 
 @Preview
 @Composable
-fun Preview() {
+fun Preview(
+    @PreviewParameter(SampleArtEntrySectionsProvider::class) sections: List<ArtEntrySection>
+) {
     Column {
         ArtEntryForm(
-            artistSection = ArtEntryFormSection("Lucidsky"),
-            locationSection = ArtEntryFormSection("Fanime 2022"),
-            seriesSection = ArtEntryFormSection("Dress Up Darling"),
-            characterSection = ArtEntryFormSection("Marin Kitagawa"),
-            tagSection = ArtEntryFormSection().apply {
-                contents.addAll(listOf("cute", "portrait"))
-                pendingValue = "schoolgirl uniform"
-            },
+            sections = sections
         )
     }
 }

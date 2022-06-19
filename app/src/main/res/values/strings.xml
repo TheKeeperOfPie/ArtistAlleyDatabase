@@ -21,6 +21,7 @@
     <string name="add_entry_tags_header_zero">Tag</string>
     <string name="add_entry_tags_header_one">Tag</string>
     <string name="add_entry_tags_header_many">Tags</string>
+    <string name="add_entry_size_header">Size</string>
     <string name="error_fail_to_load_image">Failed to load image</string>
     <string name="error_fail_to_select_image">Failed to select image</string>
     <string name="error_fail_to_open_file_output">Failed to open file output</string>
@@ -40,4 +41,14 @@
     <string name="import_button">Import</string>
     <string name="import_source">Import source</string>
     <string name="invalid_import_source">Invalid import source</string>
+    <string name="print_size_8_5x11_inches">8.5\" x 11\"</string>
+    <string name="print_size_11x8_5_inches">11\" x 8.5\"</string>
+    <string name="print_size_11x17_inches">11\" x 17\"</string>
+    <string name="print_size_17x11_inches">17\" x 11\"</string>
+    <string name="print_size_12x18_inches">12\" x 18\"</string>
+    <string name="print_size_18x12_inches">18\" x 12\"</string>
+    <string name="print_size_13x19_inches">13\" x 19\"</string>
+    <string name="print_size_19x13_inches">19\" x 13\"</string>
+    <string name="custom">Custom</string>
+    <string name="unknown">Unknown</string>
 </resources>

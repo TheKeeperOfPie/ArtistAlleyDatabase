@@ -25,6 +25,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
@@ -33,10 +34,11 @@ import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.HorizontalPagerIndicator
 import com.google.accompanist.pager.rememberPagerState
 import com.thekeeperofpie.artistalleydatabase.R
-import com.thekeeperofpie.artistalleydatabase.ui.ArtEntryForm
-import com.thekeeperofpie.artistalleydatabase.ui.ArtEntryFormSection
+import com.thekeeperofpie.artistalleydatabase.art.ArtEntryForm
+import com.thekeeperofpie.artistalleydatabase.art.ArtEntrySection
+import com.thekeeperofpie.artistalleydatabase.art.ImagesSelectBox
+import com.thekeeperofpie.artistalleydatabase.art.SampleArtEntrySectionsProvider
 import com.thekeeperofpie.artistalleydatabase.ui.ButtonFooter
-import com.thekeeperofpie.artistalleydatabase.ui.ImagesSelectBox
 import com.thekeeperofpie.artistalleydatabase.ui.SnackbarErrorText
 import com.thekeeperofpie.artistalleydatabase.ui.theme.ArtistAlleyDatabaseTheme
 
@@ -48,11 +50,7 @@ object AddEntryScreen {
         imageUris: List<Uri> = emptyList(),
         onImagesSelected: (List<Uri>) -> Unit = {},
         onImageSelectError: (Exception?) -> Unit = {},
-        artistSection: ArtEntryFormSection = ArtEntryFormSection(),
-        locationSection: ArtEntryFormSection = ArtEntryFormSection(),
-        seriesSection: ArtEntryFormSection = ArtEntryFormSection(),
-        characterSection: ArtEntryFormSection = ArtEntryFormSection(),
-        tagSection: ArtEntryFormSection = ArtEntryFormSection(),
+        sections: List<ArtEntrySection> = emptyList(),
         onClickSave: () -> Unit = {},
         errorRes: Pair<Int, Exception?>? = null,
         onErrorDismiss: () -> Unit = {},
@@ -73,14 +71,7 @@ object AddEntryScreen {
                         ) {
                             HeaderImage(imageUris, onImagesSelected, onImageSelectError)
 
-                            ArtEntryForm(
-                                false,
-                                artistSection,
-                                locationSection,
-                                seriesSection,
-                                characterSection,
-                                tagSection,
-                            )
+                            ArtEntryForm(false, sections)
                         }
 
                         ButtonFooter(onClickSave, R.string.save)
@@ -150,15 +141,8 @@ object AddEntryScreen {
 
 @Preview
 @Composable
-fun Preview() {
-    AddEntryScreen(
-        artistSection = ArtEntryFormSection("Lucidsky"),
-        locationSection = ArtEntryFormSection("Fanime 2022"),
-        seriesSection = ArtEntryFormSection("Dress Up Darling"),
-        characterSection = ArtEntryFormSection("Marin Kitagawa"),
-        tagSection = ArtEntryFormSection().apply {
-            contents.addAll(listOf("cute", "portrait"))
-            pendingValue = "schoolgirl uniform"
-        },
-    )
+fun Preview(
+    @PreviewParameter(SampleArtEntrySectionsProvider::class) sections: List<ArtEntrySection>
+) {
+    AddEntryScreen(sections = sections)
 }
