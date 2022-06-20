@@ -57,6 +57,7 @@ object DetailsScreen {
         imageUri: Uri? = null,
         onImageSelected: (Uri?) -> Unit = {},
         onImageSelectError: (Exception?) -> Unit = {},
+        onImageSizeResult: (Int, Int) -> Unit = { _, _ -> },
         areSectionsLoading: Boolean = false,
         sections: List<ArtEntrySection> = emptyList(),
         onClickSave: () -> Unit = {},
@@ -92,7 +93,8 @@ object DetailsScreen {
                                 entryImageRatio,
                                 imageUri,
                                 onImageSelected,
-                                onImageSelectError
+                                onImageSelectError,
+                                onImageSizeResult,
                             )
 
                             ArtEntryForm(areSectionsLoading, sections)
@@ -140,7 +142,8 @@ object DetailsScreen {
         entryImageRatio: Float,
         imageUri: Uri?,
         onImageSelected: (Uri?) -> Unit,
-        onImageSelectError: (Exception?) -> Unit
+        onImageSelectError: (Exception?) -> Unit,
+        onImageSizeResult: (Int, Int) -> Unit = { _, _ -> },
     ) {
         ImageSelectBox(onImageSelected, onImageSelectError) {
             if (imageUri != null) {
@@ -148,6 +151,12 @@ object DetailsScreen {
                     model = ImageRequest.Builder(LocalContext.current)
                         .data(imageUri)
                         .crossfade(true)
+                        .listener { _, result ->
+                            onImageSizeResult(
+                                result.drawable.intrinsicWidth,
+                                result.drawable.intrinsicHeight,
+                            )
+                        }
                         .build(),
                     contentDescription = stringResource(
                         R.string.art_entry_image_content_description

@@ -7,9 +7,9 @@ import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.CallSuper
-import androidx.annotation.StringRes
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
@@ -22,22 +22,24 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
@@ -73,7 +75,7 @@ fun ColumnScope.ArtEntryForm(
                 sections.forEach {
                     when (it) {
                         is ArtEntrySection.MultiText -> MultiTextSection(it)
-                        is ArtEntrySection.MultiDropdown2<*> -> Dropdown2Section(it)
+                        is ArtEntrySection.Dropdown<*> -> Dropdown2Section(it)
                     }
                 }
             }
@@ -89,7 +91,7 @@ private fun SectionHeader(
     Text(
         text = text,
         style = MaterialTheme.typography.labelMedium,
-        modifier = modifier.padding(top = 12.dp, bottom = 12.dp, start = 16.dp, end = 16.dp)
+        modifier = modifier.padding(top = 12.dp, bottom = 10.dp, start = 16.dp, end = 16.dp)
     )
 }
 
@@ -117,8 +119,13 @@ private fun MultiTextSection(section: ArtEntrySection.MultiText) {
         section.pendingValue,
         { section.pendingValue = it },
         {
-            section.contents += it
-            section.pendingValue = ""
+            if (it.isNotEmpty()) {
+                section.contents += it
+                section.pendingValue = ""
+            }
+        },
+        {
+            section.pendingValue = section.contents.removeLast()
         }
     )
 }
@@ -153,6 +160,7 @@ private fun OpenSectionField(
     value: String,
     onValueChange: (value: String) -> Unit,
     onDone: (value: String) -> Unit,
+    onBackspaceEmpty: () -> Unit,
 ) {
     OutlinedTextField(
         value = value,
@@ -163,34 +171,66 @@ private fun OpenSectionField(
             .fillMaxWidth()
             .padding(start = 16.dp, end = 16.dp)
             .onKeyEvent {
-                if (it.type == KeyEventType.KeyUp && it.key == Key.Enter) {
-                    onDone(value)
-                    true
+                if (it.type == KeyEventType.KeyUp) {
+                    return@onKeyEvent when (it.key) {
+                        Key.Enter -> {
+                            onDone(value)
+                            true
+                        }
+                        Key.Backspace -> {
+                            if (value.isEmpty()) {
+                                onBackspaceEmpty()
+                                true
+                            } else false
+                        }
+                        else -> false
+                    }
                 } else false
             }
     )
 }
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
-private fun <T> Dropdown2Section(section: ArtEntrySection.MultiDropdown2<T>) {
+private fun <T> Dropdown2Section(section: ArtEntrySection.Dropdown<T>) {
     SectionHeader(stringResource(section.headerRes))
 
     Box(
         Modifier
-            .clickable { section.expanded = true }
             .fillMaxWidth()
+            .padding(start = 16.dp, end = 16.dp)
     ) {
-        val selectedItemText = if (section.selectedOption < section.predefinedOptions.size) {
-            section.textOf(section.predefinedOptions[section.selectedOption])
-        } else {
-            stringResource(R.string.custom)
-        }
+        val selectedItem = section.selectedItem()
 
-        Text(
-            selectedItemText,
+        val (focusRequester) = FocusRequester.createRefs()
+        val interactionSource = remember { MutableInteractionSource() }
+
+        OutlinedTextField(
+            value = selectedItem.fieldText(),
+            readOnly = true,
+            trailingIcon = {
+                Icon(
+                    Icons.Default.ArrowDropDown,
+                    stringResource(R.string.art_entry_size_dropdown_content_description)
+                )
+            },
+            onValueChange = {},
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(start = 16.dp, end = 16.dp, top = 10.dp, bottom = 10.dp)
+                .focusRequester(focusRequester)
+        )
+
+        Box(
+            modifier = Modifier
+                .matchParentSize()
+                .clickable(
+                    onClick = {
+                        section.expanded = true
+                        focusRequester.requestFocus()
+                    },
+                    interactionSource = interactionSource,
+                    indication = null
+                )
         )
 
         DropdownMenu(
@@ -198,25 +238,21 @@ private fun <T> Dropdown2Section(section: ArtEntrySection.MultiDropdown2<T>) {
             onDismissRequest = { section.expanded = false },
             Modifier.fillMaxWidth()
         ) {
-            section.predefinedOptions.forEachIndexed { index, item ->
+            section.options.forEachIndexed { index, item ->
                 DropdownMenuItem(
                     onClick = {
                         section.expanded = false
-                        section.selectedOption = index
+                        section.selectedIndex = index
                     },
-                    text = { Text(section.textOf(item)) }
+                    text = { item.DropdownItemText() }
                 )
             }
-
-            DropdownMenuItem(
-                onClick = {
-                    section.expanded = false
-                    section.selectedOption = section.predefinedOptions.size
-                },
-                text = { Text(stringResource(R.string.custom)) }
-            )
         }
     }
+
+    section.selectedItem()
+        .takeIf { it.hasCustomView }
+        ?.Content()
 }
 
 @Composable
@@ -285,34 +321,6 @@ private object GetMultipleContentsChooser : ActivityResultContracts.GetMultipleC
     }
 }
 
-sealed class ArtEntrySection {
-
-    class MultiText(
-        @StringRes val headerZero: Int,
-        @StringRes val headerOne: Int,
-        @StringRes val headerMany: Int,
-        initialPendingValue: String = "",
-    ) : ArtEntrySection() {
-        val contents = mutableStateListOf<String>()
-        var pendingValue by mutableStateOf(initialPendingValue)
-
-        fun finalContents() = (contents + pendingValue).filter { it.isNotEmpty() }
-    }
-
-    open class MultiDropdown2<T>(
-        @StringRes val headerRes: Int,
-        var predefinedOptions: SnapshotStateList<T> = mutableStateListOf()
-    ) : ArtEntrySection() {
-        var expanded by mutableStateOf(false)
-        var selectedOption by mutableStateOf(0)
-        var customValue0 by mutableStateOf("")
-        var customValue1 by mutableStateOf("")
-
-        @Composable
-        open fun textOf(value: T) = value.toString()
-    }
-}
-
 class SampleArtEntrySectionsProvider : PreviewParameterProvider<List<ArtEntrySection>> {
     override val values = sequenceOf(
         listOf(
@@ -340,6 +348,9 @@ class SampleArtEntrySectionsProvider : PreviewParameterProvider<List<ArtEntrySec
                 R.string.add_entry_characters_header_many,
                 "Marin Kitagawa"
             ),
+            SizeDropdown().apply {
+                selectedIndex = options.size - 1
+            },
             ArtEntrySection.MultiText(
                 R.string.add_entry_tags_header_zero,
                 R.string.add_entry_tags_header_one,
@@ -348,33 +359,38 @@ class SampleArtEntrySectionsProvider : PreviewParameterProvider<List<ArtEntrySec
                 contents.addAll(listOf("cute", "portrait"))
                 pendingValue = "schoolgirl uniform"
             },
-            SizeDropdown(
-                predefinedOptions = mutableStateListOf(*PrintSize.PORTRAITS.toTypedArray())
-            )
         )
     )
 }
 
-class SizeDropdown(
-    predefinedOptions: SnapshotStateList<PrintSize> = mutableStateListOf(),
-) : ArtEntrySection.MultiDropdown2<PrintSize>(
+class SizeDropdown : ArtEntrySection.Dropdown<PrintSize>(
     R.string.add_entry_size_header,
-    predefinedOptions
+    R.string.add_entry_size_label_width,
+    R.string.add_entry_size_label_height,
+    PrintSize.PORTRAITS
+        .map { Item.Basic(it, it.textRes) }
+        .plus(
+            Item.TwoFields(
+                R.string.add_entry_size_label_width,
+                R.string.add_entry_size_label_height
+            )
+        )
+        .toMutableStateList(),
 ) {
 
     @Composable
     override fun textOf(value: PrintSize) = stringResource(value.textRes)
 
-    fun finalWidth() = if (selectedOption == predefinedOptions.size) {
-        customValue0.toIntOrNull()
-    } else {
-        predefinedOptions[selectedOption].printWidth
+    @Suppress("UNCHECKED_CAST")
+    fun finalWidth() = when (val item = selectedItem()) {
+        is Item.Basic<*> -> (item as Item.Basic<PrintSize>).value.printWidth
+        is Item.TwoFields -> item.customValue0.toIntOrNull()
     }
 
-    fun finalHeight() = if (selectedOption == predefinedOptions.size) {
-        customValue0.toIntOrNull()
-    } else {
-        predefinedOptions[selectedOption].printHeight
+    @Suppress("UNCHECKED_CAST")
+    fun finalHeight() = when (val item = selectedItem()) {
+        is Item.Basic<*> -> (item as Item.Basic<PrintSize>).value.printHeight
+        is Item.TwoFields -> item.customValue1.toIntOrNull()
     }
 }
 

@@ -19,6 +19,7 @@ data class ArtEntry(
     val tags: List<String> = emptyList(),
     val price: BigDecimal? = null,
     val date: Date? = null,
+    val lastEditTime: Date? = null,
     val imageWidth: Int?,
     val imageHeight: Int?,
     val printWidth: Int?,

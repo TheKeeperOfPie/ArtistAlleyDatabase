@@ -108,6 +108,7 @@ class ImportViewModel @Inject constructor(
                         val tags = mutableListOf<String>()
                         var price: BigDecimal? = null
                         var date: Date? = null
+                        var lastEditTime: Date? = null
                         var imageWidth: Int? = null
                         var imageHeight: Int? = null
                         var printWidth: Int? = null
@@ -131,20 +132,12 @@ class ImportViewModel @Inject constructor(
                                             .deserializeBigDecimal(reader.nextString())
                                     }
                                 }
-                                "date" -> {
-                                    val nextToken = reader.peek()
-                                    date = when (nextToken) {
-                                        JsonReader.Token.NULL -> reader.nextNull<Long>()
-                                        JsonReader.Token.STRING -> reader.nextString()
-                                            .toLongOrNull()
-                                        JsonReader.Token.NUMBER -> reader.nextLong()
-                                        else -> null
-                                    }.let(Converters.DateConverter::deserializeDate)
-                                }
+                                "date" -> date = reader.readDate()
                                 "imageWidth" -> imageWidth = reader.nextInt()
                                 "imageHeight" -> imageHeight = reader.nextInt()
                                 "printWidth" -> printWidth = reader.nextInt()
                                 "printHeight" -> printHeight = reader.nextInt()
+                                "lastEditTime" -> lastEditTime = reader.readDate()
                                 else -> reader.skipValue()
                             }
                         }
@@ -164,6 +157,7 @@ class ImportViewModel @Inject constructor(
                                 tags = tags,
                                 price = price,
                                 date = date,
+                                lastEditTime = lastEditTime,
                                 imageWidth = imageWidth,
                                 imageHeight = imageHeight,
                                 printWidth = printWidth,
@@ -189,4 +183,11 @@ class ImportViewModel @Inject constructor(
         }
         endArray()
     }
+
+    private fun JsonReader.readDate() = when (peek()) {
+        JsonReader.Token.NULL -> nextNull<Long>()
+        JsonReader.Token.STRING -> nextString().toLongOrNull()
+        JsonReader.Token.NUMBER -> nextLong()
+        else -> null
+    }.let(Converters.DateConverter::deserializeDate)
 }

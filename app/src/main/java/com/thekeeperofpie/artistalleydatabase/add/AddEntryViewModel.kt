@@ -13,6 +13,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.time.Instant
+import java.util.Date
 import java.util.UUID
 import javax.inject.Inject
 
@@ -47,6 +49,7 @@ class AddEntryViewModel @Inject constructor(
                         series = seriesSection.finalContents(),
                         characters = characterSection.finalContents(),
                         tags = tagSection.finalContents(),
+                        lastEditTime = Date.from(Instant.now()),
                         imageWidth = imageWidth,
                         imageHeight = imageHeight,
                         printWidth = printSizeSection.finalWidth(),

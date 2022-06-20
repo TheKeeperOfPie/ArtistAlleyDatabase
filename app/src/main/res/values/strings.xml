@@ -51,4 +51,7 @@
     <string name="print_size_19x13_inches">19\" x 13\"</string>
     <string name="custom">Custom</string>
     <string name="unknown">Unknown</string>
+    <string name="add_entry_size_label_width">Width (mm)</string>
+    <string name="add_entry_size_label_height">Height (mm)</string>
+    <string name="art_entry_size_dropdown_content_description">Size selection dropdown</string>
 </resources>

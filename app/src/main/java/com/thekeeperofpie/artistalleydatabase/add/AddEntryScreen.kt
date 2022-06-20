@@ -50,6 +50,7 @@ object AddEntryScreen {
         imageUris: List<Uri> = emptyList(),
         onImagesSelected: (List<Uri>) -> Unit = {},
         onImageSelectError: (Exception?) -> Unit = {},
+        onImageSizeResult: (Int, Int) -> Unit = { _, _ -> },
         sections: List<ArtEntrySection> = emptyList(),
         onClickSave: () -> Unit = {},
         errorRes: Pair<Int, Exception?>? = null,
@@ -69,7 +70,12 @@ object AddEntryScreen {
                                 .weight(1f, true)
                                 .verticalScroll(rememberScrollState())
                         ) {
-                            HeaderImage(imageUris, onImagesSelected, onImageSelectError)
+                            HeaderImage(
+                                imageUris,
+                                onImagesSelected,
+                                onImageSelectError,
+                                onImageSizeResult,
+                            )
 
                             ArtEntryForm(false, sections)
                         }
@@ -87,6 +93,7 @@ object AddEntryScreen {
         imageUris: List<Uri> = emptyList(),
         onImagesSelected: (List<Uri>) -> Unit = {},
         onImageSelectError: (Exception?) -> Unit = {},
+        onImageSizeResult: (Int, Int) -> Unit = { _, _ -> },
     ) {
         ImagesSelectBox(onImagesSelected, onImageSelectError) {
             if (imageUris.isNotEmpty()) {
@@ -100,6 +107,12 @@ object AddEntryScreen {
                         model = ImageRequest.Builder(LocalContext.current)
                             .data(imageUris[it])
                             .crossfade(true)
+                            .listener { _, result ->
+                                onImageSizeResult(
+                                    result.drawable.intrinsicWidth,
+                                    result.drawable.intrinsicHeight,
+                                )
+                            }
                             .build(),
                         contentDescription = stringResource(
                             R.string.art_entry_image_content_description

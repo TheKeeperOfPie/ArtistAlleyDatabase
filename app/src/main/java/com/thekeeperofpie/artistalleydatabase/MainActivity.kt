@@ -153,6 +153,7 @@ class MainActivity : ComponentActivity() {
                         onImageSelectError = {
                             viewModel.errorResource = R.string.error_fail_to_load_image to it
                         },
+                        onImageSizeResult = viewModel::onImageSizeResult,
                         sections = viewModel.sections,
                         onClickSave = { viewModel.onClickSave(navController) },
                         errorRes = viewModel.errorResource,
@@ -185,7 +186,7 @@ class MainActivity : ComponentActivity() {
                     val entryImageRatio = arguments.getFloat("entry_image_ratio", 1f)
 
                     val viewModel = hiltViewModel<DetailsViewModel>()
-                    viewModel.initialize(entryId)
+                    viewModel.initialize(entryId, entryImageRatio)
 
                     DetailsScreen(
                         entryId,
@@ -196,6 +197,7 @@ class MainActivity : ComponentActivity() {
                         onImageSelectError = {
                             viewModel.errorResource = R.string.error_fail_to_load_image to it
                         },
+                        onImageSizeResult = viewModel::onImageSizeResult,
                         areSectionsLoading = viewModel.areSectionsLoading,
                         sections = viewModel.sections,
                         onClickSave = { viewModel.onClickSave(navController) },

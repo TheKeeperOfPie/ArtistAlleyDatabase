@@ -41,9 +41,23 @@ abstract class ArtEntryViewModel : ViewModel() {
         locationSection,
         seriesSection,
         characterSection,
+        printSizeSection,
         tagSection,
-        printSizeSection
     )
 
     var errorResource by mutableStateOf<Pair<Int, Exception?>?>(null)
+
+    fun onImageSizeResult(width: Int, height: Int) {
+        if (width > height) {
+            PrintSize.LANDSCAPES.forEachIndexed { index, printSize ->
+                printSizeSection.options[index] =
+                    ArtEntrySection.Dropdown.Item.Basic(printSize, printSize.textRes)
+            }
+        } else {
+            PrintSize.PORTRAITS.forEachIndexed { index, printSize ->
+                printSizeSection.options[index] =
+                    ArtEntrySection.Dropdown.Item.Basic(printSize, printSize.textRes)
+            }
+        }
+    }
 }
