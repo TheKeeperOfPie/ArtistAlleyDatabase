@@ -1,6 +1,22 @@
 package com.thekeeperofpie.artistalleydatabase.art
 
 import androidx.annotation.StringRes
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.toMutableStateList
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.unit.dp
 import com.thekeeperofpie.artistalleydatabase.BuildConfig
 import com.thekeeperofpie.artistalleydatabase.R
 import kotlin.math.roundToInt
@@ -62,4 +78,106 @@ sealed class PrintSize(
 
     object Landscape19x13 :
         PrintSize((19 * 25.4).toInt(), (13 * 25.4).toInt(), R.string.print_size_19x13_inches)
+}
+
+class PrintSizeDropdown : ArtEntrySection.Dropdown(
+    R.string.art_entry_size_header,
+    R.string.art_entry_size_dropdown_content_description,
+    PrintSize.PORTRAITS
+        .map { Item.Basic(it, it.textRes) }
+        .plus(PrintSizeCustomTextFields())
+        .toMutableStateList(),
+) {
+
+    fun initialize(printWidth: Int?, printHeight: Int?) {
+        var indexOfSize = options.indexOfFirst {
+            if (it !is Item.Basic<*>) return@indexOfFirst false
+            @Suppress("UNCHECKED_CAST")
+            it as Item.Basic<PrintSize>
+            it.value.printWidth == printWidth && it.value.printHeight == printHeight
+        }
+
+        if (indexOfSize < 0) {
+            if (printWidth != null && printHeight != null) {
+                indexOfSize = options.size - 1
+                (options.last() as PrintSizeCustomTextFields)
+                    .run {
+                        width = printWidth.toString()
+                        height = printHeight.toString()
+                    }
+            } else {
+                indexOfSize = 0
+            }
+        }
+        selectedIndex = indexOfSize
+    }
+
+    fun onSizeChange(width: Int, height: Int) {
+        if (width > height) {
+            PrintSize.LANDSCAPES.forEachIndexed { index, printSize ->
+                options[index] = Item.Basic(printSize, printSize.textRes)
+            }
+        } else {
+            PrintSize.PORTRAITS.forEachIndexed { index, printSize ->
+                options[index] = Item.Basic(printSize, printSize.textRes)
+            }
+        }
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    fun finalWidth() = when (val item = selectedItem()) {
+        is Item.Basic<*> -> (item as Item.Basic<PrintSize>).value.printWidth
+        is PrintSizeCustomTextFields -> item.width.toIntOrNull()
+        else -> throw IllegalArgumentException()
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    fun finalHeight() = when (val item = selectedItem()) {
+        is Item.Basic<*> -> (item as Item.Basic<PrintSize>).value.printHeight
+        is PrintSizeCustomTextFields -> item.height.toIntOrNull()
+        else -> throw IllegalArgumentException()
+    }
+}
+
+class PrintSizeCustomTextFields : ArtEntrySection.Dropdown.Item {
+
+    var width by mutableStateOf("")
+    var height by mutableStateOf("")
+
+    override val hasCustomView = true
+
+    @Composable
+    override fun fieldText() = stringResource(R.string.custom)
+
+    @Composable
+    override fun DropdownItemText() = Text(fieldText())
+
+    @Composable
+    override fun Content() {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 16.dp, end = 16.dp, top = 10.dp, bottom = 10.dp)
+        ) {
+            TextField(
+                value = width,
+                label = { Text(stringResource(R.string.add_entry_size_label_width)) },
+                onValueChange = { width = it },
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    keyboardType = KeyboardType.Number
+                ),
+                modifier = Modifier.weight(1f, true),
+            )
+            TextField(
+                value = height,
+                label = { Text(stringResource(R.string.add_entry_size_label_height)) },
+                onValueChange = { height = it },
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    keyboardType = KeyboardType.Number
+                ),
+                modifier = Modifier.weight(1f, true),
+            )
+        }
+    }
 }

@@ -14,7 +14,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
@@ -34,7 +36,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -71,13 +72,14 @@ fun ColumnScope.ArtEntryForm(
             )
         } else {
             Column {
-
                 sections.forEach {
                     when (it) {
                         is ArtEntrySection.MultiText -> MultiTextSection(it)
-                        is ArtEntrySection.Dropdown<*> -> Dropdown2Section(it)
+                        is ArtEntrySection.Dropdown -> DropdownSection(it)
                     }
                 }
+
+                Spacer(Modifier.height(24.dp))
             }
         }
     }
@@ -192,7 +194,7 @@ private fun OpenSectionField(
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-private fun <T> Dropdown2Section(section: ArtEntrySection.Dropdown<T>) {
+private fun DropdownSection(section: ArtEntrySection.Dropdown) {
     SectionHeader(stringResource(section.headerRes))
 
     Box(
@@ -211,7 +213,7 @@ private fun <T> Dropdown2Section(section: ArtEntrySection.Dropdown<T>) {
             trailingIcon = {
                 Icon(
                     Icons.Default.ArrowDropDown,
-                    stringResource(R.string.art_entry_size_dropdown_content_description)
+                    stringResource(section.arrowContentDescription)
                 )
             },
             onValueChange = {},
@@ -325,73 +327,42 @@ class SampleArtEntrySectionsProvider : PreviewParameterProvider<List<ArtEntrySec
     override val values = sequenceOf(
         listOf(
             ArtEntrySection.MultiText(
-                R.string.add_entry_artists_header_zero,
-                R.string.add_entry_artists_header_one,
-                R.string.add_entry_artists_header_many,
+                R.string.art_entry_artists_header_zero,
+                R.string.art_entry_artists_header_one,
+                R.string.art_entry_artists_header_many,
                 "Lucidsky"
             ),
             ArtEntrySection.MultiText(
-                R.string.add_entry_locations_header_zero,
-                R.string.add_entry_locations_header_one,
-                R.string.add_entry_locations_header_many,
+                R.string.art_entry_locations_header_zero,
+                R.string.art_entry_locations_header_one,
+                R.string.art_entry_locations_header_many,
                 "Fanime 2022"
             ),
             ArtEntrySection.MultiText(
-                R.string.add_entry_series_header_zero,
-                R.string.add_entry_series_header_one,
-                R.string.add_entry_series_header_many,
+                R.string.art_entry_series_header_zero,
+                R.string.art_entry_series_header_one,
+                R.string.art_entry_series_header_many,
                 "Dress Up Darling"
             ),
             ArtEntrySection.MultiText(
-                R.string.add_entry_characters_header_zero,
-                R.string.add_entry_characters_header_one,
-                R.string.add_entry_characters_header_many,
+                R.string.art_entry_characters_header_zero,
+                R.string.art_entry_characters_header_one,
+                R.string.art_entry_characters_header_many,
                 "Marin Kitagawa"
             ),
-            SizeDropdown().apply {
+            PrintSizeDropdown().apply {
                 selectedIndex = options.size - 1
             },
             ArtEntrySection.MultiText(
-                R.string.add_entry_tags_header_zero,
-                R.string.add_entry_tags_header_one,
-                R.string.add_entry_tags_header_many,
+                R.string.art_entry_tags_header_zero,
+                R.string.art_entry_tags_header_one,
+                R.string.art_entry_tags_header_many,
             ).apply {
                 contents.addAll(listOf("cute", "portrait"))
                 pendingValue = "schoolgirl uniform"
             },
         )
     )
-}
-
-class SizeDropdown : ArtEntrySection.Dropdown<PrintSize>(
-    R.string.add_entry_size_header,
-    R.string.add_entry_size_label_width,
-    R.string.add_entry_size_label_height,
-    PrintSize.PORTRAITS
-        .map { Item.Basic(it, it.textRes) }
-        .plus(
-            Item.TwoFields(
-                R.string.add_entry_size_label_width,
-                R.string.add_entry_size_label_height
-            )
-        )
-        .toMutableStateList(),
-) {
-
-    @Composable
-    override fun textOf(value: PrintSize) = stringResource(value.textRes)
-
-    @Suppress("UNCHECKED_CAST")
-    fun finalWidth() = when (val item = selectedItem()) {
-        is Item.Basic<*> -> (item as Item.Basic<PrintSize>).value.printWidth
-        is Item.TwoFields -> item.customValue0.toIntOrNull()
-    }
-
-    @Suppress("UNCHECKED_CAST")
-    fun finalHeight() = when (val item = selectedItem()) {
-        is Item.Basic<*> -> (item as Item.Basic<PrintSize>).value.printHeight
-        is Item.TwoFields -> item.customValue1.toIntOrNull()
-    }
 }
 
 @Preview

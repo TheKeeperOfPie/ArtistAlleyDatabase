@@ -102,7 +102,8 @@ class ImportViewModel @Inject constructor(
                     while (reader.peek() == JsonReader.Token.BEGIN_OBJECT) {
                         var id: String? = null
                         val artists = mutableListOf<String>()
-                        val locations = mutableListOf<String>()
+                        var sourceType: String? = null
+                        var sourceValue: String? = null
                         val series = mutableListOf<String>()
                         val characters = mutableListOf<String>()
                         val tags = mutableListOf<String>()
@@ -120,17 +121,14 @@ class ImportViewModel @Inject constructor(
                                     .removePrefix("\"")
                                     .removeSuffix("\"")
                                 "artists" -> reader.readStringArray(artists)
-                                "locations" -> reader.readStringArray(locations)
+                                "sourceType" -> sourceType = reader.readNullableString()
+                                "sourceValue" -> sourceValue = reader.readNullableString()
                                 "series" -> reader.readStringArray(series)
                                 "characters" -> reader.readStringArray(characters)
                                 "tags" -> reader.readStringArray(tags)
                                 "price" -> {
-                                    if (reader.peek() == JsonReader.Token.NULL) {
-                                        reader.nextNull<BigDecimal>()
-                                    } else {
-                                        price = Converters.BigDecimalConverter
-                                            .deserializeBigDecimal(reader.nextString())
-                                    }
+                                    price = Converters.BigDecimalConverter
+                                        .deserializeBigDecimal(reader.readNullableString())
                                 }
                                 "date" -> date = reader.readDate()
                                 "imageWidth" -> imageWidth = reader.nextInt()
@@ -151,7 +149,8 @@ class ImportViewModel @Inject constructor(
                             ArtEntry(
                                 id = id,
                                 artists = artists,
-                                locations = locations,
+                                sourceType = sourceType,
+                                sourceValue = sourceValue,
                                 series = series,
                                 characters = characters,
                                 tags = tags,
@@ -190,4 +189,10 @@ class ImportViewModel @Inject constructor(
         JsonReader.Token.NUMBER -> nextLong()
         else -> null
     }.let(Converters.DateConverter::deserializeDate)
+
+    private fun JsonReader.readNullableString() = when (peek()) {
+        JsonReader.Token.NULL -> nextNull<String>()
+        JsonReader.Token.STRING -> nextString()
+        else -> null
+    }
 }

@@ -45,7 +45,6 @@ class AddEntryViewModel @Inject constructor(
                     ArtEntry(
                         id = id,
                         artists = artistSection.finalContents(),
-                        locations = locationSection.finalContents(),
                         series = seriesSection.finalContents(),
                         characters = characterSection.finalContents(),
                         tags = tagSection.finalContents(),

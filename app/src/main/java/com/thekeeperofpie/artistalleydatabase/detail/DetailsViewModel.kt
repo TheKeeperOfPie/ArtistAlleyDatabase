@@ -9,10 +9,8 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntry
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryDao
-import com.thekeeperofpie.artistalleydatabase.art.ArtEntrySection
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryUtils
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryViewModel
-import com.thekeeperofpie.artistalleydatabase.art.PrintSize
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -52,32 +50,12 @@ class DetailsViewModel @Inject constructor(
             entry = artEntryDao.getEntry(entryId)
             withContext(Dispatchers.Main) {
                 artistSection.contents.addAll(entry.artists)
-                locationSection.contents.addAll(entry.locations)
                 seriesSection.contents.addAll(entry.series)
                 characterSection.contents.addAll(entry.characters)
                 tagSection.contents.addAll(entry.tags)
 
-                var indexOfSize = printSizeSection.options.indexOfFirst {
-                    if (it !is ArtEntrySection.Dropdown.Item.Basic<*>) return@indexOfFirst false
-                    @Suppress("UNCHECKED_CAST")
-                    it as ArtEntrySection.Dropdown.Item.Basic<PrintSize>
-                    it.value.printWidth == entry.printWidth
-                            && it.value.printHeight == entry.printHeight
-                }
-
-                if (indexOfSize < 0) {
-                    if (entry.printWidth != null && entry.printHeight != null) {
-                        indexOfSize = printSizeSection.options.size - 1
-                        (printSizeSection.options.last() as ArtEntrySection.Dropdown.Item.TwoFields)
-                            .run {
-                                customValue0 = entry.printWidth.toString()
-                                customValue1 = entry.printHeight.toString()
-                            }
-                    } else {
-                        indexOfSize = 0
-                    }
-                }
-                printSizeSection.selectedIndex = indexOfSize
+                printSizeSection.initialize(entry.printWidth, entry.printHeight)
+                sourceSection.initialize(entry.sourceType, entry.sourceValue)
 
                 areSectionsLoading = false
             }
@@ -109,11 +87,13 @@ class DetailsViewModel @Inject constructor(
             }
 
             val (imageWidth, imageHeight) = ArtEntryUtils.getImageSize(outputFile)
+            val (sourceType, sourceValue) = sourceSection.finalTypeToValue()
 
             artEntryDao.insertEntries(
                 entry.copy(
                     artists = artistSection.finalContents(),
-                    locations = locationSection.finalContents(),
+                    sourceType = sourceType,
+                    sourceValue = sourceValue,
                     series = seriesSection.finalContents(),
                     characters = characterSection.finalContents(),
                     tags = tagSection.finalContents(),
