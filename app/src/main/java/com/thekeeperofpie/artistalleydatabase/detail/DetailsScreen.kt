@@ -3,6 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.detail
 import android.net.Uri
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.background
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -80,6 +81,7 @@ object DetailsScreen {
                         Modifier
                             .padding(it)
                             .fillMaxWidth()
+                            .focusable(true)
                     ) {
                         Column(
                             modifier = Modifier

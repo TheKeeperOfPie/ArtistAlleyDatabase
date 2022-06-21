@@ -5,6 +5,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -47,6 +48,7 @@ import coil.size.Dimension
 import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.R
 import com.thekeeperofpie.artistalleydatabase.navigation.NavDestinations
+import com.thekeeperofpie.artistalleydatabase.ui.ButtonFooter
 import com.thekeeperofpie.artistalleydatabase.ui.LazyStaggeredGrid
 import com.thekeeperofpie.artistalleydatabase.ui.theme.ArtistAlleyDatabaseTheme
 import kotlinx.coroutines.flow.emptyFlow
@@ -60,23 +62,27 @@ object SearchScreen {
         onQueryChange: (String) -> Unit = {},
         entries: LazyPagingItems<ArtEntryModel> =
             emptyFlow<PagingData<ArtEntryModel>>().collectAsLazyPagingItems(),
-        selectedItems: List<Int> = emptyList(),
-        onClickEntry: (entry: ArtEntryModel) -> Unit = {},
-        onLongClickEntry: (index: Int) -> Unit = {},
-        onClickAddFab: () -> Unit = {}
+        selectedItems: Collection<Int> = emptyList(),
+        onClickEntry: (index: Int, entry: ArtEntryModel) -> Unit = { _, _ -> },
+        onLongClickEntry: (index: Int, entry: ArtEntryModel) -> Unit = { _, _ -> },
+        onClickAddFab: () -> Unit = {},
+        onClickClear: () -> Unit = {},
+        onClickDelete: () -> Unit = {},
     ) {
         ArtistAlleyDatabaseTheme {
             Surface(
                 modifier = Modifier.fillMaxSize(),
                 color = MaterialTheme.colorScheme.background
             ) {
-                Chrome(query, onQueryChange, onClickAddFab) {
+                Chrome(query, onQueryChange, showFab = selectedItems.isEmpty(), onClickAddFab) {
                     Content(
                         entries = entries,
                         paddingValues = it,
                         selectedItems = selectedItems,
                         onClickEntry = onClickEntry,
                         onLongClickEntry = onLongClickEntry,
+                        onClickClear = onClickClear,
+                        onClickDelete = onClickDelete,
                     )
                 }
             }
@@ -87,6 +93,7 @@ object SearchScreen {
     private fun Chrome(
         query: String,
         onQueryChange: (String) -> Unit,
+        showFab: Boolean = true,
         onClickAddFab: () -> Unit,
         content: @Composable (PaddingValues) -> Unit,
     ) {
@@ -103,13 +110,15 @@ object SearchScreen {
                 )
             },
             floatingActionButton = {
-                FloatingActionButton(
-                    onClick = onClickAddFab,
-                ) {
-                    Icon(
-                        Icons.Filled.Add,
-                        contentDescription = stringResource(R.string.search_add_entry)
-                    )
+                if (showFab) {
+                    FloatingActionButton(
+                        onClick = onClickAddFab,
+                    ) {
+                        Icon(
+                            Icons.Filled.Add,
+                            contentDescription = stringResource(R.string.search_add_entry)
+                        )
+                    }
                 }
             },
             content = content
@@ -121,16 +130,39 @@ object SearchScreen {
         columnCount: Int = 2,
         entries: LazyPagingItems<ArtEntryModel>,
         paddingValues: PaddingValues,
-        selectedItems: List<Int> = emptyList(),
-        onClickEntry: (entry: ArtEntryModel) -> Unit = {},
-        onLongClickEntry: (index: Int) -> Unit = {},
+        selectedItems: Collection<Int> = emptyList(),
+        onClickEntry: (index: Int, entry: ArtEntryModel) -> Unit = { _, _ -> },
+        onLongClickEntry: (index: Int, entry: ArtEntryModel) -> Unit = { _, _ -> },
+        onClickClear: () -> Unit = {},
+        onClickDelete: () -> Unit = {},
     ) {
         val expectedWidth = LocalDensity.current.run {
             LocalConfiguration.current.screenWidthDp.dp.roundToPx() / columnCount
         }.let(::Dimension)
-        LazyStaggeredGrid<ArtEntryModel>(columnCount, Modifier.padding(paddingValues)) {
-            items(entries, key = { it.value.id }) { index, item ->
-                ArtEntry(expectedWidth, index, item, selectedItems, onClickEntry, onLongClickEntry)
+        Column {
+            LazyStaggeredGrid<ArtEntryModel>(
+                columnCount = columnCount,
+                modifier = Modifier
+                    .padding(paddingValues)
+                    .weight(1f, true)
+            ) {
+                items(entries, key = { it.value.id }) { index, item ->
+                    ArtEntry(
+                        expectedWidth,
+                        index,
+                        item,
+                        selectedItems,
+                        onClickEntry,
+                        onLongClickEntry
+                    )
+                }
+            }
+
+            if (selectedItems.isNotEmpty()) {
+                ButtonFooter(
+                    R.string.clear to onClickClear,
+                    R.string.delete to onClickDelete,
+                )
             }
         }
     }
@@ -141,9 +173,9 @@ object SearchScreen {
         expectedWidth: Dimension.Pixels,
         index: Int,
         entry: ArtEntryModel? = null,
-        selectedItems: List<Int> = emptyList(),
-        onClickEntry: (entry: ArtEntryModel) -> Unit = {},
-        onLongClickEntry: (index: Int) -> Unit = {},
+        selectedItems: Collection<Int> = emptyList(),
+        onClickEntry: (index: Int, entry: ArtEntryModel) -> Unit = { _, _ -> },
+        onLongClickEntry: (index: Int, entry: ArtEntryModel) -> Unit = { _, _ -> },
     ) {
         val entryModifier = Modifier.fillMaxWidth()
         if (entry == null) {
@@ -182,12 +214,8 @@ object SearchScreen {
                             .alpha(if (selected) ContentAlpha.disabled else 1f)
                             .semantics { this.selected = selected }
                             .combinedClickable(
-                                onClick = {
-                                    onClickEntry(entry)
-                                },
-                                onLongClick = {
-                                    onLongClickEntry(index)
-                                },
+                                onClick = { onClickEntry(index, entry) },
+                                onLongClick = { onLongClickEntry(index, entry) },
                                 onLongClickLabel = stringResource(
                                     R.string.art_entry_long_press_multi_select_label
                                 )

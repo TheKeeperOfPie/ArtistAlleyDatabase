@@ -97,11 +97,16 @@ class ExportArtEntriesWorker @AssistedInject constructor(
                             val kType = property.returnType
                             val kClass = kType.jvmErasure
 
-                            @Suppress("UNCHECKED_CAST")
-                            val serializer = Converters.KSERIALIZERS[kClass] as? KSerializer<Any?>
-                                ?: Json.Default.serializersModule.serializer(kType)
+                            if (value is String) {
+                                jsonWriter.value(value)
+                            } else {
+                                @Suppress("UNCHECKED_CAST")
+                                val serializer =
+                                    Converters.KSERIALIZERS[kClass] as? KSerializer<Any?>
+                                        ?: Json.Default.serializersModule.serializer(kType)
 
-                            jsonWriter.value(Json.Default.encodeToString(serializer, value))
+                                jsonWriter.value(Json.Default.encodeToString(serializer, value))
+                            }
                         }
                         jsonWriter.endObject()
                     }

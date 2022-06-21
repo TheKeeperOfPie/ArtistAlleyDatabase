@@ -22,8 +22,8 @@ import javax.inject.Inject
 @HiltViewModel
 class DetailsViewModel @Inject constructor(
     private val application: Application,
-    private val artEntryDao: ArtEntryDao,
-) : ArtEntryViewModel() {
+    artEntryDao: ArtEntryDao,
+) : ArtEntryViewModel(artEntryDao) {
 
     var entryId: String? = null
     lateinit var entry: ArtEntry
@@ -102,6 +102,7 @@ class DetailsViewModel @Inject constructor(
                     imageHeight = imageHeight,
                     printWidth = printSizeSection.finalWidth(),
                     printHeight = printSizeSection.finalHeight(),
+                    notes = notesSection.value,
                 )
             )
 

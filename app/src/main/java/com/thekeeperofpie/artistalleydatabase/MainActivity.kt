@@ -42,7 +42,6 @@ import com.thekeeperofpie.artistalleydatabase.search.SearchScreen
 import com.thekeeperofpie.artistalleydatabase.search.SearchViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File
 
@@ -122,23 +121,28 @@ class MainActivity : ComponentActivity() {
                         viewModel.query.collectAsState().value,
                         viewModel::onQuery,
                         viewModel.results.collectAsLazyPagingItems(),
-                        selectedItems = viewModel.selectedItems,
+                        selectedItems = viewModel.selectedEntries.keys,
                         onClickAddFab = {
                             navController.navigate(NavDestinations.ADD_ENTRY)
                         },
-                        onClickEntry = { entry ->
-                            viewModel.viewModelScope.launch(Dispatchers.Main) {
-                                delay(150)
-                                val entryImageRatio = entry.value.imageWidthToHeightRatio
-                                navController.navigate(
-                                    NavDestinations.ENTRY_DETAILS +
-                                            "?entry_id=${entry.value.id}" +
-                                            "&entry_image_file=${entry.localImageFile.toPath()}" +
-                                            "&entry_image_ratio=${entryImageRatio}"
-                                )
+                        onClickEntry = { index, entry ->
+                            if (viewModel.selectedEntries.isNotEmpty()) {
+                                viewModel.selectEntry(index, entry)
+                            } else {
+                                viewModel.viewModelScope.launch(Dispatchers.Main) {
+                                    val entryImageRatio = entry.value.imageWidthToHeightRatio
+                                    navController.navigate(
+                                        NavDestinations.ENTRY_DETAILS +
+                                                "?entry_id=${entry.value.id}" +
+                                                "&entry_image_file=${entry.localImageFile.toPath()}" +
+                                                "&entry_image_ratio=${entryImageRatio}"
+                                    )
+                                }
                             }
                         },
-                        onLongClickEntry = viewModel::selectEntry
+                        onLongClickEntry = viewModel::selectEntry,
+                        onClickClear = viewModel::clearSelected,
+                        onClickDelete = viewModel::deleteSelected
                     )
                 }
 

@@ -9,6 +9,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.res.stringResource
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 sealed class ArtEntrySection {
 
@@ -19,9 +21,28 @@ sealed class ArtEntrySection {
         initialPendingValue: String = "",
     ) : ArtEntrySection() {
         val contents = mutableStateListOf<String>()
-        var pendingValue by mutableStateOf(initialPendingValue)
+        private var _pendingValue by mutableStateOf(initialPendingValue)
+        private var pendingValueUpdates = MutableStateFlow("")
+        var pendingValue: String
+            get() = _pendingValue
+            set(value) {
+                _pendingValue = value
+                pendingValueUpdates.tryEmit(value)
+            }
+
+        var focused by mutableStateOf(false)
+        var predictions by mutableStateOf(emptyList<String>())
+
+        fun valueUpdates() = pendingValueUpdates.asStateFlow()
 
         fun finalContents() = (contents + pendingValue).filter { it.isNotEmpty() }
+    }
+
+    class LongText(
+        @StringRes val headerRes: Int,
+        initialPendingValue: String = "",
+    ) : ArtEntrySection() {
+        var value by mutableStateOf(initialPendingValue)
     }
 
     open class Dropdown(

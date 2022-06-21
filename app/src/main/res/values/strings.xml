@@ -68,4 +68,6 @@
     <string name="art_entry_source_convention_placeholder_year">2022</string>
     <string name="art_entry_source_convention_placeholder_hall">AA</string>
     <string name="art_entry_source_convention_placeholder_booth">201</string>
+    <string name="art_entry_notes_header">Notes</string>
+    <string name="clear">Clear</string>
 </resources>

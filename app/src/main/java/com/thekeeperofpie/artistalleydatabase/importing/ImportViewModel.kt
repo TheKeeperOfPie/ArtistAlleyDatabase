@@ -114,6 +114,7 @@ class ImportViewModel @Inject constructor(
                         var imageHeight: Int? = null
                         var printWidth: Int? = null
                         var printHeight: Int? = null
+                        var notes: String? = null
                         reader.beginObject()
                         while (reader.peek() != JsonReader.Token.END_OBJECT) {
                             when (reader.nextName()) {
@@ -131,11 +132,12 @@ class ImportViewModel @Inject constructor(
                                         .deserializeBigDecimal(reader.readNullableString())
                                 }
                                 "date" -> date = reader.readDate()
-                                "imageWidth" -> imageWidth = reader.nextInt()
-                                "imageHeight" -> imageHeight = reader.nextInt()
-                                "printWidth" -> printWidth = reader.nextInt()
-                                "printHeight" -> printHeight = reader.nextInt()
+                                "imageWidth" -> imageWidth = reader.readNullableInt()
+                                "imageHeight" -> imageHeight = reader.readNullableInt()
+                                "printWidth" -> printWidth = reader.readNullableInt()
+                                "printHeight" -> printHeight = reader.readNullableInt()
                                 "lastEditTime" -> lastEditTime = reader.readDate()
+                                "notes" -> notes = reader.readNullableString()
                                 else -> reader.skipValue()
                             }
                         }
@@ -161,6 +163,7 @@ class ImportViewModel @Inject constructor(
                                 imageHeight = imageHeight,
                                 printWidth = printWidth,
                                 printHeight = printHeight,
+                                notes = notes,
                             )
                         )
                     }
@@ -192,7 +195,17 @@ class ImportViewModel @Inject constructor(
 
     private fun JsonReader.readNullableString() = when (peek()) {
         JsonReader.Token.NULL -> nextNull<String>()
-        JsonReader.Token.STRING -> nextString()
+        JsonReader.Token.STRING -> {
+            val value = nextString()
+            if (value == "null") null else value
+        }
+        else -> null
+    }
+
+    private fun JsonReader.readNullableInt() = when (peek()) {
+        JsonReader.Token.NULL -> nextNull<Int>()
+        JsonReader.Token.STRING -> nextString().toIntOrNull()
+        JsonReader.Token.NUMBER -> nextInt()
         else -> null
     }
 }

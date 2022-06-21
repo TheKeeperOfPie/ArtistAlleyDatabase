@@ -4,9 +4,17 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.thekeeperofpie.artistalleydatabase.JsonUtils
 import com.thekeeperofpie.artistalleydatabase.R
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
-abstract class ArtEntryViewModel : ViewModel() {
+abstract class ArtEntryViewModel(
+    protected val artEntryDao: ArtEntryDao
+) : ViewModel() {
 
     val artistSection = ArtEntrySection.MultiText(
         R.string.art_entry_artists_header_zero,
@@ -33,6 +41,8 @@ abstract class ArtEntryViewModel : ViewModel() {
 
     val sourceSection = SourceDropdown()
 
+    val notesSection = ArtEntrySection.LongText(R.string.art_entry_notes_header)
+
     val sections = listOf(
         artistSection,
         sourceSection,
@@ -40,11 +50,40 @@ abstract class ArtEntryViewModel : ViewModel() {
         characterSection,
         printSizeSection,
         tagSection,
+        notesSection,
     )
 
     var errorResource by mutableStateOf<Pair<Int, Exception?>?>(null)
 
     fun onImageSizeResult(width: Int, height: Int) {
         printSizeSection.onSizeChange(width, height)
+    }
+
+    init {
+        viewModelScope.launch(Dispatchers.IO) {
+            subscribeMultiTextSection(artistSection, artEntryDao::queryArtists)
+        }
+        viewModelScope.launch(Dispatchers.IO) {
+            subscribeMultiTextSection(seriesSection, artEntryDao::querySeries)
+        }
+        viewModelScope.launch(Dispatchers.IO) {
+            subscribeMultiTextSection(characterSection, artEntryDao::queryCharacters)
+        }
+        viewModelScope.launch(Dispatchers.IO) {
+            subscribeMultiTextSection(tagSection, artEntryDao::queryTags)
+        }
+    }
+
+    suspend fun subscribeMultiTextSection(
+        section: ArtEntrySection.MultiText,
+        databaseCall: suspend (String) -> List<String>
+    ) {
+        section.valueUpdates()
+            .collectLatest {
+                val predictions = databaseCall(it).flatMap(JsonUtils::readStringList)
+                withContext(Dispatchers.Main) {
+                    section.predictions = predictions
+                }
+            }
     }
 }

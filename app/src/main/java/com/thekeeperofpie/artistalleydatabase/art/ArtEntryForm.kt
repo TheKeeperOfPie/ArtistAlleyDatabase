@@ -41,6 +41,7 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
@@ -52,6 +53,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.PopupProperties
 import com.thekeeperofpie.artistalleydatabase.R
 
 @Composable
@@ -75,6 +77,7 @@ fun ColumnScope.ArtEntryForm(
                 sections.forEach {
                     when (it) {
                         is ArtEntrySection.MultiText -> MultiTextSection(it)
+                        is ArtEntrySection.LongText -> LongTextSection(it)
                         is ArtEntrySection.Dropdown -> DropdownSection(it)
                     }
                 }
@@ -117,18 +120,57 @@ private fun MultiTextSection(section: ArtEntrySection.MultiText) {
                 section.contents.removeAt(index)
             })
     }
-    OpenSectionField(
-        section.pendingValue,
-        { section.pendingValue = it },
-        {
-            if (it.isNotEmpty()) {
-                section.contents += it
-                section.pendingValue = ""
+
+    Box {
+        val focusRequester = remember { FocusRequester() }
+        OpenSectionField(
+            value = section.pendingValue,
+            onValueChange = { section.pendingValue = it },
+            onDone = {
+                if (it.isNotEmpty()) {
+                    section.contents += it
+                    section.pendingValue = ""
+                }
+            },
+            onBackspaceEmpty = {
+                if (section.contents.isNotEmpty()) {
+                    section.pendingValue = section.contents.removeLast()
+                }
+            },
+            modifier = Modifier
+                .onFocusChanged { section.focused = it.isFocused }
+                .focusRequester(focusRequester)
+        )
+
+        if (section.predictions.isNotEmpty()) {
+            DropdownMenu(
+                expanded = section.focused,
+                onDismissRequest = { focusRequester.freeFocus() },
+                properties = PopupProperties(focusable = false),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                section.predictions.forEach {
+                    DropdownMenuItem(
+                        onClick = {
+                            focusRequester.freeFocus()
+                            section.focused = false
+                            section.pendingValue = it
+                        },
+                        text = { Text(it) }
+                    )
+                }
             }
-        },
-        {
-            section.pendingValue = section.contents.removeLast()
         }
+    }
+}
+
+@Composable
+private fun LongTextSection(section: ArtEntrySection.LongText) {
+    SectionHeader(stringResource(section.headerRes))
+
+    OpenSectionField(
+        value = section.value,
+        onValueChange = { section.value = it },
     )
 }
 
@@ -160,16 +202,17 @@ private fun PrefilledSectionField(
 @Composable
 private fun OpenSectionField(
     value: String,
-    onValueChange: (value: String) -> Unit,
-    onDone: (value: String) -> Unit,
-    onBackspaceEmpty: () -> Unit,
+    modifier: Modifier = Modifier,
+    onValueChange: (value: String) -> Unit = {},
+    onDone: (value: String) -> Unit = {},
+    onBackspaceEmpty: () -> Unit = {},
 ) {
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
         keyboardActions = KeyboardActions(onDone = { onDone(value) }),
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(start = 16.dp, end = 16.dp)
             .onKeyEvent {

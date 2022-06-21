@@ -21,8 +21,8 @@ import javax.inject.Inject
 @HiltViewModel
 class AddEntryViewModel @Inject constructor(
     private val application: Application,
-    private val artEntryDao: ArtEntryDao,
-) : ArtEntryViewModel() {
+    artEntryDao: ArtEntryDao,
+) : ArtEntryViewModel(artEntryDao) {
 
     val imageUris = mutableStateListOf<Uri>()
 
@@ -53,6 +53,7 @@ class AddEntryViewModel @Inject constructor(
                         imageHeight = imageHeight,
                         printWidth = printSizeSection.finalWidth(),
                         printHeight = printSizeSection.finalHeight(),
+                        notes = notesSection.value,
                     )
                 )
             }

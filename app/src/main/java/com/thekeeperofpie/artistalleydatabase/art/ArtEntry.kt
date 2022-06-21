@@ -25,6 +25,7 @@ data class ArtEntry(
     val imageHeight: Int?,
     val printWidth: Int?,
     val printHeight: Int?,
+    val notes: String? = null,
 ) {
     val imageWidthToHeightRatio by lazy {
         (imageHeight?.toFloat() ?: 1f) /
@@ -52,4 +53,5 @@ data class ArtEntryFts(
     val imageHeight: Int?,
     val printWidth: Int?,
     val printHeight: Int?,
+    val notes: String?,
 )

@@ -2,7 +2,6 @@ package com.thekeeperofpie.artistalleydatabase.art
 
 import android.util.JsonReader
 import android.util.JsonToken
-import android.util.Log
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -62,7 +61,6 @@ class SourceDropdown : ArtEntrySection.Dropdown(
                 if (value != null) {
                     (options[1] as SourceConventionSectionItem).run {
                         val reader = JsonReader(value.reader())
-                        Log.d("JsonDebug", "json = $value")
                         reader.beginObject()
                         reader.isLenient = true
                         while (reader.peek() != JsonToken.END_OBJECT) {
