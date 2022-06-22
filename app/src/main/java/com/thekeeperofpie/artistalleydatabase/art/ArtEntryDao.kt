@@ -33,6 +33,7 @@ interface ArtEntryDao {
         """
         SELECT *
         FROM art_entries
+        ORDER BY lastEditTime DESC
         """
     )
     fun getEntries(): PagingSource<Int, ArtEntry>

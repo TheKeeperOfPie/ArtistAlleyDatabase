@@ -41,14 +41,15 @@ sealed class SourceType(val serializedType: String, @StringRes val textRes: Int)
     data class Custom(val value: String) : SourceType("custom", R.string.art_entry_source_custom)
 }
 
-class SourceDropdown : ArtEntrySection.Dropdown(
+class SourceDropdown(locked: Boolean? = null) : ArtEntrySection.Dropdown(
     R.string.art_entry_source_header,
     R.string.art_entry_source_dropdown_content_description,
     listOf(
         Item.Basic<SourceType>(SourceType.Unknown, SourceType.Unknown.textRes),
         SourceConventionSectionItem(),
         SourceCustomSectionItem(),
-    ).toMutableStateList()
+    ).toMutableStateList(),
+    locked,
 ) {
 
     fun initialize(type: String?, value: String?) {

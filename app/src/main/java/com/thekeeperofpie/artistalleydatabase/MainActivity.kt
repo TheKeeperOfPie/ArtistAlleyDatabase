@@ -118,9 +118,9 @@ class MainActivity : ComponentActivity() {
                 composable(NavDestinations.SEARCH) {
                     val viewModel = hiltViewModel<SearchViewModel>()
                     SearchScreen(
-                        viewModel.query.collectAsState().value,
-                        viewModel::onQuery,
-                        viewModel.results.collectAsLazyPagingItems(),
+                        query = viewModel.query.collectAsState().value,
+                        onQueryChange = viewModel::onQuery,
+                        entries = viewModel.results.collectAsLazyPagingItems(),
                         selectedItems = viewModel.selectedEntries.keys,
                         onClickAddFab = {
                             navController.navigate(NavDestinations.ADD_ENTRY)

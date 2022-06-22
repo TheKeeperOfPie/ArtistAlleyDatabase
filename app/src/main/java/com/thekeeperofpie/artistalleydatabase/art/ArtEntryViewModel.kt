@@ -20,28 +20,32 @@ abstract class ArtEntryViewModel(
         R.string.art_entry_artists_header_zero,
         R.string.art_entry_artists_header_one,
         R.string.art_entry_artists_header_many,
+        locked = false,
     )
     val seriesSection = ArtEntrySection.MultiText(
         R.string.art_entry_series_header_zero,
         R.string.art_entry_series_header_one,
         R.string.art_entry_series_header_many,
+        locked = false,
     )
     val characterSection = ArtEntrySection.MultiText(
         R.string.art_entry_characters_header_zero,
         R.string.art_entry_characters_header_one,
         R.string.art_entry_characters_header_many,
+        locked = false,
     )
     val tagSection = ArtEntrySection.MultiText(
         R.string.art_entry_tags_header_zero,
         R.string.art_entry_tags_header_one,
         R.string.art_entry_tags_header_many,
+        locked = false,
     )
 
     val printSizeSection = PrintSizeDropdown()
 
-    val sourceSection = SourceDropdown()
+    val sourceSection = SourceDropdown(locked = false)
 
-    val notesSection = ArtEntrySection.LongText(R.string.art_entry_notes_header)
+    val notesSection = ArtEntrySection.LongText(R.string.art_entry_notes_header, locked = false)
 
     val sections = listOf(
         artistSection,

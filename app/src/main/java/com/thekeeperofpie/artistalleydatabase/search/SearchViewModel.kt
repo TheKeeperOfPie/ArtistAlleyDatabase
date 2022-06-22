@@ -1,7 +1,10 @@
 package com.thekeeperofpie.artistalleydatabase.search
 
 import android.app.Application
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
@@ -9,8 +12,10 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.map
+import com.thekeeperofpie.artistalleydatabase.R
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntry
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryDao
+import com.thekeeperofpie.artistalleydatabase.art.ArtEntryUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -34,6 +39,18 @@ class SearchViewModel @Inject constructor(
     val results = MutableStateFlow(PagingData.empty<ArtEntryModel>())
 
     val selectedEntries = mutableStateMapOf<Int, ArtEntryModel>()
+
+    var showOptions by mutableStateOf(false)
+
+    val options = listOf(
+        SearchScreen.Option(R.string.search_option_artists),
+        SearchScreen.Option(R.string.search_option_source),
+        SearchScreen.Option(R.string.search_option_series),
+        SearchScreen.Option(R.string.search_option_characters),
+        SearchScreen.Option(R.string.search_option_tags),
+        SearchScreen.Option(R.string.search_option_notes),
+        SearchScreen.Option(R.string.search_option_other),
+    )
 
     fun onQuery(query: String) {
         if (this.query.value != query) {
@@ -88,6 +105,9 @@ class SearchViewModel @Inject constructor(
                 withContext(Dispatchers.Main) {
                     toDelete = selectedEntries.values.map { it.value }
                     selectedEntries.clear()
+                }
+                toDelete.forEach {
+                    ArtEntryUtils.getImageFile(application, it.id).delete()
                 }
                 artEntryDao.delete(toDelete)
             }

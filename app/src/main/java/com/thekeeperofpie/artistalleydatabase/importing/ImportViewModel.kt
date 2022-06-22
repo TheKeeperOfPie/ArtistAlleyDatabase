@@ -115,6 +115,7 @@ class ImportViewModel @Inject constructor(
                         var printWidth: Int? = null
                         var printHeight: Int? = null
                         var notes: String? = null
+                        var locks: ArtEntry.Locks? = null
                         reader.beginObject()
                         while (reader.peek() != JsonReader.Token.END_OBJECT) {
                             when (reader.nextName()) {
@@ -138,6 +139,35 @@ class ImportViewModel @Inject constructor(
                                 "printHeight" -> printHeight = reader.readNullableInt()
                                 "lastEditTime" -> lastEditTime = reader.readDate()
                                 "notes" -> notes = reader.readNullableString()
+                                "locks" -> {
+                                    reader.beginObject()
+                                    var artistsLocked = false
+                                    var sourceLocked = false
+                                    var seriesLocked = false
+                                    var charactersLocked = false
+                                    var tagsLocked = false
+                                    var notesLocked = false
+                                    while (reader.peek() != JsonReader.Token.END_OBJECT) {
+                                        when (reader.nextName()) {
+                                            "artistsLocked" -> artistsLocked = reader.nextBoolean()
+                                            "sourceLocked" -> sourceLocked = reader.nextBoolean()
+                                            "seriesLocked" -> seriesLocked = reader.nextBoolean()
+                                            "charactersLocked" -> charactersLocked =
+                                                reader.nextBoolean()
+                                            "tagsLocked" -> tagsLocked = reader.nextBoolean()
+                                            "notesLocked" -> notesLocked = reader.nextBoolean()
+                                        }
+                                    }
+                                    reader.endObject()
+                                    locks = ArtEntry.Locks(
+                                        artistsLocked,
+                                        sourceLocked,
+                                        seriesLocked,
+                                        charactersLocked,
+                                        tagsLocked,
+                                        notesLocked
+                                    )
+                                }
                                 else -> reader.skipValue()
                             }
                         }
@@ -164,6 +194,7 @@ class ImportViewModel @Inject constructor(
                                 printWidth = printWidth,
                                 printHeight = printHeight,
                                 notes = notes,
+                                locks = locks ?: ArtEntry.Locks.EMPTY
                             )
                         )
                     }

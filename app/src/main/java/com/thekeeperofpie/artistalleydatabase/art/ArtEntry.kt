@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.art
 
 import androidx.room.ColumnInfo
+import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.Fts4
 import androidx.room.PrimaryKey
@@ -26,10 +27,25 @@ data class ArtEntry(
     val printWidth: Int?,
     val printHeight: Int?,
     val notes: String? = null,
+    @Embedded val locks: Locks = Locks.EMPTY,
 ) {
     val imageWidthToHeightRatio by lazy {
         (imageHeight?.toFloat() ?: 1f) /
                 (imageWidth ?: 1).coerceAtLeast(1)
+    }
+
+    data class Locks(
+        val artistsLocked: Boolean = false,
+        val sourceLocked: Boolean = false,
+        val seriesLocked: Boolean = false,
+        val charactersLocked: Boolean = false,
+        val tagsLocked: Boolean = false,
+        val notesLocked: Boolean = false,
+        val printSizeLocked: Boolean = false,
+    ) {
+        companion object {
+            val EMPTY = Locks()
+        }
     }
 }
 

@@ -19,6 +19,7 @@ import okio.sink
 import java.io.File
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
+import kotlin.reflect.KClass
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.jvm.jvmErasure
 
@@ -90,25 +91,8 @@ class ExportArtEntriesWorker @AssistedInject constructor(
                             stopped = true
                             return@iterateEntries
                         }
-                        jsonWriter.beginObject()
-                        for (property in ArtEntry::class.memberProperties) {
-                            jsonWriter.name(property.name)
-                            val value = property.get(entry)
-                            val kType = property.returnType
-                            val kClass = kType.jvmErasure
 
-                            if (value is String) {
-                                jsonWriter.value(value)
-                            } else {
-                                @Suppress("UNCHECKED_CAST")
-                                val serializer =
-                                    Converters.KSERIALIZERS[kClass] as? KSerializer<Any?>
-                                        ?: Json.Default.serializersModule.serializer(kType)
-
-                                jsonWriter.value(Json.Default.encodeToString(serializer, value))
-                            }
-                        }
-                        jsonWriter.endObject()
+                        jsonWriter.writeMembersAsObject(ArtEntry::class, entry)
                     }
                     if (stopped) {
                         return false
@@ -120,5 +104,34 @@ class ExportArtEntriesWorker @AssistedInject constructor(
         }
 
         return true
+    }
+
+    private fun <T : Any> JsonWriter.writeMembersAsObject(inputKClass: KClass<T>, input: T) {
+        beginObject()
+        for (property in inputKClass.memberProperties) {
+            val name = property.name
+            name(name)
+
+            if (name == "locks") {
+                writeMembersAsObject(ArtEntry.Locks::class, property.get(input) as ArtEntry.Locks)
+                continue
+            }
+
+            val value = property.get(input)
+            val kType = property.returnType
+            val kClass = kType.jvmErasure
+
+            if (value is String) {
+                value(value)
+            } else {
+                @Suppress("UNCHECKED_CAST")
+                val serializer =
+                    Converters.KSERIALIZERS[kClass] as? KSerializer<Any?>
+                        ?: Json.Default.serializersModule.serializer(kType)
+
+                value(Json.Default.encodeToString(serializer, value))
+            }
+        }
+        endObject()
     }
 }

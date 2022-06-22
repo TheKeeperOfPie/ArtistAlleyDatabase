@@ -7,13 +7,13 @@ import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.CallSuper
-import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -26,6 +26,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.LockOpen
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -61,29 +63,23 @@ fun ColumnScope.ArtEntryForm(
     areSectionsLoading: Boolean = false,
     sections: List<ArtEntrySection> = emptyList(),
 ) {
-    Crossfade(
-        targetState = areSectionsLoading,
-        Modifier
-            .fillMaxWidth()
-    ) {
-        if (it) {
-            CircularProgressIndicator(
-                Modifier
-                    .padding(16.dp)
-                    .align(Alignment.CenterHorizontally)
-            )
-        } else {
-            Column {
-                sections.forEach {
-                    when (it) {
-                        is ArtEntrySection.MultiText -> MultiTextSection(it)
-                        is ArtEntrySection.LongText -> LongTextSection(it)
-                        is ArtEntrySection.Dropdown -> DropdownSection(it)
-                    }
+    if (areSectionsLoading) {
+        CircularProgressIndicator(
+            Modifier
+                .padding(16.dp)
+                .align(Alignment.CenterHorizontally)
+        )
+    } else {
+        Column {
+            sections.forEach {
+                when (it) {
+                    is ArtEntrySection.MultiText -> MultiTextSection(it)
+                    is ArtEntrySection.LongText -> LongTextSection(it)
+                    is ArtEntrySection.Dropdown -> DropdownSection(it)
                 }
-
-                Spacer(Modifier.height(24.dp))
             }
+
+            Spacer(Modifier.height(24.dp))
         }
     }
 }
@@ -91,13 +87,27 @@ fun ColumnScope.ArtEntryForm(
 @Composable
 private fun SectionHeader(
     text: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    locked: Boolean? = null,
+    onClick: () -> Unit = {},
 ) {
-    Text(
-        text = text,
-        style = MaterialTheme.typography.labelMedium,
-        modifier = modifier.padding(top = 12.dp, bottom = 10.dp, start = 16.dp, end = 16.dp)
-    )
+    Row(Modifier.clickable(true, onClick = onClick)) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelMedium,
+            modifier = modifier
+                .weight(1f, true)
+                .padding(top = 12.dp, bottom = 10.dp, start = 16.dp, end = 16.dp)
+        )
+
+        if (locked != null) {
+            Icon(
+                imageVector = if (locked) Icons.Default.Lock else Icons.Default.LockOpen,
+                contentDescription = stringResource(R.string.art_entry_lock_content_description),
+                modifier = Modifier.padding(top = 12.dp, bottom = 10.dp, start = 16.dp, end = 16.dp)
+            )
+        }
+    }
 }
 
 @Composable
@@ -108,7 +118,13 @@ private fun MultiTextSection(section: ArtEntrySection.MultiText) {
         else -> section.headerMany
     }
         .let { stringResource(it) }
-        .let { SectionHeader(it) }
+        .let {
+            SectionHeader(
+                text = it,
+                locked = section.locked,
+                onClick = { section.locked = section.locked?.not() }
+            )
+        }
 
     section.contents.forEachIndexed { index, value ->
         PrefilledSectionField(
@@ -118,7 +134,9 @@ private fun MultiTextSection(section: ArtEntrySection.MultiText) {
             },
             onValueDelete = {
                 section.contents.removeAt(index)
-            })
+            },
+            locked = section.locked
+        )
     }
 
     Box {
@@ -137,12 +155,13 @@ private fun MultiTextSection(section: ArtEntrySection.MultiText) {
                     section.pendingValue = section.contents.removeLast()
                 }
             },
+            locked = section.locked,
             modifier = Modifier
                 .onFocusChanged { section.focused = it.isFocused }
                 .focusRequester(focusRequester)
         )
 
-        if (section.predictions.isNotEmpty()) {
+        if (section.locked != true && section.predictions.isNotEmpty()) {
             DropdownMenu(
                 expanded = section.focused,
                 onDismissRequest = { focusRequester.freeFocus() },
@@ -166,11 +185,19 @@ private fun MultiTextSection(section: ArtEntrySection.MultiText) {
 
 @Composable
 private fun LongTextSection(section: ArtEntrySection.LongText) {
-    SectionHeader(stringResource(section.headerRes))
+    SectionHeader(
+        text = stringResource(section.headerRes),
+        locked = section.locked,
+        onClick = { section.locked = section.locked?.not() }
+    )
 
-    OpenSectionField(
+    OutlinedTextField(
         value = section.value,
         onValueChange = { section.value = it },
+        readOnly = section.locked == true,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 16.dp, end = 16.dp)
     )
 }
 
@@ -180,11 +207,13 @@ private fun PrefilledSectionField(
     value: String,
     onValueChange: (value: String) -> Unit = {},
     onValueDelete: () -> Unit = {},
+    locked: Boolean? = null,
 ) {
     TextField(
         value = value,
         onValueChange = { onValueChange(it) },
-        Modifier
+        readOnly = locked == true,
+        modifier = Modifier
             .fillMaxWidth()
             .padding(start = 16.dp, end = 16.dp)
             .onKeyEvent {
@@ -206,10 +235,12 @@ private fun OpenSectionField(
     onValueChange: (value: String) -> Unit = {},
     onDone: (value: String) -> Unit = {},
     onBackspaceEmpty: () -> Unit = {},
+    locked: Boolean? = null,
 ) {
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
+        readOnly = locked == true,
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
         keyboardActions = KeyboardActions(onDone = { onDone(value) }),
         modifier = modifier
@@ -238,7 +269,11 @@ private fun OpenSectionField(
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun DropdownSection(section: ArtEntrySection.Dropdown) {
-    SectionHeader(stringResource(section.headerRes))
+    SectionHeader(
+        text = stringResource(section.headerRes),
+        locked = section.locked,
+        onClick = { section.locked = section.locked?.not() }
+    )
 
     Box(
         Modifier
@@ -270,27 +305,31 @@ private fun DropdownSection(section: ArtEntrySection.Dropdown) {
                 .matchParentSize()
                 .clickable(
                     onClick = {
-                        section.expanded = true
-                        focusRequester.requestFocus()
+                        if (section.locked != true) {
+                            section.expanded = true
+                            focusRequester.requestFocus()
+                        }
                     },
                     interactionSource = interactionSource,
                     indication = null
                 )
         )
 
-        DropdownMenu(
-            expanded = section.expanded,
-            onDismissRequest = { section.expanded = false },
-            Modifier.fillMaxWidth()
-        ) {
-            section.options.forEachIndexed { index, item ->
-                DropdownMenuItem(
-                    onClick = {
-                        section.expanded = false
-                        section.selectedIndex = index
-                    },
-                    text = { item.DropdownItemText() }
-                )
+        if (section.locked != true) {
+            DropdownMenu(
+                expanded = section.expanded,
+                onDismissRequest = { section.expanded = false },
+                Modifier.fillMaxWidth()
+            ) {
+                section.options.forEachIndexed { index, item ->
+                    DropdownMenuItem(
+                        onClick = {
+                            section.expanded = false
+                            section.selectedIndex = index
+                        },
+                        text = { item.DropdownItemText() }
+                    )
+                }
             }
         }
     }
@@ -415,7 +454,9 @@ fun Preview(
 ) {
     Column {
         ArtEntryForm(
-            sections = sections
+            sections = sections.apply {
+                (first() as ArtEntrySection.MultiText).locked = true
+            }
         )
     }
 }

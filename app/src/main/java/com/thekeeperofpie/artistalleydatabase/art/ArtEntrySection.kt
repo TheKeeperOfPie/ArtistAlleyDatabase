@@ -12,14 +12,17 @@ import androidx.compose.ui.res.stringResource
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-sealed class ArtEntrySection {
+sealed class ArtEntrySection(locked: Boolean? = null) {
+
+    var locked by mutableStateOf(locked)
 
     class MultiText(
         @StringRes val headerZero: Int,
         @StringRes val headerOne: Int,
         @StringRes val headerMany: Int,
         initialPendingValue: String = "",
-    ) : ArtEntrySection() {
+        locked: Boolean? = null
+    ) : ArtEntrySection(locked) {
         val contents = mutableStateListOf<String>()
         private var _pendingValue by mutableStateOf(initialPendingValue)
         private var pendingValueUpdates = MutableStateFlow("")
@@ -41,7 +44,8 @@ sealed class ArtEntrySection {
     class LongText(
         @StringRes val headerRes: Int,
         initialPendingValue: String = "",
-    ) : ArtEntrySection() {
+        locked: Boolean? = null,
+    ) : ArtEntrySection(locked) {
         var value by mutableStateOf(initialPendingValue)
     }
 
@@ -49,7 +53,8 @@ sealed class ArtEntrySection {
         @StringRes val headerRes: Int,
         @StringRes val arrowContentDescription: Int,
         var options: SnapshotStateList<Item> = mutableStateListOf(),
-    ) : ArtEntrySection() {
+        locked: Boolean? = null,
+    ) : ArtEntrySection(locked) {
         var expanded by mutableStateOf(false)
         var selectedIndex by mutableStateOf(0)
 

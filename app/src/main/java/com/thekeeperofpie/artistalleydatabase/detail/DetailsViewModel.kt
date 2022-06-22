@@ -13,6 +13,7 @@ import com.thekeeperofpie.artistalleydatabase.art.ArtEntryUtils
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.Instant
@@ -48,14 +49,28 @@ class DetailsViewModel @Inject constructor(
 
         viewModelScope.launch(Dispatchers.IO) {
             entry = artEntryDao.getEntry(entryId)
+            delay(350)
             withContext(Dispatchers.Main) {
                 artistSection.contents.addAll(entry.artists)
+                artistSection.locked = entry.locks.artistsLocked
+
+                sourceSection.initialize(entry.sourceType, entry.sourceValue)
+                sourceSection.locked = entry.locks.sourceLocked
+
                 seriesSection.contents.addAll(entry.series)
+                seriesSection.locked = entry.locks.seriesLocked
+
                 characterSection.contents.addAll(entry.characters)
-                tagSection.contents.addAll(entry.tags)
+                characterSection.locked = entry.locks.charactersLocked
 
                 printSizeSection.initialize(entry.printWidth, entry.printHeight)
-                sourceSection.initialize(entry.sourceType, entry.sourceValue)
+                printSizeSection.locked = entry.locks.printSizeLocked
+
+                tagSection.contents.addAll(entry.tags)
+                tagSection.locked = entry.locks.tagsLocked
+
+                notesSection.value = entry.notes.orEmpty()
+                notesSection.locked = entry.locks.notesLocked
 
                 areSectionsLoading = false
             }

@@ -1,18 +1,23 @@
 package com.thekeeperofpie.artistalleydatabase.search
 
+import androidx.annotation.StringRes
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.material.Checkbox
 import androidx.compose.material.ContentAlpha
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -26,9 +31,14 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.focus.FocusState
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
@@ -60,6 +70,10 @@ object SearchScreen {
     operator fun invoke(
         query: String = "",
         onQueryChange: (String) -> Unit = {},
+        onSearchFocusChange: (FocusState) -> Unit = {},
+        showOptions: Boolean = false,
+        options: List<Option> = emptyList(),
+        onOptionChanged: (Option) -> Unit = {},
         entries: LazyPagingItems<ArtEntryModel> =
             emptyFlow<PagingData<ArtEntryModel>>().collectAsLazyPagingItems(),
         selectedItems: Collection<Int> = emptyList(),
@@ -74,7 +88,16 @@ object SearchScreen {
                 modifier = Modifier.fillMaxSize(),
                 color = MaterialTheme.colorScheme.background
             ) {
-                Chrome(query, onQueryChange, showFab = selectedItems.isEmpty(), onClickAddFab) {
+                Chrome(
+                    query = query,
+                    onQueryChange = onQueryChange,
+                    showFab = selectedItems.isEmpty(),
+                    showOptions = showOptions,
+                    options = options,
+                    onOptionChanged = onOptionChanged,
+                    onSearchFocusChange = onSearchFocusChange,
+                    onClickAddFab = onClickAddFab,
+                ) {
                     Content(
                         entries = entries,
                         paddingValues = it,
@@ -93,21 +116,58 @@ object SearchScreen {
     private fun Chrome(
         query: String,
         onQueryChange: (String) -> Unit,
+        onSearchFocusChange: (FocusState) -> Unit,
+        showOptions: Boolean = false,
+        options: List<Option> = emptyList(),
+        onOptionChanged: (Option) -> Unit,
         showFab: Boolean = true,
         onClickAddFab: () -> Unit,
         content: @Composable (PaddingValues) -> Unit,
     ) {
         Scaffold(
             topBar = {
-                TextField(
-                    query,
-                    placeholder = {
-                        Text(stringResource(id = R.string.search))
-                    },
-                    onValueChange = onQueryChange,
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth(),
-                )
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentWidth()
+                ) {
+                    TextField(
+                        query,
+                        placeholder = { Text(stringResource(id = R.string.search)) },
+                        onValueChange = onQueryChange,
+                        singleLine = true,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .onFocusChanged(onSearchFocusChange),
+                    )
+
+                    if (showOptions) {
+                        options.forEach { option ->
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        option.enabled = !option.enabled
+                                        onOptionChanged(option)
+                                    }
+                            ) {
+                                Checkbox(
+                                    checked = option.enabled,
+                                    onCheckedChange = null,
+                                    Modifier.padding(
+                                        start = 16.dp,
+                                        end = 16.dp,
+                                        top = 8.dp,
+                                        bottom = 8.dp
+                                    )
+                                )
+
+                                Text(stringResource(option.textRes))
+                            }
+                        }
+                    }
+                }
             },
             floatingActionButton = {
                 if (showFab) {
@@ -137,7 +197,9 @@ object SearchScreen {
         onClickDelete: () -> Unit = {},
     ) {
         val expectedWidth = LocalDensity.current.run {
-            LocalConfiguration.current.screenWidthDp.dp.roundToPx() / columnCount
+            // Load at half width for better scrolling performance
+            // TODO: Find a better way to calculate the optimal image size
+            LocalConfiguration.current.screenWidthDp.dp.roundToPx() / columnCount / 2
         }.let(::Dimension)
         Column {
             LazyStaggeredGrid<ArtEntryModel>(
@@ -201,7 +263,7 @@ object SearchScreen {
                         contentDescription = stringResource(
                             R.string.art_entry_image_content_description
                         ),
-                        contentScale = ContentScale.Fit,
+                        contentScale = ContentScale.FillWidth,
                         modifier = entryModifier
                             .fillMaxWidth()
                             .heightIn(min = LocalDensity.current.run {
@@ -242,10 +304,25 @@ object SearchScreen {
             }
         }
     }
+
+    class Option(@StringRes val textRes: Int) {
+        var enabled by mutableStateOf(true)
+    }
 }
 
 @Preview
 @Composable
 fun Preview() {
-    SearchScreen()
+    SearchScreen(
+        showOptions = true,
+        options = listOf(
+            SearchScreen.Option(R.string.search_option_artists),
+            SearchScreen.Option(R.string.search_option_source),
+            SearchScreen.Option(R.string.search_option_series),
+            SearchScreen.Option(R.string.search_option_characters),
+            SearchScreen.Option(R.string.search_option_tags),
+            SearchScreen.Option(R.string.search_option_notes),
+            SearchScreen.Option(R.string.search_option_other),
+        )
+    )
 }

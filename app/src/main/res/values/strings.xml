@@ -70,4 +70,12 @@
     <string name="art_entry_source_convention_placeholder_booth">201</string>
     <string name="art_entry_notes_header">Notes</string>
     <string name="clear">Clear</string>
+    <string name="search_option_artists">Artists</string>
+    <string name="search_option_source">Source</string>
+    <string name="search_option_series">Series</string>
+    <string name="search_option_characters">Characters</string>
+    <string name="search_option_tags">Tags</string>
+    <string name="search_option_notes">Notes</string>
+    <string name="search_option_other">Other</string>
+    <string name="art_entry_lock_content_description">Unlock section</string>
 </resources>
