@@ -206,6 +206,7 @@ private fun MultiTextSection(section: ArtEntrySection.MultiText) {
     ) {
         Box {
             val focusRequester = remember { FocusRequester() }
+            var focused by remember { mutableStateOf(false) }
             OpenSectionField(
                 value = section.pendingValue,
                 onValueChange = { section.pendingValue = it },
@@ -218,13 +219,13 @@ private fun MultiTextSection(section: ArtEntrySection.MultiText) {
                 locked = section.locked,
                 modifier = Modifier
                     .focusable(section.locked != true)
-                    .onFocusChanged { section.focused = it.isFocused }
+                    .onFocusChanged { focused = it.isFocused }
                     .focusRequester(focusRequester)
             )
 
             if (section.locked != true && section.predictions.isNotEmpty()) {
                 DropdownMenu(
-                    expanded = section.focused,
+                    expanded = focused,
                     onDismissRequest = { focusRequester.freeFocus() },
                     properties = PopupProperties(focusable = false),
                     modifier = Modifier.fillMaxWidth()
@@ -233,7 +234,7 @@ private fun MultiTextSection(section: ArtEntrySection.MultiText) {
                         DropdownMenuItem(
                             onClick = {
                                 focusRequester.freeFocus()
-                                section.focused = false
+                                focused = false
                                 section.pendingValue = it
                             },
                             text = { Text(it) }

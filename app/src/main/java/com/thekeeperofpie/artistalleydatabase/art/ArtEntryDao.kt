@@ -61,14 +61,20 @@ interface ArtEntryDao {
             lockOptions.joinToString(prefix = " ", separator = " ")
         }
 
-        val queryValue = "*${query.value}*"
-        if (query.includeArtists) options += "artists:$queryValue"
-        if (query.includeSources) options += "sourceType:$queryValue"
-        if (query.includeSources) options += "sourceValue:$queryValue"
-        if (query.includeSeries) options += "series:$queryValue"
-        if (query.includeCharacters) options += "characters:$queryValue"
-        if (query.includeTags) options += "tags:$queryValue"
-        if (query.includeNotes) options += "notes:$queryValue"
+        if (query.value.isNotEmpty()) {
+            val queryValue = "*${query.value}*"
+            if (query.includeArtists) options += "artists:$queryValue"
+            if (query.includeSources) options += "sourceType:$queryValue"
+            if (query.includeSources) options += "sourceValue:$queryValue"
+            if (query.includeSeries) options += "series:$queryValue"
+            if (query.includeCharacters) options += "characters:$queryValue"
+            if (query.includeTags) options += "tags:$queryValue"
+            if (query.includeNotes) options += "notes:$queryValue"
+        }
+
+        if (optionsSuffix.isEmpty() && options.isEmpty()) {
+            return getEntries()
+        }
 
         val finalQuery = options.joinToString(separator = " OR ") + optionsSuffix
         val statement = """

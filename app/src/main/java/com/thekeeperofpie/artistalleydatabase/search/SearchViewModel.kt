@@ -75,13 +75,7 @@ class SearchViewModel @Inject constructor(
     init {
         viewModelScope.launch(Dispatchers.IO) {
             query.flatMapLatest {
-                Pager(PagingConfig(pageSize = 20)) {
-                    if (it.value.isEmpty()) {
-                        artEntryDao.getEntries()
-                    } else {
-                        artEntryDao.getEntries(it)
-                    }
-                }
+                Pager(PagingConfig(pageSize = 20)) { artEntryDao.getEntries(it) }
                     .flow.cachedIn(viewModelScope)
                     .onEach {
                         viewModelScope.launch(Dispatchers.Main) {

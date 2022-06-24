@@ -33,7 +33,7 @@ sealed class ArtEntrySection(locked: Boolean? = null) {
                 pendingValueUpdates.tryEmit(value)
             }
 
-        var focused by mutableStateOf(false)
+        // TODO: Predictions for existing prefilled fields
         var predictions by mutableStateOf(emptyList<String>())
 
         fun valueUpdates() = pendingValueUpdates.asStateFlow()
