@@ -71,7 +71,7 @@ sealed class ArtEntrySection(locked: Boolean? = null) {
             fun DropdownItemText()
 
             @Composable
-            fun Content() {
+            fun Content(locked: Boolean?) {
             }
 
             class Basic<T>(val value: T, @StringRes val textRes: Int) : Item {

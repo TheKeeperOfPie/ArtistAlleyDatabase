@@ -7,7 +7,13 @@ import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.CallSuper
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -19,6 +25,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
@@ -28,16 +35,21 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.LockOpen
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -94,7 +106,7 @@ private fun SectionHeader(
     Row(Modifier.clickable(true, onClick = onClick)) {
         Text(
             text = text,
-            style = MaterialTheme.typography.labelMedium,
+            style = MaterialTheme.typography.labelLarge,
             modifier = modifier
                 .weight(1f, true)
                 .padding(top = 12.dp, bottom = 10.dp, start = 16.dp, end = 16.dp)
@@ -122,61 +134,110 @@ private fun MultiTextSection(section: ArtEntrySection.MultiText) {
             SectionHeader(
                 text = it,
                 locked = section.locked,
-                onClick = { section.locked = section.locked?.not() }
+                onClick = {
+                    if (section.pendingValue.isNotEmpty()) {
+                        section.contents += section.pendingValue
+                        section.pendingValue = ""
+                    }
+                    section.locked = section.locked?.not()
+                }
             )
         }
 
     section.contents.forEachIndexed { index, value ->
-        PrefilledSectionField(
-            value,
-            onValueChange = {
-                section.contents[index] = it
-            },
-            onValueDelete = {
-                section.contents.removeAt(index)
-            },
-            locked = section.locked
-        )
+        var showOverflow by remember { mutableStateOf(false) }
+        Box {
+            PrefilledSectionField(
+                value,
+                onValueChange = { section.contents[index] = it },
+                onClickMore = { showOverflow = !showOverflow },
+                onDone = { section.contents.add(index, "") },
+                locked = section.locked
+            )
+
+            Box(
+                Modifier
+                    .width(48.dp)
+                    .align(Alignment.BottomEnd)
+                    .padding(end = 16.dp)
+            ) {
+                DropdownMenu(
+                    expanded = showOverflow,
+                    onDismissRequest = { showOverflow = false },
+                ) {
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.delete)) },
+                        onClick = {
+                            section.contents.removeAt(index)
+                            showOverflow = false
+                        }
+                    )
+                    if (index > 0) {
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.move_up)) },
+                            onClick = {
+                                val oldValue = section.contents[index]
+                                section.contents[index] = section.contents[index - 1]
+                                section.contents[index - 1] = oldValue
+                                showOverflow = false
+                            }
+                        )
+                    }
+                    if (index < section.contents.size - 1) {
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.move_down)) },
+                            onClick = {
+                                val oldValue = section.contents[index]
+                                section.contents[index] = section.contents[index + 1]
+                                section.contents[index + 1] = oldValue
+                                showOverflow = false
+                            }
+                        )
+                    }
+                }
+            }
+        }
     }
 
-    Box {
-        val focusRequester = remember { FocusRequester() }
-        OpenSectionField(
-            value = section.pendingValue,
-            onValueChange = { section.pendingValue = it },
-            onDone = {
-                if (it.isNotEmpty()) {
-                    section.contents += it
-                    section.pendingValue = ""
-                }
-            },
-            onBackspaceEmpty = {
-                if (section.contents.isNotEmpty()) {
-                    section.pendingValue = section.contents.removeLast()
-                }
-            },
-            locked = section.locked,
-            modifier = Modifier
-                .onFocusChanged { section.focused = it.isFocused }
-                .focusRequester(focusRequester)
-        )
+    AnimatedVisibility(
+        visible = section.locked != true,
+        enter = expandVertically(),
+        exit = shrinkVertically(),
+    ) {
+        Box {
+            val focusRequester = remember { FocusRequester() }
+            OpenSectionField(
+                value = section.pendingValue,
+                onValueChange = { section.pendingValue = it },
+                onDone = {
+                    if (it.isNotEmpty()) {
+                        section.contents += it
+                        section.pendingValue = ""
+                    }
+                },
+                locked = section.locked,
+                modifier = Modifier
+                    .onFocusChanged { section.focused = it.isFocused }
+                    .focusRequester(focusRequester)
+            )
 
-        if (section.locked != true && section.predictions.isNotEmpty()) {
-            DropdownMenu(
-                expanded = section.focused,
-                onDismissRequest = { focusRequester.freeFocus() },
-                properties = PopupProperties(focusable = false),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                section.predictions.forEach {
-                    DropdownMenuItem(
-                        onClick = {
-                            focusRequester.freeFocus()
-                            section.focused = false
-                            section.pendingValue = it
-                        },
-                        text = { Text(it) }
-                    )
+            if (section.locked != true && section.predictions.isNotEmpty()) {
+                DropdownMenu(
+                    expanded = section.focused,
+                    onDismissRequest = { focusRequester.freeFocus() },
+                    properties = PopupProperties(focusable = false),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    section.predictions.forEach {
+                        DropdownMenuItem(
+                            onClick = {
+                                focusRequester.freeFocus()
+                                section.focused = false
+                                section.pendingValue = it
+                            },
+                            text = { Text(it) }
+                        )
+                    }
                 }
             }
         }
@@ -196,6 +257,7 @@ private fun LongTextSection(section: ArtEntrySection.LongText) {
         onValueChange = { section.value = it },
         readOnly = section.locked == true,
         modifier = Modifier
+            .focusable(section.locked != true)
             .fillMaxWidth()
             .padding(start = 16.dp, end = 16.dp)
     )
@@ -206,21 +268,39 @@ private fun LongTextSection(section: ArtEntrySection.LongText) {
 private fun PrefilledSectionField(
     value: String,
     onValueChange: (value: String) -> Unit = {},
-    onValueDelete: () -> Unit = {},
+    onClickMore: () -> Unit = {},
+    onDone: () -> Unit = {},
     locked: Boolean? = null,
 ) {
     TextField(
         value = value,
         onValueChange = { onValueChange(it) },
         readOnly = locked == true,
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+        keyboardActions = KeyboardActions(onDone = { onDone() }),
+        trailingIcon = {
+            AnimatedVisibility(
+                visible = locked != true,
+                enter = fadeIn(),
+                exit = fadeOut(),
+            ) {
+                IconButton(onClick = onClickMore) {
+                    Icon(
+                        imageVector = Icons.Default.MoreVert,
+                        contentDescription = stringResource(
+                            R.string.art_entry_more_actions_content_description
+                        ),
+                    )
+                }
+            }
+        },
         modifier = Modifier
+            .focusable(locked != true)
             .fillMaxWidth()
             .padding(start = 16.dp, end = 16.dp)
             .onKeyEvent {
-                if (it.type == KeyEventType.KeyUp && it.key == Key.Backspace) {
-                    if (value.isEmpty()) {
-                        onValueDelete()
-                    }
+                if (it.type == KeyEventType.KeyUp && it.key == Key.Enter) {
+                    onDone()
                     true
                 } else false
             }
@@ -234,7 +314,6 @@ private fun OpenSectionField(
     modifier: Modifier = Modifier,
     onValueChange: (value: String) -> Unit = {},
     onDone: (value: String) -> Unit = {},
-    onBackspaceEmpty: () -> Unit = {},
     locked: Boolean? = null,
 ) {
     OutlinedTextField(
@@ -244,6 +323,7 @@ private fun OpenSectionField(
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
         keyboardActions = KeyboardActions(onDone = { onDone(value) }),
         modifier = modifier
+            .focusable(locked != true)
             .fillMaxWidth()
             .padding(start = 16.dp, end = 16.dp)
             .onKeyEvent {
@@ -252,12 +332,6 @@ private fun OpenSectionField(
                         Key.Enter -> {
                             onDone(value)
                             true
-                        }
-                        Key.Backspace -> {
-                            if (value.isEmpty()) {
-                                onBackspaceEmpty()
-                                true
-                            } else false
                         }
                         else -> false
                     }
@@ -336,7 +410,7 @@ private fun DropdownSection(section: ArtEntrySection.Dropdown) {
 
     section.selectedItem()
         .takeIf { it.hasCustomView }
-        ?.Content()
+        ?.Content(section.locked)
 }
 
 @Composable

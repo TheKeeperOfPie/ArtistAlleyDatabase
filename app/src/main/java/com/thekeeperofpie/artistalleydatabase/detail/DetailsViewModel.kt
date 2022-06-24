@@ -9,22 +9,19 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntry
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryDao
-import com.thekeeperofpie.artistalleydatabase.art.ArtEntryUtils
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.time.Instant
-import java.util.Date
 import javax.inject.Inject
 
 @HiltViewModel
 class DetailsViewModel @Inject constructor(
-    private val application: Application,
+    application: Application,
     artEntryDao: ArtEntryDao,
-) : ArtEntryViewModel(artEntryDao) {
+) : ArtEntryViewModel(application, artEntryDao) {
 
     var entryId: String? = null
     lateinit var entry: ArtEntry
@@ -92,34 +89,7 @@ class DetailsViewModel @Inject constructor(
 
     fun onClickSave(navHostController: NavHostController) {
         viewModelScope.launch(Dispatchers.IO) {
-            val outputFile = ArtEntryUtils.getImageFile(application, entryId!!)
-            val error = ArtEntryUtils.writeEntryImage(application, outputFile, imageUri)
-            if (error != null) {
-                withContext(Dispatchers.Main) {
-                    errorResource = error
-                }
-                return@launch
-            }
-
-            val (imageWidth, imageHeight) = ArtEntryUtils.getImageSize(outputFile)
-            val (sourceType, sourceValue) = sourceSection.finalTypeToValue()
-
-            artEntryDao.insertEntries(
-                entry.copy(
-                    artists = artistSection.finalContents(),
-                    sourceType = sourceType,
-                    sourceValue = sourceValue,
-                    series = seriesSection.finalContents(),
-                    characters = characterSection.finalContents(),
-                    tags = tagSection.finalContents(),
-                    lastEditTime = Date.from(Instant.now()),
-                    imageWidth = imageWidth,
-                    imageHeight = imageHeight,
-                    printWidth = printSizeSection.finalWidth(),
-                    printHeight = printSizeSection.finalHeight(),
-                    notes = notesSection.value,
-                )
-            )
+            saveEntry(imageUri, entryId!!)
 
             withContext(Dispatchers.Main) {
                 navHostController.popBackStack()

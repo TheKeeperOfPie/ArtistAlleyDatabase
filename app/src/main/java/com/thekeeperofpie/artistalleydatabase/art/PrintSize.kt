@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.art
 
 import androidx.annotation.StringRes
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -153,7 +154,7 @@ class PrintSizeCustomTextFields : ArtEntrySection.Dropdown.Item {
     override fun DropdownItemText() = Text(fieldText())
 
     @Composable
-    override fun Content() {
+    override fun Content(locked: Boolean?) {
         Row(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             modifier = Modifier
@@ -164,19 +165,25 @@ class PrintSizeCustomTextFields : ArtEntrySection.Dropdown.Item {
                 value = width,
                 label = { Text(stringResource(R.string.add_entry_size_label_width)) },
                 onValueChange = { width = it },
+                readOnly = locked == true,
                 keyboardOptions = KeyboardOptions.Default.copy(
                     keyboardType = KeyboardType.Number
                 ),
-                modifier = Modifier.weight(1f, true),
+                modifier = Modifier
+                    .focusable(locked != true)
+                    .weight(1f, true),
             )
             TextField(
                 value = height,
                 label = { Text(stringResource(R.string.add_entry_size_label_height)) },
                 onValueChange = { height = it },
+                readOnly = locked == true,
                 keyboardOptions = KeyboardOptions.Default.copy(
                     keyboardType = KeyboardType.Number
                 ),
-                modifier = Modifier.weight(1f, true),
+                modifier = Modifier
+                    .focusable(locked != true)
+                    .weight(1f, true),
             )
         }
     }

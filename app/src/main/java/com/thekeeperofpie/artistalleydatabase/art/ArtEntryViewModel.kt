@@ -1,5 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.art
 
+import android.app.Application
+import android.net.Uri
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -11,8 +13,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.time.Instant
+import java.util.Date
 
 abstract class ArtEntryViewModel(
+    protected val application: Application,
     protected val artEntryDao: ArtEntryDao
 ) : ViewModel() {
 
@@ -89,5 +94,46 @@ abstract class ArtEntryViewModel(
                     section.predictions = predictions
                 }
             }
+    }
+
+    suspend fun saveEntry(imageUri: Uri?, id: String) {
+        val outputFile = ArtEntryUtils.getImageFile(application, id)
+        val error = ArtEntryUtils.writeEntryImage(application, outputFile, imageUri)
+        if (error != null) {
+            withContext(Dispatchers.Main) {
+                errorResource = error
+            }
+            return
+        }
+
+        val (imageWidth, imageHeight) = ArtEntryUtils.getImageSize(outputFile)
+        val (sourceType, sourceValue) = sourceSection.finalTypeToValue()
+
+        artEntryDao.insertEntries(
+            ArtEntry(
+                id = id,
+                artists = artistSection.finalContents(),
+                sourceType = sourceType,
+                sourceValue = sourceValue,
+                series = seriesSection.finalContents(),
+                characters = characterSection.finalContents(),
+                tags = tagSection.finalContents(),
+                lastEditTime = Date.from(Instant.now()),
+                imageWidth = imageWidth,
+                imageHeight = imageHeight,
+                printWidth = printSizeSection.finalWidth(),
+                printHeight = printSizeSection.finalHeight(),
+                notes = notesSection.value,
+                locks = ArtEntry.Locks(
+                    artistsLocked = artistSection.locked ?: false,
+                    seriesLocked = seriesSection.locked ?: false,
+                    charactersLocked = characterSection.locked ?: false,
+                    sourceLocked = sourceSection.locked ?: false,
+                    tagsLocked = tagSection.locked ?: false,
+                    notesLocked = notesSection.locked ?: false,
+                    printSizeLocked = printSizeSection.locked ?: false,
+                )
+            )
+        )
     }
 }

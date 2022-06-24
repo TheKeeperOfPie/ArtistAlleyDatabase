@@ -3,6 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.art
 import android.util.JsonReader
 import android.util.JsonToken
 import androidx.annotation.StringRes
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -123,7 +124,7 @@ class SourceConventionSectionItem : ArtEntrySection.Dropdown.Item {
     override fun DropdownItemText() = Text(fieldText())
 
     @Composable
-    override fun Content() {
+    override fun Content(locked: Boolean?) {
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier
@@ -136,8 +137,11 @@ class SourceConventionSectionItem : ArtEntrySection.Dropdown.Item {
                 placeholder = {
                     Text(stringResource(R.string.art_entry_source_convention_placeholder_name))
                 },
+                readOnly = locked == true,
                 onValueChange = { name = it },
-                modifier = Modifier.weight(1f, true),
+                modifier = Modifier
+                    .focusable(locked != true)
+                    .weight(1f, true),
             )
             TextField(
                 value = year,
@@ -145,11 +149,14 @@ class SourceConventionSectionItem : ArtEntrySection.Dropdown.Item {
                 placeholder = {
                     Text(stringResource(R.string.art_entry_source_convention_placeholder_year))
                 },
+                readOnly = locked == true,
                 keyboardOptions = KeyboardOptions.Default.copy(
                     keyboardType = KeyboardType.Number
                 ),
                 onValueChange = { year = it },
-                modifier = Modifier.weight(1f, true),
+                modifier = Modifier
+                    .focusable(locked != true)
+                    .weight(1f, true),
             )
         }
 
@@ -194,11 +201,13 @@ class SourceCustomSectionItem : ArtEntrySection.Dropdown.Item {
     override fun DropdownItemText() = Text(fieldText())
 
     @Composable
-    override fun Content() {
+    override fun Content(locked: Boolean?) {
         TextField(
             value = value,
             onValueChange = { value = it },
+            readOnly = locked == true,
             modifier = Modifier
+                .focusable(locked != true)
                 .fillMaxWidth()
                 .padding(start = 16.dp, end = 16.dp, top = 10.dp, bottom = 10.dp),
         )
