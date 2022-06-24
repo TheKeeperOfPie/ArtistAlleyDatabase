@@ -1,11 +1,15 @@
 package com.thekeeperofpie.artistalleydatabase.search
 
 import androidx.annotation.StringRes
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -17,14 +21,18 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Checkbox
 import androidx.compose.material.ContentAlpha
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -33,12 +41,11 @@ import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.focus.FocusState
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
@@ -47,6 +54,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.paging.PagingData
@@ -60,6 +68,7 @@ import com.thekeeperofpie.artistalleydatabase.R
 import com.thekeeperofpie.artistalleydatabase.navigation.NavDestinations
 import com.thekeeperofpie.artistalleydatabase.ui.ButtonFooter
 import com.thekeeperofpie.artistalleydatabase.ui.LazyStaggeredGrid
+import com.thekeeperofpie.artistalleydatabase.ui.bottomBorder
 import com.thekeeperofpie.artistalleydatabase.ui.theme.ArtistAlleyDatabaseTheme
 import kotlinx.coroutines.flow.emptyFlow
 
@@ -70,8 +79,6 @@ object SearchScreen {
     operator fun invoke(
         query: String = "",
         onQueryChange: (String) -> Unit = {},
-        onSearchFocusChange: (FocusState) -> Unit = {},
-        showOptions: Boolean = false,
         options: List<Option> = emptyList(),
         onOptionChanged: (Option) -> Unit = {},
         entries: LazyPagingItems<ArtEntryModel> =
@@ -92,10 +99,8 @@ object SearchScreen {
                     query = query,
                     onQueryChange = onQueryChange,
                     showFab = selectedItems.isEmpty(),
-                    showOptions = showOptions,
                     options = options,
                     onOptionChanged = onOptionChanged,
-                    onSearchFocusChange = onSearchFocusChange,
                     onClickAddFab = onClickAddFab,
                 ) {
                     Content(
@@ -116,8 +121,6 @@ object SearchScreen {
     private fun Chrome(
         query: String,
         onQueryChange: (String) -> Unit,
-        onSearchFocusChange: (FocusState) -> Unit,
-        showOptions: Boolean = false,
         options: List<Option> = emptyList(),
         onOptionChanged: (Option) -> Unit,
         showFab: Boolean = true,
@@ -126,44 +129,70 @@ object SearchScreen {
     ) {
         Scaffold(
             topBar = {
+                var showOptions by remember { mutableStateOf(false) }
+
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .wrapContentWidth()
+                        .run {
+                            if (showOptions) {
+                                bottomBorder(1.dp, MaterialTheme.colorScheme.onBackground)
+                            } else this
+                        }
                 ) {
                     TextField(
                         query,
                         placeholder = { Text(stringResource(id = R.string.search)) },
                         onValueChange = onQueryChange,
+                        trailingIcon = {
+                            if (options.isNotEmpty()) {
+                                IconButton(onClick = { showOptions = !showOptions }) {
+                                    Icon(
+                                        imageVector = Icons.Default.FilterList,
+                                        contentDescription = stringResource(
+                                            R.string.search_filter_content_description
+                                        )
+                                    )
+                                }
+                            }
+                        },
                         singleLine = true,
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                        keyboardActions = KeyboardActions(onSearch = { showOptions = false }),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .onFocusChanged(onSearchFocusChange),
                     )
 
-                    if (showOptions) {
-                        options.forEach { option ->
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable {
-                                        option.enabled = !option.enabled
-                                        onOptionChanged(option)
-                                    }
-                            ) {
-                                Checkbox(
-                                    checked = option.enabled,
-                                    onCheckedChange = null,
-                                    Modifier.padding(
-                                        start = 16.dp,
-                                        end = 16.dp,
-                                        top = 8.dp,
-                                        bottom = 8.dp
+                    AnimatedVisibility(
+                        visible = showOptions,
+                        enter = expandVertically(),
+                        exit = shrinkVertically(),
+                    ) {
+                        Column {
+                            options.forEach { option ->
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable {
+                                            option.enabled = !option.enabled
+                                            onOptionChanged(option)
+                                        }
+                                ) {
+                                    Checkbox(
+                                        checked = option.enabled,
+                                        onCheckedChange = null,
+                                        Modifier.padding(
+                                            start = 16.dp,
+                                            end = 16.dp,
+                                            top = 8.dp,
+                                            bottom = 8.dp
+                                        )
                                     )
-                                )
 
-                                Text(stringResource(option.textRes))
+                                    Text(stringResource(option.textRes))
+                                }
                             }
                         }
                     }
@@ -201,7 +230,7 @@ object SearchScreen {
             // TODO: Find a better way to calculate the optimal image size
             LocalConfiguration.current.screenWidthDp.dp.roundToPx() / columnCount / 2
         }.let(::Dimension)
-        Column {
+        Column(Modifier.focusable(true)) {
             LazyStaggeredGrid<ArtEntryModel>(
                 columnCount = columnCount,
                 modifier = Modifier
@@ -305,8 +334,8 @@ object SearchScreen {
         }
     }
 
-    class Option(@StringRes val textRes: Int) {
-        var enabled by mutableStateOf(true)
+    class Option(@StringRes val textRes: Int, enabled: Boolean = true) {
+        var enabled by mutableStateOf(enabled)
     }
 }
 
@@ -314,7 +343,6 @@ object SearchScreen {
 @Composable
 fun Preview() {
     SearchScreen(
-        showOptions = true,
         options = listOf(
             SearchScreen.Option(R.string.search_option_artists),
             SearchScreen.Option(R.string.search_option_source),

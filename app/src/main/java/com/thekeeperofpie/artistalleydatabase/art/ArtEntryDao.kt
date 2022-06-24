@@ -8,7 +8,9 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.RawQuery
 import androidx.room.Transaction
+import androidx.sqlite.db.SimpleSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteQuery
+import com.thekeeperofpie.artistalleydatabase.search.SearchViewModel
 
 @Dao
 interface ArtEntryDao {
@@ -37,6 +39,46 @@ interface ArtEntryDao {
         """
     )
     fun getEntries(): PagingSource<Int, ArtEntry>
+
+    fun getEntries(query: SearchViewModel.QueryWrapper): PagingSource<Int, ArtEntry> {
+        val options = mutableListOf<String>()
+
+        val lockedValue = when {
+            query.locked && query.unlocked -> null
+            query.locked -> "1"
+            query.unlocked -> "0"
+            else -> null
+        }
+
+        val optionsSuffix = if (lockedValue == null) "" else {
+            val lockOptions = mutableListOf<String>()
+            if (query.includeArtists) lockOptions += "artistsLocked:$lockedValue"
+            if (query.includeSources) lockOptions += "sourceLocked:$lockedValue"
+            if (query.includeSeries) lockOptions += "seriesLocked:$lockedValue"
+            if (query.includeCharacters) lockOptions += "charactersLocked:$lockedValue"
+            if (query.includeTags) lockOptions += "tagsLocked:$lockedValue"
+            if (query.includeNotes) lockOptions += "notesLocked:$lockedValue"
+            lockOptions.joinToString(prefix = " ", separator = " ")
+        }
+
+        val queryValue = "*${query.value}*"
+        if (query.includeArtists) options += "artists:$queryValue"
+        if (query.includeSources) options += "sourceType:$queryValue"
+        if (query.includeSources) options += "sourceValue:$queryValue"
+        if (query.includeSeries) options += "series:$queryValue"
+        if (query.includeCharacters) options += "characters:$queryValue"
+        if (query.includeTags) options += "tags:$queryValue"
+        if (query.includeNotes) options += "notes:$queryValue"
+
+        val finalQuery = options.joinToString(separator = " OR ") + optionsSuffix
+        val statement = """
+            SELECT *
+            FROM art_entries
+            JOIN art_entries_fts ON art_entries.id = art_entries_fts.id
+            WHERE art_entries_fts MATCH '$finalQuery'
+        """.trimIndent()
+        return getEntries(SimpleSQLiteQuery(statement))
+    }
 
     @Query(
         """

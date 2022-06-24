@@ -25,6 +25,7 @@ import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.drawscope.ContentDrawScope
 import androidx.compose.ui.platform.debugInspectorInfo
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
@@ -91,14 +92,46 @@ fun SnackbarErrorText(@StringRes errorRes: Int?, onErrorDismiss: () -> Unit) {
         }
     }
 }
+
 @Suppress("UnnecessaryComposedModifier")
-fun Modifier.topBorder(width: Dp = Dp.Hairline, color: Color): Modifier = composed(
+fun Modifier.topBorder(width: Dp = Dp.Hairline, color: Color): Modifier = border(
+    width,
+    color,
+    startOffsetX = { width.value },
+    startOffsetY = { 0f },
+    endOffsetX = { size.width - width.value },
+    endOffsetY = { 0f }
+)
+
+@Suppress("UnnecessaryComposedModifier")
+fun Modifier.bottomBorder(width: Dp = Dp.Hairline, color: Color): Modifier = border(
+    width,
+    color,
+    startOffsetX = { width.value },
+    startOffsetY = { size.height },
+    endOffsetX = { size.width - width.value },
+    endOffsetY = { size.height }
+)
+
+@Suppress("UnnecessaryComposedModifier")
+fun Modifier.border(
+    width: Dp = Dp.Hairline,
+    color: Color,
+    startOffsetX: ContentDrawScope.() -> Float,
+    startOffsetY: ContentDrawScope.() -> Float,
+    endOffsetX: ContentDrawScope.() -> Float,
+    endOffsetY: ContentDrawScope.() -> Float
+): Modifier = composed(
     factory = {
         this.then(
             Modifier.drawWithCache {
                 onDrawWithContent {
                     drawContent()
-                    drawLine(color, Offset(width.value, 0f), Offset(size.width - width.value, 0f))
+                    drawLine(
+                        color,
+                        Offset(startOffsetX(), startOffsetY()),
+                        Offset(endOffsetX(), endOffsetY())
+                    )
                 }
             }
         )

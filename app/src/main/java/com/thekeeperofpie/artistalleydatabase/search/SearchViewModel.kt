@@ -1,10 +1,8 @@
 package com.thekeeperofpie.artistalleydatabase.search
 
 import android.app.Application
-import androidx.compose.runtime.getValue
+import androidx.annotation.MainThread
 import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
@@ -34,39 +32,54 @@ class SearchViewModel @Inject constructor(
     private val artEntryDao: ArtEntryDao,
 ) : ViewModel() {
 
-    val query = MutableStateFlow("")
+    val query = MutableStateFlow(QueryWrapper())
 
     val results = MutableStateFlow(PagingData.empty<ArtEntryModel>())
 
     val selectedEntries = mutableStateMapOf<Int, ArtEntryModel>()
 
-    var showOptions by mutableStateOf(false)
+    private val artistsOption = SearchScreen.Option(R.string.search_option_artists)
+    private val sourceOption = SearchScreen.Option(R.string.search_option_source)
+    private val seriesOption = SearchScreen.Option(R.string.search_option_series)
+    private val charactersOption = SearchScreen.Option(R.string.search_option_characters)
+    private val tagsOption = SearchScreen.Option(R.string.search_option_tags)
+    private val notesOption = SearchScreen.Option(R.string.search_option_notes)
+    private val otherOption = SearchScreen.Option(R.string.search_option_other)
+    private val lockedOption = SearchScreen.Option(R.string.search_option_locked)
+    private val unlockedOption = SearchScreen.Option(R.string.search_option_unlocked)
 
     val options = listOf(
-        SearchScreen.Option(R.string.search_option_artists),
-        SearchScreen.Option(R.string.search_option_source),
-        SearchScreen.Option(R.string.search_option_series),
-        SearchScreen.Option(R.string.search_option_characters),
-        SearchScreen.Option(R.string.search_option_tags),
-        SearchScreen.Option(R.string.search_option_notes),
-        SearchScreen.Option(R.string.search_option_other),
+        artistsOption,
+        sourceOption,
+        seriesOption,
+        charactersOption,
+        tagsOption,
+        notesOption,
+        otherOption,
+        lockedOption,
+        unlockedOption,
     )
 
     fun onQuery(query: String) {
-        if (this.query.value != query) {
+        if (this.query.value.value != query) {
             clearSelected()
         }
-        this.query.tryEmit(query)
+        this.query.tryEmit(buildQueryWrapper(query))
+    }
+
+    fun refreshQuery() {
+        clearSelected()
+        this.query.tryEmit(buildQueryWrapper(query.value.value))
     }
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
             query.flatMapLatest {
                 Pager(PagingConfig(pageSize = 20)) {
-                    if (it.isEmpty()) {
+                    if (it.value.isEmpty()) {
                         artEntryDao.getEntries()
                     } else {
-                        artEntryDao.getEntries("'*$it*'")
+                        artEntryDao.getEntries(it)
                     }
                 }
                     .flow.cachedIn(viewModelScope)
@@ -113,4 +126,30 @@ class SearchViewModel @Inject constructor(
             }
         }
     }
+
+    @MainThread
+    fun buildQueryWrapper(query: String) = QueryWrapper(
+        value = query,
+        includeArtists = artistsOption.enabled,
+        includeSources = sourceOption.enabled,
+        includeSeries = seriesOption.enabled,
+        includeCharacters = charactersOption.enabled,
+        includeTags = tagsOption.enabled,
+        includeNotes = notesOption.enabled,
+        locked = lockedOption.enabled,
+        unlocked = unlockedOption.enabled,
+    )
+
+    data class QueryWrapper(
+        val value: String = "",
+        val includeArtists: Boolean = true,
+        val includeSources: Boolean = true,
+        val includeSeries: Boolean = true,
+        val includeCharacters: Boolean = true,
+        val includeTags: Boolean = true,
+        val includeNotes: Boolean = true,
+        val includeOther: Boolean = true,
+        val locked: Boolean = true,
+        val unlocked: Boolean = true,
+    )
 }

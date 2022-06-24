@@ -77,8 +77,11 @@
     <string name="search_option_tags">Tags</string>
     <string name="search_option_notes">Notes</string>
     <string name="search_option_other">Other</string>
+    <string name="search_option_locked">Locked</string>
+    <string name="search_option_unlocked">Unlocked</string>
     <string name="art_entry_lock_content_description">Unlock section</string>
     <string name="art_entry_more_actions_content_description">More actions</string>
     <string name="move_down">Move down</string>
     <string name="move_up">Move up</string>
+    <string name="search_filter_content_description">Filter options</string>
 </resources>

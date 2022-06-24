@@ -83,7 +83,7 @@ abstract class ArtEntryViewModel(
         }
     }
 
-    suspend fun subscribeMultiTextSection(
+    private suspend fun subscribeMultiTextSection(
         section: ArtEntrySection.MultiText,
         databaseCall: suspend (String) -> List<String>
     ) {

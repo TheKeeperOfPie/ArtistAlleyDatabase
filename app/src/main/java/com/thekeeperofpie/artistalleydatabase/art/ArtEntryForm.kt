@@ -217,6 +217,7 @@ private fun MultiTextSection(section: ArtEntrySection.MultiText) {
                 },
                 locked = section.locked,
                 modifier = Modifier
+                    .focusable(section.locked != true)
                     .onFocusChanged { section.focused = it.isFocused }
                     .focusRequester(focusRequester)
             )
@@ -323,7 +324,6 @@ private fun OpenSectionField(
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
         keyboardActions = KeyboardActions(onDone = { onDone(value) }),
         modifier = modifier
-            .focusable(locked != true)
             .fillMaxWidth()
             .padding(start = 16.dp, end = 16.dp)
             .onKeyEvent {

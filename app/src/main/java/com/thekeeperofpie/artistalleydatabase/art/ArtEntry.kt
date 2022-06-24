@@ -70,4 +70,5 @@ data class ArtEntryFts(
     val printWidth: Int?,
     val printHeight: Int?,
     val notes: String?,
+    @Embedded val locks: ArtEntry.Locks = ArtEntry.Locks.EMPTY,
 )
