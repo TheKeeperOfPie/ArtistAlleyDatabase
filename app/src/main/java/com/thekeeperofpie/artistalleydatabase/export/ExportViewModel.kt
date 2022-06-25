@@ -19,6 +19,7 @@ class ExportViewModel @Inject constructor(
 
     var exportUriString by mutableStateOf<String?>(null)
     var errorResource by mutableStateOf<Pair<Int, Exception?>?>(null)
+    var userReadable by mutableStateOf(true)
 
     fun onClickExport() {
         val exportUriString = exportUriString ?: run {
@@ -26,13 +27,14 @@ class ExportViewModel @Inject constructor(
             return
         }
 
-        val request = OneTimeWorkRequestBuilder<ExportArtEntriesWorker>()
+        val request = if (userReadable) {
+            OneTimeWorkRequestBuilder<ExportUserReadableWorker>()
+        } else {
+            OneTimeWorkRequestBuilder<ExportAppDataWorker>()
+        }
             .setInputData(
                 Data.Builder()
-                    .putString(
-                        ExportArtEntriesWorker.KEY_OUTPUT_CONTENT_URI,
-                        exportUriString
-                    )
+                    .putString(ExportUtils.KEY_OUTPUT_CONTENT_URI, exportUriString)
                     .build()
             )
             .build()

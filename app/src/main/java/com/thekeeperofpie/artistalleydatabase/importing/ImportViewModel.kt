@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.importing
 
 import android.app.Application
 import android.net.Uri
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -24,9 +25,11 @@ import okio.source
 import java.io.FilterInputStream
 import java.io.InputStream
 import java.math.BigDecimal
+import java.nio.file.Paths
 import java.util.Date
 import java.util.zip.ZipInputStream
 import javax.inject.Inject
+import kotlin.io.path.nameWithoutExtension
 
 @HiltViewModel
 class ImportViewModel @Inject constructor(
@@ -70,7 +73,10 @@ class ImportViewModel @Inject constructor(
                         when (entry.name) {
                             "art_entries.json" -> readArtEntriesJson(entryInputStream)
                             else -> {
-                                ArtEntryUtils.getImageFile(application, entry.name)
+                                ArtEntryUtils.getImageFile(
+                                    application,
+                                    Paths.get(entry.name).nameWithoutExtension
+                                )
                                     .outputStream()
                                     .use { entryInputStream.copyTo(it) }
                             }
@@ -91,8 +97,8 @@ class ImportViewModel @Inject constructor(
                 val reader = JsonReader.of(it)
                 reader.isLenient = true
                 reader.beginObject()
-                val name = reader.nextName()
-                if (name != "art_entries") {
+                val rootName = reader.nextName()
+                if (rootName != "art_entries") {
                     reader.skipValue()
                 }
 
@@ -118,7 +124,7 @@ class ImportViewModel @Inject constructor(
                         var locks: ArtEntry.Locks? = null
                         reader.beginObject()
                         while (reader.peek() != JsonReader.Token.END_OBJECT) {
-                            when (reader.nextName()) {
+                            when (val name = reader.nextName()) {
                                 "id" -> id = reader.nextString()
                                     .removePrefix("\"")
                                     .removeSuffix("\"")
@@ -147,28 +153,39 @@ class ImportViewModel @Inject constructor(
                                     var charactersLocked = false
                                     var tagsLocked = false
                                     var notesLocked = false
+                                    var printSizeLocked = false
                                     while (reader.peek() != JsonReader.Token.END_OBJECT) {
-                                        when (reader.nextName()) {
-                                            "artistsLocked" -> artistsLocked = reader.nextBoolean()
-                                            "sourceLocked" -> sourceLocked = reader.nextBoolean()
-                                            "seriesLocked" -> seriesLocked = reader.nextBoolean()
+                                        when (val locksName = reader.nextName()) {
+                                            "artistsLocked" -> artistsLocked = reader.readBoolean()
+                                            "sourceLocked" -> sourceLocked = reader.readBoolean()
+                                            "seriesLocked" -> seriesLocked = reader.readBoolean()
                                             "charactersLocked" -> charactersLocked =
-                                                reader.nextBoolean()
-                                            "tagsLocked" -> tagsLocked = reader.nextBoolean()
-                                            "notesLocked" -> notesLocked = reader.nextBoolean()
+                                                reader.readBoolean()
+                                            "tagsLocked" -> tagsLocked = reader.readBoolean()
+                                            "notesLocked" -> notesLocked = reader.readBoolean()
+                                            "printSizeLocked" -> printSizeLocked =
+                                                reader.readBoolean()
+                                            else -> {
+                                                Log.e("Import", "Unexpected name = $locksName")
+                                                reader.skipValue()
+                                            }
                                         }
                                     }
                                     reader.endObject()
                                     locks = ArtEntry.Locks(
-                                        artistsLocked,
-                                        sourceLocked,
-                                        seriesLocked,
-                                        charactersLocked,
-                                        tagsLocked,
-                                        notesLocked
+                                        artistsLocked = artistsLocked,
+                                        sourceLocked = sourceLocked,
+                                        seriesLocked = seriesLocked,
+                                        charactersLocked = charactersLocked,
+                                        tagsLocked = tagsLocked,
+                                        notesLocked = notesLocked,
+                                        printSizeLocked = printSizeLocked,
                                     )
                                 }
-                                else -> reader.skipValue()
+                                else -> {
+                                    Log.e("Import", "Unexpected name = $name")
+                                    reader.skipValue()
+                                }
                             }
                         }
                         reader.endObject()
@@ -221,7 +238,10 @@ class ImportViewModel @Inject constructor(
         JsonReader.Token.NULL -> nextNull<Long>()
         JsonReader.Token.STRING -> nextString().toLongOrNull()
         JsonReader.Token.NUMBER -> nextLong()
-        else -> null
+        else -> {
+            skipValue()
+            null
+        }
     }.let(Converters.DateConverter::deserializeDate)
 
     private fun JsonReader.readNullableString() = when (peek()) {
@@ -230,13 +250,32 @@ class ImportViewModel @Inject constructor(
             val value = nextString()
             if (value == "null") null else value
         }
-        else -> null
+        else -> {
+            skipValue()
+            null
+        }
     }
 
     private fun JsonReader.readNullableInt() = when (peek()) {
         JsonReader.Token.NULL -> nextNull<Int>()
         JsonReader.Token.STRING -> nextString().toIntOrNull()
         JsonReader.Token.NUMBER -> nextInt()
-        else -> null
+        else -> {
+            skipValue()
+            null
+        }
+    }
+
+    private fun JsonReader.readBoolean() = when (peek()) {
+        JsonReader.Token.NULL -> {
+            nextNull<Boolean>()
+            false
+        }
+        JsonReader.Token.STRING -> nextString().toBoolean()
+        JsonReader.Token.BOOLEAN -> nextBoolean()
+        else -> {
+            skipValue()
+            false
+        }
     }
 }

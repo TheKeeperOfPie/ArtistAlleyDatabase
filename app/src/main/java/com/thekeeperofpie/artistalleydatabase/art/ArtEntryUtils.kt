@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.art
 
 import android.app.Application
+import android.content.Context
 import android.graphics.BitmapFactory
 import android.net.Uri
 import com.thekeeperofpie.artistalleydatabase.R
@@ -8,8 +9,8 @@ import java.io.File
 
 object ArtEntryUtils {
 
-    fun getImageFile(application: Application, id: String) =
-        application.filesDir.resolve("entry_images/${id}")
+    fun getImageFile(context: Context, id: String) =
+        context.filesDir.resolve("entry_images/${id}")
 
     fun getImageSize(file: File): Pair<Int?, Int?> {
         val options = BitmapFactory.Options().apply {

@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.Checkbox
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -44,9 +45,11 @@ object ExportScreen {
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     operator fun invoke(
-        uriString: String = "",
+        uriString: () -> String = { "" },
         onUriStringEdit: (String) -> Unit = {},
         onContentUriSelected: (Uri?) -> Unit = {},
+        userReadable: () -> Boolean = { true },
+        onToggleUserReadable: (Boolean) -> Unit = {},
         onClickExport: () -> Unit = {},
         errorRes: Pair<Int, Exception?>? = null,
         onErrorDismiss: () -> Unit = { },
@@ -59,7 +62,15 @@ object ExportScreen {
                 Scaffold(snackbarHost = {
                     SnackbarErrorText(errorRes?.first, onErrorDismiss = onErrorDismiss)
                 }) {
-                    Content(it, uriString, onUriStringEdit, onContentUriSelected, onClickExport)
+                    Content(
+                        paddingValues = it,
+                        uriString = uriString,
+                        onUriStringEdit = onUriStringEdit,
+                        onContentUriSelected = onContentUriSelected,
+                        userReadable = userReadable,
+                        onToggleUserReadable = onToggleUserReadable,
+                        onClickExport = onClickExport,
+                    )
                 }
             }
         }
@@ -68,9 +79,11 @@ object ExportScreen {
     @Composable
     private fun Content(
         paddingValues: PaddingValues,
-        uriString: String,
+        uriString: () -> String,
         onUriStringEdit: (String) -> Unit = {},
         onContentUriSelected: (Uri?) -> Unit = {},
+        userReadable: () -> Boolean,
+        onToggleUserReadable: (Boolean) -> Unit = {},
         onClickExport: () -> Unit = {},
     ) {
         Column(
@@ -89,12 +102,35 @@ object ExportScreen {
                 )
                 ChooseUriRow(
                     R.string.export_destination,
-                    uriString,
+                    uriString(),
                     onUriStringEdit,
                     onClickChoose = {
                         launcher.launch("${ExportUtils.currentDateTimeFileName()}.zip")
                     }
                 )
+
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            onToggleUserReadable(!userReadable())
+                        }
+                ) {
+                    Checkbox(
+                        checked = userReadable(),
+                        onCheckedChange = null,
+                        Modifier.padding(
+                            start = 16.dp,
+                            end = 16.dp,
+                            top = 8.dp,
+                            bottom = 8.dp
+                        )
+                    )
+
+                    Text(stringResource(R.string.export_user_readable))
+                }
             }
 
             ButtonFooter(onClickExport, R.string.export)

@@ -94,10 +94,14 @@ class MainActivity : ComponentActivity() {
                         NavDrawerItems.Export -> {
                             val viewModel = hiltViewModel<ExportViewModel>()
                             ExportScreen(
-                                uriString = viewModel.exportUriString.orEmpty(),
+                                uriString = { viewModel.exportUriString.orEmpty() },
                                 onUriStringEdit = { viewModel.exportUriString = it },
                                 onContentUriSelected = {
                                     viewModel.exportUriString = it?.toString()
+                                },
+                                userReadable = { viewModel.userReadable },
+                                onToggleUserReadable = {
+                                    viewModel.userReadable = !viewModel.userReadable
                                 },
                                 onClickExport = viewModel::onClickExport,
                                 errorRes = viewModel.errorResource,

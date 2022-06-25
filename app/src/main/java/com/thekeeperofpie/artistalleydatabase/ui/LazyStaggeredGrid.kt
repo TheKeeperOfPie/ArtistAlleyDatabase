@@ -8,17 +8,17 @@ import androidx.compose.foundation.gestures.ScrollableDefaults
 import androidx.compose.foundation.gestures.rememberScrollableState
 import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.gestures.scrollable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.paging.compose.LazyPagingItems
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collectLatest
 
 object LazyStaggeredGrid {
 
@@ -30,9 +30,16 @@ object LazyStaggeredGrid {
     ) {
         val states = (0 until columnCount)
             .map { rememberLazyListState() }
-        val scope = rememberCoroutineScope { Dispatchers.Main.immediate }
+        val flow = remember { MutableStateFlow(0f) }
+        states.forEach { state ->
+            LaunchedEffect(key1 = Unit) {
+                flow.collectLatest { delta ->
+                    state.scrollBy(-delta)
+                }
+            }
+        }
         val scroll = rememberScrollableState { delta ->
-            scope.launch { states.forEach { it.scrollBy(-delta) } }
+            flow.tryEmit(delta)
             delta
         }
         val gridScope = LazyStaggeredGridScope<T>()
@@ -43,7 +50,7 @@ object LazyStaggeredGrid {
         val key = gridScope.key
         if (items == null || itemContent == null || key == null) return
 
-        Box(
+        Row(
             modifier = modifier
                 .scrollable(
                     scroll,
@@ -51,29 +58,27 @@ object LazyStaggeredGrid {
                     flingBehavior = ScrollableDefaults.flingBehavior()
                 )
         ) {
-            Row {
-                for (columnIndex in 0 until columnCount) {
-                    LazyColumn(
-                        userScrollEnabled = false,
-                        state = states[columnIndex],
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        val itemCount = items.itemCount
-                        items(
-                            count = itemCount / columnCount + (itemCount % columnCount - columnIndex)
-                                .coerceAtLeast(0),
-                            key = { index ->
-                                val item = items.peek(index)
-                                if (item == null) {
-                                    PagingPlaceholderKey(index)
-                                } else {
-                                    key(item)
-                                }
+            for (columnIndex in 0 until columnCount) {
+                LazyColumn(
+                    userScrollEnabled = false,
+                    state = states[columnIndex],
+                    modifier = Modifier.weight(1f)
+                ) {
+                    val itemCount = items.itemCount
+                    items(
+                        count = itemCount / columnCount + (itemCount % columnCount - columnIndex)
+                            .coerceAtLeast(0),
+                        key = { index ->
+                            val item = items.peek(index)
+                            if (item == null) {
+                                PagingPlaceholderKey(index)
+                            } else {
+                                key(item)
                             }
-                        ) { index ->
-                            val itemIndex = index * columnCount + columnIndex
-                            itemContent(itemIndex, items[itemIndex])
                         }
+                    ) { index ->
+                        val itemIndex = index * columnCount + columnIndex
+                        itemContent(itemIndex, items[itemIndex])
                     }
                 }
             }
