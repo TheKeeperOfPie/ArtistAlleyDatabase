@@ -53,17 +53,23 @@ interface ArtEntryDao {
             else -> null
         }
 
-        val options = if (query.value.isEmpty()) emptyList() else {
-            val queryValue = "*${query.value}*"
-            mutableListOf<String>().apply {
-                if (query.includeArtists) this += "artists:$queryValue"
-                if (query.includeSources) this += "sourceType:$queryValue"
-                if (query.includeSources) this += "sourceValue:$queryValue"
-                if (query.includeSeries) this += "series:$queryValue"
-                if (query.includeCharacters) this += "characters:$queryValue"
-                if (query.includeTags) this += "tags:$queryValue"
-                if (query.includeNotes) this += "notes:$queryValue"
+        val options = query.value.split(Regex("\\s+"))
+            .filter(String::isNotBlank)
+            .map { "*$it*" }
+            .map { queryValue ->
+                mutableListOf<String>().apply {
+                    if (query.includeArtists) this += "artists:$queryValue"
+                    if (query.includeSources) this += "sourceType:$queryValue"
+                    if (query.includeSources) this += "sourceValue:$queryValue"
+                    if (query.includeSeries) this += "series:$queryValue"
+                    if (query.includeCharacters) this += "characters:$queryValue"
+                    if (query.includeTags) this += "tags:$queryValue"
+                    if (query.includeNotes) this += "notes:$queryValue"
+                }
             }
+
+        if (options.isEmpty() && lockedValue == null) {
+            return getEntries()
         }
 
         val lockOptions = if (lockedValue == null) emptyList() else {
@@ -77,21 +83,21 @@ interface ArtEntryDao {
             }
         }
 
-        if (lockOptions.isEmpty() && options.isEmpty()) {
-            return getEntries()
+        val bindArguments = (options.ifEmpty { listOf(listOf("")) }).map {
+            it.joinToString(separator = " OR ") + " " +
+                    lockOptions.joinToString(separator = " ")
         }
 
-        val bindArgument = options.joinToString(separator = " OR ") + " " +
-                lockOptions.joinToString(separator = " ")
+        val statement = bindArguments.joinToString("\nINTERSECT\n") {
+            """
+                SELECT *
+                FROM art_entries
+                JOIN art_entries_fts ON art_entries.id = art_entries_fts.id
+                WHERE art_entries_fts MATCH ?
+                """.trimIndent()
+        }
 
-        val statement = """
-            SELECT *
-            FROM art_entries
-            JOIN art_entries_fts ON art_entries.id = art_entries_fts.id
-            WHERE art_entries_fts MATCH ?
-        """.trimIndent()
-
-        return getEntries(SimpleSQLiteQuery(statement, arrayOf(bindArgument)))
+        return getEntries(SimpleSQLiteQuery(statement, bindArguments.toTypedArray()))
     }
 
     @Query(
