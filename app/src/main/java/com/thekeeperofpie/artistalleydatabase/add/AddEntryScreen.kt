@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -62,14 +63,17 @@ object AddEntryScreen {
                 modifier = Modifier.fillMaxSize(),
                 color = MaterialTheme.colorScheme.background
             ) {
-                Scaffold(snackbarHost = {
-                    SnackbarErrorText(errorRes?.first, onErrorDismiss = onErrorDismiss)
-                }) {
+                Scaffold(
+                    snackbarHost = {
+                        SnackbarErrorText(errorRes?.first, onErrorDismiss = onErrorDismiss)
+                    }
+                ) {
                     Column(Modifier.padding(it)) {
                         Column(
                             modifier = Modifier
                                 .weight(1f, true)
                                 .verticalScroll(rememberScrollState())
+                                .imePadding(),
                         ) {
                             HeaderImage(
                                 imageUris,

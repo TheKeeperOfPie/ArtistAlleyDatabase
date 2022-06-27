@@ -7,7 +7,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.thekeeperofpie.artistalleydatabase.JsonUtils
 import com.thekeeperofpie.artistalleydatabase.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
@@ -83,13 +82,13 @@ abstract class ArtEntryViewModel(
         }
     }
 
-    suspend fun subscribeMultiTextSection(
+    private suspend fun subscribeMultiTextSection(
         section: ArtEntrySection.MultiText,
         databaseCall: suspend (String) -> List<String>
     ) {
         section.valueUpdates()
-            .collectLatest {
-                val predictions = databaseCall(it).flatMap(JsonUtils::readStringList)
+            .collectLatest { query ->
+                val predictions = databaseCall(query)
                 withContext(Dispatchers.Main) {
                     section.predictions = predictions
                 }
@@ -123,7 +122,7 @@ abstract class ArtEntryViewModel(
                 imageHeight = imageHeight,
                 printWidth = printSizeSection.finalWidth(),
                 printHeight = printSizeSection.finalHeight(),
-                notes = notesSection.value,
+                notes = notesSection.value.trim(),
                 locks = ArtEntry.Locks(
                     artistsLocked = artistSection.locked ?: false,
                     seriesLocked = seriesSection.locked ?: false,

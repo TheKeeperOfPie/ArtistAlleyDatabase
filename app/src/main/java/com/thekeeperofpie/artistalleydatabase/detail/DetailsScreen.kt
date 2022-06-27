@@ -3,11 +3,13 @@ package com.thekeeperofpie.artistalleydatabase.detail
 import android.net.Uri
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.background
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -25,7 +27,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.focusTarget
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
@@ -75,15 +76,17 @@ object DetailsScreen {
                 modifier = Modifier.fillMaxSize(),
                 color = MaterialTheme.colorScheme.background
             ) {
-                Scaffold(snackbarHost = {
-                    SnackbarErrorText(errorRes?.first, onErrorDismiss = onErrorDismiss)
-                }) {
+                Scaffold(
+                    snackbarHost = {
+                        SnackbarErrorText(errorRes?.first, onErrorDismiss = onErrorDismiss)
+                    },
+                    modifier = Modifier.imePadding()
+                ) {
                     Column(
                         Modifier
                             .padding(it)
                             .fillMaxWidth()
-                            .focusTarget()
-//                            .focusable(true)
+                            .focusable(true)
                     ) {
                         Column(
                             modifier = Modifier

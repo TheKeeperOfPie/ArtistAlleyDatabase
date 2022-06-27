@@ -1,5 +1,8 @@
 package com.thekeeperofpie.artistalleydatabase.art
 
+import androidx.compose.ui.text.intl.Locale
+import androidx.compose.ui.text.toLowerCase
+import androidx.compose.ui.text.toUpperCase
 import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Delete
@@ -10,6 +13,7 @@ import androidx.room.RawQuery
 import androidx.room.Transaction
 import androidx.sqlite.db.SimpleSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteQuery
+import com.thekeeperofpie.artistalleydatabase.JsonUtils
 import com.thekeeperofpie.artistalleydatabase.search.SearchViewModel
 
 @Dao
@@ -41,7 +45,6 @@ interface ArtEntryDao {
     fun getEntries(): PagingSource<Int, ArtEntry>
 
     fun getEntries(query: SearchViewModel.QueryWrapper): PagingSource<Int, ArtEntry> {
-        val options = mutableListOf<String>()
 
         val lockedValue = when {
             query.locked && query.unlocked -> null
@@ -50,40 +53,45 @@ interface ArtEntryDao {
             else -> null
         }
 
-        val optionsSuffix = if (lockedValue == null) "" else {
-            val lockOptions = mutableListOf<String>()
-            if (query.includeArtists) lockOptions += "artistsLocked:$lockedValue"
-            if (query.includeSources) lockOptions += "sourceLocked:$lockedValue"
-            if (query.includeSeries) lockOptions += "seriesLocked:$lockedValue"
-            if (query.includeCharacters) lockOptions += "charactersLocked:$lockedValue"
-            if (query.includeTags) lockOptions += "tagsLocked:$lockedValue"
-            if (query.includeNotes) lockOptions += "notesLocked:$lockedValue"
-            lockOptions.joinToString(prefix = " ", separator = " ")
-        }
-
-        if (query.value.isNotEmpty()) {
+        val options = if (query.value.isEmpty()) emptyList() else {
             val queryValue = "*${query.value}*"
-            if (query.includeArtists) options += "artists:$queryValue"
-            if (query.includeSources) options += "sourceType:$queryValue"
-            if (query.includeSources) options += "sourceValue:$queryValue"
-            if (query.includeSeries) options += "series:$queryValue"
-            if (query.includeCharacters) options += "characters:$queryValue"
-            if (query.includeTags) options += "tags:$queryValue"
-            if (query.includeNotes) options += "notes:$queryValue"
+            mutableListOf<String>().apply {
+                if (query.includeArtists) this += "artists:$queryValue"
+                if (query.includeSources) this += "sourceType:$queryValue"
+                if (query.includeSources) this += "sourceValue:$queryValue"
+                if (query.includeSeries) this += "series:$queryValue"
+                if (query.includeCharacters) this += "characters:$queryValue"
+                if (query.includeTags) this += "tags:$queryValue"
+                if (query.includeNotes) this += "notes:$queryValue"
+            }
         }
 
-        if (optionsSuffix.isEmpty() && options.isEmpty()) {
+        val lockOptions = if (lockedValue == null) emptyList() else {
+            mutableListOf<String>().apply {
+                if (query.includeArtists) this += "artistsLocked:$lockedValue"
+                if (query.includeSources) this += "sourceLocked:$lockedValue"
+                if (query.includeSeries) this += "seriesLocked:$lockedValue"
+                if (query.includeCharacters) this += "charactersLocked:$lockedValue"
+                if (query.includeTags) this += "tagsLocked:$lockedValue"
+                if (query.includeNotes) this += "notesLocked:$lockedValue"
+            }
+        }
+
+        if (lockOptions.isEmpty() && options.isEmpty()) {
             return getEntries()
         }
 
-        val finalQuery = options.joinToString(separator = " OR ") + optionsSuffix
+        val bindArgument = options.joinToString(separator = " OR ") + " " +
+                lockOptions.joinToString(separator = " ")
+
         val statement = """
             SELECT *
             FROM art_entries
             JOIN art_entries_fts ON art_entries.id = art_entries_fts.id
-            WHERE art_entries_fts MATCH '$finalQuery'
+            WHERE art_entries_fts MATCH ?
         """.trimIndent()
-        return getEntries(SimpleSQLiteQuery(statement))
+
+        return getEntries(SimpleSQLiteQuery(statement, arrayOf(bindArgument)))
     }
 
     @Query(
@@ -127,6 +135,34 @@ interface ArtEntryDao {
     @Query("DELETE FROM art_entries WHERE id = :id")
     suspend fun delete(id: String)
 
+    private suspend fun queryListStringColumn(
+        query: String,
+        matchFunction: suspend (String) -> List<String>,
+        likeFunction: suspend (String) -> List<String>,
+    ): List<String> {
+        val matchQuery = "'*$query*'"
+        val likeQuery = "'%$query%'"
+        return matchFunction(matchQuery)
+            .plus(matchFunction(matchQuery.toLowerCase(Locale.current)))
+            .plus(matchFunction(matchQuery.toUpperCase(Locale.current)))
+            .plus(likeFunction(likeQuery))
+            .plus(likeFunction(likeQuery.toLowerCase(Locale.current)))
+            .plus(likeFunction(likeQuery.toUpperCase(Locale.current)))
+            .flatMap(JsonUtils::readStringList)
+            .distinct()
+            .filter { it.toLowerCase(Locale.current).contains(query.toLowerCase(Locale.current)) }
+    }
+
+    suspend fun queryArtists(
+        query: String,
+        limit: Int = 5,
+        offset: Int = 0
+    ) = queryListStringColumn(
+        query,
+        { queryArtistsViaMatch(it, limit, offset) },
+        { queryArtistsViaLike(it, limit, offset) }
+    )
+
     @Query(
         """
         SELECT DISTINCT (art_entries.artists)
@@ -156,13 +192,15 @@ interface ArtEntryDao {
         offset: Int = 0
     ): List<String>
 
-    suspend fun queryArtists(
+    suspend fun querySeries(
         query: String,
         limit: Int = 5,
         offset: Int = 0
-    ) = queryArtistsViaMatch("'*$query*'", limit, offset)
-        .plus(queryArtistsViaLike("'%$query%'", limit, offset))
-        .distinct()
+    ) = queryListStringColumn(
+        query,
+        { querySeriesViaMatch(it, limit, offset) },
+        { querySeriesViaLike(it, limit, offset) }
+    )
 
     @Query(
         """
@@ -193,13 +231,15 @@ interface ArtEntryDao {
         offset: Int = 0
     ): List<String>
 
-    suspend fun querySeries(
+    suspend fun queryCharacters(
         query: String,
         limit: Int = 5,
         offset: Int = 0
-    ) = querySeriesViaMatch("'*$query*'", limit, offset)
-        .plus(querySeriesViaLike("'%$query%'", limit, offset))
-        .distinct()
+    ) = queryListStringColumn(
+        query,
+        { queryCharactersViaMatch(it, limit, offset) },
+        { queryCharactersViaLike(it, limit, offset) }
+    )
 
     @Query(
         """
@@ -230,13 +270,15 @@ interface ArtEntryDao {
         offset: Int = 0
     ): List<String>
 
-    suspend fun queryCharacters(
+    suspend fun queryTags(
         query: String,
         limit: Int = 5,
         offset: Int = 0
-    ) = queryCharactersViaMatch("'*$query*'", limit, offset)
-        .plus(queryCharactersViaLike("'%$query%'", limit, offset))
-        .distinct()
+    ) = queryListStringColumn(
+        query,
+        { queryTagsViaMatch(it, limit, offset) },
+        { queryTagsViaLike(it, limit, offset) }
+    )
 
     @Query(
         """
@@ -266,12 +308,4 @@ interface ArtEntryDao {
         limit: Int = 5,
         offset: Int = 0
     ): List<String>
-
-    suspend fun queryTags(
-        query: String,
-        limit: Int = 5,
-        offset: Int = 0
-    ) = queryTagsViaMatch("'*$query*'", limit, offset)
-        .plus(queryTagsViaLike("'%$query%'", limit, offset))
-        .distinct()
 }

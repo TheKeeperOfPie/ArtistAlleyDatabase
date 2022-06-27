@@ -38,7 +38,9 @@ sealed class ArtEntrySection(locked: Boolean? = null) {
 
         fun valueUpdates() = pendingValueUpdates.asStateFlow()
 
-        fun finalContents() = (contents + pendingValue).filter { it.isNotEmpty() }
+        fun finalContents() = (contents + pendingValue)
+            .filter(String::isNotBlank)
+            .map(String::trim)
     }
 
     class LongText(

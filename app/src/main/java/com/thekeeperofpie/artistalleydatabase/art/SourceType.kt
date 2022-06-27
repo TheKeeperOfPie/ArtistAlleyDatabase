@@ -96,14 +96,14 @@ class SourceDropdown(locked: Boolean? = null) : ArtEntrySection.Dropdown(
             // TODO: Find a better way to write out the JSON
             """
                 {
-                  "name": "${item.name}",
-                  "year": "${item.year}",
-                  "hall": "${item.hall}",
-                  "booth": "${item.booth}"
+                  "name": "${item.name.trim()}",
+                  "year": "${item.year.trim()}",
+                  "hall": "${item.hall.trim()}",
+                  "booth": "${item.booth.trim()}"
                 }
             """.trimIndent()
         }
-        is SourceCustomSectionItem -> "custom" to item.value
+        is SourceCustomSectionItem -> "custom" to item.value.trim()
         else -> throw IllegalArgumentException()
     }
 }

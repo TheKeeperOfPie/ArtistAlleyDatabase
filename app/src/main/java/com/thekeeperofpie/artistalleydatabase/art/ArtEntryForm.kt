@@ -234,7 +234,6 @@ private fun MultiTextSection(section: ArtEntrySection.MultiText) {
                         DropdownMenuItem(
                             onClick = {
                                 focusRequester.freeFocus()
-                                focused = false
                                 section.pendingValue = it
                             },
                             text = { Text(it) }
