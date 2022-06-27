@@ -183,7 +183,7 @@ object DetailsScreen {
                     AsyncImage(
                         ImageRequest.Builder(LocalContext.current)
                             .data(entryImageFile)
-                            .placeholderMemoryCacheKey("coil_memory_entry_image_search_$entryId")
+                            .placeholderMemoryCacheKey("coil_memory_entry_image_home_$entryId")
                             .build(),
                         contentDescription = stringResource(
                             R.string.art_entry_image_content_description

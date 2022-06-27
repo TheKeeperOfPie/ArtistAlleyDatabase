@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.search
+package com.thekeeperofpie.artistalleydatabase.home
 
 import android.app.Application
 import androidx.annotation.MainThread
@@ -27,7 +27,7 @@ import javax.inject.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
-class SearchViewModel @Inject constructor(
+class HomeViewModel @Inject constructor(
     private val application: Application,
     private val artEntryDao: ArtEntryDao,
 ) : ViewModel() {
@@ -38,15 +38,15 @@ class SearchViewModel @Inject constructor(
 
     val selectedEntries = mutableStateMapOf<Int, ArtEntryModel>()
 
-    private val artistsOption = SearchScreen.Option(R.string.search_option_artists)
-    private val sourceOption = SearchScreen.Option(R.string.search_option_source)
-    private val seriesOption = SearchScreen.Option(R.string.search_option_series)
-    private val charactersOption = SearchScreen.Option(R.string.search_option_characters)
-    private val tagsOption = SearchScreen.Option(R.string.search_option_tags)
-    private val notesOption = SearchScreen.Option(R.string.search_option_notes)
-    private val otherOption = SearchScreen.Option(R.string.search_option_other)
-    private val lockedOption = SearchScreen.Option(R.string.search_option_locked)
-    private val unlockedOption = SearchScreen.Option(R.string.search_option_unlocked)
+    private val artistsOption = HomeScreen.SearchOption(R.string.search_option_artists)
+    private val sourceOption = HomeScreen.SearchOption(R.string.search_option_source)
+    private val seriesOption = HomeScreen.SearchOption(R.string.search_option_series)
+    private val charactersOption = HomeScreen.SearchOption(R.string.search_option_characters)
+    private val tagsOption = HomeScreen.SearchOption(R.string.search_option_tags)
+    private val notesOption = HomeScreen.SearchOption(R.string.search_option_notes)
+    private val otherOption = HomeScreen.SearchOption(R.string.search_option_other)
+    private val lockedOption = HomeScreen.SearchOption(R.string.search_option_locked)
+    private val unlockedOption = HomeScreen.SearchOption(R.string.search_option_unlocked)
 
     val options = listOf(
         artistsOption,

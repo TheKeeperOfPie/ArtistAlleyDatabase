@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.search
+package com.thekeeperofpie.artistalleydatabase.home
 
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
@@ -73,14 +73,14 @@ import com.thekeeperofpie.artistalleydatabase.ui.theme.ArtistAlleyDatabaseTheme
 import kotlinx.coroutines.flow.emptyFlow
 
 @OptIn(ExperimentalMaterial3Api::class)
-object SearchScreen {
+object HomeScreen {
 
     @Composable
     operator fun invoke(
         query: String = "",
         onQueryChange: (String) -> Unit = {},
-        options: List<Option> = emptyList(),
-        onOptionChanged: (Option) -> Unit = {},
+        options: List<SearchOption> = emptyList(),
+        onOptionChanged: (SearchOption) -> Unit = {},
         entries: LazyPagingItems<ArtEntryModel> =
             emptyFlow<PagingData<ArtEntryModel>>().collectAsLazyPagingItems(),
         selectedItems: Collection<Int> = emptyList(),
@@ -121,8 +121,8 @@ object SearchScreen {
     private fun Chrome(
         query: String,
         onQueryChange: (String) -> Unit,
-        options: List<Option> = emptyList(),
-        onOptionChanged: (Option) -> Unit,
+        options: List<SearchOption> = emptyList(),
+        onOptionChanged: (SearchOption) -> Unit,
         showFab: Boolean = true,
         onClickAddFab: () -> Unit,
         content: @Composable (PaddingValues) -> Unit,
@@ -280,14 +280,14 @@ object SearchScreen {
 
                 SharedElement(
                     key = "${entry.value.id}_image",
-                    screenKey = NavDestinations.SEARCH
+                    screenKey = NavDestinations.HOME
                 ) {
                     AsyncImage(
                         model = ImageRequest.Builder(LocalContext.current)
                             .data(entry.localImageFile)
                             .size(expectedWidth, Dimension.Undefined)
                             .crossfade(true)
-                            .memoryCacheKey("coil_memory_entry_image_search_${entry.value.id}")
+                            .memoryCacheKey("coil_memory_entry_image_home_${entry.value.id}")
                             .build(),
                         contentDescription = stringResource(
                             R.string.art_entry_image_content_description
@@ -334,7 +334,7 @@ object SearchScreen {
         }
     }
 
-    class Option(@StringRes val textRes: Int, enabled: Boolean = true) {
+    class SearchOption(@StringRes val textRes: Int, enabled: Boolean = true) {
         var enabled by mutableStateOf(enabled)
     }
 }
@@ -342,15 +342,15 @@ object SearchScreen {
 @Preview
 @Composable
 fun Preview() {
-    SearchScreen(
+    HomeScreen(
         options = listOf(
-            SearchScreen.Option(R.string.search_option_artists),
-            SearchScreen.Option(R.string.search_option_source),
-            SearchScreen.Option(R.string.search_option_series),
-            SearchScreen.Option(R.string.search_option_characters),
-            SearchScreen.Option(R.string.search_option_tags),
-            SearchScreen.Option(R.string.search_option_notes),
-            SearchScreen.Option(R.string.search_option_other),
+            HomeScreen.SearchOption(R.string.search_option_artists),
+            HomeScreen.SearchOption(R.string.search_option_source),
+            HomeScreen.SearchOption(R.string.search_option_series),
+            HomeScreen.SearchOption(R.string.search_option_characters),
+            HomeScreen.SearchOption(R.string.search_option_tags),
+            HomeScreen.SearchOption(R.string.search_option_notes),
+            HomeScreen.SearchOption(R.string.search_option_other),
         )
     )
 }

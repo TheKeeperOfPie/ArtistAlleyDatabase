@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.search
+package com.thekeeperofpie.artistalleydatabase.home
 
 import android.content.Context
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntry

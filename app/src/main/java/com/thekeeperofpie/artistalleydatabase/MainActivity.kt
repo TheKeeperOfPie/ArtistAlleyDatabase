@@ -38,8 +38,8 @@ import com.thekeeperofpie.artistalleydatabase.importing.ImportScreen
 import com.thekeeperofpie.artistalleydatabase.importing.ImportViewModel
 import com.thekeeperofpie.artistalleydatabase.navigation.NavDestinations
 import com.thekeeperofpie.artistalleydatabase.navigation.NavDrawerItems
-import com.thekeeperofpie.artistalleydatabase.search.SearchScreen
-import com.thekeeperofpie.artistalleydatabase.search.SearchViewModel
+import com.thekeeperofpie.artistalleydatabase.home.HomeScreen
+import com.thekeeperofpie.artistalleydatabase.home.HomeViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -118,10 +118,10 @@ class MainActivity : ComponentActivity() {
     private fun HomeScreen() {
         val navController = rememberNavController()
         SharedElementsRoot {
-            NavHost(navController = navController, startDestination = NavDestinations.SEARCH) {
-                composable(NavDestinations.SEARCH) {
-                    val viewModel = hiltViewModel<SearchViewModel>()
-                    SearchScreen(
+            NavHost(navController = navController, startDestination = NavDestinations.HOME) {
+                composable(NavDestinations.HOME) {
+                    val viewModel = hiltViewModel<HomeViewModel>()
+                    HomeScreen(
                         query = viewModel.query.collectAsState().value.value,
                         onQueryChange = viewModel::onQuery,
                         options = viewModel.options,
