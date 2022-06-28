@@ -11,9 +11,13 @@ import com.thekeeperofpie.artistalleydatabase.art.ArtEntryColumn
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryDao
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
+import kotlin.reflect.KMutableProperty0
 
 @HiltViewModel
 class BrowseViewModel @Inject constructor(artEntryDao: ArtEntryDao) : ViewModel() {
@@ -46,20 +50,20 @@ class BrowseViewModel @Inject constructor(artEntryDao: ArtEntryDao) : ViewModel(
     )
 
     init {
-        viewModelScope.launch(Dispatchers.IO) {
-            val artists = artEntryDao.getArtists().toDistinctSortedResult()
-//            sources = artEntryDao.getArtists().flatMap(JsonUtils::readStringList)
-            val series = artEntryDao.getSeries().toDistinctSortedResult()
-            val characters = artEntryDao.getCharacters().toDistinctSortedResult()
-            val tags = artEntryDao.getTags().toDistinctSortedResult()
+        subscribeColumn(artEntryDao::getArtists, this::artists)
+        subscribeColumn(artEntryDao::getSeries, this::series)
+        subscribeColumn(artEntryDao::getCharacters, this::characters)
+        subscribeColumn(artEntryDao::getTags, this::tags)
+    }
 
-            withContext(Dispatchers.Main) {
-                this@BrowseViewModel.artists = artists
-                this@BrowseViewModel.series = series
-                this@BrowseViewModel.characters = characters
-                this@BrowseViewModel.tags = tags
-            }
-        }
+    private fun subscribeColumn(
+        query: () -> Flow<List<String>>,
+        property: KMutableProperty0<List<String>>
+    ) = viewModelScope.launch(Dispatchers.Main) {
+        query()
+            .map { it.toDistinctSortedResult() }
+            .flowOn(Dispatchers.IO)
+            .collectLatest(property::set)
     }
 
     private fun List<String>.toDistinctSortedResult() =

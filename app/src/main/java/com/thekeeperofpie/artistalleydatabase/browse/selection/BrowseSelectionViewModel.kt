@@ -4,7 +4,6 @@ import android.app.Application
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
@@ -13,6 +12,7 @@ import androidx.paging.cachedIn
 import androidx.paging.map
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryColumn
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryDao
+import com.thekeeperofpie.artistalleydatabase.art.ArtEntryGridViewModel
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -24,9 +24,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 class BrowseSelectionViewModel @Inject constructor(
-    private val application: Application,
-    private val artEntryDao: ArtEntryDao,
-) : ViewModel() {
+    application: Application,
+    artEntryDao: ArtEntryDao,
+) : ArtEntryGridViewModel(application, artEntryDao) {
 
     lateinit var column: ArtEntryColumn
 

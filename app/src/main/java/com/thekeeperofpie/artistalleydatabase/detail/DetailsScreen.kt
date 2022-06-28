@@ -3,7 +3,6 @@ package com.thekeeperofpie.artistalleydatabase.detail
 import android.net.Uri
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.background
-import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -15,13 +14,14 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ImageNotSupported
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -37,6 +37,7 @@ import coil.request.ImageRequest
 import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.R
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryForm
+import com.thekeeperofpie.artistalleydatabase.art.ArtEntryGrid
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntrySection
 import com.thekeeperofpie.artistalleydatabase.art.ImageSelectBox
 import com.thekeeperofpie.artistalleydatabase.art.SampleArtEntrySectionsProvider
@@ -62,9 +63,6 @@ object DetailsScreen {
         onClickSave: () -> Unit = {},
         errorRes: Pair<Int, Exception?>? = null,
         onErrorDismiss: () -> Unit = {},
-        showDeleteDialog: Boolean = false,
-        onDismissDeleteDialog: () -> Unit = {},
-        onClickDelete: () -> Unit = {},
         onConfirmDelete: () -> Unit = {},
     ) {
         Scaffold(
@@ -73,11 +71,12 @@ object DetailsScreen {
             },
             modifier = Modifier.imePadding()
         ) {
+            var showDeleteDialog by remember { mutableStateOf(false) }
+
             Column(
                 Modifier
                     .padding(it)
                     .fillMaxWidth()
-                    .focusable(true)
             ) {
                 Column(
                     modifier = Modifier
@@ -106,28 +105,17 @@ object DetailsScreen {
                     if (!it) {
                         ButtonFooter(
                             R.string.save to onClickSave,
-                            R.string.delete to onClickDelete,
+                            R.string.delete to { showDeleteDialog = true },
                         )
                     }
                 }
             }
 
-            if (showDeleteDialog) {
-                AlertDialog(
-                    onDismissRequest = onDismissDeleteDialog,
-                    title = { Text(stringResource(R.string.art_entry_delete_dialog_title)) },
-                    confirmButton = {
-                        TextButton(onClick = onConfirmDelete) {
-                            Text(stringResource(R.string.confirm))
-                        }
-                    },
-                    dismissButton = {
-                        TextButton(onClick = onDismissDeleteDialog) {
-                            Text(stringResource(R.string.cancel))
-                        }
-                    },
-                )
-            }
+            ArtEntryGrid.DeleteDialog(
+                showDeleteDialog,
+                { showDeleteDialog = false },
+                onConfirmDelete
+            )
         }
     }
 

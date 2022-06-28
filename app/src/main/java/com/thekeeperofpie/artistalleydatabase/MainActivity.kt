@@ -21,7 +21,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewModelScope
+import androidx.navigation.NavGraphBuilder
+import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -48,7 +49,6 @@ import com.thekeeperofpie.artistalleydatabase.navigation.NavDestinations
 import com.thekeeperofpie.artistalleydatabase.navigation.NavDrawerItems
 import com.thekeeperofpie.artistalleydatabase.ui.theme.ArtistAlleyDatabaseTheme
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.File
 
@@ -147,20 +147,18 @@ class MainActivity : ComponentActivity() {
                             if (viewModel.selectedEntries.isNotEmpty()) {
                                 viewModel.selectEntry(index, entry)
                             } else {
-                                viewModel.viewModelScope.launch(Dispatchers.Main) {
-                                    val entryImageRatio = entry.value.imageWidthToHeightRatio
-                                    navController.navigate(
-                                        NavDestinations.ENTRY_DETAILS +
-                                                "?entry_id=${entry.value.id}" +
-                                                "&entry_image_file=${entry.localImageFile.toPath()}" +
-                                                "&entry_image_ratio=${entryImageRatio}"
-                                    )
-                                }
+                                val entryImageRatio = entry.value.imageWidthToHeightRatio
+                                navController.navigate(
+                                    NavDestinations.ENTRY_DETAILS +
+                                            "?entry_id=${entry.value.id}" +
+                                            "&entry_image_file=${entry.localImageFile.toPath()}" +
+                                            "&entry_image_ratio=${entryImageRatio}"
+                                )
                             }
                         },
                         onLongClickEntry = viewModel::selectEntry,
                         onClickClear = viewModel::clearSelected,
-                        onClickDelete = viewModel::deleteSelected
+                        onConfirmDelete = viewModel::deleteSelected,
                     )
                 }
 
@@ -183,54 +181,7 @@ class MainActivity : ComponentActivity() {
                     )
                 }
 
-                composable(
-                    NavDestinations.ENTRY_DETAILS +
-                            "?entry_id={entry_id}" +
-                            "&entry_image_file={entry_image_file}" +
-                            "&entry_image_ratio={entry_image_ratio}",
-                    arguments = listOf(
-                        navArgument("entry_id") {
-                            type = NavType.StringType
-                            nullable = false
-                        },
-                        navArgument("entry_image_file") {
-                            type = NavType.StringType
-                            nullable = true
-                        },
-                        navArgument("entry_image_ratio") {
-                            type = NavType.FloatType
-                        },
-                    )
-                ) {
-                    val arguments = it.arguments!!
-                    val entryId = arguments.getString("entry_id")!!
-                    val entryImageFile = arguments.getString("entry_image_file")
-                    val entryImageRatio = arguments.getFloat("entry_image_ratio", 1f)
-
-                    val viewModel = hiltViewModel<DetailsViewModel>()
-                    viewModel.initialize(entryId, entryImageRatio)
-
-                    DetailsScreen(
-                        entryId,
-                        entryImageFile?.let(::File),
-                        entryImageRatio,
-                        imageUri = viewModel.imageUri,
-                        onImageSelected = { viewModel.imageUri = it },
-                        onImageSelectError = {
-                            viewModel.errorResource = R.string.error_fail_to_load_image to it
-                        },
-                        onImageSizeResult = viewModel::onImageSizeResult,
-                        areSectionsLoading = viewModel.areSectionsLoading,
-                        sections = viewModel.sections,
-                        onClickSave = { viewModel.onClickSave(navController) },
-                        errorRes = viewModel.errorResource,
-                        onErrorDismiss = { viewModel.errorResource = null },
-                        showDeleteDialog = viewModel.showDeleteDialog,
-                        onDismissDeleteDialog = { viewModel.showDeleteDialog = false },
-                        onClickDelete = { viewModel.showDeleteDialog = true },
-                        onConfirmDelete = { viewModel.onConfirmDelete(navController) }
-                    )
-                }
+                addDetailsScreen(navController)
             }
         }
     }
@@ -278,9 +229,76 @@ class MainActivity : ComponentActivity() {
                         title = { value },
                         loading = { viewModel.loading },
                         entries = viewModel.entries.collectAsLazyPagingItems(),
+                        selectedItems = viewModel.selectedEntries.keys,
+                        onClickEntry = { index, entry ->
+                            if (viewModel.selectedEntries.isNotEmpty()) {
+                                viewModel.selectEntry(index, entry)
+                            } else {
+                                val entryImageRatio = entry.value.imageWidthToHeightRatio
+                                navController.navigate(
+                                    NavDestinations.ENTRY_DETAILS +
+                                            "?entry_id=${entry.value.id}" +
+                                            "&entry_image_file=${entry.localImageFile.toPath()}" +
+                                            "&entry_image_ratio=${entryImageRatio}"
+                                )
+                            }
+                        },
+                        onLongClickEntry = viewModel::selectEntry,
+                        onClickClear = viewModel::clearSelected,
+                        onConfirmDelete = viewModel::deleteSelected,
                     )
                 }
+
+                addDetailsScreen(navController)
             }
+        }
+    }
+
+    private fun NavGraphBuilder.addDetailsScreen(navController: NavHostController) {
+        composable(
+            NavDestinations.ENTRY_DETAILS +
+                    "?entry_id={entry_id}" +
+                    "&entry_image_file={entry_image_file}" +
+                    "&entry_image_ratio={entry_image_ratio}",
+            arguments = listOf(
+                navArgument("entry_id") {
+                    type = NavType.StringType
+                    nullable = false
+                },
+                navArgument("entry_image_file") {
+                    type = NavType.StringType
+                    nullable = true
+                },
+                navArgument("entry_image_ratio") {
+                    type = NavType.FloatType
+                },
+            )
+        ) {
+            val arguments = it.arguments!!
+            val entryId = arguments.getString("entry_id")!!
+            val entryImageFile = arguments.getString("entry_image_file")
+            val entryImageRatio = arguments.getFloat("entry_image_ratio", 1f)
+
+            val viewModel = hiltViewModel<DetailsViewModel>()
+            viewModel.initialize(entryId, entryImageRatio)
+
+            DetailsScreen(
+                entryId,
+                entryImageFile?.let(::File),
+                entryImageRatio,
+                imageUri = viewModel.imageUri,
+                onImageSelected = { viewModel.imageUri = it },
+                onImageSelectError = {
+                    viewModel.errorResource = R.string.error_fail_to_load_image to it
+                },
+                onImageSizeResult = viewModel::onImageSizeResult,
+                areSectionsLoading = viewModel.areSectionsLoading,
+                sections = viewModel.sections,
+                onClickSave = { viewModel.onClickSave(navController) },
+                errorRes = viewModel.errorResource,
+                onErrorDismiss = { viewModel.errorResource = null },
+                onConfirmDelete = { viewModel.onConfirmDelete(navController) }
+            )
         }
     }
 }

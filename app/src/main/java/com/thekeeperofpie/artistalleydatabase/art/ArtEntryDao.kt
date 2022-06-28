@@ -15,6 +15,7 @@ import androidx.sqlite.db.SimpleSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteQuery
 import com.thekeeperofpie.artistalleydatabase.JsonUtils
 import com.thekeeperofpie.artistalleydatabase.home.HomeViewModel
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface ArtEntryDao {
@@ -320,7 +321,7 @@ interface ArtEntryDao {
             FROM art_entries
         """
     )
-    fun getArtists(): List<String>
+    fun getArtists(): Flow<List<String>>
 
     @Query(
         """
@@ -328,7 +329,7 @@ interface ArtEntryDao {
             FROM art_entries
         """
     )
-    fun getSourceTypes(): List<String>
+    fun getSourceTypes(): Flow<List<String>>
 
     @Query(
         """
@@ -336,7 +337,7 @@ interface ArtEntryDao {
             FROM art_entries
         """
     )
-    fun getSourceValues(): List<String>
+    fun getSourceValues(): Flow<List<String>>
 
     @Query(
         """
@@ -344,7 +345,7 @@ interface ArtEntryDao {
             FROM art_entries
         """
     )
-    fun getSeries(): List<String>
+    fun getSeries(): Flow<List<String>>
 
     @Query(
         """
@@ -352,7 +353,7 @@ interface ArtEntryDao {
             FROM art_entries
         """
     )
-    fun getCharacters(): List<String>
+    fun getCharacters(): Flow<List<String>>
 
     @Query(
         """
@@ -360,7 +361,7 @@ interface ArtEntryDao {
             FROM art_entries
         """
     )
-    fun getTags(): List<String>
+    fun getTags(): Flow<List<String>>
 
     fun getArtist(query: String) = getArtistInternal(wrapLikeQuery(query))
 

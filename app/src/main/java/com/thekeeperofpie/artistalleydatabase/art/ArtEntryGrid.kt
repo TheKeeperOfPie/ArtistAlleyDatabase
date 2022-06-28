@@ -4,7 +4,6 @@ import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -16,8 +15,15 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.ContentAlpha
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -51,14 +57,16 @@ object ArtEntryGrid {
         onClickEntry: (index: Int, entry: ArtEntryModel) -> Unit = { _, _ -> },
         onLongClickEntry: (index: Int, entry: ArtEntryModel) -> Unit = { _, _ -> },
         onClickClear: () -> Unit = {},
-        onClickDelete: () -> Unit = {},
+        onConfirmDelete: () -> Unit = {},
     ) {
         val expectedWidth = LocalDensity.current.run {
             // Load at half width for better scrolling performance
             // TODO: Find a better way to calculate the optimal image size
             LocalConfiguration.current.screenWidthDp.dp.roundToPx() / columnCount / 2
         }.let(::Dimension)
-        Column(Modifier.focusable(true)) {
+        var showDeleteDialog by remember { mutableStateOf(false) }
+
+        Column {
             LazyStaggeredGrid<ArtEntryModel>(
                 columnCount = columnCount,
                 modifier = Modifier
@@ -80,10 +88,16 @@ object ArtEntryGrid {
             if (selectedItems.isNotEmpty()) {
                 ButtonFooter(
                     R.string.clear to onClickClear,
-                    R.string.delete to onClickDelete,
+                    R.string.delete to { showDeleteDialog = true },
                 )
             }
         }
+
+        DeleteDialog(
+            showDeleteDialog,
+            { showDeleteDialog = false },
+            onConfirmDelete
+        )
     }
 
     @OptIn(ExperimentalFoundationApi::class)
@@ -159,6 +173,33 @@ object ArtEntryGrid {
                     }
                 }
             }
+        }
+    }
+
+    @Composable
+    fun DeleteDialog(
+        showDeleteDialog: Boolean,
+        onDismiss: () -> Unit,
+        onConfirmDelete: () -> Unit
+    ) {
+        if (showDeleteDialog) {
+            AlertDialog(
+                onDismissRequest = onDismiss,
+                title = { Text(stringResource(R.string.art_entry_delete_dialog_title)) },
+                confirmButton = {
+                    TextButton(onClick = {
+                        onDismiss()
+                        onConfirmDelete()
+                    }) {
+                        Text(stringResource(R.string.confirm))
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = onDismiss) {
+                        Text(stringResource(R.string.cancel))
+                    }
+                },
+            )
         }
     }
 }

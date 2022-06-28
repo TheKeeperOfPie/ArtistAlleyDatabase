@@ -61,7 +61,7 @@ object HomeScreen {
         onLongClickEntry: (index: Int, entry: ArtEntryModel) -> Unit = { _, _ -> },
         onClickAddFab: () -> Unit = {},
         onClickClear: () -> Unit = {},
-        onClickDelete: () -> Unit = {},
+        onConfirmDelete: () -> Unit = {},
     ) {
         Chrome(
             query = query,
@@ -78,7 +78,7 @@ object HomeScreen {
                 onClickEntry = onClickEntry,
                 onLongClickEntry = onLongClickEntry,
                 onClickClear = onClickClear,
-                onClickDelete = onClickDelete,
+                onConfirmDelete = onConfirmDelete,
             )
         }
     }

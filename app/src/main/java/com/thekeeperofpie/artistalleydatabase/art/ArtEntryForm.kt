@@ -12,6 +12,7 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -27,6 +28,8 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -49,6 +52,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -69,6 +73,8 @@ import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.PopupProperties
 import com.thekeeperofpie.artistalleydatabase.R
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
 fun ColumnScope.ArtEntryForm(
@@ -122,6 +128,7 @@ private fun SectionHeader(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun MultiTextSection(section: ArtEntrySection.MultiText) {
     when (section.contents.size) {
@@ -206,6 +213,8 @@ private fun MultiTextSection(section: ArtEntrySection.MultiText) {
     ) {
         Box {
             val focusRequester = remember { FocusRequester() }
+            val bringIntoViewRequester = remember { BringIntoViewRequester() }
+            val coroutineScope = rememberCoroutineScope()
             var focused by remember { mutableStateOf(false) }
             OpenSectionField(
                 value = section.pendingValue,
@@ -221,9 +230,13 @@ private fun MultiTextSection(section: ArtEntrySection.MultiText) {
                     .focusable(section.locked != true)
                     .onFocusChanged { focused = it.isFocused }
                     .focusRequester(focusRequester)
+                    .bringIntoViewRequester(bringIntoViewRequester)
             )
 
-            if (section.locked != true && section.predictions.isNotEmpty()) {
+            if (section.locked != true
+                && section.pendingValue.isNotBlank()
+                && section.predictions.isNotEmpty()
+            ) {
                 DropdownMenu(
                     expanded = focused,
                     onDismissRequest = { focusRequester.freeFocus() },
@@ -233,8 +246,13 @@ private fun MultiTextSection(section: ArtEntrySection.MultiText) {
                     section.predictions.forEach {
                         DropdownMenuItem(
                             onClick = {
-                                focusRequester.freeFocus()
-                                section.pendingValue = it
+                                focusRequester.requestFocus()
+                                section.contents += it
+                                section.pendingValue = ""
+                                coroutineScope.launch {
+                                    delay(500)
+                                    bringIntoViewRequester.bringIntoView()
+                                }
                             },
                             text = { Text(it) }
                         )

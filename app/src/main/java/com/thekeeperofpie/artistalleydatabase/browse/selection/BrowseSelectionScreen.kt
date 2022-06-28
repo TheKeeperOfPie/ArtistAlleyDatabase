@@ -24,9 +24,14 @@ object BrowseSelectionScreen {
     operator fun invoke(
         title: () -> String,
         loading: () -> Boolean,
-        entries: LazyPagingItems<ArtEntryModel>,
         errorRes: Pair<Int, Exception?>? = null,
         onErrorDismiss: () -> Unit = {},
+        entries: LazyPagingItems<ArtEntryModel>,
+        selectedItems: Collection<Int> = emptyList(),
+        onClickEntry: (index: Int, entry: ArtEntryModel) -> Unit = { _, _ -> },
+        onLongClickEntry: (index: Int, entry: ArtEntryModel) -> Unit = { _, _ -> },
+        onClickClear: () -> Unit = {},
+        onConfirmDelete: () -> Unit = {},
     ) {
         Scaffold(
             topBar = { SmallTopAppBar(title = { Text(title()) }) },
@@ -46,7 +51,15 @@ object BrowseSelectionScreen {
                                 .align(Alignment.TopCenter)
                         )
                     } else {
-                        ArtEntryGrid(paddingValues = paddingValues, entries = entries)
+                        ArtEntryGrid(
+                            paddingValues = paddingValues,
+                            entries = entries,
+                            selectedItems = selectedItems,
+                            onClickEntry = onClickEntry,
+                            onLongClickEntry = onLongClickEntry,
+                            onClickClear = onClickClear,
+                            onConfirmDelete = onConfirmDelete,
+                        )
                     }
                 }
             }
