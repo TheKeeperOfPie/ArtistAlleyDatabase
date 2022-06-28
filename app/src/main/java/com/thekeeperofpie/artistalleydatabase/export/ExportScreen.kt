@@ -16,17 +16,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Checkbox
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Shapes
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -38,7 +36,6 @@ import androidx.compose.ui.unit.dp
 import com.thekeeperofpie.artistalleydatabase.R
 import com.thekeeperofpie.artistalleydatabase.ui.ButtonFooter
 import com.thekeeperofpie.artistalleydatabase.ui.SnackbarErrorText
-import com.thekeeperofpie.artistalleydatabase.ui.theme.ArtistAlleyDatabaseTheme
 
 object ExportScreen {
 
@@ -54,28 +51,22 @@ object ExportScreen {
         errorRes: Pair<Int, Exception?>? = null,
         onErrorDismiss: () -> Unit = { },
     ) {
-        ArtistAlleyDatabaseTheme {
-            Surface(
-                modifier = Modifier.fillMaxSize(),
-                color = MaterialTheme.colorScheme.background
-            ) {
-                Scaffold(snackbarHost = {
-                    SnackbarErrorText(errorRes?.first, onErrorDismiss = onErrorDismiss)
-                }) {
-                    Content(
-                        paddingValues = it,
-                        uriString = uriString,
-                        onUriStringEdit = onUriStringEdit,
-                        onContentUriSelected = onContentUriSelected,
-                        userReadable = userReadable,
-                        onToggleUserReadable = onToggleUserReadable,
-                        onClickExport = onClickExport,
-                    )
-                }
-            }
+        Scaffold(snackbarHost = {
+            SnackbarErrorText(errorRes?.first, onErrorDismiss = onErrorDismiss)
+        }) {
+            Content(
+                paddingValues = it,
+                uriString = uriString,
+                onUriStringEdit = onUriStringEdit,
+                onContentUriSelected = onContentUriSelected,
+                userReadable = userReadable,
+                onToggleUserReadable = onToggleUserReadable,
+                onClickExport = onClickExport,
+            )
         }
     }
 
+    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     private fun Content(
         paddingValues: PaddingValues,

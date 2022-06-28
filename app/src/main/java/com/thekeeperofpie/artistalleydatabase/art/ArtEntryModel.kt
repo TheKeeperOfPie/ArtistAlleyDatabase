@@ -1,7 +1,6 @@
-package com.thekeeperofpie.artistalleydatabase.home
+package com.thekeeperofpie.artistalleydatabase.art
 
 import android.content.Context
-import com.thekeeperofpie.artistalleydatabase.art.ArtEntry
 
 class ArtEntryModel(
     context: Context,

@@ -4,13 +4,14 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.Text
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.NavigationDrawerItemDefaults
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -30,16 +31,22 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import com.mxalbert.sharedelements.SharedElementsRoot
 import com.thekeeperofpie.artistalleydatabase.add.AddEntryScreen
 import com.thekeeperofpie.artistalleydatabase.add.AddEntryViewModel
+import com.thekeeperofpie.artistalleydatabase.art.ArtEntryColumn
+import com.thekeeperofpie.artistalleydatabase.browse.BrowseScreen
+import com.thekeeperofpie.artistalleydatabase.browse.BrowseViewModel
+import com.thekeeperofpie.artistalleydatabase.browse.selection.BrowseSelectionScreen
+import com.thekeeperofpie.artistalleydatabase.browse.selection.BrowseSelectionViewModel
 import com.thekeeperofpie.artistalleydatabase.detail.DetailsScreen
 import com.thekeeperofpie.artistalleydatabase.detail.DetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.export.ExportScreen
 import com.thekeeperofpie.artistalleydatabase.export.ExportViewModel
+import com.thekeeperofpie.artistalleydatabase.home.HomeScreen
+import com.thekeeperofpie.artistalleydatabase.home.HomeViewModel
 import com.thekeeperofpie.artistalleydatabase.importing.ImportScreen
 import com.thekeeperofpie.artistalleydatabase.importing.ImportViewModel
 import com.thekeeperofpie.artistalleydatabase.navigation.NavDestinations
 import com.thekeeperofpie.artistalleydatabase.navigation.NavDrawerItems
-import com.thekeeperofpie.artistalleydatabase.home.HomeScreen
-import com.thekeeperofpie.artistalleydatabase.home.HomeViewModel
+import com.thekeeperofpie.artistalleydatabase.ui.theme.ArtistAlleyDatabaseTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -52,65 +59,70 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            val drawerState = rememberDrawerState(DrawerValue.Closed)
-            val scope = rememberCoroutineScope()
-            val selectedItem = remember { mutableStateOf(NavDrawerItems.ITEMS[0]) }
-            ModalNavigationDrawer(
-                drawerState = drawerState,
-                drawerContent = {
-                    NavDrawerItems.ITEMS.forEach {
-                        NavigationDrawerItem(
-                            icon = { Icon(it.icon, contentDescription = null) },
-                            label = { Text(stringResource(it.titleRes)) },
-                            selected = it == selectedItem.value,
-                            onClick = {
-                                scope.launch { drawerState.close() }
-                                selectedItem.value = it
-                            },
-                            modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
-                        )
-                    }
-                },
-                content = {
-                    when (selectedItem.value) {
-                        NavDrawerItems.Home -> HomeScreen()
-                        NavDrawerItems.Import -> {
-                            val viewModel = hiltViewModel<ImportViewModel>()
-                            ImportScreen(
-                                uriString = viewModel.importUriString.orEmpty(),
-                                onUriStringEdit = { viewModel.importUriString = it },
-                                onContentUriSelected = {
-                                    viewModel.importUriString = it?.toString()
-                                },
-                                onClickImport = {
-                                    viewModel.onClickImport {
-                                        selectedItem.value = NavDrawerItems.Home
-                                    }
-                                },
-                                errorRes = viewModel.errorResource,
-                                onErrorDismiss = { viewModel.errorResource = null }
-                            )
+            ArtistAlleyDatabaseTheme {
+                Surface {
+                    val drawerState = rememberDrawerState(DrawerValue.Closed)
+                    val scope = rememberCoroutineScope()
+                    val selectedItem = remember { mutableStateOf(NavDrawerItems.ITEMS[0]) }
+                    ModalNavigationDrawer(
+                        drawerState = drawerState,
+                        drawerContent = {
+                            NavDrawerItems.ITEMS.forEach {
+                                NavigationDrawerItem(
+                                    icon = { Icon(it.icon, contentDescription = null) },
+                                    label = { Text(stringResource(it.titleRes)) },
+                                    selected = it == selectedItem.value,
+                                    onClick = {
+                                        scope.launch { drawerState.close() }
+                                        selectedItem.value = it
+                                    },
+                                    modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+                                )
+                            }
+                        },
+                        content = {
+                            when (selectedItem.value) {
+                                NavDrawerItems.Home -> HomeScreen()
+                                NavDrawerItems.Browse -> BrowseScreen()
+                                NavDrawerItems.Import -> {
+                                    val viewModel = hiltViewModel<ImportViewModel>()
+                                    ImportScreen(
+                                        uriString = viewModel.importUriString.orEmpty(),
+                                        onUriStringEdit = { viewModel.importUriString = it },
+                                        onContentUriSelected = {
+                                            viewModel.importUriString = it?.toString()
+                                        },
+                                        onClickImport = {
+                                            viewModel.onClickImport {
+                                                selectedItem.value = NavDrawerItems.Home
+                                            }
+                                        },
+                                        errorRes = viewModel.errorResource,
+                                        onErrorDismiss = { viewModel.errorResource = null }
+                                    )
+                                }
+                                NavDrawerItems.Export -> {
+                                    val viewModel = hiltViewModel<ExportViewModel>()
+                                    ExportScreen(
+                                        uriString = { viewModel.exportUriString.orEmpty() },
+                                        onUriStringEdit = { viewModel.exportUriString = it },
+                                        onContentUriSelected = {
+                                            viewModel.exportUriString = it?.toString()
+                                        },
+                                        userReadable = { viewModel.userReadable },
+                                        onToggleUserReadable = {
+                                            viewModel.userReadable = !viewModel.userReadable
+                                        },
+                                        onClickExport = viewModel::onClickExport,
+                                        errorRes = viewModel.errorResource,
+                                        onErrorDismiss = { viewModel.errorResource = null }
+                                    )
+                                }
+                            }.run { /* exhaust */ }
                         }
-                        NavDrawerItems.Export -> {
-                            val viewModel = hiltViewModel<ExportViewModel>()
-                            ExportScreen(
-                                uriString = { viewModel.exportUriString.orEmpty() },
-                                onUriStringEdit = { viewModel.exportUriString = it },
-                                onContentUriSelected = {
-                                    viewModel.exportUriString = it?.toString()
-                                },
-                                userReadable = { viewModel.userReadable },
-                                onToggleUserReadable = {
-                                    viewModel.userReadable = !viewModel.userReadable
-                                },
-                                onClickExport = viewModel::onClickExport,
-                                errorRes = viewModel.errorResource,
-                                onErrorDismiss = { viewModel.errorResource = null }
-                            )
-                        }
-                    }.run { /* exhaust */ }
+                    )
                 }
-            )
+            }
         }
     }
 
@@ -190,8 +202,8 @@ class MainActivity : ComponentActivity() {
                         },
                     )
                 ) {
-                    val arguments = it.arguments
-                    val entryId = arguments!!.getString("entry_id")!!
+                    val arguments = it.arguments!!
+                    val entryId = arguments.getString("entry_id")!!
                     val entryImageFile = arguments.getString("entry_image_file")
                     val entryImageRatio = arguments.getFloat("entry_image_ratio", 1f)
 
@@ -217,6 +229,55 @@ class MainActivity : ComponentActivity() {
                         onDismissDeleteDialog = { viewModel.showDeleteDialog = false },
                         onClickDelete = { viewModel.showDeleteDialog = true },
                         onConfirmDelete = { viewModel.onConfirmDelete(navController) }
+                    )
+                }
+            }
+        }
+    }
+
+    @Composable
+    private fun BrowseScreen() {
+        val navController = rememberNavController()
+        SharedElementsRoot {
+            NavHost(navController = navController, startDestination = "browse") {
+                composable("browse") {
+                    val viewModel = hiltViewModel<BrowseViewModel>()
+                    BrowseScreen(
+                        tabs = viewModel.tabs,
+                        onClick = { column, value ->
+                            navController.navigate(
+                                "selection" +
+                                        "?column=$column" +
+                                        "&value=$value"
+                            )
+                        },
+                    )
+                }
+
+                composable(
+                    "selection" +
+                            "?column={column}" +
+                            "&value={value}",
+                    arguments = listOf(
+                        navArgument("column") {
+                            type = NavType.StringType
+                            nullable = false
+                        },
+                        navArgument("value") {
+                            type = NavType.StringType
+                            nullable = true
+                        },
+                    )
+                ) {
+                    val arguments = it.arguments!!
+                    val column = ArtEntryColumn.valueOf(arguments.getString("column")!!)
+                    val value = arguments.getString("value")!!
+                    val viewModel = hiltViewModel<BrowseSelectionViewModel>()
+                    viewModel.initialize(column, value)
+                    BrowseSelectionScreen(
+                        title = { value },
+                        loading = { viewModel.loading },
+                        entries = viewModel.entries.collectAsLazyPagingItems(),
                     )
                 }
             }

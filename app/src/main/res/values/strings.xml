@@ -38,6 +38,7 @@
     <string name="art_entry_long_press_multi_select_label">Multi select art entry</string>
     <string name="art_entry_selected_content_description">Selected</string>
     <string name="nav_drawer_home">Home</string>
+    <string name="nav_drawer_browse">Browse</string>
     <string name="nav_drawer_import">Import</string>
     <string name="nav_drawer_export">Export</string>
     <string name="import_button">Import</string>
@@ -85,4 +86,9 @@
     <string name="move_up">Move up</string>
     <string name="search_filter_content_description">Filter options</string>
     <string name="export_user_readable">User readable</string>
+    <string name="browse_tab_artists">Artists</string>
+    <string name="browse_tab_source">Source</string>
+    <string name="browse_tab_series">Series</string>
+    <string name="browse_tab_characters">Characters</string>
+    <string name="browse_tab_tags">Tags</string>
 </resources>

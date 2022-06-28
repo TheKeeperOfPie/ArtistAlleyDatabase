@@ -4,7 +4,6 @@ import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
@@ -16,9 +15,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ImageSearch
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -42,7 +39,6 @@ import com.thekeeperofpie.artistalleydatabase.art.ImagesSelectBox
 import com.thekeeperofpie.artistalleydatabase.art.SampleArtEntrySectionsProvider
 import com.thekeeperofpie.artistalleydatabase.ui.ButtonFooter
 import com.thekeeperofpie.artistalleydatabase.ui.SnackbarErrorText
-import com.thekeeperofpie.artistalleydatabase.ui.theme.ArtistAlleyDatabaseTheme
 
 object AddEntryScreen {
 
@@ -58,36 +54,29 @@ object AddEntryScreen {
         errorRes: Pair<Int, Exception?>? = null,
         onErrorDismiss: () -> Unit = {},
     ) {
-        ArtistAlleyDatabaseTheme {
-            Surface(
-                modifier = Modifier.fillMaxSize(),
-                color = MaterialTheme.colorScheme.background
-            ) {
-                Scaffold(
-                    snackbarHost = {
-                        SnackbarErrorText(errorRes?.first, onErrorDismiss = onErrorDismiss)
-                    }
+        Scaffold(
+            snackbarHost = {
+                SnackbarErrorText(errorRes?.first, onErrorDismiss = onErrorDismiss)
+            }
+        ) {
+            Column(Modifier.padding(it)) {
+                Column(
+                    modifier = Modifier
+                        .weight(1f, true)
+                        .verticalScroll(rememberScrollState())
+                        .imePadding(),
                 ) {
-                    Column(Modifier.padding(it)) {
-                        Column(
-                            modifier = Modifier
-                                .weight(1f, true)
-                                .verticalScroll(rememberScrollState())
-                                .imePadding(),
-                        ) {
-                            HeaderImage(
-                                imageUris,
-                                onImagesSelected,
-                                onImageSelectError,
-                                onImageSizeResult,
-                            )
+                    HeaderImage(
+                        imageUris,
+                        onImagesSelected,
+                        onImageSelectError,
+                        onImageSizeResult,
+                    )
 
-                            ArtEntryForm(false, sections)
-                        }
-
-                        ButtonFooter(onClickSave, R.string.save)
-                    }
+                    ArtEntryForm(false, sections)
                 }
+
+                ButtonFooter(onClickSave, R.string.save)
             }
         }
     }

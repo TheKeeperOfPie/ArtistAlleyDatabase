@@ -6,7 +6,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
@@ -19,9 +18,7 @@ import androidx.compose.material.icons.filled.ImageNotSupported
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -46,7 +43,6 @@ import com.thekeeperofpie.artistalleydatabase.art.SampleArtEntrySectionsProvider
 import com.thekeeperofpie.artistalleydatabase.navigation.NavDestinations
 import com.thekeeperofpie.artistalleydatabase.ui.ButtonFooter
 import com.thekeeperofpie.artistalleydatabase.ui.SnackbarErrorText
-import com.thekeeperofpie.artistalleydatabase.ui.theme.ArtistAlleyDatabaseTheme
 import java.io.File
 
 object DetailsScreen {
@@ -71,73 +67,66 @@ object DetailsScreen {
         onClickDelete: () -> Unit = {},
         onConfirmDelete: () -> Unit = {},
     ) {
-        ArtistAlleyDatabaseTheme {
-            Surface(
-                modifier = Modifier.fillMaxSize(),
-                color = MaterialTheme.colorScheme.background
+        Scaffold(
+            snackbarHost = {
+                SnackbarErrorText(errorRes?.first, onErrorDismiss = onErrorDismiss)
+            },
+            modifier = Modifier.imePadding()
+        ) {
+            Column(
+                Modifier
+                    .padding(it)
+                    .fillMaxWidth()
+                    .focusable(true)
             ) {
-                Scaffold(
-                    snackbarHost = {
-                        SnackbarErrorText(errorRes?.first, onErrorDismiss = onErrorDismiss)
-                    },
-                    modifier = Modifier.imePadding()
+                Column(
+                    modifier = Modifier
+                        .weight(1f, true)
+                        .fillMaxWidth()
+                        .verticalScroll(rememberScrollState())
                 ) {
-                    Column(
-                        Modifier
-                            .padding(it)
-                            .fillMaxWidth()
-                            .focusable(true)
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .weight(1f, true)
-                                .fillMaxWidth()
-                                .verticalScroll(rememberScrollState())
-                        ) {
-                            HeaderImage(
-                                entryId,
-                                entryImageFile,
-                                entryImageRatio,
-                                imageUri,
-                                onImageSelected,
-                                onImageSelectError,
-                                onImageSizeResult,
-                            )
+                    HeaderImage(
+                        entryId,
+                        entryImageFile,
+                        entryImageRatio,
+                        imageUri,
+                        onImageSelected,
+                        onImageSelectError,
+                        onImageSizeResult,
+                    )
 
-                            ArtEntryForm(areSectionsLoading, sections)
-                        }
+                    ArtEntryForm(areSectionsLoading, sections)
+                }
 
 
-                        Crossfade(
-                            targetState = areSectionsLoading,
-                            Modifier.align(Alignment.End)
-                        ) {
-                            if (!it) {
-                                ButtonFooter(
-                                    R.string.save to onClickSave,
-                                    R.string.delete to onClickDelete,
-                                )
-                            }
-                        }
-                    }
-
-                    if (showDeleteDialog) {
-                        AlertDialog(
-                            onDismissRequest = onDismissDeleteDialog,
-                            title = { Text(stringResource(R.string.art_entry_delete_dialog_title)) },
-                            confirmButton = {
-                                TextButton(onClick = onConfirmDelete) {
-                                    Text(stringResource(R.string.confirm))
-                                }
-                            },
-                            dismissButton = {
-                                TextButton(onClick = onDismissDeleteDialog) {
-                                    Text(stringResource(R.string.cancel))
-                                }
-                            },
+                Crossfade(
+                    targetState = areSectionsLoading,
+                    modifier = Modifier.align(Alignment.End),
+                ) {
+                    if (!it) {
+                        ButtonFooter(
+                            R.string.save to onClickSave,
+                            R.string.delete to onClickDelete,
                         )
                     }
                 }
+            }
+
+            if (showDeleteDialog) {
+                AlertDialog(
+                    onDismissRequest = onDismissDeleteDialog,
+                    title = { Text(stringResource(R.string.art_entry_delete_dialog_title)) },
+                    confirmButton = {
+                        TextButton(onClick = onConfirmDelete) {
+                            Text(stringResource(R.string.confirm))
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = onDismissDeleteDialog) {
+                            Text(stringResource(R.string.cancel))
+                        }
+                    },
+                )
             }
         }
     }

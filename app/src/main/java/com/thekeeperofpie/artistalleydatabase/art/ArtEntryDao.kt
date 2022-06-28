@@ -45,7 +45,6 @@ interface ArtEntryDao {
     fun getEntries(): PagingSource<Int, ArtEntry>
 
     fun getEntries(query: HomeViewModel.QueryWrapper): PagingSource<Int, ArtEntry> {
-
         val lockedValue = when {
             query.locked && query.unlocked -> null
             query.locked -> "1"
@@ -147,7 +146,7 @@ interface ArtEntryDao {
         likeFunction: suspend (String) -> List<String>,
     ): List<String> {
         val matchQuery = "'*$query*'"
-        val likeQuery = "'%$query%'"
+        val likeQuery = wrapLikeQuery(query)
         return matchFunction(matchQuery)
             .plus(matchFunction(matchQuery.toLowerCase(Locale.current)))
             .plus(matchFunction(matchQuery.toUpperCase(Locale.current)))
@@ -314,4 +313,98 @@ interface ArtEntryDao {
         limit: Int = 5,
         offset: Int = 0
     ): List<String>
+
+    @Query(
+        """
+            SELECT DISTINCT (art_entries.artists)
+            FROM art_entries
+        """
+    )
+    fun getArtists(): List<String>
+
+    @Query(
+        """
+            SELECT sourceType
+            FROM art_entries
+        """
+    )
+    fun getSourceTypes(): List<String>
+
+    @Query(
+        """
+            SELECT sourceValue
+            FROM art_entries
+        """
+    )
+    fun getSourceValues(): List<String>
+
+    @Query(
+        """
+            SELECT DISTINCT (art_entries.series)
+            FROM art_entries
+        """
+    )
+    fun getSeries(): List<String>
+
+    @Query(
+        """
+            SELECT DISTINCT (art_entries.characters)
+            FROM art_entries
+        """
+    )
+    fun getCharacters(): List<String>
+
+    @Query(
+        """
+            SELECT DISTINCT (art_entries.tags)
+            FROM art_entries
+        """
+    )
+    fun getTags(): List<String>
+
+    fun getArtist(query: String) = getArtistInternal(wrapLikeQuery(query))
+
+    @Query(
+        """
+            SELECT *
+            FROM art_entries
+            WHERE artists LIKE :query
+        """
+    )
+    fun getArtistInternal(query: String): PagingSource<Int, ArtEntry>
+
+    fun getSeries(query: String) = getSeriesInternal(wrapLikeQuery(query))
+
+    @Query(
+        """
+            SELECT *
+            FROM art_entries
+            WHERE series LIKE :query
+        """
+    )
+    fun getSeriesInternal(query: String): PagingSource<Int, ArtEntry>
+
+    fun getCharacter(query: String) = getCharacterInternal(wrapLikeQuery(query))
+
+    @Query(
+        """
+            SELECT *
+            FROM art_entries
+            WHERE characters LIKE :query
+        """
+    )
+    fun getCharacterInternal(query: String): PagingSource<Int, ArtEntry>
+
+    fun getTag(query: String) = getTagInternal(wrapLikeQuery(query))
+
+    @Query(
+        """
+            SELECT *
+            FROM art_entries
+            WHERE tags LIKE :query
+        """
+    )
+    fun getTagInternal(query: String): PagingSource<Int, ArtEntry>
+
+    private fun wrapLikeQuery(query: String) = "%${query.replace(Regex("\\s+"), "%")}%"
 }

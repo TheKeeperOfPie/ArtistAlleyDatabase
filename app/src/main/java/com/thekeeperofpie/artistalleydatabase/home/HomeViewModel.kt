@@ -13,6 +13,7 @@ import androidx.paging.map
 import com.thekeeperofpie.artistalleydatabase.R
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntry
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryDao
+import com.thekeeperofpie.artistalleydatabase.art.ArtEntryModel
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
