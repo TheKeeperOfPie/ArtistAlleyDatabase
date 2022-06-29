@@ -24,9 +24,12 @@ class AddEntryViewModel @Inject constructor(
 
     fun onClickSave(navHostController: NavHostController) {
         viewModelScope.launch(Dispatchers.IO) {
-            imageUris.forEach {
-                val id = UUID.randomUUID().toString()
-                saveEntry(it, id)
+            if (imageUris.isEmpty()) {
+                saveEntry(null, UUID.randomUUID().toString())
+            } else {
+                imageUris.forEach {
+                    saveEntry(it, UUID.randomUUID().toString())
+                }
             }
 
             withContext(Dispatchers.Main) {

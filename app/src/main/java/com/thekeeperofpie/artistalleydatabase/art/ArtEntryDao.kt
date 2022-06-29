@@ -110,10 +110,23 @@ interface ArtEntryDao {
     )
     fun getEntries(limit: Int = 50, offset: Int = 0): List<ArtEntry>
 
+    @Query(
+        """
+        SELECT COUNT(*)
+        FROM art_entries
+        """
+    )
+    fun getEntriesSize(): Int
+
     @Transaction
-    fun iterateEntries(limit: Int = 50, block: (index: Int, entry: ArtEntry) -> Unit) {
+    fun iterateEntries(
+        entriesSize: (Int) -> Unit,
+        limit: Int = 50,
+        block: (index: Int, entry: ArtEntry) -> Unit,
+    ) {
         var offset = 0
         var index = 0
+        entriesSize(getEntriesSize())
         var entries = getEntries(limit = limit, offset = offset)
         while (entries.isNotEmpty()) {
             offset += entries.size

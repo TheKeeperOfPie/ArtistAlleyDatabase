@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.export
 
 import androidx.work.CoroutineWorker
+import androidx.work.Data
 import com.squareup.moshi.JsonWriter
 import com.thekeeperofpie.artistalleydatabase.Converters
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntry
@@ -38,13 +39,23 @@ object ExportUtils {
                         .name("art_entries")
                         .beginArray()
                     var stopped = false
-                    artEntryDao.iterateEntries { _, entry ->
+                    var entriesSize = 0
+                    artEntryDao.iterateEntries({ entriesSize = it }) { index, entry ->
                         if (isStopped) {
                             stopped = true
                             return@iterateEntries
                         }
 
                         onEachEntry(entry)
+
+                        setProgressAsync(
+                            Data.Builder()
+                                .putFloat(
+                                    "progress",
+                                    index / entriesSize.coerceAtLeast(1).toFloat()
+                                )
+                                .build()
+                        )
 
                         jsonWriter.writeMembersAsObject(ArtEntry::class, entry)
                     }

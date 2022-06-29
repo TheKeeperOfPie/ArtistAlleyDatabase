@@ -30,8 +30,6 @@ class DetailsViewModel @Inject constructor(
 
     var areSectionsLoading by mutableStateOf(true)
 
-    var showDeleteDialog by mutableStateOf(false)
-
     private var deleting = false
 
     fun initialize(entryId: String, entryImageRatio: Float) {
@@ -51,7 +49,7 @@ class DetailsViewModel @Inject constructor(
                 artistSection.contents.addAll(entry.artists)
                 artistSection.locked = entry.locks.artistsLocked
 
-                sourceSection.initialize(entry.sourceType, entry.sourceValue)
+                sourceSection.initialize(entry)
                 sourceSection.locked = entry.locks.sourceLocked
 
                 seriesSection.contents.addAll(entry.series)

@@ -91,4 +91,5 @@
     <string name="browse_tab_series">Series</string>
     <string name="browse_tab_characters">Characters</string>
     <string name="browse_tab_tags">Tags</string>
+    <string name="export_progress">Progress</string>
 </resources>

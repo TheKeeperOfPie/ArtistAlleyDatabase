@@ -114,6 +114,11 @@ class MainActivity : ComponentActivity() {
                                             viewModel.userReadable = !viewModel.userReadable
                                         },
                                         onClickExport = viewModel::onClickExport,
+                                        exportProgress = {
+                                            if (!viewModel.exportRequested) null else {
+                                                viewModel.exportProgress
+                                            }
+                                        },
                                         errorRes = viewModel.errorResource,
                                         onErrorDismiss = { viewModel.errorResource = null }
                                     )
@@ -151,7 +156,9 @@ class MainActivity : ComponentActivity() {
                                 navController.navigate(
                                     NavDestinations.ENTRY_DETAILS +
                                             "?entry_id=${entry.value.id}" +
-                                            "&entry_image_file=${entry.localImageFile.toPath()}" +
+                                            (entry.localImageFile
+                                                ?.let { "&entry_image_file=${it.toPath()}" }
+                                                ?: "") +
                                             "&entry_image_ratio=${entryImageRatio}"
                                 )
                             }
@@ -238,7 +245,9 @@ class MainActivity : ComponentActivity() {
                                 navController.navigate(
                                     NavDestinations.ENTRY_DETAILS +
                                             "?entry_id=${entry.value.id}" +
-                                            "&entry_image_file=${entry.localImageFile.toPath()}" +
+                                            (entry.localImageFile
+                                                ?.let { "&entry_image_file=${it.toPath()}" }
+                                                ?: "") +
                                             "&entry_image_ratio=${entryImageRatio}"
                                 )
                             }

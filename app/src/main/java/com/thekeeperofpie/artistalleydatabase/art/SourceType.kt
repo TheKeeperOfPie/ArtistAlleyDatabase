@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.art
 
 import android.util.JsonReader
 import android.util.JsonToken
+import android.util.Log
 import androidx.annotation.StringRes
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
@@ -25,9 +26,50 @@ import okhttp3.internal.closeQuietly
 
 sealed class SourceType(val serializedType: String, @StringRes val textRes: Int) {
 
+    companion object {
+
+        fun fromEntry(entry: ArtEntry): SourceType {
+            val value = entry.sourceValue
+            return when (entry.sourceType) {
+                "unknown" -> Unknown
+                "convention" -> {
+                    var name = ""
+                    var year = ""
+                    var hall = ""
+                    var booth = ""
+
+                    if (value != null) {
+                        try {
+                            val reader = JsonReader(value.reader())
+                            reader.beginObject()
+                            reader.isLenient = true
+                            while (reader.peek() != JsonToken.END_OBJECT) {
+                                when (reader.nextName()) {
+                                    "name" -> name = reader.nextString()
+                                    "year" -> year = reader.nextString()
+                                    "hall" -> hall = reader.nextString()
+                                    "booth" -> booth = reader.nextString()
+                                }
+                            }
+                            reader.endObject()
+                            reader.closeQuietly()
+                        } catch (e: Exception) {
+                            Log.d("SourceType", "Error parsing convention type of $value", e)
+                        }
+                    }
+
+                    Convention(name, year.toIntOrNull(), hall, booth)
+                }
+                else -> if (value.isNullOrBlank()) Unknown else {
+                    Custom(value)
+                }
+            }
+        }
+    }
+
     data class Convention(
         val name: String,
-        val year: Int,
+        val year: Int?,
         val hall: String,
         val booth: String,
     ) : SourceType("convention", R.string.art_entry_source_convention)
@@ -53,8 +95,9 @@ class SourceDropdown(locked: Boolean? = null) : ArtEntrySection.Dropdown(
     locked,
 ) {
 
-    fun initialize(type: String?, value: String?) {
-        when (type) {
+    fun initialize(entry: ArtEntry) {
+        val value = entry.sourceValue
+        when (entry.sourceType) {
             "unknown" -> {
                 selectedIndex = 0
             }

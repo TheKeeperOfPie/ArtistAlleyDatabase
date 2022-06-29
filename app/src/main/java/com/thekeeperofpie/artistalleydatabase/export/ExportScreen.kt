@@ -4,6 +4,9 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -22,6 +25,8 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Shapes
@@ -48,6 +53,7 @@ object ExportScreen {
         userReadable: () -> Boolean = { true },
         onToggleUserReadable: (Boolean) -> Unit = {},
         onClickExport: () -> Unit = {},
+        exportProgress: () -> Float? = { 0.5f },
         errorRes: Pair<Int, Exception?>? = null,
         onErrorDismiss: () -> Unit = { },
     ) {
@@ -62,6 +68,7 @@ object ExportScreen {
                 userReadable = userReadable,
                 onToggleUserReadable = onToggleUserReadable,
                 onClickExport = onClickExport,
+                exportProgress = exportProgress,
             )
         }
     }
@@ -76,6 +83,7 @@ object ExportScreen {
         userReadable: () -> Boolean,
         onToggleUserReadable: (Boolean) -> Unit = {},
         onClickExport: () -> Unit = {},
+        exportProgress: () -> Float? = { 0.5f }
     ) {
         Column(
             Modifier
@@ -91,6 +99,7 @@ object ExportScreen {
                     contract = ActivityResultContracts.CreateDocument(),
                     onResult = { onContentUriSelected(it) }
                 )
+
                 ChooseUriRow(
                     R.string.export_destination,
                     uriString(),
@@ -99,7 +108,6 @@ object ExportScreen {
                         launcher.launch("${ExportUtils.currentDateTimeFileName()}.zip")
                     }
                 )
-
 
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -121,6 +129,29 @@ object ExportScreen {
                     )
 
                     Text(stringResource(R.string.export_user_readable))
+                }
+
+                val progress = exportProgress()
+                AnimatedVisibility(
+                    visible = progress != null,
+                    enter = fadeIn(),
+                    exit = fadeOut(),
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .padding(start = 16.dp, end = 16.dp, top = 10.dp, bottom = 10.dp)
+                    ) {
+                        Text(
+                            text = stringResource(R.string.export_progress),
+                            style = MaterialTheme.typography.labelLarge
+                        )
+
+                        LinearProgressIndicator(
+                            progress = progress ?: 0f,
+                            modifier = Modifier.fillMaxWidth()
+                                .padding(top = 10.dp, bottom = 10.dp)
+                        )
+                    }
                 }
             }
 

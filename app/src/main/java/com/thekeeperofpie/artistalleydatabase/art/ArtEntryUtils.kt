@@ -16,8 +16,12 @@ object ArtEntryUtils {
         val options = BitmapFactory.Options().apply {
             this.inJustDecodeBounds = true
         }
-        file.inputStream().use {
-            BitmapFactory.decodeStream(it, null, options)
+        try {
+            file.inputStream().use {
+                BitmapFactory.decodeStream(it, null, options)
+            }
+        } catch (ignored: Exception) {
+            return null to null
         }
 
         val imageWidth = if (options.outWidth == -1) null else options.outWidth

@@ -17,6 +17,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -114,46 +115,75 @@ object ArtEntryGrid {
         if (entry == null) {
             Spacer(
                 modifier = entryModifier
+                    .heightIn(min = 80.dp)
                     .background(Color.LightGray)
             )
         } else {
-            Box(Modifier.fillMaxWidth()) {
-                val selected = selectedItems.contains(index)
-
-                SharedElement(
-                    key = "${entry.value.id}_image",
-                    screenKey = NavDestinations.HOME
-                ) {
-                    AsyncImage(
-                        model = ImageRequest.Builder(LocalContext.current)
-                            .data(entry.localImageFile)
-                            .size(expectedWidth, Dimension.Undefined)
-                            .crossfade(true)
-                            .memoryCacheKey("coil_memory_entry_image_home_${entry.value.id}")
-                            .build(),
-                        contentDescription = stringResource(
-                            R.string.art_entry_image_content_description
-                        ),
-                        contentScale = ContentScale.FillWidth,
-                        modifier = entryModifier
-                            .fillMaxWidth()
-                            .heightIn(min = LocalDensity.current.run {
-                                if (entry.value.imageWidth != null) {
-                                    (expectedWidth.px * entry.value.imageWidthToHeightRatio).toDp()
-                                } else {
-                                    0.dp
-                                }
-                            })
-                            .alpha(if (selected) ContentAlpha.disabled else 1f)
-                            .semantics { this.selected = selected }
-                            .combinedClickable(
-                                onClick = { onClickEntry(index, entry) },
-                                onLongClick = { onLongClickEntry(index, entry) },
-                                onLongClickLabel = stringResource(
-                                    R.string.art_entry_long_press_multi_select_label
-                                )
-                            )
+            val selected = selectedItems.contains(index)
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .let {
+                        if (entry.localImageFile == null) {
+                            it.heightIn(min = 120.dp)
+                        } else it
+                    }
+                    .combinedClickable(
+                        onClick = { onClickEntry(index, entry) },
+                        onLongClick = { onLongClickEntry(index, entry) },
+                        onLongClickLabel = stringResource(
+                            R.string.art_entry_long_press_multi_select_label
+                        )
                     )
+            ) {
+                if (entry.localImageFile == null) {
+                    // TODO: Better no-image placeholder
+                    Text(
+                        text = entry.placeholderText,
+                        color = Color.Unspecified,
+                        style = MaterialTheme.typography.titleSmall,
+                        modifier = Modifier
+                            .align(Alignment.CenterStart)
+                            .padding(16.dp)
+                    )
+
+                    if (selected) {
+                        Spacer(
+                            modifier = Modifier
+                                .matchParentSize()
+                                .alpha(0.25f)
+                                .background(MaterialTheme.colorScheme.surfaceTint)
+                        )
+                    }
+                } else {
+                    SharedElement(
+                        key = "${entry.value.id}_image",
+                        screenKey = NavDestinations.HOME
+                    ) {
+                        AsyncImage(
+                            model = ImageRequest.Builder(LocalContext.current)
+                                .data(entry.localImageFile)
+                                .size(expectedWidth, Dimension.Undefined)
+                                .crossfade(true)
+                                .memoryCacheKey("coil_memory_entry_image_home_${entry.value.id}")
+                                .build(),
+                            contentDescription = stringResource(
+                                R.string.art_entry_image_content_description
+                            ),
+                            contentScale = ContentScale.FillWidth,
+                            modifier = entryModifier
+                                .fillMaxWidth()
+                                .heightIn(min = LocalDensity.current.run {
+                                    if (entry.value.imageWidth != null) {
+                                        (expectedWidth.px * entry.value.imageWidthToHeightRatio).toDp()
+                                    } else {
+                                        0.dp
+                                    }
+                                })
+                                .alpha(if (selected) ContentAlpha.disabled else 1f)
+                                .semantics { this.selected = selected }
+                        )
+                    }
                 }
 
                 Crossfade(
