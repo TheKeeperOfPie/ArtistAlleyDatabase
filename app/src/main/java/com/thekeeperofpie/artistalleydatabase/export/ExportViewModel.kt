@@ -9,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.work.Data
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.OutOfQuotaPolicy
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import com.thekeeperofpie.artistalleydatabase.R
@@ -26,10 +27,6 @@ class ExportViewModel @Inject constructor(
     private val workManager: WorkManager,
 ) : ViewModel() {
 
-    companion object {
-        private const val UNIQUE_WORK_NAME = "export_all_entries"
-    }
-
     var exportUriString by mutableStateOf<String?>(null)
     var errorResource by mutableStateOf<Pair<Int, Exception?>?>(null)
     var userReadable by mutableStateOf(true)
@@ -38,17 +35,30 @@ class ExportViewModel @Inject constructor(
 
     init {
         viewModelScope.launch(Dispatchers.Main) {
-            workManager.getWorkInfosForUniqueWorkLiveData(UNIQUE_WORK_NAME)
+            workManager.getWorkInfosForUniqueWorkLiveData(ExportUtils.UNIQUE_WORK_NAME)
                 .asFlow()
-                .mapNotNull { it.firstOrNull() }
+                .mapNotNull { it.lastOrNull() }
                 .map {
                     when (it.state) {
-                        WorkInfo.State.ENQUEUED -> 0f
-                        WorkInfo.State.RUNNING -> it.progress.getFloat("progress", 0f)
-                        WorkInfo.State.SUCCEEDED -> 1f
-                        WorkInfo.State.FAILED,
-                        WorkInfo.State.BLOCKED,
-                        WorkInfo.State.CANCELLED -> null
+                        WorkInfo.State.ENQUEUED -> {
+                            exportRequested = true
+                            0f
+                        }
+                        WorkInfo.State.RUNNING -> {
+                            exportRequested = true
+                            // Ensure that 1f is only reported via a SUCCEEDED state
+                            it.progress.getFloat("progress", 0f).coerceAtMost(0.99f)
+                        }
+                        WorkInfo.State.SUCCEEDED -> if (exportRequested) 1f else null
+                        WorkInfo.State.FAILED -> {
+                            errorResource = R.string.export_last_failed to null
+                            null
+                        }
+                        WorkInfo.State.CANCELLED -> {
+                            errorResource = R.string.export_last_canceled to null
+                            null
+                        }
+                        WorkInfo.State.BLOCKED -> null
                     }
                 }
                 .flowOn(Dispatchers.IO)
@@ -67,6 +77,7 @@ class ExportViewModel @Inject constructor(
         } else {
             OneTimeWorkRequestBuilder<ExportAppDataWorker>()
         }
+            .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
             .setInputData(
                 Data.Builder()
                     .putString(ExportUtils.KEY_OUTPUT_CONTENT_URI, exportUriString)
@@ -74,7 +85,11 @@ class ExportViewModel @Inject constructor(
             )
             .build()
 
-        workManager.enqueueUniqueWork(UNIQUE_WORK_NAME, ExistingWorkPolicy.REPLACE, request)
+        workManager.enqueueUniqueWork(
+            ExportUtils.UNIQUE_WORK_NAME,
+            ExistingWorkPolicy.REPLACE,
+            request
+        )
         exportRequested = true
         exportProgress = 0f
     }

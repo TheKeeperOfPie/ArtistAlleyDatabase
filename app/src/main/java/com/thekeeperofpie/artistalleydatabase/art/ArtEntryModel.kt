@@ -10,7 +10,7 @@ class ArtEntryModel(
         .takeIf { it.exists() }
 
     val placeholderText = if (localImageFile != null) "" else value.run {
-        val prefix = when (val source = SourceType.fromEntry(value)) {
+        val source = when (val source = SourceType.fromEntry(value)) {
             is SourceType.Convention -> (source.name + (source.year?.let { " $it" }
                 ?: "") + "\n" + source.hall + " " + source.booth).trim()
             is SourceType.Custom -> source.value
@@ -18,7 +18,7 @@ class ArtEntryModel(
             SourceType.Unknown -> ""
         }
 
-        val suffix = if (artists.isNotEmpty()) {
+        val info = if (artists.isNotEmpty()) {
             artists.joinToString("\n")
         } else if (series.isNotEmpty()) {
             series.joinToString("\n")
@@ -28,8 +28,9 @@ class ArtEntryModel(
             tags.take(10).joinToString("\n")
         } else ""
 
-        if (prefix.isNotBlank() || suffix.isNotBlank()) {
-            prefix + "\n" + suffix
+        val pieces = listOf(source, info, notes)
+        if (pieces.any { !it.isNullOrBlank() }) {
+            pieces.joinToString("\n")
         } else id
     }
 }

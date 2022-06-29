@@ -21,6 +21,7 @@ import kotlin.reflect.jvm.jvmErasure
 
 object ExportUtils {
 
+    const val UNIQUE_WORK_NAME = "export_all_entries"
     const val KEY_OUTPUT_CONTENT_URI = "output_content_uri"
 
     fun currentDateTimeFileName(): String =

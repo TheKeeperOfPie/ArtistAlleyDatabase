@@ -64,6 +64,9 @@ class MainActivity : ComponentActivity() {
                     val drawerState = rememberDrawerState(DrawerValue.Closed)
                     val scope = rememberCoroutineScope()
                     val selectedItem = remember { mutableStateOf(NavDrawerItems.ITEMS[0]) }
+
+                    fun onClickNav() = scope.launch { drawerState.open() }
+
                     ModalNavigationDrawer(
                         drawerState = drawerState,
                         drawerContent = {
@@ -82,21 +85,21 @@ class MainActivity : ComponentActivity() {
                         },
                         content = {
                             when (selectedItem.value) {
-                                NavDrawerItems.Home -> HomeScreen()
-                                NavDrawerItems.Browse -> BrowseScreen()
+                                NavDrawerItems.Home -> HomeScreen(::onClickNav)
+                                NavDrawerItems.Browse -> BrowseScreen(::onClickNav)
                                 NavDrawerItems.Import -> {
                                     val viewModel = hiltViewModel<ImportViewModel>()
                                     ImportScreen(
+                                        onClickNav = ::onClickNav,
                                         uriString = viewModel.importUriString.orEmpty(),
                                         onUriStringEdit = { viewModel.importUriString = it },
                                         onContentUriSelected = {
                                             viewModel.importUriString = it?.toString()
                                         },
-                                        onClickImport = {
-                                            viewModel.onClickImport {
-                                                selectedItem.value = NavDrawerItems.Home
-                                            }
-                                        },
+                                        dryRun = { viewModel.dryRun },
+                                        onToggleDryRun = { viewModel.dryRun = !viewModel.dryRun },
+                                        onClickImport = viewModel::onClickImport,
+                                        importProgress = { viewModel.importProgress },
                                         errorRes = viewModel.errorResource,
                                         onErrorDismiss = { viewModel.errorResource = null }
                                     )
@@ -104,6 +107,7 @@ class MainActivity : ComponentActivity() {
                                 NavDrawerItems.Export -> {
                                     val viewModel = hiltViewModel<ExportViewModel>()
                                     ExportScreen(
+                                        onClickNav = ::onClickNav,
                                         uriString = { viewModel.exportUriString.orEmpty() },
                                         onUriStringEdit = { viewModel.exportUriString = it },
                                         onContentUriSelected = {
@@ -114,11 +118,7 @@ class MainActivity : ComponentActivity() {
                                             viewModel.userReadable = !viewModel.userReadable
                                         },
                                         onClickExport = viewModel::onClickExport,
-                                        exportProgress = {
-                                            if (!viewModel.exportRequested) null else {
-                                                viewModel.exportProgress
-                                            }
-                                        },
+                                        exportProgress = { viewModel.exportProgress },
                                         errorRes = viewModel.errorResource,
                                         onErrorDismiss = { viewModel.errorResource = null }
                                     )
@@ -132,13 +132,14 @@ class MainActivity : ComponentActivity() {
     }
 
     @Composable
-    private fun HomeScreen() {
+    private fun HomeScreen(onClickNav: () -> Unit) {
         val navController = rememberNavController()
         SharedElementsRoot {
             NavHost(navController = navController, startDestination = NavDestinations.HOME) {
                 composable(NavDestinations.HOME) {
                     val viewModel = hiltViewModel<HomeViewModel>()
                     HomeScreen(
+                        onClickNav = onClickNav,
                         query = viewModel.query.collectAsState().value.value,
                         onQueryChange = viewModel::onQuery,
                         options = viewModel.options,
@@ -194,13 +195,14 @@ class MainActivity : ComponentActivity() {
     }
 
     @Composable
-    private fun BrowseScreen() {
+    private fun BrowseScreen(onClickNav: () -> Unit) {
         val navController = rememberNavController()
         SharedElementsRoot {
             NavHost(navController = navController, startDestination = "browse") {
                 composable("browse") {
                     val viewModel = hiltViewModel<BrowseViewModel>()
                     BrowseScreen(
+                        onClickNav = onClickNav,
                         tabs = viewModel.tabs,
                         onClick = { column, value ->
                             navController.navigate(

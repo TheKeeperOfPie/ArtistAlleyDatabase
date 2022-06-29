@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.text.KeyboardActions
@@ -25,13 +26,19 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberTopAppBarScrollState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
@@ -42,6 +49,7 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.R
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryGrid
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryModel
+import com.thekeeperofpie.artistalleydatabase.ui.NavMenuIconButton
 import com.thekeeperofpie.artistalleydatabase.ui.bottomBorder
 import kotlinx.coroutines.flow.emptyFlow
 
@@ -50,6 +58,7 @@ object HomeScreen {
 
     @Composable
     operator fun invoke(
+        onClickNav: () -> Unit = {},
         query: String = "",
         onQueryChange: (String) -> Unit = {},
         options: List<SearchOption> = emptyList(),
@@ -64,6 +73,7 @@ object HomeScreen {
         onConfirmDelete: () -> Unit = {},
     ) {
         Chrome(
+            onClickNav = onClickNav,
             query = query,
             onQueryChange = onQueryChange,
             showFab = selectedItems.isEmpty(),
@@ -85,17 +95,32 @@ object HomeScreen {
 
     @Composable
     private fun Chrome(
-        query: String,
-        onQueryChange: (String) -> Unit,
+        onClickNav: () -> Unit = {},
+        query: String = "",
+        onQueryChange: (String) -> Unit = {},
         options: List<SearchOption> = emptyList(),
-        onOptionChanged: (SearchOption) -> Unit,
+        onOptionChanged: (SearchOption) -> Unit = {},
         showFab: Boolean = true,
-        onClickAddFab: () -> Unit,
+        onClickAddFab: () -> Unit = {},
         content: @Composable (PaddingValues) -> Unit,
     ) {
+        val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(
+            rememberTopAppBarScrollState()
+        )
         Scaffold(
             topBar = {
                 var showOptions by remember { mutableStateOf(false) }
+
+                val offsetLimit = with(LocalDensity.current) { -64.dp.toPx() }
+                SideEffect {
+                    if (scrollBehavior.state.offsetLimit != offsetLimit) {
+                        scrollBehavior.state.offsetLimit = offsetLimit
+                    }
+                }
+
+                val appBarHeight = LocalDensity.current.run {
+                    64.dp.toPx() + scrollBehavior.state.offset
+                }
 
                 Column(
                     modifier = Modifier
@@ -107,10 +132,12 @@ object HomeScreen {
                             } else this
                         }
                 ) {
+                    val appBarColors = TopAppBarDefaults.smallTopAppBarColors()
                     TextField(
                         query,
                         placeholder = { Text(stringResource(id = R.string.search)) },
                         onValueChange = onQueryChange,
+                        leadingIcon = { NavMenuIconButton(onClickNav) },
                         trailingIcon = {
                             if (options.isNotEmpty()) {
                                 IconButton(onClick = { showOptions = !showOptions }) {
@@ -126,8 +153,14 @@ object HomeScreen {
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                         keyboardActions = KeyboardActions(onSearch = { showOptions = false }),
+                        colors = TextFieldDefaults.textFieldColors(
+                            containerColor = appBarColors.containerColor(
+                                scrollFraction = 0f
+                            ).value
+                        ),
                         modifier = Modifier
                             .fillMaxWidth()
+                            .height(LocalDensity.current.run { appBarHeight.toDp() })
                     )
 
                     AnimatedVisibility(
@@ -176,7 +209,8 @@ object HomeScreen {
                     }
                 }
             },
-            content = content
+            content = content,
+            modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         )
     }
 

@@ -67,5 +67,5 @@ class BrowseViewModel @Inject constructor(artEntryDao: ArtEntryDao) : ViewModel(
     }
 
     private fun List<String>.toDistinctSortedResult() =
-        flatMap(JsonUtils::readStringList).distinct().sorted()
+        flatMap(JsonUtils::readStringList).distinct().sortedWith(String.CASE_INSENSITIVE_ORDER)
 }
