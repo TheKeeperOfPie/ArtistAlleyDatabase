@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -20,6 +21,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.core.content.FileProvider
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
@@ -288,7 +290,7 @@ class MainActivity : ComponentActivity() {
         ) {
             val arguments = it.arguments!!
             val entryId = arguments.getString("entry_id")!!
-            val entryImageFile = arguments.getString("entry_image_file")
+            val entryImageFile = arguments.getString("entry_image_file")?.let(::File)
             val entryImageRatio = arguments.getFloat("entry_image_ratio", 1f)
 
             val viewModel = hiltViewModel<DetailsViewModel>()
@@ -296,7 +298,7 @@ class MainActivity : ComponentActivity() {
 
             DetailsScreen(
                 entryId,
-                entryImageFile?.let(::File),
+                entryImageFile,
                 entryImageRatio,
                 imageUri = viewModel.imageUri,
                 onImageSelected = { viewModel.imageUri = it },
@@ -304,6 +306,26 @@ class MainActivity : ComponentActivity() {
                     viewModel.errorResource = R.string.error_fail_to_load_image to it
                 },
                 onImageSizeResult = viewModel::onImageSizeResult,
+                onImageClickOpen = {
+                    entryImageFile?.let {
+                        val imageUri = FileProvider.getUriForFile(
+                            this@MainActivity,
+                            "$packageName.fileprovider",
+                            it
+                        )
+
+                        val intent = Intent(Intent.ACTION_VIEW).apply {
+                            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                            setDataAndType(imageUri, "image/*")
+                        }
+
+                        val chooserIntent = Intent.createChooser(
+                            intent,
+                            getString(R.string.art_entry_open_full_image_content_description)
+                        )
+                        startActivity(chooserIntent)
+                    }
+                },
                 areSectionsLoading = viewModel.areSectionsLoading,
                 sections = viewModel.sections,
                 onClickSave = { viewModel.onClickSave(navController) },

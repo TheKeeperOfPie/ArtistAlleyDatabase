@@ -13,12 +13,10 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberTopAppBarScrollState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.google.accompanist.pager.ExperimentalPagerApi
@@ -40,24 +38,18 @@ object BrowseScreen {
     ) {
         val pagerState = rememberPagerState()
         val selectedTabIndex = pagerState.currentPage
-        val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(
-            rememberTopAppBarScrollState()
-        )
         Scaffold(
             topBar = {
                 Column {
                     val colors = TopAppBarDefaults.smallTopAppBarColors()
                     AppBar(
                         text = stringResource(R.string.nav_drawer_browse),
-                        scrollBehavior = scrollBehavior,
                         colors = colors,
                         onClickNav = onClickNav
                     )
                     TabRow(
                         selectedTabIndex = selectedTabIndex,
-                        containerColor = colors.containerColor(
-                            scrollFraction = scrollBehavior.scrollFraction
-                        ).value
+                        containerColor = colors.containerColor(scrollFraction = 0f).value
                     ) {
                         val coroutineScope = rememberCoroutineScope()
                         tabs.forEachIndexed { index, tab ->
@@ -74,7 +66,6 @@ object BrowseScreen {
                     }
                 }
             },
-            modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         ) {
             HorizontalPager(
                 count = tabs.size,

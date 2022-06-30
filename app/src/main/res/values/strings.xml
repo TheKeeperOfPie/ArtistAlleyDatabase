@@ -100,4 +100,5 @@
     <string name="export_last_failed">Last export failed</string>
     <string name="export_last_canceled">Last export canceled</string>
     <string name="add_entry_save_template">Save template</string>
+    <string name="art_entry_open_full_image_content_description">Open full image</string>
 </resources>

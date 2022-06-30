@@ -6,12 +6,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberTopAppBarScrollState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import androidx.paging.compose.LazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryGrid
@@ -35,15 +32,11 @@ object BrowseSelectionScreen {
         onClickClear: () -> Unit = {},
         onConfirmDelete: () -> Unit = {},
     ) {
-        val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(
-            rememberTopAppBarScrollState()
-        )
         Scaffold(
-            topBar = { AppBar(text = title(), scrollBehavior = scrollBehavior) },
+            topBar = { AppBar(text = title()) },
             snackbarHost = {
                 SnackbarErrorText(errorRes?.first, onErrorDismiss = onErrorDismiss)
             },
-            modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         ) { paddingValues ->
             Box {
                 Crossfade(

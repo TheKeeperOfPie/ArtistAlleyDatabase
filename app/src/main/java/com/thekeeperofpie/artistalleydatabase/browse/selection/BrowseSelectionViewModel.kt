@@ -9,6 +9,7 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
+import androidx.paging.filter
 import androidx.paging.map
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryColumn
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryDao
@@ -48,7 +49,18 @@ class BrowseSelectionViewModel @Inject constructor(
                 }
             }
                 .flow.cachedIn(viewModelScope)
-                .map { it.map { ArtEntryModel(application, it) } }
+                .map {
+                    it.filter {
+                        when (column) {
+                            ArtEntryColumn.ARTISTS -> it.artists.contains(value)
+                            ArtEntryColumn.SOURCE -> TODO()
+                            ArtEntryColumn.SERIES -> it.series.contains(value)
+                            ArtEntryColumn.CHARACTERS -> it.characters.contains(value)
+                            ArtEntryColumn.TAGS -> it.tags.contains(value)
+                        }
+                    }
+                        .map { ArtEntryModel(application, it) }
+                }
                 .onEach {
                     viewModelScope.launch(Dispatchers.Main) {
                         loading = false

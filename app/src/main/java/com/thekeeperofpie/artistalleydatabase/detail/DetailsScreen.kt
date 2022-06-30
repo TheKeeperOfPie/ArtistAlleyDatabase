@@ -1,8 +1,12 @@
 package com.thekeeperofpie.artistalleydatabase.detail
 
 import android.net.Uri
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -14,7 +18,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ImageNotSupported
+import androidx.compose.material.icons.filled.OpenInNew
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -58,6 +64,7 @@ object DetailsScreen {
         onImageSelected: (Uri?) -> Unit = {},
         onImageSelectError: (Exception?) -> Unit = {},
         onImageSizeResult: (Int, Int) -> Unit = { _, _ -> },
+        onImageClickOpen: () -> Unit = {},
         areSectionsLoading: Boolean = false,
         sections: List<ArtEntrySection> = emptyList(),
         onClickSave: () -> Unit = {},
@@ -85,13 +92,15 @@ object DetailsScreen {
                         .verticalScroll(rememberScrollState())
                 ) {
                     HeaderImage(
-                        entryId,
-                        entryImageFile,
-                        entryImageRatio,
-                        imageUri,
-                        onImageSelected,
-                        onImageSelectError,
-                        onImageSizeResult,
+                        entryId = entryId,
+                        entryImageFile = entryImageFile,
+                        entryImageRatio = entryImageRatio,
+                        loading = areSectionsLoading,
+                        imageUri = imageUri,
+                        onImageSelected = onImageSelected,
+                        onImageSelectError = onImageSelectError,
+                        onImageSizeResult = onImageSizeResult,
+                        onImageClickOpen = onImageClickOpen,
                     )
 
                     ArtEntryForm(areSectionsLoading, sections)
@@ -124,43 +133,26 @@ object DetailsScreen {
         entryId: String,
         entryImageFile: File?,
         entryImageRatio: Float,
+        loading: Boolean = false,
         imageUri: Uri?,
         onImageSelected: (Uri?) -> Unit,
         onImageSelectError: (Exception?) -> Unit,
         onImageSizeResult: (Int, Int) -> Unit = { _, _ -> },
+        onImageClickOpen: () -> Unit,
     ) {
-        ImageSelectBox(onImageSelected, onImageSelectError) {
-            if (imageUri != null) {
-                AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(imageUri)
-                        .crossfade(true)
-                        .listener { _, result ->
-                            onImageSizeResult(
-                                result.drawable.intrinsicWidth,
-                                result.drawable.intrinsicHeight,
-                            )
-                        }
-                        .build(),
-                    contentDescription = stringResource(
-                        R.string.art_entry_image_content_description
-                    ),
-                    contentScale = ContentScale.Fit,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                )
-            } else if (entryImageFile != null) {
-                SharedElement(
-                    key = "${entryId}_image",
-                    screenKey = NavDestinations.ENTRY_DETAILS
-                ) {
-                    val configuration = LocalConfiguration.current
-                    val screenWidth = configuration.screenWidthDp.dp
-                    val minimumHeight = screenWidth * entryImageRatio
+        Box {
+            ImageSelectBox(onImageSelected, onImageSelectError) {
+                if (imageUri != null) {
                     AsyncImage(
-                        ImageRequest.Builder(LocalContext.current)
-                            .data(entryImageFile)
-                            .placeholderMemoryCacheKey("coil_memory_entry_image_home_$entryId")
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(imageUri)
+                            .crossfade(true)
+                            .listener { _, result ->
+                                onImageSizeResult(
+                                    result.drawable.intrinsicWidth,
+                                    result.drawable.intrinsicHeight,
+                                )
+                            }
                             .build(),
                         contentDescription = stringResource(
                             R.string.art_entry_image_content_description
@@ -168,25 +160,66 @@ object DetailsScreen {
                         contentScale = ContentScale.Fit,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .heightIn(min = minimumHeight)
+                    )
+                } else if (entryImageFile != null) {
+                    SharedElement(
+                        key = "${entryId}_image",
+                        screenKey = NavDestinations.ENTRY_DETAILS
+                    ) {
+                        val configuration = LocalConfiguration.current
+                        val screenWidth = configuration.screenWidthDp.dp
+                        val minimumHeight = screenWidth * entryImageRatio
+                        AsyncImage(
+                            ImageRequest.Builder(LocalContext.current)
+                                .data(entryImageFile)
+                                .placeholderMemoryCacheKey("coil_memory_entry_image_home_$entryId")
+                                .build(),
+                            contentDescription = stringResource(
+                                R.string.art_entry_image_content_description
+                            ),
+                            contentScale = ContentScale.Fit,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .heightIn(min = minimumHeight)
+                        )
+                    }
+                } else {
+                    Spacer(
+                        Modifier
+                            .heightIn(200.dp, 200.dp)
+                            .fillMaxWidth()
+                            .background(Color.LightGray)
+                    )
+                    Icon(
+                        imageVector = Icons.Default.ImageNotSupported,
+                        contentDescription = stringResource(
+                            R.string.art_entry_no_image_content_description
+                        ),
+                        Modifier
+                            .size(48.dp)
+                            .align(Alignment.Center)
                     )
                 }
-            } else {
-                Spacer(
-                    Modifier
-                        .heightIn(200.dp, 200.dp)
-                        .fillMaxWidth()
-                        .background(Color.LightGray)
-                )
-                Icon(
-                    imageVector = Icons.Default.ImageNotSupported,
-                    contentDescription = stringResource(
-                        R.string.art_entry_no_image_content_description
-                    ),
-                    Modifier
-                        .size(48.dp)
-                        .align(Alignment.Center)
-                )
+            }
+
+            AnimatedVisibility(
+                visible = !loading && entryImageFile != null,
+                enter = fadeIn(),
+                exit = fadeOut(),
+                modifier = Modifier.align(Alignment.BottomEnd)
+            ) {
+                FloatingActionButton(
+                    onClick = onImageClickOpen,
+                    modifier = Modifier
+                        .padding(16.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.OpenInNew,
+                        contentDescription = stringResource(
+                            R.string.art_entry_open_full_image_content_description
+                        ),
+                    )
+                }
             }
         }
     }

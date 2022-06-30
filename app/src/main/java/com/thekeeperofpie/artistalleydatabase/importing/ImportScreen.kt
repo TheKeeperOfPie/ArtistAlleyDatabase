@@ -16,12 +16,9 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberTopAppBarScrollState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -48,21 +45,16 @@ object ImportScreen {
         errorRes: Pair<Int, Exception?>? = null,
         onErrorDismiss: () -> Unit = { },
     ) {
-        val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(
-            rememberTopAppBarScrollState()
-        )
         Scaffold(
             topBar = {
                 AppBar(
                     text = stringResource(R.string.nav_drawer_import),
-                    scrollBehavior = scrollBehavior,
                     onClickNav = onClickNav
                 )
             },
             snackbarHost = {
                 SnackbarErrorText(errorRes?.first, onErrorDismiss = onErrorDismiss)
             },
-            modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         ) {
             Content(
                 paddingValues = it,
