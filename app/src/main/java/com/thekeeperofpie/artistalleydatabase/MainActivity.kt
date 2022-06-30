@@ -87,7 +87,7 @@ class MainActivity : ComponentActivity() {
                         },
                         content = {
                             when (selectedItem.value) {
-                                NavDrawerItems.Home -> HomeScreen(::onClickNav)
+                                NavDrawerItems.Home -> Home(::onClickNav)
                                 NavDrawerItems.Browse -> BrowseScreen(::onClickNav)
                                 NavDrawerItems.Import -> {
                                     val viewModel = hiltViewModel<ImportViewModel>()
@@ -134,7 +134,7 @@ class MainActivity : ComponentActivity() {
     }
 
     @Composable
-    private fun HomeScreen(onClickNav: () -> Unit) {
+    private fun Home(onClickNav: () -> Unit) {
         val navController = rememberNavController()
         SharedElementsRoot {
             NavHost(navController = navController, startDestination = NavDestinations.HOME) {
@@ -168,7 +168,7 @@ class MainActivity : ComponentActivity() {
                         },
                         onLongClickEntry = viewModel::selectEntry,
                         onClickClear = viewModel::clearSelected,
-                        onConfirmDelete = viewModel::deleteSelected,
+                        onConfirmDelete = viewModel::onDeleteSelected,
                     )
                 }
 
@@ -259,7 +259,7 @@ class MainActivity : ComponentActivity() {
                         },
                         onLongClickEntry = viewModel::selectEntry,
                         onClickClear = viewModel::clearSelected,
-                        onConfirmDelete = viewModel::deleteSelected,
+                        onConfirmDelete = viewModel::onDeleteSelected,
                     )
                 }
 

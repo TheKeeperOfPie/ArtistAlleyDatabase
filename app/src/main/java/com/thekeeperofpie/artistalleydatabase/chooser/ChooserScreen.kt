@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.home
+package com.thekeeperofpie.artistalleydatabase.chooser
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
@@ -13,11 +13,9 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -33,6 +31,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
@@ -40,20 +40,21 @@ import androidx.compose.ui.unit.dp
 import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
+import coil.size.Dimension
 import com.thekeeperofpie.artistalleydatabase.R
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryGrid
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryModel
 import com.thekeeperofpie.artistalleydatabase.search.SearchOption
-import com.thekeeperofpie.artistalleydatabase.ui.NavMenuIconButton
+import com.thekeeperofpie.artistalleydatabase.ui.ButtonFooter
 import com.thekeeperofpie.artistalleydatabase.ui.bottomBorder
 import kotlinx.coroutines.flow.emptyFlow
 
 @OptIn(ExperimentalMaterial3Api::class)
-object HomeScreen {
+object ChooserScreen {
 
     @Composable
     operator fun invoke(
-        onClickNav: () -> Unit = {},
+        columnCount: Int = 2,
         query: String = "",
         onQueryChange: (String) -> Unit = {},
         options: List<SearchOption> = emptyList(),
@@ -63,40 +64,51 @@ object HomeScreen {
         selectedItems: Collection<Int> = emptyList(),
         onClickEntry: (index: Int, entry: ArtEntryModel) -> Unit = { _, _ -> },
         onLongClickEntry: (index: Int, entry: ArtEntryModel) -> Unit = { _, _ -> },
-        onClickAddFab: () -> Unit = {},
         onClickClear: () -> Unit = {},
-        onConfirmDelete: () -> Unit = {},
+        onClickSelect: () -> Unit = {},
     ) {
         Chrome(
-            onClickNav = onClickNav,
             query = query,
             onQueryChange = onQueryChange,
-            showFab = selectedItems.isEmpty(),
             options = options,
             onOptionChanged = onOptionChanged,
-            onClickAddFab = onClickAddFab,
-        ) {
-            ArtEntryGrid(
-                entries = entries,
-                paddingValues = it,
-                selectedItems = selectedItems,
-                onClickEntry = onClickEntry,
-                onLongClickEntry = onLongClickEntry,
-                onClickClear = onClickClear,
-                onConfirmDelete = onConfirmDelete,
-            )
+        ) { paddingValues ->
+            val expectedWidth = LocalDensity.current.run {
+                // Load at half width for better scrolling performance
+                // TODO: Find a better way to calculate the optimal image size
+                LocalConfiguration.current.screenWidthDp.dp.roundToPx() / columnCount / 2
+            }.let(::Dimension)
+
+            Column {
+                ArtEntryGrid.EntriesGrid(
+                    columnCount = columnCount,
+                    expectedWidth = expectedWidth,
+                    entries = entries,
+                    selectedItems = selectedItems,
+                    onClickEntry = onClickEntry,
+                    onLongClickEntry = onLongClickEntry,
+                    modifier = Modifier
+                        .padding(paddingValues)
+                        .weight(1f, true)
+                )
+
+
+                if (selectedItems.isNotEmpty()) {
+                    ButtonFooter(
+                        R.string.select to onClickSelect,
+                        R.string.clear to onClickClear,
+                    )
+                }
+            }
         }
     }
 
     @Composable
     private fun Chrome(
-        onClickNav: () -> Unit = {},
         query: String = "",
         onQueryChange: (String) -> Unit = {},
         options: List<SearchOption> = emptyList(),
         onOptionChanged: (SearchOption) -> Unit = {},
-        showFab: Boolean = true,
-        onClickAddFab: () -> Unit = {},
         content: @Composable (PaddingValues) -> Unit,
     ) {
         Scaffold(
@@ -118,7 +130,6 @@ object HomeScreen {
                         query,
                         placeholder = { Text(stringResource(id = R.string.search)) },
                         onValueChange = onQueryChange,
-                        leadingIcon = { NavMenuIconButton(onClickNav) },
                         trailingIcon = {
                             if (options.isNotEmpty()) {
                                 IconButton(onClick = { showOptions = !showOptions }) {
@@ -177,18 +188,6 @@ object HomeScreen {
                     }
                 }
             },
-            floatingActionButton = {
-                if (showFab) {
-                    FloatingActionButton(
-                        onClick = onClickAddFab,
-                    ) {
-                        Icon(
-                            Icons.Filled.Add,
-                            contentDescription = stringResource(R.string.search_add_entry)
-                        )
-                    }
-                }
-            },
             content = content,
         )
     }
@@ -197,7 +196,7 @@ object HomeScreen {
 @Preview
 @Composable
 fun Preview() {
-    HomeScreen(
+    ChooserScreen(
         options = listOf(
             SearchOption(R.string.search_option_artists),
             SearchOption(R.string.search_option_source),

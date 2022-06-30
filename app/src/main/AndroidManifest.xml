@@ -24,6 +24,20 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".chooser.ChooserActivity"
+            android:exported="true"
+            android:theme="@style/Theme.ArtistAlleyDatabase"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.GET_CONTENT" />
+                <action android:name="android.intent.action.PICK" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.OPENABLE" />
+                <data android:mimeType="image/*"/>
+            </intent-filter>
+        </activity>
+
         <provider
             android:name="androidx.startup.InitializationProvider"
             android:authorities="${applicationId}.androidx-startup"

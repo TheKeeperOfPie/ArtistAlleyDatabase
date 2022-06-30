@@ -69,4 +69,8 @@ class BrowseSelectionViewModel @Inject constructor(
                 .collect(entries)
         }
     }
+
+    fun onDeleteSelected() {
+        super.deleteSelected()
+    }
 }

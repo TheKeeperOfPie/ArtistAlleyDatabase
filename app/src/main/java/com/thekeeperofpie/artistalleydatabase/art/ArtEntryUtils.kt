@@ -30,6 +30,22 @@ object ArtEntryUtils {
         return (imageWidth to imageHeight)
     }
 
+    fun getImageType(file: File): String? {
+        val options = BitmapFactory.Options().apply {
+            this.inJustDecodeBounds = true
+        }
+        try {
+            if (!file.exists()) return null
+            file.inputStream().use {
+                BitmapFactory.decodeStream(it, null, options)
+            }
+        } catch (ignored: Exception) {
+            return null
+        }
+
+        return options.outMimeType
+    }
+
     fun writeEntryImage(
         application: Application,
         outputFile: File,

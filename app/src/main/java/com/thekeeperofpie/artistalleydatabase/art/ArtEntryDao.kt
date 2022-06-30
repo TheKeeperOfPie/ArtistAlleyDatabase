@@ -14,7 +14,7 @@ import androidx.room.Transaction
 import androidx.sqlite.db.SimpleSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteQuery
 import com.thekeeperofpie.artistalleydatabase.JsonUtils
-import com.thekeeperofpie.artistalleydatabase.home.HomeViewModel
+import com.thekeeperofpie.artistalleydatabase.search.SearchQueryWrapper
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -45,7 +45,7 @@ interface ArtEntryDao {
     )
     fun getEntries(): PagingSource<Int, ArtEntry>
 
-    fun getEntries(query: HomeViewModel.QueryWrapper): PagingSource<Int, ArtEntry> {
+    fun getEntries(query: SearchQueryWrapper): PagingSource<Int, ArtEntry> {
         val lockedValue = when {
             query.locked && query.unlocked -> null
             query.locked -> "1"

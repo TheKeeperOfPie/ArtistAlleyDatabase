@@ -31,7 +31,7 @@ abstract class ArtEntryGridViewModel(
         }
     }
 
-    fun deleteSelected() {
+    protected fun deleteSelected() {
         synchronized(selectedEntries) {
             viewModelScope.launch(Dispatchers.IO) {
                 val toDelete: List<ArtEntry>

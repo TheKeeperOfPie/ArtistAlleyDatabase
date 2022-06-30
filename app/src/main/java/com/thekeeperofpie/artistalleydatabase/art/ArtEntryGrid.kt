@@ -68,23 +68,17 @@ object ArtEntryGrid {
         var showDeleteDialog by remember { mutableStateOf(false) }
 
         Column {
-            LazyStaggeredGrid<ArtEntryModel>(
+            EntriesGrid(
                 columnCount = columnCount,
+                expectedWidth = expectedWidth,
+                entries = entries,
+                selectedItems = selectedItems,
+                onClickEntry = onClickEntry,
+                onLongClickEntry = onLongClickEntry,
                 modifier = Modifier
                     .padding(paddingValues)
                     .weight(1f, true)
-            ) {
-                items(entries, key = { it.value.id }) { index, item ->
-                    ArtEntry(
-                        expectedWidth,
-                        index,
-                        item,
-                        selectedItems,
-                        onClickEntry,
-                        onLongClickEntry
-                    )
-                }
-            }
+            )
 
             if (selectedItems.isNotEmpty()) {
                 ButtonFooter(
@@ -99,6 +93,33 @@ object ArtEntryGrid {
             { showDeleteDialog = false },
             onConfirmDelete
         )
+    }
+
+    @Composable
+    fun EntriesGrid(
+        columnCount: Int,
+        modifier: Modifier = Modifier,
+        expectedWidth: Dimension.Pixels,
+        entries: LazyPagingItems<ArtEntryModel>,
+        selectedItems: Collection<Int> = emptyList(),
+        onClickEntry: (index: Int, entry: ArtEntryModel) -> Unit = { _, _ -> },
+        onLongClickEntry: (index: Int, entry: ArtEntryModel) -> Unit = { _, _ -> },
+    ) {
+        LazyStaggeredGrid<ArtEntryModel>(
+            columnCount = columnCount,
+            modifier = modifier
+        ) {
+            items(entries, key = { it.value.id }) { index, item ->
+                ArtEntry(
+                    expectedWidth,
+                    index,
+                    item,
+                    selectedItems,
+                    onClickEntry,
+                    onLongClickEntry
+                )
+            }
+        }
     }
 
     @OptIn(ExperimentalFoundationApi::class)
