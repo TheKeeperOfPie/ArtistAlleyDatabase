@@ -52,12 +52,12 @@ abstract class ArtEntryViewModel(
     val notesSection = ArtEntrySection.LongText(R.string.art_entry_notes_header, locked = false)
 
     val sections = listOf(
-        artistSection,
-        sourceSection,
         seriesSection,
         characterSection,
-        printSizeSection,
+        sourceSection,
+        artistSection,
         tagSection,
+        printSizeSection,
         notesSection,
     )
 
@@ -95,44 +95,69 @@ abstract class ArtEntryViewModel(
             }
     }
 
-    suspend fun saveEntry(imageUri: Uri?, id: String) {
+    protected fun initializeForm(entry: ArtEntry) {
+        artistSection.contents.addAll(entry.artists)
+        artistSection.locked = entry.locks.artistsLocked
+
+        sourceSection.initialize(entry)
+        sourceSection.locked = entry.locks.sourceLocked
+
+        seriesSection.contents.addAll(entry.series)
+        seriesSection.locked = entry.locks.seriesLocked
+
+        characterSection.contents.addAll(entry.characters)
+        characterSection.locked = entry.locks.charactersLocked
+
+        printSizeSection.initialize(entry.printWidth, entry.printHeight)
+        printSizeSection.locked = entry.locks.printSizeLocked
+
+        tagSection.contents.addAll(entry.tags)
+        tagSection.locked = entry.locks.tagsLocked
+
+        notesSection.value = entry.notes.orEmpty()
+        notesSection.locked = entry.locks.notesLocked
+    }
+
+    protected suspend fun makeEntry(imageUri: Uri?, id: String): ArtEntry? {
         val outputFile = ArtEntryUtils.getImageFile(application, id)
         val error = ArtEntryUtils.writeEntryImage(application, outputFile, imageUri)
         if (error != null) {
             withContext(Dispatchers.Main) {
                 errorResource = error
             }
-            return
+            return null
         }
-
         val (imageWidth, imageHeight) = ArtEntryUtils.getImageSize(outputFile)
         val (sourceType, sourceValue) = sourceSection.finalTypeToValue()
 
-        artEntryDao.insertEntries(
-            ArtEntry(
-                id = id,
-                artists = artistSection.finalContents(),
-                sourceType = sourceType,
-                sourceValue = sourceValue,
-                series = seriesSection.finalContents(),
-                characters = characterSection.finalContents(),
-                tags = tagSection.finalContents(),
-                lastEditTime = Date.from(Instant.now()),
-                imageWidth = imageWidth,
-                imageHeight = imageHeight,
-                printWidth = printSizeSection.finalWidth(),
-                printHeight = printSizeSection.finalHeight(),
-                notes = notesSection.value.trim(),
-                locks = ArtEntry.Locks(
-                    artistsLocked = artistSection.locked ?: false,
-                    seriesLocked = seriesSection.locked ?: false,
-                    charactersLocked = characterSection.locked ?: false,
-                    sourceLocked = sourceSection.locked ?: false,
-                    tagsLocked = tagSection.locked ?: false,
-                    notesLocked = notesSection.locked ?: false,
-                    printSizeLocked = printSizeSection.locked ?: false,
-                )
+        return ArtEntry(
+            id = id,
+            artists = artistSection.finalContents(),
+            sourceType = sourceType,
+            sourceValue = sourceValue,
+            series = seriesSection.finalContents(),
+            characters = characterSection.finalContents(),
+            tags = tagSection.finalContents(),
+            lastEditTime = Date.from(Instant.now()),
+            imageWidth = imageWidth,
+            imageHeight = imageHeight,
+            printWidth = printSizeSection.finalWidth(),
+            printHeight = printSizeSection.finalHeight(),
+            notes = notesSection.value.trim(),
+            locks = ArtEntry.Locks(
+                artistsLocked = artistSection.locked ?: false,
+                seriesLocked = seriesSection.locked ?: false,
+                charactersLocked = characterSection.locked ?: false,
+                sourceLocked = sourceSection.locked ?: false,
+                tagsLocked = tagSection.locked ?: false,
+                notesLocked = notesSection.locked ?: false,
+                printSizeLocked = printSizeSection.locked ?: false,
             )
         )
+    }
+
+    suspend fun saveEntry(imageUri: Uri?, id: String) {
+        val entry = makeEntry(imageUri, id) ?: return
+        artEntryDao.insertEntries(entry)
     }
 }

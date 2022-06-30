@@ -99,4 +99,5 @@
     <string name="progress_complete_content_description">Progress complete</string>
     <string name="export_last_failed">Last export failed</string>
     <string name="export_last_canceled">Last export canceled</string>
+    <string name="add_entry_save_template">Save template</string>
 </resources>

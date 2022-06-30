@@ -183,6 +183,7 @@ class MainActivity : ComponentActivity() {
                         },
                         onImageSizeResult = viewModel::onImageSizeResult,
                         sections = viewModel.sections,
+                        onClickSaveTemplate = viewModel::onClickSaveTemplate,
                         onClickSave = { viewModel.onClickSave(navController) },
                         errorRes = viewModel.errorResource,
                         onErrorDismiss = { viewModel.errorResource = null }

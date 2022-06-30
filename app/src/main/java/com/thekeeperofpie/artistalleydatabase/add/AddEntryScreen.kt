@@ -2,7 +2,9 @@ package com.thekeeperofpie.artistalleydatabase.add
 
 import android.net.Uri
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -15,7 +17,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ImageSearch
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -37,8 +42,8 @@ import com.thekeeperofpie.artistalleydatabase.art.ArtEntryForm
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntrySection
 import com.thekeeperofpie.artistalleydatabase.art.ImagesSelectBox
 import com.thekeeperofpie.artistalleydatabase.art.SampleArtEntrySectionsProvider
-import com.thekeeperofpie.artistalleydatabase.ui.ButtonFooter
 import com.thekeeperofpie.artistalleydatabase.ui.SnackbarErrorText
+import com.thekeeperofpie.artistalleydatabase.ui.topBorder
 
 object AddEntryScreen {
 
@@ -50,6 +55,7 @@ object AddEntryScreen {
         onImageSelectError: (Exception?) -> Unit = {},
         onImageSizeResult: (Int, Int) -> Unit = { _, _ -> },
         sections: List<ArtEntrySection> = emptyList(),
+        onClickSaveTemplate: () -> Unit = {},
         onClickSave: () -> Unit = {},
         errorRes: Pair<Int, Exception?>? = null,
         onErrorDismiss: () -> Unit = {},
@@ -76,7 +82,37 @@ object AddEntryScreen {
                     ArtEntryForm(false, sections)
                 }
 
-                ButtonFooter(onClickSave, R.string.save)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.End,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .topBorder(1.dp, MaterialTheme.colorScheme.inversePrimary)
+                ) {
+                    TextButton(onClick = onClickSaveTemplate) {
+                        Text(
+                            text = stringResource(R.string.add_entry_save_template),
+                            modifier = Modifier.padding(
+                                start = 16.dp,
+                                end = 16.dp,
+                                top = 10.dp,
+                                bottom = 10.dp
+                            )
+                        )
+                    }
+
+                    TextButton(onClick = onClickSave) {
+                        Text(
+                            text = stringResource(R.string.save),
+                            modifier = Modifier.padding(
+                                start = 16.dp,
+                                end = 16.dp,
+                                top = 10.dp,
+                                bottom = 10.dp
+                            )
+                        )
+                    }
+                }
             }
         }
     }

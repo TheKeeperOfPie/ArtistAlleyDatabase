@@ -17,6 +17,7 @@ object ArtEntryUtils {
             this.inJustDecodeBounds = true
         }
         try {
+            if (!file.exists()) return null to null
             file.inputStream().use {
                 BitmapFactory.decodeStream(it, null, options)
             }

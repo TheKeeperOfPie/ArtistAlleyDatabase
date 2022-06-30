@@ -19,4 +19,7 @@ class AppHiltModule {
 
     @Provides
     fun provideWorkManager(application: Application) = WorkManager.getInstance(application)
+
+    @Provides
+    fun provideSettingsProvider(application: Application) = SettingsProvider(application)
 }

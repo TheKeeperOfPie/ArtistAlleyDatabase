@@ -5,6 +5,7 @@ import android.net.Uri
 import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
+import com.thekeeperofpie.artistalleydatabase.SettingsProvider
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryDao
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -17,10 +18,20 @@ import javax.inject.Inject
 @HiltViewModel
 class AddEntryViewModel @Inject constructor(
     application: Application,
-    artEntryDao: ArtEntryDao
+    artEntryDao: ArtEntryDao,
+    private val settingsProvider: SettingsProvider,
 ) : ArtEntryViewModel(application, artEntryDao) {
 
     val imageUris = mutableStateListOf<Uri>()
+
+    init {
+        viewModelScope.launch(Dispatchers.IO) {
+            val entry = settingsProvider.loadArtEntryTemplate() ?: return@launch
+            withContext(Dispatchers.Main) {
+                initializeForm(entry)
+            }
+        }
+    }
 
     fun onClickSave(navHostController: NavHostController) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -34,6 +45,15 @@ class AddEntryViewModel @Inject constructor(
 
             withContext(Dispatchers.Main) {
                 navHostController.popBackStack()
+            }
+        }
+    }
+
+    fun onClickSaveTemplate() {
+        viewModelScope.launch(Dispatchers.Main) {
+            val entry = makeEntry(null, "template") ?: return@launch
+            withContext(Dispatchers.IO) {
+                settingsProvider.saveArtEntryTemplate(entry)
             }
         }
     }

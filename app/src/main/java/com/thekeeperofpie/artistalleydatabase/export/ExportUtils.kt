@@ -72,7 +72,7 @@ object ExportUtils {
         return true
     }
 
-    private fun <T : Any> JsonWriter.writeMembersAsObject(inputKClass: KClass<T>, input: T) {
+    fun <T : Any> JsonWriter.writeMembersAsObject(inputKClass: KClass<T>, input: T) {
         beginObject()
         for (property in inputKClass.memberProperties) {
             val name = property.name

@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.export
 
 import android.net.Uri
+import android.webkit.MimeTypeMap
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
@@ -100,7 +101,9 @@ object ExportScreen {
                     .verticalScroll(rememberScrollState())
             ) {
                 val launcher = rememberLauncherForActivityResult(
-                    contract = ActivityResultContracts.CreateDocument(),
+                    contract = ActivityResultContracts.CreateDocument(
+                        MimeTypeMap.getSingleton().getMimeTypeFromExtension(".zip") ?: "*/*"
+                    ),
                     onResult = { onContentUriSelected(it) }
                 )
 
