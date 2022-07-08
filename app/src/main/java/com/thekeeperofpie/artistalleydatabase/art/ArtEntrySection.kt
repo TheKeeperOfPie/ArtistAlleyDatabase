@@ -36,19 +36,23 @@ sealed class ArtEntrySection(locked: Boolean? = null) {
         // TODO: Predictions for existing prefilled fields
         var predictions by mutableStateOf(emptyList<Entry>())
 
-        fun pendingEntry() = Entry(pendingValue)
+        fun pendingEntry() = Entry.Custom(pendingValue)
 
         fun valueUpdates() = pendingValueUpdates.asStateFlow()
 
-        fun finalContents() = (contents + Entry(pendingValue.trim()))
+        fun finalContents() = (contents + Entry.Custom(pendingValue.trim()))
             .filterNot { it.serializedValue.isBlank() }
 
-        data class Entry(
-            val entryText: String,
-            val titleText: String = entryText,
-            val serializedValue: String = titleText,
-            val subtitleText: String? = null,
-        )
+        sealed class Entry(val text: String, val serializedValue: String = text) {
+            class Custom(text: String) : Entry(text)
+
+            class Prefilled(
+                text: String,
+                val titleText: String = text,
+                val subtitleText: String? = null,
+                serializedValue: String,
+            ) : Entry(text, serializedValue)
+        }
     }
 
     class LongText(

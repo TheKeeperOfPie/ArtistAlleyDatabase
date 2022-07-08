@@ -233,9 +233,9 @@ fun LinearProgressWithIndicator(text: String, progress: Float?) {
 fun Modifier.topBorder(width: Dp = Dp.Hairline, color: Color): Modifier = border(
     width,
     color,
-    startOffsetX = { width.value },
+    startOffsetX = { width.value * density },
     startOffsetY = { 0f },
-    endOffsetX = { size.width - width.value },
+    endOffsetX = { size.width - (width.value * density / 2) },
     endOffsetY = { 0f }
 )
 
@@ -243,9 +243,9 @@ fun Modifier.topBorder(width: Dp = Dp.Hairline, color: Color): Modifier = border
 fun Modifier.bottomBorder(width: Dp = Dp.Hairline, color: Color): Modifier = border(
     width,
     color,
-    startOffsetX = { width.value },
-    startOffsetY = { size.height },
-    endOffsetX = { size.width - width.value },
+    startOffsetX = { width.value * density },
+    startOffsetY = { size.height - (width.value * density) },
+    endOffsetX = { size.width - (width.value * density) },
     endOffsetY = { size.height }
 )
 
@@ -264,9 +264,10 @@ fun Modifier.border(
                 onDrawWithContent {
                     drawContent()
                     drawLine(
-                        color,
-                        Offset(startOffsetX(), startOffsetY()),
-                        Offset(endOffsetX(), endOffsetY())
+                        color = color,
+                        start = Offset(startOffsetX(), startOffsetY()),
+                        end = Offset(endOffsetX(), endOffsetY()),
+                        strokeWidth = width.value * density,
                     )
                 }
             }

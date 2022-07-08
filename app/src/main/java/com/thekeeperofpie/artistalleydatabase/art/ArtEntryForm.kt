@@ -13,6 +13,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -32,6 +33,7 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -61,6 +63,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
@@ -74,6 +77,7 @@ import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.PopupProperties
 import com.thekeeperofpie.artistalleydatabase.R
+import com.thekeeperofpie.artistalleydatabase.ui.bottomBorder
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -156,15 +160,21 @@ private fun MultiTextSection(section: ArtEntrySection.MultiText) {
         var showOverflow by remember { mutableStateOf(false) }
         Box {
             PrefilledSectionField(
+                index,
                 value,
                 onValueChange = {
                     val entry = section.contents[index]
-                    if (entry.entryText != it) {
-                        section.contents[index] = ArtEntrySection.MultiText.Entry(it)
+                    if (entry.text != it) {
+                        section.contents[index] = ArtEntrySection.MultiText.Entry.Custom(it)
                     }
                 },
                 onClickMore = { showOverflow = !showOverflow },
-                onDone = { section.contents.add(index, ArtEntrySection.MultiText.Entry("")) },
+                onDone = {
+                    section.contents.add(
+                        index,
+                        ArtEntrySection.MultiText.Entry.Custom("")
+                    )
+                },
                 locked = section.locked
             )
 
@@ -227,7 +237,7 @@ private fun MultiTextSection(section: ArtEntrySection.MultiText) {
                 onValueChange = { section.pendingValue = it },
                 onDone = {
                     if (it.isNotEmpty()) {
-                        section.contents += ArtEntrySection.MultiText.Entry(it)
+                        section.contents += ArtEntrySection.MultiText.Entry.Custom(it)
                         section.pendingValue = ""
                     }
                 },
@@ -262,14 +272,25 @@ private fun MultiTextSection(section: ArtEntrySection.MultiText) {
                             },
                             text = {
                                 Column {
+                                    val titleText = when (it) {
+                                        is ArtEntrySection.MultiText.Entry.Custom -> it.text
+                                        is ArtEntrySection.MultiText.Entry.Prefilled -> it.titleText
+                                    }
+
+                                    val subtitleText = when (it) {
+                                        is ArtEntrySection.MultiText.Entry.Custom -> null
+                                        is ArtEntrySection.MultiText.Entry.Prefilled ->
+                                            it.subtitleText
+                                    }
+
                                     Text(
-                                        text = it.titleText,
+                                        text = titleText,
                                         maxLines = 1,
                                         style = MaterialTheme.typography.labelLarge,
                                     )
-                                    if (it.subtitleText != null) {
+                                    if (subtitleText != null) {
                                         Text(
-                                            text = it.subtitleText,
+                                            text = subtitleText,
                                             style = MaterialTheme.typography.labelSmall,
                                             modifier = Modifier.padding(start = 24.dp)
                                         )
@@ -307,24 +328,85 @@ private fun LongTextSection(section: ArtEntrySection.LongText) {
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun PrefilledSectionField(
+    index: Int,
     entry: ArtEntrySection.MultiText.Entry,
     onValueChange: (value: String) -> Unit = {},
     onClickMore: () -> Unit = {},
     onDone: () -> Unit = {},
     locked: Boolean? = null,
 ) {
-    TextField(
-        value = entry.entryText,
-        onValueChange = { onValueChange(it) },
-        readOnly = locked == true,
-        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-        keyboardActions = KeyboardActions(onDone = { onDone() }),
-        trailingIcon = {
-            AnimatedVisibility(
-                visible = locked != true,
-                enter = fadeIn(),
-                exit = fadeOut(),
+    val backgroundShape =
+        if (index == 0) RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp) else RectangleShape
+
+    when (entry) {
+        is ArtEntrySection.MultiText.Entry.Custom -> {
+            TextField(
+                value = entry.text,
+                onValueChange = { onValueChange(it) },
+                readOnly = locked == true,
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                keyboardActions = KeyboardActions(onDone = { onDone() }),
+                trailingIcon = {
+                    AnimatedVisibility(
+                        visible = locked != true,
+                        enter = fadeIn(),
+                        exit = fadeOut(),
+                    ) {
+                        IconButton(onClick = onClickMore) {
+                            Icon(
+                                imageVector = Icons.Default.MoreVert,
+                                contentDescription = stringResource(
+                                    R.string.art_entry_more_actions_content_description
+                                ),
+                            )
+                        }
+                    }
+                },
+                modifier = Modifier
+                    .focusable(locked != true)
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, end = 16.dp)
+                    .onKeyEvent {
+                        if (it.type == KeyEventType.KeyUp && it.key == Key.Enter) {
+                            onDone()
+                            true
+                        } else false
+                    }
+                    .background(
+                        color = MaterialTheme.colorScheme.surfaceVariant,
+                        shape = backgroundShape,
+                    )
+            )
+        }
+        is ArtEntrySection.MultiText.Entry.Prefilled -> {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .padding(start = 16.dp, end = 16.dp)
+                    .background(
+                        color = MaterialTheme.colorScheme.surfaceVariant,
+                        shape = backgroundShape,
+                    )
+                    .bottomBorder(1.dp, MaterialTheme.colorScheme.onSurfaceVariant)
             ) {
+                Column(
+                    Modifier
+                        .weight(1f, true)
+                        .padding(16.dp)
+                ) {
+                    Text(
+                        text = entry.titleText,
+                        maxLines = 1,
+                    )
+                    if (entry.subtitleText != null) {
+                        Text(
+                            text = entry.subtitleText,
+                            style = MaterialTheme.typography.labelLarge,
+                            modifier = Modifier.padding(start = 24.dp)
+                        )
+                    }
+                }
+
                 IconButton(onClick = onClickMore) {
                     Icon(
                         imageVector = Icons.Default.MoreVert,
@@ -334,18 +416,8 @@ private fun PrefilledSectionField(
                     )
                 }
             }
-        },
-        modifier = Modifier
-            .focusable(locked != true)
-            .fillMaxWidth()
-            .padding(start = 16.dp, end = 16.dp)
-            .onKeyEvent {
-                if (it.type == KeyEventType.KeyUp && it.key == Key.Enter) {
-                    onDone()
-                    true
-                } else false
-            }
-    )
+        }
+    }
 }
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -556,8 +628,8 @@ class SampleArtEntrySectionsProvider : PreviewParameterProvider<List<ArtEntrySec
             ).apply {
                 contents.addAll(
                     listOf(
-                        ArtEntrySection.MultiText.Entry("cute"),
-                        ArtEntrySection.MultiText.Entry("portrait")
+                        ArtEntrySection.MultiText.Entry.Custom("cute"),
+                        ArtEntrySection.MultiText.Entry.Custom("portrait")
                     )
                 )
                 pendingValue = "schoolgirl uniform"
