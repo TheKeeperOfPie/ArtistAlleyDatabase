@@ -1,0 +1,21 @@
+query CharactersSearch($search: String, $perPage: Int, $page: Int, $mediaPage: Int,
+    $mediaPerPage: Int) {
+  Page(perPage: $perPage, page: $page) @nonnull {
+    characters(search: $search) @nonnull {
+      id
+      name {
+        first
+        last
+        alternative
+      }
+      media(page: $mediaPage, perPage: $mediaPerPage) {
+        nodes {
+          title {
+            romaji
+            english
+          }
+        }
+      }
+    }
+  }
+}

@@ -13,8 +13,8 @@ import androidx.room.RawQuery
 import androidx.room.Transaction
 import androidx.sqlite.db.SimpleSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteQuery
-import com.thekeeperofpie.artistalleydatabase.JsonUtils
 import com.thekeeperofpie.artistalleydatabase.search.SearchQueryWrapper
+import com.thekeeperofpie.artistalleydatabase.utils.JsonUtils
 import kotlinx.coroutines.flow.Flow
 
 @Dao

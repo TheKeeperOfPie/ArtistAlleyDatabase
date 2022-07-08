@@ -23,7 +23,7 @@ sealed class ArtEntrySection(locked: Boolean? = null) {
         initialPendingValue: String = "",
         locked: Boolean? = null
     ) : ArtEntrySection(locked) {
-        val contents = mutableStateListOf<String>()
+        val contents = mutableStateListOf<Entry>()
         private var _pendingValue by mutableStateOf(initialPendingValue)
         private var pendingValueUpdates = MutableStateFlow("")
         var pendingValue: String
@@ -34,13 +34,21 @@ sealed class ArtEntrySection(locked: Boolean? = null) {
             }
 
         // TODO: Predictions for existing prefilled fields
-        var predictions by mutableStateOf(emptyList<String>())
+        var predictions by mutableStateOf(emptyList<Entry>())
+
+        fun pendingEntry() = Entry(pendingValue)
 
         fun valueUpdates() = pendingValueUpdates.asStateFlow()
 
-        fun finalContents() = (contents + pendingValue)
-            .filter(String::isNotBlank)
-            .map(String::trim)
+        fun finalContents() = (contents + Entry(pendingValue.trim()))
+            .filterNot { it.serializedValue.isBlank() }
+
+        data class Entry(
+            val entryText: String,
+            val titleText: String = entryText,
+            val serializedValue: String = titleText,
+            val subtitleText: String? = null,
+        )
     }
 
     class LongText(

@@ -1,0 +1,18 @@
+query MediaSearch($search: String, $perPage: Int, $page: Int) {
+  Page(perPage: $perPage, page: $page) @nonnull {
+    media(search: $search) @nonnull {
+      id
+      description
+      title {
+        english
+        romaji
+      }
+      coverImage {
+        extraLarge
+        large
+        medium
+        color
+      }
+    }
+  }
+}

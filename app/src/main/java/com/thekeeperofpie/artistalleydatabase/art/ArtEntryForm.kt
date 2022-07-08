@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -143,7 +144,7 @@ private fun MultiTextSection(section: ArtEntrySection.MultiText) {
                 locked = section.locked,
                 onClick = {
                     if (section.pendingValue.isNotEmpty()) {
-                        section.contents += section.pendingValue
+                        section.contents += section.pendingEntry()
                         section.pendingValue = ""
                     }
                     section.locked = section.locked?.not()
@@ -156,9 +157,14 @@ private fun MultiTextSection(section: ArtEntrySection.MultiText) {
         Box {
             PrefilledSectionField(
                 value,
-                onValueChange = { section.contents[index] = it },
+                onValueChange = {
+                    val entry = section.contents[index]
+                    if (entry.entryText != it) {
+                        section.contents[index] = ArtEntrySection.MultiText.Entry(it)
+                    }
+                },
                 onClickMore = { showOverflow = !showOverflow },
-                onDone = { section.contents.add(index, "") },
+                onDone = { section.contents.add(index, ArtEntrySection.MultiText.Entry("")) },
                 locked = section.locked
             )
 
@@ -221,7 +227,7 @@ private fun MultiTextSection(section: ArtEntrySection.MultiText) {
                 onValueChange = { section.pendingValue = it },
                 onDone = {
                     if (it.isNotEmpty()) {
-                        section.contents += it
+                        section.contents += ArtEntrySection.MultiText.Entry(it)
                         section.pendingValue = ""
                     }
                 },
@@ -254,7 +260,23 @@ private fun MultiTextSection(section: ArtEntrySection.MultiText) {
                                     bringIntoViewRequester.bringIntoView()
                                 }
                             },
-                            text = { Text(it) }
+                            text = {
+                                Column {
+                                    Text(
+                                        text = it.titleText,
+                                        maxLines = 1,
+                                        style = MaterialTheme.typography.labelLarge,
+                                    )
+                                    if (it.subtitleText != null) {
+                                        Text(
+                                            text = it.subtitleText,
+                                            style = MaterialTheme.typography.labelSmall,
+                                            modifier = Modifier.padding(start = 24.dp)
+                                        )
+                                    }
+                                }
+                            },
+                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp)
                         )
                     }
                 }
@@ -285,14 +307,14 @@ private fun LongTextSection(section: ArtEntrySection.LongText) {
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun PrefilledSectionField(
-    value: String,
+    entry: ArtEntrySection.MultiText.Entry,
     onValueChange: (value: String) -> Unit = {},
     onClickMore: () -> Unit = {},
     onDone: () -> Unit = {},
     locked: Boolean? = null,
 ) {
     TextField(
-        value = value,
+        value = entry.entryText,
         onValueChange = { onValueChange(it) },
         readOnly = locked == true,
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
@@ -532,7 +554,12 @@ class SampleArtEntrySectionsProvider : PreviewParameterProvider<List<ArtEntrySec
                 R.string.art_entry_tags_header_one,
                 R.string.art_entry_tags_header_many,
             ).apply {
-                contents.addAll(listOf("cute", "portrait"))
+                contents.addAll(
+                    listOf(
+                        ArtEntrySection.MultiText.Entry("cute"),
+                        ArtEntrySection.MultiText.Entry("portrait")
+                    )
+                )
                 pendingValue = "schoolgirl uniform"
             },
         )

@@ -3,6 +3,7 @@ package com.thekeeperofpie.artistalleydatabase
 import android.app.Application
 import androidx.room.Room
 import androidx.work.WorkManager
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListApi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -22,4 +23,7 @@ class AppHiltModule {
 
     @Provides
     fun provideSettingsProvider(application: Application) = SettingsProvider(application)
+
+    @Provides
+    fun provideAniListApi() = AniListApi()
 }

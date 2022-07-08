@@ -7,6 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListApi
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntry
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryDao
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryViewModel
@@ -21,7 +22,8 @@ import javax.inject.Inject
 class DetailsViewModel @Inject constructor(
     application: Application,
     artEntryDao: ArtEntryDao,
-) : ArtEntryViewModel(application, artEntryDao) {
+    aniListApi: AniListApi,
+) : ArtEntryViewModel(application, artEntryDao, aniListApi) {
 
     var entryId: String? = null
     lateinit var entry: ArtEntry

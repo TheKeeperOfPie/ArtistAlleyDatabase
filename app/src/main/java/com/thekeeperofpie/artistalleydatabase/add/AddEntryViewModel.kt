@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
 import com.thekeeperofpie.artistalleydatabase.SettingsProvider
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListApi
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryDao
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -19,8 +20,9 @@ import javax.inject.Inject
 class AddEntryViewModel @Inject constructor(
     application: Application,
     artEntryDao: ArtEntryDao,
+    aniListApi: AniListApi,
     private val settingsProvider: SettingsProvider,
-) : ArtEntryViewModel(application, artEntryDao) {
+) : ArtEntryViewModel(application, artEntryDao, aniListApi) {
 
     val imageUris = mutableStateListOf<Uri>()
 
