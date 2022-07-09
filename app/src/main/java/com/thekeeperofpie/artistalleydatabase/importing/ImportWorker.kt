@@ -10,6 +10,7 @@ import com.squareup.moshi.JsonReader
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntry
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryDao
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryUtils
+import com.thekeeperofpie.artistalleydatabase.json.AppMoshi
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import okio.buffer
@@ -25,6 +26,7 @@ class ImportWorker @AssistedInject constructor(
     @Assisted private val appContext: Context,
     @Assisted private val params: WorkerParameters,
     private val artEntryDao: ArtEntryDao,
+    private val appMoshi: AppMoshi,
 ) : CoroutineWorker(appContext, params) {
 
     override suspend fun doWork(): Result {
@@ -120,8 +122,7 @@ class ImportWorker @AssistedInject constructor(
 
                 val block: suspend (insert: suspend (ArtEntry) -> Unit) -> Unit = { insert ->
                     while (reader.peek() == JsonReader.Token.BEGIN_OBJECT) {
-                        val entry = ImportUtils.readArtEntryObject(reader) ?: continue
-
+                        val entry = appMoshi.artEntryAdapter.fromJson(reader) ?: continue
                         count++
                         insert(entry)
                     }

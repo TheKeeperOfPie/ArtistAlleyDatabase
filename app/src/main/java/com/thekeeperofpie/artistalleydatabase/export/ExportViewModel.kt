@@ -29,7 +29,6 @@ class ExportViewModel @Inject constructor(
 
     var exportUriString by mutableStateOf<String?>(null)
     var errorResource by mutableStateOf<Pair<Int, Exception?>?>(null)
-    var userReadable by mutableStateOf(true)
     var exportRequested by mutableStateOf(false)
     var exportProgress by mutableStateOf<Float?>(null)
 
@@ -51,10 +50,12 @@ class ExportViewModel @Inject constructor(
                         }
                         WorkInfo.State.SUCCEEDED -> if (exportRequested) 1f else null
                         WorkInfo.State.FAILED -> {
+                            exportRequested = false
                             errorResource = R.string.export_last_failed to null
                             null
                         }
                         WorkInfo.State.CANCELLED -> {
+                            exportRequested = false
                             errorResource = R.string.export_last_canceled to null
                             null
                         }
@@ -67,16 +68,13 @@ class ExportViewModel @Inject constructor(
     }
 
     fun onClickExport() {
+        if (exportRequested && exportProgress != 1f) return
         val exportUriString = exportUriString ?: run {
             errorResource = R.string.invalid_export_destination to null
             return
         }
 
-        val request = if (userReadable) {
-            OneTimeWorkRequestBuilder<ExportUserReadableWorker>()
-        } else {
-            OneTimeWorkRequestBuilder<ExportAppDataWorker>()
-        }
+        val request = OneTimeWorkRequestBuilder<ExportUserReadableWorker>()
             .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
             .setInputData(
                 Data.Builder()

@@ -51,10 +51,12 @@ class ImportViewModel @Inject constructor(
                         }
                         WorkInfo.State.SUCCEEDED -> if (importRequested) 1f else null
                         WorkInfo.State.FAILED -> {
+                            importRequested = false
                             errorResource = R.string.import_last_failed to null
                             null
                         }
                         WorkInfo.State.CANCELLED -> {
+                            importRequested = false
                             errorResource = R.string.import_last_canceled to null
                             null
                         }
@@ -67,6 +69,7 @@ class ImportViewModel @Inject constructor(
     }
 
     fun onClickImport() {
+        if (importRequested && importProgress != 1f) return
         val importUriString = importUriString ?: run {
             errorResource = R.string.invalid_import_source to null
             return

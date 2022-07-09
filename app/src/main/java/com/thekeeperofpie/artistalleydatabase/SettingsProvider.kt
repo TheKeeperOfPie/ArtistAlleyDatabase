@@ -3,17 +3,14 @@ package com.thekeeperofpie.artistalleydatabase
 import android.app.Application
 import android.content.Context
 import android.util.Log
-import com.squareup.moshi.JsonReader
-import com.squareup.moshi.JsonWriter
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntry
-import com.thekeeperofpie.artistalleydatabase.export.ExportUtils.writeMembersAsObject
-import com.thekeeperofpie.artistalleydatabase.importing.ImportUtils
+import com.thekeeperofpie.artistalleydatabase.json.AppMoshi
 import okio.buffer
 import okio.sink
 import okio.source
 import java.io.ByteArrayOutputStream
 
-class SettingsProvider(application: Application) {
+class SettingsProvider(application: Application, private val appMoshi: AppMoshi) {
 
     companion object {
         private const val KEY_ART_ENTRY_TEMPLATE = "art_entry_template"
@@ -23,8 +20,7 @@ class SettingsProvider(application: Application) {
         ByteArrayOutputStream().use {
             it.sink().use {
                 it.buffer().use {
-                    JsonWriter.of(it)
-                        .writeMembersAsObject(ArtEntry::class, entry)
+                    appMoshi.artEntryAdapter.toJson(entry)
                 }
             }
 
@@ -42,9 +38,7 @@ class SettingsProvider(application: Application) {
                 .takeUnless(String?::isNullOrEmpty) ?: return null
             stringValue.byteInputStream().use {
                 it.source().use {
-                    it.buffer().use {
-                        ImportUtils.readArtEntryObject(JsonReader.of(it))
-                    }
+                    it.buffer().use(appMoshi.artEntryAdapter::fromJson)
                 }
             }
         } catch (e: Exception) {

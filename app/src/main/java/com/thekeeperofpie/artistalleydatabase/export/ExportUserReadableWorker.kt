@@ -4,12 +4,17 @@ import android.content.Context
 import android.net.Uri
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
+import androidx.work.Data
 import androidx.work.WorkerParameters
+import com.squareup.moshi.JsonWriter
+import com.thekeeperofpie.artistalleydatabase.art.ArtEntry
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryDao
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryUtils
-import com.thekeeperofpie.artistalleydatabase.export.ExportUtils.writeEntries
+import com.thekeeperofpie.artistalleydatabase.json.AppMoshi
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import okio.buffer
+import okio.sink
 import java.io.File
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
@@ -19,6 +24,7 @@ class ExportUserReadableWorker @AssistedInject constructor(
     @Assisted private val appContext: Context,
     @Assisted private val params: WorkerParameters,
     private val artEntryDao: ArtEntryDao,
+    private val appMoshi: AppMoshi,
 ) : CoroutineWorker(appContext, params) {
 
     override suspend fun doWork(): Result {
@@ -116,5 +122,49 @@ class ExportUserReadableWorker @AssistedInject constructor(
             tempJsonFile.delete()
             tempZipFile.delete()
         }
+    }
+
+    private fun CoroutineWorker.writeEntries(
+        artEntryDao: ArtEntryDao,
+        file: File,
+        onEachEntry: (ArtEntry) -> Unit = {}
+    ): Boolean {
+        file.sink().use {
+            it.buffer().use {
+                JsonWriter.of(it).use { jsonWriter ->
+                    jsonWriter.beginObject()
+                        .name("art_entries")
+                        .beginArray()
+                    var stopped = false
+                    var entriesSize = 0
+                    artEntryDao.iterateEntries({ entriesSize = it }) { index, entry ->
+                        if (isStopped) {
+                            stopped = true
+                            return@iterateEntries
+                        }
+
+                        onEachEntry(entry)
+
+                        setProgressAsync(
+                            Data.Builder()
+                                .putFloat(
+                                    "progress",
+                                    index / entriesSize.coerceAtLeast(1).toFloat()
+                                )
+                                .build()
+                        )
+
+                        jsonWriter.jsonValue(appMoshi.artEntryAdapter.toJsonValue(entry))
+                    }
+                    if (stopped) {
+                        return false
+                    }
+                    jsonWriter.endArray()
+                        .endObject()
+                }
+            }
+        }
+
+        return true
     }
 }

@@ -115,10 +115,6 @@ class MainActivity : ComponentActivity() {
                                         onContentUriSelected = {
                                             viewModel.exportUriString = it?.toString()
                                         },
-                                        userReadable = { viewModel.userReadable },
-                                        onToggleUserReadable = {
-                                            viewModel.userReadable = !viewModel.userReadable
-                                        },
                                         onClickExport = viewModel::onClickExport,
                                         exportProgress = { viewModel.exportProgress },
                                         errorRes = viewModel.errorResource,

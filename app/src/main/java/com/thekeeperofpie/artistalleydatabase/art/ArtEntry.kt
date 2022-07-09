@@ -5,10 +5,12 @@ import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.Fts4
 import androidx.room.PrimaryKey
+import com.squareup.moshi.JsonClass
 import java.math.BigDecimal
 import java.util.Date
 import java.util.UUID
 
+@JsonClass(generateAdapter = true)
 @Entity(tableName = "art_entries")
 data class ArtEntry(
     @PrimaryKey
@@ -17,7 +19,9 @@ data class ArtEntry(
     val sourceType: String? = null,
     val sourceValue: String? = null,
     val series: List<String> = emptyList(),
+    val seriesSearchable: List<String> = emptyList(),
     val characters: List<String> = emptyList(),
+    val charactersSearchable: List<String> = emptyList(),
     val tags: List<String> = emptyList(),
     val price: BigDecimal? = null,
     val date: Date? = null,
@@ -34,6 +38,7 @@ data class ArtEntry(
                 (imageWidth ?: 1).coerceAtLeast(1)
     }
 
+    @JsonClass(generateAdapter = true)
     data class Locks(
         val artistsLocked: Boolean = false,
         val sourceLocked: Boolean = false,

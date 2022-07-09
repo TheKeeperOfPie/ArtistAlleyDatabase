@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.room.Room
 import androidx.work.WorkManager
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListApi
+import com.thekeeperofpie.artistalleydatabase.json.AppMoshi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -22,8 +23,12 @@ class AppHiltModule {
     fun provideWorkManager(application: Application) = WorkManager.getInstance(application)
 
     @Provides
-    fun provideSettingsProvider(application: Application) = SettingsProvider(application)
+    fun provideAniListApi() = AniListApi()
 
     @Provides
-    fun provideAniListApi() = AniListApi()
+    fun provideAppMoshi() = AppMoshi()
+
+    @Provides
+    fun provideSettingsProvider(application: Application, appMoshi: AppMoshi) =
+        SettingsProvider(application, appMoshi)
 }

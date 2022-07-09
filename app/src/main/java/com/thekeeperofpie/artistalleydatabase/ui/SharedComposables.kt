@@ -156,6 +156,7 @@ fun ChooseUriRow(
         modifier = Modifier
             .fillMaxWidth()
             .wrapContentHeight()
+            .clickable(onClick = onClickChoose)
     ) {
         OutlinedTextField(
             value = uriString,
