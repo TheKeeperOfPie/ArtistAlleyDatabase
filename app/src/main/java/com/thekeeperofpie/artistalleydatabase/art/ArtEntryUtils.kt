@@ -9,8 +9,8 @@ import java.io.File
 
 object ArtEntryUtils {
 
-    fun getImageFile(context: Context, id: String) =
-        context.filesDir.resolve("entry_images/${id}")
+    fun getImageFile(context: Context, id: String) = context.filesDir
+        .resolve("entry_images/${id}")
 
     fun getImageSize(file: File): Pair<Int?, Int?> {
         val options = BitmapFactory.Options().apply {

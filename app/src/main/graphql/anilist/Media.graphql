@@ -1,0 +1,31 @@
+fragment AniListMedia on Media {
+  id
+  description
+  title {
+    english
+    romaji
+    native
+  }
+  type
+  coverImage {
+    extraLarge
+    large
+    medium
+    color
+  }
+  synonyms
+}
+
+query MediaSearch($search: String, $perPage: Int, $page: Int) {
+  Page(perPage: $perPage, page: $page) @nonnull {
+    media(search: $search) @nonnull {
+      ...AniListMedia
+    }
+  }
+}
+
+query MediaById($id: Int) {
+  Media(id: $id) {
+    ...AniListMedia
+  }
+}

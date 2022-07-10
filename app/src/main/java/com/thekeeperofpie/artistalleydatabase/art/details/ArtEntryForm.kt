@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.art
+package com.thekeeperofpie.artistalleydatabase.art.details
 
 import android.content.Context
 import android.content.Intent
@@ -37,6 +37,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.ContentAlpha
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Lock
@@ -60,6 +61,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
@@ -69,6 +72,7 @@ import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.type
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
@@ -76,7 +80,9 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.PopupProperties
+import coil.compose.AsyncImage
 import com.thekeeperofpie.artistalleydatabase.R
+import com.thekeeperofpie.artistalleydatabase.art.PrintSizeDropdown
 import com.thekeeperofpie.artistalleydatabase.ui.bottomBorder
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -257,7 +263,9 @@ private fun MultiTextSection(section: ArtEntrySection.MultiText) {
                     expanded = focused,
                     onDismissRequest = { focusRequester.freeFocus() },
                     properties = PopupProperties(focusable = false),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 240.dp)
                 ) {
                     section.predictions.forEach {
                         DropdownMenuItem(
@@ -271,29 +279,51 @@ private fun MultiTextSection(section: ArtEntrySection.MultiText) {
                                 }
                             },
                             text = {
-                                Column {
-                                    val titleText = when (it) {
-                                        is ArtEntrySection.MultiText.Entry.Custom -> it.text
-                                        is ArtEntrySection.MultiText.Entry.Prefilled -> it.titleText
+                                val titleText: String
+                                val subtitleText: String?
+                                val image: String?
+                                when (it) {
+                                    is ArtEntrySection.MultiText.Entry.Custom -> {
+                                        titleText = it.text
+                                        subtitleText = null
+                                        image = null
                                     }
-
-                                    val subtitleText = when (it) {
-                                        is ArtEntrySection.MultiText.Entry.Custom -> null
-                                        is ArtEntrySection.MultiText.Entry.Prefilled ->
-                                            it.subtitleText
+                                    is ArtEntrySection.MultiText.Entry.Prefilled -> {
+                                        titleText = it.titleText
+                                        subtitleText = it.subtitleText
+                                        image = it.image
                                     }
+                                }.run { /*exhaust*/ }
 
-                                    Text(
-                                        text = titleText,
-                                        maxLines = 1,
-                                        style = MaterialTheme.typography.labelLarge,
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    EntryImage(
+                                        image = image,
+                                        modifier = Modifier
+                                            .height(54.dp)
+                                            .width(42.dp)
                                     )
-                                    if (subtitleText != null) {
+                                    Column(
+                                        Modifier
+                                            .weight(1f, true)
+                                            .padding(
+                                                start = 16.dp,
+                                                end = 16.dp,
+                                                top = 8.dp,
+                                                bottom = 8.dp,
+                                            )
+                                    ) {
                                         Text(
-                                            text = subtitleText,
-                                            style = MaterialTheme.typography.labelSmall,
-                                            modifier = Modifier.padding(start = 24.dp)
+                                            text = titleText,
+                                            maxLines = 1,
+                                            style = MaterialTheme.typography.labelLarge
                                         )
+                                        if (subtitleText != null) {
+                                            Text(
+                                                text = subtitleText,
+                                                style = MaterialTheme.typography.labelSmall,
+                                                modifier = Modifier.padding(start = 24.dp)
+                                            )
+                                        }
                                     }
                                 }
                             },
@@ -389,6 +419,16 @@ private fun PrefilledSectionField(
                     )
                     .bottomBorder(1.dp, MaterialTheme.colorScheme.onSurfaceVariant)
             ) {
+                EntryImage(
+                    image = entry.image,
+                    modifier = Modifier
+                        .height(72.dp)
+                        .width(56.dp)
+                        .run {
+                            if (index == 0) clip(RoundedCornerShape(topStart = 4.dp)) else this
+                        }
+                )
+
                 Column(
                     Modifier
                         .weight(1f, true)
@@ -407,15 +447,52 @@ private fun PrefilledSectionField(
                     }
                 }
 
-                IconButton(onClick = onClickMore) {
-                    Icon(
-                        imageVector = Icons.Default.MoreVert,
-                        contentDescription = stringResource(
-                            R.string.art_entry_more_actions_content_description
-                        ),
-                    )
+                AnimatedVisibility(
+                    visible = locked != true,
+                    enter = fadeIn(),
+                    exit = fadeOut(),
+                ) {
+                    IconButton(onClick = onClickMore) {
+                        Icon(
+                            imageVector = Icons.Default.MoreVert,
+                            contentDescription = stringResource(
+                                R.string.art_entry_more_actions_content_description
+                            ),
+                        )
+                    }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun EntryImage(
+    image: String?,
+    modifier: Modifier = Modifier,
+) {
+    Box(modifier) {
+        var showPlaceholder by remember { mutableStateOf(true) }
+        if (image == null || showPlaceholder) {
+            Spacer(
+                Modifier
+                    .matchParentSize()
+                    .background(MaterialTheme.colorScheme.onSurfaceVariant)
+                    .alpha(ContentAlpha.disabled)
+            )
+        }
+
+        if (image != null) {
+            AsyncImage(
+                model = image,
+                contentDescription = stringResource(
+                    R.string.art_entry_series_image_content_description
+                ),
+                onLoading = { showPlaceholder = true },
+                onSuccess = { showPlaceholder = false },
+                contentScale = ContentScale.FillWidth,
+                modifier = Modifier.matchParentSize()
+            )
         }
     }
 }

@@ -1,8 +1,10 @@
-package com.thekeeperofpie.artistalleydatabase.art
+package com.thekeeperofpie.artistalleydatabase.art.grid
 
 import android.content.Context
+import com.thekeeperofpie.artistalleydatabase.art.ArtEntry
+import com.thekeeperofpie.artistalleydatabase.art.SourceType
 
-class ArtEntryModel(
+class ArtEntryGridModel(
     context: Context,
     val value: ArtEntry,
 ) {

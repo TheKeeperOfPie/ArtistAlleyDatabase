@@ -38,10 +38,10 @@ import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.HorizontalPagerIndicator
 import com.google.accompanist.pager.rememberPagerState
 import com.thekeeperofpie.artistalleydatabase.R
-import com.thekeeperofpie.artistalleydatabase.art.ArtEntryForm
-import com.thekeeperofpie.artistalleydatabase.art.ArtEntrySection
-import com.thekeeperofpie.artistalleydatabase.art.ImagesSelectBox
-import com.thekeeperofpie.artistalleydatabase.art.SampleArtEntrySectionsProvider
+import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryForm
+import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntrySection
+import com.thekeeperofpie.artistalleydatabase.art.details.ImagesSelectBox
+import com.thekeeperofpie.artistalleydatabase.art.details.SampleArtEntrySectionsProvider
 import com.thekeeperofpie.artistalleydatabase.ui.SnackbarErrorText
 import com.thekeeperofpie.artistalleydatabase.ui.topBorder
 
@@ -147,7 +147,7 @@ object AddEntryScreen {
                         contentDescription = stringResource(
                             R.string.art_entry_image_content_description
                         ),
-                        contentScale = ContentScale.Fit,
+                        contentScale = ContentScale.FillWidth,
                         modifier = Modifier
                             .fillMaxWidth()
                     )

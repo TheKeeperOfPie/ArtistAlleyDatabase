@@ -1,9 +1,12 @@
-package com.thekeeperofpie.artistalleydatabase.art
+package com.thekeeperofpie.artistalleydatabase.art.grid
 
 import android.app.Application
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.thekeeperofpie.artistalleydatabase.art.ArtEntry
+import com.thekeeperofpie.artistalleydatabase.art.ArtEntryDao
+import com.thekeeperofpie.artistalleydatabase.art.ArtEntryUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -13,7 +16,7 @@ abstract class ArtEntryGridViewModel(
     protected val artEntryDao: ArtEntryDao
 ) : ViewModel() {
 
-    val selectedEntries = mutableStateMapOf<Int, ArtEntryModel>()
+    val selectedEntries = mutableStateMapOf<Int, ArtEntryGridModel>()
 
     fun clearSelected() {
         synchronized(selectedEntries) {
@@ -21,7 +24,7 @@ abstract class ArtEntryGridViewModel(
         }
     }
 
-    fun selectEntry(index: Int, entry: ArtEntryModel) {
+    fun selectEntry(index: Int, entry: ArtEntryGridModel) {
         synchronized(selectedEntries) {
             if (selectedEntries.containsKey(index)) {
                 selectedEntries.remove(index)

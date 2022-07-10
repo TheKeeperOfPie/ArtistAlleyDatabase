@@ -7,8 +7,9 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
 import com.thekeeperofpie.artistalleydatabase.SettingsProvider
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListApi
+import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryDao
-import com.thekeeperofpie.artistalleydatabase.art.ArtEntryViewModel
+import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryDetailsViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -21,8 +22,9 @@ class AddEntryViewModel @Inject constructor(
     application: Application,
     artEntryDao: ArtEntryDao,
     aniListApi: AniListApi,
+    mediaRepository: MediaRepository,
     private val settingsProvider: SettingsProvider,
-) : ArtEntryViewModel(application, artEntryDao, aniListApi) {
+) : ArtEntryDetailsViewModel(application, artEntryDao, aniListApi, mediaRepository) {
 
     val imageUris = mutableStateListOf<Uri>()
 
@@ -30,7 +32,7 @@ class AddEntryViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             val entry = settingsProvider.loadArtEntryTemplate() ?: return@launch
             withContext(Dispatchers.Main) {
-                initializeForm(entry)
+                initializeForm(buildModel(entry))
             }
         }
     }

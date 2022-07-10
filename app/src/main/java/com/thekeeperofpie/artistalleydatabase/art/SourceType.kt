@@ -22,6 +22,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.thekeeperofpie.artistalleydatabase.R
+import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryModel
+import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntrySection
 import okhttp3.internal.closeQuietly
 
 sealed class SourceType(val serializedType: String, @StringRes val textRes: Int) {
@@ -95,7 +97,7 @@ class SourceDropdown(locked: Boolean? = null) : ArtEntrySection.Dropdown(
     locked,
 ) {
 
-    fun initialize(entry: ArtEntry) {
+    fun initialize(entry: ArtEntryModel) {
         val value = entry.sourceValue
         when (entry.sourceType) {
             "unknown" -> {

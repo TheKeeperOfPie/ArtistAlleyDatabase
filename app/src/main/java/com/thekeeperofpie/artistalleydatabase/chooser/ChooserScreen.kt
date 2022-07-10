@@ -42,8 +42,8 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import coil.size.Dimension
 import com.thekeeperofpie.artistalleydatabase.R
-import com.thekeeperofpie.artistalleydatabase.art.ArtEntryGrid
-import com.thekeeperofpie.artistalleydatabase.art.ArtEntryModel
+import com.thekeeperofpie.artistalleydatabase.art.grid.ArtEntryGrid
+import com.thekeeperofpie.artistalleydatabase.art.grid.ArtEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.search.SearchOption
 import com.thekeeperofpie.artistalleydatabase.ui.ButtonFooter
 import com.thekeeperofpie.artistalleydatabase.ui.bottomBorder
@@ -59,11 +59,11 @@ object ChooserScreen {
         onQueryChange: (String) -> Unit = {},
         options: List<SearchOption> = emptyList(),
         onOptionChanged: (SearchOption) -> Unit = {},
-        entries: LazyPagingItems<ArtEntryModel> =
-            emptyFlow<PagingData<ArtEntryModel>>().collectAsLazyPagingItems(),
+        entries: LazyPagingItems<ArtEntryGridModel> =
+            emptyFlow<PagingData<ArtEntryGridModel>>().collectAsLazyPagingItems(),
         selectedItems: Collection<Int> = emptyList(),
-        onClickEntry: (index: Int, entry: ArtEntryModel) -> Unit = { _, _ -> },
-        onLongClickEntry: (index: Int, entry: ArtEntryModel) -> Unit = { _, _ -> },
+        onClickEntry: (index: Int, entry: ArtEntryGridModel) -> Unit = { _, _ -> },
+        onLongClickEntry: (index: Int, entry: ArtEntryGridModel) -> Unit = { _, _ -> },
         onClickClear: () -> Unit = {},
         onClickSelect: () -> Unit = {},
     ) {

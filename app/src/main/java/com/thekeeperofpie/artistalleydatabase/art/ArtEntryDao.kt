@@ -20,7 +20,7 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface ArtEntryDao {
 
-    @Query("""SELECT * FROM art_entries WHERE art_entries.id = :id LIMIT 1""")
+    @Query("""SELECT * FROM art_entries WHERE id = :id""")
     suspend fun getEntry(id: String): ArtEntry
 
     @RawQuery([ArtEntry::class])
@@ -61,8 +61,8 @@ interface ArtEntryDao {
                     if (query.includeArtists) this += "artists:$queryValue"
                     if (query.includeSources) this += "sourceType:$queryValue"
                     if (query.includeSources) this += "sourceValue:$queryValue"
-                    if (query.includeSeries) this += "series:$queryValue"
-                    if (query.includeCharacters) this += "characters:$queryValue"
+                    if (query.includeSeries) this += "seriesSearchable:$queryValue"
+                    if (query.includeCharacters) this += "charactersSearchable:$queryValue"
                     if (query.includeTags) this += "tags:$queryValue"
                     if (query.includeNotes) this += "notes:$queryValue"
                 }
@@ -226,7 +226,7 @@ interface ArtEntryDao {
         SELECT DISTINCT (art_entries.series)
         FROM art_entries
         JOIN art_entries_fts ON art_entries.id = art_entries_fts.id
-        WHERE art_entries_fts.series MATCH :query
+        WHERE art_entries_fts.seriesSearchable MATCH :query
         LIMIT :limit OFFSET :offset
     """
     )
@@ -240,7 +240,7 @@ interface ArtEntryDao {
         """
         SELECT DISTINCT (art_entries.series)
         FROM art_entries
-        WHERE art_entries.series LIKE :query
+        WHERE art_entries.seriesSearchable LIKE :query
         LIMIT :limit OFFSET :offset
     """
     )
@@ -265,7 +265,7 @@ interface ArtEntryDao {
         SELECT DISTINCT (art_entries.characters)
         FROM art_entries
         JOIN art_entries_fts ON art_entries.id = art_entries_fts.id
-        WHERE art_entries_fts.characters MATCH :query
+        WHERE art_entries_fts.charactersSearchable MATCH :query
         LIMIT :limit OFFSET :offset
     """
     )
@@ -279,7 +279,7 @@ interface ArtEntryDao {
         """
         SELECT DISTINCT (art_entries.characters)
         FROM art_entries
-        WHERE art_entries.characters LIKE :query
+        WHERE art_entries.charactersSearchable LIKE :query
         LIMIT :limit OFFSET :offset
     """
     )

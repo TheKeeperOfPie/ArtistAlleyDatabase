@@ -4,10 +4,13 @@ import android.app.Application
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import dagger.hilt.android.HiltAndroidApp
+import kotlinx.coroutines.MainScope
 import javax.inject.Inject
 
 @HiltAndroidApp
 class CustomApplication : Application(), Configuration.Provider {
+
+    val scope = MainScope()
 
     @Inject
     lateinit var workerFactory: HiltWorkerFactory

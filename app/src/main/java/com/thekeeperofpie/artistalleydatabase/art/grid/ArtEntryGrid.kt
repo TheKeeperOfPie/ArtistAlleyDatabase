@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.art
+package com.thekeeperofpie.artistalleydatabase.art.grid
 
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -52,11 +52,11 @@ object ArtEntryGrid {
     @Composable
     operator fun invoke(
         columnCount: Int = 2,
-        entries: LazyPagingItems<ArtEntryModel>,
+        entries: LazyPagingItems<ArtEntryGridModel>,
         paddingValues: PaddingValues,
         selectedItems: Collection<Int> = emptyList(),
-        onClickEntry: (index: Int, entry: ArtEntryModel) -> Unit = { _, _ -> },
-        onLongClickEntry: (index: Int, entry: ArtEntryModel) -> Unit = { _, _ -> },
+        onClickEntry: (index: Int, entry: ArtEntryGridModel) -> Unit = { _, _ -> },
+        onLongClickEntry: (index: Int, entry: ArtEntryGridModel) -> Unit = { _, _ -> },
         onClickClear: () -> Unit = {},
         onConfirmDelete: () -> Unit = {},
     ) {
@@ -100,12 +100,12 @@ object ArtEntryGrid {
         columnCount: Int,
         modifier: Modifier = Modifier,
         expectedWidth: Dimension.Pixels,
-        entries: LazyPagingItems<ArtEntryModel>,
+        entries: LazyPagingItems<ArtEntryGridModel>,
         selectedItems: Collection<Int> = emptyList(),
-        onClickEntry: (index: Int, entry: ArtEntryModel) -> Unit = { _, _ -> },
-        onLongClickEntry: (index: Int, entry: ArtEntryModel) -> Unit = { _, _ -> },
+        onClickEntry: (index: Int, entry: ArtEntryGridModel) -> Unit = { _, _ -> },
+        onLongClickEntry: (index: Int, entry: ArtEntryGridModel) -> Unit = { _, _ -> },
     ) {
-        LazyStaggeredGrid<ArtEntryModel>(
+        LazyStaggeredGrid<ArtEntryGridModel>(
             columnCount = columnCount,
             modifier = modifier
         ) {
@@ -127,10 +127,10 @@ object ArtEntryGrid {
     private fun ArtEntry(
         expectedWidth: Dimension.Pixels,
         index: Int,
-        entry: ArtEntryModel? = null,
+        entry: ArtEntryGridModel? = null,
         selectedItems: Collection<Int> = emptyList(),
-        onClickEntry: (index: Int, entry: ArtEntryModel) -> Unit = { _, _ -> },
-        onLongClickEntry: (index: Int, entry: ArtEntryModel) -> Unit = { _, _ -> },
+        onClickEntry: (index: Int, entry: ArtEntryGridModel) -> Unit = { _, _ -> },
+        onLongClickEntry: (index: Int, entry: ArtEntryGridModel) -> Unit = { _, _ -> },
     ) {
         val entryModifier = Modifier.fillMaxWidth()
         if (entry == null) {

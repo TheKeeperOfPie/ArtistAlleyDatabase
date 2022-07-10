@@ -10,8 +10,8 @@ import androidx.paging.cachedIn
 import androidx.paging.map
 import com.thekeeperofpie.artistalleydatabase.R
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryDao
-import com.thekeeperofpie.artistalleydatabase.art.ArtEntryGridViewModel
-import com.thekeeperofpie.artistalleydatabase.art.ArtEntryModel
+import com.thekeeperofpie.artistalleydatabase.art.grid.ArtEntryGridModel
+import com.thekeeperofpie.artistalleydatabase.art.grid.ArtEntryGridViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -28,7 +28,7 @@ abstract class SearchViewModel constructor(
 
     val query = MutableStateFlow(SearchQueryWrapper())
 
-    val results = MutableStateFlow(PagingData.empty<ArtEntryModel>())
+    val results = MutableStateFlow(PagingData.empty<ArtEntryGridModel>())
 
     private val artistsOption = SearchOption(R.string.search_option_artists)
     private val sourceOption = SearchOption(R.string.search_option_source)
@@ -64,7 +64,7 @@ abstract class SearchViewModel constructor(
                         }
                     }
             }
-                .map { it.map { ArtEntryModel(application, it) } }
+                .map { it.map { ArtEntryGridModel(application, it) } }
                 .collect(results)
         }
     }

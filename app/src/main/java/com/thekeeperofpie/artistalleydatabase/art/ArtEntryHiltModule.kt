@@ -11,5 +11,5 @@ import dagger.hilt.components.SingletonComponent
 object ArtEntryHiltModule {
 
     @Provides
-    fun provideAppEntryDao(database: AppDatabase) = database.artEntryDao()
+    fun provideAppEntryDao(appDatabase: AppDatabase) = appDatabase.artEntryDao()
 }

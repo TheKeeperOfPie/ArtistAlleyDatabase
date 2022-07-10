@@ -7,8 +7,8 @@ import android.content.Intent
 import android.net.Uri
 import androidx.core.content.FileProvider
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryDao
-import com.thekeeperofpie.artistalleydatabase.art.ArtEntryModel
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryUtils
+import com.thekeeperofpie.artistalleydatabase.art.grid.ArtEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.search.SearchViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -43,7 +43,7 @@ class ChooserViewModel @Inject constructor(
         }
     }
 
-    fun getResult(entry: ArtEntryModel): Intent? {
+    fun getResult(entry: ArtEntryGridModel): Intent? {
         val appPackageName = application.packageName
         val (imageUri, mimeType) = getImageUriAndType(appPackageName, entry) ?: return null
 
@@ -55,7 +55,7 @@ class ChooserViewModel @Inject constructor(
 
     private fun getImageUriAndType(
         appPackageName: String,
-        entry: ArtEntryModel
+        entry: ArtEntryGridModel
     ): Pair<Uri, String>? {
         val file = ArtEntryUtils.getImageFile(application, entry.value.id)
         if (!file.exists()) {

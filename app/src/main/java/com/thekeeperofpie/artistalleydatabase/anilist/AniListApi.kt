@@ -1,9 +1,11 @@
 package com.thekeeperofpie.artistalleydatabase.anilist
 
 import com.anilist.CharactersSearchQuery
+import com.anilist.MediaByIdQuery
 import com.anilist.MediaSearchQuery
 import com.apollographql.apollo3.ApolloClient
 import com.apollographql.apollo3.api.Optional
+import kotlinx.coroutines.flow.map
 
 class AniListApi {
 
@@ -14,6 +16,10 @@ class AniListApi {
     private val apolloClient = ApolloClient.Builder()
         .serverUrl(SERVER_URL)
         .build()
+
+    fun getMedia(id: Int) = apolloClient.query(MediaByIdQuery(Optional.Present(id)))
+        .toFlow()
+        .map { it.data?.Media }
 
     fun searchSeries(query: String) =
         apolloClient.query(MediaSearchQuery(Optional.Present(query))).toFlow()

@@ -42,11 +42,11 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.R
-import com.thekeeperofpie.artistalleydatabase.art.ArtEntryForm
-import com.thekeeperofpie.artistalleydatabase.art.ArtEntryGrid
-import com.thekeeperofpie.artistalleydatabase.art.ArtEntrySection
-import com.thekeeperofpie.artistalleydatabase.art.ImageSelectBox
-import com.thekeeperofpie.artistalleydatabase.art.SampleArtEntrySectionsProvider
+import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryForm
+import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntrySection
+import com.thekeeperofpie.artistalleydatabase.art.details.ImageSelectBox
+import com.thekeeperofpie.artistalleydatabase.art.details.SampleArtEntrySectionsProvider
+import com.thekeeperofpie.artistalleydatabase.art.grid.ArtEntryGrid
 import com.thekeeperofpie.artistalleydatabase.navigation.NavDestinations
 import com.thekeeperofpie.artistalleydatabase.ui.ButtonFooter
 import com.thekeeperofpie.artistalleydatabase.ui.SnackbarErrorText
@@ -157,7 +157,7 @@ object DetailsScreen {
                         contentDescription = stringResource(
                             R.string.art_entry_image_content_description
                         ),
-                        contentScale = ContentScale.Fit,
+                        contentScale = ContentScale.FillWidth,
                         modifier = Modifier
                             .fillMaxWidth()
                     )
@@ -177,7 +177,7 @@ object DetailsScreen {
                             contentDescription = stringResource(
                                 R.string.art_entry_image_content_description
                             ),
-                            contentScale = ContentScale.Fit,
+                            contentScale = ContentScale.FillWidth,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .heightIn(min = minimumHeight)

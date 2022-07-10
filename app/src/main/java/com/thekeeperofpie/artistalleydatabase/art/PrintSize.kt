@@ -20,6 +20,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.thekeeperofpie.artistalleydatabase.BuildConfig
 import com.thekeeperofpie.artistalleydatabase.R
+import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntrySection
 import kotlin.math.roundToInt
 
 sealed class PrintSize(

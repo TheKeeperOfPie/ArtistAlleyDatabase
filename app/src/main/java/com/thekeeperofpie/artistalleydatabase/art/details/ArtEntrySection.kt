@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.art
+package com.thekeeperofpie.artistalleydatabase.art.details
 
 import androidx.annotation.StringRes
 import androidx.compose.material3.Text
@@ -43,15 +43,22 @@ sealed class ArtEntrySection(locked: Boolean? = null) {
         fun finalContents() = (contents + Entry.Custom(pendingValue.trim()))
             .filterNot { it.serializedValue.isBlank() }
 
-        sealed class Entry(val text: String, val serializedValue: String = text) {
+        sealed class Entry(
+            val text: String,
+            val serializedValue: String = text,
+            val searchableValue: String = text,
+        ) {
             class Custom(text: String) : Entry(text)
 
             class Prefilled(
+                val id: String,
                 text: String,
+                val image: String? = null,
                 val titleText: String = text,
                 val subtitleText: String? = null,
                 serializedValue: String,
-            ) : Entry(text, serializedValue)
+                searchableValue: String,
+            ) : Entry(text, serializedValue, searchableValue)
         }
     }
 

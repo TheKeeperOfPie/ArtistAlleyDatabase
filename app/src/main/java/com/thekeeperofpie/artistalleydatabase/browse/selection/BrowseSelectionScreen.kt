@@ -11,8 +11,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.paging.compose.LazyPagingItems
-import com.thekeeperofpie.artistalleydatabase.art.ArtEntryGrid
-import com.thekeeperofpie.artistalleydatabase.art.ArtEntryModel
+import com.thekeeperofpie.artistalleydatabase.art.grid.ArtEntryGrid
+import com.thekeeperofpie.artistalleydatabase.art.grid.ArtEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.ui.AppBar
 import com.thekeeperofpie.artistalleydatabase.ui.SnackbarErrorText
 
@@ -25,10 +25,10 @@ object BrowseSelectionScreen {
         loading: () -> Boolean,
         errorRes: Pair<Int, Exception?>? = null,
         onErrorDismiss: () -> Unit = {},
-        entries: LazyPagingItems<ArtEntryModel>,
+        entries: LazyPagingItems<ArtEntryGridModel>,
         selectedItems: Collection<Int> = emptyList(),
-        onClickEntry: (index: Int, entry: ArtEntryModel) -> Unit = { _, _ -> },
-        onLongClickEntry: (index: Int, entry: ArtEntryModel) -> Unit = { _, _ -> },
+        onClickEntry: (index: Int, entry: ArtEntryGridModel) -> Unit = { _, _ -> },
+        onLongClickEntry: (index: Int, entry: ArtEntryGridModel) -> Unit = { _, _ -> },
         onClickClear: () -> Unit = {},
         onConfirmDelete: () -> Unit = {},
     ) {

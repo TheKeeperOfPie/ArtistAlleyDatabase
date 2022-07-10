@@ -122,7 +122,16 @@ class ImportWorker @AssistedInject constructor(
 
                 val block: suspend (insert: suspend (ArtEntry) -> Unit) -> Unit = { insert ->
                     while (reader.peek() == JsonReader.Token.BEGIN_OBJECT) {
-                        val entry = appMoshi.artEntryAdapter.fromJson(reader) ?: continue
+                        var entry = appMoshi.artEntryAdapter.fromJson(reader) ?: continue
+
+                        if (entry.seriesSearchable.isEmpty()) {
+                            entry = entry.copy(seriesSearchable = entry.series)
+                        }
+
+                        if (entry.charactersSearchable.isEmpty()) {
+                            entry = entry.copy(charactersSearchable = entry.characters)
+                        }
+
                         count++
                         insert(entry)
                     }

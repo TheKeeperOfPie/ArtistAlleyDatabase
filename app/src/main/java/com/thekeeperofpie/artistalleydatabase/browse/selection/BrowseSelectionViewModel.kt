@@ -13,8 +13,8 @@ import androidx.paging.filter
 import androidx.paging.map
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryColumn
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryDao
-import com.thekeeperofpie.artistalleydatabase.art.ArtEntryGridViewModel
-import com.thekeeperofpie.artistalleydatabase.art.ArtEntryModel
+import com.thekeeperofpie.artistalleydatabase.art.grid.ArtEntryGridModel
+import com.thekeeperofpie.artistalleydatabase.art.grid.ArtEntryGridViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -32,7 +32,7 @@ class BrowseSelectionViewModel @Inject constructor(
     lateinit var column: ArtEntryColumn
 
     var loading by mutableStateOf(false)
-    val entries = MutableStateFlow(PagingData.empty<ArtEntryModel>())
+    val entries = MutableStateFlow(PagingData.empty<ArtEntryGridModel>())
 
     fun initialize(column: ArtEntryColumn, value: String) {
         if (this::column.isInitialized) return
@@ -59,7 +59,7 @@ class BrowseSelectionViewModel @Inject constructor(
                             ArtEntryColumn.TAGS -> it.tags.contains(value)
                         }
                     }
-                        .map { ArtEntryModel(application, it) }
+                        .map { ArtEntryGridModel(application, it) }
                 }
                 .onEach {
                     viewModelScope.launch(Dispatchers.Main) {
