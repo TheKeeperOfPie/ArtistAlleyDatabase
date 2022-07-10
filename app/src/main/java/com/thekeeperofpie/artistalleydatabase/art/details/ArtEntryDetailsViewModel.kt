@@ -372,7 +372,9 @@ abstract class ArtEntryDetailsViewModel(
             titleText = displayName,
             subtitleText = mediaTitle,
             serializedValue = serializedValue,
-            searchableValue = (listOf(last, middle, first) + alternative).joinToString()
+            searchableValue = (listOf(last, middle, first) + alternative.orEmpty())
+                .filterNot(String?::isNullOrBlank)
+                .joinToString()
         )
     }
 
@@ -490,9 +492,11 @@ abstract class ArtEntryDetailsViewModel(
             sourceType = sourceType,
             sourceValue = sourceValue,
             series = seriesSection.finalContents().map { it.serializedValue },
-            seriesSearchable = seriesSection.finalContents().map { it.searchableValue },
+            seriesSearchable = seriesSection.finalContents().map { it.searchableValue }
+                .filterNot(String?::isNullOrBlank),
             characters = characterSection.finalContents().map { it.serializedValue },
-            charactersSearchable = characterSection.finalContents().map { it.searchableValue },
+            charactersSearchable = characterSection.finalContents().map { it.searchableValue }
+                .filterNot(String?::isNullOrBlank),
             tags = tagSection.finalContents().map { it.serializedValue },
             lastEditTime = Date.from(Instant.now()),
             imageWidth = imageWidth,
@@ -514,6 +518,16 @@ abstract class ArtEntryDetailsViewModel(
 
     suspend fun saveEntry(imageUri: Uri?, id: String) {
         val entry = makeEntry(imageUri, id) ?: return
+        entry.series
+            .filter { it.contains("{") }
+            .mapNotNull(aniListSeriesEntryAdapter::fromJson)
+            .map { it.id }
+            .forEach(mediaRepository::ensureSaved)
+        entry.characters
+            .filter { it.contains("{") }
+            .mapNotNull(aniListCharacterEntryAdapter::fromJson)
+            .map { it.id }
+            .forEach(characterRepository::ensureSaved)
         artEntryDao.insertEntries(entry)
     }
 }

@@ -7,6 +7,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
@@ -15,7 +16,7 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class CharacterRepository(
-    application: CustomApplication,
+    private val application: CustomApplication,
     private val characterEntryDao: CharacterEntryDao,
     private val aniListApi: AniListApi,
 ) {
@@ -36,4 +37,13 @@ class CharacterRepository(
 
     suspend fun getEntry(id: Int) = characterEntryDao.getEntry(id)
         .onEach { if (it == null) fetchCharacterFlow.emit(id) }
+
+    fun ensureSaved(id: Int) {
+        application.scope.launch(Dispatchers.IO) {
+            val entry = characterEntryDao.getEntry(id).first()
+            if (entry == null) {
+                fetchCharacterFlow.emit(id)
+            }
+        }
+    }
 }

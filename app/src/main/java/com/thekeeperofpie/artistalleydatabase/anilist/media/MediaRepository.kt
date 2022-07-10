@@ -2,22 +2,21 @@ package com.thekeeperofpie.artistalleydatabase.anilist.media
 
 import com.thekeeperofpie.artistalleydatabase.CustomApplication
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListApi
+import com.thekeeperofpie.artistalleydatabase.utils.distinctWithBuffer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import java.util.LinkedList
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class MediaRepository(
-    application: CustomApplication,
+    private val application: CustomApplication,
     private val mediaEntryDao: MediaEntryDao,
     private val aniListApi: AniListApi,
 ) {
@@ -36,20 +35,15 @@ class MediaRepository(
         }
     }
 
-    private fun <T> Flow<T>.distinctWithBuffer(bufferSize: Int): Flow<T> = flow {
-        val past = LinkedList<T>()
-        collect {
-            val contains = past.contains(it)
-            if (!contains) {
-                while (past.size > bufferSize) {
-                    past.removeFirst()
-                }
-                past.addLast(it)
-                emit(it)
+    suspend fun getEntry(id: Int) = mediaEntryDao.getEntry(id)
+        .onEach { if (it == null) fetchMediaFlow.emit(id) }
+
+    fun ensureSaved(id: Int) {
+        application.scope.launch(Dispatchers.IO) {
+            val entry = mediaEntryDao.getEntry(id).first()
+            if (entry == null) {
+                fetchMediaFlow.emit(id)
             }
         }
     }
-
-    suspend fun getEntry(id: Int) = mediaEntryDao.getEntry(id)
-        .onEach { if (it == null) fetchMediaFlow.emit(id) }
 }

@@ -160,7 +160,8 @@ interface ArtEntryDao {
         matchFunction: suspend (String) -> List<String>,
         likeFunction: suspend (String) -> List<String>,
     ): List<String> {
-        val matchQuery = "'*$query*'"
+        // TODO: Filter results so that only individual entries with the query are returned
+        val matchQuery = "*$query*"
         val likeQuery = wrapLikeQuery(query)
         return matchFunction(matchQuery)
             .plus(matchFunction(matchQuery.toLowerCase(Locale.current)))
@@ -170,7 +171,6 @@ interface ArtEntryDao {
             .plus(likeFunction(likeQuery.toUpperCase(Locale.current)))
             .flatMap(JsonUtils::readStringList)
             .distinct()
-            .filter { it.toLowerCase(Locale.current).contains(query.toLowerCase(Locale.current)) }
     }
 
     suspend fun queryArtists(
