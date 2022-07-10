@@ -34,29 +34,29 @@ class BrowseSelectionViewModel @Inject constructor(
     var loading by mutableStateOf(false)
     val entries = MutableStateFlow(PagingData.empty<ArtEntryGridModel>())
 
-    fun initialize(column: ArtEntryColumn, value: String) {
+    fun initialize(column: ArtEntryColumn, query: String) {
         if (this::column.isInitialized) return
         this.column = column
 
         viewModelScope.launch(Dispatchers.IO) {
             Pager(PagingConfig(pageSize = 20)) {
                 when (column) {
-                    ArtEntryColumn.ARTISTS -> artEntryDao.getArtist(value)
+                    ArtEntryColumn.ARTISTS -> artEntryDao.getArtist(query)
                     ArtEntryColumn.SOURCE -> TODO()
-                    ArtEntryColumn.SERIES -> artEntryDao.getSeries(value)
-                    ArtEntryColumn.CHARACTERS -> artEntryDao.getCharacter(value)
-                    ArtEntryColumn.TAGS -> artEntryDao.getTag(value)
+                    ArtEntryColumn.SERIES -> artEntryDao.getSeries(query)
+                    ArtEntryColumn.CHARACTERS -> artEntryDao.getCharacter(query)
+                    ArtEntryColumn.TAGS -> artEntryDao.getTag(query)
                 }
             }
                 .flow.cachedIn(viewModelScope)
                 .map {
                     it.filter {
                         when (column) {
-                            ArtEntryColumn.ARTISTS -> it.artists.contains(value)
+                            ArtEntryColumn.ARTISTS -> it.artists.contains(query)
                             ArtEntryColumn.SOURCE -> TODO()
-                            ArtEntryColumn.SERIES -> it.series.contains(value)
-                            ArtEntryColumn.CHARACTERS -> it.characters.contains(value)
-                            ArtEntryColumn.TAGS -> it.tags.contains(value)
+                            ArtEntryColumn.SERIES -> it.series.any { it.contains(query) }
+                            ArtEntryColumn.CHARACTERS -> it.characters.any { it.contains(query) }
+                            ArtEntryColumn.TAGS -> it.tags.contains(query)
                         }
                     }
                         .map { ArtEntryGridModel(application, it) }

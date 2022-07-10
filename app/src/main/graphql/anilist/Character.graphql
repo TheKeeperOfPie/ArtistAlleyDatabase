@@ -1,0 +1,36 @@
+fragment AniListCharacter on Character {
+  id
+  name {
+    first
+    middle
+    last
+    full
+    native
+    alternative
+  }
+  image {
+    large
+    medium
+  }
+
+  media(page: $mediaPage, perPage: $mediaPerPage) {
+    nodes {
+      ...AniListMedia
+    }
+  }
+}
+
+query CharactersSearch($search: String, $perPage: Int, $page: Int, $mediaPage: Int,
+    $mediaPerPage: Int) {
+  Page(perPage: $perPage, page: $page) @nonnull {
+    characters(search: $search) @nonnull {
+      ...AniListCharacter
+    }
+  }
+}
+
+query CharacterById($id: Int, $mediaPage: Int, $mediaPerPage: Int) {
+  Character(id: $id) {
+    ...AniListCharacter
+  }
+}

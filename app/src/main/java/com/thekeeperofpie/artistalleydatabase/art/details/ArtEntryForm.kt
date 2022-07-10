@@ -467,7 +467,7 @@ private fun PrefilledSectionField(
 }
 
 @Composable
-private fun EntryImage(
+fun EntryImage(
     image: String?,
     modifier: Modifier = Modifier,
 ) {
@@ -486,7 +486,7 @@ private fun EntryImage(
             AsyncImage(
                 model = image,
                 contentDescription = stringResource(
-                    R.string.art_entry_series_image_content_description
+                    R.string.art_entry_entry_image_content_description
                 ),
                 onLoading = { showPlaceholder = true },
                 onSuccess = { showPlaceholder = false },

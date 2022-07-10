@@ -8,10 +8,12 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListApi
+import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntry
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryDao
 import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryDetailsViewModel
+import com.thekeeperofpie.artistalleydatabase.json.AppMoshi
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -25,7 +27,16 @@ class DetailsViewModel @Inject constructor(
     artEntryDao: ArtEntryDao,
     aniListApi: AniListApi,
     mediaRepository: MediaRepository,
-) : ArtEntryDetailsViewModel(application, artEntryDao, aniListApi, mediaRepository) {
+    characterRepository: CharacterRepository,
+    appMoshi: AppMoshi,
+) : ArtEntryDetailsViewModel(
+    application,
+    artEntryDao,
+    aniListApi,
+    mediaRepository,
+    characterRepository,
+    appMoshi
+) {
 
     var entryId: String? = null
     lateinit var entry: ArtEntry

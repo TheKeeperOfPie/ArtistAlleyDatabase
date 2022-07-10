@@ -63,7 +63,7 @@ fun AppBar(
     onClickNav: (() -> Unit)? = null
 ) {
     SmallTopAppBar(
-        title = { Text(text) },
+        title = { Text(text = text, maxLines = 1) },
         navigationIcon = { onClickNav?.let { NavMenuIconButton(it) } },
         scrollBehavior = scrollBehavior,
         colors = colors,

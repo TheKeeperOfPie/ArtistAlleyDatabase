@@ -8,16 +8,18 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.anilist.CharactersSearchQuery
+import com.anilist.fragment.AniListCharacter
 import com.anilist.fragment.AniListMedia
 import com.apollographql.apollo3.api.ApolloResponse
 import com.apollographql.apollo3.api.Operation
-import com.squareup.moshi.Moshi
-import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import com.thekeeperofpie.artistalleydatabase.R
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListApi
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListCharacterEntry
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListSeriesEntry
+import com.thekeeperofpie.artistalleydatabase.anilist.DatabaseCharacterEntry
+import com.thekeeperofpie.artistalleydatabase.anilist.DatabaseSeriesEntry
+import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterEntry
+import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
+import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterUtils
+import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterUtils.buildDisplayName
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntry
@@ -25,6 +27,7 @@ import com.thekeeperofpie.artistalleydatabase.art.ArtEntryDao
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryUtils
 import com.thekeeperofpie.artistalleydatabase.art.PrintSizeDropdown
 import com.thekeeperofpie.artistalleydatabase.art.SourceDropdown
+import com.thekeeperofpie.artistalleydatabase.json.AppMoshi
 import com.thekeeperofpie.artistalleydatabase.utils.nullable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -34,7 +37,6 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
@@ -45,20 +47,22 @@ import kotlinx.coroutines.withContext
 import java.time.Instant
 import java.util.Date
 
+@OptIn(ExperimentalCoroutinesApi::class)
 abstract class ArtEntryDetailsViewModel(
     protected val application: Application,
     protected val artEntryDao: ArtEntryDao,
     private val aniListApi: AniListApi,
-    private val mediaRepository: MediaRepository
+    private val mediaRepository: MediaRepository,
+    private val characterRepository: CharacterRepository,
+    appMoshi: AppMoshi,
 ) : ViewModel() {
 
     companion object {
         private val TAG = ArtEntryDetailsViewModel::class.java.name
     }
 
-    private val moshi = Moshi.Builder().addLast(KotlinJsonAdapterFactory()).build()
-    private val aniListSeriesEntryAdapter = moshi.adapter(AniListSeriesEntry::class.java)
-    private val aniListCharacterEntryAdapter = moshi.adapter(AniListCharacterEntry::class.java)
+    private val aniListSeriesEntryAdapter = appMoshi.aniListSeriesEntryAdapter
+    private val aniListCharacterEntryAdapter = appMoshi.aniListCharacterEntryAdapter
 
     private val artistSection = ArtEntrySection.MultiText(
         R.string.art_entry_artists_header_zero,
@@ -156,14 +160,23 @@ abstract class ArtEntryDetailsViewModel(
                     artEntryDao.queryCharacters(query)
                         .map {
                             if (it.contains("{")) {
-                                flow<ArtEntrySection.MultiText.Entry> {
-                                    val entry = aniListCharacterEntryAdapter.fromJson(it)
-                                    if (entry == null) {
-                                        emit(ArtEntrySection.MultiText.Entry.Custom(it))
-                                        return@flow
-                                    }
-                                    characterEntry(entry)?.let { emit(it) }
-                                        ?: emit(ArtEntrySection.MultiText.Entry.Custom(it))
+                                val entry = aniListCharacterEntryAdapter.fromJson(it)
+                                if (entry == null) {
+                                    flowOf(ArtEntrySection.MultiText.Entry.Custom(it))
+                                } else {
+                                    characterRepository.getEntry(entry.id)
+                                        .filterNotNull()
+                                        .flatMapLatest { character ->
+                                            // TODO: Batch query?
+                                            character.mediaIds
+                                                ?.map { mediaRepository.getEntry(it) }
+                                                ?.let { combine(it) { it.toList() } }
+                                                .let { it ?: flowOf(listOf(null)) }
+                                                .map { character to it.filterNotNull() }
+                                        }
+                                        .map { characterEntry(it.first, it.second) }
+                                        .onStart { emit(characterEntry(entry)) }
+                                        .filterNotNull()
                                 }
                             } else {
                                 flowOf(ArtEntrySection.MultiText.Entry.Custom(it))
@@ -172,7 +185,8 @@ abstract class ArtEntryDetailsViewModel(
                         .ifEmpty { listOf(flowOf(null)) }
                 }, networkCall = { query ->
                     aniListCall({ aniListApi.searchCharacters(query) }) {
-                        it.Page.characters.filterNotNull().map(::characterEntry)
+                        it.Page.characters.filterNotNull()
+                            .map { characterEntry(it.aniListCharacter) }
                     }
                 }
             )
@@ -206,7 +220,7 @@ abstract class ArtEntryDetailsViewModel(
                         removeIf { source ->
                             network.any { target -> target.text.trim() == source.text.trim() }
                         }
-                    } + network.distinctBy {  }
+                    } + network
                 }
             }
             .collectLatest {
@@ -233,7 +247,7 @@ abstract class ArtEntryDetailsViewModel(
     private fun seriesEntry(media: AniListMedia): ArtEntrySection.MultiText.Entry.Prefilled {
         val title = media.title?.romaji ?: media.id.toString()
         val serializedValue =
-            aniListSeriesEntryAdapter.toJson(AniListSeriesEntry(media.id, title))
+            aniListSeriesEntryAdapter.toJson(DatabaseSeriesEntry(media.id, title))
         return ArtEntrySection.MultiText.Entry.Prefilled(
             id = media.id.toString(),
             text = title,
@@ -253,7 +267,7 @@ abstract class ArtEntryDetailsViewModel(
         val title = entry.title
         val nonNullTitle = title?.romaji ?: entry.id.toString()
         val serializedValue =
-            aniListSeriesEntryAdapter.toJson(AniListSeriesEntry(entry.id, nonNullTitle))
+            aniListSeriesEntryAdapter.toJson(DatabaseSeriesEntry(entry.id, nonNullTitle))
         return ArtEntrySection.MultiText.Entry.Prefilled(
             id = entry.id.toString(),
             text = nonNullTitle,
@@ -269,9 +283,9 @@ abstract class ArtEntryDetailsViewModel(
         )
     }
 
-    private fun seriesEntry(entry: AniListSeriesEntry): ArtEntrySection.MultiText.Entry {
+    private fun seriesEntry(entry: DatabaseSeriesEntry): ArtEntrySection.MultiText.Entry {
         val serializedValue =
-            aniListSeriesEntryAdapter.toJson(AniListSeriesEntry(entry.id, entry.title))
+            aniListSeriesEntryAdapter.toJson(DatabaseSeriesEntry(entry.id, entry.title))
         return ArtEntrySection.MultiText.Entry.Prefilled(
             id = entry.id.toString(),
             text = entry.title,
@@ -281,54 +295,84 @@ abstract class ArtEntryDetailsViewModel(
         )
     }
 
-    private fun characterEntry(
-        character: CharactersSearchQuery.Character
-    ) = characterEntry(character.id, character.name, character.media)
+    private fun characterEntry(character: AniListCharacter) =
+        characterEntry(
+            id = character.id,
+            image = character.image?.medium,
+            first = character.name?.first,
+            middle = character.name?.middle,
+            last = character.name?.last,
+            full = character.name?.full,
+            native = character.name?.native,
+            alternative = character.name?.alternative?.filterNotNull(),
+            mediaTitle = character.media?.nodes?.firstOrNull()?.aniListMedia?.title?.romaji
+        )
 
-    private fun characterEntry(entry: AniListCharacterEntry) =
-        characterEntry(entry.id, entry.name, null)
+    private fun characterEntry(entry: DatabaseCharacterEntry) =
+        characterEntry(
+            id = entry.id,
+            image = null,
+            first = entry.name?.first,
+            middle = entry.name?.middle,
+            last = entry.name?.last,
+            full = entry.name?.full,
+            native = entry.name?.native,
+            alternative = emptyList(),
+            mediaTitle = null,
+        )
+
+    private fun characterEntry(entry: CharacterEntry, media: List<MediaEntry>) =
+        characterEntry(
+            id = entry.id,
+            image = entry.image?.medium,
+            first = entry.name?.first,
+            middle = entry.name?.middle,
+            last = entry.name?.last,
+            full = entry.name?.full,
+            native = entry.name?.native,
+            alternative = entry.name?.alternative,
+            mediaTitle = media.firstOrNull()?.title?.romaji,
+        )
 
     private fun characterEntry(
         id: Int?,
-        name: CharactersSearchQuery.Name?,
-        media: CharactersSearchQuery.Media?
+        image: String?,
+        first: String?,
+        middle: String?,
+        last: String?,
+        full: String?,
+        native: String?,
+        alternative: List<String>?,
+        mediaTitle: String?
     ): ArtEntrySection.MultiText.Entry? {
-        @Suppress("NAME_SHADOWING")
-        val name = name ?: return null
-        val canonicalName = when {
-            name.last == null -> name.first
-            name.first == null -> name.last
-            else -> "${name.last} ${name.first}"
-        }.takeUnless(String?::isNullOrBlank) ?: return null
+        val canonicalName = CharacterUtils.buildCanonicalName(
+            first = first,
+            middle = middle,
+            last = last,
+        ) ?: return null
 
-        val displayName = canonicalName + name.alternative.orEmpty()
-            .filterNot(String?::isNullOrBlank)
-            .takeUnless(Collection<*>::isEmpty)
-            ?.joinToString(prefix = " (", separator = ", ", postfix = ")")
-            .orEmpty()
-
-        val series = media?.nodes
-            ?.map { it?.title?.romaji?.trim() }
-            .orEmpty()
-            .filterNotNull()
-
-        val collapsedSeries = series.toMutableList().apply {
-            removeIf { target ->
-                series.any { source ->
-                    source != target && target.startsWith(source)
-                }
-            }
-        }
+        val displayName = buildDisplayName(canonicalName, alternative)
 
         val serializedValue =
-            aniListCharacterEntryAdapter.toJson(AniListCharacterEntry(id ?: -1, name))
+            aniListCharacterEntryAdapter.toJson(
+                DatabaseCharacterEntry(
+                    id ?: -1, DatabaseCharacterEntry.Name(
+                        first = first,
+                        middle = middle,
+                        last = last,
+                        full = full,
+                        native = native,
+                    )
+                )
+            )
         return ArtEntrySection.MultiText.Entry.Prefilled(
             id = (id ?: -1).toString(),
             text = canonicalName,
+            image = image,
             titleText = displayName,
-            subtitleText = collapsedSeries.takeUnless(Collection<*>::isEmpty)?.firstOrNull(),
+            subtitleText = mediaTitle,
             serializedValue = serializedValue,
-            searchableValue = (listOf(name.last, name.first) + name.alternative).joinToString()
+            searchableValue = (listOf(last, middle, first) + alternative).joinToString()
         )
     }
 
@@ -341,7 +385,7 @@ abstract class ArtEntryDetailsViewModel(
     private fun databaseToCharacterEntry(value: String) =
         value.takeIf { it.contains("{") }
             ?.let { aniListCharacterEntryAdapter.fromJson(it) }
-            ?.let { characterEntry(it.id, it.name, null) }
+            ?.let { characterEntry(it) }
             ?: ArtEntrySection.MultiText.Entry.Custom(value)
 
     protected fun buildModel(entry: ArtEntry): ArtEntryModel {
@@ -382,18 +426,46 @@ abstract class ArtEntryDetailsViewModel(
         notesSection.value = entry.notes.orEmpty()
         notesSection.locked = locks.notesLocked
 
+        entry.characters.filterIsInstance<ArtEntrySection.MultiText.Entry.Prefilled>()
+            .forEach {
+                val characterId = it.id.toInt()
+                viewModelScope.launch(Dispatchers.Main) {
+                    characterRepository.getEntry(characterId)
+                        .filterNotNull()
+                        .flatMapLatest { character ->
+                            // TODO: Batch query?
+                            character.mediaIds
+                                ?.map { mediaRepository.getEntry(it) }
+                                ?.let { combine(it) { it.toList() } }
+                                .let { it ?: flowOf(listOf(null)) }
+                                .map { character to it.filterNotNull() }
+                        }
+                        .map { characterEntry(it.first, it.second) }
+                        .filterNotNull()
+                        .flowOn(Dispatchers.IO)
+                        .collectLatest { newEntry ->
+                            characterSection.contents.replaceAll { entry ->
+                                if (entry is ArtEntrySection.MultiText.Entry.Prefilled &&
+                                    entry.id == characterId.toString()
+                                ) newEntry else entry
+                            }
+                        }
+                }
+            }
+
         entry.series.filterIsInstance<ArtEntrySection.MultiText.Entry.Prefilled>()
             .forEach {
                 val mediaId = it.id.toInt()
                 viewModelScope.launch(Dispatchers.Main) {
                     mediaRepository.getEntry(mediaId)
                         .filterNotNull()
+                        .map(::seriesEntry)
                         .flowOn(Dispatchers.IO)
-                        .collectLatest { mediaEntry ->
+                        .collectLatest { newEntry ->
                             seriesSection.contents.replaceAll { entry ->
                                 if (entry is ArtEntrySection.MultiText.Entry.Prefilled &&
                                     entry.id == mediaId.toString()
-                                ) seriesEntry(mediaEntry) else entry
+                                ) newEntry else entry
                             }
                         }
                 }

@@ -94,6 +94,7 @@ interface ArtEntryDao {
                 FROM art_entries
                 JOIN art_entries_fts ON art_entries.id = art_entries_fts.id
                 WHERE art_entries_fts MATCH ?
+                ORDER BY art_entries.lastEditTime DESC
                 """.trimIndent()
         }
 

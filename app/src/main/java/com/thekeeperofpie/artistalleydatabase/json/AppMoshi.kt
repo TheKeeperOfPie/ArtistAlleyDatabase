@@ -1,6 +1,8 @@
 package com.thekeeperofpie.artistalleydatabase.json
 
 import com.squareup.moshi.Moshi
+import com.thekeeperofpie.artistalleydatabase.anilist.DatabaseCharacterEntry
+import com.thekeeperofpie.artistalleydatabase.anilist.DatabaseSeriesEntry
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntry
 import com.thekeeperofpie.artistalleydatabase.utils.Converters
 import java.math.BigDecimal
@@ -16,4 +18,6 @@ class AppMoshi {
     }
 
     val artEntryAdapter by lazy { moshi.adapter(ArtEntry::class.java)!! }
+    val aniListSeriesEntryAdapter = moshi.adapter(DatabaseSeriesEntry::class.java)
+    val aniListCharacterEntryAdapter = moshi.adapter(DatabaseCharacterEntry::class.java)
 }

@@ -3,9 +3,11 @@ package com.thekeeperofpie.artistalleydatabase.browse
 import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
@@ -16,6 +18,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -24,6 +27,7 @@ import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
 import com.thekeeperofpie.artistalleydatabase.R
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryColumn
+import com.thekeeperofpie.artistalleydatabase.art.details.EntryImage
 import com.thekeeperofpie.artistalleydatabase.ui.AppBar
 import kotlinx.coroutines.launch
 
@@ -34,7 +38,7 @@ object BrowseScreen {
     operator fun invoke(
         onClickNav: () -> Unit = {},
         tabs: List<TabContent>,
-        onClick: (column: ArtEntryColumn, value: String) -> Unit = { _, _ -> },
+        onClick: (column: ArtEntryColumn, value: BrowseEntryModel) -> Unit = { _, _ -> },
     ) {
         val pagerState = rememberPagerState()
         val selectedTabIndex = pagerState.currentPage
@@ -79,9 +83,11 @@ object BrowseScreen {
                     val content = tab.content()
                     items(content.size) {
                         val value = content[it]
-                        TextRow(text = value, onClick = {
-                            onClick(tab.type, value)
-                        })
+                        EntryRow(
+                            image = value.image,
+                            text = value.text,
+                            onClick = { onClick(tab.type, value) }
+                        )
                     }
                 }
             }
@@ -89,20 +95,30 @@ object BrowseScreen {
     }
 
     @Composable
-    private fun TextRow(text: String, onClick: () -> Unit) {
-        Text(
-            text = text,
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable(onClick = onClick)
-                .padding(start = 16.dp, end = 16.dp, top = 10.dp, bottom = 10.dp)
-        )
+    private fun EntryRow(image: String?, text: String, onClick: () -> Unit) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.clickable(onClick = onClick)
+        ) {
+            EntryImage(
+                image = image,
+                modifier = Modifier
+                    .height(54.dp)
+                    .width(42.dp)
+            )
+            Text(
+                text = text,
+                modifier = Modifier
+                    .weight(1f, true)
+                    .padding(start = 16.dp, end = 16.dp, top = 10.dp, bottom = 10.dp)
+            )
+        }
     }
 
     @Immutable
     data class TabContent(
         val type: ArtEntryColumn,
         @StringRes val textRes: () -> Int,
-        val content: () -> List<String>,
+        val content: () -> List<BrowseEntryModel>,
     )
 }

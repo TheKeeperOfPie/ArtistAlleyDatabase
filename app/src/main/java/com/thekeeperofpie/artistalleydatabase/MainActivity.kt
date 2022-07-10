@@ -207,7 +207,8 @@ class MainActivity : ComponentActivity() {
                             navController.navigate(
                                 "selection" +
                                         "?column=$column" +
-                                        "&value=$value"
+                                        "&title=${value.text}" +
+                                        "&query=${value.query}"
                             )
                         },
                     )
@@ -216,25 +217,29 @@ class MainActivity : ComponentActivity() {
                 composable(
                     "selection" +
                             "?column={column}" +
-                            "&value={value}",
+                            "&title={title}" +
+                            "&query={query}",
                     arguments = listOf(
                         navArgument("column") {
                             type = NavType.StringType
                             nullable = false
                         },
-                        navArgument("value") {
+                        navArgument("title") {
                             type = NavType.StringType
-                            nullable = true
+                        },
+                        navArgument("query") {
+                            type = NavType.StringType
                         },
                     )
                 ) {
                     val arguments = it.arguments!!
                     val column = ArtEntryColumn.valueOf(arguments.getString("column")!!)
-                    val value = arguments.getString("value")!!
+                    val title = arguments.getString("title")!!
+                    val query = arguments.getString("query")!!
                     val viewModel = hiltViewModel<BrowseSelectionViewModel>()
-                    viewModel.initialize(column, value)
+                    viewModel.initialize(column, query)
                     BrowseSelectionScreen(
-                        title = { value },
+                        title = { title },
                         loading = { viewModel.loading },
                         entries = viewModel.entries.collectAsLazyPagingItems(),
                         selectedItems = viewModel.selectedEntries.keys,

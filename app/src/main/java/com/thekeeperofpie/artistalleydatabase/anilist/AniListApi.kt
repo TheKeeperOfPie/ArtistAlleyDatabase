@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anilist
 
+import com.anilist.CharacterByIdQuery
 import com.anilist.CharactersSearchQuery
 import com.anilist.MediaByIdQuery
 import com.anilist.MediaSearchQuery
@@ -20,6 +21,10 @@ class AniListApi {
     fun getMedia(id: Int) = apolloClient.query(MediaByIdQuery(Optional.Present(id)))
         .toFlow()
         .map { it.data?.Media }
+
+    fun getCharacter(id: Int) = apolloClient.query(CharacterByIdQuery(Optional.Present(id)))
+        .toFlow()
+        .map { it.data?.Character }
 
     fun searchSeries(query: String) =
         apolloClient.query(MediaSearchQuery(Optional.Present(query))).toFlow()

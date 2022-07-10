@@ -38,6 +38,16 @@ object Converters {
             value?.let<String, List<String>>(Json.Default::decodeFromString).orEmpty()
     }
 
+    object IntListConverter {
+
+        @TypeConverter
+        fun serializeIntList(value: List<Int>?) = Json.encodeToString(value)
+
+        @TypeConverter
+        fun deserializeIntList(value: String?) =
+            value?.let<String, List<Int>>(Json.Default::decodeFromString).orEmpty()
+    }
+
     object BigDecimalConverter : JsonAdapter<BigDecimal>() {
 
         @TypeConverter
