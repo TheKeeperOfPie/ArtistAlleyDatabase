@@ -58,6 +58,7 @@ object ArtEntryGrid {
         onClickEntry: (index: Int, entry: ArtEntryGridModel) -> Unit = { _, _ -> },
         onLongClickEntry: (index: Int, entry: ArtEntryGridModel) -> Unit = { _, _ -> },
         onClickClear: () -> Unit = {},
+        onClickEdit: () -> Unit = {},
         onConfirmDelete: () -> Unit = {},
     ) {
         val expectedWidth = LocalDensity.current.run {
@@ -83,6 +84,7 @@ object ArtEntryGrid {
             if (selectedItems.isNotEmpty()) {
                 ButtonFooter(
                     R.string.clear to onClickClear,
+                    R.string.edit to onClickEdit,
                     R.string.delete to { showDeleteDialog = true },
                 )
             }

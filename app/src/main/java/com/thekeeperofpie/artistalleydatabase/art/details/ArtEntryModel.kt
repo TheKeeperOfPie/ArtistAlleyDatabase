@@ -3,28 +3,33 @@ package com.thekeeperofpie.artistalleydatabase.art.details
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntry
 
 class ArtEntryModel(
-    private val value: ArtEntry,
     val artists: List<ArtEntrySection.MultiText.Entry.Custom>,
     val series: List<ArtEntrySection.MultiText.Entry>,
     val characters: List<ArtEntrySection.MultiText.Entry>,
     val tags: List<ArtEntrySection.MultiText.Entry.Custom>,
+    val sourceType: String?,
+    val sourceValue: String?,
+    val printWidth: Int?,
+    val printHeight: Int?,
+    val notes: String?,
+    val locks: ArtEntry.Locks,
 ) {
-
-    val sourceType
-        get() = value.sourceType
-
-    val sourceValue
-        get() = value.sourceValue
-
-    val printWidth
-        get() = value.printWidth
-
-    val printHeight
-        get() = value.printHeight
-
-    val notes
-        get() = value.notes
-
-    val locks
-        get() = value.locks
+    constructor(
+        entry: ArtEntry,
+        artists: List<ArtEntrySection.MultiText.Entry.Custom>,
+        series: List<ArtEntrySection.MultiText.Entry>,
+        characters: List<ArtEntrySection.MultiText.Entry>,
+        tags: List<ArtEntrySection.MultiText.Entry.Custom>,
+    ) : this(
+        artists = artists,
+        series = series,
+        characters = characters,
+        tags = tags,
+        sourceType = entry.sourceType,
+        sourceValue = entry.sourceValue,
+        printWidth = entry.printWidth,
+        printHeight = entry.printHeight,
+        notes = entry.notes,
+        locks = entry.locks,
+    )
 }

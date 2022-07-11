@@ -18,6 +18,6 @@ class AppMoshi {
     }
 
     val artEntryAdapter by lazy { moshi.adapter(ArtEntry::class.java)!! }
-    val aniListSeriesEntryAdapter = moshi.adapter(DatabaseSeriesEntry::class.java)
-    val aniListCharacterEntryAdapter = moshi.adapter(DatabaseCharacterEntry::class.java)
+    val aniListSeriesEntryAdapter = moshi.adapter(DatabaseSeriesEntry::class.java).lenient()
+    val aniListCharacterEntryAdapter = moshi.adapter(DatabaseCharacterEntry::class.java).lenient()
 }

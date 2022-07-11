@@ -65,6 +65,7 @@ object HomeScreen {
         onLongClickEntry: (index: Int, entry: ArtEntryGridModel) -> Unit = { _, _ -> },
         onClickAddFab: () -> Unit = {},
         onClickClear: () -> Unit = {},
+        onClickEdit: () -> Unit = {},
         onConfirmDelete: () -> Unit = {},
     ) {
         Chrome(
@@ -83,6 +84,7 @@ object HomeScreen {
                 onClickEntry = onClickEntry,
                 onLongClickEntry = onLongClickEntry,
                 onClickClear = onClickClear,
+                onClickEdit = onClickEdit,
                 onConfirmDelete = onConfirmDelete,
             )
         }

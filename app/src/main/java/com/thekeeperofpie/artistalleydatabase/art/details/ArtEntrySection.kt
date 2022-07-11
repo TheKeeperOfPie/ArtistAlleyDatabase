@@ -48,7 +48,7 @@ sealed class ArtEntrySection(locked: Boolean? = null) {
             val serializedValue: String = text,
             val searchableValue: String = text,
         ) {
-            class Custom(text: String) : Entry(text)
+            class Custom(text: String, val id: String? = null) : Entry(text)
 
             class Prefilled(
                 val id: String,

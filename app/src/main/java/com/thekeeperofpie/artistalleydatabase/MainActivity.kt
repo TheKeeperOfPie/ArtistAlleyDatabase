@@ -35,12 +35,15 @@ import com.mxalbert.sharedelements.SharedElementsRoot
 import com.thekeeperofpie.artistalleydatabase.add.AddEntryScreen
 import com.thekeeperofpie.artistalleydatabase.add.AddEntryViewModel
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryColumn
+import com.thekeeperofpie.artistalleydatabase.art.grid.ArtEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseScreen
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseViewModel
 import com.thekeeperofpie.artistalleydatabase.browse.selection.BrowseSelectionScreen
 import com.thekeeperofpie.artistalleydatabase.browse.selection.BrowseSelectionViewModel
 import com.thekeeperofpie.artistalleydatabase.detail.DetailsScreen
 import com.thekeeperofpie.artistalleydatabase.detail.DetailsViewModel
+import com.thekeeperofpie.artistalleydatabase.edit.MultiEditScreen
+import com.thekeeperofpie.artistalleydatabase.edit.MultiEditViewModel
 import com.thekeeperofpie.artistalleydatabase.export.ExportScreen
 import com.thekeeperofpie.artistalleydatabase.export.ExportViewModel
 import com.thekeeperofpie.artistalleydatabase.home.HomeScreen
@@ -164,6 +167,12 @@ class MainActivity : ComponentActivity() {
                         },
                         onLongClickEntry = viewModel::selectEntry,
                         onClickClear = viewModel::clearSelected,
+                        onClickEdit = {
+                            editSelected(
+                                navController,
+                                viewModel.selectedEntries.values
+                            )
+                        },
                         onConfirmDelete = viewModel::onDeleteSelected,
                     )
                 }
@@ -189,6 +198,7 @@ class MainActivity : ComponentActivity() {
                 }
 
                 addDetailsScreen(navController)
+                addEditScreen(navController)
             }
         }
     }
@@ -260,11 +270,18 @@ class MainActivity : ComponentActivity() {
                         },
                         onLongClickEntry = viewModel::selectEntry,
                         onClickClear = viewModel::clearSelected,
+                        onClickEdit = {
+                            editSelected(
+                                navController,
+                                viewModel.selectedEntries.values
+                            )
+                        },
                         onConfirmDelete = viewModel::onDeleteSelected,
                     )
                 }
 
                 addDetailsScreen(navController)
+                addEditScreen(navController)
             }
         }
     }
@@ -335,5 +352,48 @@ class MainActivity : ComponentActivity() {
                 onConfirmDelete = { viewModel.onConfirmDelete(navController) }
             )
         }
+    }
+
+    private fun NavGraphBuilder.addEditScreen(navController: NavHostController) {
+        composable(
+            NavDestinations.MULTI_EDIT +
+                    "?entry_ids={entry_ids}",
+            arguments = listOf(
+                navArgument("entry_ids") {
+                    type = NavType.StringType
+                    nullable = false
+                },
+            )
+        ) {
+            val arguments = it.arguments!!
+            val entryIds = arguments.getString("entry_ids")!!.split(',')
+
+            val viewModel = hiltViewModel<MultiEditViewModel>()
+            viewModel.initialize(entryIds)
+
+            MultiEditScreen(
+                imageUris = viewModel.imageUris,
+                onImageSelected = { index, uri -> viewModel.setImageUri(index, uri) },
+                onImageSelectError = {
+                    viewModel.errorResource = R.string.error_fail_to_load_image to it
+                },
+                loading = viewModel.loading,
+                sections = viewModel.sections,
+                onClickSave = { viewModel.onClickSave(navController) },
+                errorRes = viewModel.errorResource,
+                onErrorDismiss = { viewModel.errorResource = null },
+            )
+        }
+    }
+
+    private fun editSelected(
+        navController: NavHostController,
+        values: MutableCollection<ArtEntryGridModel>
+    ) {
+        val entryIds = values.map { it.value.id }
+        navController.navigate(
+            NavDestinations.MULTI_EDIT +
+                    "?entry_ids=${entryIds.joinToString(",")}"
+        )
     }
 }

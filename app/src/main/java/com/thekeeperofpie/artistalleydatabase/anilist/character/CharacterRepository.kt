@@ -6,6 +6,7 @@ import com.thekeeperofpie.artistalleydatabase.utils.distinctWithBuffer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
@@ -29,6 +30,7 @@ class CharacterRepository(
                 .drop(1) // Ignore initial value
                 .distinctWithBuffer(10)
                 .flatMapLatest { aniListApi.getCharacter(it) }
+                .catch {}
                 .mapNotNull { it?.aniListCharacter }
                 .map(CharacterEntry::from)
                 .collect(characterEntryDao::insertEntries)

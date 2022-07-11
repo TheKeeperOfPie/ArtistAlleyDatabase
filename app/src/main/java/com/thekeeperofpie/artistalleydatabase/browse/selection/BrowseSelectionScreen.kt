@@ -30,6 +30,7 @@ object BrowseSelectionScreen {
         onClickEntry: (index: Int, entry: ArtEntryGridModel) -> Unit = { _, _ -> },
         onLongClickEntry: (index: Int, entry: ArtEntryGridModel) -> Unit = { _, _ -> },
         onClickClear: () -> Unit = {},
+        onClickEdit: () -> Unit = {},
         onConfirmDelete: () -> Unit = {},
     ) {
         Scaffold(
@@ -57,6 +58,7 @@ object BrowseSelectionScreen {
                             onClickEntry = onClickEntry,
                             onLongClickEntry = onLongClickEntry,
                             onClickClear = onClickClear,
+                            onClickEdit = onClickEdit,
                             onConfirmDelete = onConfirmDelete,
                         )
                     }

@@ -64,36 +64,38 @@ abstract class ArtEntryDetailsViewModel(
     private val aniListSeriesEntryAdapter = appMoshi.aniListSeriesEntryAdapter
     private val aniListCharacterEntryAdapter = appMoshi.aniListCharacterEntryAdapter
 
-    private val artistSection = ArtEntrySection.MultiText(
-        R.string.art_entry_artists_header_zero,
-        R.string.art_entry_artists_header_one,
-        R.string.art_entry_artists_header_many,
-        locked = false,
-    )
-    private val seriesSection = ArtEntrySection.MultiText(
+    protected val seriesSection = ArtEntrySection.MultiText(
         R.string.art_entry_series_header_zero,
         R.string.art_entry_series_header_one,
         R.string.art_entry_series_header_many,
         locked = false,
     )
-    private val characterSection = ArtEntrySection.MultiText(
+
+    protected val characterSection = ArtEntrySection.MultiText(
         R.string.art_entry_characters_header_zero,
         R.string.art_entry_characters_header_one,
         R.string.art_entry_characters_header_many,
         locked = false,
     )
-    private val tagSection = ArtEntrySection.MultiText(
+
+    protected val sourceSection = SourceDropdown(locked = false)
+
+    protected val artistSection = ArtEntrySection.MultiText(
+        R.string.art_entry_artists_header_zero,
+        R.string.art_entry_artists_header_one,
+        R.string.art_entry_artists_header_many,
+        locked = false,
+    )
+    protected val tagSection = ArtEntrySection.MultiText(
         R.string.art_entry_tags_header_zero,
         R.string.art_entry_tags_header_one,
         R.string.art_entry_tags_header_many,
         locked = false,
     )
 
-    private val printSizeSection = PrintSizeDropdown()
+    protected val printSizeSection = PrintSizeDropdown()
 
-    private val sourceSection = SourceDropdown(locked = false)
-
-    private val notesSection = ArtEntrySection.LongText(
+    protected val notesSection = ArtEntrySection.LongText(
         headerRes = R.string.art_entry_notes_header,
         locked = false
     )
@@ -378,13 +380,13 @@ abstract class ArtEntryDetailsViewModel(
         )
     }
 
-    private fun databaseToSeriesEntry(value: String) =
+    protected fun databaseToSeriesEntry(value: String) =
         value.takeIf { it.contains("{") }
             ?.let { aniListSeriesEntryAdapter.fromJson(it) }
             ?.let(::seriesEntry)
             ?: ArtEntrySection.MultiText.Entry.Custom(value)
 
-    private fun databaseToCharacterEntry(value: String) =
+    protected fun databaseToCharacterEntry(value: String) =
         value.takeIf { it.contains("{") }
             ?.let { aniListCharacterEntryAdapter.fromJson(it) }
             ?.let { characterEntry(it) }
@@ -397,7 +399,7 @@ abstract class ArtEntryDetailsViewModel(
         val tags = entry.tags.map(ArtEntrySection.MultiText.Entry::Custom)
 
         return ArtEntryModel(
-            value = entry,
+            entry = entry,
             artists = artists,
             series = series,
             characters = characters,

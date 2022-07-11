@@ -12,6 +12,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaEntryDao
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntry
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryDao
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryFts
+import com.thekeeperofpie.artistalleydatabase.edit.ArtEntryEditDao
 import com.thekeeperofpie.artistalleydatabase.utils.Converters
 
 @Database(
@@ -29,6 +30,7 @@ import com.thekeeperofpie.artistalleydatabase.utils.Converters
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun artEntryDao(): ArtEntryDao
+    abstract fun artEntryEditDao(): ArtEntryEditDao
     abstract fun mediaEntryDao(): MediaEntryDao
     abstract fun characterEntryDao(): CharacterEntryDao
 }

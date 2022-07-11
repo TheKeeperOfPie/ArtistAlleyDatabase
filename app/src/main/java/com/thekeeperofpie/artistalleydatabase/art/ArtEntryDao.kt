@@ -422,4 +422,5 @@ interface ArtEntryDao {
     fun getTagInternal(query: String): PagingSource<Int, ArtEntry>
 
     private fun wrapLikeQuery(query: String) = "%${query.replace(Regex("\\s+"), "%")}%"
+
 }
