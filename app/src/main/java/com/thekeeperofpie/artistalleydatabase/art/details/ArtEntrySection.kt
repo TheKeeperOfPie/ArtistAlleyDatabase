@@ -8,6 +8,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -45,10 +46,13 @@ sealed class ArtEntrySection(locked: Boolean? = null) {
 
         sealed class Entry(
             val text: String,
+            val trailingIcon: ImageVector? = null,
+            @StringRes val trailingIconContentDescription: Int? = null,
             val serializedValue: String = text,
             val searchableValue: String = text,
         ) {
-            class Custom(text: String, val id: String? = null) : Entry(text)
+            class Custom(text: String, val id: String? = null, trailingIcon: ImageVector? = null) :
+                Entry(text, trailingIcon)
 
             class Prefilled(
                 val id: String,
@@ -56,9 +60,17 @@ sealed class ArtEntrySection(locked: Boolean? = null) {
                 val image: String? = null,
                 val titleText: String = text,
                 val subtitleText: String? = null,
+                trailingIcon: ImageVector? = null,
+                trailingIconContentDescription: Int? = null,
                 serializedValue: String,
                 searchableValue: String,
-            ) : Entry(text, serializedValue, searchableValue)
+            ) : Entry(
+                text,
+                trailingIcon,
+                trailingIconContentDescription,
+                serializedValue,
+                searchableValue
+            )
         }
     }
 

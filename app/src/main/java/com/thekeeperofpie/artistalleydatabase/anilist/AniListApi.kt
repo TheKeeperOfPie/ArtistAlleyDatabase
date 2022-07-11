@@ -27,14 +27,22 @@ class AniListApi {
         .map { it.data?.Character }
 
     fun searchSeries(query: String) =
-        apolloClient.query(MediaSearchQuery(Optional.Present(query))).toFlow()
+        apolloClient.query(
+            MediaSearchQuery(
+                search = Optional.Present(query),
+                page = Optional.Present(0),
+                perPage = Optional.Present(10),
+            )
+        ).toFlow()
 
     fun searchCharacters(query: String) =
-        apolloClient.query(CharactersSearchQuery(
-            search = Optional.Present(query),
-            page = Optional.Present(0),
-            perPage = Optional.Present(5),
-            mediaPage = Optional.Present(0),
-            mediaPerPage = Optional.Present(1),
-        )).toFlow()
+        apolloClient.query(
+            CharactersSearchQuery(
+                search = Optional.Present(query),
+                page = Optional.Present(0),
+                perPage = Optional.Present(10),
+                mediaPage = Optional.Present(0),
+                mediaPerPage = Optional.Present(1),
+            )
+        ).toFlow()
 }

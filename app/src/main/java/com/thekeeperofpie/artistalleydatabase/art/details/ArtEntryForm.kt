@@ -325,6 +325,14 @@ private fun MultiTextSection(section: ArtEntrySection.MultiText) {
                                             )
                                         }
                                     }
+
+                                    it.trailingIcon?.let { imageVector ->
+                                        Icon(
+                                            imageVector = imageVector,
+                                            contentDescription = it.trailingIconContentDescription
+                                                ?.let { stringResource(it) },
+                                        )
+                                    }
                                 }
                             },
                             contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp)
@@ -445,6 +453,15 @@ private fun PrefilledSectionField(
                             modifier = Modifier.padding(start = 24.dp)
                         )
                     }
+                }
+
+                entry.trailingIcon?.let { imageVector ->
+                    Icon(
+                        imageVector = imageVector,
+                        contentDescription = entry.trailingIconContentDescription
+                            ?.let { stringResource(it) },
+                        modifier = if (locked != true) Modifier else Modifier.padding(16.dp),
+                    )
                 }
 
                 AnimatedVisibility(

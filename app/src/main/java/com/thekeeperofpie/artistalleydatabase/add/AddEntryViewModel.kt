@@ -39,6 +39,8 @@ class AddEntryViewModel @Inject constructor(
 
     val imageUris = mutableStateListOf<Uri>()
 
+    private var saving = false
+
     init {
         viewModelScope.launch(Dispatchers.IO) {
             val entry = settingsProvider.loadArtEntryTemplate() ?: return@launch
@@ -49,6 +51,9 @@ class AddEntryViewModel @Inject constructor(
     }
 
     fun onClickSave(navHostController: NavHostController) {
+        if (saving) return
+        saving = true
+
         viewModelScope.launch(Dispatchers.IO) {
             if (imageUris.isEmpty()) {
                 saveEntry(null, UUID.randomUUID().toString())

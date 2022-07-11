@@ -46,6 +46,7 @@ class DetailsViewModel @Inject constructor(
     var areSectionsLoading by mutableStateOf(true)
 
     private var deleting = false
+    private var saving = false
 
     fun initialize(entryId: String, entryImageRatio: Float) {
         if (this.entryId != null) return
@@ -68,7 +69,7 @@ class DetailsViewModel @Inject constructor(
     }
 
     fun onConfirmDelete(navHostController: NavHostController) {
-        if (deleting) return
+        if (deleting || saving) return
         deleting = true
 
         viewModelScope.launch(Dispatchers.IO) {
@@ -81,6 +82,9 @@ class DetailsViewModel @Inject constructor(
     }
 
     fun onClickSave(navHostController: NavHostController) {
+        if (saving || deleting) return
+        saving = true
+
         viewModelScope.launch(Dispatchers.IO) {
             saveEntry(imageUri, entryId!!)
 

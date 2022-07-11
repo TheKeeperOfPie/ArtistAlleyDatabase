@@ -3,6 +3,9 @@ package com.thekeeperofpie.artistalleydatabase.art.details
 import android.app.Application
 import android.net.Uri
 import android.util.Log
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Book
+import androidx.compose.material.icons.filled.Monitor
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -10,6 +13,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.anilist.fragment.AniListCharacter
 import com.anilist.fragment.AniListMedia
+import com.anilist.type.MediaType
 import com.apollographql.apollo3.api.ApolloResponse
 import com.apollographql.apollo3.api.Operation
 import com.thekeeperofpie.artistalleydatabase.R
@@ -186,9 +190,19 @@ abstract class ArtEntryDetailsViewModel(
                         }
                         .ifEmpty { listOf(flowOf(null)) }
                 }, networkCall = { query ->
-                    aniListCall({ aniListApi.searchCharacters(query) }) {
+                    val search = aniListCall({ aniListApi.searchCharacters(query) }) {
                         it.Page.characters.filterNotNull()
                             .map { characterEntry(it.aniListCharacter) }
+                    }
+                    val queryAsId = query.toIntOrNull()
+                    if (queryAsId == null) search else {
+                        combine(search, aniListApi.getCharacter(queryAsId)
+                            .catch {}
+                            .mapNotNull { it?.aniListCharacter }
+                            .mapNotNull(::characterEntry)
+                            .map(::listOf)
+                            .onStart { emit(emptyList()) }
+                        ) { result, character -> result + character }
                     }
                 }
             )
@@ -227,10 +241,7 @@ abstract class ArtEntryDetailsViewModel(
             }
             .collectLatest {
                 withContext(Dispatchers.Main) {
-                    val contents = section.contents
-                    section.predictions = it.toMutableList().apply {
-                        removeIf { entry -> contents.any { it.text == entry.text } }
-                    }
+                    section.predictions = it.toMutableList()
                 }
             }
     }
@@ -253,6 +264,16 @@ abstract class ArtEntryDetailsViewModel(
         return ArtEntrySection.MultiText.Entry.Prefilled(
             id = media.id.toString(),
             text = title,
+            trailingIcon = when (media.type) {
+                MediaType.ANIME -> Icons.Default.Monitor
+                MediaType.MANGA -> Icons.Default.Book
+                else -> null
+            },
+            trailingIconContentDescription = when (media.type) {
+                MediaType.ANIME -> R.string.aniList_entry_anime_indicator_content_description
+                MediaType.MANGA -> R.string.aniList_entry_manga_indicator_content_description
+                else -> null
+            },
             image = media.coverImage?.medium,
             serializedValue = serializedValue,
             searchableValue = (listOf(
@@ -273,6 +294,16 @@ abstract class ArtEntryDetailsViewModel(
         return ArtEntrySection.MultiText.Entry.Prefilled(
             id = entry.id.toString(),
             text = nonNullTitle,
+            trailingIcon = when (entry.type) {
+                MediaEntry.Type.ANIME -> Icons.Default.Monitor
+                MediaEntry.Type.MANGA -> Icons.Default.Book
+                else -> null
+            },
+            trailingIconContentDescription = when (entry.type) {
+                MediaEntry.Type.ANIME -> R.string.aniList_entry_anime_indicator_content_description
+                MediaEntry.Type.MANGA -> R.string.aniList_entry_manga_indicator_content_description
+                else -> null
+            },
             image = entry.image?.medium,
             serializedValue = serializedValue,
             searchableValue = (listOf(
