@@ -22,9 +22,9 @@ data class MediaEntry(
         fun from(media: AniListMedia) = MediaEntry(
             id = media.id,
             title = Title(
-                romaji = media.title?.romaji,
-                english = media.title?.english,
-                native = media.title?.native,
+                romaji = media.title?.romaji?.trim(),
+                english = media.title?.english?.trim(),
+                native = media.title?.native?.trim(),
             ),
             type = media.type?.rawValue?.let(Type::valueOf),
             image = CoverImage(
@@ -33,7 +33,7 @@ data class MediaEntry(
                 medium = media.coverImage?.medium,
                 color = media.coverImage?.color,
             ),
-            synonyms = media.synonyms?.filterNotNull(),
+            synonyms = media.synonyms?.filterNotNull()?.map(String::trim),
         )
     }
 

@@ -108,8 +108,8 @@ class SourceDropdown(locked: Boolean? = null) : ArtEntrySection.Dropdown(
                 if (value != null) {
                     (options[1] as SourceConventionSectionItem).run {
                         val reader = JsonReader(value.reader())
-                        reader.beginObject()
                         reader.isLenient = true
+                        reader.beginObject()
                         while (reader.peek() != JsonToken.END_OBJECT) {
                             when (reader.nextName()) {
                                 "name" -> name = reader.nextString()

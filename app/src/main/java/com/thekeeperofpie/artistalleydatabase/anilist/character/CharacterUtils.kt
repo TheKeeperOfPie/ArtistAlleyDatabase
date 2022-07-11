@@ -1,9 +1,19 @@
 package com.thekeeperofpie.artistalleydatabase.anilist.character
 
+import com.thekeeperofpie.artistalleydatabase.anilist.DatabaseCharacterEntry
+
 object CharacterUtils {
 
     fun buildCanonicalName(
         entry: CharacterEntry
+    ) = buildCanonicalName(
+        first = entry.name?.first,
+        middle = entry.name?.middle,
+        last = entry.name?.last,
+    )
+
+    fun buildCanonicalName(
+        entry: DatabaseCharacterEntry
     ) = buildCanonicalName(
         first = entry.name?.first,
         middle = entry.name?.middle,
@@ -17,13 +27,19 @@ object CharacterUtils {
     ) = when {
         !middle.isNullOrBlank() -> {
             when {
-                last == null -> "$first $middle"
-                first == null -> "$middle $last"
+                last.isNullOrBlank() -> when {
+                    first.isNullOrBlank() -> middle
+                    else -> "$first $middle"
+                }
+                first.isNullOrBlank() -> when {
+                    last.isBlank() -> middle
+                    else -> "$middle $last"
+                }
                 else -> "$first $middle $last"
             }
         }
-        last == null -> first
-        first == null -> last
+        last.isNullOrBlank() -> first
+        first.isNullOrBlank() -> last
         else -> "$last $first"
     }.takeUnless(String?::isNullOrBlank)
 

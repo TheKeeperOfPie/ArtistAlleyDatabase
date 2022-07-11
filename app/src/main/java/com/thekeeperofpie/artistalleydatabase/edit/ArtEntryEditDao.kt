@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Query
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntry
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryDao
+import java.util.Date
 
 @Dao
 interface ArtEntryEditDao : ArtEntryDao {
@@ -215,5 +216,14 @@ interface ArtEntryEditDao : ArtEntryDao {
             WHERE id IN (:ids)
         """
     )
-    suspend fun updateNotes(ids: List<String>, notes: String?) {}
+    suspend fun updateNotes(ids: List<String>, notes: String?)
+
+    @Query(
+        """
+            UPDATE art_entries
+            SET lastEditTime = :lastEditTime
+            WHERE id IN (:ids)
+        """
+    )
+    suspend fun updateLastEditTime(ids: List<String>, lastEditTime: Date?)
 }

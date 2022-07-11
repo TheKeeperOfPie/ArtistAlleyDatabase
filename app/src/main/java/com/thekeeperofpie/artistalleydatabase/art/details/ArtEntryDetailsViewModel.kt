@@ -260,7 +260,7 @@ abstract class ArtEntryDetailsViewModel(
     private fun seriesEntry(media: AniListMedia): ArtEntrySection.MultiText.Entry.Prefilled {
         val title = media.title?.romaji ?: media.id.toString()
         val serializedValue =
-            aniListSeriesEntryAdapter.toJson(DatabaseSeriesEntry(media.id, title))
+            aniListSeriesEntryAdapter.toJson(DatabaseSeriesEntry(media.id, title.trim()))
         return ArtEntrySection.MultiText.Entry.Prefilled(
             id = media.id.toString(),
             text = title,
@@ -282,6 +282,7 @@ abstract class ArtEntryDetailsViewModel(
                 media.title?.native,
             ) + media.synonyms.orEmpty())
                 .filterNot(String?::isNullOrBlank)
+                .mapNotNull { it?.trim() }
                 .joinToString()
         )
     }
@@ -324,7 +325,7 @@ abstract class ArtEntryDetailsViewModel(
             text = entry.title,
             image = null,
             serializedValue = serializedValue,
-            searchableValue = entry.title
+            searchableValue = entry.title.trim()
         )
     }
 
@@ -390,11 +391,11 @@ abstract class ArtEntryDetailsViewModel(
             aniListCharacterEntryAdapter.toJson(
                 DatabaseCharacterEntry(
                     id ?: -1, DatabaseCharacterEntry.Name(
-                        first = first,
-                        middle = middle,
-                        last = last,
-                        full = full,
-                        native = native,
+                        first = first?.trim(),
+                        middle = middle?.trim(),
+                        last = last?.trim(),
+                        full = full?.trim(),
+                        native = native?.trim(),
                     )
                 )
             )
@@ -407,6 +408,7 @@ abstract class ArtEntryDetailsViewModel(
             serializedValue = serializedValue,
             searchableValue = (listOf(last, middle, first) + alternative.orEmpty())
                 .filterNot(String?::isNullOrBlank)
+                .mapNotNull { it?.trim() }
                 .joinToString()
         )
     }

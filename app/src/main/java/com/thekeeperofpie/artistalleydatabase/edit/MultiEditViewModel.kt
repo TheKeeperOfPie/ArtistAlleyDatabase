@@ -21,6 +21,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.time.Instant
+import java.util.Date
 import javax.inject.Inject
 
 @HiltViewModel
@@ -78,13 +80,17 @@ class MultiEditViewModel @Inject constructor(
                 ?.map(::databaseToCharacterEntry)
                 ?: differentValue
 
-            val sourceType = firstEntry.sourceType
-                ?.takeIf { artEntryEditDao.distinctCountSourceType(entryIds) == 1 }
-                ?: "Different"
-
             val sourceValue = firstEntry.sourceValue
                 ?.takeIf { artEntryEditDao.distinctCountSourceValue(entryIds) == 1 }
                 ?: "Different"
+
+            // TODO: Fix source multi-edit
+            var sourceType = firstEntry.sourceType
+                ?.takeIf { artEntryEditDao.distinctCountSourceType(entryIds) == 1 }
+                ?: "Different"
+            if (sourceValue == "Different") {
+                sourceType = "Different"
+            }
 
             val artists = firstEntry.artists
                 .takeIf { artEntryEditDao.distinctCountArtists(entryIds) == 1 }
@@ -205,6 +211,8 @@ class MultiEditViewModel @Inject constructor(
             if (notes.isNotEmpty() && notes.trim() != "Different") {
                 artEntryEditDao.updateNotes(entryIds, notes)
             }
+
+            artEntryEditDao.updateLastEditTime(entryIds, Date.from(Instant.now()))
 
             withContext(Dispatchers.Main) {
                 navHostController.popBackStack()

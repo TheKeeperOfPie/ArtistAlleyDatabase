@@ -21,12 +21,12 @@ data class CharacterEntry(
         fun from(character: AniListCharacter) = CharacterEntry(
             id = character.id,
             name = Name(
-                first = character.name?.first,
-                middle = character.name?.middle,
-                last = character.name?.last,
-                full = character.name?.full,
-                native = character.name?.native,
-                alternative = character.name?.alternative?.filterNotNull(),
+                first = character.name?.first?.trim(),
+                middle = character.name?.middle?.trim(),
+                last = character.name?.last?.trim(),
+                full = character.name?.full?.trim(),
+                native = character.name?.native?.trim(),
+                alternative = character.name?.alternative?.filterNotNull()?.map(String::trim),
             ),
             image = Image(
                 large = character.image?.large,

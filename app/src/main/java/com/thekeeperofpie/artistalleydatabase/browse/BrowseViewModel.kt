@@ -83,22 +83,32 @@ class BrowseViewModel @Inject constructor(
                     it.flatMap(JsonUtils::readStringList)
                         .distinct()
                         .map { databaseText ->
-                            databaseText.takeIf { it.contains("{") }
+                            val entry = databaseText.takeIf { it.contains("{") }
                                 ?.let(aniListCharacterEntryAdapter::fromJson)
-                                ?.let {
-                                    characterRepository.getEntry(it.id)
-                                        .filterNotNull()
-                                        .map {
-                                            BrowseEntryModel(
-                                                image = it.image?.medium,
-                                                text = CharacterUtils.buildCanonicalName(it)
-                                                    ?: databaseText,
-                                                query = it.id.toString(),
-                                            )
-                                        }
-                                }
+                            entry?.let {
+                                characterRepository.getEntry(it.id)
+                                    .filterNotNull()
+                                    .map {
+                                        BrowseEntryModel(
+                                            image = it.image?.medium,
+                                            text = CharacterUtils.buildCanonicalName(it)
+                                                ?: databaseText,
+                                            query = it.id.toString(),
+                                        )
+                                    }
+                            }
                                 .let { it ?: emptyFlow() }
-                                .onStart { emit(BrowseEntryModel(text = databaseText)) }
+                                .onStart {
+                                    if (entry == null) {
+                                        emit(BrowseEntryModel(text = databaseText))
+                                    } else {
+                                        BrowseEntryModel(
+                                            text = CharacterUtils.buildCanonicalName(entry)
+                                                ?: databaseText,
+                                            query = entry.id.toString(),
+                                        )
+                                    }
+                                }
                         }
                         .let { combine(it) { it.sortedByText() } }
                 }
@@ -109,21 +119,30 @@ class BrowseViewModel @Inject constructor(
                     it.flatMap(JsonUtils::readStringList)
                         .distinct()
                         .map { databaseText ->
-                            databaseText.takeIf { it.contains("{") }
+                            val entry = databaseText.takeIf { it.contains("{") }
                                 ?.let(aniListSeriesEntryAdapter::fromJson)
-                                ?.let {
-                                    mediaRepository.getEntry(it.id)
-                                        .filterNotNull()
-                                        .map {
-                                            BrowseEntryModel(
-                                                image = it.image?.medium,
-                                                text = it.title?.romaji ?: databaseText,
-                                                query = it.id.toString(),
-                                            )
-                                        }
-                                }
+                            entry?.let {
+                                mediaRepository.getEntry(it.id)
+                                    .filterNotNull()
+                                    .map {
+                                        BrowseEntryModel(
+                                            image = it.image?.medium,
+                                            text = it.title?.romaji ?: databaseText,
+                                            query = it.id.toString(),
+                                        )
+                                    }
+                            }
                                 .let { it ?: emptyFlow() }
-                                .onStart { emit(BrowseEntryModel(text = databaseText)) }
+                                .onStart {
+                                    if (entry == null) {
+                                        emit(BrowseEntryModel(text = databaseText))
+                                    } else {
+                                        BrowseEntryModel(
+                                            text = entry.title,
+                                            query = entry.id.toString(),
+                                        )
+                                    }
+                                }
                         }
                         .let { combine(it) { it.sortedByText() } }
                 }

@@ -2,7 +2,6 @@ package com.thekeeperofpie.artistalleydatabase.detail
 
 import android.net.Uri
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.Crossfade
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
@@ -107,16 +106,15 @@ object DetailsScreen {
                 }
 
 
-                Crossfade(
-                    targetState = areSectionsLoading,
-                    modifier = Modifier.align(Alignment.End),
+                AnimatedVisibility(
+                    visible = !areSectionsLoading,
+                    enter = fadeIn(),
+                    exit = fadeOut(),
                 ) {
-                    if (!it) {
-                        ButtonFooter(
-                            R.string.save to onClickSave,
-                            R.string.delete to { showDeleteDialog = true },
-                        )
-                    }
+                    ButtonFooter(
+                        R.string.save to onClickSave,
+                        R.string.delete to { showDeleteDialog = true },
+                    )
                 }
             }
 
