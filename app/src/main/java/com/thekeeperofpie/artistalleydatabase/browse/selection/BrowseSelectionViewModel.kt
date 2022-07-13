@@ -15,6 +15,7 @@ import com.thekeeperofpie.artistalleydatabase.art.ArtEntryColumn
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryDao
 import com.thekeeperofpie.artistalleydatabase.art.grid.ArtEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.art.grid.ArtEntryGridViewModel
+import com.thekeeperofpie.artistalleydatabase.json.AppJson
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,6 +28,7 @@ import javax.inject.Inject
 class BrowseSelectionViewModel @Inject constructor(
     application: Application,
     artEntryDao: ArtEntryDao,
+    private val appJson: AppJson,
 ) : ArtEntryGridViewModel(application, artEntryDao) {
 
     lateinit var column: ArtEntryColumn
@@ -59,10 +61,10 @@ class BrowseSelectionViewModel @Inject constructor(
                             ArtEntryColumn.TAGS -> it.tags.contains(query)
                         }
                     }
-                        .map { ArtEntryGridModel(application, it) }
+                        .map { ArtEntryGridModel.buildFromEntry(application, appJson, it) }
                 }
                 .onEach {
-                    viewModelScope.launch(Dispatchers.Main) {
+                    launch(Dispatchers.Main) {
                         loading = false
                     }
                 }

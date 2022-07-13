@@ -9,6 +9,7 @@ import androidx.core.content.FileProvider
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryDao
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryUtils
 import com.thekeeperofpie.artistalleydatabase.art.grid.ArtEntryGridModel
+import com.thekeeperofpie.artistalleydatabase.json.AppJson
 import com.thekeeperofpie.artistalleydatabase.search.SearchViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -17,7 +18,8 @@ import javax.inject.Inject
 class ChooserViewModel @Inject constructor(
     application: Application,
     artEntryDao: ArtEntryDao,
-) : SearchViewModel(application, artEntryDao) {
+    appJson: AppJson,
+) : SearchViewModel(application, artEntryDao, appJson) {
 
     fun getResults(): Intent? {
         val appPackageName = application.packageName

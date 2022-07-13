@@ -31,6 +31,8 @@ import com.thekeeperofpie.artistalleydatabase.art.ArtEntryDao
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryUtils
 import com.thekeeperofpie.artistalleydatabase.art.PrintSizeDropdown
 import com.thekeeperofpie.artistalleydatabase.art.SourceDropdown
+import com.thekeeperofpie.artistalleydatabase.art.SourceType
+import com.thekeeperofpie.artistalleydatabase.json.AppJson
 import com.thekeeperofpie.artistalleydatabase.json.AppMoshi
 import com.thekeeperofpie.artistalleydatabase.utils.nullable
 import kotlinx.coroutines.Dispatchers
@@ -59,6 +61,7 @@ abstract class ArtEntryDetailsViewModel(
     private val mediaRepository: MediaRepository,
     private val characterRepository: CharacterRepository,
     appMoshi: AppMoshi,
+    protected val appJson: AppJson,
 ) : ViewModel() {
 
     companion object {
@@ -72,36 +75,36 @@ abstract class ArtEntryDetailsViewModel(
         R.string.art_entry_series_header_zero,
         R.string.art_entry_series_header_one,
         R.string.art_entry_series_header_many,
-        locked = false,
+        lockState = ArtEntrySection.LockState.UNLOCKED,
     )
 
     protected val characterSection = ArtEntrySection.MultiText(
         R.string.art_entry_characters_header_zero,
         R.string.art_entry_characters_header_one,
         R.string.art_entry_characters_header_many,
-        locked = false,
+        lockState = ArtEntrySection.LockState.UNLOCKED,
     )
 
-    protected val sourceSection = SourceDropdown(locked = false)
+    protected val sourceSection = SourceDropdown(locked = ArtEntrySection.LockState.UNLOCKED)
 
     protected val artistSection = ArtEntrySection.MultiText(
         R.string.art_entry_artists_header_zero,
         R.string.art_entry_artists_header_one,
         R.string.art_entry_artists_header_many,
-        locked = false,
+        lockState = ArtEntrySection.LockState.UNLOCKED,
     )
     protected val tagSection = ArtEntrySection.MultiText(
         R.string.art_entry_tags_header_zero,
         R.string.art_entry_tags_header_one,
         R.string.art_entry_tags_header_many,
-        locked = false,
+        lockState = ArtEntrySection.LockState.UNLOCKED,
     )
 
     protected val printSizeSection = PrintSizeDropdown()
 
     protected val notesSection = ArtEntrySection.LongText(
         headerRes = R.string.art_entry_notes_header,
-        locked = false
+        lockState = ArtEntrySection.LockState.UNLOCKED
     )
 
     val sections = listOf(
@@ -437,31 +440,31 @@ abstract class ArtEntryDetailsViewModel(
             series = series,
             characters = characters,
             tags = tags,
+            sourceType = SourceType.fromEntry(appJson.json, entry)
         )
     }
 
     protected fun initializeForm(entry: ArtEntryModel) {
-        val locks = entry.locks
         artistSection.contents.addAll(entry.artists)
-        artistSection.locked = locks.artistsLocked
+        artistSection.lockState = entry.artistsLocked
 
-        sourceSection.initialize(entry)
-        sourceSection.locked = locks.sourceLocked
+        sourceSection.initialize(appJson.json, entry)
+        sourceSection.lockState = entry.sourceLocked
 
         seriesSection.contents.addAll(entry.series)
-        seriesSection.locked = locks.seriesLocked
+        seriesSection.lockState = entry.seriesLocked
 
         characterSection.contents.addAll(entry.characters)
-        characterSection.locked = locks.charactersLocked
+        characterSection.lockState = entry.charactersLocked
 
         printSizeSection.initialize(entry.printWidth, entry.printHeight)
-        printSizeSection.locked = locks.printSizeLocked
+        printSizeSection.lockState = entry.printSizeLocked
 
         tagSection.contents.addAll(entry.tags)
-        tagSection.locked = locks.tagsLocked
+        tagSection.lockState = entry.tagsLocked
 
         notesSection.value = entry.notes.orEmpty()
-        notesSection.locked = locks.notesLocked
+        notesSection.lockState = entry.notesLocked
 
         entry.characters.filterIsInstance<ArtEntrySection.MultiText.Entry.Prefilled>()
             .forEach {
@@ -519,13 +522,13 @@ abstract class ArtEntryDetailsViewModel(
             return null
         }
         val (imageWidth, imageHeight) = ArtEntryUtils.getImageSize(outputFile)
-        val (sourceType, sourceValue) = sourceSection.finalTypeToValue()
+        val sourceItem = sourceSection.selectedItem().toSource()
 
         return ArtEntry(
             id = id,
             artists = artistSection.finalContents().map { it.serializedValue },
-            sourceType = sourceType,
-            sourceValue = sourceValue,
+            sourceType = sourceItem.serializedType,
+            sourceValue = sourceItem.serializedValue(appJson.json),
             series = seriesSection.finalContents().map { it.serializedValue },
             seriesSearchable = seriesSection.finalContents().map { it.searchableValue }
                 .filterNot(String?::isNullOrBlank),
@@ -540,13 +543,13 @@ abstract class ArtEntryDetailsViewModel(
             printHeight = printSizeSection.finalHeight(),
             notes = notesSection.value.trim(),
             locks = ArtEntry.Locks(
-                artistsLocked = artistSection.locked ?: false,
-                seriesLocked = seriesSection.locked ?: false,
-                charactersLocked = characterSection.locked ?: false,
-                sourceLocked = sourceSection.locked ?: false,
-                tagsLocked = tagSection.locked ?: false,
-                notesLocked = notesSection.locked ?: false,
-                printSizeLocked = printSizeSection.locked ?: false,
+                artistsLocked = artistSection.lockState?.toSerializedValue() ?: false,
+                seriesLocked = seriesSection.lockState?.toSerializedValue() ?: false,
+                charactersLocked = characterSection.lockState?.toSerializedValue() ?: false,
+                sourceLocked = sourceSection.lockState?.toSerializedValue() ?: false,
+                tagsLocked = tagSection.lockState?.toSerializedValue() ?: false,
+                notesLocked = notesSection.lockState?.toSerializedValue() ?: false,
+                printSizeLocked = printSizeSection.lockState?.toSerializedValue() ?: false,
             )
         )
     }

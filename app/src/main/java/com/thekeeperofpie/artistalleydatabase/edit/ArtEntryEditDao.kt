@@ -185,6 +185,15 @@ interface ArtEntryEditDao : ArtEntryDao {
     @Query(
         """
             UPDATE art_entries
+            SET sourceType = :sourceType, sourceValue = :sourceValue
+            WHERE id IN (:ids)
+        """
+    )
+    suspend fun updateSource(ids: List<String>, sourceType: String, sourceValue: String)
+
+    @Query(
+        """
+            UPDATE art_entries
             SET artists = :artists
             WHERE id IN (:ids)
         """
@@ -217,6 +226,69 @@ interface ArtEntryEditDao : ArtEntryDao {
         """
     )
     suspend fun updateNotes(ids: List<String>, notes: String?)
+
+    @Query(
+        """
+            UPDATE art_entries
+            SET artistsLocked = :locked
+            WHERE id IN (:ids)
+        """
+    )
+    suspend fun updateArtistsLocked(ids: List<String>, locked: Boolean)
+
+    @Query(
+        """
+            UPDATE art_entries
+            SET sourceLocked = :locked
+            WHERE id IN (:ids)
+        """
+    )
+    suspend fun updateSourceLocked(ids: List<String>, locked: Boolean)
+
+    @Query(
+        """
+            UPDATE art_entries
+            SET seriesLocked = :locked
+            WHERE id IN (:ids)
+        """
+    )
+    suspend fun updateSeriesLocked(ids: List<String>, locked: Boolean)
+
+    @Query(
+        """
+            UPDATE art_entries
+            SET charactersLocked = :locked
+            WHERE id IN (:ids)
+        """
+    )
+    suspend fun updateCharactersLocked(ids: List<String>, locked: Boolean)
+
+    @Query(
+        """
+            UPDATE art_entries
+            SET tagsLocked = :locked
+            WHERE id IN (:ids)
+        """
+    )
+    suspend fun updateTagsLocked(ids: List<String>, locked: Boolean)
+
+    @Query(
+        """
+            UPDATE art_entries
+            SET notesLocked = :locked
+            WHERE id IN (:ids)
+        """
+    )
+    suspend fun updateNotesLocked(ids: List<String>, locked: Boolean)
+
+    @Query(
+        """
+            UPDATE art_entries
+            SET printSizeLocked = :locked
+            WHERE id IN (:ids)
+        """
+    )
+    suspend fun updatePrintSizeLocked(ids: List<String>, locked: Boolean)
 
     @Query(
         """

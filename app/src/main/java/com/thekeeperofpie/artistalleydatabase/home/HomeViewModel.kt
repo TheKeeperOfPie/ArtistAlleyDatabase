@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.home
 
 import android.app.Application
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryDao
+import com.thekeeperofpie.artistalleydatabase.json.AppJson
 import com.thekeeperofpie.artistalleydatabase.search.SearchViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -10,7 +11,8 @@ import javax.inject.Inject
 class HomeViewModel @Inject constructor(
     application: Application,
     artEntryDao: ArtEntryDao,
-) : SearchViewModel(application, artEntryDao) {
+    appJson: AppJson,
+) : SearchViewModel(application, artEntryDao, appJson) {
 
     fun onDeleteSelected() {
         super.deleteSelected()

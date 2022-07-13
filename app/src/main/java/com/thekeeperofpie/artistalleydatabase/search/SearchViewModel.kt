@@ -12,6 +12,7 @@ import com.thekeeperofpie.artistalleydatabase.R
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryDao
 import com.thekeeperofpie.artistalleydatabase.art.grid.ArtEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.art.grid.ArtEntryGridViewModel
+import com.thekeeperofpie.artistalleydatabase.json.AppJson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,6 +25,7 @@ import kotlinx.coroutines.launch
 abstract class SearchViewModel constructor(
     application: Application,
     artEntryDao: ArtEntryDao,
+    private val appJson: AppJson,
 ) : ArtEntryGridViewModel(application, artEntryDao) {
 
     val query = MutableStateFlow(SearchQueryWrapper())
@@ -64,7 +66,11 @@ abstract class SearchViewModel constructor(
                         }
                     }
             }
-                .map { it.map { ArtEntryGridModel(application, it) } }
+                .map {
+                    it.map {
+                        ArtEntryGridModel.buildFromEntry(application, appJson, it)
+                    }
+                }
                 .collect(results)
         }
     }

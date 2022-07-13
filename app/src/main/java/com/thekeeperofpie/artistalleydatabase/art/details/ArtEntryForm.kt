@@ -42,6 +42,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.LockOpen
+import androidx.compose.material.icons.filled.LockReset
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
@@ -117,7 +118,7 @@ fun ColumnScope.ArtEntryForm(
 private fun SectionHeader(
     text: String,
     modifier: Modifier = Modifier,
-    locked: Boolean? = null,
+    lockState: ArtEntrySection.LockState? = null,
     onClick: () -> Unit = {},
 ) {
     Row(Modifier.clickable(true, onClick = onClick)) {
@@ -129,10 +130,21 @@ private fun SectionHeader(
                 .padding(top = 12.dp, bottom = 10.dp, start = 16.dp, end = 16.dp)
         )
 
-        if (locked != null) {
+        if (lockState != null) {
             Icon(
-                imageVector = if (locked) Icons.Default.Lock else Icons.Default.LockOpen,
-                contentDescription = stringResource(R.string.art_entry_lock_content_description),
+                imageVector = when (lockState) {
+                    ArtEntrySection.LockState.LOCKED -> Icons.Default.Lock
+                    ArtEntrySection.LockState.UNLOCKED -> Icons.Default.LockOpen
+                    ArtEntrySection.LockState.DIFFERENT -> Icons.Default.LockReset
+                },
+                contentDescription = when (lockState) {
+                    ArtEntrySection.LockState.LOCKED ->
+                        R.string.art_entry_lock_state_locked_content_description
+                    ArtEntrySection.LockState.UNLOCKED ->
+                        R.string.art_entry_lock_state_unlocked_content_description
+                    ArtEntrySection.LockState.DIFFERENT ->
+                        R.string.art_entry_lock_state_different_content_description
+                }.let { stringResource(it) },
                 modifier = Modifier.padding(top = 12.dp, bottom = 10.dp, start = 16.dp, end = 16.dp)
             )
         }
@@ -151,13 +163,13 @@ private fun MultiTextSection(section: ArtEntrySection.MultiText) {
         .let {
             SectionHeader(
                 text = it,
-                locked = section.locked,
+                lockState = section.lockState,
                 onClick = {
                     if (section.pendingValue.isNotEmpty()) {
                         section.contents += section.pendingEntry()
                         section.pendingValue = ""
                     }
-                    section.locked = section.locked?.not()
+                    section.rotateLockState()
                 }
             )
         }
@@ -181,7 +193,7 @@ private fun MultiTextSection(section: ArtEntrySection.MultiText) {
                         ArtEntrySection.MultiText.Entry.Custom("")
                     )
                 },
-                locked = section.locked
+                lockState = section.lockState
             )
 
             Box(
@@ -229,7 +241,7 @@ private fun MultiTextSection(section: ArtEntrySection.MultiText) {
     }
 
     AnimatedVisibility(
-        visible = section.locked != true,
+        visible = section.lockState?.editable != false,
         enter = expandVertically(),
         exit = shrinkVertically(),
     ) {
@@ -247,15 +259,15 @@ private fun MultiTextSection(section: ArtEntrySection.MultiText) {
                         section.pendingValue = ""
                     }
                 },
-                locked = section.locked,
+                lockState = section.lockState,
                 modifier = Modifier
-                    .focusable(section.locked != true)
+                    .focusable(section.lockState?.editable != false)
                     .onFocusChanged { focused = it.isFocused }
                     .focusRequester(focusRequester)
                     .bringIntoViewRequester(bringIntoViewRequester)
             )
 
-            if (section.locked != true
+            if (section.lockState?.editable != false
                 && section.pendingValue.isNotBlank()
                 && section.predictions.isNotEmpty()
             ) {
@@ -292,6 +304,13 @@ private fun MultiTextSection(section: ArtEntrySection.MultiText) {
                                         titleText = it.titleText
                                         subtitleText = it.subtitleText
                                         image = it.image
+                                    }
+                                    ArtEntrySection.MultiText.Entry.Different -> {
+                                        titleText = stringResource(
+                                            R.string.art_entry_source_different
+                                        )
+                                        subtitleText = null
+                                        image = null
                                     }
                                 }.run { /*exhaust*/ }
 
@@ -348,16 +367,16 @@ private fun MultiTextSection(section: ArtEntrySection.MultiText) {
 private fun LongTextSection(section: ArtEntrySection.LongText) {
     SectionHeader(
         text = stringResource(section.headerRes),
-        locked = section.locked,
-        onClick = { section.locked = section.locked?.not() }
+        lockState = section.lockState,
+        onClick = { section.rotateLockState() }
     )
 
     OutlinedTextField(
         value = section.value,
         onValueChange = { section.value = it },
-        readOnly = section.locked == true,
+        readOnly = section.lockState?.editable == false,
         modifier = Modifier
-            .focusable(section.locked != true)
+            .focusable(section.lockState?.editable != false)
             .fillMaxWidth()
             .padding(start = 16.dp, end = 16.dp)
     )
@@ -371,7 +390,7 @@ private fun PrefilledSectionField(
     onValueChange: (value: String) -> Unit = {},
     onClickMore: () -> Unit = {},
     onDone: () -> Unit = {},
-    locked: Boolean? = null,
+    lockState: ArtEntrySection.LockState? = null,
 ) {
     val backgroundShape =
         if (index == 0) RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp) else RectangleShape
@@ -381,12 +400,12 @@ private fun PrefilledSectionField(
             TextField(
                 value = entry.text,
                 onValueChange = { onValueChange(it) },
-                readOnly = locked == true,
+                readOnly = lockState?.editable == false,
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                 keyboardActions = KeyboardActions(onDone = { onDone() }),
                 trailingIcon = {
                     AnimatedVisibility(
-                        visible = locked != true,
+                        visible = lockState?.editable != false,
                         enter = fadeIn(),
                         exit = fadeOut(),
                     ) {
@@ -401,7 +420,7 @@ private fun PrefilledSectionField(
                     }
                 },
                 modifier = Modifier
-                    .focusable(locked != true)
+                    .focusable(lockState?.editable != false)
                     .fillMaxWidth()
                     .padding(start = 16.dp, end = 16.dp)
                     .onKeyEvent {
@@ -460,12 +479,13 @@ private fun PrefilledSectionField(
                         imageVector = imageVector,
                         contentDescription = entry.trailingIconContentDescription
                             ?.let { stringResource(it) },
-                        modifier = if (locked != true) Modifier else Modifier.padding(16.dp),
+                        modifier = if (lockState?.editable != false) Modifier else
+                            Modifier.padding(16.dp),
                     )
                 }
 
                 AnimatedVisibility(
-                    visible = locked != true,
+                    visible = lockState?.editable != false,
                     enter = fadeIn(),
                     exit = fadeOut(),
                 ) {
@@ -479,6 +499,45 @@ private fun PrefilledSectionField(
                     }
                 }
             }
+        }
+        ArtEntrySection.MultiText.Entry.Different -> {
+            TextField(
+                value = stringResource(R.string.art_entry_source_different),
+                onValueChange = {},
+                readOnly = true,
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                keyboardActions = KeyboardActions(onDone = { onDone() }),
+                trailingIcon = {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        entry.trailingIcon?.let { imageVector ->
+                            Icon(
+                                imageVector = imageVector,
+                                contentDescription = entry.trailingIconContentDescription
+                                    ?.let { stringResource(it) },
+                                modifier = if (lockState?.editable != false) Modifier else
+                                    Modifier.padding(16.dp),
+                            )
+                        }
+
+                        IconButton(onClick = onClickMore) {
+                            Icon(
+                                imageVector = Icons.Default.MoreVert,
+                                contentDescription = stringResource(
+                                    R.string.art_entry_more_actions_content_description
+                                ),
+                            )
+                        }
+                    }
+                },
+                modifier = Modifier
+                    .focusable(false)
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, end = 16.dp)
+                    .background(
+                        color = MaterialTheme.colorScheme.surfaceVariant,
+                        shape = backgroundShape,
+                    )
+            )
         }
     }
 }
@@ -521,12 +580,12 @@ private fun OpenSectionField(
     modifier: Modifier = Modifier,
     onValueChange: (value: String) -> Unit = {},
     onDone: (value: String) -> Unit = {},
-    locked: Boolean? = null,
+    lockState: ArtEntrySection.LockState? = null,
 ) {
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
-        readOnly = locked == true,
+        readOnly = lockState?.editable == false,
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
         keyboardActions = KeyboardActions(onDone = { onDone(value) }),
         modifier = modifier
@@ -551,8 +610,8 @@ private fun OpenSectionField(
 private fun DropdownSection(section: ArtEntrySection.Dropdown) {
     SectionHeader(
         text = stringResource(section.headerRes),
-        locked = section.locked,
-        onClick = { section.locked = section.locked?.not() }
+        lockState = section.lockState,
+        onClick = { section.rotateLockState() }
     )
 
     Box(
@@ -585,7 +644,7 @@ private fun DropdownSection(section: ArtEntrySection.Dropdown) {
                 .matchParentSize()
                 .clickable(
                     onClick = {
-                        if (section.locked != true) {
+                        if (section.lockState?.editable != false) {
                             section.expanded = true
                             focusRequester.requestFocus()
                         }
@@ -595,7 +654,7 @@ private fun DropdownSection(section: ArtEntrySection.Dropdown) {
                 )
         )
 
-        if (section.locked != true) {
+        if (section.lockState?.editable != false) {
             DropdownMenu(
                 expanded = section.expanded,
                 onDismissRequest = { section.expanded = false },
@@ -616,7 +675,7 @@ private fun DropdownSection(section: ArtEntrySection.Dropdown) {
 
     section.selectedItem()
         .takeIf { it.hasCustomView }
-        ?.Content(section.locked)
+        ?.Content(section.lockState)
 }
 
 @Composable
@@ -740,7 +799,7 @@ fun Preview(
     Column {
         ArtEntryForm(
             sections = sections.apply {
-                (first() as ArtEntrySection.MultiText).locked = true
+                (first() as ArtEntrySection.MultiText).lockState = ArtEntrySection.LockState.LOCKED
             }
         )
     }

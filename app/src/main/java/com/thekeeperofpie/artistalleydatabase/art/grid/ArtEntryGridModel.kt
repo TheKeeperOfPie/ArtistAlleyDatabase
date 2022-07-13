@@ -1,38 +1,35 @@
 package com.thekeeperofpie.artistalleydatabase.art.grid
 
-import android.content.Context
+import android.app.Application
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntry
-import com.thekeeperofpie.artistalleydatabase.art.SourceType
+import com.thekeeperofpie.artistalleydatabase.art.ArtEntryUtils
+import com.thekeeperofpie.artistalleydatabase.json.AppJson
+import java.io.File
 
 class ArtEntryGridModel(
-    context: Context,
     val value: ArtEntry,
+    val localImageFile: File?,
+    val placeholderText: String,
 ) {
-    val localImageFile = context.filesDir.resolve("entry_images/${value.id}")
-        .takeIf { it.exists() }
+    companion object {
+        fun buildFromEntry(
+            application: Application,
+            appJson: AppJson,
+            entry: ArtEntry
+        ): ArtEntryGridModel {
+            val localImageFile = ArtEntryUtils.getImageFile(application, entry.id)
+                .takeIf(File::exists)
 
-    val placeholderText = if (localImageFile != null) "" else value.run {
-        val source = when (val source = SourceType.fromEntry(value)) {
-            is SourceType.Convention -> (source.name + (source.year?.let { " $it" }
-                ?: "") + "\n" + source.hall + " " + source.booth).trim()
-            is SourceType.Custom -> source.value
-            is SourceType.Online -> source.name
-            SourceType.Unknown -> ""
+            // Placeholder text is generally only useful without an image
+            val placeholderText = if (localImageFile == null) {
+                ArtEntryUtils.buildPlaceholderText(appJson.json, entry)
+            } else ""
+
+            return ArtEntryGridModel(
+                value = entry,
+                localImageFile = localImageFile,
+                placeholderText = placeholderText,
+            )
         }
-
-        val info = if (artists.isNotEmpty()) {
-            artists.joinToString("\n")
-        } else if (series.isNotEmpty()) {
-            series.joinToString("\n")
-        } else if (characters.isNotEmpty()) {
-            characters.joinToString("\n")
-        } else if (tags.isNotEmpty()) {
-            tags.take(10).joinToString("\n")
-        } else ""
-
-        val pieces = listOf(source, info, notes)
-        if (pieces.any { !it.isNullOrBlank() }) {
-            pieces.joinToString("\n")
-        } else id
     }
 }

@@ -13,6 +13,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntry
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryDao
 import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryDetailsViewModel
+import com.thekeeperofpie.artistalleydatabase.json.AppJson
 import com.thekeeperofpie.artistalleydatabase.json.AppMoshi
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -29,13 +30,15 @@ class DetailsViewModel @Inject constructor(
     mediaRepository: MediaRepository,
     characterRepository: CharacterRepository,
     appMoshi: AppMoshi,
+    appJson: AppJson,
 ) : ArtEntryDetailsViewModel(
     application,
     artEntryDao,
     aniListApi,
     mediaRepository,
     characterRepository,
-    appMoshi
+    appMoshi,
+    appJson,
 ) {
 
     var entryId: String? = null

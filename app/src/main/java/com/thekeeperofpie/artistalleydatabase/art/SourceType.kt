@@ -1,7 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.art
 
-import android.util.JsonReader
-import android.util.JsonToken
 import android.util.Log
 import androidx.annotation.StringRes
 import androidx.compose.foundation.focusable
@@ -14,9 +12,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
@@ -24,43 +22,37 @@ import androidx.compose.ui.unit.dp
 import com.thekeeperofpie.artistalleydatabase.R
 import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryModel
 import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntrySection
-import okhttp3.internal.closeQuietly
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
-sealed class SourceType(val serializedType: String, @StringRes val textRes: Int) {
+@Serializable
+sealed class SourceType(
+    @Transient val serializedType: String = "",
+    @Transient @StringRes val textRes: Int = -1,
+) {
+
+    abstract fun serializedValue(json: Json): String
 
     companion object {
 
-        fun fromEntry(entry: ArtEntry): SourceType {
+        private val TAG = SourceType::class.java.name
+
+        fun fromEntry(json: Json, entry: ArtEntry): SourceType {
             val value = entry.sourceValue
             return when (entry.sourceType) {
                 "unknown" -> Unknown
                 "convention" -> {
-                    var name = ""
-                    var year = ""
-                    var hall = ""
-                    var booth = ""
-
                     if (value != null) {
                         try {
-                            val reader = JsonReader(value.reader())
-                            reader.beginObject()
-                            reader.isLenient = true
-                            while (reader.peek() != JsonToken.END_OBJECT) {
-                                when (reader.nextName()) {
-                                    "name" -> name = reader.nextString()
-                                    "year" -> year = reader.nextString()
-                                    "hall" -> hall = reader.nextString()
-                                    "booth" -> booth = reader.nextString()
-                                }
-                            }
-                            reader.endObject()
-                            reader.closeQuietly()
+                            json.decodeFromString<Convention>(value)
                         } catch (e: Exception) {
-                            Log.d("SourceType", "Error parsing convention type of $value", e)
+                            Log.e(TAG, "Failed to parse ${entry.sourceType}, sourceValue $value")
+                            Convention()
                         }
-                    }
-
-                    Convention(name, year.toIntOrNull(), hall, booth)
+                    } else Convention()
                 }
                 else -> if (value.isNullOrBlank()) Unknown else {
                     Custom(value)
@@ -69,91 +61,97 @@ sealed class SourceType(val serializedType: String, @StringRes val textRes: Int)
         }
     }
 
+    @Serializable
     data class Convention(
-        val name: String,
-        val year: Int?,
-        val hall: String,
-        val booth: String,
-    ) : SourceType("convention", R.string.art_entry_source_convention)
+        val name: String = "",
+        val year: Int? = null,
+        val hall: String = "",
+        val booth: String = "",
+    ) : SourceType("convention", R.string.art_entry_source_convention) {
+        override fun serializedValue(json: Json) = json.encodeToString(this)
+    }
 
     data class Online(
         val name: String,
         val url: String,
-    ) : SourceType("online", R.string.art_entry_source_online)
+    ) : SourceType("online", R.string.art_entry_source_online) {
+        override fun serializedValue(json: Json) = json.encodeToString(this)
+    }
 
-    object Unknown : SourceType("unknown", R.string.art_entry_source_unknown)
+    data class Custom(val value: String) : SourceType("custom", R.string.art_entry_source_custom) {
+        override fun serializedValue(json: Json) = value
+    }
 
-    data class Custom(val value: String) : SourceType("custom", R.string.art_entry_source_custom)
+    object Unknown : SourceType("unknown", R.string.art_entry_source_unknown) {
+        override fun serializedValue(json: Json) = ""
+    }
+
+    /**
+     * [Different] is internal value used for multi-edit to represent multiply not equal fields
+     * across multiple entries. It should never be serialized to disk.
+     */
+    object Different : SourceType("different", R.string.art_entry_source_different) {
+        override fun serializedValue(json: Json) = ""
+    }
 }
 
-class SourceDropdown(locked: Boolean? = null) : ArtEntrySection.Dropdown(
-    R.string.art_entry_source_header,
-    R.string.art_entry_source_dropdown_content_description,
-    listOf(
-        Item.Basic<SourceType>(SourceType.Unknown, SourceType.Unknown.textRes),
-        SourceConventionSectionItem(),
-        SourceCustomSectionItem(),
-    ).toMutableStateList(),
-    locked,
+class SourceDropdown(locked: LockState? = null) : ArtEntrySection.Dropdown(
+    headerRes = R.string.art_entry_source_header,
+    arrowContentDescription = R.string.art_entry_source_dropdown_content_description,
+    lockState = locked,
 ) {
 
-    fun initialize(entry: ArtEntryModel) {
+    private val unknownSectionItem = SourceUnknownSectionItem()
+    private val conventionSectionItem = SourceConventionSectionItem()
+    private val customSectionItem = SourceCustomSectionItem()
+
+    init {
+        options = mutableStateListOf(
+            unknownSectionItem,
+            conventionSectionItem,
+            customSectionItem,
+        )
+    }
+
+    fun initialize(json: Json, entry: ArtEntryModel) {
         val value = entry.sourceValue
         when (entry.sourceType) {
-            "unknown" -> {
-                selectedIndex = 0
-            }
-            "convention" -> {
-                selectedIndex = 1
+            is SourceType.Convention -> {
                 if (value != null) {
-                    (options[1] as SourceConventionSectionItem).run {
-                        val reader = JsonReader(value.reader())
-                        reader.isLenient = true
-                        reader.beginObject()
-                        while (reader.peek() != JsonToken.END_OBJECT) {
-                            when (reader.nextName()) {
-                                "name" -> name = reader.nextString()
-                                "year" -> year = reader.nextString()
-                                "hall" -> hall = reader.nextString()
-                                "booth" -> booth = reader.nextString()
-                            }
-                        }
-                        reader.endObject()
-                        reader.closeQuietly()
-                    }
+                    val data = json.decodeFromString<SourceType.Convention>(value)
+                    conventionSectionItem.name = data.name
+                    conventionSectionItem.year = data.year.toString()
+                    conventionSectionItem.hall = data.hall
+                    conventionSectionItem.booth = data.booth
                 }
+                selectedIndex = options.indexOf(conventionSectionItem)
             }
-            else -> {
+            SourceType.Different -> {
+                options += SourceDifferentSectionItem()
+                selectedIndex = options.lastIndex
+            }
+            null,
+            is SourceType.Custom,
+            is SourceType.Online,
+            SourceType.Unknown -> {
                 if (value.isNullOrBlank()) {
-                    selectedIndex = 0
+                    selectedIndex = options.indexOf(unknownSectionItem)
                 } else {
-                    selectedIndex = 2
-                    (options[2] as SourceCustomSectionItem).value = value
+                    customSectionItem.value = value
+                    selectedIndex = options.indexOf(customSectionItem)
                 }
             }
         }
     }
 
-    @Suppress("UNCHECKED_CAST")
-    fun finalTypeToValue() = when (val item = selectedItem()) {
-        is Item.Basic<*> -> (item as Item.Basic<SourceType>).value.serializedType to ""
-        is SourceConventionSectionItem -> "convention" to run {
-            // TODO: Find a better way to write out the JSON
-            """
-                {
-                  "name": "${item.name.trim()}",
-                  "year": "${item.year.trim()}",
-                  "hall": "${item.hall.trim()}",
-                  "booth": "${item.booth.trim()}"
-                }
-            """.trimIndent()
-        }
-        is SourceCustomSectionItem -> "custom" to item.value.trim()
-        else -> throw IllegalArgumentException()
+    override fun selectedItem() = super.selectedItem() as SourceItem
+
+    sealed class SourceItem : Item {
+        abstract fun toSource(): SourceType
     }
 }
 
-class SourceConventionSectionItem : ArtEntrySection.Dropdown.Item {
+class SourceConventionSectionItem : SourceDropdown.SourceItem() {
 
     var name by mutableStateOf("")
     var year by mutableStateOf("")
@@ -162,6 +160,8 @@ class SourceConventionSectionItem : ArtEntrySection.Dropdown.Item {
 
     override val hasCustomView = true
 
+    override fun toSource() = SourceType.Convention(name, year.toIntOrNull(), hall, booth)
+
     @Composable
     override fun fieldText() = stringResource(R.string.art_entry_source_convention)
 
@@ -169,7 +169,7 @@ class SourceConventionSectionItem : ArtEntrySection.Dropdown.Item {
     override fun DropdownItemText() = Text(fieldText())
 
     @Composable
-    override fun Content(locked: Boolean?) {
+    override fun Content(lockState: ArtEntrySection.LockState?) {
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier
@@ -182,10 +182,10 @@ class SourceConventionSectionItem : ArtEntrySection.Dropdown.Item {
                 placeholder = {
                     Text(stringResource(R.string.art_entry_source_convention_placeholder_name))
                 },
-                readOnly = locked == true,
+                readOnly = lockState?.editable == false,
                 onValueChange = { name = it },
                 modifier = Modifier
-                    .focusable(locked != true)
+                    .focusable(lockState?.editable != false)
                     .weight(1f, true),
             )
             TextField(
@@ -194,13 +194,13 @@ class SourceConventionSectionItem : ArtEntrySection.Dropdown.Item {
                 placeholder = {
                     Text(stringResource(R.string.art_entry_source_convention_placeholder_year))
                 },
-                readOnly = locked == true,
+                readOnly = lockState?.editable == false,
                 keyboardOptions = KeyboardOptions.Default.copy(
                     keyboardType = KeyboardType.Number
                 ),
                 onValueChange = { year = it },
                 modifier = Modifier
-                    .focusable(locked != true)
+                    .focusable(lockState?.editable != false)
                     .weight(1f, true),
             )
         }
@@ -233,11 +233,13 @@ class SourceConventionSectionItem : ArtEntrySection.Dropdown.Item {
     }
 }
 
-class SourceCustomSectionItem : ArtEntrySection.Dropdown.Item {
+class SourceCustomSectionItem : SourceDropdown.SourceItem() {
 
     var value by mutableStateOf("")
 
     override val hasCustomView = true
+
+    override fun toSource() = SourceType.Custom(value.trim())
 
     @Composable
     override fun fieldText() = stringResource(R.string.art_entry_source_custom)
@@ -246,15 +248,41 @@ class SourceCustomSectionItem : ArtEntrySection.Dropdown.Item {
     override fun DropdownItemText() = Text(fieldText())
 
     @Composable
-    override fun Content(locked: Boolean?) {
+    override fun Content(lockState: ArtEntrySection.LockState?) {
         TextField(
             value = value,
             onValueChange = { value = it },
-            readOnly = locked == true,
+            readOnly = lockState?.editable == false,
             modifier = Modifier
-                .focusable(locked != true)
+                .focusable(lockState?.editable != false)
                 .fillMaxWidth()
                 .padding(start = 16.dp, end = 16.dp, top = 10.dp, bottom = 10.dp),
         )
     }
+}
+
+class SourceUnknownSectionItem : SourceDropdown.SourceItem() {
+
+    override val hasCustomView = false
+
+    override fun toSource() = SourceType.Unknown
+
+    @Composable
+    override fun fieldText() = stringResource(SourceType.Unknown.textRes)
+
+    @Composable
+    override fun DropdownItemText() = Text(fieldText())
+}
+
+class SourceDifferentSectionItem : SourceDropdown.SourceItem() {
+
+    override val hasCustomView = false
+
+    override fun toSource() = SourceType.Different
+
+    @Composable
+    override fun fieldText() = stringResource(SourceType.Different.textRes)
+
+    @Composable
+    override fun DropdownItemText() = Text(fieldText())
 }

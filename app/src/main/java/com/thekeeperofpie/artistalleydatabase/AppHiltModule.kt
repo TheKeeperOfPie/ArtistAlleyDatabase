@@ -3,6 +3,7 @@ package com.thekeeperofpie.artistalleydatabase
 import android.app.Application
 import androidx.room.Room
 import androidx.work.WorkManager
+import com.thekeeperofpie.artistalleydatabase.json.AppJson
 import com.thekeeperofpie.artistalleydatabase.json.AppMoshi
 import dagger.Module
 import dagger.Provides
@@ -27,6 +28,9 @@ class AppHiltModule {
 
     @Provides
     fun provideAppMoshi() = AppMoshi()
+
+    @Provides
+    fun provideAppJson() = AppJson()
 
     @Provides
     fun provideSettingsProvider(application: Application, appMoshi: AppMoshi) =

@@ -155,7 +155,7 @@ class PrintSizeCustomTextFields : ArtEntrySection.Dropdown.Item {
     override fun DropdownItemText() = Text(fieldText())
 
     @Composable
-    override fun Content(locked: Boolean?) {
+    override fun Content(lockState: ArtEntrySection.LockState?) {
         Row(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             modifier = Modifier
@@ -166,24 +166,24 @@ class PrintSizeCustomTextFields : ArtEntrySection.Dropdown.Item {
                 value = width,
                 label = { Text(stringResource(R.string.add_entry_size_label_width)) },
                 onValueChange = { width = it },
-                readOnly = locked == true,
+                readOnly = lockState?.editable == false,
                 keyboardOptions = KeyboardOptions.Default.copy(
                     keyboardType = KeyboardType.Number
                 ),
                 modifier = Modifier
-                    .focusable(locked != true)
+                    .focusable(lockState?.editable != false)
                     .weight(1f, true),
             )
             TextField(
                 value = height,
                 label = { Text(stringResource(R.string.add_entry_size_label_height)) },
                 onValueChange = { height = it },
-                readOnly = locked == true,
+                readOnly = lockState?.editable == false,
                 keyboardOptions = KeyboardOptions.Default.copy(
                     keyboardType = KeyboardType.Number
                 ),
                 modifier = Modifier
-                    .focusable(locked != true)
+                    .focusable(lockState?.editable != false)
                     .weight(1f, true),
             )
         }
