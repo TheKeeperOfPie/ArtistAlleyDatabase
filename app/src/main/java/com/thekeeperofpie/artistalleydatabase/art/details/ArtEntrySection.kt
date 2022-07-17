@@ -15,6 +15,7 @@ import androidx.compose.ui.res.stringResource
 import com.thekeeperofpie.artistalleydatabase.R
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import java.util.function.UnaryOperator
 
 sealed class ArtEntrySection(lockState: LockState? = null) {
 
@@ -65,6 +66,8 @@ sealed class ArtEntrySection(lockState: LockState? = null) {
         lockState: LockState? = null
     ) : ArtEntrySection(lockState) {
         val contents = mutableStateListOf<Entry>()
+        private var contentUpdates = MutableStateFlow(emptyList<Entry>())
+
         private var _pendingValue by mutableStateOf(initialPendingValue)
         private var pendingValueUpdates = MutableStateFlow("")
         var pendingValue: String
@@ -78,6 +81,53 @@ sealed class ArtEntrySection(lockState: LockState? = null) {
         var predictions by mutableStateOf(emptyList<Entry>())
 
         fun pendingEntry() = Entry.Custom(pendingValue)
+
+        fun contentSize() = contents.size
+
+        fun content(index: Int) = contents[index]
+
+        fun setContents(entries: Collection<Entry>) {
+            contents.clear()
+            contents.addAll(entries)
+            contentUpdates.tryEmit(contents.toList())
+        }
+
+        fun replaceContents(operator: UnaryOperator<Entry>) {
+            contents.replaceAll(operator)
+            contentUpdates.tryEmit(contents.toList())
+        }
+
+        fun addContent(index: Int, entry: Entry) {
+            contents.add(index, entry)
+            contentUpdates.tryEmit(contents.toList())
+        }
+
+        fun addContent(entry: Entry) {
+            contents += entry
+            contentUpdates.tryEmit(contents.toList())
+        }
+
+        fun removeContentAt(index: Int) {
+            contents.removeAt(index)
+            contentUpdates.tryEmit(contents.toList())
+        }
+
+        fun swapContent(firstIndex: Int, secondIndex: Int) {
+            val oldValue = contents[firstIndex]
+            contents[firstIndex] = contents[secondIndex]
+            contents[secondIndex] = oldValue
+            contentUpdates.tryEmit(contents.toList())
+        }
+
+        fun setContent(index: Int, entry: Entry) {
+            contents[index] = entry
+            contentUpdates.tryEmit(contents.toList())
+        }
+
+        inline fun forEachContentIndexed(action: (index: Int, Entry) -> Unit) =
+            contents.forEachIndexed(action)
+
+        fun contentUpdates() = contentUpdates.asStateFlow()
 
         fun valueUpdates() = pendingValueUpdates.asStateFlow()
 

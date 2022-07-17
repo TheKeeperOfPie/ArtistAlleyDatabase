@@ -29,3 +29,14 @@ query MediaById($id: Int) {
     ...AniListMedia
   }
 }
+
+query MediaWithCharacters($mediaId: Int, $page: Int, $perPage: Int, $mediaPage: Int,
+    $mediaPerPage: Int) {
+    Media(id: $mediaId) @nonnull {
+      characters(page: $page, perPage: $perPage) @nonnull {
+        nodes @nonnull {
+          ...AniListCharacter
+        }
+      }
+    }
+}

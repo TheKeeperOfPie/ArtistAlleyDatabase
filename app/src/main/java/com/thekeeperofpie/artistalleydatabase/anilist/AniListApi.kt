@@ -4,9 +4,11 @@ import com.anilist.CharacterByIdQuery
 import com.anilist.CharactersSearchQuery
 import com.anilist.MediaByIdQuery
 import com.anilist.MediaSearchQuery
+import com.anilist.MediaWithCharactersQuery
 import com.apollographql.apollo3.ApolloClient
 import com.apollographql.apollo3.api.Optional
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapNotNull
 
 class AniListApi {
 
@@ -45,4 +47,19 @@ class AniListApi {
                 mediaPerPage = Optional.Present(1),
             )
         ).toFlow()
+
+    fun charactersByMedia(mediaId: Int) =
+        apolloClient.query(
+            MediaWithCharactersQuery(
+                mediaId = Optional.Present(mediaId),
+                page = Optional.Present(0),
+                perPage = Optional.Present(25),
+                mediaPage = Optional.Absent,
+                mediaPerPage = Optional.Absent,
+            )
+        ).toFlow()
+            .mapNotNull {
+                it.data?.Media?.characters?.nodes
+                    ?.mapNotNull { it?.aniListCharacter }
+            }
 }

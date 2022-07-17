@@ -94,7 +94,7 @@ object MultiEditScreen {
                 ImageSelectBox({ onImageSelected(index, it) }, onImageSelectError) {
                     AsyncImage(
                         model = ImageRequest.Builder(LocalContext.current)
-                            .data(imageUris[index].value)
+                            .data(imageUris[index].eitherValueUnchecked())
                             .crossfade(true)
                             .build(),
                         contentDescription = stringResource(

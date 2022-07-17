@@ -6,6 +6,7 @@ plugins {
     id("com.google.devtools.ksp") version "1.7.0-1.0.6"
     kotlin("plugin.serialization") version "1.7.10"
     id("com.apollographql.apollo3") version "3.3.2"
+    id("com.github.jk1.dependency-license-report") version "2.0"
 }
 
 android {

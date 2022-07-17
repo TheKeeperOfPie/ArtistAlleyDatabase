@@ -12,7 +12,9 @@ import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterReposit
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntry
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryDao
+import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryDataConverter
 import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryDetailsViewModel
+import com.thekeeperofpie.artistalleydatabase.autocomplete.Autocompleter
 import com.thekeeperofpie.artistalleydatabase.json.AppJson
 import com.thekeeperofpie.artistalleydatabase.json.AppMoshi
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -31,6 +33,8 @@ class DetailsViewModel @Inject constructor(
     characterRepository: CharacterRepository,
     appMoshi: AppMoshi,
     appJson: AppJson,
+    autocompleter: Autocompleter,
+    dataConverter: ArtEntryDataConverter,
 ) : ArtEntryDetailsViewModel(
     application,
     artEntryDao,
@@ -39,6 +43,8 @@ class DetailsViewModel @Inject constructor(
     characterRepository,
     appMoshi,
     appJson,
+    autocompleter,
+    dataConverter,
 ) {
 
     var entryId: String? = null

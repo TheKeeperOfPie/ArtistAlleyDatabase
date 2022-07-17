@@ -154,7 +154,7 @@ private fun SectionHeader(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun MultiTextSection(section: ArtEntrySection.MultiText) {
-    when (section.contents.size) {
+    when (section.contentSize()) {
         0 -> section.headerZero
         1 -> section.headerOne
         else -> section.headerMany
@@ -166,7 +166,7 @@ private fun MultiTextSection(section: ArtEntrySection.MultiText) {
                 lockState = section.lockState,
                 onClick = {
                     if (section.pendingValue.isNotEmpty()) {
-                        section.contents += section.pendingEntry()
+                        section.addContent(section.pendingEntry())
                         section.pendingValue = ""
                     }
                     section.rotateLockState()
@@ -174,21 +174,21 @@ private fun MultiTextSection(section: ArtEntrySection.MultiText) {
             )
         }
 
-    section.contents.forEachIndexed { index, value ->
+    section.forEachContentIndexed { index, value ->
         var showOverflow by remember { mutableStateOf(false) }
         Box {
             PrefilledSectionField(
                 index,
                 value,
                 onValueChange = {
-                    val entry = section.contents[index]
+                    val entry = section.content(index)
                     if (entry.text != it) {
-                        section.contents[index] = ArtEntrySection.MultiText.Entry.Custom(it)
+                        section.setContent(index, ArtEntrySection.MultiText.Entry.Custom(it))
                     }
                 },
                 onClickMore = { showOverflow = !showOverflow },
                 onDone = {
-                    section.contents.add(
+                    section.addContent(
                         index,
                         ArtEntrySection.MultiText.Entry.Custom("")
                     )
@@ -209,7 +209,7 @@ private fun MultiTextSection(section: ArtEntrySection.MultiText) {
                     DropdownMenuItem(
                         text = { Text(stringResource(R.string.delete)) },
                         onClick = {
-                            section.contents.removeAt(index)
+                            section.removeContentAt(index)
                             showOverflow = false
                         }
                     )
@@ -217,20 +217,16 @@ private fun MultiTextSection(section: ArtEntrySection.MultiText) {
                         DropdownMenuItem(
                             text = { Text(stringResource(R.string.move_up)) },
                             onClick = {
-                                val oldValue = section.contents[index]
-                                section.contents[index] = section.contents[index - 1]
-                                section.contents[index - 1] = oldValue
+                                section.swapContent(index, index - 1)
                                 showOverflow = false
                             }
                         )
                     }
-                    if (index < section.contents.size - 1) {
+                    if (index < section.contentSize() - 1) {
                         DropdownMenuItem(
                             text = { Text(stringResource(R.string.move_down)) },
                             onClick = {
-                                val oldValue = section.contents[index]
-                                section.contents[index] = section.contents[index + 1]
-                                section.contents[index + 1] = oldValue
+                                section.swapContent(index, index + 1)
                                 showOverflow = false
                             }
                         )
@@ -255,7 +251,7 @@ private fun MultiTextSection(section: ArtEntrySection.MultiText) {
                 onValueChange = { section.pendingValue = it },
                 onDone = {
                     if (it.isNotEmpty()) {
-                        section.contents += ArtEntrySection.MultiText.Entry.Custom(it)
+                        section.addContent(ArtEntrySection.MultiText.Entry.Custom(it))
                         section.pendingValue = ""
                     }
                 },
@@ -283,7 +279,7 @@ private fun MultiTextSection(section: ArtEntrySection.MultiText) {
                         DropdownMenuItem(
                             onClick = {
                                 focusRequester.requestFocus()
-                                section.contents += it
+                                section.addContent(it)
                                 section.pendingValue = ""
                                 coroutineScope.launch {
                                     delay(500)
@@ -461,10 +457,7 @@ private fun PrefilledSectionField(
                         .weight(1f, true)
                         .padding(16.dp)
                 ) {
-                    Text(
-                        text = entry.titleText,
-                        maxLines = 1,
-                    )
+                    Text(text = entry.titleText)
                     if (entry.subtitleText != null) {
                         Text(
                             text = entry.subtitleText,
@@ -779,7 +772,7 @@ class SampleArtEntrySectionsProvider : PreviewParameterProvider<List<ArtEntrySec
                 R.string.art_entry_tags_header_one,
                 R.string.art_entry_tags_header_many,
             ).apply {
-                contents.addAll(
+                setContents(
                     listOf(
                         ArtEntrySection.MultiText.Entry.Custom("cute"),
                         ArtEntrySection.MultiText.Entry.Custom("portrait")

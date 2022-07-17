@@ -38,7 +38,7 @@ sealed class SourceType(
 
     companion object {
 
-        private val TAG = SourceType::class.java.name
+        private const val TAG = "SourceType"
 
         fun fromEntry(json: Json, entry: ArtEntry): SourceType {
             val value = entry.sourceValue

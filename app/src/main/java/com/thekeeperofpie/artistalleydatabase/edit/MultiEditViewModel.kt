@@ -11,9 +11,11 @@ import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterReposit
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryUtils
 import com.thekeeperofpie.artistalleydatabase.art.SourceType
+import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryDataConverter
 import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryModel
 import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntrySection
+import com.thekeeperofpie.artistalleydatabase.autocomplete.Autocompleter
 import com.thekeeperofpie.artistalleydatabase.json.AppJson
 import com.thekeeperofpie.artistalleydatabase.json.AppMoshi
 import com.thekeeperofpie.artistalleydatabase.utils.Either
@@ -35,6 +37,8 @@ class MultiEditViewModel @Inject constructor(
     characterRepository: CharacterRepository,
     appMoshi: AppMoshi,
     appJson: AppJson,
+    autocompleter: Autocompleter,
+    dataConverter: ArtEntryDataConverter,
 ) : ArtEntryDetailsViewModel(
     application,
     artEntryEditDao,
@@ -42,7 +46,9 @@ class MultiEditViewModel @Inject constructor(
     mediaRepository,
     characterRepository,
     appMoshi,
-    appJson
+    appJson,
+    autocompleter,
+    dataConverter,
 ) {
 
     private lateinit var entryIds: List<String>
@@ -194,7 +200,7 @@ class MultiEditViewModel @Inject constructor(
 
         val newImages = imageUris.mapIndexedNotNull { index, either ->
             if (either is Either.Right) {
-                index to either.right
+                index to either.value
             } else null
         }.map { (index, uri) -> entryIds[index] to uri }
 

@@ -1,6 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anilist.character
 
-import com.thekeeperofpie.artistalleydatabase.anilist.DatabaseCharacterEntry
+import com.thekeeperofpie.artistalleydatabase.anilist.CharacterColumnEntry
 
 object CharacterUtils {
 
@@ -13,7 +13,7 @@ object CharacterUtils {
     )
 
     fun buildCanonicalName(
-        entry: DatabaseCharacterEntry
+        entry: CharacterColumnEntry
     ) = buildCanonicalName(
         first = entry.name?.first,
         middle = entry.name?.middle,

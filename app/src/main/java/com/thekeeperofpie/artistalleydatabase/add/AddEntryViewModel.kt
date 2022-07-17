@@ -10,7 +10,9 @@ import com.thekeeperofpie.artistalleydatabase.anilist.AniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryDao
+import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryDataConverter
 import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryDetailsViewModel
+import com.thekeeperofpie.artistalleydatabase.autocomplete.Autocompleter
 import com.thekeeperofpie.artistalleydatabase.json.AppJson
 import com.thekeeperofpie.artistalleydatabase.json.AppMoshi
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -29,6 +31,8 @@ class AddEntryViewModel @Inject constructor(
     characterRepository: CharacterRepository,
     appMoshi: AppMoshi,
     appJson: AppJson,
+    autocompleter: Autocompleter,
+    dataConverter: ArtEntryDataConverter,
     private val settingsProvider: SettingsProvider,
 ) : ArtEntryDetailsViewModel(
     application,
@@ -38,6 +42,8 @@ class AddEntryViewModel @Inject constructor(
     characterRepository,
     appMoshi,
     appJson,
+    autocompleter,
+    dataConverter,
 ) {
 
     val imageUris = mutableStateListOf<Uri>()
