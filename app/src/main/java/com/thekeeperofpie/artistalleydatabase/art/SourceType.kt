@@ -2,6 +2,9 @@ package com.thekeeperofpie.artistalleydatabase.art
 
 import android.util.Log
 import androidx.annotation.StringRes
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -170,11 +173,18 @@ class SourceConventionSectionItem : SourceDropdown.SourceItem() {
 
     @Composable
     override fun Content(lockState: ArtEntrySection.LockState?) {
+        val showSecondRow = lockState != ArtEntrySection.LockState.LOCKED ||
+                (hall.isNotEmpty() && booth.isNotEmpty())
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(start = 16.dp, end = 16.dp, top = 10.dp, bottom = 4.dp)
+                .padding(
+                    start = 16.dp,
+                    end = 16.dp,
+                    top = 10.dp,
+                    bottom = if (showSecondRow) 4.dp else 10.dp
+                )
         ) {
             TextField(
                 value = name,
@@ -205,30 +215,36 @@ class SourceConventionSectionItem : SourceDropdown.SourceItem() {
             )
         }
 
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 10.dp)
+        AnimatedVisibility(
+            visible = showSecondRow,
+            enter = expandVertically(),
+            exit = shrinkVertically(),
         ) {
-            TextField(
-                value = hall,
-                label = { Text(stringResource(R.string.art_entry_source_convention_label_hall)) },
-                placeholder = {
-                    Text(stringResource(R.string.art_entry_source_convention_placeholder_hall))
-                },
-                onValueChange = { hall = it },
-                modifier = Modifier.weight(1f, true),
-            )
-            TextField(
-                value = booth,
-                label = { Text(stringResource(R.string.art_entry_source_convention_label_booth)) },
-                placeholder = {
-                    Text(stringResource(R.string.art_entry_source_convention_placeholder_booth))
-                },
-                onValueChange = { booth = it },
-                modifier = Modifier.weight(1f, true),
-            )
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 10.dp)
+            ) {
+                TextField(
+                    value = hall,
+                    label = { Text(stringResource(R.string.art_entry_source_convention_label_hall)) },
+                    placeholder = {
+                        Text(stringResource(R.string.art_entry_source_convention_placeholder_hall))
+                    },
+                    onValueChange = { hall = it },
+                    modifier = Modifier.weight(1f, true),
+                )
+                TextField(
+                    value = booth,
+                    label = { Text(stringResource(R.string.art_entry_source_convention_label_booth)) },
+                    placeholder = {
+                        Text(stringResource(R.string.art_entry_source_convention_placeholder_booth))
+                    },
+                    onValueChange = { booth = it },
+                    modifier = Modifier.weight(1f, true),
+                )
+            }
         }
     }
 }

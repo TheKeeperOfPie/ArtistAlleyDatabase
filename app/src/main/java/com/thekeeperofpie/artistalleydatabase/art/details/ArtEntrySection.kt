@@ -155,6 +155,7 @@ sealed class ArtEntrySection(lockState: LockState? = null) {
                 val id: String,
                 text: String,
                 val image: String? = null,
+                val imageLink: String? = null,
                 val titleText: String = text,
                 val subtitleText: String? = null,
                 trailingIcon: ImageVector? = null,

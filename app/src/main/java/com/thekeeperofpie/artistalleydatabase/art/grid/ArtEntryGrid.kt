@@ -1,6 +1,8 @@
 package com.thekeeperofpie.artistalleydatabase.art.grid
 
-import androidx.compose.animation.Crossfade
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
@@ -209,21 +211,21 @@ object ArtEntryGrid {
                     }
                 }
 
-                Crossfade(
-                    targetState = selected,
+                AnimatedVisibility(
+                    visible = selected,
+                    enter = fadeIn(),
+                    exit = fadeOut(),
                     modifier = Modifier
                         .align(Alignment.TopEnd)
                         .padding(16.dp)
                         .size(24.dp)
                 ) {
-                    if (it) {
-                        Icon(
-                            Icons.Default.CheckCircle,
-                            contentDescription = stringResource(
-                                R.string.art_entry_selected_content_description
-                            ),
-                        )
-                    }
+                    Icon(
+                        Icons.Default.CheckCircle,
+                        contentDescription = stringResource(
+                            R.string.art_entry_selected_content_description
+                        ),
+                    )
                 }
             }
         }

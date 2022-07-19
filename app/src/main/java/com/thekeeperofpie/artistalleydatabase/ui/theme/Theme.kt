@@ -1,40 +1,25 @@
 package com.thekeeperofpie.artistalleydatabase.ui.theme
 
 import android.app.Activity
+import android.content.Intent
+import android.net.Uri
+import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
-import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.platform.UriHandler
 import androidx.core.view.WindowCompat
-
-private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
-)
-
-private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
-
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
-)
+import com.thekeeperofpie.artistalleydatabase.CustomApplication
+import com.thekeeperofpie.artistalleydatabase.R
 
 @Composable
 fun ArtistAlleyDatabaseTheme(
@@ -55,9 +40,25 @@ fun ArtistAlleyDatabaseTheme(
         }
     }
 
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = Typography,
-        content = content
-    )
+    val uriHandler = object : UriHandler {
+        override fun openUri(uri: String) {
+            try {
+                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(uri)))
+            } catch (e: Exception) {
+                Log.d(CustomApplication.TAG, "Error launching URI $uri", e)
+                Toast.makeText(context, R.string.error_launching_generic_uri, Toast.LENGTH_LONG)
+                    .show()
+            }
+        }
+    }
+
+    CompositionLocalProvider(
+        LocalUriHandler provides uriHandler
+    ) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            typography = Typography,
+            content = content
+        )
+    }
 }

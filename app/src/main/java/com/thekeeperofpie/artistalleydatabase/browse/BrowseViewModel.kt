@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.thekeeperofpie.artistalleydatabase.R
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
@@ -91,6 +92,7 @@ class BrowseViewModel @Inject constructor(
                                     .map {
                                         BrowseEntryModel(
                                             image = it.image?.medium,
+                                            link = AniListUtils.characterUrl(it.id),
                                             text = CharacterUtils.buildCanonicalName(it)
                                                 ?: databaseText,
                                             query = it.id.toString(),
@@ -100,14 +102,15 @@ class BrowseViewModel @Inject constructor(
                                 .let { it ?: emptyFlow() }
                                 .onStart {
                                     if (entry == null) {
-                                        emit(BrowseEntryModel(text = databaseText))
+                                        BrowseEntryModel(text = databaseText)
                                     } else {
                                         BrowseEntryModel(
+                                            link = AniListUtils.characterUrl(entry.id),
                                             text = CharacterUtils.buildCanonicalName(entry)
                                                 ?: databaseText,
                                             query = entry.id.toString(),
                                         )
-                                    }
+                                    }.let { emit(it) }
                                 }
                         }
                         .let { combine(it) { it.sortedByText() } }
@@ -127,6 +130,7 @@ class BrowseViewModel @Inject constructor(
                                     .map {
                                         BrowseEntryModel(
                                             image = it.image?.medium,
+                                            link = AniListUtils.mediaUrl(it.type, it.id),
                                             text = it.title?.romaji ?: databaseText,
                                             query = it.id.toString(),
                                         )
@@ -135,13 +139,13 @@ class BrowseViewModel @Inject constructor(
                                 .let { it ?: emptyFlow() }
                                 .onStart {
                                     if (entry == null) {
-                                        emit(BrowseEntryModel(text = databaseText))
+                                        BrowseEntryModel(text = databaseText)
                                     } else {
                                         BrowseEntryModel(
                                             text = entry.title,
                                             query = entry.id.toString(),
                                         )
-                                    }
+                                    }.let { emit(it) }
                                 }
                         }
                         .let { combine(it) { it.sortedByText() } }

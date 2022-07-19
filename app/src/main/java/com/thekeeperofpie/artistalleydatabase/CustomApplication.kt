@@ -10,6 +10,10 @@ import javax.inject.Inject
 @HiltAndroidApp
 class CustomApplication : Application(), Configuration.Provider {
 
+    companion object {
+        const val TAG = "ArtistAlleyDatabase"
+    }
+
     val scope = MainScope()
 
     @Inject

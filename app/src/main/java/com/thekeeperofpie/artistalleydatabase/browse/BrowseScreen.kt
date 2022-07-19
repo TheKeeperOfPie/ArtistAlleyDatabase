@@ -85,6 +85,7 @@ object BrowseScreen {
                         val value = content[it]
                         EntryRow(
                             image = value.image,
+                            link = value.link,
                             text = value.text,
                             onClick = { onClick(tab.type, value) }
                         )
@@ -95,13 +96,14 @@ object BrowseScreen {
     }
 
     @Composable
-    private fun EntryRow(image: String?, text: String, onClick: () -> Unit) {
+    private fun EntryRow(image: String?, link: String? = null, text: String, onClick: () -> Unit) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.clickable(onClick = onClick)
         ) {
             EntryImage(
                 image = image,
+                link = link,
                 modifier = Modifier
                     .height(54.dp)
                     .width(42.dp)

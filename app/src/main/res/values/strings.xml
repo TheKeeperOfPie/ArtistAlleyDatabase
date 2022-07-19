@@ -110,4 +110,6 @@
     <string name="aniList_entry_anime_indicator_content_description">Anime type indicator</string>
     <string name="aniList_entry_manga_indicator_content_description">Manga type indicator</string>
     <string name="art_entry_field_different_indicator_content_description">Different values indicator</string>
+    <string name="error_launching_generic_uri">Could not launch generic URI</string>
+    <string name="label_open_entry_link">Open entry link</string>
 </resources>

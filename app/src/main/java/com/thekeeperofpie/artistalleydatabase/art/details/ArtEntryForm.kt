@@ -74,7 +74,9 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
@@ -290,16 +292,19 @@ private fun MultiTextSection(section: ArtEntrySection.MultiText) {
                                 val titleText: String
                                 val subtitleText: String?
                                 val image: String?
+                                val imageLink: String?
                                 when (it) {
                                     is ArtEntrySection.MultiText.Entry.Custom -> {
                                         titleText = it.text
                                         subtitleText = null
                                         image = null
+                                        imageLink = null
                                     }
                                     is ArtEntrySection.MultiText.Entry.Prefilled -> {
                                         titleText = it.titleText
                                         subtitleText = it.subtitleText
                                         image = it.image
+                                        imageLink = it.imageLink
                                     }
                                     ArtEntrySection.MultiText.Entry.Different -> {
                                         titleText = stringResource(
@@ -307,12 +312,14 @@ private fun MultiTextSection(section: ArtEntrySection.MultiText) {
                                         )
                                         subtitleText = null
                                         image = null
+                                        imageLink = null
                                     }
                                 }.run { /*exhaust*/ }
 
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     EntryImage(
                                         image = image,
+                                        link = imageLink?.let { imageLink },
                                         modifier = Modifier
                                             .height(54.dp)
                                             .width(42.dp)
@@ -444,6 +451,7 @@ private fun PrefilledSectionField(
             ) {
                 EntryImage(
                     image = entry.image,
+                    link = entry.imageLink,
                     modifier = Modifier
                         .height(72.dp)
                         .width(56.dp)
@@ -539,8 +547,15 @@ private fun PrefilledSectionField(
 fun EntryImage(
     image: String?,
     modifier: Modifier = Modifier,
+    link: String?,
 ) {
-    Box(modifier) {
+    val uriHandler = LocalUriHandler.current
+    Box(modifier
+        .clickable(
+            onClick = { link?.let { uriHandler.openUri(it) } },
+            onClickLabel = stringResource(R.string.label_open_entry_link),
+            role = Role.Image,
+        )) {
         var showPlaceholder by remember { mutableStateOf(true) }
         if (image == null || showPlaceholder) {
             Spacer(

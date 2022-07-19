@@ -7,6 +7,7 @@ import com.anilist.fragment.AniListCharacter
 import com.anilist.fragment.AniListMedia
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.R
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.CharacterColumnEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.MediaColumnEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterEntry
@@ -36,6 +37,7 @@ class ArtEntryDataConverter @Inject constructor(
                 else -> null
             },
             image = media.coverImage?.medium,
+            imageLink = AniListUtils.mediaUrl(media.type, media.id),
             serializedValue = serializedValue,
             searchableValue = (listOf(
                 media.title?.romaji,
@@ -66,6 +68,7 @@ class ArtEntryDataConverter @Inject constructor(
                 else -> null
             },
             image = entry.image?.medium,
+            imageLink = AniListUtils.mediaUrl(entry.type, entry.id),
             serializedValue = serializedValue,
             searchableValue = (listOf(
                 title?.romaji,
@@ -83,6 +86,7 @@ class ArtEntryDataConverter @Inject constructor(
             id = entry.id.toString(),
             text = entry.title,
             image = null,
+            imageLink = null,
             serializedValue = serializedValue,
             searchableValue = entry.title.trim()
         )
@@ -161,6 +165,7 @@ class ArtEntryDataConverter @Inject constructor(
             id = id.toString(),
             text = canonicalName,
             image = image,
+            imageLink = AniListUtils.characterUrl(id),
             titleText = displayName,
             subtitleText = mediaTitle,
             serializedValue = serializedValue,
