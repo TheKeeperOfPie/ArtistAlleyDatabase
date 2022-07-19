@@ -14,6 +14,9 @@ This app does not yet implement a toggle for AniList's `isAdult` flag, and all r
 By using this application, you attest you are 18+ and comply with all AniList's content guidelines.
 No downloads are supplied, and the app must be built from source.
 
+There is no guarantee that imports and exports will work across versions until the format is
+stabilized, nor that the data is safe from corruption or bugs. Use and update at your own risk.
+
 ## Build
 
 1. Clone project with `git clone https://github.com/TheKeeperOfPie/ArtistAlleyDatabase.git`
