@@ -185,6 +185,33 @@ interface ArtEntryDao {
 
     @Query(
         """
+            SELECT sourceValue
+            FROM art_entries
+            WHERE artists LIKE :artist
+            AND sourceType IS 'convention'
+            AND sourceValue LIKE :conventionName
+            AND sourceValue LIKE :conventionYear
+            LIMIT 1
+        """
+    )
+    suspend fun queryArtistForHallBoothInternal(
+        artist: String,
+        conventionName: String,
+        conventionYear: String,
+    ): String?
+
+    suspend fun queryArtistForHallBooth(
+        artist: String,
+        conventionName: String,
+        conventionYear: Int,
+    ) = queryArtistForHallBoothInternal(
+        artist = wrapLikeQuery(artist),
+        conventionName = wrapLikeQuery(conventionName),
+        conventionYear = wrapLikeQuery(conventionYear.toString()),
+    )
+
+    @Query(
+        """
         SELECT DISTINCT (art_entries.artists)
         FROM art_entries
         JOIN art_entries_fts ON art_entries.id = art_entries_fts.id

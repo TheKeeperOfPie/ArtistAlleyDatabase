@@ -30,13 +30,16 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.decodeFromString
 import java.time.Instant
 import java.util.Date
 
@@ -189,6 +192,42 @@ abstract class ArtEntryDetailsViewModel(
                         .map { flowOf(it) }
                         .ifEmpty { listOf(flowOf(null)) }
                 })
+        }
+
+        viewModelScope.launch(Dispatchers.IO) {
+            combine(
+                artistSection.contentUpdates(),
+                sourceSection.conventionSectionItem.updates(),
+                ::Pair
+            )
+                .filter {
+                    it.second.name.isNotEmpty()
+                            && it.second.year != null && it.second.year!! > 1000
+                            && it.second.hall.isEmpty() && it.second.booth.isEmpty()
+                }
+                .mapNotNull { (artistEntries, convention) ->
+                    artistEntries.firstNotNullOfOrNull {
+                        artEntryDao
+                            .queryArtistForHallBooth(
+                                it.searchableValue,
+                                convention.name,
+                                convention.year!!
+                            )
+                            .takeUnless { it.isNullOrBlank() }
+                            .let { appJson.json.decodeFromString<SourceType.Convention>(it!!) }
+                            .takeIf { it.name == convention.name && it.year == convention.year }
+                    }
+                }
+                .collectLatest {
+                    withContext(Dispatchers.Main) {
+                        sourceSection.conventionSectionItem.updateHallBoothIfEmpty(
+                            expectedName = it.name,
+                            expectedYear = it.year!!,
+                            newHall = it.hall,
+                            newBooth = it.booth
+                        )
+                    }
+                }
         }
     }
 

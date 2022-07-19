@@ -13,6 +13,7 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import com.thekeeperofpie.artistalleydatabase.R
+import com.thekeeperofpie.artistalleydatabase.utils.observableStateOf
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import java.util.function.UnaryOperator
@@ -68,14 +69,11 @@ sealed class ArtEntrySection(lockState: LockState? = null) {
         val contents = mutableStateListOf<Entry>()
         private var contentUpdates = MutableStateFlow(emptyList<Entry>())
 
-        private var _pendingValue by mutableStateOf(initialPendingValue)
         private var pendingValueUpdates = MutableStateFlow("")
-        var pendingValue: String
-            get() = _pendingValue
-            set(value) {
-                _pendingValue = value
-                pendingValueUpdates.tryEmit(value)
-            }
+        var pendingValue by observableStateOf(
+            initialPendingValue,
+            pendingValueUpdates::tryEmit
+        )
 
         // TODO: Predictions for existing prefilled fields
         var predictions by mutableStateOf(emptyList<Entry>())

@@ -25,6 +25,9 @@ import androidx.compose.ui.unit.dp
 import com.thekeeperofpie.artistalleydatabase.R
 import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryModel
 import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntrySection
+import com.thekeeperofpie.artistalleydatabase.utils.observableStateOf
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import kotlinx.serialization.decodeFromString
@@ -104,8 +107,8 @@ class SourceDropdown(locked: LockState? = null) : ArtEntrySection.Dropdown(
     lockState = locked,
 ) {
 
+    val conventionSectionItem = SourceConventionSectionItem()
     private val unknownSectionItem = SourceUnknownSectionItem()
-    private val conventionSectionItem = SourceConventionSectionItem()
     private val customSectionItem = SourceCustomSectionItem()
 
     init {
@@ -122,10 +125,7 @@ class SourceDropdown(locked: LockState? = null) : ArtEntrySection.Dropdown(
             is SourceType.Convention -> {
                 if (value != null) {
                     val data = json.decodeFromString<SourceType.Convention>(value)
-                    conventionSectionItem.name = data.name
-                    conventionSectionItem.year = data.year.toString()
-                    conventionSectionItem.hall = data.hall
-                    conventionSectionItem.booth = data.booth
+                    conventionSectionItem.setValues(data)
                 }
                 selectedIndex = options.indexOf(conventionSectionItem)
             }
@@ -156,10 +156,39 @@ class SourceDropdown(locked: LockState? = null) : ArtEntrySection.Dropdown(
 
 class SourceConventionSectionItem : SourceDropdown.SourceItem() {
 
-    var name by mutableStateOf("")
-    var year by mutableStateOf("")
-    var hall by mutableStateOf("")
-    var booth by mutableStateOf("")
+    private var name by observableStateOf("") { emitNew() }
+    private var year by observableStateOf("") { emitNew() }
+    private var hall by observableStateOf("") { emitNew() }
+    private var booth by observableStateOf("") { emitNew() }
+
+    private var flow = MutableStateFlow(SourceType.Convention())
+
+    fun setValues(convention: SourceType.Convention) {
+        name = convention.name
+        year = convention.year?.toString().orEmpty()
+        hall = convention.hall
+        booth = convention.booth
+    }
+
+    private fun emitNew() {
+        flow.tryEmit(toSource())
+    }
+
+    fun updates() = flow.asStateFlow()
+
+    fun updateHallBoothIfEmpty(
+        expectedName: String,
+        expectedYear: Int,
+        newHall: String,
+        newBooth: String
+    ) {
+        if (name == expectedName && year == expectedYear.toString()
+            && hall.isEmpty() && booth.isEmpty()
+        ) {
+            hall = newHall
+            booth = newBooth
+        }
+    }
 
     override val hasCustomView = true
 
