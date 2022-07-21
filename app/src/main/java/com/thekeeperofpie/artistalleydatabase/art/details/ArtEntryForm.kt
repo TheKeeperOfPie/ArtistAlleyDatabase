@@ -16,7 +16,6 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
@@ -37,16 +36,15 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.ContentAlpha
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.LockOpen
 import androidx.compose.material.icons.filled.LockReset
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -87,6 +85,8 @@ import coil.compose.AsyncImage
 import com.thekeeperofpie.artistalleydatabase.R
 import com.thekeeperofpie.artistalleydatabase.art.PrintSizeDropdown
 import com.thekeeperofpie.artistalleydatabase.ui.bottomBorder
+import com.thekeeperofpie.compose_proxy.dropdown.DropdownMenu
+import com.thekeeperofpie.compose_proxy.dropdown.DropdownMenuItem
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -204,7 +204,7 @@ private fun MultiTextSection(section: ArtEntrySection.MultiText) {
                     .align(Alignment.BottomEnd)
                     .padding(end = 16.dp)
             ) {
-                DropdownMenu(
+                androidx.compose.material3.DropdownMenu(
                     expanded = showOverflow,
                     onDismissRequest = { showOverflow = false },
                 ) {
@@ -277,11 +277,18 @@ private fun MultiTextSection(section: ArtEntrySection.MultiText) {
                         .fillMaxWidth()
                         .heightIn(max = 240.dp)
                 ) {
-                    section.predictions.forEach {
+                    items(section.predictions.size, key = {
+                        when (val entry = section.predictions[it]) {
+                            is ArtEntrySection.MultiText.Entry.Custom -> entry.text
+                            ArtEntrySection.MultiText.Entry.Different -> entry
+                            is ArtEntrySection.MultiText.Entry.Prefilled -> entry.id
+                        }
+                    }) {
+                        val entry = section.predictions[it]
                         DropdownMenuItem(
                             onClick = {
                                 focusRequester.requestFocus()
-                                section.addContent(it)
+                                section.addContent(entry)
                                 section.pendingValue = ""
                                 coroutineScope.launch {
                                     delay(500)
@@ -293,18 +300,18 @@ private fun MultiTextSection(section: ArtEntrySection.MultiText) {
                                 val subtitleText: String?
                                 val image: String?
                                 val imageLink: String?
-                                when (it) {
+                                when (entry) {
                                     is ArtEntrySection.MultiText.Entry.Custom -> {
-                                        titleText = it.text
+                                        titleText = entry.text
                                         subtitleText = null
                                         image = null
                                         imageLink = null
                                     }
                                     is ArtEntrySection.MultiText.Entry.Prefilled -> {
-                                        titleText = it.titleText
-                                        subtitleText = it.subtitleText
-                                        image = it.image
-                                        imageLink = it.imageLink
+                                        titleText = entry.titleText
+                                        subtitleText = entry.subtitleText
+                                        image = entry.image
+                                        imageLink = entry.imageLink
                                     }
                                     ArtEntrySection.MultiText.Entry.Different -> {
                                         titleText = stringResource(
@@ -348,10 +355,10 @@ private fun MultiTextSection(section: ArtEntrySection.MultiText) {
                                         }
                                     }
 
-                                    it.trailingIcon?.let { imageVector ->
+                                    entry.trailingIcon?.let { imageVector ->
                                         Icon(
                                             imageVector = imageVector,
-                                            contentDescription = it.trailingIconContentDescription
+                                            contentDescription = entry.trailingIconContentDescription
                                                 ?.let { stringResource(it) },
                                         )
                                     }
@@ -550,19 +557,21 @@ fun EntryImage(
     link: String?,
 ) {
     val uriHandler = LocalUriHandler.current
-    Box(modifier
-        .clickable(
-            onClick = { link?.let { uriHandler.openUri(it) } },
-            onClickLabel = stringResource(R.string.label_open_entry_link),
-            role = Role.Image,
-        )) {
+    Box(
+        modifier
+            .clickable(
+                onClick = { link?.let { uriHandler.openUri(it) } },
+                onClickLabel = stringResource(R.string.label_open_entry_link),
+                role = Role.Image,
+            )
+    ) {
         var showPlaceholder by remember { mutableStateOf(true) }
         if (image == null || showPlaceholder) {
             Spacer(
                 Modifier
                     .matchParentSize()
                     .background(MaterialTheme.colorScheme.onSurfaceVariant)
-                    .alpha(ContentAlpha.disabled)
+                    .alpha(0.38f)
             )
         }
 
@@ -613,7 +622,7 @@ private fun OpenSectionField(
     )
 }
 
-@OptIn(ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun DropdownSection(section: ArtEntrySection.Dropdown) {
     SectionHeader(
@@ -627,46 +636,32 @@ private fun DropdownSection(section: ArtEntrySection.Dropdown) {
             .fillMaxWidth()
             .padding(start = 16.dp, end = 16.dp)
     ) {
-        val selectedItem = section.selectedItem()
-
-        val (focusRequester) = FocusRequester.createRefs()
-        val interactionSource = remember { MutableInteractionSource() }
-
-        OutlinedTextField(
-            value = selectedItem.fieldText(),
-            readOnly = true,
-            trailingIcon = {
-                Icon(
-                    Icons.Default.ArrowDropDown,
-                    stringResource(section.arrowContentDescription)
-                )
+        val editable = section.lockState?.editable != false
+        ExposedDropdownMenuBox(
+            expanded = section.expanded && editable,
+            onExpandedChange = {
+                if (editable) {
+                    section.expanded = !section.expanded
+                }
             },
-            onValueChange = {},
-            modifier = Modifier
-                .fillMaxWidth()
-                .focusRequester(focusRequester)
-        )
-
-        Box(
-            modifier = Modifier
-                .matchParentSize()
-                .clickable(
-                    onClick = {
-                        if (section.lockState?.editable != false) {
-                            section.expanded = true
-                            focusRequester.requestFocus()
-                        }
-                    },
-                    interactionSource = interactionSource,
-                    indication = null
-                )
-        )
-
-        if (section.lockState?.editable != false) {
-            DropdownMenu(
+            Modifier.fillMaxWidth()
+        ) {
+            TextField(
+                readOnly = true,
+                value = section.selectedItem().fieldText(),
+                onValueChange = { },
+                trailingIcon = {
+                    ExposedDropdownMenuDefaults.TrailingIcon(
+                        expanded = section.expanded
+                    )
+                },
+                colors = ExposedDropdownMenuDefaults.textFieldColors(),
+                modifier = Modifier.fillMaxWidth()
+            )
+            ExposedDropdownMenu(
                 expanded = section.expanded,
                 onDismissRequest = { section.expanded = false },
-                Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth()
             ) {
                 section.options.forEachIndexed { index, item ->
                     DropdownMenuItem(
@@ -674,7 +669,8 @@ private fun DropdownSection(section: ArtEntrySection.Dropdown) {
                             section.expanded = false
                             section.selectedIndex = index
                         },
-                        text = { item.DropdownItemText() }
+                        text = { item.DropdownItemText() },
+                        modifier = Modifier.fillMaxWidth()
                     )
                 }
             }

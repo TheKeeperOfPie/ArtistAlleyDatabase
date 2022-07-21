@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.ContentAlpha
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.AlertDialog
@@ -205,7 +204,7 @@ object ArtEntryGrid {
                                         0.dp
                                     }
                                 })
-                                .alpha(if (selected) ContentAlpha.disabled else 1f)
+                                .alpha(if (selected) 0.38f else 1f)
                                 .semantics { this.selected = selected }
                         )
                     }

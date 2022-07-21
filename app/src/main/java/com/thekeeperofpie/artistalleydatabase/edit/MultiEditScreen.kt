@@ -24,7 +24,6 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
-import com.google.accompanist.pager.HorizontalPagerIndicator
 import com.google.accompanist.pager.rememberPagerState
 import com.thekeeperofpie.artistalleydatabase.R
 import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryForm
@@ -34,6 +33,7 @@ import com.thekeeperofpie.artistalleydatabase.art.details.SampleArtEntrySections
 import com.thekeeperofpie.artistalleydatabase.ui.ButtonFooter
 import com.thekeeperofpie.artistalleydatabase.ui.SnackbarErrorText
 import com.thekeeperofpie.artistalleydatabase.utils.Either
+import com.thekeeperofpie.compose_proxy.HorizontalPagerIndicator
 import java.io.File
 
 object MultiEditScreen {

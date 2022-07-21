@@ -1,0 +1,46 @@
+plugins {
+    id("com.android.library")
+    id("org.jetbrains.kotlin.android")
+}
+
+android {
+    namespace = "com.thekeeperofpie.compose_proxy"
+    compileSdk = 32
+
+    defaultConfig {
+        minSdk = 31
+        targetSdk = 32
+
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles("consumer-rules.pro")
+    }
+
+    buildTypes {
+        release {
+            isMinifyEnabled = false
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+        }
+    }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+    buildFeatures {
+        compose = true
+    }
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.2.0-dev-k1.7.0-53370d83bb1"
+    }
+}
+
+dependencies {
+    implementation("androidx.compose.material:material:1.3.0-alpha01")
+    implementation("androidx.compose.material3:material3:1.0.0-alpha14")
+    implementation("com.google.accompanist:accompanist-pager-indicators:0.24.13-rc")
+}

@@ -86,6 +86,7 @@ if (!aniListSchemaFile.exists()) {
 }
 
 dependencies {
+    implementation(project(":compose-proxy"))
     implementation(kotlin("reflect"))
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.1")
@@ -138,8 +139,10 @@ dependencies {
     ksp("com.squareup.moshi:moshi-kotlin-codegen:1.13.0")
 
     implementation("com.google.accompanist:accompanist-drawablepainter:0.23.1")
-    implementation("com.google.accompanist:accompanist-pager:0.24.10-beta")
-    implementation("com.google.accompanist:accompanist-pager-indicators:0.24.10-beta")
+    implementation("com.google.accompanist:accompanist-pager:0.24.13-rc")
+
+    // TODO: Re-add official pager-indicator library once it migrates to material3
+    // implementation("com.google.accompanist:accompanist-pager-indicators:0.24.13-rc")
 
     implementation("com.apollographql.apollo3:apollo-runtime:3.3.2")
 }

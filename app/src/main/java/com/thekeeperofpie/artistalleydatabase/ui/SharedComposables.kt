@@ -14,16 +14,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.material.ContentAlpha
-import androidx.compose.material.DismissValue
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.SwipeToDismiss
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.outlined.CheckCircle
-import androidx.compose.material.rememberDismissState
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
@@ -39,7 +34,6 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
@@ -54,6 +48,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.thekeeperofpie.artistalleydatabase.R
+import com.thekeeperofpie.compose_proxy.SwipeToDismiss
+import com.thekeeperofpie.compose_proxy.rememberDismissState
 
 @Composable
 fun AppBar(
@@ -107,17 +103,10 @@ fun ButtonFooter(vararg pairs: Pair<Int, () -> Unit>) {
     }
 }
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun SnackbarErrorText(@StringRes errorRes: Int?, onErrorDismiss: () -> Unit) {
     if (errorRes != null) {
-        val dismissState = rememberDismissState()
-        if (dismissState.currentValue != DismissValue.Default) {
-            LaunchedEffect(errorRes) {
-                onErrorDismiss()
-                dismissState.snapTo(DismissValue.Default)
-            }
-        }
+        val dismissState = rememberDismissState(errorRes, onErrorDismiss)
         SwipeToDismiss(state = dismissState, background = {
             Surface(
                 color = MaterialTheme.colorScheme.background,
@@ -222,7 +211,7 @@ fun LinearProgressWithIndicator(text: String, progress: Float?) {
                     },
                     contentDescription = stringResource(R.string.progress_complete_content_description),
                     modifier = Modifier
-                        .alpha(if (it) 1f else ContentAlpha.disabled)
+                        .alpha(if (it) 1f else 0.38f)
                         .padding(start = 16.dp, end = 16.dp, top = 10.dp, bottom = 10.dp)
                 )
             }
