@@ -4,8 +4,9 @@ import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -84,9 +85,9 @@ object BrowseScreen {
                     items(content.size) {
                         val value = content[it]
                         EntryRow(
-                            image = value.image,
-                            link = value.link,
-                            text = value.text,
+                            image = { value.image },
+                            link = { value.link },
+                            text = { value.text },
                             onClick = { onClick(tab.type, value) }
                         )
                     }
@@ -96,7 +97,12 @@ object BrowseScreen {
     }
 
     @Composable
-    private fun EntryRow(image: String?, link: String? = null, text: String, onClick: () -> Unit) {
+    private fun EntryRow(
+        image: () -> String?,
+        link: () -> String? = { null },
+        text: () -> String,
+        onClick: () -> Unit
+    ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.clickable(onClick = onClick)
@@ -105,11 +111,12 @@ object BrowseScreen {
                 image = image,
                 link = link,
                 modifier = Modifier
-                    .height(54.dp)
+                    .fillMaxHeight()
+                    .heightIn(min = 54.dp)
                     .width(42.dp)
             )
             Text(
-                text = text,
+                text = text(),
                 modifier = Modifier
                     .weight(1f, true)
                     .padding(start = 16.dp, end = 16.dp, top = 10.dp, bottom = 10.dp)

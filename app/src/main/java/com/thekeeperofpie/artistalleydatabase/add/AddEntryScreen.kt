@@ -50,19 +50,19 @@ object AddEntryScreen {
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     operator fun invoke(
-        imageUris: List<Uri> = emptyList(),
+        imageUris: () -> List<Uri> = { emptyList() },
         onImagesSelected: (List<Uri>) -> Unit = {},
         onImageSelectError: (Exception?) -> Unit = {},
         onImageSizeResult: (Int, Int) -> Unit = { _, _ -> },
-        sections: List<ArtEntrySection> = emptyList(),
+        sections: () -> List<ArtEntrySection> = { emptyList() },
         onClickSaveTemplate: () -> Unit = {},
         onClickSave: () -> Unit = {},
-        errorRes: Pair<Int, Exception?>? = null,
+        errorRes: () -> Pair<Int, Exception?>? = { null },
         onErrorDismiss: () -> Unit = {},
     ) {
         Scaffold(
             snackbarHost = {
-                SnackbarErrorText(errorRes?.first, onErrorDismiss = onErrorDismiss)
+                SnackbarErrorText(errorRes()?.first, onErrorDismiss = onErrorDismiss)
             }
         ) {
             Column(Modifier.padding(it)) {
@@ -79,7 +79,7 @@ object AddEntryScreen {
                         onImageSizeResult,
                     )
 
-                    ArtEntryForm(false, sections)
+                    ArtEntryForm({ false }, sections)
                 }
 
                 Row(
@@ -120,12 +120,14 @@ object AddEntryScreen {
     @OptIn(ExperimentalPagerApi::class)
     @Composable
     private fun HeaderImage(
-        imageUris: List<Uri> = emptyList(),
+        imageUris: () -> List<Uri> = { emptyList() },
         onImagesSelected: (List<Uri>) -> Unit = {},
         onImageSelectError: (Exception?) -> Unit = {},
         onImageSizeResult: (Int, Int) -> Unit = { _, _ -> },
     ) {
         ImagesSelectBox(onImagesSelected, onImageSelectError) {
+            @Suppress("NAME_SHADOWING")
+            val imageUris = imageUris()
             if (imageUris.isNotEmpty()) {
                 val pagerState = rememberPagerState()
                 HorizontalPager(
@@ -187,5 +189,5 @@ object AddEntryScreen {
 fun Preview(
     @PreviewParameter(SampleArtEntrySectionsProvider::class) sections: List<ArtEntrySection>
 ) {
-    AddEntryScreen(sections = sections)
+    AddEntryScreen(sections = { sections })
 }

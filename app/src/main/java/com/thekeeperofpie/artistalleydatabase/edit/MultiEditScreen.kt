@@ -41,18 +41,18 @@ object MultiEditScreen {
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     operator fun invoke(
-        imageUris: List<Either<File, Uri?>> = emptyList(),
+        imageUris: () -> List<Either<File, Uri?>> = { emptyList() },
         onImageSelected: (index: Int, uri: Uri?) -> Unit = { _, _ -> },
         onImageSelectError: (Exception?) -> Unit = {},
-        loading: Boolean = false,
-        sections: List<ArtEntrySection> = emptyList(),
+        loading: () -> Boolean = { false },
+        sections: () -> List<ArtEntrySection> = { emptyList() },
         onClickSave: () -> Unit = {},
-        errorRes: Pair<Int, Exception?>? = null,
+        errorRes: () -> Pair<Int, Exception?>? = { null },
         onErrorDismiss: () -> Unit = {},
     ) {
         Scaffold(
             snackbarHost = {
-                SnackbarErrorText(errorRes?.first, onErrorDismiss = onErrorDismiss)
+                SnackbarErrorText(errorRes()?.first, onErrorDismiss = onErrorDismiss)
             }
         ) {
             Column(Modifier.padding(it)) {
@@ -80,11 +80,13 @@ object MultiEditScreen {
     @OptIn(ExperimentalPagerApi::class)
     @Composable
     private fun HeaderImage(
-        imageUris: List<Either<File, Uri?>> = emptyList(),
+        imageUris: () -> List<Either<File, Uri?>> = { emptyList() },
         onImageSelected: (index: Int, uri: Uri?) -> Unit = { _, _ -> },
         onImageSelectError: (Exception?) -> Unit = {},
     ) {
         Box {
+            @Suppress("NAME_SHADOWING")
+            val imageUris = imageUris()
             val pagerState = rememberPagerState()
             HorizontalPager(
                 state = pagerState,
@@ -124,5 +126,5 @@ object MultiEditScreen {
 fun Preview(
     @PreviewParameter(SampleArtEntrySectionsProvider::class) sections: List<ArtEntrySection>
 ) {
-    MultiEditScreen(sections = sections)
+    MultiEditScreen(sections = { sections })
 }

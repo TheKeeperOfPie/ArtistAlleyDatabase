@@ -16,9 +16,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.core.content.FileProvider
@@ -68,28 +70,29 @@ class MainActivity : ComponentActivity() {
                 Surface {
                     val drawerState = rememberDrawerState(DrawerValue.Closed)
                     val scope = rememberCoroutineScope()
-                    val selectedItem = remember { mutableStateOf(NavDrawerItems.ITEMS[0]) }
+                    var selectedItemIndex by rememberSaveable { mutableStateOf(0) }
+                    val selectedItem = NavDrawerItems.ITEMS[selectedItemIndex]
 
                     fun onClickNav() = scope.launch { drawerState.open() }
 
                     ModalNavigationDrawer(
                         drawerState = drawerState,
                         drawerContent = {
-                            NavDrawerItems.ITEMS.forEach {
+                            NavDrawerItems.ITEMS.forEachIndexed{ index, item ->
                                 NavigationDrawerItem(
-                                    icon = { Icon(it.icon, contentDescription = null) },
-                                    label = { Text(stringResource(it.titleRes)) },
-                                    selected = it == selectedItem.value,
+                                    icon = { Icon(item.icon, contentDescription = null) },
+                                    label = { Text(stringResource(item.titleRes)) },
+                                    selected = item == selectedItem,
                                     onClick = {
                                         scope.launch { drawerState.close() }
-                                        selectedItem.value = it
+                                        selectedItemIndex = index
                                     },
                                     modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
                                 )
                             }
                         },
                         content = {
-                            when (selectedItem.value) {
+                            when (selectedItem) {
                                 NavDrawerItems.Home -> Home(::onClickNav)
                                 NavDrawerItems.Browse -> BrowseScreen(::onClickNav)
                                 NavDrawerItems.Import -> {
@@ -180,7 +183,7 @@ class MainActivity : ComponentActivity() {
                 composable(NavDestinations.ADD_ENTRY) {
                     val viewModel = hiltViewModel<AddEntryViewModel>()
                     AddEntryScreen(
-                        imageUris = viewModel.imageUris,
+                        imageUris = { viewModel.imageUris },
                         onImagesSelected = {
                             viewModel.imageUris.clear()
                             viewModel.imageUris.addAll(it)
@@ -189,10 +192,10 @@ class MainActivity : ComponentActivity() {
                             viewModel.errorResource = R.string.error_fail_to_load_image to it
                         },
                         onImageSizeResult = viewModel::onImageSizeResult,
-                        sections = viewModel.sections,
+                        sections = { viewModel.sections },
                         onClickSaveTemplate = viewModel::onClickSaveTemplate,
                         onClickSave = { viewModel.onClickSave(navController) },
-                        errorRes = viewModel.errorResource,
+                        errorRes = { viewModel.errorResource },
                         onErrorDismiss = { viewModel.errorResource = null }
                     )
                 }
@@ -259,7 +262,7 @@ class MainActivity : ComponentActivity() {
                             } else {
                                 val entryImageRatio = entry.value.imageWidthToHeightRatio
                                 navController.navigate(
-                                    NavDestinations.ENTRY_DETAILS +
+                                    route = NavDestinations.ENTRY_DETAILS +
                                             "?entry_id=${entry.value.id}" +
                                             (entry.localImageFile
                                                 ?.let { "&entry_image_file=${it.toPath()}" }
@@ -315,10 +318,10 @@ class MainActivity : ComponentActivity() {
             viewModel.initialize(entryId, entryImageRatio)
 
             DetailsScreen(
-                entryId,
-                entryImageFile,
-                entryImageRatio,
-                imageUri = viewModel.imageUri,
+                { entryId },
+                { entryImageFile },
+                { entryImageRatio },
+                imageUri = { viewModel.imageUri },
                 onImageSelected = { viewModel.imageUri = it },
                 onImageSelectError = {
                     viewModel.errorResource = R.string.error_fail_to_load_image to it
@@ -344,10 +347,10 @@ class MainActivity : ComponentActivity() {
                         startActivity(chooserIntent)
                     }
                 },
-                areSectionsLoading = viewModel.areSectionsLoading,
-                sections = viewModel.sections,
+                areSectionsLoading = { viewModel.areSectionsLoading },
+                sections = { viewModel.sections },
                 onClickSave = { viewModel.onClickSave(navController) },
-                errorRes = viewModel.errorResource,
+                errorRes = { viewModel.errorResource },
                 onErrorDismiss = { viewModel.errorResource = null },
                 onConfirmDelete = { viewModel.onConfirmDelete(navController) }
             )
@@ -372,15 +375,15 @@ class MainActivity : ComponentActivity() {
             viewModel.initialize(entryIds)
 
             MultiEditScreen(
-                imageUris = viewModel.imageUris,
+                imageUris = { viewModel.imageUris },
                 onImageSelected = { index, uri -> viewModel.setImageUri(index, uri) },
                 onImageSelectError = {
                     viewModel.errorResource = R.string.error_fail_to_load_image to it
                 },
-                loading = viewModel.loading,
-                sections = viewModel.sections,
+                loading = { viewModel.loading },
+                sections = { viewModel.sections },
                 onClickSave = { viewModel.onClickSave(navController) },
-                errorRes = viewModel.errorResource,
+                errorRes = { viewModel.errorResource },
                 onErrorDismiss = { viewModel.errorResource = null },
             )
         }

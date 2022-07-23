@@ -25,7 +25,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -56,28 +56,28 @@ object DetailsScreen {
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     operator fun invoke(
-        entryId: String = "",
-        entryImageFile: File? = null,
-        entryImageRatio: Float = 1f,
-        imageUri: Uri? = null,
+        entryId: () -> String = { "" },
+        entryImageFile: () -> File? = { null },
+        entryImageRatio: () -> Float = { 1f },
+        imageUri: () -> Uri? = { null },
         onImageSelected: (Uri?) -> Unit = {},
         onImageSelectError: (Exception?) -> Unit = {},
         onImageSizeResult: (Int, Int) -> Unit = { _, _ -> },
         onImageClickOpen: () -> Unit = {},
-        areSectionsLoading: Boolean = false,
-        sections: List<ArtEntrySection> = emptyList(),
+        areSectionsLoading: () -> Boolean = { false },
+        sections: () -> List<ArtEntrySection> = { emptyList() },
         onClickSave: () -> Unit = {},
-        errorRes: Pair<Int, Exception?>? = null,
+        errorRes: () -> Pair<Int, Exception?>? = { null },
         onErrorDismiss: () -> Unit = {},
         onConfirmDelete: () -> Unit = {},
     ) {
         Scaffold(
             snackbarHost = {
-                SnackbarErrorText(errorRes?.first, onErrorDismiss = onErrorDismiss)
+                SnackbarErrorText(errorRes()?.first, onErrorDismiss = onErrorDismiss)
             },
             modifier = Modifier.imePadding()
         ) {
-            var showDeleteDialog by remember { mutableStateOf(false) }
+            var showDeleteDialog by rememberSaveable { mutableStateOf(false) }
 
             Column(
                 Modifier
@@ -105,9 +105,8 @@ object DetailsScreen {
                     ArtEntryForm(areSectionsLoading, sections)
                 }
 
-
                 AnimatedVisibility(
-                    visible = !areSectionsLoading,
+                    visible = !areSectionsLoading(),
                     enter = fadeIn(),
                     exit = fadeOut(),
                 ) {
@@ -128,11 +127,11 @@ object DetailsScreen {
 
     @Composable
     private fun HeaderImage(
-        entryId: String,
-        entryImageFile: File?,
-        entryImageRatio: Float,
-        loading: Boolean = false,
-        imageUri: Uri?,
+        entryId: () -> String,
+        entryImageFile: () -> File?,
+        entryImageRatio: () -> Float,
+        loading: () -> Boolean = { false },
+        imageUri: () -> Uri?,
         onImageSelected: (Uri?) -> Unit,
         onImageSelectError: (Exception?) -> Unit,
         onImageSizeResult: (Int, Int) -> Unit = { _, _ -> },
@@ -140,6 +139,8 @@ object DetailsScreen {
     ) {
         Box {
             ImageSelectBox(onImageSelected, onImageSelectError) {
+                @Suppress("NAME_SHADOWING")
+                val imageUri = imageUri()
                 if (imageUri != null) {
                     AsyncImage(
                         model = ImageRequest.Builder(LocalContext.current)
@@ -159,49 +160,57 @@ object DetailsScreen {
                         modifier = Modifier
                             .fillMaxWidth()
                     )
-                } else if (entryImageFile != null) {
-                    SharedElement(
-                        key = "${entryId}_image",
-                        screenKey = NavDestinations.ENTRY_DETAILS
-                    ) {
-                        val configuration = LocalConfiguration.current
-                        val screenWidth = configuration.screenWidthDp.dp
-                        val minimumHeight = screenWidth * entryImageRatio
-                        AsyncImage(
-                            ImageRequest.Builder(LocalContext.current)
-                                .data(entryImageFile)
-                                .placeholderMemoryCacheKey("coil_memory_entry_image_home_$entryId")
-                                .build(),
-                            contentDescription = stringResource(
-                                R.string.art_entry_image_content_description
-                            ),
-                            contentScale = ContentScale.FillWidth,
-                            modifier = Modifier
+                } else {
+                    @Suppress("NAME_SHADOWING")
+                    val entryImageFile = entryImageFile()
+                    if (entryImageFile != null) {
+                        @Suppress("NAME_SHADOWING")
+                        val entryImageRatio = entryImageRatio()
+                        @Suppress("NAME_SHADOWING")
+                        val entryId = entryId()
+                        SharedElement(
+                            key = "${entryId}_image",
+                            screenKey = NavDestinations.ENTRY_DETAILS
+                        ) {
+                            val configuration = LocalConfiguration.current
+                            val screenWidth = configuration.screenWidthDp.dp
+                            val minimumHeight = screenWidth * entryImageRatio
+                            AsyncImage(
+                                ImageRequest.Builder(LocalContext.current)
+                                    .data(entryImageFile)
+                                    .placeholderMemoryCacheKey("coil_memory_entry_image_home_$entryId")
+                                    .build(),
+                                contentDescription = stringResource(
+                                    R.string.art_entry_image_content_description
+                                ),
+                                contentScale = ContentScale.FillWidth,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .heightIn(min = minimumHeight)
+                            )
+                        }
+                    } else {
+                        Spacer(
+                            Modifier
+                                .heightIn(200.dp, 200.dp)
                                 .fillMaxWidth()
-                                .heightIn(min = minimumHeight)
+                                .background(Color.LightGray)
+                        )
+                        Icon(
+                            imageVector = Icons.Default.ImageNotSupported,
+                            contentDescription = stringResource(
+                                R.string.art_entry_no_image_content_description
+                            ),
+                            Modifier
+                                .size(48.dp)
+                                .align(Alignment.Center)
                         )
                     }
-                } else {
-                    Spacer(
-                        Modifier
-                            .heightIn(200.dp, 200.dp)
-                            .fillMaxWidth()
-                            .background(Color.LightGray)
-                    )
-                    Icon(
-                        imageVector = Icons.Default.ImageNotSupported,
-                        contentDescription = stringResource(
-                            R.string.art_entry_no_image_content_description
-                        ),
-                        Modifier
-                            .size(48.dp)
-                            .align(Alignment.Center)
-                    )
                 }
             }
 
             AnimatedVisibility(
-                visible = !loading && entryImageFile != null,
+                visible = !loading() && entryImageFile() != null,
                 enter = fadeIn(),
                 exit = fadeOut(),
                 modifier = Modifier.align(Alignment.BottomEnd)
@@ -228,5 +237,5 @@ object DetailsScreen {
 fun Preview(
     @PreviewParameter(SampleArtEntrySectionsProvider::class) sections: List<ArtEntrySection>
 ) {
-    DetailsScreen(sections = sections)
+    DetailsScreen(sections = { sections })
 }

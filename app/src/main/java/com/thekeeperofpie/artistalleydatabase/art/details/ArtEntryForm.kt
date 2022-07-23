@@ -8,9 +8,13 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.CallSuper
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -20,9 +24,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -56,6 +62,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -72,6 +79,7 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -82,6 +90,7 @@ import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.PopupProperties
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.thekeeperofpie.artistalleydatabase.R
 import com.thekeeperofpie.artistalleydatabase.art.PrintSizeDropdown
 import com.thekeeperofpie.artistalleydatabase.ui.bottomBorder
@@ -92,10 +101,10 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun ColumnScope.ArtEntryForm(
-    areSectionsLoading: Boolean = false,
-    sections: List<ArtEntrySection> = emptyList(),
+    areSectionsLoading: () -> Boolean = { false },
+    sections: () -> List<ArtEntrySection> = { emptyList() },
 ) {
-    if (areSectionsLoading) {
+    if (areSectionsLoading()) {
         CircularProgressIndicator(
             Modifier
                 .padding(16.dp)
@@ -103,7 +112,7 @@ fun ColumnScope.ArtEntryForm(
         )
     } else {
         Column {
-            sections.forEach {
+            sections().forEach {
                 when (it) {
                     is ArtEntrySection.MultiText -> MultiTextSection(it)
                     is ArtEntrySection.LongText -> LongTextSection(it)
@@ -118,20 +127,22 @@ fun ColumnScope.ArtEntryForm(
 
 @Composable
 private fun SectionHeader(
-    text: String,
+    text: @Composable () -> String,
     modifier: Modifier = Modifier,
-    lockState: ArtEntrySection.LockState? = null,
+    lockState: () -> ArtEntrySection.LockState? = { null },
     onClick: () -> Unit = {},
 ) {
     Row(Modifier.clickable(true, onClick = onClick)) {
         Text(
-            text = text,
+            text = text(),
             style = MaterialTheme.typography.labelLarge,
             modifier = modifier
                 .weight(1f, true)
                 .padding(top = 12.dp, bottom = 10.dp, start = 16.dp, end = 16.dp)
         )
 
+        @Suppress("NAME_SHADOWING")
+        val lockState = lockState()
         if (lockState != null) {
             Icon(
                 imageVector = when (lockState) {
@@ -164,8 +175,8 @@ private fun MultiTextSection(section: ArtEntrySection.MultiText) {
         .let { stringResource(it) }
         .let {
             SectionHeader(
-                text = it,
-                lockState = section.lockState,
+                text = { it },
+                lockState = { section.lockState },
                 onClick = {
                     if (section.pendingValue.isNotEmpty()) {
                         section.addContent(section.pendingEntry())
@@ -195,7 +206,7 @@ private fun MultiTextSection(section: ArtEntrySection.MultiText) {
                         ArtEntrySection.MultiText.Entry.Custom("")
                     )
                 },
-                lockState = section.lockState
+                lockState = { section.lockState }
             )
 
             Box(
@@ -247,9 +258,9 @@ private fun MultiTextSection(section: ArtEntrySection.MultiText) {
             val focusRequester = remember { FocusRequester() }
             val bringIntoViewRequester = remember { BringIntoViewRequester() }
             val coroutineScope = rememberCoroutineScope()
-            var focused by remember { mutableStateOf(false) }
+            var focused by rememberSaveable { mutableStateOf(false) }
             OpenSectionField(
-                value = section.pendingValue,
+                value = { section.pendingValue },
                 onValueChange = { section.pendingValue = it },
                 onDone = {
                     if (it.isNotEmpty()) {
@@ -257,7 +268,7 @@ private fun MultiTextSection(section: ArtEntrySection.MultiText) {
                         section.pendingValue = ""
                     }
                 },
-                lockState = section.lockState,
+                lockState = { section.lockState },
                 modifier = Modifier
                     .focusable(section.lockState?.editable != false)
                     .onFocusChanged { focused = it.isFocused }
@@ -296,39 +307,45 @@ private fun MultiTextSection(section: ArtEntrySection.MultiText) {
                                 }
                             },
                             text = {
-                                val titleText: String
-                                val subtitleText: String?
-                                val image: String?
-                                val imageLink: String?
+                                val titleText: @Composable () -> String
+                                val subtitleText: () -> String?
+                                val image: () -> String?
+                                val imageLink: () -> String?
                                 when (entry) {
                                     is ArtEntrySection.MultiText.Entry.Custom -> {
-                                        titleText = entry.text
-                                        subtitleText = null
-                                        image = null
-                                        imageLink = null
+                                        titleText = { entry.text }
+                                        subtitleText = { null }
+                                        image = { null }
+                                        imageLink = { null }
                                     }
                                     is ArtEntrySection.MultiText.Entry.Prefilled -> {
-                                        titleText = entry.titleText
-                                        subtitleText = entry.subtitleText
-                                        image = entry.image
-                                        imageLink = entry.imageLink
+                                        titleText = { entry.titleText }
+                                        subtitleText = { entry.subtitleText }
+                                        image = { entry.image }
+                                        imageLink = { entry.imageLink }
                                     }
                                     ArtEntrySection.MultiText.Entry.Different -> {
-                                        titleText = stringResource(
-                                            R.string.art_entry_source_different
-                                        )
-                                        subtitleText = null
-                                        image = null
-                                        imageLink = null
+                                        titleText = {
+                                            stringResource(
+                                                R.string.art_entry_source_different
+                                            )
+                                        }
+                                        subtitleText = { null }
+                                        image = { null }
+                                        imageLink = { null }
                                     }
                                 }.run { /*exhaust*/ }
 
-                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.animateContentSize(),
+                                ) {
                                     EntryImage(
                                         image = image,
-                                        link = imageLink?.let { imageLink },
+                                        link = imageLink,
                                         modifier = Modifier
-                                            .height(54.dp)
+                                            .fillMaxHeight()
+                                            .heightIn(min = 54.dp)
                                             .width(42.dp)
                                     )
                                     Column(
@@ -342,10 +359,13 @@ private fun MultiTextSection(section: ArtEntrySection.MultiText) {
                                             )
                                     ) {
                                         Text(
-                                            text = titleText,
+                                            text = titleText(),
                                             maxLines = 1,
                                             style = MaterialTheme.typography.labelLarge
                                         )
+
+                                        @Suppress("NAME_SHADOWING")
+                                        val subtitleText = subtitleText()
                                         if (subtitleText != null) {
                                             Text(
                                                 text = subtitleText,
@@ -376,8 +396,8 @@ private fun MultiTextSection(section: ArtEntrySection.MultiText) {
 @Composable
 private fun LongTextSection(section: ArtEntrySection.LongText) {
     SectionHeader(
-        text = stringResource(section.headerRes),
-        lockState = section.lockState,
+        text = { stringResource(section.headerRes) },
+        lockState = { section.lockState },
         onClick = { section.rotateLockState() }
     )
 
@@ -400,13 +420,15 @@ private fun PrefilledSectionField(
     onValueChange: (value: String) -> Unit = {},
     onClickMore: () -> Unit = {},
     onDone: () -> Unit = {},
-    lockState: ArtEntrySection.LockState? = null,
+    lockState: () -> ArtEntrySection.LockState? = { null },
 ) {
     val backgroundShape =
         if (index == 0) RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp) else RectangleShape
 
     when (entry) {
         is ArtEntrySection.MultiText.Entry.Custom -> {
+            @Suppress("NAME_SHADOWING")
+            val lockState = lockState()
             TextField(
                 value = entry.text,
                 onValueChange = { onValueChange(it) },
@@ -450,17 +472,20 @@ private fun PrefilledSectionField(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .padding(start = 16.dp, end = 16.dp)
+                    .height(IntrinsicSize.Min)
                     .background(
                         color = MaterialTheme.colorScheme.surfaceVariant,
                         shape = backgroundShape,
                     )
                     .bottomBorder(1.dp, MaterialTheme.colorScheme.onSurfaceVariant)
+                    .animateContentSize(),
             ) {
                 EntryImage(
-                    image = entry.image,
-                    link = entry.imageLink,
+                    image = { entry.image },
+                    link = { entry.imageLink },
                     modifier = Modifier
-                        .height(72.dp)
+                        .fillMaxHeight()
+                        .heightIn(min = 72.dp)
                         .width(56.dp)
                         .run {
                             if (index == 0) clip(RoundedCornerShape(topStart = 4.dp)) else this
@@ -482,28 +507,58 @@ private fun PrefilledSectionField(
                     }
                 }
 
+                @Suppress("NAME_SHADOWING")
+                val lockState = lockState()
+                val editable = lockState?.editable != false
                 entry.trailingIcon?.let { imageVector ->
                     Icon(
                         imageVector = imageVector,
                         contentDescription = entry.trailingIconContentDescription
                             ?.let { stringResource(it) },
-                        modifier = if (lockState?.editable != false) Modifier else
-                            Modifier.padding(16.dp),
                     )
                 }
 
-                AnimatedVisibility(
-                    visible = lockState?.editable != false,
-                    enter = fadeIn(),
-                    exit = fadeOut(),
-                ) {
-                    IconButton(onClick = onClickMore) {
+                if (entry.trailingIcon == null) {
+                    val alpha by animateFloatAsState(
+                        targetValue = if (editable) 1f else 0f,
+                    )
+                    IconButton(
+                        onClick = onClickMore,
+                        Modifier.alpha(alpha),
+                    ) {
                         Icon(
                             imageVector = Icons.Default.MoreVert,
                             contentDescription = stringResource(
                                 R.string.art_entry_more_actions_content_description
                             ),
                         )
+                    }
+                } else {
+                    AnimatedVisibility(
+                        visible = editable,
+                        enter = expandHorizontally(
+                            expandFrom = Alignment.CenterHorizontally
+                        ) + fadeIn(),
+                        exit = shrinkHorizontally(
+                            shrinkTowards = Alignment.CenterHorizontally
+                        ) + fadeOut(),
+                    ) {
+                        IconButton(onClick = onClickMore) {
+                            Icon(
+                                imageVector = Icons.Default.MoreVert,
+                                contentDescription = stringResource(
+                                    R.string.art_entry_more_actions_content_description
+                                ),
+                            )
+                        }
+                    }
+
+                    AnimatedVisibility(
+                        visible = !editable,
+                        enter = expandHorizontally(),
+                        exit = shrinkHorizontally(),
+                    ) {
+                        Spacer(Modifier.width(16.dp))
                     }
                 }
             }
@@ -518,6 +573,8 @@ private fun PrefilledSectionField(
                 trailingIcon = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         entry.trailingIcon?.let { imageVector ->
+                            @Suppress("NAME_SHADOWING")
+                            val lockState = lockState()
                             Icon(
                                 imageVector = imageVector,
                                 contentDescription = entry.trailingIconContentDescription
@@ -552,21 +609,25 @@ private fun PrefilledSectionField(
 
 @Composable
 fun EntryImage(
-    image: String?,
+    image: () -> String?,
     modifier: Modifier = Modifier,
-    link: String?,
+    link: () -> String?,
 ) {
     val uriHandler = LocalUriHandler.current
     Box(
         modifier
             .clickable(
-                onClick = { link?.let { uriHandler.openUri(it) } },
+                onClick = { link()?.let { uriHandler.openUri(it) } },
                 onClickLabel = stringResource(R.string.label_open_entry_link),
                 role = Role.Image,
             )
+            .animateContentSize()
     ) {
-        var showPlaceholder by remember { mutableStateOf(true) }
-        if (image == null || showPlaceholder) {
+        var showPlaceholder by rememberSaveable { mutableStateOf(true) }
+
+        @Suppress("NAME_SHADOWING")
+        val image = image()
+        if (showPlaceholder || image == null) {
             Spacer(
                 Modifier
                     .matchParentSize()
@@ -577,14 +638,19 @@ fun EntryImage(
 
         if (image != null) {
             AsyncImage(
-                model = image,
+                model =
+                ImageRequest.Builder(LocalContext.current)
+                    .data(image)
+                    .crossfade(true)
+                    .build(),
                 contentDescription = stringResource(
                     R.string.art_entry_entry_image_content_description
                 ),
                 onLoading = { showPlaceholder = true },
                 onSuccess = { showPlaceholder = false },
                 contentScale = ContentScale.FillWidth,
-                modifier = Modifier.matchParentSize()
+                modifier = Modifier
+                    .matchParentSize()
             )
         }
     }
@@ -593,16 +659,18 @@ fun EntryImage(
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun OpenSectionField(
-    value: String,
+    value: () -> String,
     modifier: Modifier = Modifier,
     onValueChange: (value: String) -> Unit = {},
     onDone: (value: String) -> Unit = {},
-    lockState: ArtEntrySection.LockState? = null,
+    lockState: () -> ArtEntrySection.LockState? = { null },
 ) {
+    @Suppress("NAME_SHADOWING")
+    val value = value()
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
-        readOnly = lockState?.editable == false,
+        readOnly = lockState()?.editable == false,
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
         keyboardActions = KeyboardActions(onDone = { onDone(value) }),
         modifier = modifier
@@ -626,8 +694,8 @@ private fun OpenSectionField(
 @Composable
 private fun DropdownSection(section: ArtEntrySection.Dropdown) {
     SectionHeader(
-        text = stringResource(section.headerRes),
-        lockState = section.lockState,
+        text = { stringResource(section.headerRes) },
+        lockState = { section.lockState },
         onClick = { section.rotateLockState() }
     )
 
@@ -651,9 +719,15 @@ private fun DropdownSection(section: ArtEntrySection.Dropdown) {
                 value = section.selectedItem().fieldText(),
                 onValueChange = { },
                 trailingIcon = {
-                    ExposedDropdownMenuDefaults.TrailingIcon(
-                        expanded = section.expanded
-                    )
+                    AnimatedVisibility(
+                        visible = editable,
+                        enter = fadeIn(),
+                        exit = fadeOut(),
+                    ) {
+                        ExposedDropdownMenuDefaults.TrailingIcon(
+                            expanded = section.expanded
+                        )
+                    }
                 },
                 colors = ExposedDropdownMenuDefaults.textFieldColors(),
                 modifier = Modifier.fillMaxWidth()
@@ -802,8 +876,11 @@ fun Preview(
 ) {
     Column {
         ArtEntryForm(
-            sections = sections.apply {
-                (first() as ArtEntrySection.MultiText).lockState = ArtEntrySection.LockState.LOCKED
+            sections = {
+                sections.apply {
+                    (first() as ArtEntrySection.MultiText).lockState =
+                        ArtEntrySection.LockState.LOCKED
+                }
             }
         )
     }

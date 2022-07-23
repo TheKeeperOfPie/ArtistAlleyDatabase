@@ -1,12 +1,14 @@
+@file:Suppress("UnstableApiUsage")
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-    id("kotlin-kapt")
     id("dagger.hilt.android.plugin")
     id("com.google.devtools.ksp") version "1.7.0-1.0.6"
     kotlin("plugin.serialization") version "1.7.10"
     id("com.apollographql.apollo3") version "3.3.2"
     id("com.github.jk1.dependency-license-report") version "2.0"
+    id("kotlin-kapt")
 }
 
 android {
@@ -138,7 +140,6 @@ dependencies {
     implementation("com.squareup.moshi:moshi-kotlin:1.13.0")
     ksp("com.squareup.moshi:moshi-kotlin-codegen:1.13.0")
 
-    implementation("com.google.accompanist:accompanist-drawablepainter:0.23.1")
     implementation("com.google.accompanist:accompanist-pager:0.24.13-rc")
 
     // TODO: Re-add official pager-indicator library once it migrates to material3

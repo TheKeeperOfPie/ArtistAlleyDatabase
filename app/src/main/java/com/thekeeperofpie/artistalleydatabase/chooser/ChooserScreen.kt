@@ -27,12 +27,10 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
@@ -40,7 +38,6 @@ import androidx.compose.ui.unit.dp
 import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
-import coil.size.Dimension
 import com.thekeeperofpie.artistalleydatabase.R
 import com.thekeeperofpie.artistalleydatabase.art.grid.ArtEntryGrid
 import com.thekeeperofpie.artistalleydatabase.art.grid.ArtEntryGridModel
@@ -73,16 +70,9 @@ object ChooserScreen {
             options = options,
             onOptionChanged = onOptionChanged,
         ) { paddingValues ->
-            val expectedWidth = LocalDensity.current.run {
-                // Load at half width for better scrolling performance
-                // TODO: Find a better way to calculate the optimal image size
-                LocalConfiguration.current.screenWidthDp.dp.roundToPx() / columnCount / 2
-            }.let(::Dimension)
-
             Column {
                 ArtEntryGrid.EntriesGrid(
                     columnCount = columnCount,
-                    expectedWidth = expectedWidth,
                     entries = entries,
                     selectedItems = selectedItems,
                     onClickEntry = onClickEntry,
@@ -113,7 +103,7 @@ object ChooserScreen {
     ) {
         Scaffold(
             topBar = {
-                var showOptions by remember { mutableStateOf(false) }
+                var showOptions by rememberSaveable { mutableStateOf(false) }
 
                 Column(
                     modifier = Modifier
