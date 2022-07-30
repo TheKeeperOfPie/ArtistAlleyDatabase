@@ -93,6 +93,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.thekeeperofpie.artistalleydatabase.R
 import com.thekeeperofpie.artistalleydatabase.art.PrintSizeDropdown
+import com.thekeeperofpie.artistalleydatabase.ui.TrailingDropdownIcon
 import com.thekeeperofpie.artistalleydatabase.ui.bottomBorder
 import com.thekeeperofpie.compose_proxy.dropdown.DropdownMenu
 import com.thekeeperofpie.compose_proxy.dropdown.DropdownMenuItem
@@ -724,8 +725,9 @@ private fun DropdownSection(section: ArtEntrySection.Dropdown) {
                         enter = fadeIn(),
                         exit = fadeOut(),
                     ) {
-                        ExposedDropdownMenuDefaults.TrailingIcon(
-                            expanded = section.expanded
+                        TrailingDropdownIcon(
+                            expanded = section.expanded,
+                            contentDescription = section.arrowContentDescription,
                         )
                     }
                 },

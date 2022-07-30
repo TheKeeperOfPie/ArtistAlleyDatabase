@@ -6,8 +6,8 @@ import com.apollographql.apollo3.api.Operation
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
-import com.thekeeperofpie.artistalleydatabase.art.ArtEntryDao
 import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryDataConverter
+import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryDetailsDao
 import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntrySection.MultiText.Entry
 import com.thekeeperofpie.artistalleydatabase.json.AppMoshi
 import com.thekeeperofpie.artistalleydatabase.utils.Either
@@ -27,7 +27,7 @@ import javax.inject.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class Autocompleter @Inject constructor(
-    private val artEntryDao: ArtEntryDao,
+    private val artEntryDao: ArtEntryDetailsDao,
     private val appMoshi: AppMoshi,
     private val aniListApi: AniListApi,
     private val characterRepository: CharacterRepository,

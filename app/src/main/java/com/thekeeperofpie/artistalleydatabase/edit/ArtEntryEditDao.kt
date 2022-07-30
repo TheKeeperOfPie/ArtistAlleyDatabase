@@ -3,11 +3,11 @@ package com.thekeeperofpie.artistalleydatabase.edit
 import androidx.room.Dao
 import androidx.room.Query
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntry
-import com.thekeeperofpie.artistalleydatabase.art.ArtEntryDao
+import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryDetailsDao
 import java.util.Date
 
 @Dao
-interface ArtEntryEditDao : ArtEntryDao {
+interface ArtEntryEditDao : ArtEntryDetailsDao {
 
     @Query("""SELECT * FROM art_entries WHERE id IN (:ids)""")
     suspend fun getEntries(ids: List<String>): List<ArtEntry>

@@ -54,6 +54,10 @@ import com.thekeeperofpie.artistalleydatabase.importing.ImportScreen
 import com.thekeeperofpie.artistalleydatabase.importing.ImportViewModel
 import com.thekeeperofpie.artistalleydatabase.navigation.NavDestinations
 import com.thekeeperofpie.artistalleydatabase.navigation.NavDrawerItems
+import com.thekeeperofpie.artistalleydatabase.search.advanced.AdvancedSearchScreen
+import com.thekeeperofpie.artistalleydatabase.search.advanced.AdvancedSearchViewModel
+import com.thekeeperofpie.artistalleydatabase.search.results.SearchResultsScreen
+import com.thekeeperofpie.artistalleydatabase.search.results.SearchResultsViewModel
 import com.thekeeperofpie.artistalleydatabase.ui.theme.ArtistAlleyDatabaseTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -78,7 +82,7 @@ class MainActivity : ComponentActivity() {
                     ModalNavigationDrawer(
                         drawerState = drawerState,
                         drawerContent = {
-                            NavDrawerItems.ITEMS.forEachIndexed{ index, item ->
+                            NavDrawerItems.ITEMS.forEachIndexed { index, item ->
                                 NavigationDrawerItem(
                                     icon = { Icon(item.icon, contentDescription = null) },
                                     label = { Text(stringResource(item.titleRes)) },
@@ -95,6 +99,7 @@ class MainActivity : ComponentActivity() {
                             when (selectedItem) {
                                 NavDrawerItems.Home -> Home(::onClickNav)
                                 NavDrawerItems.Browse -> BrowseScreen(::onClickNav)
+                                NavDrawerItems.Search -> SearchScreen(::onClickNav)
                                 NavDrawerItems.Import -> {
                                     val viewModel = hiltViewModel<ImportViewModel>()
                                     ImportScreen(
@@ -253,6 +258,74 @@ class MainActivity : ComponentActivity() {
                     viewModel.initialize(column, query)
                     BrowseSelectionScreen(
                         title = { title },
+                        loading = { viewModel.loading },
+                        entries = viewModel.entries.collectAsLazyPagingItems(),
+                        selectedItems = viewModel.selectedEntries.keys,
+                        onClickEntry = { index, entry ->
+                            if (viewModel.selectedEntries.isNotEmpty()) {
+                                viewModel.selectEntry(index, entry)
+                            } else {
+                                val entryImageRatio = entry.value.imageWidthToHeightRatio
+                                navController.navigate(
+                                    route = NavDestinations.ENTRY_DETAILS +
+                                            "?entry_id=${entry.value.id}" +
+                                            (entry.localImageFile
+                                                ?.let { "&entry_image_file=${it.toPath()}" }
+                                                ?: "") +
+                                            "&entry_image_ratio=${entryImageRatio}"
+                                )
+                            }
+                        },
+                        onLongClickEntry = viewModel::selectEntry,
+                        onClickClear = viewModel::clearSelected,
+                        onClickEdit = {
+                            editSelected(
+                                navController,
+                                viewModel.selectedEntries.values
+                            )
+                        },
+                        onConfirmDelete = viewModel::onDeleteSelected,
+                    )
+                }
+
+                addDetailsScreen(navController)
+                addEditScreen(navController)
+            }
+        }
+    }
+
+    @Composable
+    private fun SearchScreen(onClickNav: () -> Unit) {
+        val navController = rememberNavController()
+        SharedElementsRoot {
+            NavHost(navController = navController, startDestination = "search") {
+                composable("search") {
+                    val viewModel = hiltViewModel<AdvancedSearchViewModel>()
+                    AdvancedSearchScreen(
+                        onClickNav = onClickNav,
+                        loading = { false },
+                        sections = { viewModel.sections },
+                        onClickSearch = {
+                            val queryId = viewModel.onClickSearch()
+                            navController.navigate("results?queryId=$queryId")
+                        },
+                    )
+                }
+
+                composable(
+                    "results?queryId={queryId}",
+                    arguments = listOf(
+                        navArgument("queryId") {
+                            type = NavType.StringType
+                            nullable = false
+                        },
+                    )
+                ) {
+                    val arguments = it.arguments!!
+                    val queryId = arguments.getString("queryId")!!
+                    val viewModel = hiltViewModel<SearchResultsViewModel>()
+                    viewModel.initialize(queryId)
+                    SearchResultsScreen(
                         loading = { viewModel.loading },
                         entries = viewModel.entries.collectAsLazyPagingItems(),
                         selectedItems = viewModel.selectedEntries.keys,

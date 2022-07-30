@@ -11,7 +11,6 @@ import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterReposit
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryColumn
-import com.thekeeperofpie.artistalleydatabase.art.ArtEntryDao
 import com.thekeeperofpie.artistalleydatabase.json.AppMoshi
 import com.thekeeperofpie.artistalleydatabase.utils.JsonUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -33,7 +32,7 @@ import kotlin.reflect.KMutableProperty0
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class BrowseViewModel @Inject constructor(
-    artEntryDao: ArtEntryDao,
+    artEntryDao: ArtEntryBrowseDao,
     appMoshi: AppMoshi,
     private val mediaRepository: MediaRepository,
     private val characterRepository: CharacterRepository,

@@ -12,7 +12,6 @@ import com.thekeeperofpie.artistalleydatabase.anilist.AniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntry
-import com.thekeeperofpie.artistalleydatabase.art.ArtEntryDao
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryUtils
 import com.thekeeperofpie.artistalleydatabase.art.PrintSizeDropdown
 import com.thekeeperofpie.artistalleydatabase.art.SourceDropdown
@@ -46,7 +45,7 @@ import java.util.Date
 @OptIn(ExperimentalCoroutinesApi::class)
 abstract class ArtEntryDetailsViewModel(
     protected val application: Application,
-    protected val artEntryDao: ArtEntryDao,
+    protected val artEntryDao: ArtEntryDetailsDao,
     private val aniListApi: AniListApi,
     private val mediaRepository: MediaRepository,
     private val characterRepository: CharacterRepository,

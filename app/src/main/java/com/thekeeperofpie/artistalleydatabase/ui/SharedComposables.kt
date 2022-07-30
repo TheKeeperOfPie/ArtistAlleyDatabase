@@ -16,9 +16,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.outlined.CheckCircle
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
@@ -39,12 +41,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.drawscope.ContentDrawScope
 import androidx.compose.ui.platform.debugInspectorInfo
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.thekeeperofpie.artistalleydatabase.R
@@ -271,3 +275,21 @@ fun Modifier.border(
         properties["shape"] = RectangleShape
     }
 )
+
+/**
+ * Copy of [ExposedDropdownMenuDefaults.TrailingIcon] to allow custom content descriptions.
+ */
+@Composable
+fun TrailingDropdownIcon(
+    expanded: Boolean,
+    @StringRes contentDescription: Int,
+    onClick: () -> Unit = {}
+) {
+    IconButton(onClick = onClick, modifier = Modifier.clearAndSetSemantics { }) {
+        Icon(
+            Icons.Filled.ArrowDropDown,
+            stringResource(contentDescription),
+            Modifier.rotate(if (expanded) 180f else 0f)
+        )
+    }
+}

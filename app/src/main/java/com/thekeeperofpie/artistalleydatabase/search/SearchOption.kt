@@ -5,6 +5,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 
-class SearchOption(@StringRes val textRes: Int, enabled: Boolean = true) {
+class SearchOption(@StringRes val textRes: Int, enabled: Boolean = false) {
     var enabled by mutableStateOf(enabled)
 }

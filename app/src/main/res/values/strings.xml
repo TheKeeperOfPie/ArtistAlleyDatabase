@@ -112,4 +112,7 @@
     <string name="art_entry_field_different_indicator_content_description">Different values indicator</string>
     <string name="error_launching_generic_uri">Could not launch generic URI</string>
     <string name="label_open_entry_link">Open entry link</string>
+    <string name="search_results">Results</string>
+    <string name="error_loading_entries">Error loading entries</string>
+    <string name="nav_drawer_search">Search</string>
 </resources>

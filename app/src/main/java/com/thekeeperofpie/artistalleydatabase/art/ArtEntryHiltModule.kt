@@ -15,4 +15,14 @@ object ArtEntryHiltModule {
 
     @Provides
     fun provideArtEntryEditDao(appDatabase: AppDatabase) = appDatabase.artEntryEditDao()
+
+    @Provides
+    fun provideArtEntryDetailsDao(appDatabase: AppDatabase) = appDatabase.artEntryDetailsDao()
+
+    @Provides
+    fun provideArtEntryBrowseDao(appDatabase: AppDatabase) = appDatabase.artEntryBrowseDao()
+
+    @Provides
+    fun provideArtEntryAdvancedSearchDao(appDatabase: AppDatabase) =
+        appDatabase.artEntryAdvancedSearchDao()
 }

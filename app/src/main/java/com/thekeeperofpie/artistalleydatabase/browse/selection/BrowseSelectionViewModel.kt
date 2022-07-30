@@ -12,9 +12,9 @@ import androidx.paging.cachedIn
 import androidx.paging.filter
 import androidx.paging.map
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryColumn
-import com.thekeeperofpie.artistalleydatabase.art.ArtEntryDao
 import com.thekeeperofpie.artistalleydatabase.art.grid.ArtEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.art.grid.ArtEntryGridViewModel
+import com.thekeeperofpie.artistalleydatabase.browse.ArtEntryBrowseDao
 import com.thekeeperofpie.artistalleydatabase.json.AppJson
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -27,9 +27,9 @@ import javax.inject.Inject
 @HiltViewModel
 class BrowseSelectionViewModel @Inject constructor(
     application: Application,
-    artEntryDao: ArtEntryDao,
+    private val artEntryBrowseDao: ArtEntryBrowseDao,
     private val appJson: AppJson,
-) : ArtEntryGridViewModel(application, artEntryDao) {
+) : ArtEntryGridViewModel(application, artEntryBrowseDao) {
 
     lateinit var column: ArtEntryColumn
 
@@ -43,11 +43,11 @@ class BrowseSelectionViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             Pager(PagingConfig(pageSize = 20)) {
                 when (column) {
-                    ArtEntryColumn.ARTISTS -> artEntryDao.getArtist(query)
+                    ArtEntryColumn.ARTISTS -> artEntryBrowseDao.getArtist(query)
                     ArtEntryColumn.SOURCE -> TODO()
-                    ArtEntryColumn.SERIES -> artEntryDao.getSeries(query)
-                    ArtEntryColumn.CHARACTERS -> artEntryDao.getCharacter(query)
-                    ArtEntryColumn.TAGS -> artEntryDao.getTag(query)
+                    ArtEntryColumn.SERIES -> artEntryBrowseDao.getSeries(query)
+                    ArtEntryColumn.CHARACTERS -> artEntryBrowseDao.getCharacter(query)
+                    ArtEntryColumn.TAGS -> artEntryBrowseDao.getTag(query)
                 }
             }
                 .flow.cachedIn(viewModelScope)
@@ -64,8 +64,10 @@ class BrowseSelectionViewModel @Inject constructor(
                         .map { ArtEntryGridModel.buildFromEntry(application, appJson, it) }
                 }
                 .onEach {
-                    launch(Dispatchers.Main) {
-                        loading = false
+                    if (loading) {
+                        launch(Dispatchers.Main) {
+                            loading = false
+                        }
                     }
                 }
                 .collect(entries)

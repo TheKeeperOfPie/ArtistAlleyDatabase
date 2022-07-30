@@ -147,6 +147,11 @@ class SourceDropdown(locked: LockState? = null) : ArtEntrySection.Dropdown(
         }
     }
 
+    fun addDifferent() {
+        options += SourceDifferentSectionItem()
+        selectedIndex = options.lastIndex
+    }
+
     override fun selectedItem() = super.selectedItem() as SourceItem
 
     sealed class SourceItem : Item {

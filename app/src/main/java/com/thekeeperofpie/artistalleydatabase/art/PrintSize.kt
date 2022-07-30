@@ -31,7 +31,7 @@ sealed class PrintSize(
 
     companion object {
 
-        val PORTRAITS = arrayOf(
+        val PORTRAITS = listOf(
             Unknown,
             Portrait8HalfBy11,
             Portrait11x17,
@@ -39,7 +39,7 @@ sealed class PrintSize(
             Portrait13x19,
         )
 
-        val LANDSCAPES = arrayOf(
+        val LANDSCAPES = listOf(
             Unknown,
             Landscape11x8Half,
             Landscape17x11,
@@ -124,6 +124,11 @@ class PrintSizeDropdown : ArtEntrySection.Dropdown(
                 options[index] = Item.Basic(printSize, printSize.textRes)
             }
         }
+    }
+
+    fun setOptions(sizes: Iterable<PrintSize>) {
+        options.clear()
+        options.addAll(sizes.map { Item.Basic(it, it.textRes) } + PrintSizeCustomTextFields())
     }
 
     @Suppress("UNCHECKED_CAST")
