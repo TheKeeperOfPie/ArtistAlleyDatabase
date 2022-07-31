@@ -111,8 +111,8 @@ object DetailsScreen {
                     exit = fadeOut(),
                 ) {
                     ButtonFooter(
-                        R.string.save to onClickSave,
                         R.string.delete to { showDeleteDialog = true },
+                        R.string.save to onClickSave,
                     )
                 }
             }

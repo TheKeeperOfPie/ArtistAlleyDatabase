@@ -6,10 +6,13 @@ import androidx.room.Entity
 import androidx.room.Fts4
 import androidx.room.PrimaryKey
 import com.squareup.moshi.JsonClass
+import com.thekeeperofpie.artistalleydatabase.utils.Converters
+import kotlinx.serialization.Serializable
 import java.math.BigDecimal
 import java.util.Date
 import java.util.UUID
 
+@Serializable
 @JsonClass(generateAdapter = true)
 @Entity(tableName = "art_entries")
 data class ArtEntry(
@@ -23,13 +26,16 @@ data class ArtEntry(
     val characters: List<String> = emptyList(),
     val charactersSearchable: List<String> = emptyList(),
     val tags: List<String> = emptyList(),
+    @Serializable(with = Converters.BigDecimalConverter::class)
     val price: BigDecimal? = null,
+    @Serializable(with = Converters.DateConverter::class)
     val date: Date? = null,
+    @Serializable(with = Converters.DateConverter::class)
     val lastEditTime: Date? = null,
-    val imageWidth: Int?,
-    val imageHeight: Int?,
-    val printWidth: Int?,
-    val printHeight: Int?,
+    val imageWidth: Int? = null,
+    val imageHeight: Int? = null,
+    val printWidth: Int? = null,
+    val printHeight: Int? = null,
     val notes: String? = null,
     @Embedded val locks: Locks = Locks.EMPTY,
 ) {
@@ -38,15 +44,16 @@ data class ArtEntry(
                 (imageWidth ?: 1).coerceAtLeast(1)
     }
 
+    @Serializable
     @JsonClass(generateAdapter = true)
     data class Locks(
-        val artistsLocked: Boolean = false,
-        val sourceLocked: Boolean = false,
-        val seriesLocked: Boolean = false,
-        val charactersLocked: Boolean = false,
-        val tagsLocked: Boolean = false,
-        val notesLocked: Boolean = false,
-        val printSizeLocked: Boolean = false,
+        val artistsLocked: Boolean? = false,
+        val sourceLocked: Boolean? = false,
+        val seriesLocked: Boolean? = false,
+        val charactersLocked: Boolean? = false,
+        val tagsLocked: Boolean? = false,
+        val notesLocked: Boolean? = false,
+        val printSizeLocked: Boolean? = false,
     ) {
         companion object {
             val EMPTY = Locks()

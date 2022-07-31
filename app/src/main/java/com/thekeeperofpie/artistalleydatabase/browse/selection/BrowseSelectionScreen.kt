@@ -23,10 +23,10 @@ object BrowseSelectionScreen {
     operator fun invoke(
         title: () -> String,
         loading: () -> Boolean,
-        errorRes: Pair<Int, Exception?>? = null,
+        errorRes: () -> Pair<Int, Exception?>? = { null },
         onErrorDismiss: () -> Unit = {},
-        entries: LazyPagingItems<ArtEntryGridModel>,
-        selectedItems: Collection<Int> = emptyList(),
+        entries: @Composable () -> LazyPagingItems<ArtEntryGridModel>,
+        selectedItems: () -> Collection<Int> = { emptyList() },
         onClickEntry: (index: Int, entry: ArtEntryGridModel) -> Unit = { _, _ -> },
         onLongClickEntry: (index: Int, entry: ArtEntryGridModel) -> Unit = { _, _ -> },
         onClickClear: () -> Unit = {},
@@ -36,7 +36,7 @@ object BrowseSelectionScreen {
         Scaffold(
             topBar = { AppBar(text = title()) },
             snackbarHost = {
-                SnackbarErrorText(errorRes?.first, onErrorDismiss = onErrorDismiss)
+                SnackbarErrorText(errorRes()?.first, onErrorDismiss = onErrorDismiss)
             },
         ) { paddingValues ->
             Box {

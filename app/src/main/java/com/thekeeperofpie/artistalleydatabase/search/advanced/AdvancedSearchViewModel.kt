@@ -1,9 +1,12 @@
 package com.thekeeperofpie.artistalleydatabase.search.advanced
 
 import android.app.Application
+import androidx.lifecycle.viewModelScope
+import com.thekeeperofpie.artistalleydatabase.SettingsProvider
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
+import com.thekeeperofpie.artistalleydatabase.art.ArtEntry
 import com.thekeeperofpie.artistalleydatabase.art.PrintSize
 import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryDataConverter
 import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryDetailsDao
@@ -13,6 +16,8 @@ import com.thekeeperofpie.artistalleydatabase.autocomplete.Autocompleter
 import com.thekeeperofpie.artistalleydatabase.json.AppJson
 import com.thekeeperofpie.artistalleydatabase.json.AppMoshi
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -27,6 +32,7 @@ class AdvancedSearchViewModel @Inject constructor(
     autocompleter: Autocompleter,
     dataConverter: ArtEntryDataConverter,
     private val searchRepository: AdvancedSearchRepository,
+    private val settingsProvider: SettingsProvider,
 ) : ArtEntryDetailsViewModel(
     application,
     artEntryDao,
@@ -45,6 +51,17 @@ class AdvancedSearchViewModel @Inject constructor(
         sections.forEach {
             it.lockState = ArtEntrySection.LockState.DIFFERENT
         }
+
+        viewModelScope.launch(Dispatchers.IO) {
+            val model = settingsProvider.loadSearchQuery()?.let(::buildModel) ?: return@launch
+            viewModelScope.launch(Dispatchers.Main) {
+                initializeForm(model)
+            }
+        }
+    }
+
+    fun onClickClear() {
+        initializeForm(buildModel(ArtEntry()))
     }
 
     fun onClickSearch(): String {
@@ -71,15 +88,18 @@ class AdvancedSearchViewModel @Inject constructor(
             printWidth = printSizeSection.finalWidth(),
             printHeight = printSizeSection.finalHeight(),
             notes = notesSection.value.trim(),
-            artistsLocked = artistSection.lockState?.toNullableBoolean(),
-            seriesLocked = seriesSection.lockState?.toNullableBoolean(),
-            charactersLocked = characterSection.lockState?.toNullableBoolean(),
-            sourceLocked = sourceSection.lockState?.toNullableBoolean(),
-            tagsLocked = tagSection.lockState?.toNullableBoolean(),
-            notesLocked = notesSection.lockState?.toNullableBoolean(),
-            printSizeLocked = printSizeSection.lockState?.toNullableBoolean(),
+            artistsLocked = artistSection.lockState?.toSerializedValue(),
+            seriesLocked = seriesSection.lockState?.toSerializedValue(),
+            charactersLocked = characterSection.lockState?.toSerializedValue(),
+            sourceLocked = sourceSection.lockState?.toSerializedValue(),
+            tagsLocked = tagSection.lockState?.toSerializedValue(),
+            notesLocked = notesSection.lockState?.toSerializedValue(),
+            printSizeLocked = printSizeSection.lockState?.toSerializedValue(),
         )
         searchRepository.registerQuery(query)
+        viewModelScope.launch(Dispatchers.IO) {
+            makeEntry(null, query.id)?.let(settingsProvider::saveSearchQuery)
+        }
         return query.id
     }
 }

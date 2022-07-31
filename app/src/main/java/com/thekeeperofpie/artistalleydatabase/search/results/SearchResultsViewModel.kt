@@ -1,7 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.search.results
 
 import android.app.Application
-import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -51,9 +50,7 @@ class SearchResultsViewModel @Inject constructor(
                 Pager(PagingConfig(pageSize = 20)) { artEntrySearchDao.search(query) }
                     .flow.cachedIn(viewModelScope)
                     .map {
-                        Log.d("SearchDebug", "result = $it")
                         it.map {
-                            Log.d("SearchDebug", "result = $it")
                             ArtEntryGridModel.buildFromEntry(application, appJson, it)
                         }
                     }

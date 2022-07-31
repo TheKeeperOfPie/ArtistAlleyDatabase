@@ -54,13 +54,13 @@ object HomeScreen {
     @Composable
     operator fun invoke(
         onClickNav: () -> Unit = {},
-        query: String = "",
+        query: @Composable () -> String = { "" },
         onQueryChange: (String) -> Unit = {},
-        options: List<SearchOption> = emptyList(),
+        options: () -> List<SearchOption> = { emptyList() },
         onOptionChanged: (SearchOption) -> Unit = {},
-        entries: LazyPagingItems<ArtEntryGridModel> =
-            emptyFlow<PagingData<ArtEntryGridModel>>().collectAsLazyPagingItems(),
-        selectedItems: Collection<Int> = emptyList(),
+        entries: @Composable () -> LazyPagingItems<ArtEntryGridModel> =
+            { emptyFlow<PagingData<ArtEntryGridModel>>().collectAsLazyPagingItems() },
+        selectedItems: () -> Collection<Int> = { emptyList() },
         onClickEntry: (index: Int, entry: ArtEntryGridModel) -> Unit = { _, _ -> },
         onLongClickEntry: (index: Int, entry: ArtEntryGridModel) -> Unit = { _, _ -> },
         onClickAddFab: () -> Unit = {},
@@ -72,7 +72,7 @@ object HomeScreen {
             onClickNav = onClickNav,
             query = query,
             onQueryChange = onQueryChange,
-            showFab = selectedItems.isEmpty(),
+            showFab = { selectedItems().isEmpty() },
             options = options,
             onOptionChanged = onOptionChanged,
             onClickAddFab = onClickAddFab,
@@ -93,11 +93,11 @@ object HomeScreen {
     @Composable
     private fun Chrome(
         onClickNav: () -> Unit = {},
-        query: String = "",
+        query: @Composable () -> String = { "" },
         onQueryChange: (String) -> Unit = {},
-        options: List<SearchOption> = emptyList(),
+        options: () -> List<SearchOption> = { emptyList() },
         onOptionChanged: (SearchOption) -> Unit = {},
-        showFab: Boolean = true,
+        showFab: () -> Boolean = { true },
         onClickAddFab: () -> Unit = {},
         content: @Composable (PaddingValues) -> Unit,
     ) {
@@ -117,12 +117,12 @@ object HomeScreen {
                 ) {
                     val appBarColors = TopAppBarDefaults.smallTopAppBarColors()
                     TextField(
-                        query,
+                        query(),
                         placeholder = { Text(stringResource(id = R.string.search)) },
                         onValueChange = onQueryChange,
                         leadingIcon = { NavMenuIconButton(onClickNav) },
                         trailingIcon = {
-                            if (options.isNotEmpty()) {
+                            if (options().isNotEmpty()) {
                                 IconButton(onClick = { showOptions = !showOptions }) {
                                     Icon(
                                         imageVector = Icons.Default.FilterList,
@@ -138,7 +138,7 @@ object HomeScreen {
                         keyboardActions = KeyboardActions(onSearch = { showOptions = false }),
                         colors = TextFieldDefaults.textFieldColors(
                             containerColor = appBarColors.containerColor(
-                                scrollFraction = 0f
+                                colorTransitionFraction = 0f
                             ).value
                         ),
                         modifier = Modifier
@@ -151,7 +151,7 @@ object HomeScreen {
                         exit = shrinkVertically(),
                     ) {
                         Column {
-                            options.forEach { option ->
+                            options().forEach { option ->
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
                                     modifier = Modifier
@@ -180,7 +180,7 @@ object HomeScreen {
                 }
             },
             floatingActionButton = {
-                if (showFab) {
+                if (showFab()) {
                     FloatingActionButton(
                         onClick = onClickAddFab,
                     ) {
@@ -200,14 +200,16 @@ object HomeScreen {
 @Composable
 fun Preview() {
     HomeScreen(
-        options = listOf(
-            SearchOption(R.string.search_option_artists),
-            SearchOption(R.string.search_option_source),
-            SearchOption(R.string.search_option_series),
-            SearchOption(R.string.search_option_characters),
-            SearchOption(R.string.search_option_tags),
-            SearchOption(R.string.search_option_notes),
-            SearchOption(R.string.search_option_other),
-        )
+        options = {
+            listOf(
+                SearchOption(R.string.search_option_artists),
+                SearchOption(R.string.search_option_source),
+                SearchOption(R.string.search_option_series),
+                SearchOption(R.string.search_option_characters),
+                SearchOption(R.string.search_option_tags),
+                SearchOption(R.string.search_option_notes),
+                SearchOption(R.string.search_option_other),
+            )
+        }
     )
 }

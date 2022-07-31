@@ -6,7 +6,6 @@ import android.os.Parcelable
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.ScrollableDefaults
 import androidx.compose.foundation.gestures.rememberScrollableState
-import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.lazy.LazyColumn
@@ -28,20 +27,6 @@ object LazyStaggeredGrid {
         modifier: Modifier,
         content: @Composable LazyStaggeredGridScope<T>.() -> Unit,
     ) {
-        val states = (0 until columnCount)
-            .map { rememberLazyListState() }
-        val flow = remember { MutableStateFlow(0f) }
-        states.forEach { state ->
-            LaunchedEffect(key1 = Unit) {
-                flow.collectLatest { delta ->
-                    state.scrollBy(-delta)
-                }
-            }
-        }
-        val scroll = rememberScrollableState { delta ->
-            flow.tryEmit(delta)
-            delta
-        }
         val gridScope = LazyStaggeredGridScope<T>()
         content(gridScope)
 
@@ -49,6 +34,12 @@ object LazyStaggeredGrid {
         val itemContent = gridScope.itemContent
         val key = gridScope.key
         if (items == null || itemContent == null || key == null) return
+
+        val flow = remember { MutableStateFlow(0f) }
+        val scroll = rememberScrollableState { delta ->
+            flow.tryEmit(delta)
+            delta
+        }
 
         Row(
             modifier = modifier
@@ -59,9 +50,15 @@ object LazyStaggeredGrid {
                 )
         ) {
             for (columnIndex in 0 until columnCount) {
+                val state = rememberLazyListState()
+                LaunchedEffect(key1 = Unit) {
+                    flow.collectLatest { delta ->
+                        state.dispatchRawDelta(-delta)
+                    }
+                }
                 LazyColumn(
                     userScrollEnabled = false,
-                    state = states[columnIndex],
+                    state = state,
                     modifier = Modifier.weight(1f)
                 ) {
                     val itemCount = items.itemCount

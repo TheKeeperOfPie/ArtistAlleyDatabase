@@ -4,15 +4,41 @@ import androidx.room.TypeConverter
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.JsonReader
 import com.squareup.moshi.JsonWriter
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.encodeToString
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.Json
 import java.math.BigDecimal
 import java.util.Date
 
 object Converters {
 
-    object DateConverter : JsonAdapter<Date>() {
+    object DateConverter : JsonAdapter<Date>(), KSerializer<Date?> {
+
+        override val descriptor = PrimitiveSerialDescriptor("Date", PrimitiveKind.LONG)
+
+        @OptIn(ExperimentalSerializationApi::class)
+        override fun deserialize(decoder: Decoder) = if (decoder.decodeNotNullMark()) {
+            deserializeDate(decoder.decodeLong())
+        } else {
+            decoder.decodeNull()
+        }
+
+        @OptIn(ExperimentalSerializationApi::class)
+        override fun serialize(encoder: Encoder, value: Date?) {
+            val serializedValue = serializeDate(value)
+            if (serializedValue == null) {
+                encoder.encodeNull()
+            } else {
+                encoder.encodeNotNullMark()
+                encoder.encodeLong(serializedValue)
+            }
+        }
 
         @TypeConverter
         fun serializeDate(value: Date?) = value?.time
@@ -48,7 +74,27 @@ object Converters {
             value?.let<String, List<Int>>(Json.Default::decodeFromString).orEmpty()
     }
 
-    object BigDecimalConverter : JsonAdapter<BigDecimal>() {
+    object BigDecimalConverter : JsonAdapter<BigDecimal>(), KSerializer<BigDecimal?> {
+
+        override val descriptor = PrimitiveSerialDescriptor("BigDecimal", PrimitiveKind.STRING)
+
+        @OptIn(ExperimentalSerializationApi::class)
+        override fun deserialize(decoder: Decoder) = if (decoder.decodeNotNullMark()) {
+            deserializeBigDecimal(decoder.decodeString())
+        } else {
+            decoder.decodeNull()
+        }
+
+        @OptIn(ExperimentalSerializationApi::class)
+        override fun serialize(encoder: Encoder, value: BigDecimal?) {
+            val serializedValue = serializeBigDecimal(value)
+            if (serializedValue == null) {
+                encoder.encodeNull()
+            } else {
+                encoder.encodeNotNullMark()
+                encoder.encodeString(serializedValue)
+            }
+        }
 
         @TypeConverter
         fun serializeBigDecimal(value: BigDecimal?) = value?.toPlainString()

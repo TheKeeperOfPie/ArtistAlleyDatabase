@@ -28,6 +28,7 @@ object AdvancedSearchScreen {
         onClickNav: () -> Unit = {},
         loading: () -> Boolean = { false },
         sections: () -> List<ArtEntrySection>,
+        onClickClear: () -> Unit,
         onClickSearch: () -> Unit,
     ) {
         Scaffold(
@@ -61,6 +62,7 @@ object AdvancedSearchScreen {
                     exit = fadeOut(),
                 ) {
                     ButtonFooter(
+                        R.string.clear to onClickClear,
                         R.string.search to onClickSearch,
                     )
                 }

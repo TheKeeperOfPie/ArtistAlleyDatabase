@@ -14,11 +14,24 @@ import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaEntry
 import com.thekeeperofpie.artistalleydatabase.json.AppMoshi
+import com.thekeeperofpie.artistalleydatabase.utils.Either
 import javax.inject.Inject
 
 class ArtEntryDataConverter @Inject constructor(
     private val appMoshi: AppMoshi
 ) {
+
+    fun databaseToSeriesEntry(value: String) =
+        when (val either = appMoshi.parseSeriesColumn(value)) {
+            is Either.Right -> seriesEntry(either.value)
+            is Either.Left -> ArtEntrySection.MultiText.Entry.Custom(either.value)
+        }
+
+    fun databaseToCharacterEntry(value: String) =
+        when (val either = appMoshi.parseCharacterColumn(value)) {
+            is Either.Right -> characterEntry(either.value)
+            is Either.Left -> ArtEntrySection.MultiText.Entry.Custom(either.value)
+        }
 
     fun seriesEntry(media: AniListMedia): ArtEntrySection.MultiText.Entry.Prefilled {
         val title = media.title?.romaji ?: media.id.toString()

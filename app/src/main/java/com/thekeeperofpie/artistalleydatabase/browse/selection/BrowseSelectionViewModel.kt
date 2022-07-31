@@ -12,10 +12,13 @@ import androidx.paging.cachedIn
 import androidx.paging.filter
 import androidx.paging.map
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryColumn
+import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryDataConverter
+import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntrySection
 import com.thekeeperofpie.artistalleydatabase.art.grid.ArtEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.art.grid.ArtEntryGridViewModel
 import com.thekeeperofpie.artistalleydatabase.browse.ArtEntryBrowseDao
 import com.thekeeperofpie.artistalleydatabase.json.AppJson
+import com.thekeeperofpie.artistalleydatabase.utils.Either
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -29,6 +32,7 @@ class BrowseSelectionViewModel @Inject constructor(
     application: Application,
     private val artEntryBrowseDao: ArtEntryBrowseDao,
     private val appJson: AppJson,
+    private val dataConverter: ArtEntryDataConverter,
 ) : ArtEntryGridViewModel(application, artEntryBrowseDao) {
 
     lateinit var column: ArtEntryColumn
@@ -36,29 +40,42 @@ class BrowseSelectionViewModel @Inject constructor(
     var loading by mutableStateOf(false)
     val entries = MutableStateFlow(PagingData.empty<ArtEntryGridModel>())
 
-    fun initialize(column: ArtEntryColumn, query: String) {
+    fun initialize(column: ArtEntryColumn, query: Either<Int, String>) {
         if (this::column.isInitialized) return
         this.column = column
 
         viewModelScope.launch(Dispatchers.IO) {
+            val queryValue = query.eitherValueUnchecked().toString()
             Pager(PagingConfig(pageSize = 20)) {
                 when (column) {
-                    ArtEntryColumn.ARTISTS -> artEntryBrowseDao.getArtist(query)
+                    ArtEntryColumn.ARTISTS -> artEntryBrowseDao.getArtist(queryValue)
                     ArtEntryColumn.SOURCE -> TODO()
-                    ArtEntryColumn.SERIES -> artEntryBrowseDao.getSeries(query)
-                    ArtEntryColumn.CHARACTERS -> artEntryBrowseDao.getCharacter(query)
-                    ArtEntryColumn.TAGS -> artEntryBrowseDao.getTag(query)
+                    ArtEntryColumn.SERIES -> artEntryBrowseDao.getSeries(queryValue)
+                    ArtEntryColumn.CHARACTERS -> artEntryBrowseDao.getCharacter(queryValue)
+                    ArtEntryColumn.TAGS -> artEntryBrowseDao.getTag(queryValue)
                 }
             }
                 .flow.cachedIn(viewModelScope)
                 .map {
                     it.filter {
                         when (column) {
-                            ArtEntryColumn.ARTISTS -> it.artists.contains(query)
+                            ArtEntryColumn.ARTISTS -> it.artists.contains(queryValue)
                             ArtEntryColumn.SOURCE -> TODO()
-                            ArtEntryColumn.SERIES -> it.series.any { it.contains(query) }
-                            ArtEntryColumn.CHARACTERS -> it.characters.any { it.contains(query) }
-                            ArtEntryColumn.TAGS -> it.tags.contains(query)
+                            ArtEntryColumn.SERIES -> when (query) {
+                                is Either.Left -> it.series.asSequence()
+                                    .map(dataConverter::databaseToSeriesEntry)
+                                    .filterIsInstance<ArtEntrySection.MultiText.Entry.Prefilled>()
+                                    .any { it.id.toIntOrNull() == query.value }
+                                is Either.Right -> it.series.any { it.contains(query.value) }
+                            }
+                            ArtEntryColumn.CHARACTERS -> when (query) {
+                                is Either.Left -> it.characters.asSequence()
+                                    .map(dataConverter::databaseToCharacterEntry)
+                                    .filterIsInstance<ArtEntrySection.MultiText.Entry.Prefilled>()
+                                    .any { it.id.toIntOrNull() == query.value }
+                                is Either.Right -> it.characters.any { it.contains(query.value) }
+                            }
+                            ArtEntryColumn.TAGS -> it.tags.contains(queryValue)
                         }
                     }
                         .map { ArtEntryGridModel.buildFromEntry(application, appJson, it) }

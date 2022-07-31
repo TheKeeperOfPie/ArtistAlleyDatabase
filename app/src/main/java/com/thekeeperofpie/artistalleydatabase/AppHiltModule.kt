@@ -39,8 +39,8 @@ class AppHiltModule {
     fun provideAppJson() = AppJson()
 
     @Provides
-    fun provideSettingsProvider(application: Application, appMoshi: AppMoshi) =
-        SettingsProvider(application, appMoshi)
+    fun provideSettingsProvider(application: Application, appMoshi: AppMoshi, appJson: AppJson) =
+        SettingsProvider(application, appMoshi, appJson)
 
     @Provides
     fun provideAutocompleter(

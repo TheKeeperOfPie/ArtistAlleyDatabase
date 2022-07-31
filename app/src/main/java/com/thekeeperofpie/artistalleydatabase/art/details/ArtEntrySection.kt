@@ -40,19 +40,13 @@ sealed class ArtEntrySection(lockState: LockState? = null) {
         fun toSerializedValue() = when (this) {
             LOCKED -> true
             UNLOCKED -> false
-            DIFFERENT -> throw IllegalStateException("DIFFERENT should never be serialized")
-        }
-
-        fun toNullableBoolean() = when (this) {
-            LOCKED -> true
-            UNLOCKED -> false
             DIFFERENT -> null
         }
 
         companion object {
             fun from(value: Boolean?) = value?.let {
                 if (it) LOCKED else UNLOCKED
-            }
+            } ?: DIFFERENT
         }
     }
 

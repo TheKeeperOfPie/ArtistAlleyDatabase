@@ -54,7 +54,7 @@ object BrowseScreen {
                     )
                     TabRow(
                         selectedTabIndex = selectedTabIndex,
-                        containerColor = colors.containerColor(scrollFraction = 0f).value
+                        containerColor = colors.containerColor(colorTransitionFraction = 0f).value
                     ) {
                         val coroutineScope = rememberCoroutineScope()
                         tabs.forEachIndexed { index, tab ->

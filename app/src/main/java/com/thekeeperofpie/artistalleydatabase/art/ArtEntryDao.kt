@@ -16,7 +16,10 @@ import com.thekeeperofpie.artistalleydatabase.search.SearchQueryWrapper
 interface ArtEntryDao {
 
     companion object {
+        fun wrapMatchQuery(query: String) = "*$query*"
         fun wrapLikeQuery(query: String) = "%${query.replace(Regex("\\s+"), "%")}%"
+
+        fun Boolean.toBit() = if (this) "1" else "0"
     }
 
     @Query("""SELECT * FROM art_entries WHERE id = :id""")
@@ -95,9 +98,8 @@ interface ArtEntryDao {
                 FROM art_entries
                 JOIN art_entries_fts ON art_entries.id = art_entries_fts.id
                 WHERE art_entries_fts MATCH ?
-                ORDER BY art_entries.lastEditTime DESC
                 """.trimIndent()
-        }
+        } + "\nORDER BY art_entries.lastEditTime DESC"
 
         return getEntries(SimpleSQLiteQuery(statement, bindArguments.toTypedArray()))
     }

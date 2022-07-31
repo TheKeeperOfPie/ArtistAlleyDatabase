@@ -20,6 +20,7 @@ import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.outlined.CheckCircle
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -55,6 +56,7 @@ import com.thekeeperofpie.artistalleydatabase.R
 import com.thekeeperofpie.compose_proxy.SwipeToDismiss
 import com.thekeeperofpie.compose_proxy.rememberDismissState
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppBar(
     text: String,
@@ -96,7 +98,7 @@ fun ButtonFooter(vararg pairs: Pair<Int, () -> Unit>) {
             .fillMaxWidth()
             .topBorder(1.dp, MaterialTheme.colorScheme.inversePrimary)
     ) {
-        pairs.reversed().forEach { (stringRes, onClick) ->
+        pairs.forEach { (stringRes, onClick) ->
             TextButton(onClick = onClick) {
                 Text(
                     stringResource(stringRes),
@@ -137,6 +139,7 @@ fun SnackbarErrorText(@StringRes errorRes: Int?, onErrorDismiss: () -> Unit) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChooseUriRow(
     @StringRes label: Int,

@@ -53,9 +53,9 @@ object ArtEntryGrid {
     @Composable
     operator fun invoke(
         columnCount: Int = 2,
-        entries: LazyPagingItems<ArtEntryGridModel>,
+        entries: @Composable () -> LazyPagingItems<ArtEntryGridModel>,
         paddingValues: PaddingValues,
-        selectedItems: Collection<Int> = emptyList(),
+        selectedItems: () -> Collection<Int> = { emptyList() },
         onClickEntry: (index: Int, entry: ArtEntryGridModel) -> Unit = { _, _ -> },
         onLongClickEntry: (index: Int, entry: ArtEntryGridModel) -> Unit = { _, _ -> },
         onClickClear: () -> Unit = {},
@@ -76,11 +76,11 @@ object ArtEntryGrid {
                     .weight(1f, true)
             )
 
-            if (selectedItems.isNotEmpty()) {
+            if (selectedItems().isNotEmpty()) {
                 ButtonFooter(
-                    R.string.clear to onClickClear,
-                    R.string.edit to onClickEdit,
                     R.string.delete to { showDeleteDialog = true },
+                    R.string.edit to onClickEdit,
+                    R.string.clear to onClickClear,
                 )
             }
         }
@@ -96,8 +96,8 @@ object ArtEntryGrid {
     fun EntriesGrid(
         columnCount: Int,
         modifier: Modifier = Modifier,
-        entries: LazyPagingItems<ArtEntryGridModel>,
-        selectedItems: Collection<Int> = emptyList(),
+        entries: @Composable () -> LazyPagingItems<ArtEntryGridModel>,
+        selectedItems: () -> Collection<Int> = { emptyList() },
         onClickEntry: (index: Int, entry: ArtEntryGridModel) -> Unit = { _, _ -> },
         onLongClickEntry: (index: Int, entry: ArtEntryGridModel) -> Unit = { _, _ -> },
     ) {
@@ -110,7 +110,7 @@ object ArtEntryGrid {
             columnCount = columnCount,
             modifier = modifier
         ) {
-            items(entries, key = { it.value.id }) { index, item ->
+            items(entries(), key = { it.value.id }) { index, item ->
                 ArtEntry(
                     expectedWidth,
                     index,
@@ -129,7 +129,7 @@ object ArtEntryGrid {
         expectedWidth: Dimension.Pixels,
         index: Int,
         entry: ArtEntryGridModel? = null,
-        selectedItems: Collection<Int> = emptyList(),
+        selectedItems: () -> Collection<Int> = { emptyList() },
         onClickEntry: (index: Int, entry: ArtEntryGridModel) -> Unit = { _, _ -> },
         onLongClickEntry: (index: Int, entry: ArtEntryGridModel) -> Unit = { _, _ -> },
     ) {
@@ -141,7 +141,7 @@ object ArtEntryGrid {
                     .background(Color.LightGray)
             )
         } else {
-            val selected = selectedItems.contains(index)
+            val selected = selectedItems().contains(index)
             Box(
                 Modifier
                     .fillMaxWidth()
@@ -186,7 +186,7 @@ object ArtEntryGrid {
                             model = ImageRequest.Builder(LocalContext.current)
                                 .data(entry.localImageFile)
                                 .size(expectedWidth, Dimension.Undefined)
-                                .crossfade(true)
+                                .crossfade(false)
                                 .memoryCacheKey("coil_memory_entry_image_home_${entry.value.id}")
                                 .build(),
                             contentDescription = stringResource(

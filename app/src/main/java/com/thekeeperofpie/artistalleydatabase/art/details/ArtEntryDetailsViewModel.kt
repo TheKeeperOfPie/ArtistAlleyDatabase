@@ -20,12 +20,12 @@ import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntrySection.MultiT
 import com.thekeeperofpie.artistalleydatabase.autocomplete.Autocompleter
 import com.thekeeperofpie.artistalleydatabase.json.AppJson
 import com.thekeeperofpie.artistalleydatabase.json.AppMoshi
-import com.thekeeperofpie.artistalleydatabase.utils.Either
 import com.thekeeperofpie.artistalleydatabase.utils.split
 import com.thekeeperofpie.artistalleydatabase.utils.start
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -52,7 +52,7 @@ abstract class ArtEntryDetailsViewModel(
     private val appMoshi: AppMoshi,
     protected val appJson: AppJson,
     private val autocompleter: Autocompleter,
-    private val dataConverter: ArtEntryDataConverter,
+    protected val dataConverter: ArtEntryDataConverter,
 ) : ViewModel() {
 
     protected val seriesSection = ArtEntrySection.MultiText(
@@ -136,6 +136,7 @@ abstract class ArtEntryDetailsViewModel(
                             .map {
                                 aniListApi.charactersByMedia(it)
                                     .map { it.map { dataConverter.characterEntry((it)) } }
+                                    .catch {}
                                     .start(emptyList())
                             }
                             .let {
@@ -257,22 +258,10 @@ abstract class ArtEntryDetailsViewModel(
             }
     }
 
-    protected fun databaseToSeriesEntry(value: String) =
-        when (val either = appMoshi.parseSeriesColumn(value)) {
-            is Either.Right -> dataConverter.seriesEntry(either.value)
-            is Either.Left -> Entry.Custom(either.value)
-        }
-
-    protected fun databaseToCharacterEntry(value: String) =
-        when (val either = appMoshi.parseCharacterColumn(value)) {
-            is Either.Right -> dataConverter.characterEntry(either.value)
-            is Either.Left -> Entry.Custom(either.value)
-        }
-
     protected fun buildModel(entry: ArtEntry): ArtEntryModel {
         val artists = entry.artists.map(Entry::Custom)
-        val series = entry.series.map(::databaseToSeriesEntry)
-        val characters = entry.characters.map(::databaseToCharacterEntry)
+        val series = entry.series.map(dataConverter::databaseToSeriesEntry)
+        val characters = entry.characters.map(dataConverter::databaseToCharacterEntry)
         val tags = entry.tags.map(Entry::Custom)
 
         return ArtEntryModel(
@@ -281,7 +270,7 @@ abstract class ArtEntryDetailsViewModel(
             series = series,
             characters = characters,
             tags = tags,
-            sourceType = SourceType.fromEntry(appJson.json, entry)
+            source = SourceType.fromEntry(appJson.json, entry)
         )
     }
 
@@ -289,7 +278,7 @@ abstract class ArtEntryDetailsViewModel(
         artistSection.setContents(entry.artists)
         artistSection.lockState = entry.artistsLocked
 
-        sourceSection.initialize(appJson.json, entry)
+        sourceSection.initialize(entry)
         sourceSection.lockState = entry.sourceLocked
 
         seriesSection.setContents(entry.series)
@@ -384,13 +373,13 @@ abstract class ArtEntryDetailsViewModel(
             printHeight = printSizeSection.finalHeight(),
             notes = notesSection.value.trim(),
             locks = ArtEntry.Locks(
-                artistsLocked = artistSection.lockState?.toSerializedValue() ?: false,
-                seriesLocked = seriesSection.lockState?.toSerializedValue() ?: false,
-                charactersLocked = characterSection.lockState?.toSerializedValue() ?: false,
-                sourceLocked = sourceSection.lockState?.toSerializedValue() ?: false,
-                tagsLocked = tagSection.lockState?.toSerializedValue() ?: false,
-                notesLocked = notesSection.lockState?.toSerializedValue() ?: false,
-                printSizeLocked = printSizeSection.lockState?.toSerializedValue() ?: false,
+                artistsLocked = artistSection.lockState?.toSerializedValue(),
+                seriesLocked = seriesSection.lockState?.toSerializedValue(),
+                charactersLocked = characterSection.lockState?.toSerializedValue(),
+                sourceLocked = sourceSection.lockState?.toSerializedValue(),
+                tagsLocked = tagSection.lockState?.toSerializedValue(),
+                notesLocked = notesSection.lockState?.toSerializedValue(),
+                printSizeLocked = printSizeSection.lockState?.toSerializedValue(),
             )
         )
     }

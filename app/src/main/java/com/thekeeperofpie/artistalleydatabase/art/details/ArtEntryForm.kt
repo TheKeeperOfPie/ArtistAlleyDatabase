@@ -394,6 +394,7 @@ private fun MultiTextSection(section: ArtEntrySection.MultiText) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun LongTextSection(section: ArtEntrySection.LongText) {
     SectionHeader(
@@ -413,7 +414,7 @@ private fun LongTextSection(section: ArtEntrySection.LongText) {
     )
 }
 
-@OptIn(ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterial3Api::class)
 @Composable
 private fun PrefilledSectionField(
     index: Int,
@@ -657,7 +658,7 @@ fun EntryImage(
     }
 }
 
-@OptIn(ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterial3Api::class)
 @Composable
 private fun OpenSectionField(
     value: () -> String,

@@ -59,6 +59,7 @@ import com.thekeeperofpie.artistalleydatabase.search.advanced.AdvancedSearchView
 import com.thekeeperofpie.artistalleydatabase.search.results.SearchResultsScreen
 import com.thekeeperofpie.artistalleydatabase.search.results.SearchResultsViewModel
 import com.thekeeperofpie.artistalleydatabase.ui.theme.ArtistAlleyDatabaseTheme
+import com.thekeeperofpie.artistalleydatabase.utils.Either
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.io.File
@@ -149,12 +150,12 @@ class MainActivity : ComponentActivity() {
                     val viewModel = hiltViewModel<HomeViewModel>()
                     HomeScreen(
                         onClickNav = onClickNav,
-                        query = viewModel.query.collectAsState().value.value,
+                        query = { viewModel.query.collectAsState().value.value },
                         onQueryChange = viewModel::onQuery,
-                        options = viewModel.options,
+                        options = { viewModel.options },
                         onOptionChanged = { viewModel.refreshQuery() },
-                        entries = viewModel.results.collectAsLazyPagingItems(),
-                        selectedItems = viewModel.selectedEntries.keys,
+                        entries = { viewModel.results.collectAsLazyPagingItems() },
+                        selectedItems = { viewModel.selectedEntries.keys },
                         onClickAddFab = {
                             navController.navigate(NavDestinations.ADD_ENTRY)
                         },
@@ -222,11 +223,17 @@ class MainActivity : ComponentActivity() {
                         onClickNav = onClickNav,
                         tabs = viewModel.tabs,
                         onClick = { column, value ->
+                            val query = value.query
+                            val queryParam = if (query is Either.Left) {
+                                "&queryId=${query.value}"
+                            } else {
+                                "&queryString=${query.rightOrNull()}"
+                            }
                             navController.navigate(
                                 "selection" +
                                         "?column=$column" +
                                         "&title=${value.text}" +
-                                        "&query=${value.query}"
+                                        queryParam
                             )
                         },
                     )
@@ -236,31 +243,43 @@ class MainActivity : ComponentActivity() {
                     "selection" +
                             "?column={column}" +
                             "&title={title}" +
-                            "&query={query}",
+                            "&queryId={queryId}" +
+                            "&queryString={queryString}",
                     arguments = listOf(
                         navArgument("column") {
                             type = NavType.StringType
-                            nullable = false
                         },
                         navArgument("title") {
                             type = NavType.StringType
                         },
-                        navArgument("query") {
+                        navArgument("queryId") {
+                            type = NavType.IntType
+                            defaultValue = -1
+                        },
+                        navArgument("queryString") {
                             type = NavType.StringType
+                            nullable = true
                         },
                     )
                 ) {
                     val arguments = it.arguments!!
                     val column = ArtEntryColumn.valueOf(arguments.getString("column")!!)
                     val title = arguments.getString("title")!!
-                    val query = arguments.getString("query")!!
+                    val queryId = arguments.getInt("queryId", -1)
+                    val queryString = arguments.getString("queryString")
                     val viewModel = hiltViewModel<BrowseSelectionViewModel>()
+                    val query: Either<Int, String> = if (queryId > 0) {
+                        Either.Left(queryId)
+                    } else {
+                        Either.Right(queryString!!)
+                    }
+
                     viewModel.initialize(column, query)
                     BrowseSelectionScreen(
                         title = { title },
                         loading = { viewModel.loading },
-                        entries = viewModel.entries.collectAsLazyPagingItems(),
-                        selectedItems = viewModel.selectedEntries.keys,
+                        entries = { viewModel.entries.collectAsLazyPagingItems() },
+                        selectedItems = { viewModel.selectedEntries.keys },
                         onClickEntry = { index, entry ->
                             if (viewModel.selectedEntries.isNotEmpty()) {
                                 viewModel.selectEntry(index, entry)
@@ -305,6 +324,7 @@ class MainActivity : ComponentActivity() {
                         onClickNav = onClickNav,
                         loading = { false },
                         sections = { viewModel.sections },
+                        onClickClear = viewModel::onClickClear,
                         onClickSearch = {
                             val queryId = viewModel.onClickSearch()
                             navController.navigate("results?queryId=$queryId")
@@ -327,8 +347,8 @@ class MainActivity : ComponentActivity() {
                     viewModel.initialize(queryId)
                     SearchResultsScreen(
                         loading = { viewModel.loading },
-                        entries = viewModel.entries.collectAsLazyPagingItems(),
-                        selectedItems = viewModel.selectedEntries.keys,
+                        entries = { viewModel.entries.collectAsLazyPagingItems() },
+                        selectedItems = { viewModel.selectedEntries.keys },
                         onClickEntry = { index, entry ->
                             if (viewModel.selectedEntries.isNotEmpty()) {
                                 viewModel.selectEntry(index, entry)

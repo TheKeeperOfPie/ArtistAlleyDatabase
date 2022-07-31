@@ -12,6 +12,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryColumn
 import com.thekeeperofpie.artistalleydatabase.json.AppMoshi
+import com.thekeeperofpie.artistalleydatabase.utils.Either
 import com.thekeeperofpie.artistalleydatabase.utils.JsonUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -94,7 +95,7 @@ class BrowseViewModel @Inject constructor(
                                             link = AniListUtils.characterUrl(it.id),
                                             text = CharacterUtils.buildCanonicalName(it)
                                                 ?: databaseText,
-                                            query = it.id.toString(),
+                                            query = Either.Left(it.id),
                                         )
                                     }
                             }
@@ -107,7 +108,7 @@ class BrowseViewModel @Inject constructor(
                                             link = AniListUtils.characterUrl(entry.id),
                                             text = CharacterUtils.buildCanonicalName(entry)
                                                 ?: databaseText,
-                                            query = entry.id.toString(),
+                                            query = Either.Left(entry.id),
                                         )
                                     }.let { emit(it) }
                                 }
@@ -131,7 +132,7 @@ class BrowseViewModel @Inject constructor(
                                             image = it.image?.medium,
                                             link = AniListUtils.mediaUrl(it.type, it.id),
                                             text = it.title?.romaji ?: databaseText,
-                                            query = it.id.toString(),
+                                            query = Either.Left(it.id),
                                         )
                                     }
                             }
@@ -142,7 +143,7 @@ class BrowseViewModel @Inject constructor(
                                     } else {
                                         BrowseEntryModel(
                                             text = entry.title,
-                                            query = entry.id.toString(),
+                                            query = Either.Left(entry.id),
                                         )
                                     }.let { emit(it) }
                                 }

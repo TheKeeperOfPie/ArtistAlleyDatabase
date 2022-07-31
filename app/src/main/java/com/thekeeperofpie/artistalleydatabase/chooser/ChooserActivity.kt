@@ -33,12 +33,12 @@ class ChooserActivity : ComponentActivity() {
                     SharedElementsRoot {
                         val viewModel = hiltViewModel<ChooserViewModel>()
                         ChooserScreen(
-                            query = viewModel.query.collectAsState().value.value,
+                            query = { viewModel.query.collectAsState().value.value },
                             onQueryChange = viewModel::onQuery,
-                            options = viewModel.options,
+                            options = { viewModel.options },
                             onOptionChanged = { viewModel.refreshQuery() },
-                            entries = viewModel.results.collectAsLazyPagingItems(),
-                            selectedItems = viewModel.selectedEntries.keys,
+                            entries = { viewModel.results.collectAsLazyPagingItems() },
+                            selectedItems = { viewModel.selectedEntries.keys },
                             onClickEntry = { index, entry ->
                                 if (allowMultiple) {
                                     viewModel.selectEntry(index, entry)

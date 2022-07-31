@@ -7,6 +7,7 @@ import androidx.room.Dao
 import androidx.room.Query
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryDao
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryDao.Companion.wrapLikeQuery
+import com.thekeeperofpie.artistalleydatabase.art.ArtEntryDao.Companion.wrapMatchQuery
 import com.thekeeperofpie.artistalleydatabase.utils.JsonUtils
 
 @Dao
@@ -18,7 +19,7 @@ interface ArtEntryDetailsDao : ArtEntryDao {
         likeFunction: suspend (String) -> List<String>,
     ): List<String> {
         // TODO: Filter results so that only individual entries with the query are returned
-        val matchQuery = "*$query*"
+        val matchQuery = wrapMatchQuery(query)
         val likeQuery = wrapLikeQuery(query)
         return matchFunction(matchQuery)
             .plus(matchFunction(matchQuery.toLowerCase(Locale.current)))

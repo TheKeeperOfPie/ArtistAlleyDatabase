@@ -2,7 +2,6 @@ package com.thekeeperofpie.artistalleydatabase.edit
 
 import android.app.Application
 import android.net.Uri
-import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
@@ -75,29 +74,23 @@ class MultiEditViewModel @Inject constructor(
             val differentValue = listOf(ArtEntrySection.MultiText.Entry.Different)
 
             val series = firstEntry.series
-                .takeIf {
-                    artEntryEditDao.distinctCountSeries(entryIds).also {
-                        Log.d("Debug", "distinct count series = $it")
-                    } == 1
-                }
-                ?.map(::databaseToSeriesEntry)
+                .takeIf { artEntryEditDao.distinctCountSeries(entryIds) == 1 }
+                ?.map(dataConverter::databaseToSeriesEntry)
                 ?: differentValue
 
             val characters = firstEntry.characters
                 .takeIf { artEntryEditDao.distinctCountCharacters(entryIds) == 1 }
-                ?.map(::databaseToCharacterEntry)
+                ?.map(dataConverter::databaseToCharacterEntry)
                 ?: differentValue
 
-            val sourceValue = firstEntry.sourceValue
-                ?.takeIf { artEntryEditDao.distinctCountSourceValue(entryIds) == 1 }
-                ?: "Different"
+            val sourceTypeSame = artEntryEditDao.distinctCountSourceType(entryIds) == 1
+            val sourceValueSame = artEntryEditDao.distinctCountSourceValue(entryIds) == 1
 
-            // TODO: Fix source multi-edit
-            val sourceType = firstEntry.sourceType
-                ?.takeIf { artEntryEditDao.distinctCountSourceType(entryIds) == 1 }
-                ?.takeIf { sourceValue != "Different" }
-                ?.let { SourceType.fromEntry(appJson.json, firstEntry) }
-                ?: SourceType.Different
+            val source = if (sourceTypeSame && sourceValueSame) {
+                SourceType.fromEntry(appJson.json, firstEntry)
+            } else {
+                SourceType.Different
+            }
 
             val artists = firstEntry.artists
                 .takeIf { artEntryEditDao.distinctCountArtists(entryIds) == 1 }
@@ -159,8 +152,7 @@ class MultiEditViewModel @Inject constructor(
                 series = series,
                 characters = characters,
                 tags = tags,
-                sourceType = sourceType,
-                sourceValue = sourceValue,
+                source = source,
                 printWidth = printWidth,
                 printHeight = printHeight,
                 notes = notes,

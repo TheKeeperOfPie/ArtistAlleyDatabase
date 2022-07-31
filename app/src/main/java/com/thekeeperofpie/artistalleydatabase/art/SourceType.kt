@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -119,30 +120,24 @@ class SourceDropdown(locked: LockState? = null) : ArtEntrySection.Dropdown(
         )
     }
 
-    fun initialize(json: Json, entry: ArtEntryModel) {
-        val value = entry.sourceValue
-        when (entry.sourceType) {
+    fun initialize(entry: ArtEntryModel) {
+        when (val source = entry.source) {
             is SourceType.Convention -> {
-                if (value != null) {
-                    val data = json.decodeFromString<SourceType.Convention>(value)
-                    conventionSectionItem.setValues(data)
-                }
+                conventionSectionItem.setValues(source)
                 selectedIndex = options.indexOf(conventionSectionItem)
             }
             SourceType.Different -> {
                 options += SourceDifferentSectionItem()
                 selectedIndex = options.lastIndex
             }
+            is SourceType.Custom -> {
+                customSectionItem.value = source.value
+                selectedIndex = options.indexOf(customSectionItem)
+            }
             null,
-            is SourceType.Custom,
             is SourceType.Online,
             SourceType.Unknown -> {
-                if (value.isNullOrBlank()) {
-                    selectedIndex = options.indexOf(unknownSectionItem)
-                } else {
-                    customSectionItem.value = value
-                    selectedIndex = options.indexOf(customSectionItem)
-                }
+                selectedIndex = options.indexOf(unknownSectionItem)
             }
         }
     }
@@ -205,6 +200,7 @@ class SourceConventionSectionItem : SourceDropdown.SourceItem() {
     @Composable
     override fun DropdownItemText() = Text(fieldText())
 
+    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     override fun Content(lockState: ArtEntrySection.LockState?) {
         val showSecondRow = lockState != ArtEntrySection.LockState.LOCKED ||
@@ -297,6 +293,7 @@ class SourceCustomSectionItem : SourceDropdown.SourceItem() {
     @Composable
     override fun DropdownItemText() = Text(fieldText())
 
+    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     override fun Content(lockState: ArtEntrySection.LockState?) {
         TextField(

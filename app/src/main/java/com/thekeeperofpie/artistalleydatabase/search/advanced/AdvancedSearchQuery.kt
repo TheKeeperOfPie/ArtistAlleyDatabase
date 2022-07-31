@@ -1,8 +1,10 @@
 package com.thekeeperofpie.artistalleydatabase.search.advanced
 
 import com.thekeeperofpie.artistalleydatabase.art.SourceType
+import kotlinx.serialization.Serializable
 import java.util.UUID
 
+@Serializable
 data class AdvancedSearchQuery(
     val id: String = UUID.randomUUID().toString(),
     val artists: List<String> = emptyList(),

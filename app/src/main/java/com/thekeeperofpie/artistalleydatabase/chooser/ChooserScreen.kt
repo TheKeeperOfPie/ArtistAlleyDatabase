@@ -52,13 +52,13 @@ object ChooserScreen {
     @Composable
     operator fun invoke(
         columnCount: Int = 2,
-        query: String = "",
+        query: @Composable () -> String = { "" },
         onQueryChange: (String) -> Unit = {},
-        options: List<SearchOption> = emptyList(),
+        options: () -> List<SearchOption> = { emptyList() },
         onOptionChanged: (SearchOption) -> Unit = {},
-        entries: LazyPagingItems<ArtEntryGridModel> =
-            emptyFlow<PagingData<ArtEntryGridModel>>().collectAsLazyPagingItems(),
-        selectedItems: Collection<Int> = emptyList(),
+        entries: @Composable () -> LazyPagingItems<ArtEntryGridModel> =
+            { emptyFlow<PagingData<ArtEntryGridModel>>().collectAsLazyPagingItems() },
+        selectedItems: () -> Collection<Int> = { emptyList() },
         onClickEntry: (index: Int, entry: ArtEntryGridModel) -> Unit = { _, _ -> },
         onLongClickEntry: (index: Int, entry: ArtEntryGridModel) -> Unit = { _, _ -> },
         onClickClear: () -> Unit = {},
@@ -83,10 +83,10 @@ object ChooserScreen {
                 )
 
 
-                if (selectedItems.isNotEmpty()) {
+                if (selectedItems().isNotEmpty()) {
                     ButtonFooter(
-                        R.string.select to onClickSelect,
                         R.string.clear to onClickClear,
+                        R.string.select to onClickSelect,
                     )
                 }
             }
@@ -95,9 +95,9 @@ object ChooserScreen {
 
     @Composable
     private fun Chrome(
-        query: String = "",
+        query: @Composable () -> String = { "" },
         onQueryChange: (String) -> Unit = {},
-        options: List<SearchOption> = emptyList(),
+        options: () -> List<SearchOption> = { emptyList() },
         onOptionChanged: (SearchOption) -> Unit = {},
         content: @Composable (PaddingValues) -> Unit,
     ) {
@@ -117,11 +117,11 @@ object ChooserScreen {
                 ) {
                     val appBarColors = TopAppBarDefaults.smallTopAppBarColors()
                     TextField(
-                        query,
+                        query(),
                         placeholder = { Text(stringResource(id = R.string.search)) },
                         onValueChange = onQueryChange,
                         trailingIcon = {
-                            if (options.isNotEmpty()) {
+                            if (options().isNotEmpty()) {
                                 IconButton(onClick = { showOptions = !showOptions }) {
                                     Icon(
                                         imageVector = Icons.Default.FilterList,
@@ -137,7 +137,7 @@ object ChooserScreen {
                         keyboardActions = KeyboardActions(onSearch = { showOptions = false }),
                         colors = TextFieldDefaults.textFieldColors(
                             containerColor = appBarColors.containerColor(
-                                scrollFraction = 0f
+                                colorTransitionFraction = 0f
                             ).value
                         ),
                         modifier = Modifier
@@ -150,7 +150,7 @@ object ChooserScreen {
                         exit = shrinkVertically(),
                     ) {
                         Column {
-                            options.forEach { option ->
+                            options().forEach { option ->
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
                                     modifier = Modifier
@@ -187,14 +187,16 @@ object ChooserScreen {
 @Composable
 fun Preview() {
     ChooserScreen(
-        options = listOf(
-            SearchOption(R.string.search_option_artists),
-            SearchOption(R.string.search_option_source),
-            SearchOption(R.string.search_option_series),
-            SearchOption(R.string.search_option_characters),
-            SearchOption(R.string.search_option_tags),
-            SearchOption(R.string.search_option_notes),
-            SearchOption(R.string.search_option_other),
-        )
+        options = {
+            listOf(
+                SearchOption(R.string.search_option_artists),
+                SearchOption(R.string.search_option_source),
+                SearchOption(R.string.search_option_series),
+                SearchOption(R.string.search_option_characters),
+                SearchOption(R.string.search_option_tags),
+                SearchOption(R.string.search_option_notes),
+                SearchOption(R.string.search_option_other),
+            )
+        }
     )
 }
