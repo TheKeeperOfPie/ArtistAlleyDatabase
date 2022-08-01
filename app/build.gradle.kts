@@ -1,5 +1,7 @@
 @file:Suppress("UnstableApiUsage")
 
+import android.annotation.SuppressLint
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -18,6 +20,7 @@ android {
     defaultConfig {
         applicationId = "com.thekeeperofpie.artistalleydatabase"
         minSdk = 31
+        @SuppressLint("OldTargetApi")
         targetSdk = 32
         versionCode = 1
         versionName = "1.0"
@@ -31,22 +34,48 @@ android {
     val proguardFiles = (file("proguard/").listFiles().orEmpty().toList() +
             getDefaultProguardFile("proguard-android-optimize.txt")).toTypedArray()
 
+    val debugKeystore = file(System.getProperty("user.home"))
+        .resolve(".android")
+        .resolve("debug.keystore")
+    val debugKeystoreExists = debugKeystore.exists()
+
+    if (debugKeystoreExists) {
+        signingConfigs {
+            create("default") {
+                keyAlias = "androiddebugkey"
+                keyPassword = "android"
+                storeFile = debugKeystore
+                storePassword = "android"
+            }
+        }
+    }
+
     buildTypes {
         getByName("debug") {
-            // Enable minify even in debug build to improve real world performance,
-            // since there's no build pipeline to actually build release variants
+            applicationIdSuffix = ".debug"
+            isDebuggable = true
             isMinifyEnabled = false
             isShrinkResources = false
             isCrunchPngs = false
             proguardFiles(*proguardFiles)
+
+            if (debugKeystoreExists) {
+                signingConfig = signingConfigs.getByName("default")
+            }
         }
         getByName("release") {
+            isDebuggable = false
             isMinifyEnabled = true
             isShrinkResources = true
             isCrunchPngs = true
             proguardFiles(*proguardFiles)
+
+            if (debugKeystoreExists) {
+                signingConfig = signingConfigs.getByName("default")
+            }
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
@@ -88,6 +117,10 @@ apollo {
 
 if (!aniListSchemaFile.exists()) {
     tasks["generateAniListApolloSources"].dependsOn("downloadAniListApolloSchemaFromIntrospection")
+}
+
+tasks.register("installAll") {
+    dependsOn("installDebug", "installRelease")
 }
 
 dependencies {

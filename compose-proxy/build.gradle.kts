@@ -1,3 +1,5 @@
+@file:Suppress("UnstableApiUsage")
+
 plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
@@ -9,7 +11,6 @@ android {
 
     defaultConfig {
         minSdk = 31
-        targetSdk = 32
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
@@ -40,7 +41,7 @@ android {
 }
 
 dependencies {
-    implementation("androidx.compose.material:material:1.3.0-alpha01")
-    implementation("androidx.compose.material3:material3:1.0.0-alpha14")
+    implementation("androidx.compose.material:material:1.3.0-alpha02")
+    implementation("androidx.compose.material3:material3:1.0.0-alpha15")
     implementation("com.google.accompanist:accompanist-pager-indicators:0.24.13-rc")
 }

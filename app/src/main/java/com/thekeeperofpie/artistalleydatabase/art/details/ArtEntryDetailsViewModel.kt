@@ -200,10 +200,10 @@ abstract class ArtEntryDetailsViewModel(
                 sourceSection.conventionSectionItem.updates(),
                 ::Pair
             )
-                .filter {
-                    it.second.name.isNotEmpty()
-                            && it.second.year != null && it.second.year!! > 1000
-                            && it.second.hall.isEmpty() && it.second.booth.isEmpty()
+                .filter { (_, convention) ->
+                    convention.name.isNotEmpty()
+                            && convention.year != null && convention.year > 1000
+                            && convention.hall.isEmpty() && convention.booth.isEmpty()
                 }
                 .mapNotNull { (artistEntries, convention) ->
                     artistEntries.firstNotNullOfOrNull {
@@ -214,8 +214,8 @@ abstract class ArtEntryDetailsViewModel(
                                 convention.year!!
                             )
                             .takeUnless { it.isNullOrBlank() }
-                            .let { appJson.json.decodeFromString<SourceType.Convention>(it!!) }
-                            .takeIf { it.name == convention.name && it.year == convention.year }
+                            ?.let<String, SourceType.Convention>(appJson.json::decodeFromString)
+                            ?.takeIf { it.name == convention.name && it.year == convention.year }
                     }
                 }
                 .collectLatest {
