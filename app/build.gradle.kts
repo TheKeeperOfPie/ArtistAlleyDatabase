@@ -15,7 +15,7 @@ plugins {
 
 android {
     namespace = "com.thekeeperofpie.artistalleydatabase"
-    compileSdk = 32
+    compileSdk = 33
 
     defaultConfig {
         applicationId = "com.thekeeperofpie.artistalleydatabase"
@@ -121,6 +121,30 @@ if (!aniListSchemaFile.exists()) {
 
 tasks.register("installAll") {
     dependsOn("installDebug", "installRelease")
+}
+
+fun Exec.launchActivity(
+    packageName: String,
+    activityName: String = "com.thekeeperofpie.artistalleydatabase.MainActivity"
+) {
+    commandLine(
+        "adb", "shell", "am", "start-activity",
+        "-a", "\"android.intent.action.MAIN\"",
+        "-c", "\"android.intent.category.LAUNCHER\"",
+        "-n", "\"$packageName/$activityName\"",
+    )
+}
+
+tasks.register<Exec>("launchRelease") {
+    dependsOn("installRelease")
+    launchActivity("com.thekeeperofpie.artistalleydatabase")
+    finalizedBy("installDebug")
+}
+
+tasks.register<Exec>("launchDebug") {
+    dependsOn("installDebug")
+    launchActivity("com.thekeeperofpie.artistalleydatabase.debug")
+    finalizedBy("installRelease")
 }
 
 dependencies {

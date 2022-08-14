@@ -83,13 +83,14 @@ sealed class PrintSize(
         PrintSize((19 * 25.4).toInt(), (13 * 25.4).toInt(), R.string.print_size_19x13_inches)
 }
 
-class PrintSizeDropdown : ArtEntrySection.Dropdown(
+class PrintSizeDropdown(lockState: LockState? = null) : ArtEntrySection.Dropdown(
     R.string.art_entry_size_header,
     R.string.art_entry_size_dropdown_content_description,
     PrintSize.PORTRAITS
         .map { Item.Basic(it, it.textRes) }
         .plus(PrintSizeCustomTextFields())
         .toMutableStateList(),
+    lockState,
 ) {
 
     fun initialize(printWidth: Int?, printHeight: Int?) {

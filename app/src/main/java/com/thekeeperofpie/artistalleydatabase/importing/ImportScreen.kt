@@ -40,6 +40,8 @@ object ImportScreen {
         onContentUriSelected: (Uri?) -> Unit = {},
         dryRun: () -> Boolean = { false },
         onToggleDryRun: (Boolean) -> Unit = {},
+        replaceAll: () -> Boolean = { false },
+        onToggleReplaceAll: (Boolean) -> Unit = {},
         onClickImport: () -> Unit = {},
         importProgress: () -> Float? = { 0.5f },
         errorRes: Pair<Int, Exception?>? = null,
@@ -63,6 +65,8 @@ object ImportScreen {
                 onContentUriSelected = onContentUriSelected,
                 dryRun = dryRun,
                 onToggleDryRun = onToggleDryRun,
+                replaceAll = replaceAll,
+                onToggleReplaceAll = onToggleReplaceAll,
                 onClickImport = onClickImport,
                 importProgress = importProgress,
             )
@@ -78,6 +82,8 @@ object ImportScreen {
         onContentUriSelected: (Uri?) -> Unit = {},
         dryRun: () -> Boolean = { false },
         onToggleDryRun: (Boolean) -> Unit = {},
+        replaceAll: () -> Boolean = { false },
+        onToggleReplaceAll: (Boolean) -> Unit = {},
         onClickImport: () -> Unit = {},
         importProgress: () -> Float? = { 0.5f }
     ) {
@@ -122,6 +128,28 @@ object ImportScreen {
                     )
 
                     Text(stringResource(R.string.import_dry_run))
+                }
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            onToggleReplaceAll(!replaceAll())
+                        }
+                ) {
+                    Checkbox(
+                        checked = replaceAll(),
+                        onCheckedChange = null,
+                        Modifier.padding(
+                            start = 16.dp,
+                            end = 16.dp,
+                            top = 8.dp,
+                            bottom = 8.dp
+                        )
+                    )
+
+                    Text(stringResource(R.string.import_replace_all))
                 }
 
                 LinearProgressWithIndicator(

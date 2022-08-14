@@ -262,6 +262,7 @@ class SourceConventionSectionItem : SourceDropdown.SourceItem() {
                     placeholder = {
                         Text(stringResource(R.string.art_entry_source_convention_placeholder_hall))
                     },
+                    readOnly = lockState?.editable == false,
                     onValueChange = { hall = it },
                     modifier = Modifier.weight(1f, true),
                 )
@@ -271,6 +272,7 @@ class SourceConventionSectionItem : SourceDropdown.SourceItem() {
                     placeholder = {
                         Text(stringResource(R.string.art_entry_source_convention_placeholder_booth))
                     },
+                    readOnly = lockState?.editable == false,
                     onValueChange = { booth = it },
                     modifier = Modifier.weight(1f, true),
                 )

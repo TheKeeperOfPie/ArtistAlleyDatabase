@@ -115,4 +115,6 @@
     <string name="search_results">Results</string>
     <string name="error_loading_entries">Error loading entries</string>
     <string name="nav_drawer_search">Search</string>
+    <string name="import_replace_all">Replace all</string>
+    <string name="debug_variant">DEBUG</string>
 </resources>

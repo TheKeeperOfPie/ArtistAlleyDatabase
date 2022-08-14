@@ -4,6 +4,11 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -21,8 +26,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraphBuilder
@@ -97,43 +105,72 @@ class MainActivity : ComponentActivity() {
                             }
                         },
                         content = {
-                            when (selectedItem) {
-                                NavDrawerItems.Home -> Home(::onClickNav)
-                                NavDrawerItems.Browse -> BrowseScreen(::onClickNav)
-                                NavDrawerItems.Search -> SearchScreen(::onClickNav)
-                                NavDrawerItems.Import -> {
-                                    val viewModel = hiltViewModel<ImportViewModel>()
-                                    ImportScreen(
-                                        onClickNav = ::onClickNav,
-                                        uriString = viewModel.importUriString.orEmpty(),
-                                        onUriStringEdit = { viewModel.importUriString = it },
-                                        onContentUriSelected = {
-                                            viewModel.importUriString = it?.toString()
-                                        },
-                                        dryRun = { viewModel.dryRun },
-                                        onToggleDryRun = { viewModel.dryRun = !viewModel.dryRun },
-                                        onClickImport = viewModel::onClickImport,
-                                        importProgress = { viewModel.importProgress },
-                                        errorRes = viewModel.errorResource,
-                                        onErrorDismiss = { viewModel.errorResource = null }
-                                    )
+                            val block = @Composable {
+                                when (selectedItem) {
+                                    NavDrawerItems.Home -> Home(::onClickNav)
+                                    NavDrawerItems.Browse -> BrowseScreen(::onClickNav)
+                                    NavDrawerItems.Search -> SearchScreen(::onClickNav)
+                                    NavDrawerItems.Import -> {
+                                        val viewModel = hiltViewModel<ImportViewModel>()
+                                        ImportScreen(
+                                            onClickNav = ::onClickNav,
+                                            uriString = viewModel.importUriString.orEmpty(),
+                                            onUriStringEdit = { viewModel.importUriString = it },
+                                            onContentUriSelected = {
+                                                viewModel.importUriString = it?.toString()
+                                            },
+                                            dryRun = { viewModel.dryRun },
+                                            onToggleDryRun = {
+                                                viewModel.dryRun = !viewModel.dryRun
+                                            },
+                                            replaceAll = { viewModel.replaceAll },
+                                            onToggleReplaceAll = {
+                                                viewModel.replaceAll = !viewModel.replaceAll
+                                            },
+                                            onClickImport = viewModel::onClickImport,
+                                            importProgress = { viewModel.importProgress },
+                                            errorRes = viewModel.errorResource,
+                                            onErrorDismiss = { viewModel.errorResource = null }
+                                        )
+                                    }
+                                    NavDrawerItems.Export -> {
+                                        val viewModel = hiltViewModel<ExportViewModel>()
+                                        ExportScreen(
+                                            onClickNav = ::onClickNav,
+                                            uriString = { viewModel.exportUriString.orEmpty() },
+                                            onUriStringEdit = { viewModel.exportUriString = it },
+                                            onContentUriSelected = {
+                                                viewModel.exportUriString = it?.toString()
+                                            },
+                                            onClickExport = viewModel::onClickExport,
+                                            exportProgress = { viewModel.exportProgress },
+                                            errorRes = viewModel.errorResource,
+                                            onErrorDismiss = { viewModel.errorResource = null }
+                                        )
+                                    }
+                                }.run { /* exhaust */ }
+                            }
+
+                            if (BuildConfig.DEBUG) {
+                                Column {
+                                    Box(modifier = Modifier.weight(1f)) {
+                                        block()
+                                    }
+                                    Box(
+                                        modifier = Modifier
+                                            .background(colorResource(R.color.launcher_background))
+                                            .fillMaxWidth()
+                                            .height(56.dp)
+                                    ) {
+                                        Text(
+                                            text = stringResource(R.string.debug_variant),
+                                            modifier = Modifier.align(Alignment.Center)
+                                        )
+                                    }
                                 }
-                                NavDrawerItems.Export -> {
-                                    val viewModel = hiltViewModel<ExportViewModel>()
-                                    ExportScreen(
-                                        onClickNav = ::onClickNav,
-                                        uriString = { viewModel.exportUriString.orEmpty() },
-                                        onUriStringEdit = { viewModel.exportUriString = it },
-                                        onContentUriSelected = {
-                                            viewModel.exportUriString = it?.toString()
-                                        },
-                                        onClickExport = viewModel::onClickExport,
-                                        exportProgress = { viewModel.exportProgress },
-                                        errorRes = viewModel.errorResource,
-                                        onErrorDismiss = { viewModel.errorResource = null }
-                                    )
-                                }
-                            }.run { /* exhaust */ }
+                            } else {
+                                block()
+                            }
                         }
                     )
                 }
@@ -199,6 +236,7 @@ class MainActivity : ComponentActivity() {
                         },
                         onImageSizeResult = viewModel::onImageSizeResult,
                         sections = { viewModel.sections },
+                        saving = { viewModel.saving },
                         onClickSaveTemplate = viewModel::onClickSaveTemplate,
                         onClickSave = { viewModel.onClickSave(navController) },
                         errorRes = { viewModel.errorResource },
@@ -442,6 +480,7 @@ class MainActivity : ComponentActivity() {
                 },
                 areSectionsLoading = { viewModel.areSectionsLoading },
                 sections = { viewModel.sections },
+                saving = { viewModel.saving },
                 onClickSave = { viewModel.onClickSave(navController) },
                 errorRes = { viewModel.errorResource },
                 onErrorDismiss = { viewModel.errorResource = null },
@@ -475,6 +514,7 @@ class MainActivity : ComponentActivity() {
                 },
                 loading = { viewModel.loading },
                 sections = { viewModel.sections },
+                saving = { viewModel.saving },
                 onClickSave = { viewModel.onClickSave(navController) },
                 errorRes = { viewModel.errorResource },
                 onErrorDismiss = { viewModel.errorResource = null },

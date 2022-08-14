@@ -33,16 +33,19 @@ class ImportWorker @AssistedInject constructor(
         val uriString = params.inputData.getString(ImportUtils.KEY_INPUT_CONTENT_URI)
             ?: return Result.failure()
 
-        // Default to true to avoid accidentally overwrites
+        // Default to safe values to avoid accidentally overwrites
         val dryRun = params.inputData.getBoolean(ImportUtils.KEY_DRY_RUN, true)
+        val replaceAll = params.inputData.getBoolean(ImportUtils.KEY_DRY_RUN, false)
         val uri = Uri.parse(uriString)
 
+        // TODO: Wrap the entire delete -> insert -> success cycle in a transaction
+
         // First open only counts and inserts entries
-        val entriesSize =
-            (appContext.contentResolver.openInputStream(uri) ?: return Result.failure())
-                .use { fileInput ->
+        var entriesSize = 0
+        try {
+            artEntryDao.insertEntriesDeferred(dryRun, replaceAll) { insertEntry ->
+                appContext.contentResolver.openInputStream(uri).use { fileInput ->
                     ZipInputStream(fileInput).use { zipInput ->
-                        var count = 0
                         var entry = zipInput.nextEntry
                         while (entry != null) {
                             val entryInputStream = object : FilterInputStream(zipInput) {
@@ -52,17 +55,22 @@ class ImportWorker @AssistedInject constructor(
                             }
 
                             when (entry.name) {
-                                "art_entries.json" -> count = readArtEntriesJson(
-                                    entryInputStream,
-                                    dryRun,
-                                )
+                                "art_entries.json" ->
+                                    entriesSize = if (dryRun) {
+                                        readArtEntriesJson(entryInputStream) {}
+                                    } else {
+                                        readArtEntriesJson(entryInputStream, insertEntry)
+                                    }
                             }
                             zipInput.closeEntry()
                             entry = zipInput.nextEntry
                         }
-                        count
                     }
                 }
+            }
+        } catch (e: Exception) {
+            return Result.failure()
+        }
 
         // Second pass uses previous count to determine progress and does image copying
         (appContext.contentResolver.openInputStream(uri) ?: return Result.failure())
@@ -106,7 +114,10 @@ class ImportWorker @AssistedInject constructor(
     /**
      * @return number of valid entries found
      */
-    private suspend fun readArtEntriesJson(input: InputStream, dryRun: Boolean): Int {
+    private suspend fun readArtEntriesJson(
+        input: InputStream,
+        insertEntry: suspend (ArtEntry) -> Unit,
+    ): Int {
         var count = 0
         input.source().use {
             it.buffer().use {
@@ -120,28 +131,21 @@ class ImportWorker @AssistedInject constructor(
 
                 reader.beginArray()
 
-                val block: suspend (insert: suspend (ArtEntry) -> Unit) -> Unit = { insert ->
-                    while (reader.peek() == JsonReader.Token.BEGIN_OBJECT) {
-                        var entry = appMoshi.artEntryAdapter.fromJson(reader) ?: continue
+                while (reader.peek() == JsonReader.Token.BEGIN_OBJECT) {
+                    var entry = appMoshi.artEntryAdapter.fromJson(reader) ?: continue
 
-                        if (entry.seriesSearchable.isEmpty()) {
-                            entry = entry.copy(seriesSearchable = entry.series)
-                        }
-
-                        if (entry.charactersSearchable.isEmpty()) {
-                            entry = entry.copy(charactersSearchable = entry.characters)
-                        }
-
-                        count++
-                        insert(entry)
+                    if (entry.seriesSearchable.isEmpty()) {
+                        entry = entry.copy(seriesSearchable = entry.series)
                     }
+
+                    if (entry.charactersSearchable.isEmpty()) {
+                        entry = entry.copy(charactersSearchable = entry.characters)
+                    }
+
+                    count++
+                    insertEntry(entry)
                 }
 
-                if (dryRun) {
-                    block {}
-                } else {
-                    artEntryDao.insertEntriesDeferred(block)
-                }
                 reader.endArray()
                 reader.endObject()
             }

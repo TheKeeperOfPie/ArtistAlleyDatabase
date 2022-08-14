@@ -29,6 +29,7 @@ class ImportViewModel @Inject constructor(
 
     var importUriString by mutableStateOf<String?>(null)
     var dryRun by mutableStateOf(true)
+    var replaceAll by mutableStateOf(false)
     var importRequested by mutableStateOf(false)
     var importProgress by mutableStateOf<Float?>(null)
     var errorResource by mutableStateOf<Pair<Int, Exception?>?>(null)
@@ -81,6 +82,7 @@ class ImportViewModel @Inject constructor(
                 Data.Builder()
                     .putString(ImportUtils.KEY_INPUT_CONTENT_URI, importUriString)
                     .putBoolean(ImportUtils.KEY_DRY_RUN, dryRun)
+                    .putBoolean(ImportUtils.KEY_REPLACE_ALL, replaceAll)
                     .build()
             )
             .build()

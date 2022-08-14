@@ -21,12 +21,14 @@ import java.util.function.UnaryOperator
 sealed class ArtEntrySection(lockState: LockState? = null) {
 
     private var lockState_ by mutableStateOf(lockState)
+    var lockStateFlow = MutableStateFlow(lockState)
     var lockState: LockState? = lockState
         get() = lockState_
         set(value) {
             field = value
             wasEverDifferent = wasEverDifferent || value == LockState.DIFFERENT
             lockState_ = value
+            lockStateFlow.tryEmit(value)
         }
 
     private var wasEverDifferent = false

@@ -2,7 +2,10 @@ package com.thekeeperofpie.artistalleydatabase.edit
 
 import android.app.Application
 import android.net.Uri
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListApi
@@ -57,7 +60,8 @@ class MultiEditViewModel @Inject constructor(
     var loading = true
         private set
 
-    private var saving = false
+    var saving by mutableStateOf(false)
+        private set
 
     fun initialize(entryIds: List<String>) {
         if (this::entryIds.isInitialized) return
@@ -250,16 +254,6 @@ class MultiEditViewModel @Inject constructor(
                 }
             }
 
-            // TODO: Real print size different value tracking
-            if (printWidth != null || printHeight != null) {
-                artEntryEditDao.updatePrintSize(entryIds, printWidth, printHeight)
-            }
-
-            // TODO: Real notes different value tracking
-            if (notes.isNotEmpty() && notes.trim() != "Different") {
-                artEntryEditDao.updateNotes(entryIds, notes)
-            }
-
             if (artistSection.lockState != ArtEntrySection.LockState.DIFFERENT) {
                 artEntryEditDao.updateArtistsLocked(
                     entryIds,
@@ -300,6 +294,11 @@ class MultiEditViewModel @Inject constructor(
                     entryIds,
                     notesSection.lockState?.toSerializedValue() ?: false
                 )
+
+                // TODO: Real notes different value tracking
+                if (notes.isNotEmpty() && notes.trim() != "Different") {
+                    artEntryEditDao.updateNotes(entryIds, notes)
+                }
             }
 
             if (printSizeSection.lockState != ArtEntrySection.LockState.DIFFERENT) {
@@ -307,6 +306,11 @@ class MultiEditViewModel @Inject constructor(
                     entryIds,
                     printSizeSection.lockState?.toSerializedValue() ?: false
                 )
+
+                // TODO: Real print size different value tracking
+                if (printWidth != null || printHeight != null) {
+                    artEntryEditDao.updatePrintSize(entryIds, printWidth, printHeight)
+                }
             }
 
             artEntryEditDao.updateLastEditTime(entryIds, Date.from(Instant.now()))

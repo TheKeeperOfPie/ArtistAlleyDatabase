@@ -582,7 +582,7 @@ private fun PrefilledSectionField(
                                 contentDescription = entry.trailingIconContentDescription
                                     ?.let { stringResource(it) },
                                 modifier = if (lockState?.editable != false) Modifier else
-                                    Modifier.padding(16.dp),
+                                    Modifier.padding(start = 16.dp),
                             )
                         }
 

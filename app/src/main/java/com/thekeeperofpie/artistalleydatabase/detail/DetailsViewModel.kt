@@ -55,7 +55,8 @@ class DetailsViewModel @Inject constructor(
     var areSectionsLoading by mutableStateOf(true)
 
     private var deleting = false
-    private var saving = false
+    var saving by mutableStateOf(false)
+        private set
 
     fun initialize(entryId: String, entryImageRatio: Float) {
         if (this.entryId != null) return

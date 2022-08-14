@@ -2,11 +2,14 @@ package com.thekeeperofpie.artistalleydatabase.detail
 
 import android.net.Uri
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.Crossfade
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -18,10 +21,14 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ImageNotSupported
 import androidx.compose.material.icons.filled.OpenInNew
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -47,8 +54,8 @@ import com.thekeeperofpie.artistalleydatabase.art.details.ImageSelectBox
 import com.thekeeperofpie.artistalleydatabase.art.details.SampleArtEntrySectionsProvider
 import com.thekeeperofpie.artistalleydatabase.art.grid.ArtEntryGrid
 import com.thekeeperofpie.artistalleydatabase.navigation.NavDestinations
-import com.thekeeperofpie.artistalleydatabase.ui.ButtonFooter
 import com.thekeeperofpie.artistalleydatabase.ui.SnackbarErrorText
+import com.thekeeperofpie.artistalleydatabase.ui.topBorder
 import java.io.File
 
 object DetailsScreen {
@@ -66,6 +73,7 @@ object DetailsScreen {
         onImageClickOpen: () -> Unit = {},
         areSectionsLoading: () -> Boolean = { false },
         sections: () -> List<ArtEntrySection> = { emptyList() },
+        saving: () -> Boolean = { false },
         onClickSave: () -> Unit = {},
         errorRes: () -> Pair<Int, Exception?>? = { null },
         onErrorDismiss: () -> Unit = {},
@@ -110,10 +118,43 @@ object DetailsScreen {
                     enter = fadeIn(),
                     exit = fadeOut(),
                 ) {
-                    ButtonFooter(
-                        R.string.delete to { showDeleteDialog = true },
-                        R.string.save to onClickSave,
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.End,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .topBorder(1.dp, MaterialTheme.colorScheme.inversePrimary)
+                    ) {
+                        TextButton(onClick = { showDeleteDialog = true }) {
+                            Text(
+                                text = stringResource(R.string.delete),
+                                modifier = Modifier.padding(
+                                    start = 16.dp,
+                                    end = 16.dp,
+                                    top = 10.dp,
+                                    bottom = 10.dp
+                                )
+                            )
+                        }
+
+                        TextButton(onClick = onClickSave) {
+                            Crossfade(targetState = saving()) {
+                                if (it) {
+                                    CircularProgressIndicator()
+                                } else {
+                                    Text(
+                                        text = stringResource(R.string.save),
+                                        modifier = Modifier.padding(
+                                            start = 16.dp,
+                                            end = 16.dp,
+                                            top = 10.dp,
+                                            bottom = 10.dp
+                                        )
+                                    )
+                                }
+                            }
+                        }
+                    }
                 }
             }
 

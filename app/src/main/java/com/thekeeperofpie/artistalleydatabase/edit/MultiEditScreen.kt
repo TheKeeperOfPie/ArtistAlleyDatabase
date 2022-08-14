@@ -1,16 +1,23 @@
 package com.thekeeperofpie.artistalleydatabase.edit
 
 import android.net.Uri
+import androidx.compose.animation.Crossfade
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -30,8 +37,8 @@ import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryForm
 import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntrySection
 import com.thekeeperofpie.artistalleydatabase.art.details.ImageSelectBox
 import com.thekeeperofpie.artistalleydatabase.art.details.SampleArtEntrySectionsProvider
-import com.thekeeperofpie.artistalleydatabase.ui.ButtonFooter
 import com.thekeeperofpie.artistalleydatabase.ui.SnackbarErrorText
+import com.thekeeperofpie.artistalleydatabase.ui.topBorder
 import com.thekeeperofpie.artistalleydatabase.utils.Either
 import com.thekeeperofpie.compose_proxy.HorizontalPagerIndicator
 import java.io.File
@@ -46,6 +53,7 @@ object MultiEditScreen {
         onImageSelectError: (Exception?) -> Unit = {},
         loading: () -> Boolean = { false },
         sections: () -> List<ArtEntrySection> = { emptyList() },
+        saving: () -> Boolean = { false },
         onClickSave: () -> Unit = {},
         errorRes: () -> Pair<Int, Exception?>? = { null },
         onErrorDismiss: () -> Unit = {},
@@ -72,7 +80,32 @@ object MultiEditScreen {
                 }
 
 
-                ButtonFooter(onClickSave, R.string.save)
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.End,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .topBorder(1.dp, MaterialTheme.colorScheme.inversePrimary)
+                ) {
+                    TextButton(onClick = onClickSave) {
+                        Crossfade(targetState = saving()) {
+                            if (it) {
+                                CircularProgressIndicator()
+                            } else {
+                                Text(
+                                    text = stringResource(R.string.save),
+                                    modifier = Modifier.padding(
+                                        start = 16.dp,
+                                        end = 16.dp,
+                                        top = 10.dp,
+                                        bottom = 10.dp
+                                    )
+                                )
+                            }
+                        }
+                    }
+                }
             }
         }
     }

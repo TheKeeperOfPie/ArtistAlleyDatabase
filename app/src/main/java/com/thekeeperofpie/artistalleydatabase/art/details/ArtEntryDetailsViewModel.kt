@@ -84,7 +84,7 @@ abstract class ArtEntryDetailsViewModel(
         lockState = ArtEntrySection.LockState.UNLOCKED,
     )
 
-    protected val printSizeSection = PrintSizeDropdown()
+    protected val printSizeSection = PrintSizeDropdown(lockState = ArtEntrySection.LockState.UNLOCKED)
 
     protected val notesSection = ArtEntrySection.LongText(
         headerRes = R.string.art_entry_notes_header,
@@ -198,25 +198,42 @@ abstract class ArtEntryDetailsViewModel(
             combine(
                 artistSection.contentUpdates(),
                 sourceSection.conventionSectionItem.updates(),
-                ::Pair
+                sourceSection.lockStateFlow,
+                ::Triple
             )
-                .filter { (_, convention) ->
-                    convention.name.isNotEmpty()
-                            && convention.year != null && convention.year > 1000
-                            && convention.hall.isEmpty() && convention.booth.isEmpty()
-                }
-                .mapNotNull { (artistEntries, convention) ->
-                    artistEntries.firstNotNullOfOrNull {
-                        artEntryDao
-                            .queryArtistForHallBooth(
-                                it.searchableValue,
-                                convention.name,
-                                convention.year!!
-                            )
-                            .takeUnless { it.isNullOrBlank() }
-                            ?.let<String, SourceType.Convention>(appJson.json::decodeFromString)
-                            ?.takeIf { it.name == convention.name && it.year == convention.year }
-                    }
+                .flatMapLatest {
+                    // flatMapLatest to immediately drop request if lockState has changed
+                    flowOf(it)
+                        .filter { (_, _, lockState) ->
+                            when (lockState) {
+                                ArtEntrySection.LockState.LOCKED -> false
+                                ArtEntrySection.LockState.UNLOCKED,
+                                ArtEntrySection.LockState.DIFFERENT,
+                                null -> true
+                            }
+                        }
+                        .filter { (_, convention, _) ->
+                            convention.name.isNotEmpty()
+                                    && convention.year != null && convention.year > 1000
+                                    && convention.hall.isEmpty() && convention.booth.isEmpty()
+                        }
+                        .mapNotNull { (artistEntries, convention) ->
+                            artistEntries.firstNotNullOfOrNull {
+                                artEntryDao
+                                    .queryArtistForHallBooth(
+                                        it.searchableValue,
+                                        convention.name,
+                                        convention.year!!
+                                    )
+                                    .takeUnless { it.isNullOrBlank() }
+                                    ?.let<String, SourceType.Convention>(
+                                        appJson.json::decodeFromString
+                                    )
+                                    ?.takeIf {
+                                        it.name == convention.name && it.year == convention.year
+                                    }
+                            }
+                        }
                 }
                 .collectLatest {
                     withContext(Dispatchers.Main) {

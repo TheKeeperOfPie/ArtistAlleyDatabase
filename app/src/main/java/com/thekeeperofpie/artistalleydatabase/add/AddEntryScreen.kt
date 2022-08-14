@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.add
 
 import android.net.Uri
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -15,6 +16,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ImageSearch
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -55,6 +57,7 @@ object AddEntryScreen {
         onImageSelectError: (Exception?) -> Unit = {},
         onImageSizeResult: (Int, Int) -> Unit = { _, _ -> },
         sections: () -> List<ArtEntrySection> = { emptyList() },
+        saving: () -> Boolean = { false },
         onClickSaveTemplate: () -> Unit = {},
         onClickSave: () -> Unit = {},
         errorRes: () -> Pair<Int, Exception?>? = { null },
@@ -102,15 +105,21 @@ object AddEntryScreen {
                     }
 
                     TextButton(onClick = onClickSave) {
-                        Text(
-                            text = stringResource(R.string.save),
-                            modifier = Modifier.padding(
-                                start = 16.dp,
-                                end = 16.dp,
-                                top = 10.dp,
-                                bottom = 10.dp
-                            )
-                        )
+                        Crossfade(targetState = saving()) {
+                            if (it) {
+                                CircularProgressIndicator()
+                            } else {
+                                Text(
+                                    text = stringResource(R.string.save),
+                                    modifier = Modifier.padding(
+                                        start = 16.dp,
+                                        end = 16.dp,
+                                        top = 10.dp,
+                                        bottom = 10.dp
+                                    )
+                                )
+                            }
+                        }
                     }
                 }
             }

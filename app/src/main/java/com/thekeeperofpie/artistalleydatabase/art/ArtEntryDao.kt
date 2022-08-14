@@ -145,7 +145,14 @@ interface ArtEntryDao {
     suspend fun insertEntries(vararg entries: ArtEntry)
 
     @Transaction
-    suspend fun insertEntriesDeferred(block: suspend (insert: suspend (ArtEntry) -> Unit) -> Unit) {
+    suspend fun insertEntriesDeferred(
+        dryRun: Boolean,
+        replaceAll: Boolean,
+        block: suspend (insertEntry: suspend (ArtEntry) -> Unit) -> Unit
+    ) {
+        if (!dryRun && replaceAll) {
+            deleteAll()
+        }
         block { insertEntries(it) }
     }
 
@@ -157,4 +164,7 @@ interface ArtEntryDao {
 
     @Query("DELETE FROM art_entries WHERE id = :id")
     suspend fun delete(id: String)
+
+    @Query("DELETE FROM art_entries")
+    suspend fun deleteAll()
 }

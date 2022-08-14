@@ -102,9 +102,9 @@ object ArtEntryGrid {
         onLongClickEntry: (index: Int, entry: ArtEntryGridModel) -> Unit = { _, _ -> },
     ) {
         val expectedWidth = LocalDensity.current.run {
-            // Load at one-third width for better scrolling performance
+            // Load at smaller width for better scrolling performance
             // TODO: Find a better way to calculate the optimal image size
-            LocalConfiguration.current.screenWidthDp.dp.roundToPx() / columnCount / 3
+            LocalConfiguration.current.screenWidthDp.dp.roundToPx() / columnCount / 2
         }.let(::Dimension)
         LazyStaggeredGrid<ArtEntryGridModel>(
             columnCount = columnCount,

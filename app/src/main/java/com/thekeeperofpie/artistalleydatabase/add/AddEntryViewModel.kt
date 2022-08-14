@@ -2,7 +2,10 @@ package com.thekeeperofpie.artistalleydatabase.add
 
 import android.app.Application
 import android.net.Uri
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
 import com.thekeeperofpie.artistalleydatabase.SettingsProvider
@@ -48,7 +51,8 @@ class AddEntryViewModel @Inject constructor(
 
     val imageUris = mutableStateListOf<Uri>()
 
-    private var saving = false
+    var saving by mutableStateOf(false)
+        private set
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
