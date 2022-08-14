@@ -39,13 +39,13 @@ import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
 import com.thekeeperofpie.artistalleydatabase.R
-import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryForm
-import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntrySection
-import com.thekeeperofpie.artistalleydatabase.art.details.ImagesSelectBox
 import com.thekeeperofpie.artistalleydatabase.art.details.SampleArtEntrySectionsProvider
-import com.thekeeperofpie.artistalleydatabase.ui.SnackbarErrorText
-import com.thekeeperofpie.artistalleydatabase.ui.topBorder
-import com.thekeeperofpie.compose_proxy.HorizontalPagerIndicator
+import com.thekeeperofpie.artistalleydatabase.compose.HorizontalPagerIndicator
+import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
+import com.thekeeperofpie.artistalleydatabase.compose.topBorder
+import com.thekeeperofpie.artistalleydatabase.form.EntryForm
+import com.thekeeperofpie.artistalleydatabase.form.EntrySection
+import com.thekeeperofpie.artistalleydatabase.form.ImagesSelectBox
 
 object AddEntryScreen {
 
@@ -56,7 +56,7 @@ object AddEntryScreen {
         onImagesSelected: (List<Uri>) -> Unit = {},
         onImageSelectError: (Exception?) -> Unit = {},
         onImageSizeResult: (Int, Int) -> Unit = { _, _ -> },
-        sections: () -> List<ArtEntrySection> = { emptyList() },
+        sections: () -> List<EntrySection> = { emptyList() },
         saving: () -> Boolean = { false },
         onClickSaveTemplate: () -> Unit = {},
         onClickSave: () -> Unit = {},
@@ -82,7 +82,7 @@ object AddEntryScreen {
                         onImageSizeResult,
                     )
 
-                    ArtEntryForm({ false }, sections)
+                    EntryForm({ false }, sections)
                 }
 
                 Row(
@@ -196,7 +196,7 @@ object AddEntryScreen {
 @Preview
 @Composable
 fun Preview(
-    @PreviewParameter(SampleArtEntrySectionsProvider::class) sections: List<ArtEntrySection>
+    @PreviewParameter(SampleArtEntrySectionsProvider::class) sections: List<EntrySection>
 ) {
     AddEntryScreen(sections = { sections })
 }

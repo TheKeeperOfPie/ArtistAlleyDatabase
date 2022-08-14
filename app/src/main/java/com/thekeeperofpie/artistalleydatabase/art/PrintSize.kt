@@ -21,7 +21,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.thekeeperofpie.artistalleydatabase.BuildConfig
 import com.thekeeperofpie.artistalleydatabase.R
-import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntrySection
+import com.thekeeperofpie.artistalleydatabase.form.EntrySection
 import kotlin.math.roundToInt
 
 sealed class PrintSize(
@@ -83,7 +83,7 @@ sealed class PrintSize(
         PrintSize((19 * 25.4).toInt(), (13 * 25.4).toInt(), R.string.print_size_19x13_inches)
 }
 
-class PrintSizeDropdown(lockState: LockState? = null) : ArtEntrySection.Dropdown(
+class PrintSizeDropdown(lockState: LockState? = null) : EntrySection.Dropdown(
     R.string.art_entry_size_header,
     R.string.art_entry_size_dropdown_content_description,
     PrintSize.PORTRAITS
@@ -148,7 +148,7 @@ class PrintSizeDropdown(lockState: LockState? = null) : ArtEntrySection.Dropdown
     }
 }
 
-class PrintSizeCustomTextFields : ArtEntrySection.Dropdown.Item {
+class PrintSizeCustomTextFields : EntrySection.Dropdown.Item {
 
     var width by mutableStateOf("")
     var height by mutableStateOf("")
@@ -163,7 +163,7 @@ class PrintSizeCustomTextFields : ArtEntrySection.Dropdown.Item {
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
-    override fun Content(lockState: ArtEntrySection.LockState?) {
+    override fun Content(lockState: EntrySection.LockState?) {
         Row(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             modifier = Modifier

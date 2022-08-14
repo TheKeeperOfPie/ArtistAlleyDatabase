@@ -16,8 +16,8 @@ import com.thekeeperofpie.artistalleydatabase.art.SourceType
 import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryDataConverter
 import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryModel
-import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntrySection
 import com.thekeeperofpie.artistalleydatabase.autocomplete.Autocompleter
+import com.thekeeperofpie.artistalleydatabase.form.EntrySection
 import com.thekeeperofpie.artistalleydatabase.json.AppJson
 import com.thekeeperofpie.artistalleydatabase.json.AppMoshi
 import com.thekeeperofpie.artistalleydatabase.utils.Either
@@ -75,7 +75,7 @@ class MultiEditViewModel @Inject constructor(
 
         viewModelScope.launch(Dispatchers.IO) {
             val firstEntry = artEntryEditDao.getEntry(entryIds.first())
-            val differentValue = listOf(ArtEntrySection.MultiText.Entry.Different)
+            val differentValue = listOf(EntrySection.MultiText.Entry.Different)
 
             val series = firstEntry.series
                 .takeIf { artEntryEditDao.distinctCountSeries(entryIds) == 1 }
@@ -98,12 +98,12 @@ class MultiEditViewModel @Inject constructor(
 
             val artists = firstEntry.artists
                 .takeIf { artEntryEditDao.distinctCountArtists(entryIds) == 1 }
-                ?.map(ArtEntrySection.MultiText.Entry::Custom)
+                ?.map(EntrySection.MultiText.Entry::Custom)
                 ?: differentValue
 
             val tags = firstEntry.tags
                 .takeIf { artEntryEditDao.distinctCountTags(entryIds) == 1 }
-                ?.map(ArtEntrySection.MultiText.Entry::Custom)
+                ?.map(EntrySection.MultiText.Entry::Custom)
                 ?: differentValue
 
             val printWidth = firstEntry.printWidth
@@ -118,38 +118,38 @@ class MultiEditViewModel @Inject constructor(
 
             val artistsLocked = firstEntry.locks.artistsLocked
                 .takeIf { artEntryEditDao.distinctCountArtistsLocked(entryIds) == 1 }
-                ?.let(ArtEntrySection.LockState::from)
-                ?: ArtEntrySection.LockState.DIFFERENT
+                ?.let(EntrySection.LockState::from)
+                ?: EntrySection.LockState.DIFFERENT
 
             val sourceLocked = firstEntry.locks.sourceLocked
                 .takeIf { artEntryEditDao.distinctCountSourceLocked(entryIds) == 1 }
-                ?.let(ArtEntrySection.LockState::from)
-                ?: ArtEntrySection.LockState.DIFFERENT
+                ?.let(EntrySection.LockState::from)
+                ?: EntrySection.LockState.DIFFERENT
 
             val seriesLocked = firstEntry.locks.seriesLocked
                 .takeIf { artEntryEditDao.distinctCountSeriesLocked(entryIds) == 1 }
-                ?.let(ArtEntrySection.LockState::from)
-                ?: ArtEntrySection.LockState.DIFFERENT
+                ?.let(EntrySection.LockState::from)
+                ?: EntrySection.LockState.DIFFERENT
 
             val charactersLocked = firstEntry.locks.charactersLocked
                 .takeIf { artEntryEditDao.distinctCountCharactersLocked(entryIds) == 1 }
-                ?.let(ArtEntrySection.LockState::from)
-                ?: ArtEntrySection.LockState.DIFFERENT
+                ?.let(EntrySection.LockState::from)
+                ?: EntrySection.LockState.DIFFERENT
 
             val tagsLocked = firstEntry.locks.tagsLocked
                 .takeIf { artEntryEditDao.distinctCountTagsLocked(entryIds) == 1 }
-                ?.let(ArtEntrySection.LockState::from)
-                ?: ArtEntrySection.LockState.DIFFERENT
+                ?.let(EntrySection.LockState::from)
+                ?: EntrySection.LockState.DIFFERENT
 
             val notesLocked = firstEntry.locks.notesLocked
                 .takeIf { artEntryEditDao.distinctCountNotesLocked(entryIds) == 1 }
-                ?.let(ArtEntrySection.LockState::from)
-                ?: ArtEntrySection.LockState.DIFFERENT
+                ?.let(EntrySection.LockState::from)
+                ?: EntrySection.LockState.DIFFERENT
 
             val printSizeLocked = firstEntry.locks.printSizeLocked
                 .takeIf { artEntryEditDao.distinctCountPrintSizeLocked(entryIds) == 1 }
-                ?.let(ArtEntrySection.LockState::from)
-                ?: ArtEntrySection.LockState.DIFFERENT
+                ?.let(EntrySection.LockState::from)
+                ?: EntrySection.LockState.DIFFERENT
 
             val model = ArtEntryModel(
                 artists = artists,
@@ -215,7 +215,7 @@ class MultiEditViewModel @Inject constructor(
             // TODO: Better communicate to user that "Different" value must be deleted,
             //  append is not currently supported.
             if (series.isNotEmpty()) {
-                if (series.none { it is ArtEntrySection.MultiText.Entry.Different }) {
+                if (series.none { it is EntrySection.MultiText.Entry.Different }) {
                     artEntryEditDao.updateSeries(
                         entryIds,
                         series.map { it.serializedValue },
@@ -225,7 +225,7 @@ class MultiEditViewModel @Inject constructor(
             }
 
             if (characters.isNotEmpty()) {
-                if (characters.none { it is ArtEntrySection.MultiText.Entry.Different }) {
+                if (characters.none { it is EntrySection.MultiText.Entry.Different }) {
                     artEntryEditDao.updateCharacters(
                         entryIds,
                         characters.map { it.serializedValue },
@@ -243,53 +243,53 @@ class MultiEditViewModel @Inject constructor(
             }
 
             if (artists.isNotEmpty()) {
-                if (artists.none { it is ArtEntrySection.MultiText.Entry.Different }) {
+                if (artists.none { it is EntrySection.MultiText.Entry.Different }) {
                     artEntryEditDao.updateArtists(entryIds, artists.map { it.serializedValue })
                 }
             }
 
             if (tags.isNotEmpty()) {
-                if (tags.none { it is ArtEntrySection.MultiText.Entry.Different }) {
+                if (tags.none { it is EntrySection.MultiText.Entry.Different }) {
                     artEntryEditDao.updateTags(entryIds, tags.map { it.serializedValue })
                 }
             }
 
-            if (artistSection.lockState != ArtEntrySection.LockState.DIFFERENT) {
+            if (artistSection.lockState != EntrySection.LockState.DIFFERENT) {
                 artEntryEditDao.updateArtistsLocked(
                     entryIds,
                     artistSection.lockState?.toSerializedValue() ?: false
                 )
             }
 
-            if (sourceSection.lockState != ArtEntrySection.LockState.DIFFERENT) {
+            if (sourceSection.lockState != EntrySection.LockState.DIFFERENT) {
                 artEntryEditDao.updateSourceLocked(
                     entryIds,
                     sourceSection.lockState?.toSerializedValue() ?: false
                 )
             }
 
-            if (seriesSection.lockState != ArtEntrySection.LockState.DIFFERENT) {
+            if (seriesSection.lockState != EntrySection.LockState.DIFFERENT) {
                 artEntryEditDao.updateSeriesLocked(
                     entryIds,
                     seriesSection.lockState?.toSerializedValue() ?: false
                 )
             }
 
-            if (characterSection.lockState != ArtEntrySection.LockState.DIFFERENT) {
+            if (characterSection.lockState != EntrySection.LockState.DIFFERENT) {
                 artEntryEditDao.updateCharactersLocked(
                     entryIds,
                     characterSection.lockState?.toSerializedValue() ?: false
                 )
             }
 
-            if (tagSection.lockState != ArtEntrySection.LockState.DIFFERENT) {
+            if (tagSection.lockState != EntrySection.LockState.DIFFERENT) {
                 artEntryEditDao.updateTagsLocked(
                     entryIds,
                     tagSection.lockState?.toSerializedValue() ?: false
                 )
             }
 
-            if (notesSection.lockState != ArtEntrySection.LockState.DIFFERENT) {
+            if (notesSection.lockState != EntrySection.LockState.DIFFERENT) {
                 artEntryEditDao.updateNotesLocked(
                     entryIds,
                     notesSection.lockState?.toSerializedValue() ?: false
@@ -301,7 +301,7 @@ class MultiEditViewModel @Inject constructor(
                 }
             }
 
-            if (printSizeSection.lockState != ArtEntrySection.LockState.DIFFERENT) {
+            if (printSizeSection.lockState != EntrySection.LockState.DIFFERENT) {
                 artEntryEditDao.updatePrintSizeLocked(
                     entryIds,
                     printSizeSection.lockState?.toSerializedValue() ?: false

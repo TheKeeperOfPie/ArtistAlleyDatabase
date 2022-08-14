@@ -28,8 +28,8 @@ import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
 import com.thekeeperofpie.artistalleydatabase.R
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryColumn
-import com.thekeeperofpie.artistalleydatabase.art.details.EntryImage
-import com.thekeeperofpie.artistalleydatabase.ui.AppBar
+import com.thekeeperofpie.artistalleydatabase.compose.AppBar
+import com.thekeeperofpie.artistalleydatabase.form.EntryImage
 import kotlinx.coroutines.launch
 
 object BrowseScreen {

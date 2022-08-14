@@ -25,8 +25,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.thekeeperofpie.artistalleydatabase.R
 import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryModel
-import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntrySection
-import com.thekeeperofpie.artistalleydatabase.utils.observableStateOf
+import com.thekeeperofpie.artistalleydatabase.compose.observableStateOf
+import com.thekeeperofpie.artistalleydatabase.form.EntrySection
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.serialization.Serializable
@@ -102,7 +102,7 @@ sealed class SourceType(
     }
 }
 
-class SourceDropdown(locked: LockState? = null) : ArtEntrySection.Dropdown(
+class SourceDropdown(locked: LockState? = null) : EntrySection.Dropdown(
     headerRes = R.string.art_entry_source_header,
     arrowContentDescription = R.string.art_entry_source_dropdown_content_description,
     lockState = locked,
@@ -202,8 +202,8 @@ class SourceConventionSectionItem : SourceDropdown.SourceItem() {
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
-    override fun Content(lockState: ArtEntrySection.LockState?) {
-        val showSecondRow = lockState != ArtEntrySection.LockState.LOCKED ||
+    override fun Content(lockState: EntrySection.LockState?) {
+        val showSecondRow = lockState != EntrySection.LockState.LOCKED ||
                 (hall.isNotEmpty() && booth.isNotEmpty())
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -297,7 +297,7 @@ class SourceCustomSectionItem : SourceDropdown.SourceItem() {
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
-    override fun Content(lockState: ArtEntrySection.LockState?) {
+    override fun Content(lockState: EntrySection.LockState?) {
         TextField(
             value = value,
             onValueChange = { value = it },

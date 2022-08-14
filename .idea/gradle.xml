@@ -12,7 +12,9 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/app" />
-            <option value="$PROJECT_DIR$/compose-proxy" />
+            <option value="$PROJECT_DIR$/modules" />
+            <option value="$PROJECT_DIR$/modules/compose-utils" />
+            <option value="$PROJECT_DIR$/modules/form" />
           </set>
         </option>
       </GradleProjectSettings>

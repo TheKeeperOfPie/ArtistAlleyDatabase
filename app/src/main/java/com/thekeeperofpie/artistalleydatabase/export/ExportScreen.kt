@@ -17,11 +17,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.thekeeperofpie.artistalleydatabase.R
-import com.thekeeperofpie.artistalleydatabase.ui.AppBar
-import com.thekeeperofpie.artistalleydatabase.ui.ButtonFooter
-import com.thekeeperofpie.artistalleydatabase.ui.ChooseUriRow
-import com.thekeeperofpie.artistalleydatabase.ui.LinearProgressWithIndicator
-import com.thekeeperofpie.artistalleydatabase.ui.SnackbarErrorText
+import com.thekeeperofpie.artistalleydatabase.compose.AppBar
+import com.thekeeperofpie.artistalleydatabase.compose.ButtonFooter
+import com.thekeeperofpie.artistalleydatabase.compose.ChooseUriRow
+import com.thekeeperofpie.artistalleydatabase.compose.LinearProgressWithIndicator
+import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
 
 object ExportScreen {
 

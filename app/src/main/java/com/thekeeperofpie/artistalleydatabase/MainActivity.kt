@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.NavigationDrawerItemDefaults
@@ -91,17 +92,20 @@ class MainActivity : ComponentActivity() {
                     ModalNavigationDrawer(
                         drawerState = drawerState,
                         drawerContent = {
-                            NavDrawerItems.ITEMS.forEachIndexed { index, item ->
-                                NavigationDrawerItem(
-                                    icon = { Icon(item.icon, contentDescription = null) },
-                                    label = { Text(stringResource(item.titleRes)) },
-                                    selected = item == selectedItem,
-                                    onClick = {
-                                        scope.launch { drawerState.close() }
-                                        selectedItemIndex = index
-                                    },
-                                    modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
-                                )
+                            ModalDrawerSheet {
+                                NavDrawerItems.ITEMS.forEachIndexed { index, item ->
+                                    NavigationDrawerItem(
+                                        icon = { Icon(item.icon, contentDescription = null) },
+                                        label = { Text(stringResource(item.titleRes)) },
+                                        selected = item == selectedItem,
+                                        onClick = {
+                                            scope.launch { drawerState.close() }
+                                            selectedItemIndex = index
+                                        },
+                                        modifier = Modifier
+                                            .padding(NavigationDrawerItemDefaults.ItemPadding)
+                                    )
+                                }
                             }
                         },
                         content = {

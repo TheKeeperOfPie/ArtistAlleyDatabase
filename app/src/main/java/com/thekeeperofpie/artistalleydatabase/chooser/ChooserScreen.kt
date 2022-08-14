@@ -39,11 +39,11 @@ import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.R
-import com.thekeeperofpie.artistalleydatabase.art.grid.ArtEntryGrid
 import com.thekeeperofpie.artistalleydatabase.art.grid.ArtEntryGridModel
+import com.thekeeperofpie.artistalleydatabase.compose.ButtonFooter
+import com.thekeeperofpie.artistalleydatabase.compose.bottomBorder
+import com.thekeeperofpie.artistalleydatabase.form.grid.EntryGrid
 import com.thekeeperofpie.artistalleydatabase.search.SearchOption
-import com.thekeeperofpie.artistalleydatabase.ui.ButtonFooter
-import com.thekeeperofpie.artistalleydatabase.ui.bottomBorder
 import kotlinx.coroutines.flow.emptyFlow
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -71,7 +71,8 @@ object ChooserScreen {
             onOptionChanged = onOptionChanged,
         ) { paddingValues ->
             Column {
-                ArtEntryGrid.EntriesGrid(
+                EntryGrid.EntriesGrid(
+                    imageScreenKey = "chooser",
                     columnCount = columnCount,
                     entries = entries,
                     selectedItems = selectedItems,

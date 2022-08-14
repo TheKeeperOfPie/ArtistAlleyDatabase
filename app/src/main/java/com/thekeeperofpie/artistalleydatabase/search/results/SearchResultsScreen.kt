@@ -13,10 +13,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.paging.compose.LazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.R
-import com.thekeeperofpie.artistalleydatabase.art.grid.ArtEntryGrid
 import com.thekeeperofpie.artistalleydatabase.art.grid.ArtEntryGridModel
-import com.thekeeperofpie.artistalleydatabase.ui.AppBar
-import com.thekeeperofpie.artistalleydatabase.ui.SnackbarErrorText
+import com.thekeeperofpie.artistalleydatabase.compose.AppBar
+import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
+import com.thekeeperofpie.artistalleydatabase.form.grid.EntryGrid
 
 object SearchResultsScreen {
 
@@ -52,7 +52,8 @@ object SearchResultsScreen {
                                 .align(Alignment.TopCenter)
                         )
                     } else {
-                        ArtEntryGrid(
+                        EntryGrid(
+                            imageScreenKey = "results",
                             paddingValues = paddingValues,
                             entries = entries,
                             selectedItems = selectedItems,

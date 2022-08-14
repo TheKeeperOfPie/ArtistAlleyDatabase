@@ -18,7 +18,7 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -41,7 +41,10 @@ android {
 }
 
 dependencies {
-    implementation("androidx.compose.material:material:1.3.0-alpha02")
-    implementation("androidx.compose.material3:material3:1.0.0-alpha15")
+    implementation("androidx.compose.material:material:1.3.0-alpha03")
+    implementation("androidx.compose.material3:material3:1.0.0-alpha16")
     implementation("com.google.accompanist:accompanist-pager-indicators:0.24.13-rc")
+
+    implementation("androidx.paging:paging-runtime:3.2.0-alpha02")
+    implementation("androidx.paging:paging-compose:1.0.0-alpha16")
 }

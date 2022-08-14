@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.art.details
+package com.thekeeperofpie.artistalleydatabase.form
 
 import android.content.Context
 import android.content.Intent
@@ -84,26 +84,21 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.tooling.preview.PreviewParameter
-import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.PopupProperties
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.thekeeperofpie.artistalleydatabase.R
-import com.thekeeperofpie.artistalleydatabase.art.PrintSizeDropdown
-import com.thekeeperofpie.artistalleydatabase.ui.TrailingDropdownIcon
-import com.thekeeperofpie.artistalleydatabase.ui.bottomBorder
-import com.thekeeperofpie.compose_proxy.dropdown.DropdownMenu
-import com.thekeeperofpie.compose_proxy.dropdown.DropdownMenuItem
+import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIcon
+import com.thekeeperofpie.artistalleydatabase.compose.bottomBorder
+import com.thekeeperofpie.artistalleydatabase.compose.dropdown.DropdownMenu
+import com.thekeeperofpie.artistalleydatabase.compose.dropdown.DropdownMenuItem
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
-fun ColumnScope.ArtEntryForm(
+fun ColumnScope.EntryForm(
     areSectionsLoading: () -> Boolean = { false },
-    sections: () -> List<ArtEntrySection> = { emptyList() },
+    sections: () -> List<EntrySection> = { emptyList() },
 ) {
     if (areSectionsLoading()) {
         CircularProgressIndicator(
@@ -115,9 +110,9 @@ fun ColumnScope.ArtEntryForm(
         Column {
             sections().forEach {
                 when (it) {
-                    is ArtEntrySection.MultiText -> MultiTextSection(it)
-                    is ArtEntrySection.LongText -> LongTextSection(it)
-                    is ArtEntrySection.Dropdown -> DropdownSection(it)
+                    is EntrySection.MultiText -> MultiTextSection(it)
+                    is EntrySection.LongText -> LongTextSection(it)
+                    is EntrySection.Dropdown -> DropdownSection(it)
                 }
             }
 
@@ -130,7 +125,7 @@ fun ColumnScope.ArtEntryForm(
 private fun SectionHeader(
     text: @Composable () -> String,
     modifier: Modifier = Modifier,
-    lockState: () -> ArtEntrySection.LockState? = { null },
+    lockState: () -> EntrySection.LockState? = { null },
     onClick: () -> Unit = {},
 ) {
     Row(Modifier.clickable(true, onClick = onClick)) {
@@ -147,17 +142,14 @@ private fun SectionHeader(
         if (lockState != null) {
             Icon(
                 imageVector = when (lockState) {
-                    ArtEntrySection.LockState.LOCKED -> Icons.Default.Lock
-                    ArtEntrySection.LockState.UNLOCKED -> Icons.Default.LockOpen
-                    ArtEntrySection.LockState.DIFFERENT -> Icons.Default.LockReset
+                    EntrySection.LockState.LOCKED -> Icons.Default.Lock
+                    EntrySection.LockState.UNLOCKED -> Icons.Default.LockOpen
+                    EntrySection.LockState.DIFFERENT -> Icons.Default.LockReset
                 },
                 contentDescription = when (lockState) {
-                    ArtEntrySection.LockState.LOCKED ->
-                        R.string.art_entry_lock_state_locked_content_description
-                    ArtEntrySection.LockState.UNLOCKED ->
-                        R.string.art_entry_lock_state_unlocked_content_description
-                    ArtEntrySection.LockState.DIFFERENT ->
-                        R.string.art_entry_lock_state_different_content_description
+                    EntrySection.LockState.LOCKED -> R.string.lock_state_locked_content_description
+                    EntrySection.LockState.UNLOCKED -> R.string.lock_state_unlocked_content_description
+                    EntrySection.LockState.DIFFERENT -> R.string.lock_state_different_content_description
                 }.let { stringResource(it) },
                 modifier = Modifier.padding(top = 12.dp, bottom = 10.dp, start = 16.dp, end = 16.dp)
             )
@@ -167,7 +159,7 @@ private fun SectionHeader(
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun MultiTextSection(section: ArtEntrySection.MultiText) {
+private fun MultiTextSection(section: EntrySection.MultiText) {
     when (section.contentSize()) {
         0 -> section.headerZero
         1 -> section.headerOne
@@ -197,14 +189,14 @@ private fun MultiTextSection(section: ArtEntrySection.MultiText) {
                 onValueChange = {
                     val entry = section.content(index)
                     if (entry.text != it) {
-                        section.setContent(index, ArtEntrySection.MultiText.Entry.Custom(it))
+                        section.setContent(index, EntrySection.MultiText.Entry.Custom(it))
                     }
                 },
                 onClickMore = { showOverflow = !showOverflow },
                 onDone = {
                     section.addContent(
                         index,
-                        ArtEntrySection.MultiText.Entry.Custom("")
+                        EntrySection.MultiText.Entry.Custom("")
                     )
                 },
                 lockState = { section.lockState }
@@ -265,7 +257,7 @@ private fun MultiTextSection(section: ArtEntrySection.MultiText) {
                 onValueChange = { section.pendingValue = it },
                 onDone = {
                     if (it.isNotEmpty()) {
-                        section.addContent(ArtEntrySection.MultiText.Entry.Custom(it))
+                        section.addContent(EntrySection.MultiText.Entry.Custom(it))
                         section.pendingValue = ""
                     }
                 },
@@ -291,9 +283,9 @@ private fun MultiTextSection(section: ArtEntrySection.MultiText) {
                 ) {
                     items(section.predictions.size, key = {
                         when (val entry = section.predictions[it]) {
-                            is ArtEntrySection.MultiText.Entry.Custom -> entry.text
-                            ArtEntrySection.MultiText.Entry.Different -> entry
-                            is ArtEntrySection.MultiText.Entry.Prefilled -> entry.id
+                            is EntrySection.MultiText.Entry.Custom -> entry.text
+                            EntrySection.MultiText.Entry.Different -> entry
+                            is EntrySection.MultiText.Entry.Prefilled -> entry.id
                         }
                     }) {
                         val entry = section.predictions[it]
@@ -313,24 +305,20 @@ private fun MultiTextSection(section: ArtEntrySection.MultiText) {
                                 val image: () -> String?
                                 val imageLink: () -> String?
                                 when (entry) {
-                                    is ArtEntrySection.MultiText.Entry.Custom -> {
+                                    is EntrySection.MultiText.Entry.Custom -> {
                                         titleText = { entry.text }
                                         subtitleText = { null }
                                         image = { null }
                                         imageLink = { null }
                                     }
-                                    is ArtEntrySection.MultiText.Entry.Prefilled -> {
+                                    is EntrySection.MultiText.Entry.Prefilled -> {
                                         titleText = { entry.titleText }
                                         subtitleText = { entry.subtitleText }
                                         image = { entry.image }
                                         imageLink = { entry.imageLink }
                                     }
-                                    ArtEntrySection.MultiText.Entry.Different -> {
-                                        titleText = {
-                                            stringResource(
-                                                R.string.art_entry_source_different
-                                            )
-                                        }
+                                    EntrySection.MultiText.Entry.Different -> {
+                                        titleText = { stringResource(R.string.different) }
                                         subtitleText = { null }
                                         image = { null }
                                         imageLink = { null }
@@ -396,7 +384,7 @@ private fun MultiTextSection(section: ArtEntrySection.MultiText) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun LongTextSection(section: ArtEntrySection.LongText) {
+private fun LongTextSection(section: EntrySection.LongText) {
     SectionHeader(
         text = { stringResource(section.headerRes) },
         lockState = { section.lockState },
@@ -418,17 +406,17 @@ private fun LongTextSection(section: ArtEntrySection.LongText) {
 @Composable
 private fun PrefilledSectionField(
     index: Int,
-    entry: ArtEntrySection.MultiText.Entry,
+    entry: EntrySection.MultiText.Entry,
     onValueChange: (value: String) -> Unit = {},
     onClickMore: () -> Unit = {},
     onDone: () -> Unit = {},
-    lockState: () -> ArtEntrySection.LockState? = { null },
+    lockState: () -> EntrySection.LockState? = { null },
 ) {
     val backgroundShape =
         if (index == 0) RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp) else RectangleShape
 
     when (entry) {
-        is ArtEntrySection.MultiText.Entry.Custom -> {
+        is EntrySection.MultiText.Entry.Custom -> {
             @Suppress("NAME_SHADOWING")
             val lockState = lockState()
             TextField(
@@ -447,7 +435,7 @@ private fun PrefilledSectionField(
                             Icon(
                                 imageVector = Icons.Default.MoreVert,
                                 contentDescription = stringResource(
-                                    R.string.art_entry_more_actions_content_description
+                                    R.string.more_actions_content_description
                                 ),
                             )
                         }
@@ -469,7 +457,7 @@ private fun PrefilledSectionField(
                     )
             )
         }
-        is ArtEntrySection.MultiText.Entry.Prefilled -> {
+        is EntrySection.MultiText.Entry.Prefilled -> {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
@@ -531,7 +519,7 @@ private fun PrefilledSectionField(
                         Icon(
                             imageVector = Icons.Default.MoreVert,
                             contentDescription = stringResource(
-                                R.string.art_entry_more_actions_content_description
+                                R.string.more_actions_content_description
                             ),
                         )
                     }
@@ -549,7 +537,7 @@ private fun PrefilledSectionField(
                             Icon(
                                 imageVector = Icons.Default.MoreVert,
                                 contentDescription = stringResource(
-                                    R.string.art_entry_more_actions_content_description
+                                    R.string.more_actions_content_description
                                 ),
                             )
                         }
@@ -565,9 +553,9 @@ private fun PrefilledSectionField(
                 }
             }
         }
-        ArtEntrySection.MultiText.Entry.Different -> {
+        EntrySection.MultiText.Entry.Different -> {
             TextField(
-                value = stringResource(R.string.art_entry_source_different),
+                value = stringResource(R.string.different),
                 onValueChange = {},
                 readOnly = true,
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
@@ -590,7 +578,7 @@ private fun PrefilledSectionField(
                             Icon(
                                 imageVector = Icons.Default.MoreVert,
                                 contentDescription = stringResource(
-                                    R.string.art_entry_more_actions_content_description
+                                    R.string.more_actions_content_description
                                 ),
                             )
                         }
@@ -645,9 +633,7 @@ fun EntryImage(
                     .data(image)
                     .crossfade(true)
                     .build(),
-                contentDescription = stringResource(
-                    R.string.art_entry_entry_image_content_description
-                ),
+                contentDescription = stringResource(R.string.entry_image_content_description),
                 onLoading = { showPlaceholder = true },
                 onSuccess = { showPlaceholder = false },
                 contentScale = ContentScale.FillWidth,
@@ -665,7 +651,7 @@ private fun OpenSectionField(
     modifier: Modifier = Modifier,
     onValueChange: (value: String) -> Unit = {},
     onDone: (value: String) -> Unit = {},
-    lockState: () -> ArtEntrySection.LockState? = { null },
+    lockState: () -> EntrySection.LockState? = { null },
 ) {
     @Suppress("NAME_SHADOWING")
     val value = value()
@@ -694,7 +680,7 @@ private fun OpenSectionField(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun DropdownSection(section: ArtEntrySection.Dropdown) {
+private fun DropdownSection(section: EntrySection.Dropdown) {
     SectionHeader(
         text = { stringResource(section.headerRes) },
         lockState = { section.lockState },
@@ -822,69 +808,5 @@ private object GetMultipleContentsChooser : ActivityResultContracts.GetMultipleC
     @CallSuper
     override fun createIntent(context: Context, input: String): Intent {
         return Intent.createChooser(super.createIntent(context, input), null)
-    }
-}
-
-class SampleArtEntrySectionsProvider : PreviewParameterProvider<List<ArtEntrySection>> {
-    override val values = sequenceOf(
-        listOf(
-            ArtEntrySection.MultiText(
-                R.string.art_entry_artists_header_zero,
-                R.string.art_entry_artists_header_one,
-                R.string.art_entry_artists_header_many,
-                "Lucidsky"
-            ),
-            ArtEntrySection.MultiText(
-                R.string.art_entry_locations_header_zero,
-                R.string.art_entry_locations_header_one,
-                R.string.art_entry_locations_header_many,
-                "Fanime 2022"
-            ),
-            ArtEntrySection.MultiText(
-                R.string.art_entry_series_header_zero,
-                R.string.art_entry_series_header_one,
-                R.string.art_entry_series_header_many,
-                "Dress Up Darling"
-            ),
-            ArtEntrySection.MultiText(
-                R.string.art_entry_characters_header_zero,
-                R.string.art_entry_characters_header_one,
-                R.string.art_entry_characters_header_many,
-                "Marin Kitagawa"
-            ),
-            PrintSizeDropdown().apply {
-                selectedIndex = options.size - 1
-            },
-            ArtEntrySection.MultiText(
-                R.string.art_entry_tags_header_zero,
-                R.string.art_entry_tags_header_one,
-                R.string.art_entry_tags_header_many,
-            ).apply {
-                setContents(
-                    listOf(
-                        ArtEntrySection.MultiText.Entry.Custom("cute"),
-                        ArtEntrySection.MultiText.Entry.Custom("portrait")
-                    )
-                )
-                pendingValue = "schoolgirl uniform"
-            },
-        )
-    )
-}
-
-@Preview
-@Composable
-fun Preview(
-    @PreviewParameter(SampleArtEntrySectionsProvider::class) sections: List<ArtEntrySection>
-) {
-    Column {
-        ArtEntryForm(
-            sections = {
-                sections.apply {
-                    (first() as ArtEntrySection.MultiText).lockState =
-                        ArtEntrySection.LockState.LOCKED
-                }
-            }
-        )
     }
 }

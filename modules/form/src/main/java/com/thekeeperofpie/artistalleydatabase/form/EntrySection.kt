@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.art.details
+package com.thekeeperofpie.artistalleydatabase.form
 
 import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
@@ -12,13 +12,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
-import com.thekeeperofpie.artistalleydatabase.R
-import com.thekeeperofpie.artistalleydatabase.utils.observableStateOf
+import com.thekeeperofpie.artistalleydatabase.compose.observableStateOf
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import java.util.function.UnaryOperator
 
-sealed class ArtEntrySection(lockState: LockState? = null) {
+sealed class EntrySection(lockState: LockState? = null) {
 
     private var lockState_ by mutableStateOf(lockState)
     var lockStateFlow = MutableStateFlow(lockState)
@@ -67,7 +66,7 @@ sealed class ArtEntrySection(lockState: LockState? = null) {
         @StringRes val headerMany: Int,
         initialPendingValue: String = "",
         lockState: LockState? = null
-    ) : ArtEntrySection(lockState) {
+    ) : EntrySection(lockState) {
         val contents = mutableStateListOf<Entry>()
         private var contentUpdates = MutableStateFlow(emptyList<Entry>())
 
@@ -148,7 +147,7 @@ sealed class ArtEntrySection(lockState: LockState? = null) {
                 text = "",
                 trailingIcon = Icons.Default.ViewKanban,
                 trailingIconContentDescription =
-                R.string.art_entry_field_different_indicator_content_description
+                R.string.different_indicator_content_description
             )
 
             class Prefilled(
@@ -176,7 +175,7 @@ sealed class ArtEntrySection(lockState: LockState? = null) {
         @StringRes val headerRes: Int,
         initialPendingValue: String = "",
         lockState: LockState? = null,
-    ) : ArtEntrySection(lockState) {
+    ) : EntrySection(lockState) {
         var value by mutableStateOf(initialPendingValue)
     }
 
@@ -185,7 +184,7 @@ sealed class ArtEntrySection(lockState: LockState? = null) {
         @StringRes val arrowContentDescription: Int,
         var options: SnapshotStateList<Item> = mutableStateListOf(),
         lockState: LockState? = null,
-    ) : ArtEntrySection(lockState) {
+    ) : EntrySection(lockState) {
         var expanded by mutableStateOf(false)
         var selectedIndex by mutableStateOf(0)
 

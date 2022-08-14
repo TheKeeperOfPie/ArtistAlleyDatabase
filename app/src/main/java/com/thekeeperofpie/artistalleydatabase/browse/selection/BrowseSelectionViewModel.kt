@@ -13,10 +13,10 @@ import androidx.paging.filter
 import androidx.paging.map
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryColumn
 import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryDataConverter
-import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntrySection
 import com.thekeeperofpie.artistalleydatabase.art.grid.ArtEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.art.grid.ArtEntryGridViewModel
 import com.thekeeperofpie.artistalleydatabase.browse.ArtEntryBrowseDao
+import com.thekeeperofpie.artistalleydatabase.form.EntrySection
 import com.thekeeperofpie.artistalleydatabase.json.AppJson
 import com.thekeeperofpie.artistalleydatabase.utils.Either
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -64,14 +64,14 @@ class BrowseSelectionViewModel @Inject constructor(
                             ArtEntryColumn.SERIES -> when (query) {
                                 is Either.Left -> it.series.asSequence()
                                     .map(dataConverter::databaseToSeriesEntry)
-                                    .filterIsInstance<ArtEntrySection.MultiText.Entry.Prefilled>()
+                                    .filterIsInstance<EntrySection.MultiText.Entry.Prefilled>()
                                     .any { it.id.toIntOrNull() == query.value }
                                 is Either.Right -> it.series.any { it.contains(query.value) }
                             }
                             ArtEntryColumn.CHARACTERS -> when (query) {
                                 is Either.Left -> it.characters.asSequence()
                                     .map(dataConverter::databaseToCharacterEntry)
-                                    .filterIsInstance<ArtEntrySection.MultiText.Entry.Prefilled>()
+                                    .filterIsInstance<EntrySection.MultiText.Entry.Prefilled>()
                                     .any { it.id.toIntOrNull() == query.value }
                                 is Either.Right -> it.characters.any { it.contains(query.value) }
                             }

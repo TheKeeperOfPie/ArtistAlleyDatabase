@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.ui
+package com.thekeeperofpie.artistalleydatabase.compose
 
 import android.annotation.SuppressLint
 import android.os.Parcel

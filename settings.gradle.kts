@@ -1,3 +1,4 @@
+@file:Suppress("UnstableApiUsage")
 pluginManagement {
     repositories {
         gradlePluginPortal()
@@ -16,4 +17,5 @@ dependencyResolutionManagement {
 }
 rootProject.name = "Artist Alley Database"
 include(":app")
-include(":compose-proxy")
+include(":modules:compose-utils")
+include(":modules:form")

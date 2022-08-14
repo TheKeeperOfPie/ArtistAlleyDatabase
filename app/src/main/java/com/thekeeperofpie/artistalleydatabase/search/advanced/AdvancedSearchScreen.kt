@@ -15,10 +15,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.thekeeperofpie.artistalleydatabase.R
-import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryForm
-import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntrySection
-import com.thekeeperofpie.artistalleydatabase.ui.AppBar
-import com.thekeeperofpie.artistalleydatabase.ui.ButtonFooter
+import com.thekeeperofpie.artistalleydatabase.compose.AppBar
+import com.thekeeperofpie.artistalleydatabase.compose.ButtonFooter
+import com.thekeeperofpie.artistalleydatabase.form.EntryForm
+import com.thekeeperofpie.artistalleydatabase.form.EntrySection
 
 object AdvancedSearchScreen {
 
@@ -27,7 +27,7 @@ object AdvancedSearchScreen {
     operator fun invoke(
         onClickNav: () -> Unit = {},
         loading: () -> Boolean = { false },
-        sections: () -> List<ArtEntrySection>,
+        sections: () -> List<EntrySection>,
         onClickClear: () -> Unit,
         onClickSearch: () -> Unit,
     ) {
@@ -53,7 +53,7 @@ object AdvancedSearchScreen {
                         .fillMaxWidth()
                         .verticalScroll(rememberScrollState())
                 ) {
-                    ArtEntryForm(loading, sections)
+                    EntryForm(loading, sections)
                 }
 
                 AnimatedVisibility(

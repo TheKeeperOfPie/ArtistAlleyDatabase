@@ -33,14 +33,14 @@ import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
 import com.thekeeperofpie.artistalleydatabase.R
-import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryForm
-import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntrySection
-import com.thekeeperofpie.artistalleydatabase.art.details.ImageSelectBox
 import com.thekeeperofpie.artistalleydatabase.art.details.SampleArtEntrySectionsProvider
-import com.thekeeperofpie.artistalleydatabase.ui.SnackbarErrorText
-import com.thekeeperofpie.artistalleydatabase.ui.topBorder
+import com.thekeeperofpie.artistalleydatabase.compose.HorizontalPagerIndicator
+import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
+import com.thekeeperofpie.artistalleydatabase.compose.topBorder
+import com.thekeeperofpie.artistalleydatabase.form.EntryForm
+import com.thekeeperofpie.artistalleydatabase.form.EntrySection
+import com.thekeeperofpie.artistalleydatabase.form.ImageSelectBox
 import com.thekeeperofpie.artistalleydatabase.utils.Either
-import com.thekeeperofpie.compose_proxy.HorizontalPagerIndicator
 import java.io.File
 
 object MultiEditScreen {
@@ -52,7 +52,7 @@ object MultiEditScreen {
         onImageSelected: (index: Int, uri: Uri?) -> Unit = { _, _ -> },
         onImageSelectError: (Exception?) -> Unit = {},
         loading: () -> Boolean = { false },
-        sections: () -> List<ArtEntrySection> = { emptyList() },
+        sections: () -> List<EntrySection> = { emptyList() },
         saving: () -> Boolean = { false },
         onClickSave: () -> Unit = {},
         errorRes: () -> Pair<Int, Exception?>? = { null },
@@ -76,7 +76,7 @@ object MultiEditScreen {
                         onImageSelectError,
                     )
 
-                    ArtEntryForm(loading, sections)
+                    EntryForm(loading, sections)
                 }
 
 
@@ -157,7 +157,7 @@ object MultiEditScreen {
 @Preview
 @Composable
 fun Preview(
-    @PreviewParameter(SampleArtEntrySectionsProvider::class) sections: List<ArtEntrySection>
+    @PreviewParameter(SampleArtEntrySectionsProvider::class) sections: List<EntrySection>
 ) {
     MultiEditScreen(sections = { sections })
 }

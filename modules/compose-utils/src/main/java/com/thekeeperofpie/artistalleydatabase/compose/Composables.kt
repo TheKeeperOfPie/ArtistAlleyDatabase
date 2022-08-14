@@ -3,7 +3,7 @@
  * the Material3 variants.
  */
 
-package com.thekeeperofpie.compose_proxy
+package com.thekeeperofpie.artistalleydatabase.compose
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.RowScope

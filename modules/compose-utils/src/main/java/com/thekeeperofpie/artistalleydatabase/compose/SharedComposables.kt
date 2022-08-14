@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.ui
+package com.thekeeperofpie.artistalleydatabase.compose
 
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
@@ -52,9 +52,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.thekeeperofpie.artistalleydatabase.R
-import com.thekeeperofpie.compose_proxy.SwipeToDismiss
-import com.thekeeperofpie.compose_proxy.rememberDismissState
+import com.thekeeperofpie.compose_proxy.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

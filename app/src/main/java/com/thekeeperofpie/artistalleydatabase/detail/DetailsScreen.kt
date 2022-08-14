@@ -48,14 +48,14 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.R
-import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryForm
-import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntrySection
-import com.thekeeperofpie.artistalleydatabase.art.details.ImageSelectBox
 import com.thekeeperofpie.artistalleydatabase.art.details.SampleArtEntrySectionsProvider
-import com.thekeeperofpie.artistalleydatabase.art.grid.ArtEntryGrid
+import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
+import com.thekeeperofpie.artistalleydatabase.compose.topBorder
+import com.thekeeperofpie.artistalleydatabase.form.EntryForm
+import com.thekeeperofpie.artistalleydatabase.form.EntrySection
+import com.thekeeperofpie.artistalleydatabase.form.ImageSelectBox
+import com.thekeeperofpie.artistalleydatabase.form.grid.EntryGrid
 import com.thekeeperofpie.artistalleydatabase.navigation.NavDestinations
-import com.thekeeperofpie.artistalleydatabase.ui.SnackbarErrorText
-import com.thekeeperofpie.artistalleydatabase.ui.topBorder
 import java.io.File
 
 object DetailsScreen {
@@ -72,7 +72,7 @@ object DetailsScreen {
         onImageSizeResult: (Int, Int) -> Unit = { _, _ -> },
         onImageClickOpen: () -> Unit = {},
         areSectionsLoading: () -> Boolean = { false },
-        sections: () -> List<ArtEntrySection> = { emptyList() },
+        sections: () -> List<EntrySection> = { emptyList() },
         saving: () -> Boolean = { false },
         onClickSave: () -> Unit = {},
         errorRes: () -> Pair<Int, Exception?>? = { null },
@@ -110,7 +110,7 @@ object DetailsScreen {
                         onImageClickOpen = onImageClickOpen,
                     )
 
-                    ArtEntryForm(areSectionsLoading, sections)
+                    EntryForm(areSectionsLoading, sections)
                 }
 
                 AnimatedVisibility(
@@ -158,7 +158,7 @@ object DetailsScreen {
                 }
             }
 
-            ArtEntryGrid.DeleteDialog(
+            EntryGrid.DeleteDialog(
                 showDeleteDialog,
                 { showDeleteDialog = false },
                 onConfirmDelete
@@ -276,7 +276,7 @@ object DetailsScreen {
 @Preview
 @Composable
 fun Preview(
-    @PreviewParameter(SampleArtEntrySectionsProvider::class) sections: List<ArtEntrySection>
+    @PreviewParameter(SampleArtEntrySectionsProvider::class) sections: List<EntrySection>
 ) {
     DetailsScreen(sections = { sections })
 }

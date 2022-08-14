@@ -11,10 +11,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.paging.compose.LazyPagingItems
-import com.thekeeperofpie.artistalleydatabase.art.grid.ArtEntryGrid
 import com.thekeeperofpie.artistalleydatabase.art.grid.ArtEntryGridModel
-import com.thekeeperofpie.artistalleydatabase.ui.AppBar
-import com.thekeeperofpie.artistalleydatabase.ui.SnackbarErrorText
+import com.thekeeperofpie.artistalleydatabase.compose.AppBar
+import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
+import com.thekeeperofpie.artistalleydatabase.form.grid.EntryGrid
 
 object BrowseSelectionScreen {
 
@@ -51,7 +51,8 @@ object BrowseSelectionScreen {
                                 .align(Alignment.TopCenter)
                         )
                     } else {
-                        ArtEntryGrid(
+                        EntryGrid(
+                            imageScreenKey = "selection",
                             paddingValues = paddingValues,
                             entries = entries,
                             selectedItems = selectedItems,

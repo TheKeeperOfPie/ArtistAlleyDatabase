@@ -13,6 +13,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.MediaColumnEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaEntry
+import com.thekeeperofpie.artistalleydatabase.form.EntrySection
 import com.thekeeperofpie.artistalleydatabase.json.AppMoshi
 import com.thekeeperofpie.artistalleydatabase.utils.Either
 import javax.inject.Inject
@@ -24,19 +25,19 @@ class ArtEntryDataConverter @Inject constructor(
     fun databaseToSeriesEntry(value: String) =
         when (val either = appMoshi.parseSeriesColumn(value)) {
             is Either.Right -> seriesEntry(either.value)
-            is Either.Left -> ArtEntrySection.MultiText.Entry.Custom(either.value)
+            is Either.Left -> EntrySection.MultiText.Entry.Custom(either.value)
         }
 
     fun databaseToCharacterEntry(value: String) =
         when (val either = appMoshi.parseCharacterColumn(value)) {
             is Either.Right -> characterEntry(either.value)
-            is Either.Left -> ArtEntrySection.MultiText.Entry.Custom(either.value)
+            is Either.Left -> EntrySection.MultiText.Entry.Custom(either.value)
         }
 
-    fun seriesEntry(media: AniListMedia): ArtEntrySection.MultiText.Entry.Prefilled {
+    fun seriesEntry(media: AniListMedia): EntrySection.MultiText.Entry.Prefilled {
         val title = media.title?.romaji ?: media.id.toString()
         val serializedValue = appMoshi.toJson(MediaColumnEntry(media.id, title.trim()))
-        return ArtEntrySection.MultiText.Entry.Prefilled(
+        return EntrySection.MultiText.Entry.Prefilled(
             id = media.id.toString(),
             text = title,
             trailingIcon = when (media.type) {
@@ -63,11 +64,11 @@ class ArtEntryDataConverter @Inject constructor(
         )
     }
 
-    fun seriesEntry(entry: MediaEntry): ArtEntrySection.MultiText.Entry {
+    fun seriesEntry(entry: MediaEntry): EntrySection.MultiText.Entry {
         val title = entry.title
         val nonNullTitle = title?.romaji ?: entry.id.toString()
         val serializedValue = appMoshi.toJson(MediaColumnEntry(entry.id, nonNullTitle))
-        return ArtEntrySection.MultiText.Entry.Prefilled(
+        return EntrySection.MultiText.Entry.Prefilled(
             id = entry.id.toString(),
             text = nonNullTitle,
             trailingIcon = when (entry.type) {
@@ -93,9 +94,9 @@ class ArtEntryDataConverter @Inject constructor(
         )
     }
 
-    fun seriesEntry(entry: MediaColumnEntry): ArtEntrySection.MultiText.Entry {
+    fun seriesEntry(entry: MediaColumnEntry): EntrySection.MultiText.Entry {
         val serializedValue = appMoshi.toJson(MediaColumnEntry(entry.id, entry.title))
-        return ArtEntrySection.MultiText.Entry.Prefilled(
+        return EntrySection.MultiText.Entry.Prefilled(
             id = entry.id.toString(),
             text = entry.title,
             image = null,
@@ -154,7 +155,7 @@ class ArtEntryDataConverter @Inject constructor(
         native: String?,
         alternative: List<String>?,
         mediaTitle: String?
-    ): ArtEntrySection.MultiText.Entry.Prefilled {
+    ): EntrySection.MultiText.Entry.Prefilled {
         val canonicalName = CharacterUtils.buildCanonicalName(
             first = first,
             middle = middle,
@@ -174,7 +175,7 @@ class ArtEntryDataConverter @Inject constructor(
                 )
             )
         )
-        return ArtEntrySection.MultiText.Entry.Prefilled(
+        return EntrySection.MultiText.Entry.Prefilled(
             id = id.toString(),
             text = canonicalName,
             image = image,

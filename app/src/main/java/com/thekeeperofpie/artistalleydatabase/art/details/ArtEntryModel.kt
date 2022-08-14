@@ -2,30 +2,31 @@ package com.thekeeperofpie.artistalleydatabase.art.details
 
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntry
 import com.thekeeperofpie.artistalleydatabase.art.SourceType
+import com.thekeeperofpie.artistalleydatabase.form.EntrySection
 
 class ArtEntryModel(
-    val artists: List<ArtEntrySection.MultiText.Entry>,
-    val series: List<ArtEntrySection.MultiText.Entry>,
-    val characters: List<ArtEntrySection.MultiText.Entry>,
-    val tags: List<ArtEntrySection.MultiText.Entry>,
+    val artists: List<EntrySection.MultiText.Entry>,
+    val series: List<EntrySection.MultiText.Entry>,
+    val characters: List<EntrySection.MultiText.Entry>,
+    val tags: List<EntrySection.MultiText.Entry>,
     val source: SourceType?,
     val printWidth: Int?,
     val printHeight: Int?,
     val notes: String?,
-    val artistsLocked: ArtEntrySection.LockState?,
-    val sourceLocked: ArtEntrySection.LockState?,
-    val seriesLocked: ArtEntrySection.LockState?,
-    val charactersLocked: ArtEntrySection.LockState?,
-    val tagsLocked: ArtEntrySection.LockState?,
-    val notesLocked: ArtEntrySection.LockState?,
-    val printSizeLocked: ArtEntrySection.LockState?,
+    val artistsLocked: EntrySection.LockState?,
+    val sourceLocked: EntrySection.LockState?,
+    val seriesLocked: EntrySection.LockState?,
+    val charactersLocked: EntrySection.LockState?,
+    val tagsLocked: EntrySection.LockState?,
+    val notesLocked: EntrySection.LockState?,
+    val printSizeLocked: EntrySection.LockState?,
 ) {
     constructor(
         entry: ArtEntry,
-        artists: List<ArtEntrySection.MultiText.Entry.Custom>,
-        series: List<ArtEntrySection.MultiText.Entry>,
-        characters: List<ArtEntrySection.MultiText.Entry>,
-        tags: List<ArtEntrySection.MultiText.Entry.Custom>,
+        artists: List<EntrySection.MultiText.Entry.Custom>,
+        series: List<EntrySection.MultiText.Entry>,
+        characters: List<EntrySection.MultiText.Entry>,
+        tags: List<EntrySection.MultiText.Entry.Custom>,
         source: SourceType?,
     ) : this(
         artists = artists,
@@ -36,12 +37,12 @@ class ArtEntryModel(
         printWidth = entry.printWidth,
         printHeight = entry.printHeight,
         notes = entry.notes,
-        artistsLocked = ArtEntrySection.LockState.from(entry.locks.artistsLocked),
-        sourceLocked = ArtEntrySection.LockState.from(entry.locks.sourceLocked),
-        seriesLocked = ArtEntrySection.LockState.from(entry.locks.seriesLocked),
-        charactersLocked = ArtEntrySection.LockState.from(entry.locks.charactersLocked),
-        tagsLocked = ArtEntrySection.LockState.from(entry.locks.tagsLocked),
-        notesLocked = ArtEntrySection.LockState.from(entry.locks.notesLocked),
-        printSizeLocked = ArtEntrySection.LockState.from(entry.locks.printSizeLocked),
+        artistsLocked = EntrySection.LockState.from(entry.locks.artistsLocked),
+        sourceLocked = EntrySection.LockState.from(entry.locks.sourceLocked),
+        seriesLocked = EntrySection.LockState.from(entry.locks.seriesLocked),
+        charactersLocked = EntrySection.LockState.from(entry.locks.charactersLocked),
+        tagsLocked = EntrySection.LockState.from(entry.locks.tagsLocked),
+        notesLocked = EntrySection.LockState.from(entry.locks.notesLocked),
+        printSizeLocked = EntrySection.LockState.from(entry.locks.printSizeLocked),
     )
 }

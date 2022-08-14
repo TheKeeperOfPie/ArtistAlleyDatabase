@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.utils
+package com.thekeeperofpie.artistalleydatabase.compose
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf

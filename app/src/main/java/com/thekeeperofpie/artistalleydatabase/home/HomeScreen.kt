@@ -41,11 +41,12 @@ import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.R
-import com.thekeeperofpie.artistalleydatabase.art.grid.ArtEntryGrid
 import com.thekeeperofpie.artistalleydatabase.art.grid.ArtEntryGridModel
+import com.thekeeperofpie.artistalleydatabase.compose.NavMenuIconButton
+import com.thekeeperofpie.artistalleydatabase.compose.bottomBorder
+import com.thekeeperofpie.artistalleydatabase.form.grid.EntryGrid
+import com.thekeeperofpie.artistalleydatabase.navigation.NavDestinations
 import com.thekeeperofpie.artistalleydatabase.search.SearchOption
-import com.thekeeperofpie.artistalleydatabase.ui.NavMenuIconButton
-import com.thekeeperofpie.artistalleydatabase.ui.bottomBorder
 import kotlinx.coroutines.flow.emptyFlow
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -77,7 +78,8 @@ object HomeScreen {
             onOptionChanged = onOptionChanged,
             onClickAddFab = onClickAddFab,
         ) {
-            ArtEntryGrid(
+            EntryGrid(
+                imageScreenKey = NavDestinations.HOME,
                 entries = entries,
                 paddingValues = it,
                 selectedItems = selectedItems,

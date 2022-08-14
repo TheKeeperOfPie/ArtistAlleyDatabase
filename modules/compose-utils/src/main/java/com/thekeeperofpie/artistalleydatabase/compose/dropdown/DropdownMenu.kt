@@ -5,7 +5,7 @@
 
 @file:Suppress("KDocUnresolvedReference")
 
-package com.thekeeperofpie.compose_proxy.dropdown
+package com.thekeeperofpie.artistalleydatabase.compose.dropdown
 
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.MutableTransitionState

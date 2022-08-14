@@ -11,8 +11,8 @@ import com.thekeeperofpie.artistalleydatabase.art.PrintSize
 import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryDataConverter
 import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryDetailsDao
 import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryDetailsViewModel
-import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntrySection
 import com.thekeeperofpie.artistalleydatabase.autocomplete.Autocompleter
+import com.thekeeperofpie.artistalleydatabase.form.EntrySection
 import com.thekeeperofpie.artistalleydatabase.json.AppJson
 import com.thekeeperofpie.artistalleydatabase.json.AppMoshi
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -49,7 +49,7 @@ class AdvancedSearchViewModel @Inject constructor(
         printSizeSection.setOptions((PrintSize.PORTRAITS + PrintSize.LANDSCAPES.distinct()))
         sourceSection.addDifferent()
         sections.forEach {
-            it.lockState = ArtEntrySection.LockState.DIFFERENT
+            it.lockState = EntrySection.LockState.DIFFERENT
         }
 
         viewModelScope.launch(Dispatchers.IO) {
@@ -72,17 +72,17 @@ class AdvancedSearchViewModel @Inject constructor(
         val query = AdvancedSearchQuery(
             artists = artistSection.finalContents().map { it.serializedValue },
             source = sourceItem,
-            series = seriesContents.filterIsInstance<ArtEntrySection.MultiText.Entry.Custom>()
+            series = seriesContents.filterIsInstance<EntrySection.MultiText.Entry.Custom>()
                 .map { it.serializedValue }
                 .filterNot(String::isBlank),
-            seriesById = seriesContents.filterIsInstance<ArtEntrySection.MultiText.Entry.Prefilled>()
+            seriesById = seriesContents.filterIsInstance<EntrySection.MultiText.Entry.Prefilled>()
                 .mapNotNull { it.id.toIntOrNull() },
             characters = characterContents
-                .filterIsInstance<ArtEntrySection.MultiText.Entry.Custom>()
+                .filterIsInstance<EntrySection.MultiText.Entry.Custom>()
                 .map { it.serializedValue }
                 .filterNot(String::isBlank),
             charactersById = characterContents
-                .filterIsInstance<ArtEntrySection.MultiText.Entry.Prefilled>()
+                .filterIsInstance<EntrySection.MultiText.Entry.Prefilled>()
                 .mapNotNull { it.id.toIntOrNull() },
             tags = tagSection.finalContents().map { it.serializedValue },
             printWidth = printSizeSection.finalWidth(),

@@ -16,8 +16,9 @@ import com.thekeeperofpie.artistalleydatabase.art.ArtEntryUtils
 import com.thekeeperofpie.artistalleydatabase.art.PrintSizeDropdown
 import com.thekeeperofpie.artistalleydatabase.art.SourceDropdown
 import com.thekeeperofpie.artistalleydatabase.art.SourceType
-import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntrySection.MultiText.Entry
 import com.thekeeperofpie.artistalleydatabase.autocomplete.Autocompleter
+import com.thekeeperofpie.artistalleydatabase.form.EntrySection
+import com.thekeeperofpie.artistalleydatabase.form.EntrySection.MultiText.Entry
 import com.thekeeperofpie.artistalleydatabase.json.AppJson
 import com.thekeeperofpie.artistalleydatabase.json.AppMoshi
 import com.thekeeperofpie.artistalleydatabase.utils.split
@@ -55,40 +56,40 @@ abstract class ArtEntryDetailsViewModel(
     protected val dataConverter: ArtEntryDataConverter,
 ) : ViewModel() {
 
-    protected val seriesSection = ArtEntrySection.MultiText(
+    protected val seriesSection = EntrySection.MultiText(
         R.string.art_entry_series_header_zero,
         R.string.art_entry_series_header_one,
         R.string.art_entry_series_header_many,
-        lockState = ArtEntrySection.LockState.UNLOCKED,
+        lockState = EntrySection.LockState.UNLOCKED,
     )
 
-    protected val characterSection = ArtEntrySection.MultiText(
+    protected val characterSection = EntrySection.MultiText(
         R.string.art_entry_characters_header_zero,
         R.string.art_entry_characters_header_one,
         R.string.art_entry_characters_header_many,
-        lockState = ArtEntrySection.LockState.UNLOCKED,
+        lockState = EntrySection.LockState.UNLOCKED,
     )
 
-    protected val sourceSection = SourceDropdown(locked = ArtEntrySection.LockState.UNLOCKED)
+    protected val sourceSection = SourceDropdown(locked = EntrySection.LockState.UNLOCKED)
 
-    protected val artistSection = ArtEntrySection.MultiText(
+    protected val artistSection = EntrySection.MultiText(
         R.string.art_entry_artists_header_zero,
         R.string.art_entry_artists_header_one,
         R.string.art_entry_artists_header_many,
-        lockState = ArtEntrySection.LockState.UNLOCKED,
+        lockState = EntrySection.LockState.UNLOCKED,
     )
-    protected val tagSection = ArtEntrySection.MultiText(
+    protected val tagSection = EntrySection.MultiText(
         R.string.art_entry_tags_header_zero,
         R.string.art_entry_tags_header_one,
         R.string.art_entry_tags_header_many,
-        lockState = ArtEntrySection.LockState.UNLOCKED,
+        lockState = EntrySection.LockState.UNLOCKED,
     )
 
-    protected val printSizeSection = PrintSizeDropdown(lockState = ArtEntrySection.LockState.UNLOCKED)
+    protected val printSizeSection = PrintSizeDropdown(lockState = EntrySection.LockState.UNLOCKED)
 
-    protected val notesSection = ArtEntrySection.LongText(
+    protected val notesSection = EntrySection.LongText(
         headerRes = R.string.art_entry_notes_header,
-        lockState = ArtEntrySection.LockState.UNLOCKED
+        lockState = EntrySection.LockState.UNLOCKED
     )
 
     val sections = listOf(
@@ -206,9 +207,9 @@ abstract class ArtEntryDetailsViewModel(
                     flowOf(it)
                         .filter { (_, _, lockState) ->
                             when (lockState) {
-                                ArtEntrySection.LockState.LOCKED -> false
-                                ArtEntrySection.LockState.UNLOCKED,
-                                ArtEntrySection.LockState.DIFFERENT,
+                                EntrySection.LockState.LOCKED -> false
+                                EntrySection.LockState.UNLOCKED,
+                                EntrySection.LockState.DIFFERENT,
                                 null -> true
                             }
                         }
@@ -250,7 +251,7 @@ abstract class ArtEntryDetailsViewModel(
 
     @OptIn(ExperimentalCoroutinesApi::class)
     private suspend fun subscribeMultiTextSection(
-        section: ArtEntrySection.MultiText,
+        section: EntrySection.MultiText,
         localCall: suspend (String) -> List<Flow<Entry?>>,
         networkCall: suspend (query: String) -> Flow<List<Entry>> = {
             flowOf(emptyList())

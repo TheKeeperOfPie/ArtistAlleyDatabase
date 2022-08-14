@@ -3,14 +3,20 @@ package com.thekeeperofpie.artistalleydatabase.art.grid
 import android.app.Application
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntry
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryUtils
+import com.thekeeperofpie.artistalleydatabase.form.grid.EntryGridModel
 import com.thekeeperofpie.artistalleydatabase.json.AppJson
 import java.io.File
 
 class ArtEntryGridModel(
     val value: ArtEntry,
-    val localImageFile: File?,
-    val placeholderText: String,
-) {
+    override val localImageFile: File?,
+    override val placeholderText: String,
+) : EntryGridModel {
+
+    override val id get() = value.id
+    override val imageWidth get() = value.imageWidth
+    override val imageWidthToHeightRatio get() = value.imageWidthToHeightRatio
+
     companion object {
         fun buildFromEntry(
             application: Application,

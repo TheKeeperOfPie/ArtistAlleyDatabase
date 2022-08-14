@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.art.grid
+package com.thekeeperofpie.artistalleydatabase.form.grid
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -43,21 +43,21 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import coil.size.Dimension
 import com.mxalbert.sharedelements.SharedElement
-import com.thekeeperofpie.artistalleydatabase.R
-import com.thekeeperofpie.artistalleydatabase.navigation.NavDestinations
-import com.thekeeperofpie.artistalleydatabase.ui.ButtonFooter
-import com.thekeeperofpie.artistalleydatabase.ui.LazyStaggeredGrid
+import com.thekeeperofpie.artistalleydatabase.compose.ButtonFooter
+import com.thekeeperofpie.artistalleydatabase.compose.LazyStaggeredGrid
+import com.thekeeperofpie.artistalleydatabase.form.R
 
-object ArtEntryGrid {
+object EntryGrid {
 
     @Composable
-    operator fun invoke(
+    operator fun <T: EntryGridModel> invoke(
+        imageScreenKey: String,
         columnCount: Int = 2,
-        entries: @Composable () -> LazyPagingItems<ArtEntryGridModel>,
+        entries: @Composable () -> LazyPagingItems<T>,
         paddingValues: PaddingValues,
         selectedItems: () -> Collection<Int> = { emptyList() },
-        onClickEntry: (index: Int, entry: ArtEntryGridModel) -> Unit = { _, _ -> },
-        onLongClickEntry: (index: Int, entry: ArtEntryGridModel) -> Unit = { _, _ -> },
+        onClickEntry: (index: Int, entry: T) -> Unit = { _, _ -> },
+        onLongClickEntry: (index: Int, entry: T) -> Unit = { _, _ -> },
         onClickClear: () -> Unit = {},
         onClickEdit: () -> Unit = {},
         onConfirmDelete: () -> Unit = {},
@@ -66,6 +66,7 @@ object ArtEntryGrid {
 
         Column {
             EntriesGrid(
+                imageScreenKey = imageScreenKey,
                 columnCount = columnCount,
                 entries = entries,
                 selectedItems = selectedItems,
@@ -93,25 +94,27 @@ object ArtEntryGrid {
     }
 
     @Composable
-    fun EntriesGrid(
+    fun <T: EntryGridModel> EntriesGrid(
+        imageScreenKey: String,
         columnCount: Int,
         modifier: Modifier = Modifier,
-        entries: @Composable () -> LazyPagingItems<ArtEntryGridModel>,
+        entries: @Composable () -> LazyPagingItems<T>,
         selectedItems: () -> Collection<Int> = { emptyList() },
-        onClickEntry: (index: Int, entry: ArtEntryGridModel) -> Unit = { _, _ -> },
-        onLongClickEntry: (index: Int, entry: ArtEntryGridModel) -> Unit = { _, _ -> },
+        onClickEntry: (index: Int, entry: T) -> Unit = { _, _ -> },
+        onLongClickEntry: (index: Int, entry: T) -> Unit = { _, _ -> },
     ) {
         val expectedWidth = LocalDensity.current.run {
             // Load at smaller width for better scrolling performance
             // TODO: Find a better way to calculate the optimal image size
             LocalConfiguration.current.screenWidthDp.dp.roundToPx() / columnCount / 2
         }.let(::Dimension)
-        LazyStaggeredGrid<ArtEntryGridModel>(
+        LazyStaggeredGrid<T>(
             columnCount = columnCount,
             modifier = modifier
         ) {
-            items(entries(), key = { it.value.id }) { index, item ->
-                ArtEntry(
+            items(entries(), key = { it.id }) { index, item ->
+                Entry(
+                    imageScreenKey,
                     expectedWidth,
                     index,
                     item,
@@ -125,13 +128,14 @@ object ArtEntryGrid {
 
     @OptIn(ExperimentalFoundationApi::class)
     @Composable
-    private fun ArtEntry(
+    private fun <T: EntryGridModel> Entry(
+        imageScreenKey: String,
         expectedWidth: Dimension.Pixels,
         index: Int,
-        entry: ArtEntryGridModel? = null,
+        entry: T? = null,
         selectedItems: () -> Collection<Int> = { emptyList() },
-        onClickEntry: (index: Int, entry: ArtEntryGridModel) -> Unit = { _, _ -> },
-        onLongClickEntry: (index: Int, entry: ArtEntryGridModel) -> Unit = { _, _ -> },
+        onClickEntry: (index: Int, entry: T) -> Unit = { _, _ -> },
+        onLongClickEntry: (index: Int, entry: T) -> Unit = { _, _ -> },
     ) {
         val entryModifier = Modifier.fillMaxWidth()
         if (entry == null) {
@@ -153,9 +157,7 @@ object ArtEntryGrid {
                     .combinedClickable(
                         onClick = { onClickEntry(index, entry) },
                         onLongClick = { onLongClickEntry(index, entry) },
-                        onLongClickLabel = stringResource(
-                            R.string.art_entry_long_press_multi_select_label
-                        )
+                        onLongClickLabel = stringResource(R.string.long_press_multi_select_label)
                     )
             ) {
                 if (entry.localImageFile == null) {
@@ -179,25 +181,25 @@ object ArtEntryGrid {
                     }
                 } else {
                     SharedElement(
-                        key = "${entry.value.id}_image",
-                        screenKey = NavDestinations.HOME
+                        key = "${entry.id}_image",
+                        screenKey = imageScreenKey,
                     ) {
                         AsyncImage(
                             model = ImageRequest.Builder(LocalContext.current)
                                 .data(entry.localImageFile)
                                 .size(expectedWidth, Dimension.Undefined)
                                 .crossfade(false)
-                                .memoryCacheKey("coil_memory_entry_image_home_${entry.value.id}")
+                                .memoryCacheKey("coil_memory_entry_image_home_${entry.id}")
                                 .build(),
                             contentDescription = stringResource(
-                                R.string.art_entry_image_content_description
+                                R.string.entry_image_content_description
                             ),
                             contentScale = ContentScale.FillWidth,
                             modifier = entryModifier
                                 .fillMaxWidth()
                                 .heightIn(min = LocalDensity.current.run {
-                                    if (entry.value.imageWidth != null) {
-                                        (expectedWidth.px * entry.value.imageWidthToHeightRatio).toDp()
+                                    if (entry.imageWidth != null) {
+                                        (expectedWidth.px * entry.imageWidthToHeightRatio).toDp()
                                     } else {
                                         0.dp
                                     }
@@ -219,9 +221,7 @@ object ArtEntryGrid {
                 ) {
                     Icon(
                         Icons.Default.CheckCircle,
-                        contentDescription = stringResource(
-                            R.string.art_entry_selected_content_description
-                        ),
+                        contentDescription = stringResource(R.string.selected_content_description),
                     )
                 }
             }
@@ -237,7 +237,7 @@ object ArtEntryGrid {
         if (showDeleteDialog) {
             AlertDialog(
                 onDismissRequest = onDismiss,
-                title = { Text(stringResource(R.string.art_entry_delete_dialog_title)) },
+                title = { Text(stringResource(R.string.delete_dialog_title)) },
                 confirmButton = {
                     TextButton(onClick = {
                         onDismiss()
