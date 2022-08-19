@@ -32,7 +32,25 @@ class CharacterRepository(
                 .flatMapLatest { aniListApi.getCharacter(it) }
                 .catch {}
                 .mapNotNull { it?.aniListCharacter }
-                .map(CharacterEntry::from)
+                .map {
+                    CharacterEntry(
+                        id = it.id,
+                        name = CharacterEntry.Name(
+                            first = it.name?.first?.trim(),
+                            middle = it.name?.middle?.trim(),
+                            last = it.name?.last?.trim(),
+                            full = it.name?.full?.trim(),
+                            native = it.name?.native?.trim(),
+                            alternative = it.name?.alternative?.filterNotNull()
+                                ?.map(String::trim),
+                        ),
+                        image = CharacterEntry.Image(
+                            large = it.image?.large,
+                            medium = it.image?.medium,
+                        ),
+                        mediaIds = it.media?.nodes?.mapNotNull { it?.aniListMedia?.id }
+                    )
+                }
                 .collect(characterEntryDao::insertEntries)
         }
     }

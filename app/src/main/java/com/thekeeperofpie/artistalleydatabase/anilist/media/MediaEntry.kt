@@ -3,7 +3,6 @@ package com.thekeeperofpie.artistalleydatabase.anilist.media
 import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.anilist.fragment.AniListMedia
 import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
@@ -18,24 +17,6 @@ data class MediaEntry(
     val image: CoverImage? = null,
     val synonyms: List<String>? = null
 ) {
-    companion object {
-        fun from(media: AniListMedia) = MediaEntry(
-            id = media.id,
-            title = Title(
-                romaji = media.title?.romaji?.trim(),
-                english = media.title?.english?.trim(),
-                native = media.title?.native?.trim(),
-            ),
-            type = media.type?.rawValue?.let(Type::valueOf),
-            image = CoverImage(
-                extraLarge = media.coverImage?.extraLarge,
-                large = media.coverImage?.large,
-                medium = media.coverImage?.medium,
-                color = media.coverImage?.color,
-            ),
-            synonyms = media.synonyms?.filterNotNull()?.map(String::trim),
-        )
-    }
 
     data class Title(
         val romaji: String? = null,

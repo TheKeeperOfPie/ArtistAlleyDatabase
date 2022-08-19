@@ -1,11 +1,15 @@
 @file:Suppress("UnstableApiUsage")
+
 pluginManagement {
     repositories {
         gradlePluginPortal()
         google()
         mavenCentral()
     }
+
+    includeBuild("./composite")
 }
+
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
@@ -18,4 +22,7 @@ dependencyResolutionManagement {
 rootProject.name = "Artist Alley Database"
 include(":app")
 include(":modules:compose-utils")
+include(":modules:cds")
 include(":modules:form")
+include(":modules:utils")
+include(":modules:vgmdb")

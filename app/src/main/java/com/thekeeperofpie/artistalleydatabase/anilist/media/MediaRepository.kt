@@ -32,7 +32,24 @@ class MediaRepository(
                 .flatMapLatest { aniListApi.getMedia(it) }
                 .catch {}
                 .mapNotNull { it?.aniListMedia }
-                .map(MediaEntry::from)
+                .map {
+                    MediaEntry(
+                        id = it.id,
+                        title = MediaEntry.Title(
+                            romaji = it.title?.romaji?.trim(),
+                            english = it.title?.english?.trim(),
+                            native = it.title?.native?.trim(),
+                        ),
+                        type = it.type?.rawValue?.let(MediaEntry.Type::valueOf),
+                        image = MediaEntry.CoverImage(
+                            extraLarge = it.coverImage?.extraLarge,
+                            large = it.coverImage?.large,
+                            medium = it.coverImage?.medium,
+                            color = it.coverImage?.color,
+                        ),
+                        synonyms = it.synonyms?.filterNotNull()?.map(String::trim),
+                    )
+                }
                 .collect(mediaEntryDao::insertEntries)
         }
     }

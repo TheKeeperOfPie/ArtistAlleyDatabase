@@ -4,6 +4,18 @@
   <component name="GradleSettings">
     <option name="linkedExternalProjectsSettings">
       <GradleProjectSettings>
+        <compositeConfiguration>
+          <compositeBuild compositeDefinitionSource="SCRIPT">
+            <builds>
+              <build path="$PROJECT_DIR$/composite" name="Artist Alley Database Composite Build">
+                <projects>
+                  <project path="$PROJECT_DIR$/composite" />
+                  <project path="$PROJECT_DIR$/composite/json-schema" />
+                </projects>
+              </build>
+            </builds>
+          </compositeBuild>
+        </compositeConfiguration>
         <option name="testRunner" value="GRADLE" />
         <option name="distributionType" value="DEFAULT_WRAPPED" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
@@ -12,9 +24,14 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/app" />
+            <option value="$PROJECT_DIR$/composite" />
+            <option value="$PROJECT_DIR$/composite/json-schema" />
             <option value="$PROJECT_DIR$/modules" />
+            <option value="$PROJECT_DIR$/modules/cds" />
             <option value="$PROJECT_DIR$/modules/compose-utils" />
             <option value="$PROJECT_DIR$/modules/form" />
+            <option value="$PROJECT_DIR$/modules/utils" />
+            <option value="$PROJECT_DIR$/modules/vgmdb" />
           </set>
         </option>
       </GradleProjectSettings>

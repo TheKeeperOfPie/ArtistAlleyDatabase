@@ -7,7 +7,7 @@ plugins {
 
 android {
     namespace = "com.thekeeperofpie.compose_proxy"
-    compileSdk = 32
+    compileSdk = 33
 
     defaultConfig {
         minSdk = 31
@@ -36,14 +36,14 @@ android {
         compose = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.2.0-dev-k1.7.0-53370d83bb1"
+        kotlinCompilerExtensionVersion = "1.3.0-dev-k1.7.20-Beta-18f49346e42"
     }
 }
 
 dependencies {
     implementation("androidx.compose.material:material:1.3.0-alpha03")
     implementation("androidx.compose.material3:material3:1.0.0-alpha16")
-    implementation("com.google.accompanist:accompanist-pager-indicators:0.24.13-rc")
+    implementation("com.google.accompanist:accompanist-pager-indicators:0.26.1-alpha")
 
     implementation("androidx.paging:paging-runtime:3.2.0-alpha02")
     implementation("androidx.paging:paging-compose:1.0.0-alpha16")
