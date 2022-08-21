@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.json_schema
+package com.thekeeperofpie.artistalleydatabase.raml
 
 import org.gradle.testkit.runner.GradleRunner
 import org.junit.Rule
@@ -7,9 +7,9 @@ import kotlin.test.Test
 import kotlin.test.assertTrue
 
 /**
- * A simple functional test for the 'com.thekeeperofpie.artistalleydatabase.json_schema' plugin.
+ * A simple functional test for the 'com.thekeeperofpie.artistalleydatabase.raml' plugin.
  */
-class JsonSchemaPluginFunctionalTest {
+class RamlPluginFunctionalTest {
     @get:Rule val tempFolder = TemporaryFolder()
 
     private fun getProjectDir() = tempFolder.root
@@ -21,7 +21,7 @@ class JsonSchemaPluginFunctionalTest {
         getSettingsFile().writeText("")
         getBuildFile().writeText("""
             plugins {
-                id('com.thekeeperofpie.artistalleydatabase.json_schema')
+                id('com.thekeeperofpie.artistalleydatabase.raml')
             }
             """
         )
@@ -34,6 +34,6 @@ class JsonSchemaPluginFunctionalTest {
         val result = runner.build()
 
         // Verify the result
-        assertTrue(result.output.contains("Hello from plugin 'com.thekeeperofpie.artistalleydatabase.json_schema'"))
+        assertTrue(result.output.contains("Hello from plugin 'com.thekeeperofpie.artistalleydatabase.raml'"))
     }
 }

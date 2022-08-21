@@ -12,12 +12,14 @@ kotlin.sourceSets.all {
 }
 
 dependencies {
+    implementation(project(":json-schema"))
     implementation(project(":utils"))
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("com.squareup:kotlinpoet:1.12.0")
     implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:1.7.10")
     api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3")
+    implementation("com.charleskorn.kaml:kaml:0.47.0")
 }
 
 testing {
@@ -47,8 +49,8 @@ testing {
 gradlePlugin {
     @Suppress("UNUSED_VARIABLE")
     val plugin by plugins.creating {
-        id = "com.thekeeperofpie.artistalleydatabase.json_schema"
-        implementationClass = "com.thekeeperofpie.artistalleydatabase.json_schema.JsonSchemaPlugin"
+        id = "com.thekeeperofpie.artistalleydatabase.raml"
+        implementationClass = "com.thekeeperofpie.artistalleydatabase.raml.RamlPlugin"
     }
 }
 

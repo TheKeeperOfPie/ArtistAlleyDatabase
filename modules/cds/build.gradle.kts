@@ -46,6 +46,7 @@ dependencies {
     implementation(project(":modules:compose-utils"))
     implementation(project(":modules:form"))
     implementation(project(":modules:utils"))
+    implementation(project(":modules:vgmdb"))
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3")
 
     implementation("androidx.activity:activity-compose:1.5.1")

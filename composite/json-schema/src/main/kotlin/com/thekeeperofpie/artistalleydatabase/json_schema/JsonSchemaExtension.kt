@@ -18,19 +18,25 @@ abstract class JsonSchemaExtension(project: Project) {
     val urls = project.objects.listProperty<String>()
 
     @get:Input
-    val urlsCustomNames = project.objects.listProperty<Pair<String, String>>()
+    val urlsCustomNames = project.objects.mapProperty<String, String>()
 
     @get:Input
     val modelPackageName = project.objects.property<String>()
 
     @get:Input
-    val customPropertyNameMap = project.objects.mapProperty<String, String>()
+    val customPropertyNames = project.objects.mapProperty<String, String>()
+
+    @get:OutputDirectory
+    val schemaOutputDir: DirectoryProperty = project.objects.directoryProperty()
 
     @get:OutputDirectory
     val generatedOutputDir: DirectoryProperty = project.objects.directoryProperty()
 
     init {
-        generatedOutputDir.convention(project.layout.buildDirectory.dir("generated/source/jsonSchema"))
+        schemaOutputDir.convention(
+            project.layout.buildDirectory.dir("generated/source/jsonSchema"))
+        generatedOutputDir.convention(
+            project.layout.buildDirectory.dir("generated/source/jsonSchemaModels"))
         modelPackageName.convention("com.thekeeperofpie.artistalleydatabase.json_schema.generated")
     }
 }

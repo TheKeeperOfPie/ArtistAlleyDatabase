@@ -10,10 +10,14 @@ import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.TypeSpec
+import com.thekeeperofpie.artistalleydatabase.composite.utils.Utils
+import com.thekeeperofpie.artistalleydatabase.composite.utils.Utils.toClassName
+import com.thekeeperofpie.artistalleydatabase.composite.utils.Utils.toPropertyName
 import com.thekeeperofpie.artistalleydatabase.json_schema.models.JsonSchema
 import com.thekeeperofpie.artistalleydatabase.json_schema.models.JsonSchemaType
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
@@ -27,16 +31,10 @@ import kotlinx.serialization.modules.subclass
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
-import org.gradle.configurationcache.extensions.capitalized
 import org.jetbrains.kotlin.util.prefixIfNot
 import java.net.URL
-import java.util.Locale
 
 open class JsonSchemaTask : DefaultTask() {
-
-    companion object {
-        private val WHITESPACE_OR_UNDERLINE = Regex("[\\s_]")
-    }
 
     @get:Input
     lateinit var extension: JsonSchemaExtension
@@ -45,7 +43,6 @@ open class JsonSchemaTask : DefaultTask() {
 
     @TaskAction
     fun run() {
-        extension.generatedOutputDir.asFile.get().deleteRecursively()
         extension.urls.get().forEach {
             parseSchema(it, null)
         }
@@ -55,14 +52,7 @@ open class JsonSchemaTask : DefaultTask() {
 
         extension.generatedOutputDir.asFileTree
             .filter { it.extension == "kt" }
-            .forEach {
-                // Strip redundant public modifiers
-                it.writeText(
-                    it.readText()
-                        .replace("public val", "val")
-                        .replace("public data class", "data class")
-                )
-            }
+            .forEach(Utils::reformatKotlinSource)
     }
 
     @OptIn(ExperimentalSerializationApi::class)
@@ -75,16 +65,25 @@ open class JsonSchemaTask : DefaultTask() {
                 subclass(JsonSchemaType.StringType::class)
                 subclass(JsonSchemaType.Array::class)
                 subclass(JsonSchemaType.Object::class)
-                defaultDeserializer { JsonSchemaType.StringType.serializer() }
+                defaultDeserializer { JsonSchemaType.Unknown.serializer() }
             }
         }
     }
 
     private fun fetchSchema(json: Json, url: String): JsonSchema {
-        val realUrl = if (url.startsWith("http") && !url.startsWith("https")) {
-            url.removePrefix("http").prefixIfNot("https")
-        } else url
-        return URL(realUrl).readText()
+        val realUrl = URL(
+            if (url.startsWith("http") && !url.startsWith("https")) {
+                url.removePrefix("http").prefixIfNot("https")
+            } else url
+        )
+        val fileName = realUrl.path
+        val cached = extension.schemaOutputDir.file(fileName).get().asFile
+        return if (cached.exists()) {
+            cached.readText()
+        } else {
+            cached.parentFile.mkdirs()
+            realUrl.readText().also(cached::writeText)
+        }
             .let<String, JsonSchema>(json::decodeFromString)
             .apply { this.url = url }
     }
@@ -98,6 +97,7 @@ open class JsonSchemaTask : DefaultTask() {
             className = customName ?: schema.name.toClassName(),
             comment = schema.title,
             properties = schema.properties,
+            required = schema.required,
             patternProperties = emptyMap()
         )
     }
@@ -153,13 +153,14 @@ open class JsonSchemaTask : DefaultTask() {
             is JsonSchemaType.Array -> {
                 val items = type.items?.jsonObject ?: return null
                 val ref = resolveRef(json, schema, name, items)
-                if (ref != null) return ClassWrapper.Array(type.title, ref)
+                if (ref != null) return ClassWrapper.List(type.title, ref)
 
                 val itemType: JsonSchemaType = json.decodeFromJsonElement(items)
-                val itemClass = resolveClass(json, schema, name, itemType) ?: ClassWrapper.String(
-                    itemType.title
-                )
-                return ClassWrapper.Array(type.title, itemClass)
+                val itemClass =
+                    resolveClass(json, schema, name, itemType) ?: ClassWrapper.StringType(
+                        itemType.title
+                    )
+                return ClassWrapper.List(type.title, itemClass)
             }
             is JsonSchemaType.Object -> {
                 var className = name.toClassName()
@@ -194,11 +195,18 @@ open class JsonSchemaTask : DefaultTask() {
                     className = className,
                     comment = type.title,
                     properties = properties,
+                    required = type.required,
                     patternProperties = type.patternProperties,
                 ).also { classCache[className] = it }
             }
-            is JsonSchemaType.StringType -> return ClassWrapper.String(type.title)
+            is JsonSchemaType.StringType -> return ClassWrapper.StringType(type.title)
             is JsonSchemaType.Number -> return ClassWrapper.Number(type.title)
+            is JsonSchemaType.Unknown ->
+                return ClassWrapper.Map(
+                    "",
+                    ClassWrapper.StringType(""),
+                    ClassWrapper.StringType("")
+                )
         }
     }
 
@@ -208,10 +216,15 @@ open class JsonSchemaTask : DefaultTask() {
         className: String,
         comment: String,
         properties: Map<String, JsonElement>,
+        required: List<String>,
         patternProperties: Map<String, JsonElement>,
     ): ClassWrapper {
         if (patternProperties.isNotEmpty()) {
-            return ClassWrapper.Map(comment, ClassWrapper.String(""), ClassWrapper.String(""))
+            return ClassWrapper.Map(
+                comment,
+                ClassWrapper.StringType(""),
+                ClassWrapper.StringType("")
+            )
         }
 
         @Suppress("UNCHECKED_CAST")
@@ -224,20 +237,29 @@ open class JsonSchemaTask : DefaultTask() {
 
         val packageName = extension.modelPackageName.get()
         val directory = extension.generatedOutputDir.asFile.get()
+
+        fun ClassWrapper.realTypeName(optional: Boolean) = when (this) {
+            is ClassWrapper.List -> typeName
+            is ClassWrapper.Map -> typeName
+            is ClassWrapper.Number -> typeName.copy(nullable = optional)
+            is ClassWrapper.Object -> typeName.copy(nullable = optional)
+            is ClassWrapper.StringType -> typeName.copy(nullable = optional)
+        }
+
         FileSpec.builder(packageName, className)
             .addType(
                 TypeSpec.classBuilder(className)
                     .addModifiers(KModifier.DATA)
+                    .addAnnotation(Serializable::class)
                     .primaryConstructor(
                         FunSpec.constructorBuilder()
                             .apply {
-                                resolvedProperties.forEach { (name, classSpec) ->
+                                resolvedProperties.forEach { (name, classWrapper) ->
+                                    val optional = !required.contains(name.serializedName)
+                                    val realTypeName = classWrapper.realTypeName(optional)
                                     addParameter(
-                                        ParameterSpec.builder(
-                                            name.propertyName,
-                                            classSpec.typeName
-                                        )
-                                            .addKdoc(classSpec.comment)
+                                        ParameterSpec.builder(name.propertyName, realTypeName)
+                                            .addKdoc(classWrapper.comment)
                                             .apply {
                                                 if (name.serializedName != name.propertyName) {
                                                     addAnnotation(
@@ -249,6 +271,10 @@ open class JsonSchemaTask : DefaultTask() {
                                                             .build()
                                                     )
                                                 }
+
+                                                if (optional) {
+                                                    defaultValue(classWrapper.defaultValue)
+                                                }
                                             }
                                             .build()
                                     )
@@ -257,13 +283,12 @@ open class JsonSchemaTask : DefaultTask() {
                             .build()
                     )
                     .apply {
-                        resolvedProperties.forEach { (name, classSpec) ->
+                        resolvedProperties.forEach { (name, classWrapper) ->
+                            val optional = !required.contains(name.serializedName)
+                            val realTypeName = classWrapper.realTypeName(optional)
                             addProperty(
-                                PropertySpec.builder(
-                                    name.propertyName,
-                                    classSpec.typeName
-                                )
-                                    .addKdoc(classSpec.comment)
+                                PropertySpec.builder(name.propertyName, realTypeName)
+                                    .addKdoc(classWrapper.comment)
                                     .initializer(name.propertyName)
                                     .build()
                             )
@@ -276,43 +301,46 @@ open class JsonSchemaTask : DefaultTask() {
         return ClassWrapper.Object(comment, ClassName(packageName, className))
     }
 
-    private fun String.toClassName() = split(WHITESPACE_OR_UNDERLINE)
-        .joinToString(separator = "", transform = String::capitalized)
-
     sealed class ClassWrapper {
-        abstract val comment: kotlin.String
+        abstract val comment: String
         abstract val typeName: TypeName
+        abstract val defaultValue: String
 
-        data class Array(
-            override val comment: kotlin.String,
+        data class List(
+            override val comment: String,
             val itemType: ClassWrapper
         ) : ClassWrapper() {
             override val typeName = ClassName("kotlin.collections", "List")
                 .parameterizedBy(itemType.typeName)
+            override val defaultValue = "emptyList()"
         }
 
         data class Map(
-            override val comment: kotlin.String,
+            override val comment: String,
             val keyType: ClassWrapper,
             val valueType: ClassWrapper
         ) : ClassWrapper() {
             override val typeName = ClassName("kotlin.collections", "Map")
                 .parameterizedBy(keyType.typeName, valueType.typeName)
+            override val defaultValue = "emptyMap()"
         }
 
-        data class String(override val comment: kotlin.String) : ClassWrapper() {
+        data class StringType(override val comment: String) : ClassWrapper() {
             override val typeName = ClassName("kotlin", "String")
+            override val defaultValue = "\"\""
         }
 
-        data class Number(override val comment: kotlin.String) : ClassWrapper() {
+        data class Number(override val comment: String) : ClassWrapper() {
             override val typeName = ClassName("kotlin", "Int")
+            override val defaultValue = "-1"
         }
 
         data class Object(
-            override val comment: kotlin.String,
+            override val comment: String,
             val className: ClassName
         ) : ClassWrapper() {
             override val typeName = className
+            override val defaultValue = "null"
         }
     }
 
@@ -320,10 +348,8 @@ open class JsonSchemaTask : DefaultTask() {
         val serializedName: String,
     ) {
         val propertyName: String by lazy {
-            extension.customPropertyNameMap.getting(serializedName).getOrElse(
-                serializedName.split(WHITESPACE_OR_UNDERLINE)
-                    .joinToString(separator = "", transform = String::capitalized)
-                    .decapitalize(Locale.getDefault())
+            extension.customPropertyNames.getting(serializedName).getOrElse(
+                serializedName.toPropertyName()
             )
         }
     }

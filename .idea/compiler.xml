@@ -11,6 +11,10 @@
       <module name="Artist_Alley_Database_Composite_Build.json-schema.functionalTest" target="11" />
       <module name="Artist_Alley_Database_Composite_Build.json-schema.main" target="11" />
       <module name="Artist_Alley_Database_Composite_Build.json-schema.test" target="11" />
+      <module name="Artist_Alley_Database_Composite_Build.raml" target="11" />
+      <module name="Artist_Alley_Database_Composite_Build.raml.functionalTest" target="11" />
+      <module name="Artist_Alley_Database_Composite_Build.raml.main" target="11" />
+      <module name="Artist_Alley_Database_Composite_Build.raml.test" target="11" />
       <module name="composite.json-schema" target="11" />
       <module name="composite.json-schema.functionalTest" target="11" />
       <module name="composite.json-schema.main" target="11" />

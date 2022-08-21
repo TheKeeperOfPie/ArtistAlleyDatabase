@@ -11,6 +11,8 @@
                 <projects>
                   <project path="$PROJECT_DIR$/composite" />
                   <project path="$PROJECT_DIR$/composite/json-schema" />
+                  <project path="$PROJECT_DIR$/composite/raml" />
+                  <project path="$PROJECT_DIR$/composite/utils" />
                 </projects>
               </build>
             </builds>
@@ -26,12 +28,15 @@
             <option value="$PROJECT_DIR$/app" />
             <option value="$PROJECT_DIR$/composite" />
             <option value="$PROJECT_DIR$/composite/json-schema" />
+            <option value="$PROJECT_DIR$/composite/raml" />
+            <option value="$PROJECT_DIR$/composite/utils" />
             <option value="$PROJECT_DIR$/modules" />
             <option value="$PROJECT_DIR$/modules/cds" />
             <option value="$PROJECT_DIR$/modules/compose-utils" />
             <option value="$PROJECT_DIR$/modules/form" />
             <option value="$PROJECT_DIR$/modules/utils" />
             <option value="$PROJECT_DIR$/modules/vgmdb" />
+            <option value="$PROJECT_DIR$/modules/web-infra" />
           </set>
         </option>
       </GradleProjectSettings>

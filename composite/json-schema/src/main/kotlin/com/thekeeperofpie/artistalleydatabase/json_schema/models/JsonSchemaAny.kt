@@ -39,5 +39,11 @@ sealed class JsonSchemaType {
         val properties: Map<String, JsonElement> = emptyMap(),
         val patternProperties: Map<String, JsonElement> = emptyMap(),
         val allOf: List<JsonElement> = emptyList(),
+        val required: List<String> = emptyList(),
     ) : JsonSchemaType()
+
+    @Serializable
+    object Unknown : JsonSchemaType() {
+        override val title: String = ""
+    }
 }

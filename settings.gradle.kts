@@ -7,7 +7,7 @@ pluginManagement {
         mavenCentral()
     }
 
-    includeBuild("./composite")
+    includeBuild("composite")
 }
 
 dependencyResolutionManagement {
@@ -20,9 +20,12 @@ dependencyResolutionManagement {
     }
 }
 rootProject.name = "Artist Alley Database"
-include(":app")
-include(":modules:compose-utils")
-include(":modules:cds")
-include(":modules:form")
-include(":modules:utils")
-include(":modules:vgmdb")
+include(
+    ":app",
+    ":modules:compose-utils",
+    ":modules:cds",
+    ":modules:form",
+    ":modules:utils",
+    ":modules:vgmdb",
+    ":modules:web-infra",
+)
