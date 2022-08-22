@@ -22,6 +22,8 @@ dependencyResolutionManagement {
 rootProject.name = "Artist Alley Database"
 include(
     ":app",
+    ":modules:anilist",
+    ":modules:art",
     ":modules:compose-utils",
     ":modules:cds",
     ":modules:form",

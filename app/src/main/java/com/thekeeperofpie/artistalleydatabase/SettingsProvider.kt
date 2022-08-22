@@ -4,18 +4,15 @@ import android.app.Application
 import android.content.Context
 import android.util.Log
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntry
-import com.thekeeperofpie.artistalleydatabase.json.AppJson
-import com.thekeeperofpie.artistalleydatabase.json.AppMoshi
+import com.thekeeperofpie.artistalleydatabase.utils.AppJson
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import okio.buffer
 import okio.sink
-import okio.source
 import java.io.ByteArrayOutputStream
 
 class SettingsProvider(
     application: Application,
-    private val appMoshi: AppMoshi,
     private val appJson: AppJson,
 ) {
 
@@ -28,7 +25,7 @@ class SettingsProvider(
         ByteArrayOutputStream().use {
             it.sink().use {
                 it.buffer().use {
-                    appMoshi.artEntryAdapter.toJson(entry)
+                    appJson.json.encodeToString(entry)
                 }
             }
 
@@ -44,11 +41,7 @@ class SettingsProvider(
         return try {
             stringValue = sharedPreferences.getString(KEY_ART_ENTRY_TEMPLATE, "")
                 .takeUnless(String?::isNullOrEmpty) ?: return null
-            stringValue.byteInputStream().use {
-                it.source().use {
-                    it.buffer().use(appMoshi.artEntryAdapter::fromJson)
-                }
-            }
+            appJson.json.decodeFromString(stringValue)
         } catch (e: Exception) {
             Log.e("SettingsProvider", "Error loading art entry template: $stringValue", e)
             null

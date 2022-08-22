@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="error_fail_to_load_image">Failed to load image</string>
+    <string name="error_fail_to_open_file_output">Failed to open file output</string>
+</resources>

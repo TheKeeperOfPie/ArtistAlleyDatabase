@@ -8,18 +8,16 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryUtils
 import com.thekeeperofpie.artistalleydatabase.art.SourceType
+import com.thekeeperofpie.artistalleydatabase.art.autocomplete.Autocompleter
 import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryDataConverter
 import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryModel
-import com.thekeeperofpie.artistalleydatabase.autocomplete.Autocompleter
+import com.thekeeperofpie.artistalleydatabase.art.json.ArtJson
 import com.thekeeperofpie.artistalleydatabase.form.EntrySection
-import com.thekeeperofpie.artistalleydatabase.json.AppJson
-import com.thekeeperofpie.artistalleydatabase.json.AppMoshi
 import com.thekeeperofpie.artistalleydatabase.utils.Either
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -34,11 +32,10 @@ import javax.inject.Inject
 class MultiEditViewModel @Inject constructor(
     application: Application,
     private val artEntryEditDao: ArtEntryEditDao,
-    aniListApi: AniListApi,
+    aniListApi: com.thekeeperofpie.artistalleydatabase.anilist.AniListApi,
     mediaRepository: MediaRepository,
     characterRepository: CharacterRepository,
-    appMoshi: AppMoshi,
-    appJson: AppJson,
+    artJson: ArtJson,
     autocompleter: Autocompleter,
     dataConverter: ArtEntryDataConverter,
 ) : ArtEntryDetailsViewModel(
@@ -47,8 +44,7 @@ class MultiEditViewModel @Inject constructor(
     aniListApi,
     mediaRepository,
     characterRepository,
-    appMoshi,
-    appJson,
+    artJson,
     autocompleter,
     dataConverter,
 ) {
@@ -91,7 +87,7 @@ class MultiEditViewModel @Inject constructor(
             val sourceValueSame = artEntryEditDao.distinctCountSourceValue(entryIds) == 1
 
             val source = if (sourceTypeSame && sourceValueSame) {
-                SourceType.fromEntry(appJson.json, firstEntry)
+                SourceType.fromEntry(artJson.json, firstEntry)
             } else {
                 SourceType.Different
             }
@@ -238,7 +234,7 @@ class MultiEditViewModel @Inject constructor(
                 artEntryEditDao.updateSource(
                     entryIds,
                     sourceItem.serializedType,
-                    sourceItem.serializedValue(appJson.json)
+                    sourceItem.serializedValue(artJson.json)
                 )
             }
 

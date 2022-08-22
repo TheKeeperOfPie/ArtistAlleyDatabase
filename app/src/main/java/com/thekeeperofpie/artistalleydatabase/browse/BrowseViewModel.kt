@@ -6,12 +6,13 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.thekeeperofpie.artistalleydatabase.R
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
+import com.thekeeperofpie.artistalleydatabase.anilist.CharacterColumnEntry
+import com.thekeeperofpie.artistalleydatabase.anilist.MediaColumnEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryColumn
-import com.thekeeperofpie.artistalleydatabase.json.AppMoshi
+import com.thekeeperofpie.artistalleydatabase.utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.utils.Either
 import com.thekeeperofpie.artistalleydatabase.utils.JsonUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -27,6 +28,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
+import kotlinx.serialization.decodeFromString
 import javax.inject.Inject
 import kotlin.reflect.KMutableProperty0
 
@@ -34,13 +36,10 @@ import kotlin.reflect.KMutableProperty0
 @HiltViewModel
 class BrowseViewModel @Inject constructor(
     artEntryDao: ArtEntryBrowseDao,
-    appMoshi: AppMoshi,
+    private val appJson: AppJson,
     private val mediaRepository: MediaRepository,
     private val characterRepository: CharacterRepository,
 ) : ViewModel() {
-
-    private val aniListSeriesEntryAdapter = appMoshi.aniListSeriesEntryAdapter
-    private val aniListCharacterEntryAdapter = appMoshi.aniListCharacterEntryAdapter
 
     var artists by mutableStateOf(emptyList<BrowseEntryModel>())
     var series by mutableStateOf(emptyList<BrowseEntryModel>())
@@ -85,14 +84,16 @@ class BrowseViewModel @Inject constructor(
                         .distinct()
                         .map { databaseText ->
                             val entry = databaseText.takeIf { it.contains("{") }
-                                ?.let(aniListCharacterEntryAdapter::fromJson)
+                                ?.let<String, CharacterColumnEntry>(appJson.json::decodeFromString)
                             entry?.let {
                                 characterRepository.getEntry(it.id)
                                     .filterNotNull()
                                     .map {
                                         BrowseEntryModel(
                                             image = it.image?.medium,
-                                            link = AniListUtils.characterUrl(it.id),
+                                            link = com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils.characterUrl(
+                                                it.id
+                                            ),
                                             text = CharacterUtils.buildCanonicalName(it)
                                                 ?: databaseText,
                                             query = Either.Left(it.id),
@@ -105,7 +106,9 @@ class BrowseViewModel @Inject constructor(
                                         BrowseEntryModel(text = databaseText)
                                     } else {
                                         BrowseEntryModel(
-                                            link = AniListUtils.characterUrl(entry.id),
+                                            link = com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils.characterUrl(
+                                                entry.id
+                                            ),
                                             text = CharacterUtils.buildCanonicalName(entry)
                                                 ?: databaseText,
                                             query = Either.Left(entry.id),
@@ -123,14 +126,17 @@ class BrowseViewModel @Inject constructor(
                         .distinct()
                         .map { databaseText ->
                             val entry = databaseText.takeIf { it.contains("{") }
-                                ?.let(aniListSeriesEntryAdapter::fromJson)
+                                ?.let<String, MediaColumnEntry>(appJson.json::decodeFromString)
                             entry?.let {
                                 mediaRepository.getEntry(it.id)
                                     .filterNotNull()
                                     .map {
                                         BrowseEntryModel(
                                             image = it.image?.medium,
-                                            link = AniListUtils.mediaUrl(it.type, it.id),
+                                            link = com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils.mediaUrl(
+                                                it.type,
+                                                it.id
+                                            ),
                                             text = it.title?.romaji ?: databaseText,
                                             query = Either.Left(it.id),
                                         )

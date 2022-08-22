@@ -10,9 +10,10 @@ import com.squareup.moshi.JsonWriter
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntry
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryDao
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryUtils
-import com.thekeeperofpie.artistalleydatabase.json.AppMoshi
+import com.thekeeperofpie.artistalleydatabase.art.json.ArtJson
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import kotlinx.serialization.encodeToString
 import okio.buffer
 import okio.sink
 import java.io.File
@@ -24,7 +25,7 @@ class ExportUserReadableWorker @AssistedInject constructor(
     @Assisted private val appContext: Context,
     @Assisted private val params: WorkerParameters,
     private val artEntryDao: ArtEntryDao,
-    private val appMoshi: AppMoshi,
+    private val artJson: ArtJson,
 ) : CoroutineWorker(appContext, params) {
 
     override suspend fun doWork(): Result {
@@ -154,7 +155,7 @@ class ExportUserReadableWorker @AssistedInject constructor(
                                 .build()
                         )
 
-                        jsonWriter.jsonValue(appMoshi.artEntryAdapter.toJsonValue(entry))
+                        jsonWriter.jsonValue(artJson.json.encodeToString(entry))
                     }
                     if (stopped) {
                         return false

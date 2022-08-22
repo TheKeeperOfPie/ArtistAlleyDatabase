@@ -3,18 +3,19 @@ package com.thekeeperofpie.artistalleydatabase
 import android.app.Application
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
+import com.thekeeperofpie.artistalleydatabase.utils.ScopedApplication
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.MainScope
 import javax.inject.Inject
 
 @HiltAndroidApp
-class CustomApplication : Application(), Configuration.Provider {
+class CustomApplication : Application(), Configuration.Provider, ScopedApplication {
 
     companion object {
         const val TAG = "ArtistAlleyDatabase"
     }
 
-    val scope = MainScope()
+    override val scope = MainScope()
 
     @Inject
     lateinit var workerFactory: HiltWorkerFactory

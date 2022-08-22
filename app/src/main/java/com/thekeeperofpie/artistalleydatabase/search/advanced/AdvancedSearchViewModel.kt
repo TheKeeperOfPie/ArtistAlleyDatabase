@@ -3,18 +3,16 @@ package com.thekeeperofpie.artistalleydatabase.search.advanced
 import android.app.Application
 import androidx.lifecycle.viewModelScope
 import com.thekeeperofpie.artistalleydatabase.SettingsProvider
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntry
 import com.thekeeperofpie.artistalleydatabase.art.PrintSize
+import com.thekeeperofpie.artistalleydatabase.art.autocomplete.Autocompleter
 import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryDataConverter
 import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryDetailsDao
 import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryDetailsViewModel
-import com.thekeeperofpie.artistalleydatabase.autocomplete.Autocompleter
+import com.thekeeperofpie.artistalleydatabase.art.json.ArtJson
 import com.thekeeperofpie.artistalleydatabase.form.EntrySection
-import com.thekeeperofpie.artistalleydatabase.json.AppJson
-import com.thekeeperofpie.artistalleydatabase.json.AppMoshi
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -24,11 +22,10 @@ import javax.inject.Inject
 class AdvancedSearchViewModel @Inject constructor(
     application: Application,
     artEntryDao: ArtEntryDetailsDao,
-    aniListApi: AniListApi,
+    aniListApi: com.thekeeperofpie.artistalleydatabase.anilist.AniListApi,
     mediaRepository: MediaRepository,
     characterRepository: CharacterRepository,
-    appMoshi: AppMoshi,
-    appJson: AppJson,
+    artJson: ArtJson,
     autocompleter: Autocompleter,
     dataConverter: ArtEntryDataConverter,
     private val searchRepository: AdvancedSearchRepository,
@@ -39,8 +36,7 @@ class AdvancedSearchViewModel @Inject constructor(
     aniListApi,
     mediaRepository,
     characterRepository,
-    appMoshi,
-    appJson,
+    artJson,
     autocompleter,
     dataConverter,
 ) {

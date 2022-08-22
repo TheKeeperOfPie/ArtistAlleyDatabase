@@ -17,7 +17,7 @@ import com.thekeeperofpie.artistalleydatabase.art.grid.ArtEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.art.grid.ArtEntryGridViewModel
 import com.thekeeperofpie.artistalleydatabase.browse.ArtEntryBrowseDao
 import com.thekeeperofpie.artistalleydatabase.form.EntrySection
-import com.thekeeperofpie.artistalleydatabase.json.AppJson
+import com.thekeeperofpie.artistalleydatabase.utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.utils.Either
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers

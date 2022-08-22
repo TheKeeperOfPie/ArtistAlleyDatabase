@@ -6,7 +6,6 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("dagger.hilt.android.plugin")
-    id("com.apollographql.apollo3") version "3.5.0"
     id("com.github.jk1.dependency-license-report") version "2.0"
     id("kotlin-kapt")
     id("com.google.devtools.ksp") version "1.7.20-Beta-1.0.6"
@@ -104,21 +103,6 @@ ksp {
     arg("room.schemaLocation", "$projectDir/schemas")
 }
 
-val aniListSchemaFile = file("src/main/graphql/anilist/schema.graphqls")
-apollo {
-    service("aniList") {
-        packageName.set("com.anilist")
-        introspection {
-            endpointUrl.set("https://graphql.anilist.co")
-            schemaFile.set(aniListSchemaFile)
-        }
-    }
-}
-
-if (!aniListSchemaFile.exists()) {
-    tasks["generateAniListApolloSources"].dependsOn("downloadAniListApolloSchemaFromIntrospection")
-}
-
 tasks.register("installAll") {
     dependsOn("installDebug", "installRelease")
 }
@@ -150,6 +134,8 @@ tasks.register<Exec>("launchDebug") {
 }
 
 dependencies {
+    implementation(project(":modules:anilist"))
+    implementation(project(":modules:art"))
     implementation(project(":modules:compose-utils"))
     implementation(project(":modules:form"))
     implementation(project(":modules:utils"))
@@ -207,6 +193,4 @@ dependencies {
 
     // TODO: Re-add official pager-indicator library once it migrates to material3
     // implementation("com.google.accompanist:accompanist-pager-indicators:0.24.13-rc")
-
-    implementation("com.apollographql.apollo3:apollo-runtime:3.5.0")
 }

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="aniList_entry_anime_indicator_content_description">Anime type indicator</string>
+    <string name="aniList_entry_manga_indicator_content_description">Manga type indicator</string>
+</resources>

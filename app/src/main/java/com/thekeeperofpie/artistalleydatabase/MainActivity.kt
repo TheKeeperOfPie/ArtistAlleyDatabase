@@ -69,6 +69,7 @@ import com.thekeeperofpie.artistalleydatabase.search.results.SearchResultsScreen
 import com.thekeeperofpie.artistalleydatabase.search.results.SearchResultsViewModel
 import com.thekeeperofpie.artistalleydatabase.ui.theme.ArtistAlleyDatabaseTheme
 import com.thekeeperofpie.artistalleydatabase.utils.Either
+import com.thekeeperofpie.artistalleydatabase.utils.UtilsStringR
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.io.File
@@ -236,7 +237,7 @@ class MainActivity : ComponentActivity() {
                             viewModel.imageUris.addAll(it)
                         },
                         onImageSelectError = {
-                            viewModel.errorResource = R.string.error_fail_to_load_image to it
+                            viewModel.errorResource = UtilsStringR.error_fail_to_load_image to it
                         },
                         onImageSizeResult = viewModel::onImageSizeResult,
                         sections = { viewModel.sections },
@@ -459,7 +460,7 @@ class MainActivity : ComponentActivity() {
                 imageUri = { viewModel.imageUri },
                 onImageSelected = { viewModel.imageUri = it },
                 onImageSelectError = {
-                    viewModel.errorResource = R.string.error_fail_to_load_image to it
+                    viewModel.errorResource = UtilsStringR.error_fail_to_load_image to it
                 },
                 onImageSizeResult = viewModel::onImageSizeResult,
                 onImageClickOpen = {
@@ -514,7 +515,7 @@ class MainActivity : ComponentActivity() {
                 imageUris = { viewModel.imageUris },
                 onImageSelected = { index, uri -> viewModel.setImageUri(index, uri) },
                 onImageSelectError = {
-                    viewModel.errorResource = R.string.error_fail_to_load_image to it
+                    viewModel.errorResource = UtilsStringR.error_fail_to_load_image to it
                 },
                 loading = { viewModel.loading },
                 sections = { viewModel.sections },

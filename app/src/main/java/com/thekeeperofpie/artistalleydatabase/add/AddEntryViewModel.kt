@@ -9,15 +9,13 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
 import com.thekeeperofpie.artistalleydatabase.SettingsProvider
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
+import com.thekeeperofpie.artistalleydatabase.art.autocomplete.Autocompleter
 import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryDataConverter
 import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryDetailsDao
 import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryDetailsViewModel
-import com.thekeeperofpie.artistalleydatabase.autocomplete.Autocompleter
-import com.thekeeperofpie.artistalleydatabase.json.AppJson
-import com.thekeeperofpie.artistalleydatabase.json.AppMoshi
+import com.thekeeperofpie.artistalleydatabase.art.json.ArtJson
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -29,11 +27,10 @@ import javax.inject.Inject
 class AddEntryViewModel @Inject constructor(
     application: Application,
     artEntryDao: ArtEntryDetailsDao,
-    aniListApi: AniListApi,
+    aniListApi: com.thekeeperofpie.artistalleydatabase.anilist.AniListApi,
     mediaRepository: MediaRepository,
     characterRepository: CharacterRepository,
-    appMoshi: AppMoshi,
-    appJson: AppJson,
+    artJson: ArtJson,
     autocompleter: Autocompleter,
     dataConverter: ArtEntryDataConverter,
     private val settingsProvider: SettingsProvider,
@@ -43,8 +40,7 @@ class AddEntryViewModel @Inject constructor(
     aniListApi,
     mediaRepository,
     characterRepository,
-    appMoshi,
-    appJson,
+    artJson,
     autocompleter,
     dataConverter,
 ) {

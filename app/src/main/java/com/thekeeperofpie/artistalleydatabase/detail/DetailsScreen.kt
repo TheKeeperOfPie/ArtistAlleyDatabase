@@ -48,6 +48,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.R
+import com.thekeeperofpie.artistalleydatabase.art.ArtStringR
 import com.thekeeperofpie.artistalleydatabase.art.details.SampleArtEntrySectionsProvider
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
 import com.thekeeperofpie.artistalleydatabase.compose.topBorder
@@ -195,7 +196,7 @@ object DetailsScreen {
                             }
                             .build(),
                         contentDescription = stringResource(
-                            R.string.art_entry_image_content_description
+                            ArtStringR.art_entry_image_content_description
                         ),
                         contentScale = ContentScale.FillWidth,
                         modifier = Modifier
@@ -222,7 +223,7 @@ object DetailsScreen {
                                     .placeholderMemoryCacheKey("coil_memory_entry_image_home_$entryId")
                                     .build(),
                                 contentDescription = stringResource(
-                                    R.string.art_entry_image_content_description
+                                    ArtStringR.art_entry_image_content_description
                                 ),
                                 contentScale = ContentScale.FillWidth,
                                 modifier = Modifier
@@ -240,7 +241,7 @@ object DetailsScreen {
                         Icon(
                             imageVector = Icons.Default.ImageNotSupported,
                             contentDescription = stringResource(
-                                R.string.art_entry_no_image_content_description
+                                ArtStringR.art_entry_no_image_content_description
                             ),
                             Modifier
                                 .size(48.dp)

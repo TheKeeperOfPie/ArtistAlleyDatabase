@@ -2,8 +2,8 @@ package com.thekeeperofpie.artistalleydatabase.home
 
 import android.app.Application
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryDao
-import com.thekeeperofpie.artistalleydatabase.json.AppJson
 import com.thekeeperofpie.artistalleydatabase.search.SearchViewModel
+import com.thekeeperofpie.artistalleydatabase.utils.AppJson
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
