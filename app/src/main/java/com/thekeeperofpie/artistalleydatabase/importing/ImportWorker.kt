@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.importing
 
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.Data
@@ -28,6 +29,10 @@ class ImportWorker @AssistedInject constructor(
     private val artEntryDao: ArtEntryDao,
     private val appMoshi: AppMoshi,
 ) : CoroutineWorker(appContext, params) {
+
+    companion object {
+        private const val TAG = "ImportWorker"
+    }
 
     override suspend fun doWork(): Result {
         val uriString = params.inputData.getString(ImportUtils.KEY_INPUT_CONTENT_URI)
@@ -69,6 +74,7 @@ class ImportWorker @AssistedInject constructor(
                 }
             }
         } catch (e: Exception) {
+            Log.d(TAG, "Failure inserting entries", e)
             return Result.failure()
         }
 

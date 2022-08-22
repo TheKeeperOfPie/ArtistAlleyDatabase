@@ -10,10 +10,12 @@ import com.squareup.moshi.JsonWriter
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntry
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryDao
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryUtils
-import com.thekeeperofpie.artistalleydatabase.art.json.ArtJson
+import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryDataConverter
+import com.thekeeperofpie.artistalleydatabase.json.AppMoshi
+import com.thekeeperofpie.artistalleydatabase.utils.AppJson
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
-import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.encodeToJsonElement
 import okio.buffer
 import okio.sink
 import java.io.File
@@ -25,7 +27,9 @@ class ExportUserReadableWorker @AssistedInject constructor(
     @Assisted private val appContext: Context,
     @Assisted private val params: WorkerParameters,
     private val artEntryDao: ArtEntryDao,
-    private val artJson: ArtJson,
+    private val appMoshi: AppMoshi,
+    private val appJson: AppJson,
+    private val artEntryDataConverter: ArtEntryDataConverter,
 ) : CoroutineWorker(appContext, params) {
 
     override suspend fun doWork(): Result {
@@ -45,6 +49,9 @@ class ExportUserReadableWorker @AssistedInject constructor(
                         val imageFile = ArtEntryUtils.getImageFile(appContext, it.id)
                         if (imageFile.exists()) {
                             val folderParts = it.series
+                                .asSequence()
+                                .map(artEntryDataConverter::databaseToSeriesEntry)
+                                .map { it.text }
                                 .sorted()
                                 .map {
                                     if (it.length > 120) {
@@ -53,29 +60,33 @@ class ExportUserReadableWorker @AssistedInject constructor(
                                 }
                                 .toMutableList()
 
+                            val characters = it.characters
+                                .map(artEntryDataConverter::databaseToCharacterEntry)
+                                .map { it.text }
+
                             folderParts += when {
-                                it.characters.isEmpty() -> {
+                                characters.isEmpty() -> {
                                     when {
                                         it.tags.isEmpty() -> "Unknown"
                                         else -> it.tags.joinToString("-")
                                     }
                                 }
-                                else -> if (it.characters.size == 1) {
+                                else -> if (characters.size == 1) {
                                     when {
-                                        it.tags.isEmpty() -> it.characters.first()
+                                        it.tags.isEmpty() -> characters.first()
                                         else -> {
-                                            folderParts += it.characters.first()
+                                            folderParts += characters.first()
                                             it.tags.joinToString("-")
                                         }
                                     }
                                 } else {
-                                    val characters = it.characters.joinToString("-")
+                                    val charactersCombined = characters.joinToString("-")
                                     if (it.tags.isNotEmpty()) {
-                                        characters + it.tags.joinToString(
+                                        charactersCombined + it.tags.joinToString(
                                             prefix = "-",
                                             separator = "-"
                                         )
-                                    } else characters
+                                    } else charactersCombined
                                 }
                             }.take(120)
 
@@ -155,7 +166,10 @@ class ExportUserReadableWorker @AssistedInject constructor(
                                 .build()
                         )
 
-                        jsonWriter.jsonValue(artJson.json.encodeToString(entry))
+                        val jsonValue = appMoshi.jsonElementAdapter.toJsonValue(
+                            appJson.json.encodeToJsonElement(entry)
+                        )
+                        jsonWriter.jsonValue(jsonValue)
                     }
                     if (stopped) {
                         return false
