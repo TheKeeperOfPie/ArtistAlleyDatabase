@@ -5,6 +5,7 @@ package com.thekeeperofpie.artistalleydatabase
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import com.thekeeperofpie.artistalleydatabase.android_utils.Converters
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterEntryDao
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaEntry
@@ -16,7 +17,6 @@ import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryDetailsDao
 import com.thekeeperofpie.artistalleydatabase.browse.ArtEntryBrowseDao
 import com.thekeeperofpie.artistalleydatabase.edit.ArtEntryEditDao
 import com.thekeeperofpie.artistalleydatabase.search.advanced.ArtEntryAdvancedSearchDao
-import com.thekeeperofpie.artistalleydatabase.utils.Converters
 
 @Database(
     entities = [ArtEntry::class, ArtEntryFts::class, MediaEntry::class, CharacterEntry::class],

@@ -31,12 +31,12 @@
             <option value="$PROJECT_DIR$/composite/raml" />
             <option value="$PROJECT_DIR$/composite/utils" />
             <option value="$PROJECT_DIR$/modules" />
+            <option value="$PROJECT_DIR$/modules/android-utils" />
             <option value="$PROJECT_DIR$/modules/anilist" />
             <option value="$PROJECT_DIR$/modules/art" />
             <option value="$PROJECT_DIR$/modules/cds" />
             <option value="$PROJECT_DIR$/modules/compose-utils" />
             <option value="$PROJECT_DIR$/modules/form" />
-            <option value="$PROJECT_DIR$/modules/utils" />
             <option value="$PROJECT_DIR$/modules/vgmdb" />
             <option value="$PROJECT_DIR$/modules/web-infra" />
           </set>

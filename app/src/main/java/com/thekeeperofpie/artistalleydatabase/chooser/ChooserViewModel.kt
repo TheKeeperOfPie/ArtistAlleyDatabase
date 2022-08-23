@@ -6,11 +6,11 @@ import android.content.ClipDescription
 import android.content.Intent
 import android.net.Uri
 import androidx.core.content.FileProvider
+import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryDao
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryUtils
 import com.thekeeperofpie.artistalleydatabase.art.grid.ArtEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.search.SearchViewModel
-import com.thekeeperofpie.artistalleydatabase.utils.AppJson
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 

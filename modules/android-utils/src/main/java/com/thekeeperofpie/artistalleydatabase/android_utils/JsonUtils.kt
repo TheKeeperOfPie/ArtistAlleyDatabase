@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.utils
+package com.thekeeperofpie.artistalleydatabase.android_utils
 
 import android.util.JsonReader
 import android.util.JsonToken

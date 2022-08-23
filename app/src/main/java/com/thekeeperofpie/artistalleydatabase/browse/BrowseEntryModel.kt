@@ -1,6 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.browse
 
-import com.thekeeperofpie.artistalleydatabase.utils.Either
+import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 
 data class BrowseEntryModel(
     val image: String? = null,

@@ -1,8 +1,8 @@
 package com.thekeeperofpie.artistalleydatabase.art
 
 import com.thekeeperofpie.artistalleydatabase.AppDatabase
+import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.art.json.ArtJson
-import com.thekeeperofpie.artistalleydatabase.utils.AppJson
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

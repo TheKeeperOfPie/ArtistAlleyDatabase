@@ -43,10 +43,10 @@ android {
 }
 
 dependencies {
+    implementation(project(":modules:android-utils"))
     implementation(project(":modules:anilist"))
     implementation(project(":modules:compose-utils"))
     implementation(project(":modules:form"))
-    implementation(project(":modules:utils"))
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3")
 
     implementation("javax.inject:javax.inject:1")

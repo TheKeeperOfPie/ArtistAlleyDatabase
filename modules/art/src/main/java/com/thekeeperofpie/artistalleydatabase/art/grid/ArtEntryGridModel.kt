@@ -1,10 +1,10 @@
 package com.thekeeperofpie.artistalleydatabase.art.grid
 
 import android.app.Application
+import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntry
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryUtils
 import com.thekeeperofpie.artistalleydatabase.form.grid.EntryGridModel
-import com.thekeeperofpie.artistalleydatabase.utils.AppJson
 import java.io.File
 
 class ArtEntryGridModel(

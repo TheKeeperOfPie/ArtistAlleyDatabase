@@ -4,7 +4,7 @@ import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.squareup.moshi.JsonClass
-import com.thekeeperofpie.artistalleydatabase.utils.Converters
+import com.thekeeperofpie.artistalleydatabase.android_utils.Converters
 import kotlinx.serialization.Serializable
 import java.math.BigDecimal
 import java.util.Date

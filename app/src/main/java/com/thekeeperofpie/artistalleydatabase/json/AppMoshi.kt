@@ -1,8 +1,8 @@
 package com.thekeeperofpie.artistalleydatabase.json
 
 import com.squareup.moshi.Moshi
+import com.thekeeperofpie.artistalleydatabase.android_utils.Converters
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntry
-import com.thekeeperofpie.artistalleydatabase.utils.Converters
 import kotlinx.serialization.json.JsonElement
 import java.math.BigDecimal
 import java.util.Date

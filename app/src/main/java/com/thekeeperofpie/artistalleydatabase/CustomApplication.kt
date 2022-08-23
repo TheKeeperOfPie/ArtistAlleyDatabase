@@ -3,7 +3,7 @@ package com.thekeeperofpie.artistalleydatabase
 import android.app.Application
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
-import com.thekeeperofpie.artistalleydatabase.utils.ScopedApplication
+import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.MainScope
 import javax.inject.Inject

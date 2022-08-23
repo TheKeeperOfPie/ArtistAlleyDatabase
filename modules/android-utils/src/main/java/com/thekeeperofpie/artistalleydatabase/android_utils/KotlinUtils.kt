@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.utils
+package com.thekeeperofpie.artistalleydatabase.android_utils
 
 fun <T> Iterable<T>.split(predicate: (T) -> Boolean): Pair<List<T>, List<T>> {
     val filtered = mutableListOf<T>()

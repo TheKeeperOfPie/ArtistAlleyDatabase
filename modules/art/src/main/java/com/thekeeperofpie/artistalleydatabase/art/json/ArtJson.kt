@@ -1,10 +1,10 @@
 package com.thekeeperofpie.artistalleydatabase.art.json
 
 import android.util.Log
+import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
+import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.anilist.CharacterColumnEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.MediaColumnEntry
-import com.thekeeperofpie.artistalleydatabase.utils.AppJson
-import com.thekeeperofpie.artistalleydatabase.utils.Either
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json

@@ -5,10 +5,10 @@ import androidx.compose.ui.text.toLowerCase
 import androidx.compose.ui.text.toUpperCase
 import androidx.room.Dao
 import androidx.room.Query
+import com.thekeeperofpie.artistalleydatabase.android_utils.JsonUtils
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryDao
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryDao.Companion.wrapLikeQuery
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryDao.Companion.wrapMatchQuery
-import com.thekeeperofpie.artistalleydatabase.utils.JsonUtils
 
 @Dao
 interface ArtEntryDetailsDao : ArtEntryDao {

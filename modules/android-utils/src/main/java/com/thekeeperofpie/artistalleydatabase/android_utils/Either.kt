@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.utils
+package com.thekeeperofpie.artistalleydatabase.android_utils
 
 sealed class Either<Left, Right>(private val value: Any?) {
 

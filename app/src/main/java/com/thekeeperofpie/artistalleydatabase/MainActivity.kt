@@ -45,6 +45,8 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import com.mxalbert.sharedelements.SharedElementsRoot
 import com.thekeeperofpie.artistalleydatabase.add.AddEntryScreen
 import com.thekeeperofpie.artistalleydatabase.add.AddEntryViewModel
+import com.thekeeperofpie.artistalleydatabase.android_utils.Either
+import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryColumn
 import com.thekeeperofpie.artistalleydatabase.art.grid.ArtEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseScreen
@@ -68,8 +70,6 @@ import com.thekeeperofpie.artistalleydatabase.search.advanced.AdvancedSearchView
 import com.thekeeperofpie.artistalleydatabase.search.results.SearchResultsScreen
 import com.thekeeperofpie.artistalleydatabase.search.results.SearchResultsViewModel
 import com.thekeeperofpie.artistalleydatabase.ui.theme.ArtistAlleyDatabaseTheme
-import com.thekeeperofpie.artistalleydatabase.utils.Either
-import com.thekeeperofpie.artistalleydatabase.utils.UtilsStringR
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.io.File

@@ -4,7 +4,7 @@ import android.app.Application
 import android.content.Context
 import android.graphics.BitmapFactory
 import android.net.Uri
-import com.thekeeperofpie.artistalleydatabase.utils.UtilsStringR
+import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import kotlinx.serialization.json.Json
 import java.io.File
 

@@ -134,11 +134,11 @@ tasks.register<Exec>("launchDebug") {
 }
 
 dependencies {
+    implementation(project(":modules:android-utils"))
     implementation(project(":modules:anilist"))
     implementation(project(":modules:art"))
     implementation(project(":modules:compose-utils"))
     implementation(project(":modules:form"))
-    implementation(project(":modules:utils"))
     implementation(kotlin("reflect"))
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4")

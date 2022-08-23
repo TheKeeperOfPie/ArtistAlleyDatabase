@@ -33,6 +33,7 @@ import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
 import com.thekeeperofpie.artistalleydatabase.R
+import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.art.ArtStringR
 import com.thekeeperofpie.artistalleydatabase.art.details.SampleArtEntrySectionsProvider
 import com.thekeeperofpie.artistalleydatabase.compose.HorizontalPagerIndicator
@@ -41,7 +42,6 @@ import com.thekeeperofpie.artistalleydatabase.compose.topBorder
 import com.thekeeperofpie.artistalleydatabase.form.EntryForm
 import com.thekeeperofpie.artistalleydatabase.form.EntrySection
 import com.thekeeperofpie.artistalleydatabase.form.ImageSelectBox
-import com.thekeeperofpie.artistalleydatabase.utils.Either
 import java.io.File
 
 object MultiEditScreen {

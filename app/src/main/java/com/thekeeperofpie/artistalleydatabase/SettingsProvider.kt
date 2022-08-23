@@ -3,8 +3,8 @@ package com.thekeeperofpie.artistalleydatabase
 import android.app.Application
 import android.content.Context
 import android.util.Log
+import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntry
-import com.thekeeperofpie.artistalleydatabase.utils.AppJson
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import okio.buffer

@@ -56,8 +56,7 @@ if (!aniListSchemaFile.exists()) {
 
 dependencies {
     api("com.apollographql.apollo3:apollo-runtime:3.5.0")
-
-    implementation(project(":modules:utils"))
+    implementation(project(":modules:android-utils"))
 
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3")
 

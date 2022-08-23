@@ -27,7 +27,7 @@ include(
     ":modules:compose-utils",
     ":modules:cds",
     ":modules:form",
-    ":modules:utils",
+    ":modules:android-utils",
     ":modules:vgmdb",
     ":modules:web-infra",
 )

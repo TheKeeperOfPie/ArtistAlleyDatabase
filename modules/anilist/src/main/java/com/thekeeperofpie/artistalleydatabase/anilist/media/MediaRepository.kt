@@ -1,8 +1,8 @@
 package com.thekeeperofpie.artistalleydatabase.anilist.media
 
+import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
+import com.thekeeperofpie.artistalleydatabase.android_utils.distinctWithBuffer
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListApi
-import com.thekeeperofpie.artistalleydatabase.utils.ScopedApplication
-import com.thekeeperofpie.artistalleydatabase.utils.distinctWithBuffer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow

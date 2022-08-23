@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-    namespace = "com.thekeeperofpie.artistalleydatabase.utils"
+    namespace = "com.thekeeperofpie.artistalleydatabase.android_utils"
     compileSdk = 33
 
     defaultConfig {
