@@ -7,17 +7,10 @@ import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.Data
 import androidx.work.WorkerParameters
-import com.squareup.moshi.JsonReader
-import com.thekeeperofpie.artistalleydatabase.art.ArtEntry
-import com.thekeeperofpie.artistalleydatabase.art.ArtEntryDao
-import com.thekeeperofpie.artistalleydatabase.art.ArtEntryUtils
-import com.thekeeperofpie.artistalleydatabase.json.AppMoshi
+import com.thekeeperofpie.artistalleydatabase.android_utils.importer.Importer
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
-import okio.buffer
-import okio.source
 import java.io.FilterInputStream
-import java.io.InputStream
 import java.nio.file.Paths
 import java.util.zip.ZipInputStream
 import kotlin.io.path.nameWithoutExtension
@@ -26,8 +19,7 @@ import kotlin.io.path.nameWithoutExtension
 class ImportWorker @AssistedInject constructor(
     @Assisted private val appContext: Context,
     @Assisted private val params: WorkerParameters,
-    private val artEntryDao: ArtEntryDao,
-    private val appMoshi: AppMoshi,
+    private val importers: Set<@JvmSuppressWildcards Importer>,
 ) : CoroutineWorker(appContext, params) {
 
     companion object {
@@ -43,13 +35,26 @@ class ImportWorker @AssistedInject constructor(
         val replaceAll = params.inputData.getBoolean(ImportUtils.KEY_DRY_RUN, false)
         val uri = Uri.parse(uriString)
 
-        // TODO: Wrap the entire delete -> insert -> success cycle in a transaction
+        // Wraps the entire delete -> insert -> success cycle in a transaction
+        // by nesting transactions started from each module's DAO
+        // TODO: Verify this nesting actually works as expected
+        val initialBlock: suspend (block: suspend () -> Result) -> Result = { it() }
+        val runBlock: suspend (block: suspend () -> Result) -> Result =
+            importers.fold(initialBlock) { block, importer ->
+                {
+                    block {
+                        importer.transaction(it)
+                    }
+                }
+            }
 
-        // First open only counts and inserts entries
-        var entriesSize = 0
-        try {
-            artEntryDao.insertEntriesDeferred(dryRun, replaceAll) { insertEntry ->
-                appContext.contentResolver.openInputStream(uri).use { fileInput ->
+        return runBlock {
+            var entriesSize = 0
+            // First open only counts and inserts entries
+            val firstPass = appContext.contentResolver.openInputStream(uri)
+                ?: throw IllegalArgumentException("Cannot open input URI $uri")
+            try {
+                firstPass.use { fileInput ->
                     ZipInputStream(fileInput).use { zipInput ->
                         var entry = zipInput.nextEntry
                         while (entry != null) {
@@ -59,28 +64,23 @@ class ImportWorker @AssistedInject constructor(
                                 }
                             }
 
-                            when (entry.name) {
-                                "art_entries.json" ->
-                                    entriesSize = if (dryRun) {
-                                        readArtEntriesJson(entryInputStream) {}
-                                    } else {
-                                        readArtEntriesJson(entryInputStream, insertEntry)
-                                    }
-                            }
+                            entriesSize += importers.find { "${it.zipEntryName}.json" == entry.name }
+                                ?.readEntries(entryInputStream, dryRun, replaceAll) ?: 0
+
                             zipInput.closeEntry()
                             entry = zipInput.nextEntry
                         }
                     }
                 }
+            } catch (e: Exception) {
+                Log.d(TAG, "Failure inserting entries", e)
+                throw RuntimeException(e)
             }
-        } catch (e: Exception) {
-            Log.d(TAG, "Failure inserting entries", e)
-            return Result.failure()
-        }
 
-        // Second pass uses previous count to determine progress and does image copying
-        (appContext.contentResolver.openInputStream(uri) ?: return Result.failure())
-            .use { fileInput ->
+            // Second pass uses previous count to determine progress and does image copying
+            val secondPass = appContext.contentResolver.openInputStream(uri)
+                ?: throw IllegalArgumentException("Cannot open input URI $uri")
+            secondPass.use { fileInput ->
                 ZipInputStream(fileInput).use { zipInput ->
                     var count = 0
                     var entry = zipInput.nextEntry
@@ -91,72 +91,26 @@ class ImportWorker @AssistedInject constructor(
                             }
                         }
 
-                        if (entry.name != "art_entries.json") {
-                            if (!dryRun) {
-                                ArtEntryUtils.getImageFile(
-                                    appContext,
-                                    Paths.get(entry.name).nameWithoutExtension
+                        val fileName = Paths.get(entry.name).nameWithoutExtension
+                        importers.find { entry.name.startsWith(it.zipEntryName + "/") }
+                            ?.readInnerFile(entryInputStream, fileName, dryRun)
+                            ?.also {
+                                count++
+                                setProgressAsync(
+                                    Data.Builder().putFloat(
+                                        ImportUtils.KEY_PROGRESS,
+                                        (count / entriesSize.toFloat()).coerceIn(0f, 1f)
+                                    ).build()
                                 )
-                                    .outputStream()
-                                    .use { entryInputStream.copyTo(it) }
                             }
-                            count++
-                            setProgressAsync(
-                                Data.Builder().putFloat(
-                                    ImportUtils.KEY_PROGRESS,
-                                    (count / entriesSize.toFloat()).coerceIn(0f, 1f)
-                                ).build()
-                            )
-                        }
+
                         zipInput.closeEntry()
                         entry = zipInput.nextEntry
                     }
                 }
             }
 
-        return Result.success()
-    }
-
-    /**
-     * @return number of valid entries found
-     */
-    private suspend fun readArtEntriesJson(
-        input: InputStream,
-        insertEntry: suspend (ArtEntry) -> Unit,
-    ): Int {
-        var count = 0
-        input.source().use {
-            it.buffer().use {
-                val reader = JsonReader.of(it)
-                reader.isLenient = true
-                reader.beginObject()
-                val rootName = reader.nextName()
-                if (rootName != "art_entries") {
-                    reader.skipValue()
-                }
-
-                reader.beginArray()
-
-                while (reader.peek() == JsonReader.Token.BEGIN_OBJECT) {
-                    var entry = appMoshi.artEntryAdapter.fromJson(reader) ?: continue
-
-                    if (entry.seriesSearchable.isEmpty()) {
-                        entry = entry.copy(seriesSearchable = entry.series)
-                    }
-
-                    if (entry.charactersSearchable.isEmpty()) {
-                        entry = entry.copy(charactersSearchable = entry.characters)
-                    }
-
-                    count++
-                    insertEntry(entry)
-                }
-
-                reader.endArray()
-                reader.endObject()
-            }
+            return@runBlock Result.success()
         }
-
-        return count
     }
 }

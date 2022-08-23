@@ -10,6 +10,7 @@ import androidx.room.RawQuery
 import androidx.room.Transaction
 import androidx.sqlite.db.SimpleSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteQuery
+import kotlinx.coroutines.yield
 
 @Dao
 interface ArtEntryDao {
@@ -122,10 +123,10 @@ interface ArtEntryDao {
     fun getEntriesSize(): Int
 
     @Transaction
-    fun iterateEntries(
+    suspend fun iterateEntries(
         entriesSize: (Int) -> Unit,
         limit: Int = 50,
-        block: (index: Int, entry: ArtEntry) -> Unit,
+        block: suspend (index: Int, entry: ArtEntry) -> Unit,
     ) {
         var offset = 0
         var index = 0
@@ -135,6 +136,7 @@ interface ArtEntryDao {
             offset += entries.size
             entries.forEach {
                 block(index++, it)
+                yield()
             }
             entries = getEntries(limit = limit, offset = offset)
         }
@@ -166,4 +168,7 @@ interface ArtEntryDao {
 
     @Query("DELETE FROM art_entries")
     suspend fun deleteAll()
+
+    @Transaction
+    suspend fun transaction(block: suspend () -> Unit) = block()
 }
