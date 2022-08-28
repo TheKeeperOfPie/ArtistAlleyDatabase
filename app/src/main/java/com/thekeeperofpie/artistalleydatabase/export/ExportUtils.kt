@@ -8,6 +8,7 @@ object ExportUtils {
 
     const val UNIQUE_WORK_NAME = "export_all_entries"
     const val KEY_OUTPUT_CONTENT_URI = "output_content_uri"
+    const val KEY_PROGRESS: String = "progress"
 
     fun currentDateTimeFileName(): String =
         DateFormat.getDateTimeInstance(DateFormat.FULL, DateFormat.FULL)

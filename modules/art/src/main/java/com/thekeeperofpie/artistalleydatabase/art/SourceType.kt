@@ -181,11 +181,19 @@ class SourceConventionSectionItem : SourceDropdown.SourceItem() {
         newHall: String,
         newBooth: String
     ) {
-        if (name == expectedName && year == expectedYear.toString()
-            && hall.isEmpty() && booth.isEmpty()
-        ) {
-            hall = newHall
-            booth = newBooth
+        if (name == expectedName && year == expectedYear.toString()) {
+            when {
+                hall.isEmpty() && booth.isEmpty() -> {
+                    hall = newHall
+                    booth = newBooth
+                }
+                hall.isEmpty() -> if (booth == newBooth) {
+                    hall = newHall
+                }
+                booth.isEmpty() -> if (hall == newHall) {
+                    booth = newBooth
+                }
+            }
         }
     }
 
@@ -263,7 +271,9 @@ class SourceConventionSectionItem : SourceDropdown.SourceItem() {
                     },
                     readOnly = lockState?.editable == false,
                     onValueChange = { hall = it },
-                    modifier = Modifier.weight(1f, true),
+                    modifier = Modifier
+                        .focusable(lockState?.editable != false)
+                        .weight(1f, true),
                 )
                 TextField(
                     value = booth,
@@ -273,7 +283,9 @@ class SourceConventionSectionItem : SourceDropdown.SourceItem() {
                     },
                     readOnly = lockState?.editable == false,
                     onValueChange = { booth = it },
-                    modifier = Modifier.weight(1f, true),
+                    modifier = Modifier
+                        .focusable(lockState?.editable != false)
+                        .weight(1f, true),
                 )
             }
         }

@@ -46,7 +46,7 @@ class ExportViewModel @Inject constructor(
                         WorkInfo.State.RUNNING -> {
                             exportRequested = true
                             // Ensure that 1f is only reported via a SUCCEEDED state
-                            it.progress.getFloat("progress", 0f).coerceAtMost(0.99f)
+                            it.progress.getFloat(ExportUtils.KEY_PROGRESS, 0f).coerceAtMost(0.99f)
                         }
                         WorkInfo.State.SUCCEEDED -> if (exportRequested) 1f else null
                         WorkInfo.State.FAILED -> {
@@ -74,7 +74,7 @@ class ExportViewModel @Inject constructor(
             return
         }
 
-        val request = OneTimeWorkRequestBuilder<ExportUserReadableWorker>()
+        val request = OneTimeWorkRequestBuilder<ExportWorker>()
             .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
             .setInputData(
                 Data.Builder()

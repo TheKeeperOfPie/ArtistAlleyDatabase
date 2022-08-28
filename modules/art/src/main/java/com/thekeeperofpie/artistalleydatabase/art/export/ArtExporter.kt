@@ -2,7 +2,6 @@ package com.thekeeperofpie.artistalleydatabase.art.export
 
 import android.content.Context
 import androidx.work.CoroutineWorker
-import androidx.work.Data
 import com.squareup.moshi.JsonWriter
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.export.Exporter
@@ -29,6 +28,7 @@ class ArtExporter(
         jsonWriter: JsonWriter,
         jsonElementConverter: (JsonElement) -> Any?,
         writeEntry: suspend (String, InputStream) -> Unit,
+        updateProgress: suspend (progress: Int, max: Int) -> Unit,
     ): Boolean {
         jsonWriter.beginObject()
             .name("art_entries")
@@ -46,15 +46,7 @@ class ArtExporter(
                 writeImage(entry, imageFile, writeEntry)
             }
 
-            // TODO: Multi-module progress
-            worker.setProgressAsync(
-                Data.Builder()
-                    .putFloat(
-                        "progress",
-                        index / entriesSize.coerceAtLeast(1).toFloat()
-                    )
-                    .build()
-            )
+            updateProgress(index, entriesSize)
 
             val jsonValue = jsonElementConverter(appJson.json.encodeToJsonElement(entry))
             jsonWriter.jsonValue(jsonValue)

@@ -11,17 +11,18 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import com.thekeeperofpie.artistalleydatabase.R
 
 sealed class NavDrawerItems(
+    val id: String,
     @StringRes val titleRes: Int,
     val icon: ImageVector,
 ) {
 
     companion object {
-        val ITEMS = listOf(Home, Browse, Search, Import, Export)
+        fun items() = listOf(Home, Browse, Search, Import, Export)
     }
 
-    object Home : NavDrawerItems(R.string.nav_drawer_home, Icons.Default.Home)
-    object Browse : NavDrawerItems(R.string.nav_drawer_browse, Icons.Default.ListAlt)
-    object Search : NavDrawerItems(R.string.nav_drawer_search, Icons.Default.Search)
-    object Import : NavDrawerItems(R.string.nav_drawer_import, Icons.Default.Create)
-    object Export : NavDrawerItems(R.string.nav_drawer_export, Icons.Default.Build)
+    object Home : NavDrawerItems("home", R.string.nav_drawer_home, Icons.Default.Home)
+    object Browse : NavDrawerItems("browse", R.string.nav_drawer_browse, Icons.Default.ListAlt)
+    object Search : NavDrawerItems("search", R.string.nav_drawer_search, Icons.Default.Search)
+    object Import : NavDrawerItems("import", R.string.nav_drawer_import, Icons.Default.Create)
+    object Export : NavDrawerItems("export", R.string.nav_drawer_export, Icons.Default.Build)
 }

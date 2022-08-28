@@ -13,6 +13,7 @@ interface Exporter {
         worker: CoroutineWorker,
         jsonWriter: JsonWriter,
         jsonElementConverter: (JsonElement) -> Any?,
-        writeEntry: suspend (String, InputStream) -> Unit
+        writeEntry: suspend (String, InputStream) -> Unit,
+        updateProgress: suspend (progress: Int, progressMax: Int) -> Unit,
     ): Boolean
 }

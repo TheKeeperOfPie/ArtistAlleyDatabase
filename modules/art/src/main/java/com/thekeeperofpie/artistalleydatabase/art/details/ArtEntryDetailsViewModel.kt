@@ -7,6 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.hoc081098.flowext.withLatestFrom
 import com.thekeeperofpie.artistalleydatabase.android_utils.split
 import com.thekeeperofpie.artistalleydatabase.android_utils.start
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListApi
@@ -194,12 +195,14 @@ abstract class ArtEntryDetailsViewModel(
         }
 
         viewModelScope.launch(Dispatchers.IO) {
-            combine(
-                artistSection.contentUpdates(),
-                sourceSection.conventionSectionItem.updates(),
-                sourceSection.lockStateFlow,
-                ::Triple
-            )
+            artistSection.contentUpdates()
+                .withLatestFrom(
+                    combine(
+                        sourceSection.conventionSectionItem.updates(),
+                        sourceSection.lockStateFlow,
+                        ::Pair
+                    )
+                ) { artist, (convention, lock) -> Triple(artist, convention, lock) }
                 .flatMapLatest {
                     // flatMapLatest to immediately drop request if lockState has changed
                     flowOf(it)
@@ -214,7 +217,7 @@ abstract class ArtEntryDetailsViewModel(
                         .filter { (_, convention, _) ->
                             convention.name.isNotEmpty()
                                     && convention.year != null && convention.year > 1000
-                                    && convention.hall.isEmpty() && convention.booth.isEmpty()
+                                    && (convention.hall.isEmpty() || convention.booth.isEmpty())
                         }
                         .mapNotNull { (artistEntries, convention) ->
                             artistEntries.firstNotNullOfOrNull {

@@ -77,6 +77,10 @@ import java.io.File
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
+    companion object {
+        const val STARTING_NAV_DESTINATION = "starting_nav_destination"
+    }
+
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -85,8 +89,14 @@ class MainActivity : ComponentActivity() {
                 Surface {
                     val drawerState = rememberDrawerState(DrawerValue.Closed)
                     val scope = rememberCoroutineScope()
-                    var selectedItemIndex by rememberSaveable { mutableStateOf(0) }
-                    val selectedItem = NavDrawerItems.ITEMS[selectedItemIndex]
+                    val navDrawerItems = NavDrawerItems.items()
+                    val defaultSelectedItemIndex = intent.getStringExtra(STARTING_NAV_DESTINATION)
+                        ?.let { navId -> navDrawerItems.indexOfFirst { it.id == navId } }
+                        ?: 0
+                    var selectedItemIndex by rememberSaveable {
+                        mutableStateOf(defaultSelectedItemIndex)
+                    }
+                    val selectedItem = navDrawerItems[selectedItemIndex]
 
                     fun onClickNav() = scope.launch { drawerState.open() }
 
@@ -94,7 +104,7 @@ class MainActivity : ComponentActivity() {
                         drawerState = drawerState,
                         drawerContent = {
                             ModalDrawerSheet {
-                                NavDrawerItems.ITEMS.forEachIndexed { index, item ->
+                                navDrawerItems.forEachIndexed { index, item ->
                                     NavigationDrawerItem(
                                         icon = { Icon(item.icon, contentDescription = null) },
                                         label = { Text(stringResource(item.titleRes)) },

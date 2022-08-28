@@ -48,4 +48,12 @@
     <string name="nav_drawer_search">Search</string>
     <string name="import_replace_all">Replace all</string>
     <string name="debug_variant">DEBUG</string>
+    <string name="notification_channel_export_name">Export</string>
+    <string name="notification_channel_export_description">Ongoing data export operations</string>
+    <string name="notification_channel_import_name">Import</string>
+    <string name="notification_channel_import_description">Ongoing data import operations</string>
+    <string name="notification_export_ongoing_title">Exporting</string>
+    <string name="notification_export_finished_title">Export finished</string>
+    <string name="notification_import_ongoing_title">Importing</string>
+    <string name="notification_import_finished_title">Import finished</string>
 </resources>

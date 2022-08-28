@@ -48,7 +48,7 @@ class ImportViewModel @Inject constructor(
                         WorkInfo.State.RUNNING -> {
                             importRequested = true
                             // Ensure that 1f is only reported via a SUCCEEDED state
-                            it.progress.getFloat("progress", 0f).coerceAtMost(0.99f)
+                            it.progress.getFloat(ImportUtils.KEY_PROGRESS, 0f).coerceAtMost(0.99f)
                         }
                         WorkInfo.State.SUCCEEDED -> if (importRequested) 1f else null
                         WorkInfo.State.FAILED -> {
