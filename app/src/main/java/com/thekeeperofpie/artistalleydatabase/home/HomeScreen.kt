@@ -25,7 +25,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -116,7 +115,6 @@ object HomeScreen {
                             } else this
                         }
                 ) {
-                    val appBarColors = TopAppBarDefaults.smallTopAppBarColors()
                     TextField(
                         query(),
                         placeholder = { Text(stringResource(id = R.string.search)) },
@@ -138,9 +136,7 @@ object HomeScreen {
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                         keyboardActions = KeyboardActions(onSearch = { showOptions = false }),
                         colors = TextFieldDefaults.textFieldColors(
-                            containerColor = appBarColors.containerColor(
-                                colorTransitionFraction = 0f
-                            ).value
+                            containerColor = MaterialTheme.colorScheme.surface,
                         ),
                         modifier = Modifier
                             .fillMaxWidth()

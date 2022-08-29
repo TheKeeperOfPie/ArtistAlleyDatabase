@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
@@ -54,7 +55,7 @@ object BrowseScreen {
                     )
                     TabRow(
                         selectedTabIndex = selectedTabIndex,
-                        containerColor = colors.containerColor(colorTransitionFraction = 0f).value
+                        containerColor = MaterialTheme.colorScheme.surface,
                     ) {
                         val coroutineScope = rememberCoroutineScope()
                         tabs.forEachIndexed { index, tab ->
