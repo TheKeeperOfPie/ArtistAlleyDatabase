@@ -3,6 +3,8 @@ package com.thekeeperofpie.artistalleydatabase.search.advanced
 import android.app.Application
 import androidx.lifecycle.viewModelScope
 import com.thekeeperofpie.artistalleydatabase.SettingsProvider
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListApi
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListJson
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntry
@@ -11,7 +13,6 @@ import com.thekeeperofpie.artistalleydatabase.art.autocomplete.Autocompleter
 import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryDataConverter
 import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryDetailsDao
 import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryDetailsViewModel
-import com.thekeeperofpie.artistalleydatabase.art.json.ArtJson
 import com.thekeeperofpie.artistalleydatabase.form.EntrySection
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -22,10 +23,10 @@ import javax.inject.Inject
 class AdvancedSearchViewModel @Inject constructor(
     application: Application,
     artEntryDao: ArtEntryDetailsDao,
-    aniListApi: com.thekeeperofpie.artistalleydatabase.anilist.AniListApi,
+    aniListApi: AniListApi,
     mediaRepository: MediaRepository,
     characterRepository: CharacterRepository,
-    artJson: ArtJson,
+    aniListJson: AniListJson,
     autocompleter: Autocompleter,
     dataConverter: ArtEntryDataConverter,
     private val searchRepository: AdvancedSearchRepository,
@@ -36,7 +37,7 @@ class AdvancedSearchViewModel @Inject constructor(
     aniListApi,
     mediaRepository,
     characterRepository,
-    artJson,
+    aniListJson,
     autocompleter,
     dataConverter,
 ) {

@@ -10,6 +10,8 @@
     <string name="invalid_export_destination">Invalid export destination</string>
     <string name="delete">Delete</string>
     <string name="nav_drawer_home">Home</string>
+    <string name="nav_drawer_art">Art</string>
+    <string name="nav_drawer_cds">CDs</string>
     <string name="nav_drawer_browse">Browse</string>
     <string name="nav_drawer_import">Import</string>
     <string name="nav_drawer_export">Export</string>
@@ -17,15 +19,6 @@
     <string name="import_source">Import source</string>
     <string name="invalid_import_source">Invalid import source</string>
     <string name="clear">Clear</string>
-    <string name="search_option_artists">Artists</string>
-    <string name="search_option_source">Source</string>
-    <string name="search_option_series">Series</string>
-    <string name="search_option_characters">Characters</string>
-    <string name="search_option_tags">Tags</string>
-    <string name="search_option_notes">Notes</string>
-    <string name="search_option_other">Other</string>
-    <string name="search_option_locked">Locked</string>
-    <string name="search_option_unlocked">Unlocked</string>
     <string name="search_filter_content_description">Filter options</string>
     <string name="export_user_readable">User readable</string>
     <string name="browse_tab_artists">Artists</string>

@@ -7,11 +7,12 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.android_utils.nullable
 import com.thekeeperofpie.artistalleydatabase.android_utils.split
 import com.thekeeperofpie.artistalleydatabase.android_utils.start
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListApi
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListJson
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
 import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryDataConverter
 import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryDetailsDao
-import com.thekeeperofpie.artistalleydatabase.art.json.ArtJson
 import com.thekeeperofpie.artistalleydatabase.form.EntrySection.MultiText.Entry
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -27,8 +28,8 @@ import javax.inject.Inject
 @OptIn(ExperimentalCoroutinesApi::class)
 class Autocompleter @Inject constructor(
     private val artEntryDao: ArtEntryDetailsDao,
-    private val artJson: ArtJson,
-    private val aniListApi: com.thekeeperofpie.artistalleydatabase.anilist.AniListApi,
+    private val aniListJson: AniListJson,
+    private val aniListApi: AniListApi,
     private val characterRepository: CharacterRepository,
     private val mediaRepository: MediaRepository,
     private val artEntryDataConverter: ArtEntryDataConverter,
@@ -41,7 +42,7 @@ class Autocompleter @Inject constructor(
     suspend fun querySeriesLocal(query: String) =
         artEntryDao.querySeries(query)
             .map {
-                val either = artJson.parseSeriesColumn(it)
+                val either = aniListJson.parseSeriesColumn(it)
                 if (either is Either.Right) {
                     mediaRepository.getEntry(either.value.id)
                         .filterNotNull()
@@ -88,7 +89,7 @@ class Autocompleter @Inject constructor(
     private suspend fun queryCharactersLocal(query: String) =
         artEntryDao.queryCharacters(query)
             .map {
-                val either = artJson.parseCharacterColumn(it)
+                val either = aniListJson.parseCharacterColumn(it)
                 if (either is Either.Right) {
                     characterRepository.getEntry(either.value.id)
                         .filterNotNull()

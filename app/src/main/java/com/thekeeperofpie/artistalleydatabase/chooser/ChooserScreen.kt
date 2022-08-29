@@ -33,7 +33,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
@@ -43,7 +42,7 @@ import com.thekeeperofpie.artistalleydatabase.art.grid.ArtEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.compose.ButtonFooter
 import com.thekeeperofpie.artistalleydatabase.compose.bottomBorder
 import com.thekeeperofpie.artistalleydatabase.form.grid.EntryGrid
-import com.thekeeperofpie.artistalleydatabase.search.SearchOption
+import com.thekeeperofpie.artistalleydatabase.form.search.EntrySearchOption
 import kotlinx.coroutines.flow.emptyFlow
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -54,8 +53,8 @@ object ChooserScreen {
         columnCount: Int = 2,
         query: @Composable () -> String = { "" },
         onQueryChange: (String) -> Unit = {},
-        options: () -> List<SearchOption> = { emptyList() },
-        onOptionChanged: (SearchOption) -> Unit = {},
+        options: () -> List<EntrySearchOption> = { emptyList() },
+        onOptionChanged: (EntrySearchOption) -> Unit = {},
         entries: @Composable () -> LazyPagingItems<ArtEntryGridModel> =
             { emptyFlow<PagingData<ArtEntryGridModel>>().collectAsLazyPagingItems() },
         selectedItems: () -> Collection<Int> = { emptyList() },
@@ -98,8 +97,8 @@ object ChooserScreen {
     private fun Chrome(
         query: @Composable () -> String = { "" },
         onQueryChange: (String) -> Unit = {},
-        options: () -> List<SearchOption> = { emptyList() },
-        onOptionChanged: (SearchOption) -> Unit = {},
+        options: () -> List<EntrySearchOption> = { emptyList() },
+        onOptionChanged: (EntrySearchOption) -> Unit = {},
         content: @Composable (PaddingValues) -> Unit,
     ) {
         Scaffold(
@@ -182,22 +181,4 @@ object ChooserScreen {
             content = content,
         )
     }
-}
-
-@Preview
-@Composable
-fun Preview() {
-    ChooserScreen(
-        options = {
-            listOf(
-                SearchOption(R.string.search_option_artists),
-                SearchOption(R.string.search_option_source),
-                SearchOption(R.string.search_option_series),
-                SearchOption(R.string.search_option_characters),
-                SearchOption(R.string.search_option_tags),
-                SearchOption(R.string.search_option_notes),
-                SearchOption(R.string.search_option_other),
-            )
-        }
-    )
 }

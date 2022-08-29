@@ -7,6 +7,7 @@ import com.anilist.fragment.AniListCharacter
 import com.anilist.fragment.AniListMedia
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListJson
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListStringR
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.CharacterColumnEntry
@@ -14,29 +15,28 @@ import com.thekeeperofpie.artistalleydatabase.anilist.MediaColumnEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaEntry
-import com.thekeeperofpie.artistalleydatabase.art.json.ArtJson
 import com.thekeeperofpie.artistalleydatabase.form.EntrySection
 import javax.inject.Inject
 
 class ArtEntryDataConverter @Inject constructor(
-    private val artJson: ArtJson
+    private val aniListJson: AniListJson
 ) {
 
     fun databaseToSeriesEntry(value: String) =
-        when (val either = artJson.parseSeriesColumn(value)) {
+        when (val either = aniListJson.parseSeriesColumn(value)) {
             is Either.Right -> seriesEntry(either.value)
             is Either.Left -> EntrySection.MultiText.Entry.Custom(either.value)
         }
 
     fun databaseToCharacterEntry(value: String) =
-        when (val either = artJson.parseCharacterColumn(value)) {
+        when (val either = aniListJson.parseCharacterColumn(value)) {
             is Either.Right -> characterEntry(either.value)
             is Either.Left -> EntrySection.MultiText.Entry.Custom(either.value)
         }
 
     fun seriesEntry(media: AniListMedia): EntrySection.MultiText.Entry.Prefilled {
         val title = media.title?.romaji ?: media.id.toString()
-        val serializedValue = artJson.toJson(MediaColumnEntry(media.id, title.trim()))
+        val serializedValue = aniListJson.toJson(MediaColumnEntry(media.id, title.trim()))
         return EntrySection.MultiText.Entry.Prefilled(
             id = media.id.toString(),
             text = title,
@@ -67,7 +67,7 @@ class ArtEntryDataConverter @Inject constructor(
     fun seriesEntry(entry: MediaEntry): EntrySection.MultiText.Entry {
         val title = entry.title
         val nonNullTitle = title?.romaji ?: entry.id.toString()
-        val serializedValue = artJson.toJson(MediaColumnEntry(entry.id, nonNullTitle))
+        val serializedValue = aniListJson.toJson(MediaColumnEntry(entry.id, nonNullTitle))
         return EntrySection.MultiText.Entry.Prefilled(
             id = entry.id.toString(),
             text = nonNullTitle,
@@ -97,7 +97,7 @@ class ArtEntryDataConverter @Inject constructor(
     }
 
     fun seriesEntry(entry: MediaColumnEntry): EntrySection.MultiText.Entry {
-        val serializedValue = artJson.toJson(MediaColumnEntry(entry.id, entry.title))
+        val serializedValue = aniListJson.toJson(MediaColumnEntry(entry.id, entry.title))
         return EntrySection.MultiText.Entry.Prefilled(
             id = entry.id.toString(),
             text = entry.title,
@@ -166,7 +166,7 @@ class ArtEntryDataConverter @Inject constructor(
 
         val displayName = CharacterUtils.buildDisplayName(canonicalName, alternative)
 
-        val serializedValue = artJson.toJson(
+        val serializedValue = aniListJson.toJson(
             CharacterColumnEntry(
                 id, CharacterColumnEntry.Name(
                     first = first?.trim(),

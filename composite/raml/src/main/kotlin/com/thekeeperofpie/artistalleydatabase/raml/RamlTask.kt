@@ -17,6 +17,7 @@ import com.thekeeperofpie.artistalleydatabase.composite.utils.Utils.toPropertyNa
 import com.thekeeperofpie.artistalleydatabase.json_schema.JsonSchemaExtension
 import kotlinx.serialization.json.Json
 import org.gradle.api.DefaultTask
+import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
 import org.jetbrains.kotlin.util.prefixIfNot
@@ -26,6 +27,7 @@ import kotlin.reflect.full.isSubtypeOf
 import kotlin.reflect.full.starProjectedType
 import kotlin.reflect.full.withNullability
 
+@CacheableTask
 open class RamlTask : DefaultTask() {
 
     @get:Input

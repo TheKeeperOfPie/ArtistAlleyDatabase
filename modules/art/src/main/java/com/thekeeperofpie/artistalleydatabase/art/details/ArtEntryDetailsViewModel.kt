@@ -8,9 +8,11 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hoc081098.flowext.withLatestFrom
+import com.thekeeperofpie.artistalleydatabase.android_utils.ImageUtils
 import com.thekeeperofpie.artistalleydatabase.android_utils.split
 import com.thekeeperofpie.artistalleydatabase.android_utils.start
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListApi
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListJson
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntry
@@ -20,7 +22,6 @@ import com.thekeeperofpie.artistalleydatabase.art.R
 import com.thekeeperofpie.artistalleydatabase.art.SourceDropdown
 import com.thekeeperofpie.artistalleydatabase.art.SourceType
 import com.thekeeperofpie.artistalleydatabase.art.autocomplete.Autocompleter
-import com.thekeeperofpie.artistalleydatabase.art.json.ArtJson
 import com.thekeeperofpie.artistalleydatabase.form.EntrySection
 import com.thekeeperofpie.artistalleydatabase.form.EntrySection.MultiText.Entry
 import kotlinx.coroutines.Dispatchers
@@ -50,7 +51,7 @@ abstract class ArtEntryDetailsViewModel(
     private val aniListApi: AniListApi,
     private val mediaRepository: MediaRepository,
     private val characterRepository: CharacterRepository,
-    protected val artJson: ArtJson,
+    protected val aniListJson: AniListJson,
     private val autocompleter: Autocompleter,
     protected val dataConverter: ArtEntryDataConverter,
 ) : ViewModel() {
@@ -77,6 +78,7 @@ abstract class ArtEntryDetailsViewModel(
         R.string.art_entry_artists_header_many,
         lockState = EntrySection.LockState.UNLOCKED,
     )
+
     protected val tagSection = EntrySection.MultiText(
         R.string.art_entry_tags_header_zero,
         R.string.art_entry_tags_header_one,
@@ -229,7 +231,7 @@ abstract class ArtEntryDetailsViewModel(
                                     )
                                     .takeUnless { it.isNullOrBlank() }
                                     ?.let<String, SourceType.Convention>(
-                                        artJson.json::decodeFromString
+                                        aniListJson.json::decodeFromString
                                     )
                                     ?.takeIf {
                                         it.name == convention.name && it.year == convention.year
@@ -289,7 +291,7 @@ abstract class ArtEntryDetailsViewModel(
             series = series,
             characters = characters,
             tags = tags,
-            source = SourceType.fromEntry(artJson.json, entry)
+            source = SourceType.fromEntry(aniListJson.json, entry)
         )
     }
 
@@ -363,21 +365,21 @@ abstract class ArtEntryDetailsViewModel(
 
     protected suspend fun makeEntry(imageUri: Uri?, id: String): ArtEntry? {
         val outputFile = ArtEntryUtils.getImageFile(application, id)
-        val error = ArtEntryUtils.writeEntryImage(application, outputFile, imageUri)
+        val error = ImageUtils.writeEntryImage(application, outputFile, imageUri)
         if (error != null) {
             withContext(Dispatchers.Main) {
                 errorResource = error
             }
             return null
         }
-        val (imageWidth, imageHeight) = ArtEntryUtils.getImageSize(outputFile)
+        val (imageWidth, imageHeight) = ImageUtils.getImageSize(outputFile)
         val sourceItem = sourceSection.selectedItem().toSource()
 
         return ArtEntry(
             id = id,
             artists = artistSection.finalContents().map { it.serializedValue },
             sourceType = sourceItem.serializedType,
-            sourceValue = sourceItem.serializedValue(artJson.json),
+            sourceValue = sourceItem.serializedValue(aniListJson.json),
             series = seriesSection.finalContents().map { it.serializedValue },
             seriesSearchable = seriesSection.finalContents().map { it.searchableValue }
                 .filterNot(String?::isNullOrBlank),
@@ -406,11 +408,11 @@ abstract class ArtEntryDetailsViewModel(
     suspend fun saveEntry(imageUri: Uri?, id: String) {
         val entry = makeEntry(imageUri, id) ?: return
         entry.series
-            .map { artJson.parseSeriesColumn(it) }
+            .map { aniListJson.parseSeriesColumn(it) }
             .mapNotNull { it.rightOrNull()?.id }
             .forEach(mediaRepository::ensureSaved)
         entry.characters
-            .map { artJson.parseCharacterColumn(it) }
+            .map { aniListJson.parseCharacterColumn(it) }
             .mapNotNull { it.rightOrNull()?.id }
             .forEach(characterRepository::ensureSaved)
         artEntryDao.insertEntries(entry)

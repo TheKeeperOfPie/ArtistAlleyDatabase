@@ -35,35 +35,34 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.R
-import com.thekeeperofpie.artistalleydatabase.art.grid.ArtEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.compose.NavMenuIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.bottomBorder
 import com.thekeeperofpie.artistalleydatabase.form.grid.EntryGrid
+import com.thekeeperofpie.artistalleydatabase.form.grid.EntryGridModel
+import com.thekeeperofpie.artistalleydatabase.form.search.EntrySearchOption
 import com.thekeeperofpie.artistalleydatabase.navigation.NavDestinations
-import com.thekeeperofpie.artistalleydatabase.search.SearchOption
 import kotlinx.coroutines.flow.emptyFlow
 
 @OptIn(ExperimentalMaterial3Api::class)
 object HomeScreen {
 
     @Composable
-    operator fun invoke(
+    operator fun <GridModel : EntryGridModel> invoke(
         onClickNav: () -> Unit = {},
         query: @Composable () -> String = { "" },
         onQueryChange: (String) -> Unit = {},
-        options: () -> List<SearchOption> = { emptyList() },
-        onOptionChanged: (SearchOption) -> Unit = {},
-        entries: @Composable () -> LazyPagingItems<ArtEntryGridModel> =
-            { emptyFlow<PagingData<ArtEntryGridModel>>().collectAsLazyPagingItems() },
+        options: () -> List<EntrySearchOption> = { emptyList() },
+        onOptionChanged: (EntrySearchOption) -> Unit = {},
+        entries: @Composable () -> LazyPagingItems<GridModel> =
+            { emptyFlow<PagingData<GridModel>>().collectAsLazyPagingItems() },
         selectedItems: () -> Collection<Int> = { emptyList() },
-        onClickEntry: (index: Int, entry: ArtEntryGridModel) -> Unit = { _, _ -> },
-        onLongClickEntry: (index: Int, entry: ArtEntryGridModel) -> Unit = { _, _ -> },
+        onClickEntry: (index: Int, entry: GridModel) -> Unit = { _, _ -> },
+        onLongClickEntry: (index: Int, entry: GridModel) -> Unit = { _, _ -> },
         onClickAddFab: () -> Unit = {},
         onClickClear: () -> Unit = {},
         onClickEdit: () -> Unit = {},
@@ -97,8 +96,8 @@ object HomeScreen {
         onClickNav: () -> Unit = {},
         query: @Composable () -> String = { "" },
         onQueryChange: (String) -> Unit = {},
-        options: () -> List<SearchOption> = { emptyList() },
-        onOptionChanged: (SearchOption) -> Unit = {},
+        options: () -> List<EntrySearchOption> = { emptyList() },
+        onOptionChanged: (EntrySearchOption) -> Unit = {},
         showFab: () -> Boolean = { true },
         onClickAddFab: () -> Unit = {},
         content: @Composable (PaddingValues) -> Unit,
@@ -196,22 +195,4 @@ object HomeScreen {
             content = content,
         )
     }
-}
-
-@Preview
-@Composable
-fun Preview() {
-    HomeScreen(
-        options = {
-            listOf(
-                SearchOption(R.string.search_option_artists),
-                SearchOption(R.string.search_option_source),
-                SearchOption(R.string.search_option_series),
-                SearchOption(R.string.search_option_characters),
-                SearchOption(R.string.search_option_tags),
-                SearchOption(R.string.search_option_notes),
-                SearchOption(R.string.search_option_other),
-            )
-        }
-    )
 }

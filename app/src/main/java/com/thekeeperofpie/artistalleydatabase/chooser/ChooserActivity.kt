@@ -33,7 +33,7 @@ class ChooserActivity : ComponentActivity() {
                     SharedElementsRoot {
                         val viewModel = hiltViewModel<ChooserViewModel>()
                         ChooserScreen(
-                            query = { viewModel.query.collectAsState().value.value },
+                            query = { viewModel.query.collectAsState().value?.query.orEmpty() },
                             onQueryChange = viewModel::onQuery,
                             options = { viewModel.options },
                             onOptionChanged = { viewModel.refreshQuery() },

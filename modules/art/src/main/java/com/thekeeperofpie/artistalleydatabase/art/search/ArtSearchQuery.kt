@@ -1,7 +1,9 @@
-package com.thekeeperofpie.artistalleydatabase.art
+package com.thekeeperofpie.artistalleydatabase.art.search
 
-data class SearchQueryWrapper(
-    val value: String = "",
+import com.thekeeperofpie.artistalleydatabase.form.search.EntrySearchQuery
+
+data class ArtSearchQuery(
+    override val query: String = "",
     val includeArtists: Boolean = false,
     val includeSources: Boolean = false,
     val includeSeries: Boolean = false,
@@ -11,7 +13,7 @@ data class SearchQueryWrapper(
     val includeOther: Boolean = false,
     val locked: Boolean = false,
     val unlocked: Boolean = false,
-) {
+) : EntrySearchQuery {
     val includeAll = !includeArtists && !includeSources && !includeSeries && !includeCharacters
             && !includeTags && !includeNotes && !includeOther && !locked && !unlocked
 }

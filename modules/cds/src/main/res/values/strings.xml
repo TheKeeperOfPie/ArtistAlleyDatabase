@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="cd_entry_title_header_zero">Title</string>
+    <string name="cd_entry_title_header_one">Title</string>
+    <string name="cd_entry_title_header_many">Titles</string>
+    <string name="cd_entry_series_header_zero">Series</string>
+    <string name="cd_entry_series_header_one">Series</string>
+    <string name="cd_entry_series_header_many">Series</string>
+    <string name="cd_entry_artists_header_zero">Artist</string>
+    <string name="cd_entry_artists_header_one">Artist</string>
+    <string name="cd_entry_artists_header_many">Artists</string>
+    <string name="cd_entry_tags_header_zero">Tag</string>
+    <string name="cd_entry_tags_header_one">Tag</string>
+    <string name="cd_entry_tags_header_many">Tags</string>
+    <string name="cd_entry_notes_header">Notes</string>
+    <string name="cd_entry_characters_header_zero">Character</string>
+    <string name="cd_entry_characters_header_one">Character</string>
+    <string name="cd_entry_characters_header_many">Characters</string>
+    <string name="cd_entry_catalog_header">Catalog ID</string>
+</resources>

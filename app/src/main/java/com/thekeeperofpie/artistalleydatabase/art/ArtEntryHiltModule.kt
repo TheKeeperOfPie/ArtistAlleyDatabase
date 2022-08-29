@@ -2,13 +2,14 @@ package com.thekeeperofpie.artistalleydatabase.art
 
 import android.app.Application
 import com.thekeeperofpie.artistalleydatabase.AppDatabase
+import com.thekeeperofpie.artistalleydatabase.SettingsProvider
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.export.Exporter
 import com.thekeeperofpie.artistalleydatabase.android_utils.importer.Importer
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListJson
 import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryDataConverter
 import com.thekeeperofpie.artistalleydatabase.art.export.ArtExporter
 import com.thekeeperofpie.artistalleydatabase.art.importer.ArtImporter
-import com.thekeeperofpie.artistalleydatabase.art.json.ArtJson
 import com.thekeeperofpie.artistalleydatabase.json.AppMoshi
 import dagger.Module
 import dagger.Provides
@@ -19,9 +20,6 @@ import dagger.multibindings.IntoSet
 @Module
 @InstallIn(SingletonComponent::class)
 object ArtEntryHiltModule {
-
-    @Provides
-    fun provideArtJson(appJson: AppJson) = ArtJson(appJson.json)
 
     @Provides
     fun provideArtEntryDao(appDatabase: AppDatabase) = appDatabase.artEntryDao()
@@ -64,4 +62,12 @@ object ArtEntryHiltModule {
         artEntryDao = artEntryDao,
         moshi = appMoshi.moshi,
     )
+
+    @Provides
+    fun provideArtEntryDataConverter(aniListJson: AniListJson) = ArtEntryDataConverter(aniListJson)
+
+
+    @Provides
+    fun provideArtAddEntryViewModelPersister(settingsProvider: SettingsProvider) =
+        settingsProvider as ArtAddEntryViewModel.Persister
 }

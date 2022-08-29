@@ -2,4 +2,6 @@
 <resources>
     <string name="error_fail_to_load_image">Failed to load image</string>
     <string name="error_fail_to_open_file_output">Failed to open file output</string>
+    <string name="unknown">Unknown</string>
+    <string name="custom">Custom</string>
 </resources>

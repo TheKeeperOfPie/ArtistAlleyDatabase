@@ -4,6 +4,7 @@ import android.app.Application
 import android.content.Context
 import android.util.Log
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
+import com.thekeeperofpie.artistalleydatabase.art.ArtAddEntryViewModel
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntry
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
@@ -14,14 +15,14 @@ import java.io.ByteArrayOutputStream
 class SettingsProvider(
     application: Application,
     private val appJson: AppJson,
-) {
+) : ArtAddEntryViewModel.Persister {
 
     companion object {
         private const val KEY_ART_ENTRY_TEMPLATE = "art_entry_template"
         private const val KEY_ADVANCED_SEARCH_QUERY = "advanced_search_query"
     }
 
-    fun saveArtEntryTemplate(entry: ArtEntry) {
+    override fun saveArtEntryTemplate(entry: ArtEntry) {
         ByteArrayOutputStream().use {
             it.sink().use {
                 it.buffer().use {
@@ -36,7 +37,7 @@ class SettingsProvider(
         }
     }
 
-    fun loadArtEntryTemplate(): ArtEntry? {
+    override fun loadArtEntryTemplate(): ArtEntry? {
         var stringValue: String? = null
         return try {
             stringValue = sharedPreferences.getString(KEY_ART_ENTRY_TEMPLATE, "")

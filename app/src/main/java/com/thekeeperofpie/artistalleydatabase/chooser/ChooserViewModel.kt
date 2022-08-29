@@ -7,10 +7,11 @@ import android.content.Intent
 import android.net.Uri
 import androidx.core.content.FileProvider
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
+import com.thekeeperofpie.artistalleydatabase.android_utils.ImageUtils
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryDao
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryUtils
 import com.thekeeperofpie.artistalleydatabase.art.grid.ArtEntryGridModel
-import com.thekeeperofpie.artistalleydatabase.search.SearchViewModel
+import com.thekeeperofpie.artistalleydatabase.art.search.ArtSearchViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
@@ -19,7 +20,7 @@ class ChooserViewModel @Inject constructor(
     application: Application,
     artEntryDao: ArtEntryDao,
     appJson: AppJson,
-) : SearchViewModel(application, artEntryDao, appJson) {
+) : ArtSearchViewModel(application, artEntryDao, appJson) {
 
     fun getResults(): Intent? {
         val appPackageName = application.packageName
@@ -65,6 +66,6 @@ class ChooserViewModel @Inject constructor(
         }
 
         return FileProvider.getUriForFile(application, "$appPackageName.fileprovider", file) to
-                (ArtEntryUtils.getImageType(file) ?: "image/*")
+                (ImageUtils.getImageType(file) ?: "image/*")
     }
 }

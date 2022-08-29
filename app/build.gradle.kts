@@ -6,8 +6,8 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("dagger.hilt.android.plugin")
-    id("com.github.jk1.dependency-license-report") version "2.0"
     id("kotlin-kapt")
+    id("com.github.jk1.dependency-license-report") version "2.0"
     id("com.google.devtools.ksp") version "1.7.20-Beta-1.0.6"
     kotlin("plugin.serialization") version "1.7.20-Beta"
 }
@@ -137,6 +137,7 @@ dependencies {
     implementation(project(":modules:android-utils"))
     implementation(project(":modules:anilist"))
     implementation(project(":modules:art"))
+    implementation(project(":modules:cds"))
     implementation(project(":modules:compose-utils"))
     implementation(project(":modules:form"))
     implementation(kotlin("reflect"))

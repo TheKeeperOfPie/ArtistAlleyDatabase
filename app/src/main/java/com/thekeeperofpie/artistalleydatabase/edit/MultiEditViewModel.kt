@@ -9,6 +9,9 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
+import com.thekeeperofpie.artistalleydatabase.android_utils.ImageUtils
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListApi
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListJson
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryUtils
@@ -17,7 +20,6 @@ import com.thekeeperofpie.artistalleydatabase.art.autocomplete.Autocompleter
 import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryDataConverter
 import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryModel
-import com.thekeeperofpie.artistalleydatabase.art.json.ArtJson
 import com.thekeeperofpie.artistalleydatabase.form.EntrySection
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -32,10 +34,10 @@ import javax.inject.Inject
 class MultiEditViewModel @Inject constructor(
     application: Application,
     private val artEntryEditDao: ArtEntryEditDao,
-    aniListApi: com.thekeeperofpie.artistalleydatabase.anilist.AniListApi,
+    aniListApi: AniListApi,
     mediaRepository: MediaRepository,
     characterRepository: CharacterRepository,
-    artJson: ArtJson,
+    aniListJson: AniListJson,
     autocompleter: Autocompleter,
     dataConverter: ArtEntryDataConverter,
 ) : ArtEntryDetailsViewModel(
@@ -44,7 +46,7 @@ class MultiEditViewModel @Inject constructor(
     aniListApi,
     mediaRepository,
     characterRepository,
-    artJson,
+    aniListJson,
     autocompleter,
     dataConverter,
 ) {
@@ -87,7 +89,7 @@ class MultiEditViewModel @Inject constructor(
             val sourceValueSame = artEntryEditDao.distinctCountSourceValue(entryIds) == 1
 
             val source = if (sourceTypeSame && sourceValueSame) {
-                SourceType.fromEntry(artJson.json, firstEntry)
+                SourceType.fromEntry(aniListJson.json, firstEntry)
             } else {
                 SourceType.Different
             }
@@ -199,7 +201,7 @@ class MultiEditViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             newImages.forEach { (entryId, uri) ->
                 val outputFile = ArtEntryUtils.getImageFile(application, entryId)
-                val error = ArtEntryUtils.writeEntryImage(application, outputFile, uri)
+                val error = ImageUtils.writeEntryImage(application, outputFile, uri)
                 if (error != null) {
                     withContext(Dispatchers.Main) {
                         errorResource = error
@@ -234,7 +236,7 @@ class MultiEditViewModel @Inject constructor(
                 artEntryEditDao.updateSource(
                     entryIds,
                     sourceItem.serializedType,
-                    sourceItem.serializedValue(artJson.json)
+                    sourceItem.serializedValue(aniListJson.json)
                 )
             }
 

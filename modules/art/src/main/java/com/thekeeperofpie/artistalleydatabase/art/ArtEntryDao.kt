@@ -10,6 +10,7 @@ import androidx.room.RawQuery
 import androidx.room.Transaction
 import androidx.sqlite.db.SimpleSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteQuery
+import com.thekeeperofpie.artistalleydatabase.art.search.ArtSearchQuery
 import kotlinx.coroutines.yield
 
 @Dao
@@ -47,7 +48,7 @@ interface ArtEntryDao {
     )
     fun getEntries(): PagingSource<Int, ArtEntry>
 
-    fun getEntries(query: SearchQueryWrapper): PagingSource<Int, ArtEntry> {
+    fun getEntries(query: ArtSearchQuery): PagingSource<Int, ArtEntry> {
         val includeAll = query.includeAll
         val lockedValue = when {
             includeAll -> null
@@ -57,7 +58,7 @@ interface ArtEntryDao {
             else -> null
         }
 
-        val options = query.value.split(Regex("\\s+"))
+        val options = query.query.split(Regex("\\s+"))
             .filter(String::isNotBlank)
             .map { "*$it*" }
             .map { queryValue ->

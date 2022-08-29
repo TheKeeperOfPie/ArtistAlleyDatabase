@@ -1,7 +1,9 @@
 package com.thekeeperofpie.artistalleydatabase.cds
 
+import androidx.room.ColumnInfo
 import androidx.room.Embedded
 import androidx.room.Entity
+import androidx.room.Fts4
 import androidx.room.PrimaryKey
 import com.squareup.moshi.JsonClass
 import com.thekeeperofpie.artistalleydatabase.android_utils.Converters
@@ -16,6 +18,15 @@ import java.util.UUID
 data class CdEntry(
     @PrimaryKey
     val id: String = UUID.randomUUID().toString(),
+    val catalogId: String? = null,
+    val titles: List<String> = emptyList(),
+    val artists: List<String> = emptyList(),
+    val artistsSearchable: List<String> = emptyList(),
+    val series: List<String> = emptyList(),
+    val seriesSearchable: List<String> = emptyList(),
+    val characters: List<String> = emptyList(),
+    val charactersSearchable: List<String> = emptyList(),
+    val tags: List<String> = emptyList(),
     @Serializable(with = Converters.BigDecimalConverter::class)
     val price: BigDecimal? = null,
     @Serializable(with = Converters.DateConverter::class)
@@ -35,16 +46,45 @@ data class CdEntry(
     @Serializable
     @JsonClass(generateAdapter = true)
     data class Locks(
+        val catalogIdLocked: Boolean? = false,
+        val titleLocked: Boolean? = false,
         val artistsLocked: Boolean? = false,
-        val sourceLocked: Boolean? = false,
         val seriesLocked: Boolean? = false,
         val charactersLocked: Boolean? = false,
         val tagsLocked: Boolean? = false,
+        val priceLocked: Boolean? = false,
         val notesLocked: Boolean? = false,
-        val printSizeLocked: Boolean? = false,
     ) {
         companion object {
             val EMPTY = Locks()
         }
     }
 }
+
+@Fts4(contentEntity = CdEntry::class)
+@Entity(tableName = "cd_entries_fts")
+data class CdEntryFts(
+    @PrimaryKey(autoGenerate = true)
+    @ColumnInfo(name = "rowid")
+    val rowId: Int? = null,
+    val id: String,
+    val catalogId: String?,
+    val titles: List<String>,
+    val artists: List<String>,
+    val artistsSearchable: List<String>,
+    val series: List<String>,
+    val seriesSearchable: List<String>,
+    val characters: List<String>,
+    val charactersSearchable: List<String>,
+    val tags: List<String>,
+    @Serializable(with = Converters.BigDecimalConverter::class)
+    val price: BigDecimal?,
+    @Serializable(with = Converters.DateConverter::class)
+    val date: Date?,
+    @Serializable(with = Converters.DateConverter::class)
+    val lastEditTime: Date?,
+    val imageWidth: Int?,
+    val imageHeight: Int?,
+    val notes: String?,
+    @Embedded val locks: CdEntry.Locks = CdEntry.Locks.EMPTY,
+)

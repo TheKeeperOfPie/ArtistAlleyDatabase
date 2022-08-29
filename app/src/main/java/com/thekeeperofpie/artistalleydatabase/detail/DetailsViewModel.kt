@@ -7,6 +7,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListApi
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListJson
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntry
@@ -14,7 +16,6 @@ import com.thekeeperofpie.artistalleydatabase.art.autocomplete.Autocompleter
 import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryDataConverter
 import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryDetailsDao
 import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryDetailsViewModel
-import com.thekeeperofpie.artistalleydatabase.art.json.ArtJson
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -26,10 +27,10 @@ import javax.inject.Inject
 class DetailsViewModel @Inject constructor(
     application: Application,
     artEntryDao: ArtEntryDetailsDao,
-    aniListApi: com.thekeeperofpie.artistalleydatabase.anilist.AniListApi,
+    aniListApi: AniListApi,
     mediaRepository: MediaRepository,
     characterRepository: CharacterRepository,
-    artJson: ArtJson,
+    aniListJson: AniListJson,
     autocompleter: Autocompleter,
     dataConverter: ArtEntryDataConverter,
 ) : ArtEntryDetailsViewModel(
@@ -38,7 +39,7 @@ class DetailsViewModel @Inject constructor(
     aniListApi,
     mediaRepository,
     characterRepository,
-    artJson,
+    aniListJson,
     autocompleter,
     dataConverter,
 ) {

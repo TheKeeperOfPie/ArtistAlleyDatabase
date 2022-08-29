@@ -44,23 +44,25 @@ import androidx.navigation.navArgument
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.mxalbert.sharedelements.SharedElementsRoot
 import com.thekeeperofpie.artistalleydatabase.add.AddEntryScreen
-import com.thekeeperofpie.artistalleydatabase.add.AddEntryViewModel
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
+import com.thekeeperofpie.artistalleydatabase.art.ArtAddEntryViewModel
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryColumn
-import com.thekeeperofpie.artistalleydatabase.art.grid.ArtEntryGridModel
+import com.thekeeperofpie.artistalleydatabase.art.search.ArtSearchViewModel
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseScreen
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseViewModel
 import com.thekeeperofpie.artistalleydatabase.browse.selection.BrowseSelectionScreen
 import com.thekeeperofpie.artistalleydatabase.browse.selection.BrowseSelectionViewModel
+import com.thekeeperofpie.artistalleydatabase.cds.CdAddEntryViewModel
+import com.thekeeperofpie.artistalleydatabase.cds.search.CdSearchViewModel
 import com.thekeeperofpie.artistalleydatabase.detail.DetailsScreen
 import com.thekeeperofpie.artistalleydatabase.detail.DetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.edit.MultiEditScreen
 import com.thekeeperofpie.artistalleydatabase.edit.MultiEditViewModel
 import com.thekeeperofpie.artistalleydatabase.export.ExportScreen
 import com.thekeeperofpie.artistalleydatabase.export.ExportViewModel
+import com.thekeeperofpie.artistalleydatabase.form.grid.EntryGridModel
 import com.thekeeperofpie.artistalleydatabase.home.HomeScreen
-import com.thekeeperofpie.artistalleydatabase.home.HomeViewModel
 import com.thekeeperofpie.artistalleydatabase.importing.ImportScreen
 import com.thekeeperofpie.artistalleydatabase.importing.ImportViewModel
 import com.thekeeperofpie.artistalleydatabase.navigation.NavDestinations
@@ -122,7 +124,8 @@ class MainActivity : ComponentActivity() {
                         content = {
                             val block = @Composable {
                                 when (selectedItem) {
-                                    NavDrawerItems.Home -> Home(::onClickNav)
+                                    NavDrawerItems.Art -> ArtScreen(::onClickNav)
+                                    NavDrawerItems.Cds -> CdsScreen(::onClickNav)
                                     NavDrawerItems.Browse -> BrowseScreen(::onClickNav)
                                     NavDrawerItems.Search -> SearchScreen(::onClickNav)
                                     NavDrawerItems.Import -> {
@@ -194,15 +197,15 @@ class MainActivity : ComponentActivity() {
     }
 
     @Composable
-    private fun Home(onClickNav: () -> Unit) {
+    private fun ArtScreen(onClickNav: () -> Unit) {
         val navController = rememberNavController()
         SharedElementsRoot {
             NavHost(navController = navController, startDestination = NavDestinations.HOME) {
                 composable(NavDestinations.HOME) {
-                    val viewModel = hiltViewModel<HomeViewModel>()
+                    val viewModel = hiltViewModel<ArtSearchViewModel>()
                     HomeScreen(
                         onClickNav = onClickNav,
-                        query = { viewModel.query.collectAsState().value.value },
+                        query = { viewModel.query.collectAsState().value?.query.orEmpty() },
                         onQueryChange = viewModel::onQuery,
                         options = { viewModel.options },
                         onOptionChanged = { viewModel.refreshQuery() },
@@ -234,12 +237,12 @@ class MainActivity : ComponentActivity() {
                                 viewModel.selectedEntries.values
                             )
                         },
-                        onConfirmDelete = viewModel::onDeleteSelected,
+                        onConfirmDelete = viewModel::deleteSelected,
                     )
                 }
 
                 composable(NavDestinations.ADD_ENTRY) {
-                    val viewModel = hiltViewModel<AddEntryViewModel>()
+                    val viewModel = hiltViewModel<ArtAddEntryViewModel>()
                     AddEntryScreen(
                         imageUris = { viewModel.imageUris },
                         onImagesSelected = {
@@ -253,6 +256,77 @@ class MainActivity : ComponentActivity() {
                         sections = { viewModel.sections },
                         saving = { viewModel.saving },
                         onClickSaveTemplate = viewModel::onClickSaveTemplate,
+                        onClickSave = { viewModel.onClickSave(navController) },
+                        errorRes = { viewModel.errorResource },
+                        onErrorDismiss = { viewModel.errorResource = null }
+                    )
+                }
+
+                addDetailsScreen(navController)
+                addEditScreen(navController)
+            }
+        }
+    }
+
+    @Composable
+    private fun CdsScreen(onClickNav: () -> Unit) {
+        val navController = rememberNavController()
+        SharedElementsRoot {
+            NavHost(navController = navController, startDestination = NavDestinations.HOME) {
+                composable(NavDestinations.HOME) {
+                    val viewModel = hiltViewModel<CdSearchViewModel>()
+                    HomeScreen(
+                        onClickNav = onClickNav,
+                        query = { viewModel.query.collectAsState().value?.query.orEmpty() },
+                        onQueryChange = viewModel::onQuery,
+                        options = { viewModel.options },
+                        onOptionChanged = { viewModel.refreshQuery() },
+                        entries = { viewModel.results.collectAsLazyPagingItems() },
+                        selectedItems = { viewModel.selectedEntries.keys },
+                        onClickAddFab = {
+                            navController.navigate(NavDestinations.ADD_ENTRY)
+                        },
+                        onClickEntry = { index, entry ->
+                            if (viewModel.selectedEntries.isNotEmpty()) {
+                                viewModel.selectEntry(index, entry)
+                            } else {
+                                val entryImageRatio = entry.value.imageWidthToHeightRatio
+                                navController.navigate(
+                                    NavDestinations.ENTRY_DETAILS +
+                                            "?entry_id=${entry.value.id}" +
+                                            (entry.localImageFile
+                                                ?.let { "&entry_image_file=${it.toPath()}" }
+                                                ?: "") +
+                                            "&entry_image_ratio=${entryImageRatio}"
+                                )
+                            }
+                        },
+                        onLongClickEntry = viewModel::selectEntry,
+                        onClickClear = viewModel::clearSelected,
+                        onClickEdit = {
+                            editSelected(
+                                navController,
+                                viewModel.selectedEntries.values
+                            )
+                        },
+                        onConfirmDelete = viewModel::deleteSelected,
+                    )
+                }
+
+                composable(NavDestinations.ADD_ENTRY) {
+                    val viewModel = hiltViewModel<CdAddEntryViewModel>()
+                    AddEntryScreen(
+                        imageUris = { viewModel.imageUris },
+                        onImagesSelected = {
+                            viewModel.imageUris.clear()
+                            viewModel.imageUris.addAll(it)
+                        },
+                        onImageSelectError = {
+                            viewModel.errorResource = UtilsStringR.error_fail_to_load_image to it
+                        },
+                        sections = { viewModel.sections },
+                        saving = { viewModel.saving },
+                        onClickSaveTemplate = { TODO() },
                         onClickSave = { viewModel.onClickSave(navController) },
                         errorRes = { viewModel.errorResource },
                         onErrorDismiss = { viewModel.errorResource = null }
@@ -539,9 +613,9 @@ class MainActivity : ComponentActivity() {
 
     private fun editSelected(
         navController: NavHostController,
-        values: MutableCollection<ArtEntryGridModel>
+        values: MutableCollection<out EntryGridModel>
     ) {
-        val entryIds = values.map { it.value.id }
+        val entryIds = values.map { it.id }
         navController.navigate(
             NavDestinations.MULTI_EDIT +
                     "?entry_ids=${entryIds.joinToString(",")}"

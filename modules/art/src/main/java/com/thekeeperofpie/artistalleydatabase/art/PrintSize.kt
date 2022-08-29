@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.form.EntrySection
 import kotlin.math.roundToInt
 
@@ -54,7 +55,7 @@ sealed class PrintSize(
         }
     }
 
-    object Unknown : PrintSize(null, null, R.string.unknown)
+    object Unknown : PrintSize(null, null, UtilsStringR.unknown)
 
     object Portrait8HalfBy11 :
         PrintSize((8.5 * 25.4).roundToInt(), (11 * 25.4).toInt(), R.string.print_size_8_5x11_inches)
@@ -154,7 +155,7 @@ class PrintSizeCustomTextFields : EntrySection.Dropdown.Item {
     override val hasCustomView = true
 
     @Composable
-    override fun fieldText() = stringResource(R.string.custom)
+    override fun fieldText() = stringResource(UtilsStringR.custom)
 
     @Composable
     override fun DropdownItemText() = Text(fieldText())
