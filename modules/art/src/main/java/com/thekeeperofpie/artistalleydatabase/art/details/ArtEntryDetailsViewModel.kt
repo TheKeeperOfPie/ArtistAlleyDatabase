@@ -43,6 +43,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.decodeFromString
 import java.time.Instant
 import java.util.Date
+import javax.annotation.CheckReturnValue
 
 @OptIn(ExperimentalCoroutinesApi::class)
 abstract class ArtEntryDetailsViewModel(
@@ -130,7 +131,7 @@ abstract class ArtEntryDetailsViewModel(
         viewModelScope.launch(Dispatchers.IO) {
             combine(
                 seriesSection.contentUpdates()
-                    .map { it.filterIsInstance<Entry.Prefilled>() }
+                    .map { it.filterIsInstance<Entry.Prefilled<*>>() }
                     .map { it.map { it.id } }
                     .distinctUntilChanged()
                     .flatMapLatest {
@@ -160,16 +161,16 @@ abstract class ArtEntryDetailsViewModel(
                 val (seriesFirst, seriesSecond) = series.toMutableList().apply {
                     removeAll { seriesCharacter ->
                         charactersFirst.any { character ->
-                            val seriesCharacterEntry = seriesCharacter as? Entry.Prefilled
+                            val seriesCharacterEntry = seriesCharacter as? Entry.Prefilled<*>
                             if (seriesCharacterEntry != null) {
-                                seriesCharacterEntry.id == (character as? Entry.Prefilled)?.id
+                                seriesCharacterEntry.id == (character as? Entry.Prefilled<*>)?.id
                             } else {
                                 false
                             }
                         } || charactersSecond.any { character ->
-                            val seriesCharacterEntry = seriesCharacter as? Entry.Prefilled
+                            val seriesCharacterEntry = seriesCharacter as? Entry.Prefilled<*>
                             if (seriesCharacterEntry != null) {
-                                seriesCharacterEntry.id == (character as? Entry.Prefilled)?.id
+                                seriesCharacterEntry.id == (character as? Entry.Prefilled<*>)?.id
                             } else {
                                 false
                             }
@@ -317,7 +318,7 @@ abstract class ArtEntryDetailsViewModel(
         notesSection.value = entry.notes.orEmpty()
         notesSection.lockState = entry.notesLocked
 
-        entry.characters.filterIsInstance<Entry.Prefilled>()
+        entry.characters.filterIsInstance<Entry.Prefilled<*>>()
             .forEach {
                 val characterId = it.id.toInt()
                 viewModelScope.launch(Dispatchers.Main) {
@@ -336,7 +337,7 @@ abstract class ArtEntryDetailsViewModel(
                         .flowOn(Dispatchers.IO)
                         .collectLatest { newEntry ->
                             characterSection.replaceContents { entry ->
-                                if (entry is Entry.Prefilled &&
+                                if (entry is Entry.Prefilled<*> &&
                                     entry.id == characterId.toString()
                                 ) newEntry else entry
                             }
@@ -344,7 +345,7 @@ abstract class ArtEntryDetailsViewModel(
                 }
             }
 
-        entry.series.filterIsInstance<Entry.Prefilled>()
+        entry.series.filterIsInstance<Entry.Prefilled<*>>()
             .forEach {
                 val mediaId = it.id.toInt()
                 viewModelScope.launch(Dispatchers.Main) {
@@ -354,7 +355,7 @@ abstract class ArtEntryDetailsViewModel(
                         .flowOn(Dispatchers.IO)
                         .collectLatest { newEntry ->
                             seriesSection.replaceContents { entry ->
-                                if (entry is Entry.Prefilled &&
+                                if (entry is Entry.Prefilled<*> &&
                                     entry.id == mediaId.toString()
                                 ) newEntry else entry
                             }
@@ -405,8 +406,9 @@ abstract class ArtEntryDetailsViewModel(
         )
     }
 
-    suspend fun saveEntry(imageUri: Uri?, id: String) {
-        val entry = makeEntry(imageUri, id) ?: return
+    @CheckReturnValue
+    suspend fun saveEntry(imageUri: Uri?, id: String): Boolean {
+        val entry = makeEntry(imageUri, id) ?: return false
         entry.series
             .map { aniListJson.parseSeriesColumn(it) }
             .mapNotNull { it.rightOrNull()?.id }
@@ -416,5 +418,6 @@ abstract class ArtEntryDetailsViewModel(
             .mapNotNull { it.rightOrNull()?.id }
             .forEach(characterRepository::ensureSaved)
         artEntryDao.insertEntries(entry)
+        return true
     }
 }

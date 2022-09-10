@@ -29,7 +29,7 @@ class MediaRepository(
             fetchMediaFlow
                 .drop(1) // Ignore initial value
                 .distinctWithBuffer(10)
-                .flatMapLatest { aniListApi.getMedia(it) }
+                .flatMapLatest { aniListApi.getMedia(it).catch {} }
                 .catch {}
                 .mapNotNull { it?.aniListMedia }
                 .map {

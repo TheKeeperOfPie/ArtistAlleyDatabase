@@ -31,6 +31,7 @@ class CustomApplication : Application(), Configuration.Provider, ScopedApplicati
     override fun onCreate() {
         super.onCreate()
         filesDir.toPath().resolve("entry_images").toFile().mkdirs()
+        filesDir.toPath().resolve("cd_entry_images").toFile().mkdirs()
 
         NotificationManagerCompat.from(this)
             .createNotificationChannelsCompat(

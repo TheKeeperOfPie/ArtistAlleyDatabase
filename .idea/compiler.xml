@@ -9,6 +9,7 @@
       <module name="Artist_Alley_Database.modules.cds" target="11" />
       <module name="Artist_Alley_Database.modules.compose-utils" target="11" />
       <module name="Artist_Alley_Database.modules.form" target="11" />
+      <module name="Artist_Alley_Database.modules.vgmdb" target="11" />
       <module name="Artist_Alley_Database_Composite_Build.json-schema" target="11" />
       <module name="Artist_Alley_Database_Composite_Build.json-schema.functionalTest" target="11" />
       <module name="Artist_Alley_Database_Composite_Build.json-schema.main" target="11" />

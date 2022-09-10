@@ -47,7 +47,7 @@ data class CdEntry(
     @JsonClass(generateAdapter = true)
     data class Locks(
         val catalogIdLocked: Boolean? = false,
-        val titleLocked: Boolean? = false,
+        val titlesLocked: Boolean? = false,
         val artistsLocked: Boolean? = false,
         val seriesLocked: Boolean? = false,
         val charactersLocked: Boolean? = false,

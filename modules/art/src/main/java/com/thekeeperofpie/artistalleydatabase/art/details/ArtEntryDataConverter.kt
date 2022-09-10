@@ -34,10 +34,11 @@ class ArtEntryDataConverter @Inject constructor(
             is Either.Left -> EntrySection.MultiText.Entry.Custom(either.value)
         }
 
-    fun seriesEntry(media: AniListMedia): EntrySection.MultiText.Entry.Prefilled {
+    fun seriesEntry(media: AniListMedia): EntrySection.MultiText.Entry {
         val title = media.title?.romaji ?: media.id.toString()
         val serializedValue = aniListJson.toJson(MediaColumnEntry(media.id, title.trim()))
         return EntrySection.MultiText.Entry.Prefilled(
+            value = media,
             id = media.id.toString(),
             text = title,
             trailingIcon = when (media.type) {
@@ -69,6 +70,7 @@ class ArtEntryDataConverter @Inject constructor(
         val nonNullTitle = title?.romaji ?: entry.id.toString()
         val serializedValue = aniListJson.toJson(MediaColumnEntry(entry.id, nonNullTitle))
         return EntrySection.MultiText.Entry.Prefilled(
+            value = entry,
             id = entry.id.toString(),
             text = nonNullTitle,
             trailingIcon = when (entry.type) {
@@ -99,6 +101,7 @@ class ArtEntryDataConverter @Inject constructor(
     fun seriesEntry(entry: MediaColumnEntry): EntrySection.MultiText.Entry {
         val serializedValue = aniListJson.toJson(MediaColumnEntry(entry.id, entry.title))
         return EntrySection.MultiText.Entry.Prefilled(
+            value = entry,
             id = entry.id.toString(),
             text = entry.title,
             image = null,
@@ -110,6 +113,7 @@ class ArtEntryDataConverter @Inject constructor(
 
     fun characterEntry(character: AniListCharacter) =
         characterEntry(
+            value = character,
             id = character.id,
             image = character.image?.medium,
             first = character.name?.first,
@@ -123,6 +127,7 @@ class ArtEntryDataConverter @Inject constructor(
 
     fun characterEntry(entry: CharacterColumnEntry) =
         characterEntry(
+            value = entry,
             id = entry.id,
             image = null,
             first = entry.name?.first,
@@ -136,6 +141,7 @@ class ArtEntryDataConverter @Inject constructor(
 
     fun characterEntry(entry: CharacterEntry, media: List<MediaEntry>) =
         characterEntry(
+            value = entry,
             id = entry.id,
             image = entry.image?.medium,
             first = entry.name?.first,
@@ -147,7 +153,8 @@ class ArtEntryDataConverter @Inject constructor(
             mediaTitle = media.firstOrNull()?.title?.romaji,
         )
 
-    private fun characterEntry(
+    private fun <T> characterEntry(
+        value: T,
         id: Int,
         image: String?,
         first: String?,
@@ -157,7 +164,7 @@ class ArtEntryDataConverter @Inject constructor(
         native: String?,
         alternative: List<String>?,
         mediaTitle: String?
-    ): EntrySection.MultiText.Entry.Prefilled {
+    ): EntrySection.MultiText.Entry {
         val canonicalName = CharacterUtils.buildCanonicalName(
             first = first,
             middle = middle,
@@ -178,6 +185,7 @@ class ArtEntryDataConverter @Inject constructor(
             )
         )
         return EntrySection.MultiText.Entry.Prefilled(
+            value = value,
             id = id.toString(),
             text = canonicalName,
             image = image,

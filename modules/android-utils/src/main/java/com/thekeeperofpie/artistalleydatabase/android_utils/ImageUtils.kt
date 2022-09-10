@@ -3,7 +3,9 @@ package com.thekeeperofpie.artistalleydatabase.android_utils
 import android.app.Application
 import android.graphics.BitmapFactory
 import android.net.Uri
+import androidx.annotation.WorkerThread
 import java.io.File
+import java.net.URL
 
 object ImageUtils {
 
@@ -41,33 +43,36 @@ object ImageUtils {
         return options.outMimeType
     }
 
+    @WorkerThread
     fun writeEntryImage(
         application: Application,
         outputFile: File,
         imageUri: Uri?
     ): Pair<Int, Exception?>? {
-        imageUri?.let {
-            val imageStream = try {
-                application.contentResolver.openInputStream(it)
-            } catch (e: Exception) {
-                return UtilsStringR.error_fail_to_load_image to e
-            } ?: run {
-                return UtilsStringR.error_fail_to_load_image to null
+        imageUri ?: return UtilsStringR.error_fail_to_load_image to null
+        val imageStream = try {
+            if (imageUri.scheme?.startsWith("http") == true) {
+                URL(imageUri.toString()).openStream()
+            } else {
+                application.contentResolver.openInputStream(imageUri)
             }
-
-            val output = try {
-                outputFile.outputStream()
-            } catch (e: Exception) {
-                return UtilsStringR.error_fail_to_open_file_output to e
-            }
-
-            output.use {
-                imageStream.use {
-                    imageStream.copyTo(output)
-                }
-            }
+        } catch (e: Exception) {
+            return UtilsStringR.error_fail_to_load_image to e
+        } ?: run {
+            return UtilsStringR.error_fail_to_load_image to null
         }
 
+        val output = try {
+            outputFile.outputStream()
+        } catch (e: Exception) {
+            return UtilsStringR.error_fail_to_open_file_output to e
+        }
+
+        output.use {
+            imageStream.use {
+                imageStream.copyTo(output)
+            }
+        }
         return null
     }
 }

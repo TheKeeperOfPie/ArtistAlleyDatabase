@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <paths>
     <files-path name="entry_images" path="entry_images/"/>
+    <files-path name="cd_entry_images" path="cd_entry_images/"/>
 </paths>

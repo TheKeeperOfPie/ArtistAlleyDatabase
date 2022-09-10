@@ -68,8 +68,8 @@ class Autocompleter @Inject constructor(
             val localValueNotNull = localValue.filterNotNull()
             val (first, second) = localValueNotNull.map { localEntry ->
                     networkValue.firstOrNull { networkEntry ->
-                        (localEntry as? Entry.Prefilled)?.id ==
-                                networkEntry.id
+                        (localEntry as? Entry.Prefilled<*>)?.id ==
+                                (networkEntry as? Entry.Prefilled<*>)?.id
                     } ?: localEntry
                 }
                 .split { it.text.contains(query, ignoreCase = true) }
@@ -77,7 +77,8 @@ class Autocompleter @Inject constructor(
             val filteredNetwork = networkValue.toMutableList().apply {
                 removeAll { networkEntry ->
                     localValueNotNull.any { localEntry ->
-                        (localEntry as? Entry.Prefilled)?.id == networkEntry.id
+                        (localEntry as? Entry.Prefilled<*>)?.id ==
+                                (networkEntry as? Entry.Prefilled<*>)?.id
                     }
                 }
             }
@@ -112,7 +113,7 @@ class Autocompleter @Inject constructor(
 
     private fun queryCharactersNetwork(
         query: String
-    ): Flow<List<Entry.Prefilled>> {
+    ): Flow<List<Entry>> {
         val search = aniListCall({ aniListApi.searchCharacters(query) }) {
             it.Page.characters.filterNotNull()
                 .map { artEntryDataConverter.characterEntry(it.aniListCharacter) }
@@ -131,7 +132,7 @@ class Autocompleter @Inject constructor(
 
     private fun <DataType : Operation.Data, ResponseType : ApolloResponse<DataType>> aniListCall(
         apiCall: () -> Flow<ResponseType>,
-        transform: suspend (DataType) -> List<Entry.Prefilled?>,
+        transform: suspend (DataType) -> List<Entry?>,
     ) = apiCall()
         .nullable()
         .catch { Log.e(TAG, "Failed to search", it); emit(null) }

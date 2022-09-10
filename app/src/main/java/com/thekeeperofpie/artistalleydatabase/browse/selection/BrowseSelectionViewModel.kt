@@ -64,14 +64,14 @@ class BrowseSelectionViewModel @Inject constructor(
                             ArtEntryColumn.SERIES -> when (query) {
                                 is Either.Left -> it.series.asSequence()
                                     .map(dataConverter::databaseToSeriesEntry)
-                                    .filterIsInstance<EntrySection.MultiText.Entry.Prefilled>()
+                                    .filterIsInstance<EntrySection.MultiText.Entry.Prefilled<*>>()
                                     .any { it.id.toIntOrNull() == query.value }
                                 is Either.Right -> it.series.any { it.contains(query.value) }
                             }
                             ArtEntryColumn.CHARACTERS -> when (query) {
                                 is Either.Left -> it.characters.asSequence()
                                     .map(dataConverter::databaseToCharacterEntry)
-                                    .filterIsInstance<EntrySection.MultiText.Entry.Prefilled>()
+                                    .filterIsInstance<EntrySection.MultiText.Entry.Prefilled<*>>()
                                     .any { it.id.toIntOrNull() == query.value }
                                 is Either.Right -> it.characters.any { it.contains(query.value) }
                             }

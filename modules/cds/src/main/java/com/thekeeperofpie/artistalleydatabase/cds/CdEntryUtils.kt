@@ -9,6 +9,6 @@ object CdEntryUtils {
         .resolve("cd_entry_images/${id}")
 
     fun buildPlaceholderText(json: Json, entry: CdEntry) = entry.run {
-        entry.titles.joinToString()
+        titles.joinToString()
     }
 }

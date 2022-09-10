@@ -21,6 +21,8 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.jsonObject
@@ -37,6 +39,12 @@ import java.net.URL
 
 @CacheableTask
 open class JsonSchemaTask : DefaultTask() {
+
+    companion object {
+        private val FORCE_NULLABLE_NAMES = listOf(
+            "category"
+        )
+    }
 
     @get:Input
     lateinit var extension: JsonSchemaExtension
@@ -64,6 +72,7 @@ open class JsonSchemaTask : DefaultTask() {
         serializersModule = SerializersModule {
             polymorphic(JsonSchemaType::class) {
                 subclass(JsonSchemaType.Number::class)
+                subclass(JsonSchemaType.Integer::class)
                 subclass(JsonSchemaType.StringType::class)
                 subclass(JsonSchemaType.Array::class)
                 subclass(JsonSchemaType.Object::class)
@@ -175,6 +184,10 @@ open class JsonSchemaTask : DefaultTask() {
                     return cached
                 }
 
+                if (type.anyOf.isNotEmpty()) {
+                    return ClassWrapper.StringType(type.title)
+                }
+
                 val allOf = type.allOf
                 val properties = if (allOf.isNotEmpty()) {
                     allOf.mapNotNull {
@@ -201,14 +214,22 @@ open class JsonSchemaTask : DefaultTask() {
                     patternProperties = type.patternProperties,
                 ).also { classCache[className] = it }
             }
-            is JsonSchemaType.StringType -> return ClassWrapper.StringType(type.title)
+            is JsonSchemaType.StringType -> return ClassWrapper.StringType(
+                comment = type.title,
+                nullable = FORCE_NULLABLE_NAMES.contains(name)
+            )
             is JsonSchemaType.Number -> return ClassWrapper.Number(type.title)
-            is JsonSchemaType.Unknown ->
+            is JsonSchemaType.Integer -> return ClassWrapper.Integer(type.title)
+            is JsonSchemaType.Unknown -> {
+                if (type.anyOf.isNotEmpty()) {
+                    return ClassWrapper.StringType(type.title)
+                }
                 return ClassWrapper.Map(
-                    "",
+                    type.title,
                     ClassWrapper.StringType(""),
                     ClassWrapper.StringType("")
                 )
+            }
         }
     }
 
@@ -222,11 +243,22 @@ open class JsonSchemaTask : DefaultTask() {
         patternProperties: Map<String, JsonElement>,
     ): ClassWrapper {
         if (patternProperties.isNotEmpty()) {
-            return ClassWrapper.Map(
-                comment,
-                ClassWrapper.StringType(""),
-                ClassWrapper.StringType("")
-            )
+            return if (patternProperties.filter { it.value is JsonObject }
+                    .map { it.value.jsonObject }
+                    .any { (it["type"] as? JsonPrimitive)?.content == "array" }
+            ) {
+                ClassWrapper.Map(
+                    comment,
+                    ClassWrapper.StringType(""),
+                    ClassWrapper.Object("", ClassName("kotlinx.serialization.json", "JsonElement"))
+                )
+            } else {
+                ClassWrapper.Map(
+                    comment,
+                    ClassWrapper.StringType(""),
+                    ClassWrapper.StringType("")
+                )
+            }
         }
 
         @Suppress("UNCHECKED_CAST")
@@ -244,6 +276,7 @@ open class JsonSchemaTask : DefaultTask() {
             is ClassWrapper.List -> typeName
             is ClassWrapper.Map -> typeName
             is ClassWrapper.Number -> typeName.copy(nullable = optional)
+            is ClassWrapper.Integer -> typeName.copy(nullable = optional)
             is ClassWrapper.Object -> typeName.copy(nullable = optional)
             is ClassWrapper.StringType -> typeName.copy(nullable = optional)
         }
@@ -327,12 +360,20 @@ open class JsonSchemaTask : DefaultTask() {
             override val defaultValue = "emptyMap()"
         }
 
-        data class StringType(override val comment: String) : ClassWrapper() {
-            override val typeName = ClassName("kotlin", "String")
+        data class StringType(
+            override val comment: String,
+            val nullable: Boolean = false
+        ) : ClassWrapper() {
+            override val typeName = ClassName("kotlin", "String").copy(nullable = nullable)
             override val defaultValue = "\"\""
         }
 
         data class Number(override val comment: String) : ClassWrapper() {
+            override val typeName = ClassName("kotlin", "Float")
+            override val defaultValue = "-1f"
+        }
+
+        data class Integer(override val comment: String) : ClassWrapper() {
             override val typeName = ClassName("kotlin", "Int")
             override val defaultValue = "-1"
         }

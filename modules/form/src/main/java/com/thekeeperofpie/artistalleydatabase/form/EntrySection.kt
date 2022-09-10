@@ -13,7 +13,10 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import com.thekeeperofpie.artistalleydatabase.compose.observableStateOf
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import java.util.function.UnaryOperator
 
@@ -76,6 +79,12 @@ sealed class EntrySection(lockState: LockState? = null) {
             pendingValueUpdates::tryEmit
         )
 
+        private val predictionChosenUpdates = MutableSharedFlow<Entry>(
+            extraBufferCapacity = 1,
+            onBufferOverflow = BufferOverflow.DROP_OLDEST
+        )
+        val predictionChosen = predictionChosenUpdates.asSharedFlow()
+
         // TODO: Predictions for existing prefilled fields
         var predictions by mutableStateOf(emptyList<Entry>())
 
@@ -84,6 +93,13 @@ sealed class EntrySection(lockState: LockState? = null) {
         fun contentSize() = contents.size
 
         fun content(index: Int) = contents[index]
+
+        fun onPredictionChosen(index: Int) {
+            val entry = predictions[index]
+            addContent(entry)
+            pendingValue = ""
+            predictionChosenUpdates.tryEmit(entry)
+        }
 
         fun setContents(entries: Collection<Entry>) {
             contents.clear()
@@ -150,7 +166,8 @@ sealed class EntrySection(lockState: LockState? = null) {
                 R.string.different_indicator_content_description
             )
 
-            class Prefilled(
+            class Prefilled<T>(
+                val value: T,
                 val id: String,
                 text: String,
                 val image: String? = null,

@@ -21,7 +21,9 @@ class JsonSchemaPlugin : Plugin<Project> {
             group = "build"
             extension = project.the()
         }
-        project.tasks.findByName("compileKotlin")!!.dependsOn(task)
+        project.tasks.apply {
+            (findByName("assemble") ?: findByName("compileKotlin"))!!.dependsOn(task)
+        }
 
         project.afterEvaluate {
             val generatedSrcDir = project.the<JsonSchemaExtension>().generatedOutputDir.get().asFile

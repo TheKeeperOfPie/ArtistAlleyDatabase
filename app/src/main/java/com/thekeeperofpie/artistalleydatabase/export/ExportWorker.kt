@@ -81,7 +81,7 @@ class ExportWorker @AssistedInject constructor(
                                         this,
                                         jsonWriter,
                                         jsonElementConverter =
-                                        appMoshi.jsonElementAdapter::toJsonValue,
+                                        appMoshi.jsonElementAdapter.indent("    ")::toJsonValue,
                                         writeEntry =
                                         @Suppress("BlockingMethodInNonBlockingContext")
                                         { name, input ->

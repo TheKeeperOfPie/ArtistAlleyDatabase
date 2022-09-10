@@ -93,10 +93,10 @@ class DetailsViewModel @Inject constructor(
         saving = true
 
         viewModelScope.launch(Dispatchers.IO) {
-            saveEntry(imageUri, entryId!!)
-
-            withContext(Dispatchers.Main) {
-                navHostController.popBackStack()
+            if (saveEntry(imageUri, entryId!!)) {
+                withContext(Dispatchers.Main) {
+                    navHostController.popBackStack()
+                }
             }
         }
     }

@@ -72,14 +72,15 @@ class AdvancedSearchViewModel @Inject constructor(
             series = seriesContents.filterIsInstance<EntrySection.MultiText.Entry.Custom>()
                 .map { it.serializedValue }
                 .filterNot(String::isBlank),
-            seriesById = seriesContents.filterIsInstance<EntrySection.MultiText.Entry.Prefilled>()
+            seriesById = seriesContents
+                .filterIsInstance<EntrySection.MultiText.Entry.Prefilled<*>>()
                 .mapNotNull { it.id.toIntOrNull() },
             characters = characterContents
                 .filterIsInstance<EntrySection.MultiText.Entry.Custom>()
                 .map { it.serializedValue }
                 .filterNot(String::isBlank),
             charactersById = characterContents
-                .filterIsInstance<EntrySection.MultiText.Entry.Prefilled>()
+                .filterIsInstance<EntrySection.MultiText.Entry.Prefilled<*>>()
                 .mapNotNull { it.id.toIntOrNull() },
             tags = tagSection.finalContents().map { it.serializedValue },
             printWidth = printSizeSection.finalWidth(),

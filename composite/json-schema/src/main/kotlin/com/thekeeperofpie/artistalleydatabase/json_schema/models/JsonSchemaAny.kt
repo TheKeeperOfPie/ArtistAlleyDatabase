@@ -16,6 +16,12 @@ sealed class JsonSchemaType {
     ) : JsonSchemaType()
 
     @Serializable
+    @SerialName("integer")
+    data class Integer(
+        override val title: String = "",
+    ) : JsonSchemaType()
+
+    @Serializable
     @SerialName("string")
     data class StringType(
         override val title: String = "",
@@ -39,11 +45,14 @@ sealed class JsonSchemaType {
         val properties: Map<String, JsonElement> = emptyMap(),
         val patternProperties: Map<String, JsonElement> = emptyMap(),
         val allOf: List<JsonElement> = emptyList(),
+        val anyOf: List<JsonElement> = emptyList(),
         val required: List<String> = emptyList(),
     ) : JsonSchemaType()
 
     @Serializable
-    object Unknown : JsonSchemaType() {
+    class Unknown(
+        val anyOf: List<JsonElement> = emptyList(),
+    ) : JsonSchemaType() {
         override val title: String = ""
     }
 }

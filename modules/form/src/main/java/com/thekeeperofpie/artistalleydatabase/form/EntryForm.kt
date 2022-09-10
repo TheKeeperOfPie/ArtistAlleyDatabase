@@ -285,15 +285,14 @@ private fun MultiTextSection(section: EntrySection.MultiText) {
                         when (val entry = section.predictions[it]) {
                             is EntrySection.MultiText.Entry.Custom -> entry.text
                             EntrySection.MultiText.Entry.Different -> entry
-                            is EntrySection.MultiText.Entry.Prefilled -> entry.id
+                            is EntrySection.MultiText.Entry.Prefilled<*> -> entry.id
                         }
                     }) {
                         val entry = section.predictions[it]
                         DropdownMenuItem(
                             onClick = {
                                 focusRequester.requestFocus()
-                                section.addContent(entry)
-                                section.pendingValue = ""
+                                section.onPredictionChosen(it)
                                 coroutineScope.launch {
                                     delay(500)
                                     bringIntoViewRequester.bringIntoView()
@@ -311,7 +310,7 @@ private fun MultiTextSection(section: EntrySection.MultiText) {
                                         image = { null }
                                         imageLink = { null }
                                     }
-                                    is EntrySection.MultiText.Entry.Prefilled -> {
+                                    is EntrySection.MultiText.Entry.Prefilled<*> -> {
                                         titleText = { entry.titleText }
                                         subtitleText = { entry.subtitleText }
                                         image = { entry.image }
@@ -457,7 +456,7 @@ private fun PrefilledSectionField(
                     )
             )
         }
-        is EntrySection.MultiText.Entry.Prefilled -> {
+        is EntrySection.MultiText.Entry.Prefilled<*> -> {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier

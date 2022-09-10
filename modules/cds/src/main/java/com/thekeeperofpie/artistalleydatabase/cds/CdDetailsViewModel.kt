@@ -3,7 +3,6 @@ package com.thekeeperofpie.artistalleydatabase.cds
 import android.app.Application
 import android.net.Uri
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.net.toUri
@@ -18,16 +17,16 @@ import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbJson
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumEntry
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
-class CdAddEntryViewModel @Inject constructor(
+class CdDetailsViewModel @Inject constructor(
     application: Application,
     cdEntryDao: CdEntryDetailsDao,
     aniListApi: AniListApi,
@@ -47,8 +46,14 @@ class CdAddEntryViewModel @Inject constructor(
     characterRepository,
 ) {
 
-    val imageUris = mutableStateListOf<Uri>()
+    var entryId: String? = null
+    lateinit var entry: CdEntry
 
+    var imageUri by mutableStateOf<Uri?>(null)
+
+    var areSectionsLoading by mutableStateOf(true)
+
+    private var deleting = false
     var saving by mutableStateOf(false)
         private set
 
@@ -58,27 +63,44 @@ class CdAddEntryViewModel @Inject constructor(
                 .filterIsInstance<EntrySection.MultiText.Entry.Prefilled<AlbumEntry>>()
                 .flowOn(Dispatchers.IO)
                 .collectLatest {
-                    val imageUrl = it.value.coverFull?.toUri() ?: return@collectLatest
-                    imageUris.clear()
-                    imageUris.add(imageUrl)
+                    imageUri = it.value.coverFull?.toUri()
                 }
         }
     }
 
+    fun initialize(entryId: String) {
+        if (this.entryId != null) return
+        this.entryId = entryId
+
+        viewModelScope.launch(Dispatchers.IO) {
+            entry = cdEntryDao.getEntry(entryId)
+            delay(350)
+            withContext(Dispatchers.Main) {
+                initializeForm(buildModel(entry))
+                areSectionsLoading = false
+            }
+        }
+    }
+
+    fun onConfirmDelete(navHostController: NavHostController) {
+        if (deleting || saving) return
+        deleting = true
+
+        viewModelScope.launch(Dispatchers.IO) {
+            cdEntryDao.delete(entryId!!)
+
+            withContext(Dispatchers.Main) {
+                navHostController.popBackStack()
+            }
+        }
+    }
+
     fun onClickSave(navHostController: NavHostController) {
-        if (saving) return
+        if (saving || deleting) return
         saving = true
 
         viewModelScope.launch(Dispatchers.IO) {
-            val success = if (imageUris.isEmpty()) {
-                saveEntry(null, UUID.randomUUID().toString())
-            } else {
-                imageUris.all {
-                    saveEntry(it, UUID.randomUUID().toString())
-                }
-            }
-
-            if (success) {
+            if (saveEntry(imageUri, entryId!!)) {
                 withContext(Dispatchers.Main) {
                     navHostController.popBackStack()
                 }

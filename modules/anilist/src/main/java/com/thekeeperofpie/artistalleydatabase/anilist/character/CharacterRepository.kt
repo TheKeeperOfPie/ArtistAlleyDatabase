@@ -29,8 +29,7 @@ class CharacterRepository(
             fetchCharacterFlow
                 .drop(1) // Ignore initial value
                 .distinctWithBuffer(10)
-                .flatMapLatest { aniListApi.getCharacter(it) }
-                .catch {}
+                .flatMapLatest { aniListApi.getCharacter(it).catch {} }
                 .mapNotNull { it?.aniListCharacter }
                 .map {
                     CharacterEntry(

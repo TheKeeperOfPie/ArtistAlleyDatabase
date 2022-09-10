@@ -54,6 +54,7 @@ import com.thekeeperofpie.artistalleydatabase.browse.BrowseViewModel
 import com.thekeeperofpie.artistalleydatabase.browse.selection.BrowseSelectionScreen
 import com.thekeeperofpie.artistalleydatabase.browse.selection.BrowseSelectionViewModel
 import com.thekeeperofpie.artistalleydatabase.cds.CdAddEntryViewModel
+import com.thekeeperofpie.artistalleydatabase.cds.CdDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.cds.search.CdSearchViewModel
 import com.thekeeperofpie.artistalleydatabase.detail.DetailsScreen
 import com.thekeeperofpie.artistalleydatabase.detail.DetailsViewModel
@@ -333,8 +334,71 @@ class MainActivity : ComponentActivity() {
                     )
                 }
 
-                addDetailsScreen(navController)
-                addEditScreen(navController)
+                composable(
+                    NavDestinations.ENTRY_DETAILS +
+                            "?entry_id={entry_id}" +
+                            "&entry_image_file={entry_image_file}" +
+                            "&entry_image_ratio={entry_image_ratio}",
+                    arguments = listOf(
+                        navArgument("entry_id") {
+                            type = NavType.StringType
+                            nullable = false
+                        },
+                        navArgument("entry_image_file") {
+                            type = NavType.StringType
+                            nullable = true
+                        },
+                        navArgument("entry_image_ratio") {
+                            type = NavType.FloatType
+                        },
+                    )
+                ) {
+                    val arguments = it.arguments!!
+                    val entryId = arguments.getString("entry_id")!!
+                    val entryImageFile = arguments.getString("entry_image_file")?.let(::File)
+                    val entryImageRatio = arguments.getFloat("entry_image_ratio", 1f)
+
+                    val viewModel = hiltViewModel<CdDetailsViewModel>()
+                    viewModel.initialize(entryId)
+
+                    DetailsScreen(
+                        { entryId },
+                        { entryImageFile },
+                        { entryImageRatio },
+                        imageUri = { viewModel.imageUri },
+                        onImageSelected = { viewModel.imageUri = it },
+                        onImageSelectError = {
+                            viewModel.errorResource = UtilsStringR.error_fail_to_load_image to it
+                        },
+                        onImageClickOpen = {
+                            entryImageFile?.let {
+                                val imageUri = FileProvider.getUriForFile(
+                                    this@MainActivity,
+                                    "$packageName.fileprovider",
+                                    it
+                                )
+
+                                val intent = Intent(Intent.ACTION_VIEW).apply {
+                                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                    setDataAndType(imageUri, "image/*")
+                                }
+
+                                val chooserIntent = Intent.createChooser(
+                                    intent,
+                                    getString(R.string.art_entry_open_full_image_content_description)
+                                )
+                                startActivity(chooserIntent)
+                            }
+                        },
+                        areSectionsLoading = { viewModel.areSectionsLoading },
+                        sections = { viewModel.sections },
+                        saving = { viewModel.saving },
+                        onClickSave = { viewModel.onClickSave(navController) },
+                        errorRes = { viewModel.errorResource },
+                        onErrorDismiss = { viewModel.errorResource = null },
+                        onConfirmDelete = { viewModel.onConfirmDelete(navController) }
+                    )
+                }
             }
         }
     }

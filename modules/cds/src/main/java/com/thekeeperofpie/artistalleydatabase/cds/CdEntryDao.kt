@@ -12,6 +12,10 @@ import com.thekeeperofpie.artistalleydatabase.cds.search.CdSearchQuery
 @Dao
 interface CdEntryDao {
 
+
+    @Query("""SELECT * FROM cd_entries WHERE id = :id""")
+    suspend fun getEntry(id: String): CdEntry
+
     @Query(
         """
         SELECT *

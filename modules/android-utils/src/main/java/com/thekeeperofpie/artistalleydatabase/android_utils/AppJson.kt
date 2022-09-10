@@ -7,5 +7,6 @@ open class AppJson {
     open val json = Json {
         isLenient = true
         ignoreUnknownKeys = true
+        prettyPrint = true
     }
 }

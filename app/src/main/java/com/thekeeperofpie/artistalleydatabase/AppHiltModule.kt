@@ -13,6 +13,7 @@ import com.thekeeperofpie.artistalleydatabase.art.autocomplete.Autocompleter
 import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryDataConverter
 import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryDetailsDao
 import com.thekeeperofpie.artistalleydatabase.json.AppMoshi
+import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbJson
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -67,4 +68,7 @@ class AppHiltModule {
 
     @Provides
     fun provideAniListJson(appJson: AppJson) = AniListJson(appJson.json)
+
+    @Provides
+    fun provideVgmdbJson(appJson: AppJson) = VgmdbJson(appJson.json)
 }

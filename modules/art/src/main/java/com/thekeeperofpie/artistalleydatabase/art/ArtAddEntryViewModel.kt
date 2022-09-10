@@ -64,16 +64,18 @@ class ArtAddEntryViewModel @Inject constructor(
         saving = true
 
         viewModelScope.launch(Dispatchers.IO) {
-            if (imageUris.isEmpty()) {
+            val success = if (imageUris.isEmpty()) {
                 saveEntry(null, UUID.randomUUID().toString())
             } else {
-                imageUris.forEach {
+                imageUris.all {
                     saveEntry(it, UUID.randomUUID().toString())
                 }
             }
 
-            withContext(Dispatchers.Main) {
-                navHostController.popBackStack()
+            if (success) {
+                withContext(Dispatchers.Main) {
+                    navHostController.popBackStack()
+                }
             }
         }
     }

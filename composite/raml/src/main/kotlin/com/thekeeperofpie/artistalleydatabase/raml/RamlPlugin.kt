@@ -30,7 +30,11 @@ class RamlPlugin : Plugin<Project> {
             jsonSchemaExtension = project.the()
         }
 
-        project.tasks.findByName("compileKotlin")!!.dependsOn(task)
+        project.tasks.apply {
+            findByName("assemble")?.dependsOn(task)
+            findByName("compileDebugKotlin")?.dependsOn(task)
+            findByName("compileReleaseKotlin")?.dependsOn(task)
+        }
 
         project.afterEvaluate {
             val generatedSrcDir = project.the<RamlExtension>().generatedOutputDir.get().asFile
