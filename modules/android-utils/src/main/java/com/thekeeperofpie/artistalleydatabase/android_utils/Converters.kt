@@ -76,6 +76,16 @@ object Converters {
             value?.let<String, List<String>>(Json.Default::decodeFromString).orEmpty()
     }
 
+    object StringMapConverter {
+
+        @TypeConverter
+        fun serializeStringMap(value: Map<String, String>?) = Json.encodeToString(value)
+
+        @TypeConverter
+        fun deserializeStringMap(value: String?) =
+            value?.let<String, Map<String, String>>(Json.Default::decodeFromString).orEmpty()
+    }
+
     object IntListConverter {
 
         @TypeConverter

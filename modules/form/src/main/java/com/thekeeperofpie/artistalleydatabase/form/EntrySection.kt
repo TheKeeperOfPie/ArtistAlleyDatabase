@@ -101,10 +101,11 @@ sealed class EntrySection(lockState: LockState? = null) {
             predictionChosenUpdates.tryEmit(entry)
         }
 
-        fun setContents(entries: Collection<Entry>) {
+        fun setContents(entries: Collection<Entry>, lockState: LockState?) {
             contents.clear()
             contents.addAll(entries)
             contentUpdates.tryEmit(contents.toList())
+            this.lockState = lockState
         }
 
         fun replaceContents(operator: UnaryOperator<Entry>) {
@@ -194,6 +195,11 @@ sealed class EntrySection(lockState: LockState? = null) {
         lockState: LockState? = null,
     ) : EntrySection(lockState) {
         var value by mutableStateOf(initialPendingValue)
+
+        fun setContents(value: String?, lockState: LockState?) {
+            this.value = value.orEmpty()
+            this.lockState = lockState
+        }
     }
 
     open class Dropdown(

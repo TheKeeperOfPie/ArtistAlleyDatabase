@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.annotation.MainThread
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -219,25 +220,12 @@ class MainActivity : ComponentActivity() {
                             if (viewModel.selectedEntries.isNotEmpty()) {
                                 viewModel.selectEntry(index, entry)
                             } else {
-                                val entryImageRatio = entry.value.imageWidthToHeightRatio
-                                navController.navigate(
-                                    NavDestinations.ENTRY_DETAILS +
-                                            "?entry_id=${entry.value.id}" +
-                                            (entry.localImageFile
-                                                ?.let { "&entry_image_file=${it.toPath()}" }
-                                                ?: "") +
-                                            "&entry_image_ratio=${entryImageRatio}"
-                                )
+                                navController.navToEntryDetails(entry)
                             }
                         },
                         onLongClickEntry = viewModel::selectEntry,
                         onClickClear = viewModel::clearSelected,
-                        onClickEdit = {
-                            editSelected(
-                                navController,
-                                viewModel.selectedEntries.values
-                            )
-                        },
+                        onClickEdit = { editSelected(navController, viewModel.selectedEntries) },
                         onConfirmDelete = viewModel::deleteSelected,
                     )
                 }
@@ -263,7 +251,7 @@ class MainActivity : ComponentActivity() {
                     )
                 }
 
-                addDetailsScreen(navController)
+                addArtDetailsScreen(navController)
                 addEditScreen(navController)
             }
         }
@@ -291,25 +279,12 @@ class MainActivity : ComponentActivity() {
                             if (viewModel.selectedEntries.isNotEmpty()) {
                                 viewModel.selectEntry(index, entry)
                             } else {
-                                val entryImageRatio = entry.value.imageWidthToHeightRatio
-                                navController.navigate(
-                                    NavDestinations.ENTRY_DETAILS +
-                                            "?entry_id=${entry.value.id}" +
-                                            (entry.localImageFile
-                                                ?.let { "&entry_image_file=${it.toPath()}" }
-                                                ?: "") +
-                                            "&entry_image_ratio=${entryImageRatio}"
-                                )
+                                navController.navToEntryDetails(entry)
                             }
                         },
                         onLongClickEntry = viewModel::selectEntry,
                         onClickClear = viewModel::clearSelected,
-                        onClickEdit = {
-                            editSelected(
-                                navController,
-                                viewModel.selectedEntries.values
-                            )
-                        },
+                        onClickEdit = { editSelected(navController, viewModel.selectedEntries) },
                         onConfirmDelete = viewModel::deleteSelected,
                     )
                 }
@@ -334,62 +309,18 @@ class MainActivity : ComponentActivity() {
                     )
                 }
 
-                composable(
-                    NavDestinations.ENTRY_DETAILS +
-                            "?entry_id={entry_id}" +
-                            "&entry_image_file={entry_image_file}" +
-                            "&entry_image_ratio={entry_image_ratio}",
-                    arguments = listOf(
-                        navArgument("entry_id") {
-                            type = NavType.StringType
-                            nullable = false
-                        },
-                        navArgument("entry_image_file") {
-                            type = NavType.StringType
-                            nullable = true
-                        },
-                        navArgument("entry_image_ratio") {
-                            type = NavType.FloatType
-                        },
-                    )
-                ) {
-                    val arguments = it.arguments!!
-                    val entryId = arguments.getString("entry_id")!!
-                    val entryImageFile = arguments.getString("entry_image_file")?.let(::File)
-                    val entryImageRatio = arguments.getFloat("entry_image_ratio", 1f)
-
-                    val viewModel = hiltViewModel<CdDetailsViewModel>()
-                    viewModel.initialize(entryId)
-
+                entryDetailsComposable { id, imageFile, imageRatio ->
+                    val viewModel = hiltViewModel<CdDetailsViewModel>().initialize(id)
                     DetailsScreen(
-                        { entryId },
-                        { entryImageFile },
-                        { entryImageRatio },
+                        { id },
+                        { imageFile },
+                        { imageRatio },
                         imageUri = { viewModel.imageUri },
                         onImageSelected = { viewModel.imageUri = it },
                         onImageSelectError = {
                             viewModel.errorResource = UtilsStringR.error_fail_to_load_image to it
                         },
-                        onImageClickOpen = {
-                            entryImageFile?.let {
-                                val imageUri = FileProvider.getUriForFile(
-                                    this@MainActivity,
-                                    "$packageName.fileprovider",
-                                    it
-                                )
-
-                                val intent = Intent(Intent.ACTION_VIEW).apply {
-                                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                                    setDataAndType(imageUri, "image/*")
-                                }
-
-                                val chooserIntent = Intent.createChooser(
-                                    intent,
-                                    getString(R.string.art_entry_open_full_image_content_description)
-                                )
-                                startActivity(chooserIntent)
-                            }
-                        },
+                        onImageClickOpen = { imageFile?.let(::openInternalImage) },
                         areSectionsLoading = { viewModel.areSectionsLoading },
                         sections = { viewModel.sections },
                         saving = { viewModel.saving },
@@ -475,30 +406,17 @@ class MainActivity : ComponentActivity() {
                             if (viewModel.selectedEntries.isNotEmpty()) {
                                 viewModel.selectEntry(index, entry)
                             } else {
-                                val entryImageRatio = entry.value.imageWidthToHeightRatio
-                                navController.navigate(
-                                    route = NavDestinations.ENTRY_DETAILS +
-                                            "?entry_id=${entry.value.id}" +
-                                            (entry.localImageFile
-                                                ?.let { "&entry_image_file=${it.toPath()}" }
-                                                ?: "") +
-                                            "&entry_image_ratio=${entryImageRatio}"
-                                )
+                                navController.navToEntryDetails(entry)
                             }
                         },
                         onLongClickEntry = viewModel::selectEntry,
                         onClickClear = viewModel::clearSelected,
-                        onClickEdit = {
-                            editSelected(
-                                navController,
-                                viewModel.selectedEntries.values
-                            )
-                        },
+                        onClickEdit = { editSelected(navController, viewModel.selectedEntries) },
                         onConfirmDelete = viewModel::onDeleteSelected,
                     )
                 }
 
-                addDetailsScreen(navController)
+                addArtDetailsScreen(navController)
                 addEditScreen(navController)
             }
         }
@@ -544,93 +462,36 @@ class MainActivity : ComponentActivity() {
                             if (viewModel.selectedEntries.isNotEmpty()) {
                                 viewModel.selectEntry(index, entry)
                             } else {
-                                val entryImageRatio = entry.value.imageWidthToHeightRatio
-                                navController.navigate(
-                                    route = NavDestinations.ENTRY_DETAILS +
-                                            "?entry_id=${entry.value.id}" +
-                                            (entry.localImageFile
-                                                ?.let { "&entry_image_file=${it.toPath()}" }
-                                                ?: "") +
-                                            "&entry_image_ratio=${entryImageRatio}"
-                                )
+                                navController.navToEntryDetails(entry)
                             }
                         },
                         onLongClickEntry = viewModel::selectEntry,
                         onClickClear = viewModel::clearSelected,
-                        onClickEdit = {
-                            editSelected(
-                                navController,
-                                viewModel.selectedEntries.values
-                            )
-                        },
+                        onClickEdit = { editSelected(navController, viewModel.selectedEntries) },
                         onConfirmDelete = viewModel::onDeleteSelected,
                     )
                 }
 
-                addDetailsScreen(navController)
+                addArtDetailsScreen(navController)
                 addEditScreen(navController)
             }
         }
     }
 
-    private fun NavGraphBuilder.addDetailsScreen(navController: NavHostController) {
-        composable(
-            NavDestinations.ENTRY_DETAILS +
-                    "?entry_id={entry_id}" +
-                    "&entry_image_file={entry_image_file}" +
-                    "&entry_image_ratio={entry_image_ratio}",
-            arguments = listOf(
-                navArgument("entry_id") {
-                    type = NavType.StringType
-                    nullable = false
-                },
-                navArgument("entry_image_file") {
-                    type = NavType.StringType
-                    nullable = true
-                },
-                navArgument("entry_image_ratio") {
-                    type = NavType.FloatType
-                },
-            )
-        ) {
-            val arguments = it.arguments!!
-            val entryId = arguments.getString("entry_id")!!
-            val entryImageFile = arguments.getString("entry_image_file")?.let(::File)
-            val entryImageRatio = arguments.getFloat("entry_image_ratio", 1f)
-
-            val viewModel = hiltViewModel<DetailsViewModel>()
-            viewModel.initialize(entryId, entryImageRatio)
-
+    private fun NavGraphBuilder.addArtDetailsScreen(navController: NavHostController) {
+        entryDetailsComposable { id, imageFile, imageRatio ->
+            val viewModel = hiltViewModel<DetailsViewModel>().initialize(id, imageRatio)
             DetailsScreen(
-                { entryId },
-                { entryImageFile },
-                { entryImageRatio },
+                { id },
+                { imageFile },
+                { imageRatio },
                 imageUri = { viewModel.imageUri },
                 onImageSelected = { viewModel.imageUri = it },
                 onImageSelectError = {
                     viewModel.errorResource = UtilsStringR.error_fail_to_load_image to it
                 },
                 onImageSizeResult = viewModel::onImageSizeResult,
-                onImageClickOpen = {
-                    entryImageFile?.let {
-                        val imageUri = FileProvider.getUriForFile(
-                            this@MainActivity,
-                            "$packageName.fileprovider",
-                            it
-                        )
-
-                        val intent = Intent(Intent.ACTION_VIEW).apply {
-                            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                            setDataAndType(imageUri, "image/*")
-                        }
-
-                        val chooserIntent = Intent.createChooser(
-                            intent,
-                            getString(R.string.art_entry_open_full_image_content_description)
-                        )
-                        startActivity(chooserIntent)
-                    }
-                },
+                onImageClickOpen = { imageFile?.let(::openInternalImage) },
                 areSectionsLoading = { viewModel.areSectionsLoading },
                 sections = { viewModel.sections },
                 saving = { viewModel.saving },
@@ -677,12 +538,73 @@ class MainActivity : ComponentActivity() {
 
     private fun editSelected(
         navController: NavHostController,
-        values: MutableCollection<out EntryGridModel>
+        values: Map<Int, EntryGridModel>,
     ) {
-        val entryIds = values.map { it.id }
+        val entryIds = values.map { it.value.id }
         navController.navigate(
             NavDestinations.MULTI_EDIT +
                     "?entry_ids=${entryIds.joinToString(",")}"
         )
+    }
+
+    private fun NavGraphBuilder.entryDetailsComposable(
+        block: @Composable (id: String, imageFile: File?, imageRatio: Float) -> Unit
+    ) = composable(
+        NavDestinations.ENTRY_DETAILS +
+                "?entry_id={entry_id}" +
+                "&entry_image_file={entry_image_file}" +
+                "&entry_image_ratio={entry_image_ratio}",
+        arguments = listOf(
+            navArgument("entry_id") {
+                type = NavType.StringType
+                nullable = false
+            },
+            navArgument("entry_image_file") {
+                type = NavType.StringType
+                nullable = true
+            },
+            navArgument("entry_image_ratio") {
+                type = NavType.FloatType
+            },
+        )
+    ) {
+        val arguments = it.arguments!!
+        val id = arguments.getString("entry_id")!!
+        val imageFile = arguments.getString("entry_image_file")?.let(::File)
+        val imageRatio = arguments.getFloat("entry_image_ratio", 1f)
+        block(id, imageFile, imageRatio)
+    }
+
+    private fun NavHostController.navToEntryDetails(entry: EntryGridModel) {
+        val imageRatio = entry.imageWidthToHeightRatio
+        val imageFileParameter = "&entry_image_file=${entry.localImageFile?.toPath()}"
+            .takeIf { entry.localImageFile != null }
+            .orEmpty()
+        navigate(
+            NavDestinations.ENTRY_DETAILS
+                    + "?entry_id=${entry.id}"
+                    + "&entry_image_ratio=$imageRatio"
+                    + imageFileParameter
+        )
+    }
+
+    @MainThread
+    private fun openInternalImage(file: File) {
+        val imageUri = FileProvider.getUriForFile(
+            this@MainActivity,
+            "$packageName.fileprovider",
+            file
+        )
+
+        val intent = Intent(Intent.ACTION_VIEW).apply {
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            setDataAndType(imageUri, "image/*")
+        }
+
+        val chooserIntent = Intent.createChooser(
+            intent,
+            getString(R.string.art_entry_open_full_image_content_description)
+        )
+        startActivity(chooserIntent)
     }
 }

@@ -46,10 +46,11 @@ class SampleArtEntrySectionsProvider : PreviewParameterProvider<List<EntrySectio
                 R.string.art_entry_tags_header_many,
             ).apply {
                 setContents(
-                    listOf(
+                    entries = listOf(
                         EntrySection.MultiText.Entry.Custom("cute"),
                         EntrySection.MultiText.Entry.Custom("portrait")
-                    )
+                    ),
+                    lockState = null,
                 )
                 pendingValue = "schoolgirl uniform"
             },

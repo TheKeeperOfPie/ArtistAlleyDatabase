@@ -92,7 +92,7 @@ class PrintSizeDropdown(lockState: LockState? = null) : EntrySection.Dropdown(
     lockState,
 ) {
 
-    fun initialize(printWidth: Int?, printHeight: Int?) {
+    fun initialize(printWidth: Int?, printHeight: Int?, lockState: LockState?) {
         var indexOfSize = options.indexOfFirst {
             if (it !is Item.Basic<*>) return@indexOfFirst false
             @Suppress("UNCHECKED_CAST")
@@ -113,6 +113,7 @@ class PrintSizeDropdown(lockState: LockState? = null) : EntrySection.Dropdown(
             }
         }
         selectedIndex = indexOfSize
+        this.lockState = lockState
     }
 
     fun onSizeChange(width: Int, height: Int) {

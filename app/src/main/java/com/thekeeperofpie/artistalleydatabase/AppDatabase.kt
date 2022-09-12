@@ -21,6 +21,8 @@ import com.thekeeperofpie.artistalleydatabase.cds.CdEntryDetailsDao
 import com.thekeeperofpie.artistalleydatabase.cds.CdEntryFts
 import com.thekeeperofpie.artistalleydatabase.edit.ArtEntryEditDao
 import com.thekeeperofpie.artistalleydatabase.search.advanced.ArtEntryAdvancedSearchDao
+import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumEntry
+import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumEntryDao
 
 @Database(
     entities = [
@@ -29,7 +31,8 @@ import com.thekeeperofpie.artistalleydatabase.search.advanced.ArtEntryAdvancedSe
         CdEntry::class,
         CdEntryFts::class,
         MediaEntry::class,
-        CharacterEntry::class
+        CharacterEntry::class,
+        AlbumEntry::class,
     ],
     exportSchema = false,
     version = 1
@@ -39,7 +42,8 @@ import com.thekeeperofpie.artistalleydatabase.search.advanced.ArtEntryAdvancedSe
         Converters.DateConverter::class,
         Converters.StringListConverter::class,
         Converters.IntListConverter::class,
-        Converters.BigDecimalConverter::class
+        Converters.BigDecimalConverter::class,
+        Converters.StringMapConverter::class,
     ]
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -52,4 +56,5 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun cdEntryDetailsDao(): CdEntryDetailsDao
     abstract fun mediaEntryDao(): MediaEntryDao
     abstract fun characterEntryDao(): CharacterEntryDao
+    abstract fun albumEntryDao(): AlbumEntryDao
 }

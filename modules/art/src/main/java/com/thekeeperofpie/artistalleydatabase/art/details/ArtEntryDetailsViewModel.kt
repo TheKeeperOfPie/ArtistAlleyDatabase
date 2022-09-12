@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.art.details
 
 import android.app.Application
 import android.net.Uri
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -56,6 +57,10 @@ abstract class ArtEntryDetailsViewModel(
     private val autocompleter: Autocompleter,
     protected val dataConverter: ArtEntryDataConverter,
 ) : ViewModel() {
+
+    companion object {
+        private const val TAG = "ArtEntryDetailsViewModel"
+    }
 
     protected val seriesSection = EntrySection.MultiText(
         R.string.art_entry_series_header_zero,
@@ -297,26 +302,13 @@ abstract class ArtEntryDetailsViewModel(
     }
 
     protected fun initializeForm(entry: ArtEntryModel) {
-        artistSection.setContents(entry.artists)
-        artistSection.lockState = entry.artistsLocked
-
-        sourceSection.initialize(entry)
-        sourceSection.lockState = entry.sourceLocked
-
-        seriesSection.setContents(entry.series)
-        seriesSection.lockState = entry.seriesLocked
-
-        characterSection.setContents(entry.characters)
-        characterSection.lockState = entry.charactersLocked
-
-        printSizeSection.initialize(entry.printWidth, entry.printHeight)
-        printSizeSection.lockState = entry.printSizeLocked
-
-        tagSection.setContents(entry.tags)
-        tagSection.lockState = entry.tagsLocked
-
-        notesSection.value = entry.notes.orEmpty()
-        notesSection.lockState = entry.notesLocked
+        artistSection.setContents(entry.artists, entry.artistsLocked)
+        sourceSection.initialize(entry, entry.sourceLocked)
+        seriesSection.setContents(entry.series, entry.seriesLocked)
+        characterSection.setContents(entry.characters, entry.charactersLocked)
+        printSizeSection.initialize(entry.printWidth, entry.printHeight, entry.printSizeLocked)
+        tagSection.setContents(entry.tags, entry.tagsLocked)
+        notesSection.setContents(entry.notes, entry.notesLocked)
 
         entry.characters.filterIsInstance<Entry.Prefilled<*>>()
             .forEach {
@@ -368,6 +360,7 @@ abstract class ArtEntryDetailsViewModel(
         val outputFile = ArtEntryUtils.getImageFile(application, id)
         val error = ImageUtils.writeEntryImage(application, outputFile, imageUri)
         if (error != null) {
+            Log.e(TAG, "${application.getString(error.first)}: $imageUri", error.second)
             withContext(Dispatchers.Main) {
                 errorResource = error
             }

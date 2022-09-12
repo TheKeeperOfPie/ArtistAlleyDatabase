@@ -49,7 +49,7 @@ object ImageUtils {
         outputFile: File,
         imageUri: Uri?
     ): Pair<Int, Exception?>? {
-        imageUri ?: return UtilsStringR.error_fail_to_load_image to null
+        imageUri ?: return null
         val imageStream = try {
             if (imageUri.scheme?.startsWith("http") == true) {
                 URL(imageUri.toString()).openStream()

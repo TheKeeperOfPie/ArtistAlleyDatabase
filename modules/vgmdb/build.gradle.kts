@@ -1,7 +1,5 @@
 @file:Suppress("UnstableApiUsage")
 
-import com.thekeeperofpie.artistalleydatabase.json_schema.JsonSchemaExtension
-import com.thekeeperofpie.artistalleydatabase.raml.RamlExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
 
 plugins {
@@ -11,7 +9,6 @@ plugins {
     id("kotlin-kapt")
     id("com.google.devtools.ksp") version "1.7.20-Beta-1.0.6"
     kotlin("plugin.serialization") version "1.7.20-Beta"
-    id("com.thekeeperofpie.artistalleydatabase.raml")
     id("de.mannodermaus.android-junit5")
 }
 
@@ -89,45 +86,4 @@ sourceSets {
             srcDir(project.layout.buildDirectory.file("generated/source/raml"))
         }
     }
-}
-
-configure<JsonSchemaExtension> {
-    urls.set(
-        listOf(
-            "https://vgmdb.info/schema/artist.json",
-            "https://vgmdb.info/schema/album.json",
-            "https://vgmdb.info/schema/artist.json",
-            "https://vgmdb.info/schema/event.json",
-            "https://vgmdb.info/schema/org.json",
-            "https://vgmdb.info/schema/product.json",
-            "https://vgmdb.info/schema/release.json",
-            "https://vgmdb.info/schema/search.json",
-            "https://vgmdb.info/schema/sellers.json",
-            "https://vgmdb.info/schema/recent.json",
-        )
-    )
-    urlsCustomNames.set(
-        mapOf(
-            "https://vgmdb.info/schema/albumlist.json" to "AlbumList",
-            "https://vgmdb.info/schema/artistlist.json" to "ArtistList",
-            "https://vgmdb.info/schema/eventlist.json" to "EventList",
-            "https://vgmdb.info/schema/orglist.json" to "OrgList",
-            "https://vgmdb.info/schema/productlist.json" to "ProductList",
-        )
-    )
-    @Suppress("SpellCheckingInspection")
-    customPropertyNames.set(
-        mapOf(
-            "deathdate" to "deathDate",
-            "albumlist" to "albumList",
-            "artistlist" to "artistList",
-            "productlist" to "productList",
-            "orglist" to "orgList",
-            "eventlist" to "eventList",
-        )
-    )
-}
-
-configure<RamlExtension> {
-    baseUrl.set("https://vgmdb.info")
 }

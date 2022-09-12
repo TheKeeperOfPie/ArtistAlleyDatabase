@@ -6,7 +6,7 @@ import java.util.Date
 
 data class CdEntryModel(
     val id: String,
-    val catalogId: String?,
+    val catalogId: EntrySection.MultiText.Entry,
     val titles: List<EntrySection.MultiText.Entry>,
     val artists: List<EntrySection.MultiText.Entry>,
     val series: List<EntrySection.MultiText.Entry>,
@@ -29,14 +29,15 @@ data class CdEntryModel(
 ) {
     constructor(
         entry: CdEntry,
-        titles: List<EntrySection.MultiText.Entry.Custom>,
-        artists: List<EntrySection.MultiText.Entry.Custom>,
+        catalogId: EntrySection.MultiText.Entry,
+        titles: List<EntrySection.MultiText.Entry>,
+        artists: List<EntrySection.MultiText.Entry>,
         series: List<EntrySection.MultiText.Entry>,
         characters: List<EntrySection.MultiText.Entry>,
-        tags: List<EntrySection.MultiText.Entry.Custom>,
+        tags: List<EntrySection.MultiText.Entry>,
     ) : this(
         id = entry.id,
-        catalogId = entry.catalogId,
+        catalogId = catalogId,
         titles = titles,
         artists = artists,
         series = series,

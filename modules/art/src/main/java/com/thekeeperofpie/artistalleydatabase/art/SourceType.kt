@@ -119,7 +119,7 @@ class SourceDropdown(locked: LockState? = null) : EntrySection.Dropdown(
         )
     }
 
-    fun initialize(entry: ArtEntryModel) {
+    fun initialize(entry: ArtEntryModel, lockState: LockState?) {
         when (val source = entry.source) {
             is SourceType.Convention -> {
                 conventionSectionItem.setValues(source)
@@ -139,6 +139,7 @@ class SourceDropdown(locked: LockState? = null) : EntrySection.Dropdown(
                 selectedIndex = options.indexOf(unknownSectionItem)
             }
         }
+        this.lockState = lockState
     }
 
     fun addDifferent() {

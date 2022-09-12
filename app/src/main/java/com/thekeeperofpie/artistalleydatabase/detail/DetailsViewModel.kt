@@ -55,8 +55,8 @@ class DetailsViewModel @Inject constructor(
     var saving by mutableStateOf(false)
         private set
 
-    fun initialize(entryId: String, entryImageRatio: Float) {
-        if (this.entryId != null) return
+    fun initialize(entryId: String, entryImageRatio: Float) = apply {
+        if (this.entryId != null) return@apply
         this.entryId = entryId
 
         if (entryImageRatio > 1f) {
@@ -93,9 +93,12 @@ class DetailsViewModel @Inject constructor(
         saving = true
 
         viewModelScope.launch(Dispatchers.IO) {
-            if (saveEntry(imageUri, entryId!!)) {
-                withContext(Dispatchers.Main) {
+            val success = saveEntry(imageUri, entryId!!)
+            withContext(Dispatchers.Main) {
+                if (success) {
                     navHostController.popBackStack()
+                } else {
+                    saving = false
                 }
             }
         }

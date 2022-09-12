@@ -13,8 +13,10 @@ import com.thekeeperofpie.artistalleydatabase.anilist.AniListJson
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
 import com.thekeeperofpie.artistalleydatabase.form.EntrySection
+import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbApi
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbJson
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumEntry
+import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -31,7 +33,9 @@ class CdDetailsViewModel @Inject constructor(
     cdEntryDao: CdEntryDetailsDao,
     aniListApi: AniListApi,
     aniListJson: AniListJson,
+    vgmdbApi: VgmdbApi,
     vgmdbJson: VgmdbJson,
+    albumRepository: AlbumRepository,
     dataConverter: CdEntryDataConverter,
     mediaRepository: MediaRepository,
     characterRepository: CharacterRepository,
@@ -40,7 +44,9 @@ class CdDetailsViewModel @Inject constructor(
     cdEntryDao,
     aniListApi,
     aniListJson,
+    vgmdbApi,
     vgmdbJson,
+    albumRepository,
     dataConverter,
     mediaRepository,
     characterRepository,
@@ -68,8 +74,8 @@ class CdDetailsViewModel @Inject constructor(
         }
     }
 
-    fun initialize(entryId: String) {
-        if (this.entryId != null) return
+    fun initialize(entryId: String) = apply {
+        if (this.entryId != null) return@apply
         this.entryId = entryId
 
         viewModelScope.launch(Dispatchers.IO) {
@@ -100,9 +106,12 @@ class CdDetailsViewModel @Inject constructor(
         saving = true
 
         viewModelScope.launch(Dispatchers.IO) {
-            if (saveEntry(imageUri, entryId!!)) {
-                withContext(Dispatchers.Main) {
+            val success = saveEntry(imageUri, entryId!!)
+            withContext(Dispatchers.Main) {
+                if (success) {
                     navHostController.popBackStack()
+                } else {
+                    saving = false
                 }
             }
         }

@@ -101,8 +101,17 @@ class VgmdbParser {
         infoTable?.all("tr")
             ?.map {
                 when (it["b"]?.ownText) {
-                    "Catalog Number" ->
-                        catalogId = it.findLast("td").ownText.trim()
+                    "Catalog Number" -> {
+                        val catalogData = it.findByIndex(1, "td")
+                        val innerA = catalogData["a"]
+                        catalogId = if (innerA?.attribute("href") == "#") {
+                            innerA.ownText
+                        } else {
+                            catalogData.ownText.substringBefore("(alternate")
+                        }
+                            .trim()
+                            .takeIf { it.isNotBlank() }
+                    }
                 }
             }
 

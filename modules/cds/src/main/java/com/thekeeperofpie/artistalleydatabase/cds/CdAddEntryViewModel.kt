@@ -14,8 +14,10 @@ import com.thekeeperofpie.artistalleydatabase.anilist.AniListJson
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
 import com.thekeeperofpie.artistalleydatabase.form.EntrySection
+import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbApi
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbJson
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumEntry
+import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
@@ -32,7 +34,9 @@ class CdAddEntryViewModel @Inject constructor(
     cdEntryDao: CdEntryDetailsDao,
     aniListApi: AniListApi,
     aniListJson: AniListJson,
+    vgmdbApi: VgmdbApi,
     vgmdbJson: VgmdbJson,
+    albumRepository: AlbumRepository,
     dataConverter: CdEntryDataConverter,
     mediaRepository: MediaRepository,
     characterRepository: CharacterRepository,
@@ -41,7 +45,9 @@ class CdAddEntryViewModel @Inject constructor(
     cdEntryDao,
     aniListApi,
     aniListJson,
+    vgmdbApi,
     vgmdbJson,
+    albumRepository,
     dataConverter,
     mediaRepository,
     characterRepository,

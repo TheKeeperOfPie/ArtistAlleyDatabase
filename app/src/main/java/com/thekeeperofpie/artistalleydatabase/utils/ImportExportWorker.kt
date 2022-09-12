@@ -35,8 +35,9 @@ abstract class ImportExportWorker(
             .setOngoing(true)
 
     protected fun notifyComplete() {
-        NotificationManagerCompat.from(appContext)
-            .notify(
+        NotificationManagerCompat.from(appContext).apply {
+            cancel(notificationIdOngoing.id)
+            notify(
                 notificationIdFinished.id,
                 NotificationCompat.Builder(appContext, notificationChannel.channel)
                     .setAutoCancel(true)
@@ -61,6 +62,7 @@ abstract class ImportExportWorker(
                     )
                     .build()
             )
+        }
     }
 
     override suspend fun getForegroundInfo(): ForegroundInfo {
