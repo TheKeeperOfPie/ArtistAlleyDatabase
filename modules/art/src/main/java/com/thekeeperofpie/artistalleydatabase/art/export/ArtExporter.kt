@@ -5,10 +5,10 @@ import androidx.work.CoroutineWorker
 import com.squareup.moshi.JsonWriter
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.export.Exporter
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListDataConverter
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntry
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryDao
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryUtils
-import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryDataConverter
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.encodeToJsonElement
 import java.io.File
@@ -17,7 +17,7 @@ import java.io.InputStream
 class ArtExporter(
     private val appContext: Context,
     private val artEntryDao: ArtEntryDao,
-    private val artEntryDataConverter: ArtEntryDataConverter,
+    private val aniListDataConverter: AniListDataConverter,
     private val appJson: AppJson,
 ) : Exporter {
 
@@ -67,7 +67,7 @@ class ArtExporter(
     ) {
         val folderParts = entry.series
             .asSequence()
-            .map(artEntryDataConverter::databaseToSeriesEntry)
+            .map(aniListDataConverter::databaseToSeriesEntry)
             .map { it.text }
             .sorted()
             .map {
@@ -78,7 +78,7 @@ class ArtExporter(
             .toMutableList()
 
         val characters = entry.characters
-            .map(artEntryDataConverter::databaseToCharacterEntry)
+            .map(aniListDataConverter::databaseToCharacterEntry)
             .map { it.text }
 
         folderParts += when {

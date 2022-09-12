@@ -6,7 +6,7 @@ import kotlinx.serialization.json.Json
 object ArtEntryUtils {
 
     fun getImageFile(context: Context, id: String) = context.filesDir
-        .resolve("entry_images/${id}")
+        .resolve("art_entry_images/${id}")
 
     fun buildPlaceholderText(json: Json, entry: ArtEntry) = entry.run {
         val source = when (val source = SourceType.fromEntry(json, this)) {

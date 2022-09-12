@@ -4,13 +4,13 @@ import android.app.Application
 import androidx.lifecycle.viewModelScope
 import com.thekeeperofpie.artistalleydatabase.SettingsProvider
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListApi
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListAutocompleter
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListDataConverter
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListJson
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntry
 import com.thekeeperofpie.artistalleydatabase.art.PrintSize
-import com.thekeeperofpie.artistalleydatabase.art.autocomplete.Autocompleter
-import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryDataConverter
 import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryDetailsDao
 import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.form.EntrySection
@@ -27,8 +27,8 @@ class AdvancedSearchViewModel @Inject constructor(
     mediaRepository: MediaRepository,
     characterRepository: CharacterRepository,
     aniListJson: AniListJson,
-    autocompleter: Autocompleter,
-    dataConverter: ArtEntryDataConverter,
+    aniListAutocompleter: AniListAutocompleter,
+    aniListDataConverter: AniListDataConverter,
     private val searchRepository: AdvancedSearchRepository,
     private val settingsProvider: SettingsProvider,
 ) : ArtEntryDetailsViewModel(
@@ -38,8 +38,8 @@ class AdvancedSearchViewModel @Inject constructor(
     mediaRepository,
     characterRepository,
     aniListJson,
-    autocompleter,
-    dataConverter,
+    aniListAutocompleter,
+    aniListDataConverter,
 ) {
 
     init {

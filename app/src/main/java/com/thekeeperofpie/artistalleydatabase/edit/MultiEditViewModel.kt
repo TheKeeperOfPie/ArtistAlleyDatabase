@@ -11,13 +11,13 @@ import androidx.navigation.NavController
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.android_utils.ImageUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListApi
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListAutocompleter
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListDataConverter
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListJson
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryUtils
 import com.thekeeperofpie.artistalleydatabase.art.SourceType
-import com.thekeeperofpie.artistalleydatabase.art.autocomplete.Autocompleter
-import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryDataConverter
 import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryModel
 import com.thekeeperofpie.artistalleydatabase.form.EntrySection
@@ -38,8 +38,8 @@ class MultiEditViewModel @Inject constructor(
     mediaRepository: MediaRepository,
     characterRepository: CharacterRepository,
     aniListJson: AniListJson,
-    autocompleter: Autocompleter,
-    dataConverter: ArtEntryDataConverter,
+    aniListAutocompleter: AniListAutocompleter,
+    aniListDataConverter: AniListDataConverter,
 ) : ArtEntryDetailsViewModel(
     application,
     artEntryEditDao,
@@ -47,8 +47,8 @@ class MultiEditViewModel @Inject constructor(
     mediaRepository,
     characterRepository,
     aniListJson,
-    autocompleter,
-    dataConverter,
+    aniListAutocompleter,
+    aniListDataConverter,
 ) {
 
     private lateinit var entryIds: List<String>
@@ -77,12 +77,12 @@ class MultiEditViewModel @Inject constructor(
 
             val series = firstEntry.series
                 .takeIf { artEntryEditDao.distinctCountSeries(entryIds) == 1 }
-                ?.map(dataConverter::databaseToSeriesEntry)
+                ?.map(aniListDataConverter::databaseToSeriesEntry)
                 ?: differentValue
 
             val characters = firstEntry.characters
                 .takeIf { artEntryEditDao.distinctCountCharacters(entryIds) == 1 }
-                ?.map(dataConverter::databaseToCharacterEntry)
+                ?.map(aniListDataConverter::databaseToCharacterEntry)
                 ?: differentValue
 
             val sourceTypeSame = artEntryEditDao.distinctCountSourceType(entryIds) == 1

@@ -6,8 +6,7 @@ import com.thekeeperofpie.artistalleydatabase.SettingsProvider
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.export.Exporter
 import com.thekeeperofpie.artistalleydatabase.android_utils.importer.Importer
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListJson
-import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryDataConverter
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListDataConverter
 import com.thekeeperofpie.artistalleydatabase.art.export.ArtExporter
 import com.thekeeperofpie.artistalleydatabase.art.importer.ArtImporter
 import com.thekeeperofpie.artistalleydatabase.json.AppMoshi
@@ -42,12 +41,12 @@ object ArtEntryHiltModule {
     fun provideArtExporter(
         application: Application,
         artEntryDao: ArtEntryDao,
-        artEntryDataConverter: ArtEntryDataConverter,
+        aniListDataConverter: AniListDataConverter,
         appJson: AppJson
     ): Exporter = ArtExporter(
         appContext = application,
         artEntryDao = artEntryDao,
-        artEntryDataConverter = artEntryDataConverter,
+        aniListDataConverter = aniListDataConverter,
         appJson = appJson
     )
 
@@ -62,10 +61,6 @@ object ArtEntryHiltModule {
         artEntryDao = artEntryDao,
         moshi = appMoshi.moshi,
     )
-
-    @Provides
-    fun provideArtEntryDataConverter(aniListJson: AniListJson) = ArtEntryDataConverter(aniListJson)
-
 
     @Provides
     fun provideArtAddEntryViewModelPersister(settingsProvider: SettingsProvider) =

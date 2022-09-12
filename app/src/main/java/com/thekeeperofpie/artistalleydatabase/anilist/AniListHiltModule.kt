@@ -19,6 +19,24 @@ class AniListHiltModule {
     fun provideAniListApi() = AniListApi()
 
     @Provides
+    fun provideAniListDataConverter(aniListJson: AniListJson) = AniListDataConverter(aniListJson)
+
+    @Provides
+    fun provideAniListAutocompleter(
+        aniListJson: AniListJson,
+        aniListApi: AniListApi,
+        characterRepository: CharacterRepository,
+        mediaRepository: MediaRepository,
+        aniListDataConverter: AniListDataConverter,
+    ) = AniListAutocompleter(
+        aniListJson,
+        aniListApi,
+        characterRepository,
+        mediaRepository,
+        aniListDataConverter
+    )
+
+    @Provides
     fun provideMediaEntryDao(appDatabase: AppDatabase) = appDatabase.mediaEntryDao()
 
     @Provides

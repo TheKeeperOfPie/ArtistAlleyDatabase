@@ -10,9 +10,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hoc081098.flowext.withLatestFrom
 import com.thekeeperofpie.artistalleydatabase.android_utils.ImageUtils
-import com.thekeeperofpie.artistalleydatabase.android_utils.split
-import com.thekeeperofpie.artistalleydatabase.android_utils.start
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListApi
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListAutocompleter
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListDataConverter
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListJson
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
@@ -22,16 +22,13 @@ import com.thekeeperofpie.artistalleydatabase.art.PrintSizeDropdown
 import com.thekeeperofpie.artistalleydatabase.art.R
 import com.thekeeperofpie.artistalleydatabase.art.SourceDropdown
 import com.thekeeperofpie.artistalleydatabase.art.SourceType
-import com.thekeeperofpie.artistalleydatabase.art.autocomplete.Autocompleter
 import com.thekeeperofpie.artistalleydatabase.form.EntrySection
 import com.thekeeperofpie.artistalleydatabase.form.EntrySection.MultiText.Entry
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
@@ -54,8 +51,8 @@ abstract class ArtEntryDetailsViewModel(
     private val mediaRepository: MediaRepository,
     private val characterRepository: CharacterRepository,
     protected val aniListJson: AniListJson,
-    private val autocompleter: Autocompleter,
-    protected val dataConverter: ArtEntryDataConverter,
+    private val aniListAutocompleter: AniListAutocompleter,
+    protected val aniListDataConverter: AniListDataConverter,
 ) : ViewModel() {
 
     companion object {
@@ -129,62 +126,17 @@ abstract class ArtEntryDetailsViewModel(
         viewModelScope.launch(Dispatchers.IO) {
             subscribeMultiTextSection(
                 seriesSection,
-                localCall = autocompleter::querySeriesLocal,
-                networkCall = autocompleter::querySeriesNetwork
+                localCall = {
+                    aniListAutocompleter.querySeriesLocal(it, artEntryDao::querySeries)
+                },
+                networkCall = aniListAutocompleter::querySeriesNetwork
             )
         }
         viewModelScope.launch(Dispatchers.IO) {
-            combine(
-                seriesSection.contentUpdates()
-                    .map { it.filterIsInstance<Entry.Prefilled<*>>() }
-                    .map { it.map { it.id } }
-                    .distinctUntilChanged()
-                    .flatMapLatest {
-                        it.mapNotNull(String::toIntOrNull)
-                            .map {
-                                aniListApi.charactersByMedia(it)
-                                    .map { it.map { dataConverter.characterEntry((it)) } }
-                                    .catch {}
-                                    .start(emptyList())
-                            }
-                            .let {
-                                combine(it) {
-                                    it.fold(mutableListOf<Entry>()) { list, value ->
-                                        list.apply { addAll(value) }
-                                    }
-                                }
-                            }
-                    }
-                    .start(emptyList()),
-                characterSection.valueUpdates()
-                    .flatMapLatest { query ->
-                        autocompleter.queryCharacters(query)
-                            .map { query to it }
-                    }
-            ) { series, (query, charactersPair) ->
-                val (charactersFirst, charactersSecond) = charactersPair
-                val (seriesFirst, seriesSecond) = series.toMutableList().apply {
-                    removeAll { seriesCharacter ->
-                        charactersFirst.any { character ->
-                            val seriesCharacterEntry = seriesCharacter as? Entry.Prefilled<*>
-                            if (seriesCharacterEntry != null) {
-                                seriesCharacterEntry.id == (character as? Entry.Prefilled<*>)?.id
-                            } else {
-                                false
-                            }
-                        } || charactersSecond.any { character ->
-                            val seriesCharacterEntry = seriesCharacter as? Entry.Prefilled<*>
-                            if (seriesCharacterEntry != null) {
-                                seriesCharacterEntry.id == (character as? Entry.Prefilled<*>)?.id
-                            } else {
-                                false
-                            }
-                        }
-                    }
-                }
-                    .split { it.text.contains(query) }
-                charactersFirst + seriesFirst + charactersSecond + seriesSecond
-            }
+            aniListAutocompleter.characterPredictions(
+                seriesSection.contentUpdates(),
+                characterSection.valueUpdates(),
+            ) { artEntryDao.queryCharacters(it) }
                 .collectLatest {
                     withContext(Dispatchers.Main) {
                         characterSection.predictions = it.toMutableList()
@@ -287,8 +239,8 @@ abstract class ArtEntryDetailsViewModel(
 
     protected fun buildModel(entry: ArtEntry): ArtEntryModel {
         val artists = entry.artists.map(Entry::Custom)
-        val series = entry.series.map(dataConverter::databaseToSeriesEntry)
-        val characters = entry.characters.map(dataConverter::databaseToCharacterEntry)
+        val series = entry.series.map(aniListDataConverter::databaseToSeriesEntry)
+        val characters = entry.characters.map(aniListDataConverter::databaseToCharacterEntry)
         val tags = entry.tags.map(Entry::Custom)
 
         return ArtEntryModel(
@@ -324,7 +276,7 @@ abstract class ArtEntryDetailsViewModel(
                                 .let { it ?: flowOf(listOf(null)) }
                                 .map { character to it.filterNotNull() }
                         }
-                        .map { dataConverter.characterEntry(it.first, it.second) }
+                        .map { aniListDataConverter.characterEntry(it.first, it.second) }
                         .filterNotNull()
                         .flowOn(Dispatchers.IO)
                         .collectLatest { newEntry ->
@@ -343,7 +295,7 @@ abstract class ArtEntryDetailsViewModel(
                 viewModelScope.launch(Dispatchers.Main) {
                     mediaRepository.getEntry(mediaId)
                         .filterNotNull()
-                        .map(dataConverter::seriesEntry)
+                        .map(aniListDataConverter::seriesEntry)
                         .flowOn(Dispatchers.IO)
                         .collectLatest { newEntry ->
                             seriesSection.replaceContents { entry ->

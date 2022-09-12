@@ -22,12 +22,43 @@
 
 -dontobfuscate
 
+# For AndroidX Paging library, seems to be a library config error
+-keep class org.xml.sax.helpers.NamespaceSupport$Context
+
+-dontwarn edu.umd.cs.findbugs.annotations.SuppressFBWarnings
+-dontwarn java.awt.font.FontRenderContext
+-dontwarn java.awt.font.LineBreakMeasurer
+-dontwarn java.awt.font.TextLayout
+-dontwarn java.awt.geom.AffineTransform
+-dontwarn java.beans.BeanDescriptor
+-dontwarn java.beans.BeanInfo
+-dontwarn java.beans.IntrospectionException
+-dontwarn java.beans.Introspector
+-dontwarn java.beans.PropertyDescriptor
+-dontwarn javax.imageio.ImageIO
+-dontwarn javax.imageio.ImageReader
+-dontwarn javax.imageio.stream.ImageInputStream
+-dontwarn javax.lang.model.SourceVersion
+-dontwarn javax.naming.InvalidNameException
+-dontwarn javax.naming.NamingException
+-dontwarn javax.naming.directory.Attribute
+-dontwarn javax.naming.directory.Attributes
+-dontwarn javax.naming.ldap.LdapName
+-dontwarn javax.naming.ldap.Rdn
+-dontwarn javax.servlet.ServletContainerInitializer
+-dontwarn org.apache.bsf.BSFManager
 -dontwarn org.bouncycastle.jsse.BCSSLParameters
 -dontwarn org.bouncycastle.jsse.BCSSLSocket
 -dontwarn org.bouncycastle.jsse.provider.BouncyCastleJsseProvider
--dontwarn org.conscrypt.Conscrypt$Version
 -dontwarn org.conscrypt.Conscrypt
+-dontwarn org.conscrypt.Conscrypt$Version
 -dontwarn org.conscrypt.ConscryptHostnameVerifier
+-dontwarn org.ietf.jgss.GSSContext
+-dontwarn org.ietf.jgss.GSSCredential
+-dontwarn org.ietf.jgss.GSSException
+-dontwarn org.ietf.jgss.GSSManager
+-dontwarn org.ietf.jgss.GSSName
+-dontwarn org.ietf.jgss.Oid
 -dontwarn org.openjsse.javax.net.ssl.SSLParameters
 -dontwarn org.openjsse.javax.net.ssl.SSLSocket
 -dontwarn org.openjsse.net.ssl.OpenJSSE

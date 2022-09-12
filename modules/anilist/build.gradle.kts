@@ -62,6 +62,7 @@ tasks["generateAniListApolloSources"].dependsOn("downloadAniListSchema")
 dependencies {
     api("com.apollographql.apollo3:apollo-runtime:3.5.0")
     implementation(project(":modules:android-utils"))
+    implementation(project(":modules:form"))
 
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3")
     implementation("com.google.dagger:hilt-android:2.43.2")

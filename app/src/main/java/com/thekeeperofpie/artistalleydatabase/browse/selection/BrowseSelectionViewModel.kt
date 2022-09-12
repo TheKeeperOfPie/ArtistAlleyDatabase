@@ -13,8 +13,8 @@ import androidx.paging.filter
 import androidx.paging.map
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListDataConverter
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryColumn
-import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryDataConverter
 import com.thekeeperofpie.artistalleydatabase.art.grid.ArtEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.art.grid.ArtEntryGridViewModel
 import com.thekeeperofpie.artistalleydatabase.browse.ArtEntryBrowseDao
@@ -32,7 +32,7 @@ class BrowseSelectionViewModel @Inject constructor(
     application: Application,
     private val artEntryBrowseDao: ArtEntryBrowseDao,
     private val appJson: AppJson,
-    private val dataConverter: ArtEntryDataConverter,
+    private val aniListDataConverter: AniListDataConverter,
 ) : ArtEntryGridViewModel(application, artEntryBrowseDao) {
 
     lateinit var column: ArtEntryColumn
@@ -63,14 +63,14 @@ class BrowseSelectionViewModel @Inject constructor(
                             ArtEntryColumn.SOURCE -> TODO()
                             ArtEntryColumn.SERIES -> when (query) {
                                 is Either.Left -> it.series.asSequence()
-                                    .map(dataConverter::databaseToSeriesEntry)
+                                    .map(aniListDataConverter::databaseToSeriesEntry)
                                     .filterIsInstance<EntrySection.MultiText.Entry.Prefilled<*>>()
                                     .any { it.id.toIntOrNull() == query.value }
                                 is Either.Right -> it.series.any { it.contains(query.value) }
                             }
                             ArtEntryColumn.CHARACTERS -> when (query) {
                                 is Either.Left -> it.characters.asSequence()
-                                    .map(dataConverter::databaseToCharacterEntry)
+                                    .map(aniListDataConverter::databaseToCharacterEntry)
                                     .filterIsInstance<EntrySection.MultiText.Entry.Prefilled<*>>()
                                     .any { it.id.toIntOrNull() == query.value }
                                 is Either.Right -> it.characters.any { it.contains(query.value) }
