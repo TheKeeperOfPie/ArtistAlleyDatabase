@@ -1,19 +1,16 @@
-package com.thekeeperofpie.artistalleydatabase.vgmdb.album
+package com.thekeeperofpie.artistalleydatabase.vgmdb.artist
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import kotlinx.serialization.Serializable
 
 @Serializable
-@Entity("album_entries")
-data class AlbumEntry(
+@Entity("artist_entries")
+data class ArtistEntry(
     @PrimaryKey
     val id: String,
-    val catalogId: String?,
     val names: Map<String, String> = emptyMap(),
     val coverArt: String? = null,
-    val vocalists: List<String> = emptyList(),
-    val composers: List<String> = emptyList(),
 ) {
     val coverMedium get() = coverArt
     val coverFull by lazy { coverArt?.replace("medium-media", "media") }

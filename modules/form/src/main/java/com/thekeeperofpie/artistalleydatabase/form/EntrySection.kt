@@ -13,11 +13,18 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import com.thekeeperofpie.artistalleydatabase.compose.observableStateOf
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.withContext
 import java.util.function.UnaryOperator
 
 sealed class EntrySection(lockState: LockState? = null) {
@@ -113,6 +120,14 @@ sealed class EntrySection(lockState: LockState? = null) {
             contentUpdates.tryEmit(contents.toList())
         }
 
+        fun replaceContent(entry: Entry.Prefilled<*>) {
+            val index = indexOf(entry)
+            if (index >= 0) {
+                contents[index] = entry
+            }
+            contentUpdates.tryEmit(contents.toList())
+        }
+
         fun addContent(index: Int, entry: Entry) {
             contents.add(index, entry)
             contentUpdates.tryEmit(contents.toList())
@@ -120,6 +135,28 @@ sealed class EntrySection(lockState: LockState? = null) {
 
         fun addContent(entry: Entry) {
             contents += entry
+            contentUpdates.tryEmit(contents.toList())
+        }
+
+        fun addOrReplaceContent(entry: Entry.Prefilled<*>) {
+            val index = indexOf(entry)
+            if (index >= 0) {
+                contents[index] = entry
+            } else {
+                contents += entry
+            }
+            contentUpdates.tryEmit(contents.toList())
+        }
+
+        fun addOrReplaceContents(entries: Collection<Entry.Prefilled<*>>) {
+            entries.forEach {
+                val index = indexOf(it)
+                if (index >= 0) {
+                    contents[index] = it
+                } else {
+                    contents += it
+                }
+            }
             contentUpdates.tryEmit(contents.toList())
         }
 
@@ -149,6 +186,40 @@ sealed class EntrySection(lockState: LockState? = null) {
 
         fun finalContents() = (contents + Entry.Custom(pendingValue.trim()))
             .filterNot { it.serializedValue.isBlank() }
+
+        suspend fun subscribePredictions(
+            localCall: suspend (String) -> List<Flow<Entry?>>,
+            networkCall: suspend (query: String) -> Flow<List<Entry>> = {
+                flowOf(emptyList())
+            },
+        ) {
+            @Suppress("OPT_IN_USAGE")
+            valueUpdates()
+                .flatMapLatest { query ->
+                    val localFlows = localCall(query)
+                    val database = if (localFlows.isEmpty()) {
+                        flowOf(emptyList())
+                    } else {
+                        combine(localFlows) { it.toList() }
+                    }
+                    val aniList = if (query.isBlank()) flowOf(emptyList()) else networkCall(query)
+                    combine(database, aniList) { local, network ->
+                        local.filterNotNull().toMutableList().apply {
+                            removeIf { source ->
+                                network.any { target -> target.text.trim() == source.text.trim() }
+                            }
+                        } + network
+                    }
+                }
+                .collectLatest {
+                    withContext(Dispatchers.Main) {
+                        predictions = it.toMutableList()
+                    }
+                }
+        }
+
+        private fun indexOf(entry: Entry.Prefilled<*>) =
+            contents.indexOfFirst { it is Entry.Prefilled<*> && it.id == entry.id }
 
         sealed class Entry(
             val text: String,

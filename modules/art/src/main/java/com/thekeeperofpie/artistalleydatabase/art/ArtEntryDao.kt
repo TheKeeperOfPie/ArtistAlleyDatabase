@@ -16,13 +16,6 @@ import kotlinx.coroutines.yield
 @Dao
 interface ArtEntryDao {
 
-    companion object {
-        fun wrapMatchQuery(query: String) = "*$query*"
-        fun wrapLikeQuery(query: String) = "%${query.replace(Regex("\\s+"), "%")}%"
-
-        fun Boolean.toBit() = if (this) "1" else "0"
-    }
-
     @Query("""SELECT * FROM art_entries WHERE id = :id""")
     suspend fun getEntry(id: String): ArtEntry
 

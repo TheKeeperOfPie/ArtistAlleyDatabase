@@ -60,7 +60,7 @@ class AniListDataConverter @Inject constructor(
         )
     }
 
-    fun seriesEntry(entry: MediaEntry): EntrySection.MultiText.Entry {
+    fun seriesEntry(entry: MediaEntry): EntrySection.MultiText.Entry.Prefilled<*> {
         val title = entry.title
         val nonNullTitle = title?.romaji ?: entry.id.toString()
         val serializedValue = aniListJson.toJson(MediaColumnEntry(entry.id, nonNullTitle))
@@ -159,7 +159,7 @@ class AniListDataConverter @Inject constructor(
         native: String?,
         alternative: List<String>?,
         mediaTitle: String?
-    ): EntrySection.MultiText.Entry {
+    ): EntrySection.MultiText.Entry.Prefilled<*> {
         val canonicalName = CharacterUtils.buildCanonicalName(
             first = first,
             middle = middle,

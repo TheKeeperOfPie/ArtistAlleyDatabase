@@ -9,7 +9,9 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.thekeeperofpie.artistalleydatabase.android_utils.ImageUtils
+import com.thekeeperofpie.artistalleydatabase.android_utils.mapLatestNotNull
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListApi
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListAutocompleter
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListJson
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
@@ -19,6 +21,7 @@ import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbApi
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbJson
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumEntry
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumRepository
+import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.ArtistRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -27,6 +30,8 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
@@ -40,9 +45,11 @@ abstract class CdEntryDetailsViewModel(
     protected val cdEntryDao: CdEntryDetailsDao,
     private val aniListApi: AniListApi,
     private val aniListJson: AniListJson,
+    private val aniListAutocompleter: AniListAutocompleter,
     private val vgmdbApi: VgmdbApi,
     private val vgmdbJson: VgmdbJson,
     private val albumRepository: AlbumRepository,
+    private val artistRepository: ArtistRepository,
     protected val dataConverter: CdEntryDataConverter,
     private val mediaRepository: MediaRepository,
     private val characterRepository: CharacterRepository,
@@ -67,10 +74,17 @@ abstract class CdEntryDetailsViewModel(
         lockState = EntrySection.LockState.UNLOCKED,
     )
 
-    protected val artistSection = EntrySection.MultiText(
-        R.string.cd_entry_artists_header_zero,
-        R.string.cd_entry_artists_header_one,
-        R.string.cd_entry_artists_header_many,
+    protected val vocalistSection = EntrySection.MultiText(
+        R.string.cd_entry_vocalists_header_zero,
+        R.string.cd_entry_vocalists_header_one,
+        R.string.cd_entry_vocalists_header_many,
+        lockState = EntrySection.LockState.UNLOCKED,
+    )
+
+    protected val composerSection = EntrySection.MultiText(
+        R.string.cd_entry_composers_header_zero,
+        R.string.cd_entry_composers_header_one,
+        R.string.cd_entry_composers_header_many,
         lockState = EntrySection.LockState.UNLOCKED,
     )
 
@@ -103,7 +117,8 @@ abstract class CdEntryDetailsViewModel(
     val sections = listOf(
         catalogIdSection,
         titleSection,
-        artistSection,
+        vocalistSection,
+        composerSection,
         seriesSection,
         characterSection,
         tagSection,
@@ -117,8 +132,7 @@ abstract class CdEntryDetailsViewModel(
             @Suppress("OPT_IN_USAGE")
             catalogIdSection.valueUpdates()
                 .filter { it.length > 4 }
-                .mapLatest { vgmdbApi.search(it) }
-                .filterNotNull()
+                .mapLatestNotNull { vgmdbApi.search(it) }
                 .catch {}
                 .mapLatest {
                     it.map {
@@ -141,20 +155,80 @@ abstract class CdEntryDetailsViewModel(
         }
 
         viewModelScope.launch(Dispatchers.Main) {
+            @Suppress("OPT_IN_USAGE")
             catalogIdSection.predictionChosen
                 .filterIsInstance<Entry.Prefilled<AlbumEntry>>()
                 .map { dataConverter.titleEntry(it.value) }
                 .flowOn(Dispatchers.IO)
-                .collectLatest {
-                    titleSection.addContent(it)
+                .collectLatest { titleSection.addOrReplaceContent(it) }
+        }
+
+        viewModelScope.launch(Dispatchers.Main) {
+            @Suppress("OPT_IN_USAGE")
+            catalogIdSection.predictionChosen
+                .filterIsInstance<Entry.Prefilled<AlbumEntry>>()
+                .map {
+                    it.value.vocalists
+                        .mapNotNull { vgmdbJson.parseVocalistColumn(it).rightOrNull() }
+                        .mapNotNull { artistRepository.getEntry(it.id).catch {}.firstOrNull() }
+                        .map { dataConverter.vocalistEntry(it) }
                 }
+                .flowOn(Dispatchers.IO)
+                .collectLatest { vocalistSection.addOrReplaceContents(it) }
+        }
+
+        viewModelScope.launch(Dispatchers.Main) {
+            @Suppress("OPT_IN_USAGE")
+            catalogIdSection.predictionChosen
+                .filterIsInstance<Entry.Prefilled<AlbumEntry>>()
+                .map {
+                    it.value.vocalists
+                        .mapNotNull { vgmdbJson.parseComposerColumn(it).rightOrNull() }
+                        .mapNotNull { artistRepository.getEntry(it.id).catch {}.firstOrNull() }
+                        .map { dataConverter.composerEntry(it) }
+                }
+                .flowOn(Dispatchers.IO)
+                .collectLatest { composerSection.addOrReplaceContents(it) }
+        }
+
+        viewModelScope.launch(Dispatchers.IO) {
+            seriesSection.subscribePredictions(
+                localCall = {
+                    aniListAutocompleter.querySeriesLocal(it, cdEntryDao::querySeries)
+                },
+                networkCall = aniListAutocompleter::querySeriesNetwork
+            )
+        }
+
+        viewModelScope.launch(Dispatchers.IO) {
+            aniListAutocompleter.characterPredictions(
+                seriesSection.contentUpdates(),
+                characterSection.valueUpdates(),
+            ) { cdEntryDao.queryCharacters(it) }
+                .collectLatest {
+                    withContext(Dispatchers.Main) {
+                        characterSection.predictions = it.toMutableList()
+                    }
+                }
+        }
+
+        viewModelScope.launch(Dispatchers.IO) {
+            tagSection.subscribePredictions(
+                localCall = {
+                    cdEntryDao.queryTags(it)
+                        .map(Entry::Custom)
+                        .map { flowOf(it) }
+                        .ifEmpty { listOf(flowOf(null)) }
+                }
+            )
         }
     }
 
     protected fun buildModel(entry: CdEntry): CdEntryModel {
         val catalogId = dataConverter.databaseToCatalogIdEntry(entry.catalogId)
         val titles = entry.titles.map(dataConverter::databaseToTitleEntry)
-        val artists = entry.artists.map(Entry::Custom)
+        val vocalists = entry.vocalists.map(Entry::Custom)
+        val composers = entry.composers.map(Entry::Custom)
         val series = entry.series.map(Entry::Custom)
         val characters = entry.characters.map(Entry::Custom)
         val tags = entry.tags.map(Entry::Custom)
@@ -163,7 +237,8 @@ abstract class CdEntryDetailsViewModel(
             entry = entry,
             catalogId = catalogId,
             titles = titles,
-            artists = artists,
+            vocalists = vocalists,
+            composers = composers,
             series = series,
             characters = characters,
             tags = tags,
@@ -173,7 +248,8 @@ abstract class CdEntryDetailsViewModel(
     protected fun initializeForm(entry: CdEntryModel) {
         catalogIdSection.setContents(listOf(entry.catalogId), entry.titlesLocked)
         titleSection.setContents(entry.titles, entry.titlesLocked)
-        artistSection.setContents(entry.artists, entry.artistsLocked)
+        vocalistSection.setContents(entry.vocalists, entry.vocalistsLocked)
+        composerSection.setContents(entry.composers, entry.composersLocked)
         seriesSection.setContents(entry.series, entry.seriesLocked)
         characterSection.setContents(entry.characters, entry.charactersLocked)
         tagSection.setContents(entry.tags, entry.tagsLocked)
@@ -230,7 +306,8 @@ abstract class CdEntryDetailsViewModel(
             id = id,
             catalogId = catalogIdSection.finalContents().firstOrNull()?.serializedValue,
             titles = titleSection.finalContents().map { it.serializedValue },
-            artists = artistSection.finalContents().map { it.serializedValue },
+            vocalists = vocalistSection.finalContents().map { it.serializedValue },
+            composers = composerSection.finalContents().map { it.serializedValue },
             series = seriesSection.finalContents().map { it.serializedValue },
             seriesSearchable = seriesSection.finalContents().map { it.searchableValue }
                 .filterNot(String?::isNullOrBlank),
@@ -245,7 +322,8 @@ abstract class CdEntryDetailsViewModel(
             locks = CdEntry.Locks(
                 catalogIdLocked = catalogIdSection.lockState?.toSerializedValue(),
                 titlesLocked = titleSection.lockState?.toSerializedValue(),
-                artistsLocked = artistSection.lockState?.toSerializedValue(),
+                vocalistsLocked = vocalistSection.lockState?.toSerializedValue(),
+                composersLocked = composerSection.lockState?.toSerializedValue(),
                 seriesLocked = seriesSection.lockState?.toSerializedValue(),
                 charactersLocked = characterSection.lockState?.toSerializedValue(),
                 tagsLocked = tagSection.lockState?.toSerializedValue(),
@@ -265,6 +343,14 @@ abstract class CdEntryDetailsViewModel(
             .map { aniListJson.parseCharacterColumn(it) }
             .mapNotNull { it.rightOrNull()?.id }
             .forEach(characterRepository::ensureSaved)
+        entry.vocalists
+            .map { vgmdbJson.parseVocalistColumn(it) }
+            .mapNotNull { it.rightOrNull()?.id }
+            .forEach(artistRepository::ensureSaved)
+        entry.composers
+            .map { vgmdbJson.parseComposerColumn(it) }
+            .mapNotNull { it.rightOrNull()?.id }
+            .forEach(artistRepository::ensureSaved)
         cdEntryDao.insertEntries(entry)
         return true
     }

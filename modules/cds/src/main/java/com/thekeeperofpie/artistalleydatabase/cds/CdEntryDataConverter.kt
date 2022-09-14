@@ -5,6 +5,8 @@ import com.thekeeperofpie.artistalleydatabase.form.EntrySection
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbJson
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumColumnEntry
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumEntry
+import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.ArtistColumnEntry
+import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.ArtistEntry
 import kotlinx.serialization.encodeToString
 import javax.inject.Inject
 
@@ -43,7 +45,7 @@ class CdEntryDataConverter @Inject constructor(
         )
     }
 
-    fun titleEntry(album: AlbumEntry): EntrySection.MultiText.Entry {
+    fun titleEntry(album: AlbumEntry): EntrySection.MultiText.Entry.Prefilled<AlbumEntry> {
         val serializedValue = vgmdbJson.json
             .encodeToString(AlbumColumnEntry(album.id, album.catalogId, album.title))
 
@@ -86,5 +88,30 @@ class CdEntryDataConverter @Inject constructor(
             is Either.Left -> EntrySection.MultiText.Entry.Custom(either.value)
         }
 
+
+    fun vocalistEntry(artist: ArtistEntry) = artistEntry(artist)
+    fun composerEntry(artist: ArtistEntry) = artistEntry(artist)
+
+    private fun artistEntry(
+        artist: ArtistEntry
+    ): EntrySection.MultiText.Entry.Prefilled<ArtistEntry> {
+        val serializedValue = vgmdbJson.json
+            .encodeToString(ArtistColumnEntry(artist.id, artist.names))
+        return EntrySection.MultiText.Entry.Prefilled(
+            value = artist,
+            id = artist.id,
+            text = artist.name,
+            image = artist.coverThumb,
+            imageLink = "https://vgmdb.net/artist/${artist.id}",
+            serializedValue = serializedValue,
+            searchableValue = artist.names.values
+                .filterNot(String?::isNullOrBlank)
+                .joinToString { it.trim() }
+        )
+    }
+
     private val AlbumEntry.title get() = names["ja-latn"] ?: names["en"] ?: names["jp"] ?: ""
+
+    private val ArtistEntry.name
+        get() = names["ja-latn"] ?: names["en"] ?: names["jp"] ?: names.values.firstOrNull() ?: ""
 }

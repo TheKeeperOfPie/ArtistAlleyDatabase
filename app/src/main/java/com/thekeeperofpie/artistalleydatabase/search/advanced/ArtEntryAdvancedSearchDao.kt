@@ -3,10 +3,10 @@ package com.thekeeperofpie.artistalleydatabase.search.advanced
 import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.sqlite.db.SimpleSQLiteQuery
+import com.thekeeperofpie.artistalleydatabase.android_utils.RoomUtils.toBit
+import com.thekeeperofpie.artistalleydatabase.android_utils.RoomUtils.wrapMatchQuery
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntry
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryDao
-import com.thekeeperofpie.artistalleydatabase.art.ArtEntryDao.Companion.toBit
-import com.thekeeperofpie.artistalleydatabase.art.ArtEntryDao.Companion.wrapMatchQuery
 import com.thekeeperofpie.artistalleydatabase.art.SourceType
 
 @Dao

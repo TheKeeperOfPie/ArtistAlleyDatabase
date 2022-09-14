@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.anilist
 
 import android.util.Log
+import androidx.annotation.WorkerThread
 import com.apollographql.apollo3.api.ApolloResponse
 import com.apollographql.apollo3.api.Operation
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
@@ -193,4 +194,25 @@ class AniListAutocompleter @Inject constructor(
             .split { it.text.contains(query) }
         charactersFirst + seriesFirst + charactersSecond + seriesSecond
     }
+
+    @WorkerThread
+    suspend fun fillCharacterField(characterId: Int) =
+        characterRepository.getEntry(characterId)
+            .filterNotNull()
+            .flatMapLatest { character ->
+                // TODO: Batch query?
+                character.mediaIds
+                    ?.map { mediaRepository.getEntry(it) }
+                    ?.let { combine(it) { it.toList() } }
+                    .let { it ?: flowOf(listOf(null)) }
+                    .map { character to it.filterNotNull() }
+            }
+            .mapNotNull { aniListDataConverter.characterEntry(it.first, it.second) }
+            .filterNotNull()
+
+    @WorkerThread
+    suspend fun fillMediaField(mediaId: Int) =
+        mediaRepository.getEntry(mediaId)
+            .filterNotNull()
+            .map(aniListDataConverter::seriesEntry)
 }

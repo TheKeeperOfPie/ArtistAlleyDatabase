@@ -23,6 +23,8 @@ import com.thekeeperofpie.artistalleydatabase.edit.ArtEntryEditDao
 import com.thekeeperofpie.artistalleydatabase.search.advanced.ArtEntryAdvancedSearchDao
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumEntry
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumEntryDao
+import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.ArtistEntry
+import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.ArtistEntryDao
 
 @Database(
     entities = [
@@ -33,6 +35,7 @@ import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumEntryDao
         MediaEntry::class,
         CharacterEntry::class,
         AlbumEntry::class,
+        ArtistEntry::class,
     ],
     exportSchema = false,
     version = 1
@@ -57,4 +60,5 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun mediaEntryDao(): MediaEntryDao
     abstract fun characterEntryDao(): CharacterEntryDao
     abstract fun albumEntryDao(): AlbumEntryDao
+    abstract fun artistEntryDao(): ArtistEntryDao
 }

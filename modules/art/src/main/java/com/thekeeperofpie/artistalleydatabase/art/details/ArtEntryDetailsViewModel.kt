@@ -26,15 +26,12 @@ import com.thekeeperofpie.artistalleydatabase.form.EntrySection
 import com.thekeeperofpie.artistalleydatabase.form.EntrySection.MultiText.Entry
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -114,18 +111,17 @@ abstract class ArtEntryDetailsViewModel(
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
-            subscribeMultiTextSection(
-                section = artistSection,
+            artistSection.subscribePredictions(
                 localCall = {
                     artEntryDao.queryArtists(it)
                         .map(Entry::Custom)
                         .map { flowOf(it) }
                         .ifEmpty { listOf(flowOf(null)) }
-                })
+                }
+            )
         }
         viewModelScope.launch(Dispatchers.IO) {
-            subscribeMultiTextSection(
-                seriesSection,
+            seriesSection.subscribePredictions(
                 localCall = {
                     aniListAutocompleter.querySeriesLocal(it, artEntryDao::querySeries)
                 },
@@ -144,14 +140,14 @@ abstract class ArtEntryDetailsViewModel(
                 }
         }
         viewModelScope.launch(Dispatchers.IO) {
-            subscribeMultiTextSection(
-                section = tagSection,
+            tagSection.subscribePredictions(
                 localCall = {
                     artEntryDao.queryTags(it)
                         .map(Entry::Custom)
                         .map { flowOf(it) }
                         .ifEmpty { listOf(flowOf(null)) }
-                })
+                }
+            )
         }
 
         viewModelScope.launch(Dispatchers.IO) {
@@ -210,33 +206,6 @@ abstract class ArtEntryDetailsViewModel(
         }
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    private suspend fun subscribeMultiTextSection(
-        section: EntrySection.MultiText,
-        localCall: suspend (String) -> List<Flow<Entry?>>,
-        networkCall: suspend (query: String) -> Flow<List<Entry>> = {
-            flowOf(emptyList())
-        },
-    ) {
-        section.valueUpdates()
-            .flatMapLatest { query ->
-                val database = combine(localCall(query)) { it.toList() }
-                val aniList = if (query.isBlank()) flowOf(emptyList()) else networkCall(query)
-                combine(database, aniList) { local, network ->
-                    local.filterNotNull().toMutableList().apply {
-                        removeIf { source ->
-                            network.any { target -> target.text.trim() == source.text.trim() }
-                        }
-                    } + network
-                }
-            }
-            .collectLatest {
-                withContext(Dispatchers.Main) {
-                    section.predictions = it.toMutableList()
-                }
-            }
-    }
-
     protected fun buildModel(entry: ArtEntry): ArtEntryModel {
         val artists = entry.artists.map(Entry::Custom)
         val series = entry.series.map(aniListDataConverter::databaseToSeriesEntry)
@@ -263,47 +232,22 @@ abstract class ArtEntryDetailsViewModel(
         notesSection.setContents(entry.notes, entry.notesLocked)
 
         entry.characters.filterIsInstance<Entry.Prefilled<*>>()
+            .mapNotNull { it.id.toIntOrNull() }
             .forEach {
-                val characterId = it.id.toInt()
                 viewModelScope.launch(Dispatchers.Main) {
-                    characterRepository.getEntry(characterId)
-                        .filterNotNull()
-                        .flatMapLatest { character ->
-                            // TODO: Batch query?
-                            character.mediaIds
-                                ?.map { mediaRepository.getEntry(it) }
-                                ?.let { combine(it) { it.toList() } }
-                                .let { it ?: flowOf(listOf(null)) }
-                                .map { character to it.filterNotNull() }
-                        }
-                        .map { aniListDataConverter.characterEntry(it.first, it.second) }
-                        .filterNotNull()
+                    aniListAutocompleter.fillCharacterField(it)
                         .flowOn(Dispatchers.IO)
-                        .collectLatest { newEntry ->
-                            characterSection.replaceContents { entry ->
-                                if (entry is Entry.Prefilled<*> &&
-                                    entry.id == characterId.toString()
-                                ) newEntry else entry
-                            }
-                        }
+                        .collectLatest(characterSection::replaceContent)
                 }
             }
 
         entry.series.filterIsInstance<Entry.Prefilled<*>>()
+            .mapNotNull { it.id.toIntOrNull() }
             .forEach {
-                val mediaId = it.id.toInt()
                 viewModelScope.launch(Dispatchers.Main) {
-                    mediaRepository.getEntry(mediaId)
-                        .filterNotNull()
-                        .map(aniListDataConverter::seriesEntry)
+                    aniListAutocompleter.fillMediaField(it)
                         .flowOn(Dispatchers.IO)
-                        .collectLatest { newEntry ->
-                            seriesSection.replaceContents { entry ->
-                                if (entry is Entry.Prefilled<*> &&
-                                    entry.id == mediaId.toString()
-                                ) newEntry else entry
-                            }
-                        }
+                        .collectLatest(seriesSection::replaceContent)
                 }
             }
     }

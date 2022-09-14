@@ -1,41 +1,19 @@
 package com.thekeeperofpie.artistalleydatabase.art.details
 
-import androidx.compose.ui.text.intl.Locale
-import androidx.compose.ui.text.toLowerCase
-import androidx.compose.ui.text.toUpperCase
 import androidx.room.Dao
 import androidx.room.Query
-import com.thekeeperofpie.artistalleydatabase.android_utils.JsonUtils
+import com.thekeeperofpie.artistalleydatabase.android_utils.RoomUtils
+import com.thekeeperofpie.artistalleydatabase.android_utils.RoomUtils.wrapLikeQuery
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryDao
-import com.thekeeperofpie.artistalleydatabase.art.ArtEntryDao.Companion.wrapLikeQuery
-import com.thekeeperofpie.artistalleydatabase.art.ArtEntryDao.Companion.wrapMatchQuery
 
 @Dao
 interface ArtEntryDetailsDao : ArtEntryDao {
-
-    private suspend fun queryListStringColumn(
-        query: String,
-        matchFunction: suspend (String) -> List<String>,
-        likeFunction: suspend (String) -> List<String>,
-    ): List<String> {
-        // TODO: Filter results so that only individual entries with the query are returned
-        val matchQuery = wrapMatchQuery(query)
-        val likeQuery = wrapLikeQuery(query)
-        return matchFunction(matchQuery)
-            .plus(matchFunction(matchQuery.toLowerCase(Locale.current)))
-            .plus(matchFunction(matchQuery.toUpperCase(Locale.current)))
-            .plus(likeFunction(likeQuery))
-            .plus(likeFunction(likeQuery.toLowerCase(Locale.current)))
-            .plus(likeFunction(likeQuery.toUpperCase(Locale.current)))
-            .flatMap(JsonUtils::readStringList)
-            .distinct()
-    }
 
     suspend fun queryArtists(
         query: String,
         limit: Int = 5,
         offset: Int = 0
-    ) = queryListStringColumn(
+    ) = RoomUtils.queryListStringColumn(
         query,
         { queryArtistsViaMatch(it, limit, offset) },
         { queryArtistsViaLike(it, limit, offset) }
@@ -101,7 +79,7 @@ interface ArtEntryDetailsDao : ArtEntryDao {
         query: String,
         limit: Int = 5,
         offset: Int = 0
-    ) = queryListStringColumn(
+    ) = RoomUtils.queryListStringColumn(
         query,
         { querySeriesViaMatch(it, limit, offset) },
         { querySeriesViaLike(it, limit, offset) }
@@ -140,7 +118,7 @@ interface ArtEntryDetailsDao : ArtEntryDao {
         query: String,
         limit: Int = 5,
         offset: Int = 0
-    ) = queryListStringColumn(
+    ) = RoomUtils.queryListStringColumn(
         query,
         { queryCharactersViaMatch(it, limit, offset) },
         { queryCharactersViaLike(it, limit, offset) }
@@ -179,7 +157,7 @@ interface ArtEntryDetailsDao : ArtEntryDao {
         query: String,
         limit: Int = 5,
         offset: Int = 0
-    ) = queryListStringColumn(
+    ) = RoomUtils.queryListStringColumn(
         query,
         { queryTagsViaMatch(it, limit, offset) },
         { queryTagsViaLike(it, limit, offset) }

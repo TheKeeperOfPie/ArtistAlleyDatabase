@@ -9,6 +9,7 @@ import androidx.core.net.toUri
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListApi
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListAutocompleter
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListJson
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
@@ -17,6 +18,7 @@ import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbApi
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbJson
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumEntry
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumRepository
+import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.ArtistRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -33,9 +35,11 @@ class CdDetailsViewModel @Inject constructor(
     cdEntryDao: CdEntryDetailsDao,
     aniListApi: AniListApi,
     aniListJson: AniListJson,
+    aniListAutocompleter: AniListAutocompleter,
     vgmdbApi: VgmdbApi,
     vgmdbJson: VgmdbJson,
     albumRepository: AlbumRepository,
+    artistRepository: ArtistRepository,
     dataConverter: CdEntryDataConverter,
     mediaRepository: MediaRepository,
     characterRepository: CharacterRepository,
@@ -44,9 +48,11 @@ class CdDetailsViewModel @Inject constructor(
     cdEntryDao,
     aniListApi,
     aniListJson,
+    aniListAutocompleter,
     vgmdbApi,
     vgmdbJson,
     albumRepository,
+    artistRepository,
     dataConverter,
     mediaRepository,
     characterRepository,

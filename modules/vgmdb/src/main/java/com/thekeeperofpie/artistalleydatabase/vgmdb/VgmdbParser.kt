@@ -1,19 +1,26 @@
 package com.thekeeperofpie.artistalleydatabase.vgmdb
 
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumEntry
+import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.ArtistColumnEntry
+import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.ArtistEntry
 import it.skrape.core.htmlDocument
+import it.skrape.fetcher.BrowserFetcher
+import it.skrape.fetcher.response
+import it.skrape.fetcher.skrape
 import it.skrape.selects.CssSelectable
 import it.skrape.selects.DocElement
 import it.skrape.selects.ElementNotFoundException
 import it.skrape.selects.html5.h1
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import java.net.URL
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.util.Locale
 
-class VgmdbParser {
+class VgmdbParser(private val json: Json) {
 
     companion object {
         private const val BASE_URL = "https://vgmdb.net"
@@ -50,6 +57,7 @@ class VgmdbParser {
     private fun parseSearchHtml(text: String) = htmlDocument(text) {
         val innerMain = this["#innermain"] ?: return@htmlDocument null
         val albums = mutableListOf<SearchResults.AlbumResult>()
+        val artists = mutableListOf<SearchResults.ArtistResult>()
         innerMain.all("div")
             .forEach {
                 when (it.attribute("id")) {
@@ -59,15 +67,30 @@ class VgmdbParser {
                             .mapNotNull {
                                 val cells = it.all("td")
                                 val catalogId = cells.getOrNull(0)?.get(".catalog")?.text
-                                val albumInfo = cells.getOrNull(2)?.get("a")
-                                val id = albumInfo?.attribute("href")
+                                val info = cells.getOrNull(2)?.get("a")
+                                val id = info?.attribute("href")
                                     ?.substringAfter("album/")
                                     ?: return@mapNotNull null
-                                val names = parseAlbumTitles(albumInfo)
+                                val names = parseAlbumTitles(info)
                                 SearchResults.AlbumResult(
                                     id = id,
                                     catalogId = catalogId,
                                     names = names,
+                                )
+                            }
+                    }
+                    "artistresults" -> {
+                        artists += it.all("tr")
+                            .drop(1) // Skip the header
+                            .mapNotNull {
+                                val cells = it.all("td")
+                                val info = cells.getOrNull(0)?.get("a")
+                                val id = info?.attribute("href")
+                                    ?.substringAfter("artist/")
+                                    ?: return@mapNotNull null
+                                SearchResults.ArtistResult(
+                                    id = id,
+                                    name = info.text,
                                 )
                             }
                     }
@@ -76,12 +99,21 @@ class VgmdbParser {
             }
 
         SearchResults(
-            albums = albums
+            albums = albums,
+            artists = artists,
         )
     }
 
     suspend fun parseAlbum(id: String) = withContext(Dispatchers.IO) {
-        parseAlbumHtml(id, URL("$BASE_URL/album/$id").readText())
+        skrape(BrowserFetcher) {
+            request {
+                url = "$BASE_URL/album/$id"
+            }
+
+            response {
+                parseAlbumHtml(id, responseBody)
+            }
+        }
     }
 
     private fun parseAlbumHtml(id: String, text: String) = htmlDocument(text) {
@@ -115,13 +147,46 @@ class VgmdbParser {
                 }
             }
 
+        val vocalists = mutableListOf<ArtistColumnEntry>()
+        val composers = mutableListOf<ArtistColumnEntry>()
+
+        innerMain["#collapse_credits"]?.all("tr")?.map {
+            val name = it["td", "b", "span"]?.ownText
+            when (name?.lowercase(Locale.ENGLISH)) {
+                "vocals" -> {
+                    vocalists += parseArtistCredits(it)
+                }
+                "composer" -> {
+                    composers += parseArtistCredits(it)
+                }
+            }
+        }
+
         AlbumEntry(
             id = id,
             catalogId = catalogId,
             names = names,
             coverArt = coverArt,
-            performers = emptyList()
+            vocalists = vocalists.map(json::encodeToString),
+            composers = composers.map(json::encodeToString),
         )
+    }
+
+    private fun parseArtistCredits(element: DocElement) = mutableListOf<ArtistColumnEntry>().apply {
+        val td = element.findByIndex(1, "td")
+        td.all("a").map {
+            val artistId = it.attribute("href").substringAfter("artist/")
+            if (artistId.isNotBlank()) {
+                val artistNames = it.all("span")
+                    .associate { it.attribute("lang") to it.ownText }
+                    .filter { it.key.isNotBlank() && it.value.isNotBlank() }
+                    .ifEmpty { mapOf("en" to it.text) }
+                this += ArtistColumnEntry(
+                    id = artistId,
+                    names = artistNames,
+                )
+            }
+        }
     }
 
     private fun parseAlbumTitles(selectable: CssSelectable) =
@@ -129,6 +194,24 @@ class VgmdbParser {
             .associate {
                 it.attribute("lang").lowercase(Locale.getDefault()) to it.ownText
             }
+
+    // TODO: Actually parse an artist
+    fun parseArtist(id: String): ArtistEntry? = null/* withContext(Dispatchers.IO) {
+        skrape(BrowserFetcher) {
+            request {
+                url = "$BASE_URL/artist/$id"
+            }
+
+            response {
+                parseArtistHtml(id, responseBody)
+            }
+        }
+    }
+
+    private fun parseArtistHtml(id: String, text: String): ArtistEntry? = htmlDocument(text) {
+        // TODO: Actually parse an artist
+        null
+    }*/
 
     private operator fun CssSelectable.get(vararg selector: String): DocElement? {
         return try {
