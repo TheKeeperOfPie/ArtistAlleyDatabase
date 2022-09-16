@@ -1,7 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anilist.character
 
-import com.thekeeperofpie.artistalleydatabase.anilist.CharacterColumnEntry
-
 object CharacterUtils {
 
     fun buildCanonicalName(

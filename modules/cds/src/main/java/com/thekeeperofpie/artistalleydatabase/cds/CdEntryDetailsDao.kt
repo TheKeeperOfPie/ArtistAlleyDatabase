@@ -7,6 +7,84 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.RoomUtils
 @Dao
 interface CdEntryDetailsDao : CdEntryDao {
 
+    suspend fun queryVocalists(
+        query: String,
+        limit: Int = 5,
+        offset: Int = 0
+    ) = RoomUtils.queryListStringColumn(
+        query,
+        { queryVocalistsViaMatch(it, limit, offset) },
+        { queryVocalistsViaLike(it, limit, offset) }
+    )
+
+    @Query(
+        """
+        SELECT DISTINCT (cd_entries.vocalists)
+        FROM cd_entries
+        JOIN cd_entries_fts ON cd_entries.id = cd_entries_fts.id
+        WHERE cd_entries_fts.vocalistsSearchable MATCH :query
+        LIMIT :limit OFFSET :offset
+    """
+    )
+    suspend fun queryVocalistsViaMatch(
+        query: String,
+        limit: Int = 5,
+        offset: Int = 0
+    ): List<String>
+
+    @Query(
+        """
+        SELECT DISTINCT (cd_entries.vocalists)
+        FROM cd_entries
+        WHERE cd_entries.vocalistsSearchable LIKE :query
+        LIMIT :limit OFFSET :offset
+    """
+    )
+    suspend fun queryVocalistsViaLike(
+        query: String,
+        limit: Int = 5,
+        offset: Int = 0
+    ): List<String>
+
+    suspend fun queryComposers(
+        query: String,
+        limit: Int = 5,
+        offset: Int = 0
+    ) = RoomUtils.queryListStringColumn(
+        query,
+        { queryComposersViaMatch(it, limit, offset) },
+        { queryComposersViaLike(it, limit, offset) }
+    )
+
+    @Query(
+        """
+        SELECT DISTINCT (cd_entries.composers)
+        FROM cd_entries
+        JOIN cd_entries_fts ON cd_entries.id = cd_entries_fts.id
+        WHERE cd_entries_fts.composersSearchable MATCH :query
+        LIMIT :limit OFFSET :offset
+    """
+    )
+    suspend fun queryComposersViaMatch(
+        query: String,
+        limit: Int = 5,
+        offset: Int = 0
+    ): List<String>
+
+    @Query(
+        """
+        SELECT DISTINCT (cd_entries.composers)
+        FROM cd_entries
+        WHERE cd_entries.composersSearchable LIKE :query
+        LIMIT :limit OFFSET :offset
+    """
+    )
+    suspend fun queryComposersViaLike(
+        query: String,
+        limit: Int = 5,
+        offset: Int = 0
+    ): List<String>
+
     suspend fun querySeries(
         query: String,
         limit: Int = 5,

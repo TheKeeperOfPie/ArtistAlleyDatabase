@@ -8,9 +8,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.hoc081098.flowext.startWith
 import com.thekeeperofpie.artistalleydatabase.android_utils.ImageUtils
-import com.thekeeperofpie.artistalleydatabase.android_utils.mapLatestNotNull
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListAutocompleter
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListJson
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
@@ -18,6 +17,8 @@ import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
 import com.thekeeperofpie.artistalleydatabase.form.EntrySection
 import com.thekeeperofpie.artistalleydatabase.form.EntrySection.MultiText.Entry
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbApi
+import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbAutocompleter
+import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbDataConverter
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbJson
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumEntry
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumRepository
@@ -27,10 +28,11 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
@@ -43,14 +45,14 @@ import java.util.Date
 abstract class CdEntryDetailsViewModel(
     protected val application: Application,
     protected val cdEntryDao: CdEntryDetailsDao,
-    private val aniListApi: AniListApi,
     private val aniListJson: AniListJson,
     private val aniListAutocompleter: AniListAutocompleter,
     private val vgmdbApi: VgmdbApi,
     private val vgmdbJson: VgmdbJson,
+    private val vgmdbDataConverter: VgmdbDataConverter,
+    private val vgmdbAutocompleter: VgmdbAutocompleter,
     private val albumRepository: AlbumRepository,
     private val artistRepository: ArtistRepository,
-    protected val dataConverter: CdEntryDataConverter,
     private val mediaRepository: MediaRepository,
     private val characterRepository: CharacterRepository,
 ) : ViewModel() {
@@ -132,7 +134,7 @@ abstract class CdEntryDetailsViewModel(
             @Suppress("OPT_IN_USAGE")
             catalogIdSection.valueUpdates()
                 .filter { it.length > 4 }
-                .mapLatestNotNull { vgmdbApi.search(it) }
+                .mapLatest { vgmdbApi.searchAlbums(it) }
                 .catch {}
                 .mapLatest {
                     it.map {
@@ -147,7 +149,7 @@ abstract class CdEntryDetailsViewModel(
                     }
                         .awaitAll()
                         .filterNotNull()
-                        .map(dataConverter::catalogEntry)
+                        .map(vgmdbDataConverter::catalogEntry)
                 }
                 .catch {}
                 .flowOn(Dispatchers.IO)
@@ -158,7 +160,7 @@ abstract class CdEntryDetailsViewModel(
             @Suppress("OPT_IN_USAGE")
             catalogIdSection.predictionChosen
                 .filterIsInstance<Entry.Prefilled<AlbumEntry>>()
-                .map { dataConverter.titleEntry(it.value) }
+                .map { vgmdbDataConverter.titleEntry(it.value) }
                 .flowOn(Dispatchers.IO)
                 .collectLatest { titleSection.addOrReplaceContent(it) }
         }
@@ -167,11 +169,17 @@ abstract class CdEntryDetailsViewModel(
             @Suppress("OPT_IN_USAGE")
             catalogIdSection.predictionChosen
                 .filterIsInstance<Entry.Prefilled<AlbumEntry>>()
-                .map {
-                    it.value.vocalists
-                        .mapNotNull { vgmdbJson.parseVocalistColumn(it).rightOrNull() }
-                        .mapNotNull { artistRepository.getEntry(it.id).catch {}.firstOrNull() }
-                        .map { dataConverter.vocalistEntry(it) }
+                .flatMapLatest {
+                    combine(
+                        it.value.vocalists
+                            .mapNotNull { vgmdbJson.parseVocalistColumn(it).rightOrNull() }
+                            .map {
+                                artistRepository.getEntry(it.id)
+                                    .map { it?.let(vgmdbDataConverter::vocalistEntry) }
+                                    .catch {}
+                                    .startWith(vgmdbDataConverter.vocalistPlaceholder(it))
+                            }
+                    ) { it.toList().filterNotNull() }
                 }
                 .flowOn(Dispatchers.IO)
                 .collectLatest { vocalistSection.addOrReplaceContents(it) }
@@ -181,14 +189,38 @@ abstract class CdEntryDetailsViewModel(
             @Suppress("OPT_IN_USAGE")
             catalogIdSection.predictionChosen
                 .filterIsInstance<Entry.Prefilled<AlbumEntry>>()
-                .map {
-                    it.value.vocalists
-                        .mapNotNull { vgmdbJson.parseComposerColumn(it).rightOrNull() }
-                        .mapNotNull { artistRepository.getEntry(it.id).catch {}.firstOrNull() }
-                        .map { dataConverter.composerEntry(it) }
+                .flatMapLatest {
+                    combine(
+                        it.value.composers
+                            .mapNotNull { vgmdbJson.parseComposerColumn(it).rightOrNull() }
+                            .map {
+                                artistRepository.getEntry(it.id)
+                                    .map { it?.let(vgmdbDataConverter::composerEntry) }
+                                    .catch {}
+                                    .startWith(vgmdbDataConverter.composerPlaceholder(it))
+                            }
+                    ) { it.toList().filterNotNull() }
                 }
                 .flowOn(Dispatchers.IO)
                 .collectLatest { composerSection.addOrReplaceContents(it) }
+        }
+
+        viewModelScope.launch(Dispatchers.IO) {
+            vocalistSection.subscribePredictions(
+                localCall = {
+                    vgmdbAutocompleter.queryVocalistsLocal(it, cdEntryDao::queryVocalists)
+                },
+                networkCall = vgmdbAutocompleter::queryVocalistsNetwork
+            )
+        }
+
+        viewModelScope.launch(Dispatchers.IO) {
+            composerSection.subscribePredictions(
+                localCall = {
+                    vgmdbAutocompleter.queryComposersLocal(it, cdEntryDao::queryComposers)
+                },
+                networkCall = vgmdbAutocompleter::queryComposersNetwork
+            )
         }
 
         viewModelScope.launch(Dispatchers.IO) {
@@ -225,8 +257,8 @@ abstract class CdEntryDetailsViewModel(
     }
 
     protected fun buildModel(entry: CdEntry): CdEntryModel {
-        val catalogId = dataConverter.databaseToCatalogIdEntry(entry.catalogId)
-        val titles = entry.titles.map(dataConverter::databaseToTitleEntry)
+        val catalogId = vgmdbDataConverter.databaseToCatalogIdEntry(entry.catalogId)
+        val titles = entry.titles.map(vgmdbDataConverter::databaseToTitleEntry)
         val vocalists = entry.vocalists.map(Entry::Custom)
         val composers = entry.composers.map(Entry::Custom)
         val series = entry.series.map(Entry::Custom)
@@ -260,7 +292,7 @@ abstract class CdEntryDetailsViewModel(
             viewModelScope.launch(Dispatchers.Main) {
                 albumRepository.getEntry(albumId)
                     .filterNotNull()
-                    .map(dataConverter::catalogEntry)
+                    .map(vgmdbDataConverter::catalogEntry)
                     .flowOn(Dispatchers.IO)
                     .collectLatest { newEntry ->
                         catalogIdSection.replaceContents { entry ->
@@ -277,7 +309,7 @@ abstract class CdEntryDetailsViewModel(
                 viewModelScope.launch(Dispatchers.Main) {
                     albumRepository.getEntry(it.id)
                         .filterNotNull()
-                        .map(dataConverter::titleEntry)
+                        .map(vgmdbDataConverter::titleEntry)
                         .flowOn(Dispatchers.IO)
                         .collectLatest { newEntry ->
                             titleSection.replaceContents { entry ->

@@ -1,6 +1,5 @@
-package com.thekeeperofpie.artistalleydatabase.anilist
+package com.thekeeperofpie.artistalleydatabase.anilist.character
 
-import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterEntry
 import kotlinx.serialization.Serializable
 
 /**
@@ -8,7 +7,7 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 data class CharacterColumnEntry(
-    val id: Int,
+    val id: String,
     val name: Name? = null,
 ) {
     @Serializable

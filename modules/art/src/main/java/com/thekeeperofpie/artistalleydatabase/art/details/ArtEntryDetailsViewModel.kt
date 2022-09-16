@@ -10,7 +10,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hoc081098.flowext.withLatestFrom
 import com.thekeeperofpie.artistalleydatabase.android_utils.ImageUtils
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListAutocompleter
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListDataConverter
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListJson
@@ -44,7 +43,6 @@ import javax.annotation.CheckReturnValue
 abstract class ArtEntryDetailsViewModel(
     protected val application: Application,
     protected val artEntryDao: ArtEntryDetailsDao,
-    private val aniListApi: AniListApi,
     private val mediaRepository: MediaRepository,
     private val characterRepository: CharacterRepository,
     protected val aniListJson: AniListJson,
@@ -232,20 +230,18 @@ abstract class ArtEntryDetailsViewModel(
         notesSection.setContents(entry.notes, entry.notesLocked)
 
         entry.characters.filterIsInstance<Entry.Prefilled<*>>()
-            .mapNotNull { it.id.toIntOrNull() }
             .forEach {
                 viewModelScope.launch(Dispatchers.Main) {
-                    aniListAutocompleter.fillCharacterField(it)
+                    aniListAutocompleter.fillCharacterField(it.id)
                         .flowOn(Dispatchers.IO)
                         .collectLatest(characterSection::replaceContent)
                 }
             }
 
         entry.series.filterIsInstance<Entry.Prefilled<*>>()
-            .mapNotNull { it.id.toIntOrNull() }
             .forEach {
                 viewModelScope.launch(Dispatchers.Main) {
-                    aniListAutocompleter.fillMediaField(it)
+                    aniListAutocompleter.fillMediaField(it.id)
                         .flowOn(Dispatchers.IO)
                         .collectLatest(seriesSection::replaceContent)
                 }

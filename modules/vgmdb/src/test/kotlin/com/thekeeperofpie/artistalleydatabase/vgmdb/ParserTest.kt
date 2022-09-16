@@ -4,6 +4,7 @@ import com.google.common.truth.Truth.assertThat
 import com.google.common.truth.Truth.assertWithMessage
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumEntry
 import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.ArtistColumnEntry
+import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.ArtistEntry
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -120,6 +121,21 @@ class ParserTest {
                         )
                     ),
                 ).map(json::encodeToString),
+            )
+        )
+    }
+
+    @Test
+    fun parseArtist() {
+        val actual = runBlocking { parser.parseArtist("29051") }
+        assertThat(actual).isEqualTo(
+            ArtistEntry(
+                id = "29051",
+                names = mapOf(
+                    "en" to "Akari Nanawo",
+                    "ja" to "ナナヲ アカリ",
+                ),
+                picture = "https://media.vgm.io/artists/15/29051/29051-1527082407.jpg"
             )
         )
     }

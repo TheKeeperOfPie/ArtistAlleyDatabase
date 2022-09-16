@@ -3,7 +3,6 @@ package com.thekeeperofpie.artistalleydatabase.search.advanced
 import android.app.Application
 import androidx.lifecycle.viewModelScope
 import com.thekeeperofpie.artistalleydatabase.SettingsProvider
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListAutocompleter
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListDataConverter
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListJson
@@ -23,7 +22,6 @@ import javax.inject.Inject
 class AdvancedSearchViewModel @Inject constructor(
     application: Application,
     artEntryDao: ArtEntryDetailsDao,
-    aniListApi: AniListApi,
     mediaRepository: MediaRepository,
     characterRepository: CharacterRepository,
     aniListJson: AniListJson,
@@ -34,7 +32,6 @@ class AdvancedSearchViewModel @Inject constructor(
 ) : ArtEntryDetailsViewModel(
     application,
     artEntryDao,
-    aniListApi,
     mediaRepository,
     characterRepository,
     aniListJson,
@@ -74,14 +71,14 @@ class AdvancedSearchViewModel @Inject constructor(
                 .filterNot(String::isBlank),
             seriesById = seriesContents
                 .filterIsInstance<EntrySection.MultiText.Entry.Prefilled<*>>()
-                .mapNotNull { it.id.toIntOrNull() },
+                .map { it.id },
             characters = characterContents
                 .filterIsInstance<EntrySection.MultiText.Entry.Custom>()
                 .map { it.serializedValue }
                 .filterNot(String::isBlank),
             charactersById = characterContents
                 .filterIsInstance<EntrySection.MultiText.Entry.Prefilled<*>>()
-                .mapNotNull { it.id.toIntOrNull() },
+                .map { it.id },
             tags = tagSection.finalContents().map { it.serializedValue },
             printWidth = printSizeSection.finalWidth(),
             printHeight = printSizeSection.finalHeight(),

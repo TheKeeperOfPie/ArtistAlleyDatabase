@@ -10,9 +10,8 @@ data class ArtistEntry(
     @PrimaryKey
     val id: String,
     val names: Map<String, String> = emptyMap(),
-    val coverArt: String? = null,
+    val picture: String? = null,
 ) {
-    val coverMedium get() = coverArt
-    val coverFull by lazy { coverArt?.replace("medium-media", "media") }
-    val coverThumb by lazy { coverArt?.replace("medium-media", "thumb-media") }
+    val pictureFull get() = picture
+    val pictureThumb by lazy { picture?.replace("media", "thumb-media") }
 }

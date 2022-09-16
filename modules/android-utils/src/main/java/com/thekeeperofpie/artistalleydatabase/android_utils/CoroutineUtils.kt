@@ -2,7 +2,6 @@ package com.thekeeperofpie.artistalleydatabase.android_utils
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.onStart
 import java.util.LinkedList
 
 fun <T> Flow<T>.nullable() = this as Flow<T?>
@@ -20,5 +19,3 @@ fun <T> Flow<T>.distinctWithBuffer(bufferSize: Int): Flow<T> = flow {
         }
     }
 }
-
-fun <T> Flow<T>.start(value: T) = onStart { emit(value) }

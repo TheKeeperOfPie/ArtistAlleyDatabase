@@ -40,12 +40,12 @@ class BrowseSelectionViewModel @Inject constructor(
     var loading by mutableStateOf(false)
     val entries = MutableStateFlow(PagingData.empty<ArtEntryGridModel>())
 
-    fun initialize(column: ArtEntryColumn, query: Either<Int, String>) {
+    fun initialize(column: ArtEntryColumn, queryIdOrString: Either<String, String>) {
         if (this::column.isInitialized) return
         this.column = column
 
         viewModelScope.launch(Dispatchers.IO) {
-            val queryValue = query.eitherValueUnchecked().toString()
+            val queryValue = queryIdOrString.eitherValueUnchecked().toString()
             Pager(PagingConfig(pageSize = 20)) {
                 when (column) {
                     ArtEntryColumn.ARTISTS -> artEntryBrowseDao.getArtist(queryValue)
@@ -61,19 +61,23 @@ class BrowseSelectionViewModel @Inject constructor(
                         when (column) {
                             ArtEntryColumn.ARTISTS -> it.artists.contains(queryValue)
                             ArtEntryColumn.SOURCE -> TODO()
-                            ArtEntryColumn.SERIES -> when (query) {
+                            ArtEntryColumn.SERIES -> when (queryIdOrString) {
                                 is Either.Left -> it.series.asSequence()
                                     .map(aniListDataConverter::databaseToSeriesEntry)
                                     .filterIsInstance<EntrySection.MultiText.Entry.Prefilled<*>>()
-                                    .any { it.id.toIntOrNull() == query.value }
-                                is Either.Right -> it.series.any { it.contains(query.value) }
+                                    .any { it.id == queryIdOrString.value }
+                                is Either.Right -> {
+                                    it.series.any { it.contains(queryIdOrString.value) }
+                                }
                             }
-                            ArtEntryColumn.CHARACTERS -> when (query) {
+                            ArtEntryColumn.CHARACTERS -> when (queryIdOrString) {
                                 is Either.Left -> it.characters.asSequence()
                                     .map(aniListDataConverter::databaseToCharacterEntry)
                                     .filterIsInstance<EntrySection.MultiText.Entry.Prefilled<*>>()
-                                    .any { it.id.toIntOrNull() == query.value }
-                                is Either.Right -> it.characters.any { it.contains(query.value) }
+                                    .any { it.id == queryIdOrString.value }
+                                is Either.Right -> {
+                                    it.characters.any { it.contains(queryIdOrString.value) }
+                                }
                             }
                             ArtEntryColumn.TAGS -> it.tags.contains(queryValue)
                         }

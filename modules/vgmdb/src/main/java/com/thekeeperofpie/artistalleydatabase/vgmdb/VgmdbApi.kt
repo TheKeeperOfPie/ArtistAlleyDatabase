@@ -11,7 +11,11 @@ class VgmdbApi(
 
     private val parser = VgmdbParser(vgmdbJson.json)
 
-    suspend fun search(query: String) = parser.search(query)?.albums?.take(5)
+    suspend fun searchAlbums(query: String) =
+        parser.search(query)?.albums?.take(5) ?: emptyList()
+
+    suspend fun searchArtists(query: String) =
+        parser.search(query)?.artists?.take(5) ?: emptyList()
 
     suspend fun getAlbum(id: String) = parser.parseAlbum(id)?.also { albumEntryDao.updateEntry(it) }
 

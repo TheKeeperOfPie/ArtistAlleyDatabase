@@ -9,7 +9,7 @@ import com.squareup.moshi.JsonClass
 @Entity("media_entries")
 data class MediaEntry(
     @PrimaryKey
-    val id: Int,
+    val id: String,
     @Embedded(prefix = "title_")
     val title: Title? = null,
     val type: Type? = null,

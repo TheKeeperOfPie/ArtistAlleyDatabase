@@ -134,15 +134,15 @@ class VgmdbParser(private val json: Json) {
             ?.map {
                 when (it["b"]?.ownText) {
                     "Catalog Number" -> {
-                        val catalogData = it.findByIndex(1, "td")
-                        val innerA = catalogData["a"]
+                        val catalogData = it.byIndex(1, "td")
+                        val innerA = catalogData?.get("a")
                         catalogId = if (innerA?.attribute("href") == "#") {
                             innerA.ownText
                         } else {
-                            catalogData.ownText.substringBefore("(alternate")
+                            catalogData?.ownText?.substringBefore("(alternate")
                         }
-                            .trim()
-                            .takeIf { it.isNotBlank() }
+                            ?.trim()
+                            ?.takeIf { it.isNotBlank() }
                     }
                 }
             }
@@ -173,8 +173,7 @@ class VgmdbParser(private val json: Json) {
     }
 
     private fun parseArtistCredits(element: DocElement) = mutableListOf<ArtistColumnEntry>().apply {
-        val td = element.findByIndex(1, "td")
-        td.all("a").map {
+        element.byIndex(1, "td")?.all("a")?.map {
             val artistId = it.attribute("href").substringAfter("artist/")
             if (artistId.isNotBlank()) {
                 val artistNames = it.all("span")
@@ -186,7 +185,7 @@ class VgmdbParser(private val json: Json) {
                     names = artistNames,
                 )
             }
-        }
+        }.orEmpty()
     }
 
     private fun parseAlbumTitles(selectable: CssSelectable) =
@@ -195,8 +194,7 @@ class VgmdbParser(private val json: Json) {
                 it.attribute("lang").lowercase(Locale.getDefault()) to it.ownText
             }
 
-    // TODO: Actually parse an artist
-    fun parseArtist(id: String): ArtistEntry? = null/* withContext(Dispatchers.IO) {
+    suspend fun parseArtist(id: String) = withContext(Dispatchers.IO) {
         skrape(BrowserFetcher) {
             request {
                 url = "$BASE_URL/artist/$id"
@@ -208,10 +206,31 @@ class VgmdbParser(private val json: Json) {
         }
     }
 
-    private fun parseArtistHtml(id: String, text: String): ArtistEntry? = htmlDocument(text) {
-        // TODO: Actually parse an artist
-        null
-    }*/
+    private fun parseArtistHtml(id: String, text: String) = htmlDocument(text) {
+        val innerMain = findNullable("#innermain") ?: return@htmlDocument null
+        val spans = innerMain.all("span")
+        val name = spans.firstOrNull { it.className.isEmpty() && it.id.isEmpty() }?.text
+            ?: return@htmlDocument null
+
+        val leftAndRight = innerMain["div"]?.all("div")
+        val leftColumn = leftAndRight?.getOrNull(0) ?: return@htmlDocument null
+        val rightColumn = leftAndRight.getOrNull(1) ?: return@htmlDocument null
+
+        val japaneseName = leftColumn["span"]?.text
+
+        val picture = leftColumn["div", "a"]?.attribute("href")
+
+        val names = mapOf(
+            "en" to name.trim(),
+            "ja" to japaneseName?.trim().orEmpty(),
+        ).filterNot { it.value.isBlank() }
+
+        ArtistEntry(
+            id = id,
+            names = names,
+            picture = picture
+        )
+    }
 
     private operator fun CssSelectable.get(vararg selector: String): DocElement? {
         return try {
@@ -235,5 +254,11 @@ class VgmdbParser(private val json: Json) {
         this.findAll(selector)
     } catch (ignored: ElementNotFoundException) {
         emptyList()
+    }
+
+    private fun CssSelectable.byIndex(index: Int, selector: String) = try {
+        this.findByIndex(index, selector)
+    } catch (ignored: ElementNotFoundException) {
+        null
     }
 }

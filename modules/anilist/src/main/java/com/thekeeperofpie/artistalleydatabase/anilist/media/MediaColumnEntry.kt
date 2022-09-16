@@ -1,6 +1,5 @@
-package com.thekeeperofpie.artistalleydatabase.anilist
+package com.thekeeperofpie.artistalleydatabase.anilist.media
 
-import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaEntry
 import kotlinx.serialization.Serializable
 
 /**
@@ -8,6 +7,6 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 data class MediaColumnEntry(
-    val id: Int,
+    val id: String,
     val title: String = "",
 )

@@ -345,7 +345,7 @@ class MainActivity : ComponentActivity() {
                         onClickNav = onClickNav,
                         tabs = viewModel.tabs,
                         onClick = { column, value ->
-                            val query = value.query
+                            val query = value.queryIdOrString
                             val queryParam = if (query is Either.Left) {
                                 "&queryId=${query.value}"
                             } else {
@@ -375,7 +375,7 @@ class MainActivity : ComponentActivity() {
                             type = NavType.StringType
                         },
                         navArgument("queryId") {
-                            type = NavType.IntType
+                            type = NavType.StringType
                             defaultValue = -1
                         },
                         navArgument("queryString") {
@@ -387,10 +387,10 @@ class MainActivity : ComponentActivity() {
                     val arguments = it.arguments!!
                     val column = ArtEntryColumn.valueOf(arguments.getString("column")!!)
                     val title = arguments.getString("title")!!
-                    val queryId = arguments.getInt("queryId", -1)
+                    val queryId = arguments.getString("queryId")
                     val queryString = arguments.getString("queryString")
                     val viewModel = hiltViewModel<BrowseSelectionViewModel>()
-                    val query: Either<Int, String> = if (queryId > 0) {
+                    val query: Either<String, String> = if (queryId != null) {
                         Either.Left(queryId)
                     } else {
                         Either.Right(queryString!!)

@@ -9,10 +9,10 @@ import com.thekeeperofpie.artistalleydatabase.R
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.android_utils.JsonUtils
-import com.thekeeperofpie.artistalleydatabase.anilist.CharacterColumnEntry
-import com.thekeeperofpie.artistalleydatabase.anilist.MediaColumnEntry
+import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterColumnEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterUtils
+import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaColumnEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryColumn
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -96,7 +96,7 @@ class BrowseViewModel @Inject constructor(
                                             ),
                                             text = CharacterUtils.buildCanonicalName(it)
                                                 ?: databaseText,
-                                            query = Either.Left(it.id),
+                                            queryIdOrString = Either.Left(it.id),
                                         )
                                     }
                             }
@@ -111,7 +111,7 @@ class BrowseViewModel @Inject constructor(
                                             ),
                                             text = CharacterUtils.buildCanonicalName(entry)
                                                 ?: databaseText,
-                                            query = Either.Left(entry.id),
+                                            queryIdOrString = Either.Left(entry.id),
                                         )
                                     }.let { emit(it) }
                                 }
@@ -138,7 +138,7 @@ class BrowseViewModel @Inject constructor(
                                                 it.id
                                             ),
                                             text = it.title?.romaji ?: databaseText,
-                                            query = Either.Left(it.id),
+                                            queryIdOrString = Either.Left(it.id),
                                         )
                                     }
                             }
@@ -149,7 +149,7 @@ class BrowseViewModel @Inject constructor(
                                     } else {
                                         BrowseEntryModel(
                                             text = entry.title,
-                                            query = Either.Left(entry.id),
+                                            queryIdOrString = Either.Left(entry.id),
                                         )
                                     }.let { emit(it) }
                                 }

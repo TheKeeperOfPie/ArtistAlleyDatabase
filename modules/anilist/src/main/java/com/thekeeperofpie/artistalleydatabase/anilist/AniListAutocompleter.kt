@@ -4,10 +4,10 @@ import android.util.Log
 import androidx.annotation.WorkerThread
 import com.apollographql.apollo3.api.ApolloResponse
 import com.apollographql.apollo3.api.Operation
+import com.hoc081098.flowext.startWith
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.android_utils.nullable
 import com.thekeeperofpie.artistalleydatabase.android_utils.split
-import com.thekeeperofpie.artistalleydatabase.android_utils.start
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
 import com.thekeeperofpie.artistalleydatabase.form.EntrySection.MultiText.Entry
@@ -46,7 +46,7 @@ class AniListAutocompleter @Inject constructor(
         .mapNotNull { it?.data }
         .map(transform)
         .map { it.filterNotNull() }
-        .start(emptyList())
+        .startWith(emptyList())
 
     suspend fun querySeriesLocal(
         query: String,
@@ -57,7 +57,7 @@ class AniListAutocompleter @Inject constructor(
             mediaRepository.getEntry(either.value.id)
                 .filterNotNull()
                 .map(aniListDataConverter::seriesEntry)
-                .start(aniListDataConverter.seriesEntry(either.value))
+                .startWith(aniListDataConverter.seriesEntry(either.value))
         } else {
             flowOf(Entry.Custom(it))
         }
@@ -116,7 +116,7 @@ class AniListAutocompleter @Inject constructor(
                         .map { character to it.filterNotNull() }
                 }
                 .map { aniListDataConverter.characterEntry(it.first, it.second) }
-                .start(aniListDataConverter.characterEntry(either.value))
+                .startWith(aniListDataConverter.characterEntry(either.value))
                 .filterNotNull()
         } else {
             flowOf(Entry.Custom(it))
@@ -130,14 +130,16 @@ class AniListAutocompleter @Inject constructor(
             it.Page.characters.filterNotNull()
                 .map { aniListDataConverter.characterEntry(it.aniListCharacter) }
         }
+
+        // AniList IDs are integers
         val queryAsId = query.toIntOrNull()
         return if (queryAsId == null) search else {
-            combine(search, aniListApi.getCharacter(queryAsId)
+            combine(search, aniListApi.getCharacter(queryAsId.toString())
                 .catch {}
                 .mapNotNull { it?.aniListCharacter }
                 .mapNotNull(aniListDataConverter::characterEntry)
                 .map(::listOf)
-                .start(emptyList())
+                .startWith(emptyList())
             ) { result, character -> result + character }
         }
     }
@@ -151,13 +153,12 @@ class AniListAutocompleter @Inject constructor(
             .map { it.map { it.id } }
             .distinctUntilChanged()
             .flatMapLatest {
-                it.mapNotNull(String::toIntOrNull)
-                    .map {
-                        aniListApi.charactersByMedia(it)
-                            .map { it.map { aniListDataConverter.characterEntry((it)) } }
-                            .catch {}
-                            .start(emptyList())
-                    }
+                it.map {
+                    aniListApi.charactersByMedia(it)
+                        .map { it.map { aniListDataConverter.characterEntry((it)) } }
+                        .catch {}
+                        .startWith(emptyList())
+                }
                     .let {
                         combine(it) {
                             it.fold(mutableListOf<Entry>()) { list, value ->
@@ -166,7 +167,7 @@ class AniListAutocompleter @Inject constructor(
                         }
                     }
             }
-            .start(emptyList()),
+            .startWith(emptyList()),
         characterValue.flatMapLatest { query ->
             queryCharacters(query, queryCharactersLocal).map { query to it }
         }
@@ -196,7 +197,7 @@ class AniListAutocompleter @Inject constructor(
     }
 
     @WorkerThread
-    suspend fun fillCharacterField(characterId: Int) =
+    suspend fun fillCharacterField(characterId: String) =
         characterRepository.getEntry(characterId)
             .filterNotNull()
             .flatMapLatest { character ->
@@ -211,7 +212,7 @@ class AniListAutocompleter @Inject constructor(
             .filterNotNull()
 
     @WorkerThread
-    suspend fun fillMediaField(mediaId: Int) =
+    suspend fun fillMediaField(mediaId: String) =
         mediaRepository.getEntry(mediaId)
             .filterNotNull()
             .map(aniListDataConverter::seriesEntry)

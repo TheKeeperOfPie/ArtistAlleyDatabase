@@ -9,12 +9,12 @@ import com.squareup.moshi.JsonClass
 @Entity("character_entries")
 data class CharacterEntry(
     @PrimaryKey
-    val id: Int,
+    val id: String,
     @Embedded(prefix = "name_")
     val name: Name? = null,
     @Embedded(prefix = "image_")
     val image: Image? = null,
-    val mediaIds: List<Int>?,
+    val mediaIds: List<String>?,
 ) {
 
     data class Name(

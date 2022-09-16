@@ -29,6 +29,17 @@ class VgmdbHiltModule {
     ) = VgmdbApi(albumEntryDao, artistEntryDao, vgmdbJson)
 
     @Provides
+    fun provideVgmdbDataConverter(vgmdbJson: VgmdbJson) = VgmdbDataConverter(vgmdbJson)
+
+    @Provides
+    fun provideVgmdbAutocompleter(
+        vgmdbApi: VgmdbApi,
+        vgmdbJson: VgmdbJson,
+        vgmdbDataConverter: VgmdbDataConverter,
+        artistRepository: ArtistRepository,
+    ) = VgmdbAutocompleter(vgmdbApi, vgmdbJson, vgmdbDataConverter, artistRepository)
+
+    @Provides
     fun provideAlbumRepository(
         application: CustomApplication,
         albumEntryDao: AlbumEntryDao,

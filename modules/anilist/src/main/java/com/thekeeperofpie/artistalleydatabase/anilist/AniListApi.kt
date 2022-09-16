@@ -20,13 +20,14 @@ class AniListApi {
         .serverUrl(SERVER_URL)
         .build()
 
-    fun getMedia(id: Int) = apolloClient.query(MediaByIdQuery(Optional.Present(id)))
+    fun getMedia(id: String) = apolloClient.query(MediaByIdQuery(Optional.Present(id.toInt())))
         .toFlow()
         .map { it.data?.Media }
 
-    fun getCharacter(id: Int) = apolloClient.query(CharacterByIdQuery(Optional.Present(id)))
-        .toFlow()
-        .map { it.data?.Character }
+    fun getCharacter(id: String) =
+        apolloClient.query(CharacterByIdQuery(Optional.Present(id.toInt())))
+            .toFlow()
+            .map { it.data?.Character }
 
     fun searchSeries(query: String) =
         apolloClient.query(
@@ -48,10 +49,10 @@ class AniListApi {
             )
         ).toFlow()
 
-    fun charactersByMedia(mediaId: Int) =
+    fun charactersByMedia(mediaId: String) =
         apolloClient.query(
             MediaWithCharactersQuery(
-                mediaId = Optional.Present(mediaId),
+                mediaId = Optional.Present(mediaId.toInt()),
                 page = Optional.Present(0),
                 perPage = Optional.Present(25),
                 mediaPage = Optional.Absent,
