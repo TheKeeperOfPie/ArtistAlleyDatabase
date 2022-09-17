@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.art.export
+package com.thekeeperofpie.artistalleydatabase.cds
 
 import android.content.Context
 import androidx.work.CoroutineWorker
@@ -7,24 +7,23 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.export.ExportUtils
 import com.thekeeperofpie.artistalleydatabase.android_utils.export.Exporter
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListDataConverter
-import com.thekeeperofpie.artistalleydatabase.art.ArtEntry
-import com.thekeeperofpie.artistalleydatabase.art.ArtEntryDao
-import com.thekeeperofpie.artistalleydatabase.art.ArtEntryUtils
+import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbDataConverter
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.encodeToJsonElement
 import java.io.File
 import java.io.InputStream
 
-class ArtExporter(
+class CdExporter(
     private val appContext: Context,
-    private val artEntryDao: ArtEntryDao,
+    private val cdEntryDao: CdEntryDao,
     private val aniListDataConverter: AniListDataConverter,
+    private val vgmdbDataConverter: VgmdbDataConverter,
     private val appJson: AppJson,
 ) : Exporter {
 
-    override val zipEntryName = "art_entries"
+    override val zipEntryName = "cd_entries"
 
-    override suspend fun entriesSize() = artEntryDao.getEntriesSize()
+    override suspend fun entriesSize() = cdEntryDao.getEntriesSize()
 
     override suspend fun writeEntries(
         worker: CoroutineWorker,
@@ -38,13 +37,13 @@ class ArtExporter(
             .beginArray()
         var stopped = false
         var entriesSize = 0
-        artEntryDao.iterateEntries({ entriesSize = it }) { index, entry ->
+        cdEntryDao.iterateEntries({ entriesSize = it }) { index, entry ->
             if (worker.isStopped) {
                 stopped = true
                 return@iterateEntries
             }
 
-            val imageFile = ArtEntryUtils.getImageFile(appContext, entry.id)
+            val imageFile = CdEntryUtils.getImageFile(appContext, entry.id)
             if (imageFile.exists()) {
                 writeImage(entry, imageFile, writeEntry)
             }
@@ -64,7 +63,7 @@ class ArtExporter(
     }
 
     private suspend fun writeImage(
-        entry: ArtEntry,
+        entry: CdEntry,
         imageFile: File,
         writeEntry: suspend (String, InputStream) -> Unit,
     ) {
@@ -77,9 +76,24 @@ class ArtExporter(
             .map(aniListDataConverter::databaseToCharacterEntry)
             .map { it.text }
 
+        val vocalists = entry.vocalists.map(vgmdbDataConverter::databaseToVocalistEntry)
+        val composers = entry.composers.map(vgmdbDataConverter::databaseToComposerEntry)
+
+        val artists = (vocalists + composers).map { it.text }
+        val catalogId = listOfNotNull(entry.catalogId)
+            .map(vgmdbDataConverter::databaseToCatalogIdEntry)
+            .map { it.text }
+
         val tags = entry.tags
 
-        val entryFileName = ExportUtils.buildEntryFilePath(entry.id, series, characters, tags)
+        val entryFileName = ExportUtils.buildEntryFilePath(
+            entry.id,
+            series,
+            characters,
+            artists,
+            catalogId,
+            tags
+        )
         writeEntry(entryFileName, imageFile.inputStream())
     }
 }

@@ -9,6 +9,8 @@ interface Exporter {
 
     val zipEntryName: String
 
+    suspend fun entriesSize(): Int
+
     suspend fun writeEntries(
         worker: CoroutineWorker,
         jsonWriter: JsonWriter,

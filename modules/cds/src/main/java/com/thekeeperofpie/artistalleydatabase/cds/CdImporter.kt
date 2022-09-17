@@ -1,25 +1,22 @@
-package com.thekeeperofpie.artistalleydatabase.art.importer
+package com.thekeeperofpie.artistalleydatabase.cds
 
 import android.content.Context
 import com.squareup.moshi.JsonReader
 import com.squareup.moshi.Moshi
 import com.thekeeperofpie.artistalleydatabase.android_utils.importer.Importer
-import com.thekeeperofpie.artistalleydatabase.art.ArtEntry
-import com.thekeeperofpie.artistalleydatabase.art.ArtEntryDao
-import com.thekeeperofpie.artistalleydatabase.art.ArtEntryUtils
 import okio.buffer
 import okio.source
 import java.io.InputStream
 
-class ArtImporter(
+class CdImporter(
     private val appContext: Context,
-    private val artEntryDao: ArtEntryDao,
+    private val cdEntryDao: CdEntryDao,
     moshi: Moshi,
 ) : Importer {
 
-    override val zipEntryName = "art_entries"
+    override val zipEntryName = "cd_entries"
 
-    private val artEntryAdapter = moshi.adapter(ArtEntry::class.java)!!
+    private val cdEntryAdapter = moshi.adapter(CdEntry::class.java)!!
 
     override suspend fun readEntries(
         input: InputStream,
@@ -27,11 +24,11 @@ class ArtImporter(
         replaceAll: Boolean
     ): Int {
         var count = 0
-        artEntryDao.insertEntriesDeferred(dryRun, replaceAll) { insertEntry ->
+        cdEntryDao.insertEntriesDeferred(dryRun, replaceAll) { insertEntry ->
             count = if (dryRun) {
-                readArtEntriesJson(input) {}
+                readCdEntriesJson(input) {}
             } else {
-                readArtEntriesJson(input, insertEntry)
+                readCdEntriesJson(input, insertEntry)
             }
         }
         return count
@@ -39,7 +36,7 @@ class ArtImporter(
 
     override suspend fun readInnerFile(input: InputStream, fileName: String, dryRun: Boolean) {
         if (!dryRun) {
-            ArtEntryUtils.getImageFile(appContext, fileName)
+            CdEntryUtils.getImageFile(appContext, fileName)
                 .outputStream()
                 .use { input.copyTo(it) }
         }
@@ -48,9 +45,9 @@ class ArtImporter(
     /**
      * @return number of valid entries found
      */
-    private suspend fun readArtEntriesJson(
+    private suspend fun readCdEntriesJson(
         input: InputStream,
-        insertEntry: suspend (ArtEntry) -> Unit,
+        insertEntry: suspend (CdEntry) -> Unit,
     ): Int {
         var count = 0
         input.source().use {
@@ -59,14 +56,22 @@ class ArtImporter(
                 reader.isLenient = true
                 reader.beginObject()
                 val rootName = reader.nextName()
-                if (rootName != "art_entries") {
+                if (rootName != "cd_entries") {
                     reader.skipValue()
                 }
 
                 reader.beginArray()
 
                 while (reader.peek() == JsonReader.Token.BEGIN_OBJECT) {
-                    var entry = artEntryAdapter.fromJson(reader) ?: continue
+                    var entry = cdEntryAdapter.fromJson(reader) ?: continue
+
+                    if (entry.vocalistsSearchable.isEmpty()) {
+                        entry = entry.copy(vocalistsSearchable = entry.vocalists)
+                    }
+
+                    if (entry.composersSearchable.isEmpty()) {
+                        entry = entry.copy(composersSearchable = entry.composers)
+                    }
 
                     if (entry.seriesSearchable.isEmpty()) {
                         entry = entry.copy(seriesSearchable = entry.series)

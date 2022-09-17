@@ -65,23 +65,28 @@ class ExportWorker @AssistedInject constructor(
 
         val tempZipFile = privateExportDir.resolve("$dateTime.zip")
 
+        val entriesSizes = exporters.map { it.entriesSize() }
+        val entriesSizeMax = entriesSizes.sum()
+
         try {
             tempZipFile.outputStream().use {
                 ZipOutputStream(it).use { zip ->
-                    exporters.forEach { exporter ->
+                    exporters.forEachIndexed { index, exporter ->
                         val tempEntryDir = privateExportDir.resolve(exporter.zipEntryName)
                             .apply { mkdirs() }
 
                         val tempJsonFile = privateExportDir.resolve(exporter.zipEntryName + ".json")
 
+                        val startingProgressIndex = entriesSizes.take(index).sum()
                         val success = tempJsonFile.sink().use {
                             it.buffer().use {
                                 JsonWriter.of(it).use { jsonWriter ->
+                                    jsonWriter.indent = "    "
                                     exporter.writeEntries(
                                         this,
                                         jsonWriter,
                                         jsonElementConverter =
-                                        appMoshi.jsonElementAdapter.indent("    ")::toJsonValue,
+                                        appMoshi.jsonElementAdapter::toJsonValue,
                                         writeEntry =
                                         @Suppress("BlockingMethodInNonBlockingContext")
                                         { name, input ->
@@ -94,9 +99,13 @@ class ExportWorker @AssistedInject constructor(
                                             )
                                             input.use { it.copyTo(zip) }
                                             zip.closeEntry()
-                                        },
-                                        updateProgress = ::setProgress
-                                    )
+                                        }
+                                    ) { progress, max ->
+                                        setProgress(
+                                            startingProgressIndex + progress,
+                                            entriesSizeMax
+                                        )
+                                    }
                                 }
                             }
                         }

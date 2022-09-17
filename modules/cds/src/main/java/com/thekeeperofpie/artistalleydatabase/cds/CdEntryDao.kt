@@ -8,6 +8,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import com.thekeeperofpie.artistalleydatabase.cds.search.CdSearchQuery
+import kotlinx.coroutines.yield
 
 @Dao
 interface CdEntryDao {
@@ -28,10 +29,47 @@ interface CdEntryDao {
         return getEntries()
     }
 
+    @Query(
+        """
+        SELECT *
+        FROM cd_entries
+        LIMIT :limit
+        OFFSET :offset
+        """
+    )
+    fun getEntries(limit: Int = 50, offset: Int = 0): List<CdEntry>
+
+    @Query(
+        """
+        SELECT COUNT(*)
+        FROM cd_entries
+        """
+    )
+    fun getEntriesSize(): Int
+
+    @Transaction
+    suspend fun iterateEntries(
+        entriesSize: (Int) -> Unit,
+        limit: Int = 50,
+        block: suspend (index: Int, entry: CdEntry) -> Unit,
+    ) {
+        var offset = 0
+        var index = 0
+        entriesSize(getEntriesSize())
+        var entries = getEntries(limit = limit, offset = offset)
+        while (entries.isNotEmpty()) {
+            offset += entries.size
+            entries.forEach {
+                block(index++, it)
+                yield()
+            }
+            entries = getEntries(limit = limit, offset = offset)
+        }
+    }
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertEntries(vararg entries: CdEntry)
 
-    @Transaction
     suspend fun insertEntriesDeferred(
         dryRun: Boolean,
         replaceAll: Boolean,
@@ -54,4 +92,7 @@ interface CdEntryDao {
 
     @Query("DELETE FROM cd_entries")
     suspend fun deleteAll()
+
+    @Transaction
+    suspend fun transaction(block: suspend () -> Unit) = block()
 }

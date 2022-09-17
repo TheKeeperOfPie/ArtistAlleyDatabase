@@ -75,7 +75,6 @@ abstract class ImportExportWorker(
     }
 
     protected fun setProgress(progress: Int, max: Int) {
-        // TODO: Multi-module progress
         setProgressAsync(
             Data.Builder()
                 .putFloat(progressKey, progress / max.coerceAtLeast(1).toFloat())

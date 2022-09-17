@@ -87,6 +87,18 @@ class VgmdbDataConverter @Inject constructor(
             is Either.Left -> EntrySection.MultiText.Entry.Custom(either.value)
         }
 
+    fun databaseToVocalistEntry(value: String) =
+        when (val either = vgmdbJson.parseVocalistColumn(value)) {
+            is Either.Right -> vocalistPlaceholder(either.value)
+            is Either.Left -> EntrySection.MultiText.Entry.Custom(either.value)
+        }
+
+    fun databaseToComposerEntry(value: String) =
+        when (val either = vgmdbJson.parseComposerColumn(value)) {
+            is Either.Right -> composerPlaceholder(either.value)
+            is Either.Left -> EntrySection.MultiText.Entry.Custom(either.value)
+        }
+
     fun artistPlaceholder(
         artist: SearchResults.ArtistResult
     ): EntrySection.MultiText.Entry.Prefilled<SearchResults.ArtistResult> {

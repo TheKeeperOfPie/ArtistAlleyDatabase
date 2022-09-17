@@ -10,7 +10,6 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.android_utils.ImageUtils
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListAutocompleter
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListDataConverter
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListJson
@@ -34,7 +33,6 @@ import javax.inject.Inject
 class MultiEditViewModel @Inject constructor(
     application: Application,
     private val artEntryEditDao: ArtEntryEditDao,
-    aniListApi: AniListApi,
     mediaRepository: MediaRepository,
     characterRepository: CharacterRepository,
     aniListJson: AniListJson,
@@ -43,7 +41,6 @@ class MultiEditViewModel @Inject constructor(
 ) : ArtEntryDetailsViewModel(
     application,
     artEntryEditDao,
-    aniListApi,
     mediaRepository,
     characterRepository,
     aniListJson,

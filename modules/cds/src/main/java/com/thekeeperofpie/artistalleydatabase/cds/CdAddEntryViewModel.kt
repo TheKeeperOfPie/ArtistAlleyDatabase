@@ -10,6 +10,7 @@ import androidx.core.net.toUri
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListAutocompleter
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListDataConverter
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListJson
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
@@ -36,6 +37,7 @@ class CdAddEntryViewModel @Inject constructor(
     application: Application,
     cdEntryDao: CdEntryDetailsDao,
     aniListJson: AniListJson,
+    aniListDataConverter: AniListDataConverter,
     aniListAutocompleter: AniListAutocompleter,
     vgmdbApi: VgmdbApi,
     vgmdbJson: VgmdbJson,
@@ -49,6 +51,7 @@ class CdAddEntryViewModel @Inject constructor(
     application,
     cdEntryDao,
     aniListJson,
+    aniListDataConverter,
     aniListAutocompleter,
     vgmdbApi,
     vgmdbJson,

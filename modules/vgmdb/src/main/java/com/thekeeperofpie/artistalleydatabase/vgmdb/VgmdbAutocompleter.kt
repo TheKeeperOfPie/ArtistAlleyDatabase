@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.vgmdb
 
+import androidx.annotation.WorkerThread
 import com.hoc081098.flowext.startWith
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.form.EntrySection
@@ -69,4 +70,16 @@ class VgmdbAutocompleter(
         }.let { combine(it) { it.toList() } }
             .let { emitAll(it) }
     }
+
+    @WorkerThread
+    suspend fun fillVocalistField(artistId: String) =
+        artistRepository.getEntry(artistId)
+            .filterNotNull()
+            .map(vgmdbDataConverter::vocalistEntry)
+
+    @WorkerThread
+    suspend fun fillComposerField(artistId: String) =
+        artistRepository.getEntry(artistId)
+            .filterNotNull()
+            .map(vgmdbDataConverter::composerEntry)
 }

@@ -139,7 +139,6 @@ interface ArtEntryDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertEntries(vararg entries: ArtEntry)
 
-    @Transaction
     suspend fun insertEntriesDeferred(
         dryRun: Boolean,
         replaceAll: Boolean,

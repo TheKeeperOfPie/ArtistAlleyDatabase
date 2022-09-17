@@ -11,6 +11,7 @@ import androidx.lifecycle.viewModelScope
 import com.hoc081098.flowext.startWith
 import com.thekeeperofpie.artistalleydatabase.android_utils.ImageUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListAutocompleter
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListDataConverter
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListJson
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
@@ -46,6 +47,7 @@ abstract class CdEntryDetailsViewModel(
     protected val application: Application,
     protected val cdEntryDao: CdEntryDetailsDao,
     private val aniListJson: AniListJson,
+    private val aniListDataConverter: AniListDataConverter,
     private val aniListAutocompleter: AniListAutocompleter,
     private val vgmdbApi: VgmdbApi,
     private val vgmdbJson: VgmdbJson,
@@ -259,10 +261,10 @@ abstract class CdEntryDetailsViewModel(
     protected fun buildModel(entry: CdEntry): CdEntryModel {
         val catalogId = vgmdbDataConverter.databaseToCatalogIdEntry(entry.catalogId)
         val titles = entry.titles.map(vgmdbDataConverter::databaseToTitleEntry)
-        val vocalists = entry.vocalists.map(Entry::Custom)
-        val composers = entry.composers.map(Entry::Custom)
-        val series = entry.series.map(Entry::Custom)
-        val characters = entry.characters.map(Entry::Custom)
+        val vocalists = entry.vocalists.map(vgmdbDataConverter::databaseToVocalistEntry)
+        val composers = entry.composers.map(vgmdbDataConverter::databaseToComposerEntry)
+        val series = entry.series.map(aniListDataConverter::databaseToSeriesEntry)
+        val characters = entry.characters.map(aniListDataConverter::databaseToCharacterEntry)
         val tags = entry.tags.map(Entry::Custom)
 
         return CdEntryModel(
@@ -318,6 +320,42 @@ abstract class CdEntryDetailsViewModel(
                                 ) newEntry else entry
                             }
                         }
+                }
+            }
+
+        entry.vocalists.filterIsInstance<Entry.Prefilled<*>>()
+            .forEach {
+                viewModelScope.launch(Dispatchers.Main) {
+                    vgmdbAutocompleter.fillVocalistField(it.id)
+                        .flowOn(Dispatchers.IO)
+                        .collectLatest(vocalistSection::replaceContent)
+                }
+            }
+
+        entry.composers.filterIsInstance<Entry.Prefilled<*>>()
+            .forEach {
+                viewModelScope.launch(Dispatchers.Main) {
+                    vgmdbAutocompleter.fillComposerField(it.id)
+                        .flowOn(Dispatchers.IO)
+                        .collectLatest(composerSection::replaceContent)
+                }
+            }
+
+        entry.characters.filterIsInstance<Entry.Prefilled<*>>()
+            .forEach {
+                viewModelScope.launch(Dispatchers.Main) {
+                    aniListAutocompleter.fillCharacterField(it.id)
+                        .flowOn(Dispatchers.IO)
+                        .collectLatest(characterSection::replaceContent)
+                }
+            }
+
+        entry.series.filterIsInstance<Entry.Prefilled<*>>()
+            .forEach {
+                viewModelScope.launch(Dispatchers.Main) {
+                    aniListAutocompleter.fillMediaField(it.id)
+                        .flowOn(Dispatchers.IO)
+                        .collectLatest(seriesSection::replaceContent)
                 }
             }
     }
