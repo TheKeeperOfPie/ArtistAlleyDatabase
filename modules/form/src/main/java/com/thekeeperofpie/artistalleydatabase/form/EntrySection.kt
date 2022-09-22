@@ -25,7 +25,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.withContext
-import java.util.function.UnaryOperator
 
 sealed class EntrySection(lockState: LockState? = null) {
 
@@ -115,11 +114,6 @@ sealed class EntrySection(lockState: LockState? = null) {
             this.lockState = lockState
         }
 
-        fun replaceContents(operator: UnaryOperator<Entry>) {
-            contents.replaceAll(operator)
-            contentUpdates.tryEmit(contents.toList())
-        }
-
         fun replaceContent(entry: Entry.Prefilled<*>) {
             val index = indexOf(entry)
             if (index >= 0) {
@@ -204,11 +198,7 @@ sealed class EntrySection(lockState: LockState? = null) {
                     }
                     val aniList = if (query.isBlank()) flowOf(emptyList()) else networkCall(query)
                     combine(database, aniList) { local, network ->
-                        local.filterNotNull().toMutableList().apply {
-                            removeIf { source ->
-                                network.any { target -> target.text.trim() == source.text.trim() }
-                            }
-                        } + network
+                        (local + network).filterNotNull().distinctBy { it.id }
                     }
                 }
                 .collectLatest {
@@ -222,16 +212,18 @@ sealed class EntrySection(lockState: LockState? = null) {
             contents.indexOfFirst { it is Entry.Prefilled<*> && it.id == entry.id }
 
         sealed class Entry(
+            val id: String,
             val text: String,
             val trailingIcon: ImageVector? = null,
             @StringRes val trailingIconContentDescription: Int? = null,
             val serializedValue: String = text,
             val searchableValue: String = text,
         ) {
-            class Custom(text: String, val id: String? = null, trailingIcon: ImageVector? = null) :
-                Entry(text, trailingIcon)
+            class Custom(text: String, trailingIcon: ImageVector? = null) :
+                Entry(id = "custom_$text", text = text, trailingIcon = trailingIcon)
 
             object Different : Entry(
+                id = "different",
                 text = "",
                 trailingIcon = Icons.Default.ViewKanban,
                 trailingIconContentDescription =
@@ -240,7 +232,7 @@ sealed class EntrySection(lockState: LockState? = null) {
 
             class Prefilled<T>(
                 val value: T,
-                val id: String,
+                id: String,
                 text: String,
                 val image: String? = null,
                 val imageLink: String? = null,
@@ -251,11 +243,12 @@ sealed class EntrySection(lockState: LockState? = null) {
                 serializedValue: String,
                 searchableValue: String,
             ) : Entry(
-                text,
-                trailingIcon,
-                trailingIconContentDescription,
-                serializedValue,
-                searchableValue
+                id = id,
+                text = text,
+                trailingIcon = trailingIcon,
+                trailingIconContentDescription = trailingIconContentDescription,
+                serializedValue = serializedValue,
+                searchableValue = searchableValue,
             )
         }
     }

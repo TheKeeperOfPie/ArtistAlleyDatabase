@@ -376,7 +376,7 @@ class MainActivity : ComponentActivity() {
                         },
                         navArgument("queryId") {
                             type = NavType.StringType
-                            defaultValue = -1
+                            nullable = true
                         },
                         navArgument("queryString") {
                             type = NavType.StringType

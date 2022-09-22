@@ -13,6 +13,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.ImageUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListAutocompleter
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListDataConverter
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListJson
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntry
@@ -230,18 +231,20 @@ abstract class ArtEntryDetailsViewModel(
         notesSection.setContents(entry.notes, entry.notesLocked)
 
         entry.characters.filterIsInstance<Entry.Prefilled<*>>()
+            .mapNotNull(AniListUtils::characterId)
             .forEach {
                 viewModelScope.launch(Dispatchers.Main) {
-                    aniListAutocompleter.fillCharacterField(it.id)
+                    aniListAutocompleter.fillCharacterField(it)
                         .flowOn(Dispatchers.IO)
                         .collectLatest(characterSection::replaceContent)
                 }
             }
 
         entry.series.filterIsInstance<Entry.Prefilled<*>>()
+            .mapNotNull(AniListUtils::mediaId)
             .forEach {
                 viewModelScope.launch(Dispatchers.Main) {
-                    aniListAutocompleter.fillMediaField(it.id)
+                    aniListAutocompleter.fillMediaField(it)
                         .flowOn(Dispatchers.IO)
                         .collectLatest(seriesSection::replaceContent)
                 }

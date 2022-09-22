@@ -6,6 +6,7 @@ import com.thekeeperofpie.artistalleydatabase.SettingsProvider
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListAutocompleter
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListDataConverter
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListJson
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntry
@@ -13,6 +14,7 @@ import com.thekeeperofpie.artistalleydatabase.art.PrintSize
 import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryDetailsDao
 import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.form.EntrySection
+import com.thekeeperofpie.artistalleydatabase.form.EntrySection.MultiText.Entry
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -66,19 +68,19 @@ class AdvancedSearchViewModel @Inject constructor(
         val query = AdvancedSearchQuery(
             artists = artistSection.finalContents().map { it.serializedValue },
             source = sourceItem,
-            series = seriesContents.filterIsInstance<EntrySection.MultiText.Entry.Custom>()
+            series = seriesContents.filterIsInstance<Entry.Custom>()
                 .map { it.serializedValue }
                 .filterNot(String::isBlank),
             seriesById = seriesContents
-                .filterIsInstance<EntrySection.MultiText.Entry.Prefilled<*>>()
-                .map { it.id },
+                .filterIsInstance<Entry.Prefilled<*>>()
+                .mapNotNull(AniListUtils::mediaId),
             characters = characterContents
-                .filterIsInstance<EntrySection.MultiText.Entry.Custom>()
+                .filterIsInstance<Entry.Custom>()
                 .map { it.serializedValue }
                 .filterNot(String::isBlank),
             charactersById = characterContents
-                .filterIsInstance<EntrySection.MultiText.Entry.Prefilled<*>>()
-                .map { it.id },
+                .filterIsInstance<Entry.Prefilled<*>>()
+                .mapNotNull(AniListUtils::characterId),
             tags = tagSection.finalContents().map { it.serializedValue },
             printWidth = printSizeSection.finalWidth(),
             printHeight = printSizeSection.finalHeight(),

@@ -79,19 +79,14 @@ class AniListAutocompleter @Inject constructor(
         return combine(local, network) { localValue, networkValue ->
             val localValueNotNull = localValue.filterNotNull()
             val (first, second) = localValueNotNull.map { localEntry ->
-                networkValue.firstOrNull { networkEntry ->
-                    (localEntry as? Entry.Prefilled<*>)?.id ==
-                            (networkEntry as? Entry.Prefilled<*>)?.id
-                } ?: localEntry
+                networkValue.firstOrNull { networkEntry -> localEntry.id == networkEntry.id }
+                    ?: localEntry
             }
                 .split { it.text.contains(query, ignoreCase = true) }
 
             val filteredNetwork = networkValue.toMutableList().apply {
                 removeAll { networkEntry ->
-                    localValueNotNull.any { localEntry ->
-                        (localEntry as? Entry.Prefilled<*>)?.id ==
-                                (networkEntry as? Entry.Prefilled<*>)?.id
-                    }
+                    localValueNotNull.any { localEntry -> localEntry.id == networkEntry.id }
                 }
             }
 
@@ -150,7 +145,7 @@ class AniListAutocompleter @Inject constructor(
         queryCharactersLocal: suspend (query: String) -> List<String>,
     ) = combine(
         seriesContents.map { it.filterIsInstance<Entry.Prefilled<*>>() }
-            .map { it.map { it.id } }
+            .map { it.mapNotNull(AniListUtils::mediaId) }
             .distinctUntilChanged()
             .flatMapLatest {
                 it.map {
@@ -175,25 +170,27 @@ class AniListAutocompleter @Inject constructor(
         val (charactersFirst, charactersSecond) = charactersPair
         val (seriesFirst, seriesSecond) = series.toMutableList().apply {
             removeAll { seriesCharacter ->
-                charactersFirst.any { character ->
-                    val seriesCharacterEntry = seriesCharacter as? Entry.Prefilled<*>
-                    if (seriesCharacterEntry != null) {
-                        seriesCharacterEntry.id == (character as? Entry.Prefilled<*>)?.id
-                    } else {
-                        false
+                charactersFirst
+                    .any { character ->
+                        val seriesCharacterEntry = seriesCharacter as? Entry.Prefilled<*>
+                        if (seriesCharacterEntry != null) {
+                            seriesCharacterEntry.id == AniListUtils.characterId(character)
+                        } else {
+                            false
+                        }
+                    } || charactersSecond
+                    .any { character ->
+                        val seriesCharacterEntry = seriesCharacter as? Entry.Prefilled<*>
+                        if (seriesCharacterEntry != null) {
+                            seriesCharacterEntry.id == AniListUtils.characterId(character)
+                        } else {
+                            false
+                        }
                     }
-                } || charactersSecond.any { character ->
-                    val seriesCharacterEntry = seriesCharacter as? Entry.Prefilled<*>
-                    if (seriesCharacterEntry != null) {
-                        seriesCharacterEntry.id == (character as? Entry.Prefilled<*>)?.id
-                    } else {
-                        false
-                    }
-                }
             }
         }
             .split { it.text.contains(query) }
-        charactersFirst + seriesFirst + charactersSecond + seriesSecond
+        (charactersFirst + seriesFirst + charactersSecond + seriesSecond).distinctBy { it.id }
     }
 
     @WorkerThread

@@ -25,8 +25,7 @@ abstract class ImportExportWorker(
     @StringRes private val finishedTitle: Int,
     private val notificationClickDestination: NavDrawerItems,
     private val pendingIntentRequestCode: PendingIntentRequestCode,
-) :
-    CoroutineWorker(appContext, params) {
+) : CoroutineWorker(appContext, params) {
 
     private val cachedNotificationBuilder =
         NotificationCompat.Builder(appContext, notificationChannel.channel)
@@ -41,9 +40,7 @@ abstract class ImportExportWorker(
                 notificationIdFinished.id,
                 NotificationCompat.Builder(appContext, notificationChannel.channel)
                     .setAutoCancel(true)
-                    .setContentTitle(
-                        appContext.getString(finishedTitle)
-                    )
+                    .setContentTitle(appContext.getString(finishedTitle))
                     .setSmallIcon(R.drawable.baseline_import_export_24)
                     .setContentIntent(
                         PendingIntent.getActivity(

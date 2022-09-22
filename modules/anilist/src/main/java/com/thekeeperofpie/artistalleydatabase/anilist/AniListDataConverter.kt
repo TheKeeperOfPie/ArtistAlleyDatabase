@@ -12,7 +12,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaColumnEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaEntry
-import com.thekeeperofpie.artistalleydatabase.form.EntrySection
+import com.thekeeperofpie.artistalleydatabase.form.EntrySection.MultiText.Entry
 import javax.inject.Inject
 
 class AniListDataConverter @Inject constructor(
@@ -22,22 +22,22 @@ class AniListDataConverter @Inject constructor(
     fun databaseToSeriesEntry(value: String) =
         when (val either = aniListJson.parseSeriesColumn(value)) {
             is Either.Right -> seriesEntry(either.value)
-            is Either.Left -> EntrySection.MultiText.Entry.Custom(either.value)
+            is Either.Left -> Entry.Custom(either.value)
         }
 
     fun databaseToCharacterEntry(value: String) =
         when (val either = aniListJson.parseCharacterColumn(value)) {
             is Either.Right -> characterEntry(either.value)
-            is Either.Left -> EntrySection.MultiText.Entry.Custom(either.value)
+            is Either.Left -> Entry.Custom(either.value)
         }
 
-    fun seriesEntry(media: AniListMedia): EntrySection.MultiText.Entry {
+    fun seriesEntry(media: AniListMedia): Entry {
         val title = media.title?.romaji ?: media.id.toString()
         val serializedValue =
             aniListJson.toJson(MediaColumnEntry(media.id.toString(), title.trim()))
-        return EntrySection.MultiText.Entry.Prefilled(
+        return Entry.Prefilled(
             value = media,
-            id = media.id.toString(),
+            id = mediaEntryId(media.id.toString()),
             text = title,
             trailingIcon = when (media.type) {
                 MediaType.ANIME -> Icons.Default.Monitor
@@ -63,13 +63,13 @@ class AniListDataConverter @Inject constructor(
         )
     }
 
-    fun seriesEntry(entry: MediaEntry): EntrySection.MultiText.Entry.Prefilled<*> {
+    fun seriesEntry(entry: MediaEntry): Entry.Prefilled<*> {
         val title = entry.title
         val nonNullTitle = title?.romaji ?: entry.id
         val serializedValue = aniListJson.toJson(MediaColumnEntry(entry.id, nonNullTitle))
-        return EntrySection.MultiText.Entry.Prefilled(
+        return Entry.Prefilled(
             value = entry,
-            id = entry.id,
+            id = mediaEntryId(entry.id),
             text = nonNullTitle,
             trailingIcon = when (entry.type) {
                 MediaEntry.Type.ANIME -> Icons.Default.Monitor
@@ -96,11 +96,11 @@ class AniListDataConverter @Inject constructor(
         )
     }
 
-    fun seriesEntry(entry: MediaColumnEntry): EntrySection.MultiText.Entry {
+    fun seriesEntry(entry: MediaColumnEntry): Entry.Prefilled<MediaColumnEntry> {
         val serializedValue = aniListJson.toJson(MediaColumnEntry(entry.id, entry.title))
-        return EntrySection.MultiText.Entry.Prefilled(
+        return Entry.Prefilled(
             value = entry,
-            id = entry.id,
+            id = mediaEntryId(entry.id),
             text = entry.title,
             image = null,
             imageLink = null,
@@ -109,7 +109,7 @@ class AniListDataConverter @Inject constructor(
         )
     }
 
-    fun characterEntry(character: AniListCharacter) =
+    fun characterEntry(character: AniListCharacter): Entry.Prefilled<AniListCharacter> =
         characterEntry(
             value = character,
             id = character.id.toString(),
@@ -123,7 +123,7 @@ class AniListDataConverter @Inject constructor(
             mediaTitle = character.media?.nodes?.firstOrNull()?.aniListMedia?.title?.romaji
         )
 
-    fun characterEntry(entry: CharacterColumnEntry) =
+    fun characterEntry(entry: CharacterColumnEntry): Entry.Prefilled<CharacterColumnEntry> =
         characterEntry(
             value = entry,
             id = entry.id,
@@ -162,7 +162,7 @@ class AniListDataConverter @Inject constructor(
         native: String?,
         alternative: List<String>?,
         mediaTitle: String?
-    ): EntrySection.MultiText.Entry.Prefilled<*> {
+    ): Entry.Prefilled<T> {
         val canonicalName = CharacterUtils.buildCanonicalName(
             first = first,
             middle = middle,
@@ -182,9 +182,9 @@ class AniListDataConverter @Inject constructor(
                 )
             )
         )
-        return EntrySection.MultiText.Entry.Prefilled(
+        return Entry.Prefilled(
             value = value,
-            id = id,
+            id = characterEntryId(id),
             text = canonicalName,
             image = image,
             imageLink = AniListUtils.characterUrl(id),
@@ -197,4 +197,7 @@ class AniListDataConverter @Inject constructor(
                 .joinToString()
         )
     }
+
+    private fun characterEntryId(id: String) = "aniListCharacter_$id"
+    private fun mediaEntryId(id: String) = "aniListCharacter_$id"
 }

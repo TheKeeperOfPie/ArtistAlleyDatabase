@@ -9,6 +9,7 @@ import com.thekeeperofpie.artistalleydatabase.R
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.android_utils.JsonUtils
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterColumnEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterUtils
@@ -81,7 +82,6 @@ class BrowseViewModel @Inject constructor(
             artEntryDao.getCharacters()
                 .flatMapLatest {
                     it.flatMap(JsonUtils::readStringList)
-                        .distinct()
                         .map { databaseText ->
                             val entry = databaseText.takeIf { it.contains("{") }
                                 ?.let<String, CharacterColumnEntry>(appJson.json::decodeFromString)
@@ -91,9 +91,7 @@ class BrowseViewModel @Inject constructor(
                                     .map {
                                         BrowseEntryModel(
                                             image = it.image?.medium,
-                                            link = com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils.characterUrl(
-                                                it.id
-                                            ),
+                                            link = AniListUtils.characterUrl(it.id),
                                             text = CharacterUtils.buildCanonicalName(it)
                                                 ?: databaseText,
                                             queryIdOrString = Either.Left(it.id),
@@ -106,9 +104,7 @@ class BrowseViewModel @Inject constructor(
                                         BrowseEntryModel(text = databaseText)
                                     } else {
                                         BrowseEntryModel(
-                                            link = com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils.characterUrl(
-                                                entry.id
-                                            ),
+                                            link = AniListUtils.characterUrl(entry.id),
                                             text = CharacterUtils.buildCanonicalName(entry)
                                                 ?: databaseText,
                                             queryIdOrString = Either.Left(entry.id),
@@ -116,7 +112,11 @@ class BrowseViewModel @Inject constructor(
                                     }.let { emit(it) }
                                 }
                         }
-                        .let { combine(it) { it.sortedByText() } }
+                        .let {
+                            combine(it) {
+                                it.distinctBy { it.queryIdOrString }.sortedByText()
+                            }
+                        }
                 }
         }
         subscribeColumn(this::series) {
@@ -133,10 +133,7 @@ class BrowseViewModel @Inject constructor(
                                     .map {
                                         BrowseEntryModel(
                                             image = it.image?.medium,
-                                            link = com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils.mediaUrl(
-                                                it.type,
-                                                it.id
-                                            ),
+                                            link = AniListUtils.mediaUrl(it.type, it.id),
                                             text = it.title?.romaji ?: databaseText,
                                             queryIdOrString = Either.Left(it.id),
                                         )
@@ -154,7 +151,11 @@ class BrowseViewModel @Inject constructor(
                                     }.let { emit(it) }
                                 }
                         }
-                        .let { combine(it) { it.sortedByText() } }
+                        .let {
+                            combine(it) {
+                                it.distinctBy { it.queryIdOrString }.sortedByText()
+                            }
+                        }
                 }
         }
         subscribeColumn(this::tags) {
@@ -176,7 +177,7 @@ class BrowseViewModel @Inject constructor(
             .collectLatest(property::set)
     }
 
-    private fun Array<BrowseEntryModel>.sortedByText() = toList().sortedWith { first, second ->
+    private fun Iterable<BrowseEntryModel>.sortedByText() = sortedWith { first, second ->
         String.CASE_INSENSITIVE_ORDER.compare(first.text, second.text)
     }
 }

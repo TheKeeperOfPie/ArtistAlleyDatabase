@@ -10,9 +10,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hoc081098.flowext.startWith
 import com.thekeeperofpie.artistalleydatabase.android_utils.ImageUtils
+import com.thekeeperofpie.artistalleydatabase.android_utils.emitNotNull
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListAutocompleter
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListDataConverter
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListJson
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
 import com.thekeeperofpie.artistalleydatabase.form.EntrySection
@@ -21,12 +23,11 @@ import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbApi
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbAutocompleter
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbDataConverter
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbJson
+import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbUtils
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumEntry
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumRepository
 import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.ArtistRepository
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
@@ -34,10 +35,10 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.Instant
@@ -136,22 +137,19 @@ abstract class CdEntryDetailsViewModel(
             @Suppress("OPT_IN_USAGE")
             catalogIdSection.valueUpdates()
                 .filter { it.length > 4 }
-                .mapLatest { vgmdbApi.searchAlbums(it) }
-                .catch {}
-                .mapLatest {
-                    it.map {
-                        async {
-                            try {
-                                vgmdbApi.getAlbum(it.id)
-                            } catch (e: Exception) {
-                                Log.e(TAG, "Error fetching album ${it.id}")
-                                null
-                            }
+                .flatMapLatest {
+                    flow { emit(vgmdbApi.searchAlbums(it)) }
+                        .catch {}
+                        .flatMapLatest {
+                            it.map {
+                                val albumId = it.id
+                                flow { emitNotNull(vgmdbApi.getAlbum(albumId)) }
+                                    .catch { Log.d(TAG, "Error fetching album $albumId", it) }
+                                    .map(vgmdbDataConverter::catalogEntry)
+                                    .startWith(vgmdbDataConverter.catalogIdPlaceholder(it))
+                            }.let { combine(it) { it.toList().distinctBy { it.id } } }
                         }
-                    }
-                        .awaitAll()
-                        .filterNotNull()
-                        .map(vgmdbDataConverter::catalogEntry)
+                        .startWith(emptyList())
                 }
                 .catch {}
                 .flowOn(Dispatchers.IO)
@@ -289,71 +287,64 @@ abstract class CdEntryDetailsViewModel(
         tagSection.setContents(entry.tags, entry.tagsLocked)
         notesSection.setContents(entry.notes, entry.notesLocked)
 
-        val albumId = (entry.catalogId as? Entry.Prefilled<*>)?.id
+        val albumId = VgmdbUtils.albumId(entry.catalogId)
         if (albumId != null) {
             viewModelScope.launch(Dispatchers.Main) {
                 albumRepository.getEntry(albumId)
                     .filterNotNull()
                     .map(vgmdbDataConverter::catalogEntry)
                     .flowOn(Dispatchers.IO)
-                    .collectLatest { newEntry ->
-                        catalogIdSection.replaceContents { entry ->
-                            if (entry is Entry.Prefilled<*>
-                                && entry.id == albumId
-                            ) newEntry else entry
-                        }
-                    }
+                    .collectLatest(catalogIdSection::replaceContent)
             }
         }
 
-        entry.titles.filterIsInstance<Entry.Prefilled<*>>()
+        entry.titles
+            .mapNotNull(VgmdbUtils::albumId)
             .forEach {
                 viewModelScope.launch(Dispatchers.Main) {
-                    albumRepository.getEntry(it.id)
+                    albumRepository.getEntry(it)
                         .filterNotNull()
                         .map(vgmdbDataConverter::titleEntry)
                         .flowOn(Dispatchers.IO)
-                        .collectLatest { newEntry ->
-                            titleSection.replaceContents { entry ->
-                                if (entry is Entry.Prefilled<*>
-                                    && entry.id == it.id
-                                ) newEntry else entry
-                            }
-                        }
+                        .collectLatest(titleSection::replaceContent)
                 }
             }
 
-        entry.vocalists.filterIsInstance<Entry.Prefilled<*>>()
+        entry.vocalists
+            .mapNotNull(VgmdbUtils::artistId)
             .forEach {
                 viewModelScope.launch(Dispatchers.Main) {
-                    vgmdbAutocompleter.fillVocalistField(it.id)
+                    vgmdbAutocompleter.fillVocalistField(it)
                         .flowOn(Dispatchers.IO)
                         .collectLatest(vocalistSection::replaceContent)
                 }
             }
 
-        entry.composers.filterIsInstance<Entry.Prefilled<*>>()
+        entry.composers
+            .mapNotNull(VgmdbUtils::artistId)
             .forEach {
                 viewModelScope.launch(Dispatchers.Main) {
-                    vgmdbAutocompleter.fillComposerField(it.id)
+                    vgmdbAutocompleter.fillComposerField(it)
                         .flowOn(Dispatchers.IO)
                         .collectLatest(composerSection::replaceContent)
                 }
             }
 
-        entry.characters.filterIsInstance<Entry.Prefilled<*>>()
+        entry.characters
+            .mapNotNull(AniListUtils::characterId)
             .forEach {
                 viewModelScope.launch(Dispatchers.Main) {
-                    aniListAutocompleter.fillCharacterField(it.id)
+                    aniListAutocompleter.fillCharacterField(it)
                         .flowOn(Dispatchers.IO)
                         .collectLatest(characterSection::replaceContent)
                 }
             }
 
-        entry.series.filterIsInstance<Entry.Prefilled<*>>()
+        entry.series
+            .mapNotNull(AniListUtils::mediaId)
             .forEach {
                 viewModelScope.launch(Dispatchers.Main) {
-                    aniListAutocompleter.fillMediaField(it.id)
+                    aniListAutocompleter.fillMediaField(it)
                         .flowOn(Dispatchers.IO)
                         .collectLatest(seriesSection::replaceContent)
                 }

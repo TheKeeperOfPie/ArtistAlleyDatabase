@@ -13,14 +13,57 @@ class VgmdbDataConverter @Inject constructor(
     private val vgmdbJson: VgmdbJson,
 ) {
 
-    fun catalogEntry(album: AlbumEntry): EntrySection.MultiText.Entry {
+    fun catalogIdPlaceholder(
+        album: SearchResults.AlbumResult
+    ): EntrySection.MultiText.Entry.Prefilled<SearchResults.AlbumResult> {
+        val catalogId = album.catalogId
+        val titleText: String
+        val subtitleText: String?
+        if (catalogId == null) {
+            titleText = album.name
+            subtitleText = null
+        } else {
+            titleText = catalogId
+            subtitleText = album.name
+        }
+
+        val serializedValue = vgmdbJson.json
+            .encodeToString(AlbumColumnEntry(album.id, album.catalogId, titleText))
+
+        return EntrySection.MultiText.Entry.Prefilled(
+            value = album,
+            id = albumEntryId(album.id),
+            text = titleText,
+            titleText = titleText,
+            subtitleText = subtitleText,
+            imageLink = "https://vgmdb.net/album/${album.id}",
+            serializedValue = serializedValue,
+            searchableValue = album.names.values
+                .filterNot(String?::isNullOrBlank)
+                .joinToString { it.trim() }
+        )
+    }
+
+    fun catalogEntry(album: AlbumEntry): EntrySection.MultiText.Entry.Prefilled<AlbumEntry> {
+        val catalogId = album.catalogId
+        val titleText: String
+        val subtitleText: String?
+        if (catalogId == null) {
+            titleText = album.title
+            subtitleText = null
+        } else {
+            titleText = catalogId
+            subtitleText = album.title
+        }
+
         val serializedValue = vgmdbJson.json
             .encodeToString(AlbumColumnEntry(album.id, album.catalogId, album.title))
 
         return EntrySection.MultiText.Entry.Prefilled(
             value = album,
-            id = album.id,
-            text = album.catalogId ?: album.title,
+            id = albumEntryId(album.id),
+            text = titleText,
+            subtitleText = subtitleText,
             image = album.coverThumb,
             imageLink = "https://vgmdb.net/album/${album.id}",
             serializedValue = serializedValue,
@@ -31,13 +74,25 @@ class VgmdbDataConverter @Inject constructor(
     }
 
     fun catalogEntry(album: AlbumColumnEntry): EntrySection.MultiText.Entry {
+        val catalogId = album.catalogId
+        val titleText: String
+        val subtitleText: String?
+        if (catalogId == null) {
+            titleText = album.title
+            subtitleText = null
+        } else {
+            titleText = catalogId
+            subtitleText = album.title
+        }
+
         val serializedValue = vgmdbJson.json
             .encodeToString(AlbumColumnEntry(album.id, album.catalogId, album.title))
 
         return EntrySection.MultiText.Entry.Prefilled(
             value = album,
-            id = album.id,
-            text = album.catalogId ?: album.title,
+            id = albumEntryId(album.id),
+            text = titleText,
+            subtitleText = subtitleText,
             imageLink = "https://vgmdb.net/album/${album.id}",
             serializedValue = serializedValue,
             searchableValue = album.title,
@@ -50,7 +105,7 @@ class VgmdbDataConverter @Inject constructor(
 
         return EntrySection.MultiText.Entry.Prefilled(
             value = album,
-            id = album.id,
+            id = albumEntryId(album.id),
             text = album.title,
             image = album.coverThumb,
             imageLink = "https://vgmdb.net/album/${album.id}",
@@ -67,7 +122,7 @@ class VgmdbDataConverter @Inject constructor(
 
         return EntrySection.MultiText.Entry.Prefilled(
             value = album,
-            id = album.id,
+            id = albumEntryId(album.id),
             text = album.title,
             imageLink = "https://vgmdb.net/album/${album.id}",
             serializedValue = serializedValue,
@@ -106,7 +161,7 @@ class VgmdbDataConverter @Inject constructor(
             vgmdbJson.json.encodeToString(ArtistColumnEntry(artist.id, mapOf("en" to artist.name)))
         return EntrySection.MultiText.Entry.Prefilled(
             value = artist,
-            id = artist.id,
+            id = artistEntryId(artist.id),
             text = artist.name,
             imageLink = "https://vgmdb.net/artist/${artist.id}",
             serializedValue = serializedValue,
@@ -125,7 +180,7 @@ class VgmdbDataConverter @Inject constructor(
         val serializedValue = vgmdbJson.json.encodeToString(artist)
         return EntrySection.MultiText.Entry.Prefilled(
             value = artist,
-            id = artist.id,
+            id = artistEntryId(artist.id),
             text = artist.name,
             imageLink = "https://vgmdb.net/artist/${artist.id}",
             serializedValue = serializedValue,
@@ -142,7 +197,7 @@ class VgmdbDataConverter @Inject constructor(
             .encodeToString(ArtistColumnEntry(artist.id, artist.names))
         return EntrySection.MultiText.Entry.Prefilled(
             value = artist,
-            id = artist.id,
+            id = artistEntryId(artist.id),
             text = artist.name,
             image = artist.pictureThumb,
             imageLink = "https://vgmdb.net/artist/${artist.id}",
@@ -153,7 +208,13 @@ class VgmdbDataConverter @Inject constructor(
         )
     }
 
+    private fun artistEntryId(id: String) = "vgmdbArtist_$id"
+    private fun albumEntryId(id: String) = "vgmdbAlbum_$id"
+
     private val AlbumEntry.title get() = names["ja-latn"] ?: names["en"] ?: names["jp"] ?: ""
+
+    private val SearchResults.AlbumResult.name
+        get() = names["ja-latn"] ?: names["en"] ?: names["jp"] ?: ""
 
     private val ArtistColumnEntry.name
         get() = names["ja-latn"] ?: names["en"] ?: names["jp"] ?: names.values.firstOrNull() ?: ""

@@ -281,13 +281,7 @@ private fun MultiTextSection(section: EntrySection.MultiText) {
                         .fillMaxWidth()
                         .heightIn(max = 240.dp)
                 ) {
-                    items(section.predictions.size, key = {
-                        when (val entry = section.predictions[it]) {
-                            is EntrySection.MultiText.Entry.Custom -> entry.text
-                            EntrySection.MultiText.Entry.Different -> entry
-                            is EntrySection.MultiText.Entry.Prefilled<*> -> entry.id
-                        }
-                    }) {
+                    items(section.predictions.size, key = { section.predictions[it].id }) {
                         val entry = section.predictions[it]
                         DropdownMenuItem(
                             onClick = {

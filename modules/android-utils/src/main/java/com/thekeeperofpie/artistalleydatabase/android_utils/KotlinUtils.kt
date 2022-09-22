@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.android_utils
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.flow.transformLatest
@@ -34,3 +35,7 @@ inline fun <T, R> Flow<T>.flatMapLatestNotNull(crossinline transform: suspend (v
         @Suppress("UNCHECKED_CAST")
         emitAll(transform(it).filterNot { it == null } as Flow<R>)
     }
+
+suspend fun <T> FlowCollector<T>.emitNotNull(value: T?) {
+    if (value != null) emit(value)
+}
