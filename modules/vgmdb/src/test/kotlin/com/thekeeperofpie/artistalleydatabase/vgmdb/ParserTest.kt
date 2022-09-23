@@ -3,6 +3,8 @@ package com.thekeeperofpie.artistalleydatabase.vgmdb
 import com.google.common.truth.Truth.assertThat
 import com.google.common.truth.Truth.assertWithMessage
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumEntry
+import com.thekeeperofpie.artistalleydatabase.vgmdb.album.DiscEntry
+import com.thekeeperofpie.artistalleydatabase.vgmdb.album.TrackEntry
 import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.ArtistColumnEntry
 import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.ArtistEntry
 import kotlinx.coroutines.runBlocking
@@ -92,20 +94,21 @@ class ParserTest {
                     "ja-latn" to "Higher's High / Akari Nanawo [Limited Edition]"
                 ),
                 coverArt = "https://medium-media.vgm.io/albums/83/101938/101938-643d29f79e54.jpg",
-                vocalists= listOf(
+                vocalists = listOf(
                     ArtistColumnEntry(
-                    id = "29051",
-                    names = mapOf(
-                        "en" to "Akari Nanawo",
-                        "ja" to  "ナナヲアカリ",
-                    ),
-                )).map(json::encodeToString),
+                        id = "29051",
+                        names = mapOf(
+                            "en" to "Akari Nanawo",
+                            "ja" to "ナナヲアカリ",
+                        ),
+                    )
+                ).map(json::encodeToString),
                 composers = listOf(
                     ArtistColumnEntry(
                         id = "29243",
                         names = mapOf(
                             "en" to "Seiji Nayuta",
-                            "ja" to  "ナユタセイジ",
+                            "ja" to "ナユタセイジ",
                         )
                     ),
                     ArtistColumnEntry(
@@ -119,6 +122,54 @@ class ParserTest {
                         names = mapOf(
                             "en" to "LASTorder",
                         )
+                    ),
+                ).map(json::encodeToString),
+                discs = listOf(
+                    DiscEntry(
+                        name = "Disc 1 (CD) Vocal",
+                        duration = "13:03",
+                        tracks = listOf(
+                            TrackEntry(
+                                number = "01",
+                                titles = mapOf("en" to "Higher's High"),
+                                duration = "3:32",
+                            ),
+                            TrackEntry(
+                                number = "02",
+                                titles = mapOf(
+                                    "en" to "Cry Song",
+                                    "ja" to "クライソング",
+                                ),
+                                duration = "3:46",
+                            ),
+                            TrackEntry(
+                                number = "03",
+                                titles = mapOf(
+                                    "en" to "Drama",
+                                    "ja" to "ドラマ",
+                                ),
+                                duration = "4:13",
+                            ),
+                            TrackEntry(
+                                number = "04",
+                                titles = mapOf("en" to "Higher's High (TV Size ver.)"),
+                                duration = "1:32",
+                            ),
+                        ).map(json::encodeToString)
+                    ),
+                    DiscEntry(
+                        name = "Disc 2 (Blu-ray) Vocal, Video",
+                        duration = "3:38",
+                        tracks = listOf(
+                            TrackEntry(
+                                number = "01",
+                                titles = mapOf(
+                                    "en" to """TV Anime "Senyoku no Sigrdrifa" × "Higher's High" Special Movie""",
+                                    "ja" to "TVアニメ「戦翼のシグルドリーヴァ」×「Higher's High」スペシャルムービー",
+                                ),
+                                duration = "3:38",
+                            ),
+                        ).map(json::encodeToString)
                     ),
                 ).map(json::encodeToString),
             )

@@ -14,6 +14,9 @@ data class AlbumEntry(
     val coverArt: String? = null,
     val vocalists: List<String> = emptyList(),
     val composers: List<String> = emptyList(),
+
+    /** Encoded list of [DiscEntry] */
+    val discs: List<String> = emptyList(),
 ) {
     val coverMedium get() = coverArt
     val coverFull by lazy { coverArt?.replace("medium-media", "media") }

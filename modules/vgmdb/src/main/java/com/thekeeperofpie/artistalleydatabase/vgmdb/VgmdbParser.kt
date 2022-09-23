@@ -1,6 +1,8 @@
 package com.thekeeperofpie.artistalleydatabase.vgmdb
 
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumEntry
+import com.thekeeperofpie.artistalleydatabase.vgmdb.album.DiscEntry
+import com.thekeeperofpie.artistalleydatabase.vgmdb.album.TrackEntry
 import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.ArtistColumnEntry
 import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.ArtistEntry
 import it.skrape.core.htmlDocument
@@ -24,6 +26,11 @@ class VgmdbParser(private val json: Json) {
 
     companion object {
         private const val BASE_URL = "https://vgmdb.net"
+
+        private val LANGUAGE_MAPPING = mapOf(
+            "English" to "en",
+            "Japanese" to "ja",
+        )
     }
 
     suspend fun search(query: String) = withContext(Dispatchers.IO) {
@@ -162,6 +169,86 @@ class VgmdbParser(private val json: Json) {
             }
         }
 
+        val discs = mutableListOf<DiscEntry>()
+        val trackDivs = innerMain["#tracklist"]?.parent()?.parent()?.all("div")
+        if (trackDivs != null) {
+            val languages = trackDivs.firstOrNull()?.get("ul")?.all("li")?.map { it["a"]?.text }
+            val languageSections = trackDivs.getOrNull(1)?.all(".tl").orEmpty()
+            val firstLanguageDiscs = languageSections.firstOrNull()?.let { section ->
+                val language = languages?.firstOrNull().orEmpty()
+                    .let { LANGUAGE_MAPPING.getOrDefault(it, it) }
+                section.children
+                    .filter {
+                        when (it.tagName) {
+                            "span", "table" -> true
+                            else -> false
+                        }
+                    }
+                    .windowed(size = 4, step = 4)
+                    .map { children ->
+                        val discNamePartOne = children.getOrNull(0)?.text
+                            ?.substringBefore("[")?.trim().orEmpty()
+                        val discNamePartTwo = children.getOrNull(1)?.text?.trim().orEmpty()
+                        val discName = listOfNotNull(
+                            discNamePartOne.takeIf { it.isNotBlank() },
+                            discNamePartTwo.takeIf { it.isNotBlank() },
+                        ).joinToString(separator = " ")
+
+                        val discDuration =
+                            children.lastOrNull()?.byIndex(1, "span")?.text.orEmpty()
+
+                        val tracks = children.getOrNull(2)?.all("tr")?.map {
+                            val tableData = it.all("td")
+                            TrackEntry(
+                                number = tableData.getOrNull(0)?.text?.trim().orEmpty(),
+                                titles = mapOf(
+                                    language to tableData.getOrNull(1)?.text?.trim().orEmpty()
+                                ),
+                                duration = tableData.getOrNull(2)?.text?.trim().orEmpty(),
+                            )
+                        }.orEmpty()
+
+                        TempDiskEntry(
+                            name = discName,
+                            duration = discDuration,
+                            tracks = tracks,
+                        )
+                    }
+            }.orEmpty()
+
+            val languageDiscsTitles: List<List<List<String>>> = languageSections.drop(1)
+                .map {
+                    it.all("table").map {
+                        it.all("tr").map {
+                            val tableData = it.all("td")
+                            tableData.getOrNull(1)?.text?.trim().orEmpty()
+                        }
+                    }
+                }
+
+            discs += firstLanguageDiscs
+                .mapIndexed { discIndex, disc ->
+                    disc.copy(tracks = disc.tracks.mapIndexed { trackIndex, track ->
+                        val firstLanguage = track.titles.map { it.key to it.value }
+                        val otherLanguages = languageDiscsTitles
+                            .mapIndexedNotNull { languageIndex, value ->
+                                val language = languages?.get(languageIndex + 1).orEmpty()
+                                    .let { LANGUAGE_MAPPING.getOrDefault(it, it) }
+                                val trackName = value.getOrNull(discIndex)
+                                    ?.getOrNull(trackIndex).orEmpty()
+                                (language to trackName).takeUnless {
+                                    language.isEmpty() || trackName.isEmpty()
+                                }
+                            }
+                        val allLanguages = (firstLanguage + otherLanguages)
+                            .distinctBy { it.second }
+                            .associate { it }
+                        track.copy(titles = allLanguages)
+                    })
+                }
+                .map { DiscEntry(it.name, it.duration, it.tracks.map(json::encodeToString)) }
+        }
+
         AlbumEntry(
             id = id,
             catalogId = catalogId,
@@ -169,6 +256,7 @@ class VgmdbParser(private val json: Json) {
             coverArt = coverArt,
             vocalists = vocalists.map(json::encodeToString),
             composers = composers.map(json::encodeToString),
+            discs = discs.map(json::encodeToString),
         )
     }
 
@@ -261,4 +349,16 @@ class VgmdbParser(private val json: Json) {
     } catch (ignored: ElementNotFoundException) {
         null
     }
+
+    private fun DocElement.parent() = try {
+        this.parent
+    } catch (ignore: ElementNotFoundException) {
+        null
+    }
+
+    private data class TempDiskEntry(
+        val name: String,
+        val duration: String,
+        val tracks: List<TrackEntry>
+    )
 }
