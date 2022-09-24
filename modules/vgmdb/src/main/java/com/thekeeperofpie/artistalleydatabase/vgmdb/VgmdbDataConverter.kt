@@ -154,6 +154,8 @@ class VgmdbDataConverter @Inject constructor(
             is Either.Left -> EntrySection.MultiText.Entry.Custom(either.value)
         }
 
+    fun databaseToDiscEntry(value: String) = vgmdbJson.parseDiscColumn(value)
+
     fun artistPlaceholder(
         artist: SearchResults.ArtistResult
     ): EntrySection.MultiText.Entry.Prefilled<SearchResults.ArtistResult> {
@@ -207,6 +209,8 @@ class VgmdbDataConverter @Inject constructor(
                 .joinToString { it.trim() }
         )
     }
+
+    fun discEntries(album: AlbumEntry) = album.discs.mapNotNull(vgmdbJson::parseDiscColumn)
 
     private fun artistEntryId(id: String) = "vgmdbArtist_$id"
     private fun albumEntryId(id: String) = "vgmdbAlbum_$id"

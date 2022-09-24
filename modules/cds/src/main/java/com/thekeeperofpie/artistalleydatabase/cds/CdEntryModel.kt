@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.cds
 
 import com.thekeeperofpie.artistalleydatabase.form.EntrySection
+import com.thekeeperofpie.artistalleydatabase.vgmdb.album.DiscEntry
 import java.math.BigDecimal
 import java.util.Date
 
@@ -12,6 +13,7 @@ data class CdEntryModel(
     val composers: List<EntrySection.MultiText.Entry>,
     val series: List<EntrySection.MultiText.Entry>,
     val characters: List<EntrySection.MultiText.Entry>,
+    val discs: List<DiscEntry>,
     val tags: List<EntrySection.MultiText.Entry>,
     val price: BigDecimal?,
     val date: Date?,
@@ -25,6 +27,7 @@ data class CdEntryModel(
     val composersLocked: EntrySection.LockState?,
     val seriesLocked: EntrySection.LockState?,
     val charactersLocked: EntrySection.LockState?,
+    val discsLocked: EntrySection.LockState?,
     val tagsLocked: EntrySection.LockState?,
     val priceLocked: EntrySection.LockState?,
     val notesLocked: EntrySection.LockState?,
@@ -37,6 +40,7 @@ data class CdEntryModel(
         composers: List<EntrySection.MultiText.Entry>,
         series: List<EntrySection.MultiText.Entry>,
         characters: List<EntrySection.MultiText.Entry>,
+        discs: List<DiscEntry>,
         tags: List<EntrySection.MultiText.Entry>,
     ) : this(
         id = entry.id,
@@ -46,6 +50,7 @@ data class CdEntryModel(
         composers = composers,
         series = series,
         characters = characters,
+        discs = discs,
         tags = tags,
         price = entry.price,
         date = entry.date,
@@ -59,6 +64,7 @@ data class CdEntryModel(
         composersLocked = EntrySection.LockState.from(entry.locks.composersLocked),
         seriesLocked = EntrySection.LockState.from(entry.locks.seriesLocked),
         charactersLocked = EntrySection.LockState.from(entry.locks.charactersLocked),
+        discsLocked = EntrySection.LockState.from(entry.locks.discsLocked),
         tagsLocked = EntrySection.LockState.from(entry.locks.tagsLocked),
         priceLocked = EntrySection.LockState.from(entry.locks.priceLocked),
         notesLocked = EntrySection.LockState.from(entry.locks.notesLocked),

@@ -9,4 +9,7 @@ data class TrackEntry(
     /** Map of language to title in that language */
     val titles: Map<String, String>,
     val duration: String,
-)
+) {
+    val title
+        get() = titles["en"] ?: titles["ja"] ?: titles.values.firstOrNull() ?: ""
+}

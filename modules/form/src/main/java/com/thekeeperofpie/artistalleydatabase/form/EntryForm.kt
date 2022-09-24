@@ -113,6 +113,7 @@ fun ColumnScope.EntryForm(
                     is EntrySection.MultiText -> MultiTextSection(it)
                     is EntrySection.LongText -> LongTextSection(it)
                     is EntrySection.Dropdown -> DropdownSection(it)
+                    is EntrySection.Custom<*> -> CustomSection(it)
                 }
             }
 
@@ -128,7 +129,9 @@ private fun SectionHeader(
     lockState: () -> EntrySection.LockState? = { null },
     onClick: () -> Unit = {},
 ) {
-    Row(Modifier.clickable(true, onClick = onClick)) {
+    @Suppress("NAME_SHADOWING")
+    val lockState = lockState()
+    Row(Modifier.clickable(lockState != null, onClick = onClick)) {
         Text(
             text = text(),
             style = MaterialTheme.typography.labelLarge,
@@ -137,8 +140,6 @@ private fun SectionHeader(
                 .padding(top = 12.dp, bottom = 10.dp, start = 16.dp, end = 16.dp)
         )
 
-        @Suppress("NAME_SHADOWING")
-        val lockState = lockState()
         if (lockState != null) {
             Icon(
                 imageVector = when (lockState) {
@@ -736,6 +737,23 @@ private fun DropdownSection(section: EntrySection.Dropdown) {
     section.selectedItem()
         .takeIf { it.hasCustomView }
         ?.Content(section.lockState)
+}
+
+@Composable
+private fun CustomSection(section: EntrySection.Custom<*>) {
+    SectionHeader(
+        text = { stringResource(section.headerRes()) },
+        lockState = { section.lockState },
+        onClick = { section.rotateLockState() }
+    )
+
+    Box(
+        Modifier
+            .fillMaxWidth()
+            .padding(start = 16.dp, end = 16.dp)
+    ) {
+        section.Content(section.lockState)
+    }
 }
 
 @Composable

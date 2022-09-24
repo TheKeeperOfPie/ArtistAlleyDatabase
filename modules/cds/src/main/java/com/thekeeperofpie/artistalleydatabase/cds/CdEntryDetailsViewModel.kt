@@ -11,6 +11,7 @@ import androidx.lifecycle.viewModelScope
 import com.hoc081098.flowext.startWith
 import com.thekeeperofpie.artistalleydatabase.android_utils.ImageUtils
 import com.thekeeperofpie.artistalleydatabase.android_utils.emitNotNull
+import com.thekeeperofpie.artistalleydatabase.android_utils.mapLatestNotNull
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListAutocompleter
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListDataConverter
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListJson
@@ -19,6 +20,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterReposit
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
 import com.thekeeperofpie.artistalleydatabase.form.EntrySection
 import com.thekeeperofpie.artistalleydatabase.form.EntrySection.MultiText.Entry
+import com.thekeeperofpie.artistalleydatabase.vgmdb.SearchResults
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbApi
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbAutocompleter
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbDataConverter
@@ -31,6 +33,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.filterNotNull
@@ -39,6 +42,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.Instant
@@ -107,6 +111,9 @@ abstract class CdEntryDetailsViewModel(
         lockState = EntrySection.LockState.UNLOCKED,
     )
 
+    protected val discSection =
+        DiscSection(json = vgmdbJson.json, lockState = EntrySection.LockState.UNLOCKED)
+
     protected val tagSection = EntrySection.MultiText(
         R.string.cd_entry_tags_header_zero,
         R.string.cd_entry_tags_header_one,
@@ -126,6 +133,7 @@ abstract class CdEntryDetailsViewModel(
         composerSection,
         seriesSection,
         characterSection,
+        discSection,
         tagSection,
         notesSection
     )
@@ -149,29 +157,43 @@ abstract class CdEntryDetailsViewModel(
                                     .startWith(vgmdbDataConverter.catalogIdPlaceholder(it))
                             }.let { combine(it) { it.toList().distinctBy { it.id } } }
                         }
-                        .startWith(emptyList())
+                        .startWith(item = emptyList())
                 }
                 .catch {}
                 .flowOn(Dispatchers.IO)
                 .collect { catalogIdSection.predictions = it }
         }
 
+        // If a search result was chosen, fill it with the final album response when it returns
         viewModelScope.launch(Dispatchers.Main) {
             @Suppress("OPT_IN_USAGE")
             catalogIdSection.predictionChosen
-                .filterIsInstance<Entry.Prefilled<AlbumEntry>>()
-                .map { vgmdbDataConverter.titleEntry(it.value) }
+                .filterIsInstance<Entry.Prefilled<*>>()
+                .mapLatestNotNull { (it.value as? SearchResults.AlbumResult)?.id }
+                .flatMapLatest {
+                    albumRepository.getEntry(it)
+                        .filterNotNull()
+                        .take(1)
+                }
+                .map(vgmdbDataConverter::catalogEntry)
+                .flowOn(Dispatchers.IO)
+                .collectLatest { catalogIdSection.addOrReplaceContent(it) }
+        }
+
+        viewModelScope.launch(Dispatchers.Main) {
+            @Suppress("OPT_IN_USAGE")
+            catalogAlbumChosen()
+                .map(vgmdbDataConverter::titleEntry)
                 .flowOn(Dispatchers.IO)
                 .collectLatest { titleSection.addOrReplaceContent(it) }
         }
 
         viewModelScope.launch(Dispatchers.Main) {
             @Suppress("OPT_IN_USAGE")
-            catalogIdSection.predictionChosen
-                .filterIsInstance<Entry.Prefilled<AlbumEntry>>()
+            catalogAlbumChosen()
                 .flatMapLatest {
                     combine(
-                        it.value.vocalists
+                        it.vocalists
                             .mapNotNull { vgmdbJson.parseVocalistColumn(it).rightOrNull() }
                             .map {
                                 artistRepository.getEntry(it.id)
@@ -187,11 +209,10 @@ abstract class CdEntryDetailsViewModel(
 
         viewModelScope.launch(Dispatchers.Main) {
             @Suppress("OPT_IN_USAGE")
-            catalogIdSection.predictionChosen
-                .filterIsInstance<Entry.Prefilled<AlbumEntry>>()
+            catalogAlbumChosen()
                 .flatMapLatest {
                     combine(
-                        it.value.composers
+                        it.composers
                             .mapNotNull { vgmdbJson.parseComposerColumn(it).rightOrNull() }
                             .map {
                                 artistRepository.getEntry(it.id)
@@ -244,6 +265,13 @@ abstract class CdEntryDetailsViewModel(
                 }
         }
 
+        viewModelScope.launch(Dispatchers.Main) {
+            catalogAlbumChosen()
+                .map(vgmdbDataConverter::discEntries)
+                .flowOn(Dispatchers.IO)
+                .collectLatest { discSection.setDiscs(it) }
+        }
+
         viewModelScope.launch(Dispatchers.IO) {
             tagSection.subscribePredictions(
                 localCall = {
@@ -256,6 +284,19 @@ abstract class CdEntryDetailsViewModel(
         }
     }
 
+    @Suppress("OPT_IN_USAGE")
+    protected fun catalogAlbumChosen() = catalogIdSection.predictionChosen
+        .filterIsInstance<Entry.Prefilled<*>>()
+        .flatMapLatest {
+            when (val value = it.value) {
+                is AlbumEntry -> flowOf(value)
+                is SearchResults.AlbumResult -> albumRepository.getEntry(value.id)
+                    .filterNotNull()
+                    .take(1)
+                else -> emptyFlow()
+            }
+        }
+
     protected fun buildModel(entry: CdEntry): CdEntryModel {
         val catalogId = vgmdbDataConverter.databaseToCatalogIdEntry(entry.catalogId)
         val titles = entry.titles.map(vgmdbDataConverter::databaseToTitleEntry)
@@ -263,6 +304,7 @@ abstract class CdEntryDetailsViewModel(
         val composers = entry.composers.map(vgmdbDataConverter::databaseToComposerEntry)
         val series = entry.series.map(aniListDataConverter::databaseToSeriesEntry)
         val characters = entry.characters.map(aniListDataConverter::databaseToCharacterEntry)
+        val discs = entry.discs.mapNotNull(vgmdbDataConverter::databaseToDiscEntry)
         val tags = entry.tags.map(Entry::Custom)
 
         return CdEntryModel(
@@ -273,6 +315,7 @@ abstract class CdEntryDetailsViewModel(
             composers = composers,
             series = series,
             characters = characters,
+            discs = discs,
             tags = tags,
         )
     }
@@ -284,6 +327,7 @@ abstract class CdEntryDetailsViewModel(
         composerSection.setContents(entry.composers, entry.composersLocked)
         seriesSection.setContents(entry.series, entry.seriesLocked)
         characterSection.setContents(entry.characters, entry.charactersLocked)
+        discSection.setDiscs(entry.discs, entry.discsLocked)
         tagSection.setContents(entry.tags, entry.tagsLocked)
         notesSection.setContents(entry.notes, entry.notesLocked)
 
@@ -375,6 +419,7 @@ abstract class CdEntryDetailsViewModel(
             characters = characterSection.finalContents().map { it.serializedValue },
             charactersSearchable = characterSection.finalContents().map { it.searchableValue }
                 .filterNot(String?::isNullOrBlank),
+            discs = discSection.serializedValue(),
             tags = tagSection.finalContents().map { it.serializedValue },
             lastEditTime = Date.from(Instant.now()),
             imageWidth = imageWidth,
@@ -387,6 +432,7 @@ abstract class CdEntryDetailsViewModel(
                 composersLocked = composerSection.lockState?.toSerializedValue(),
                 seriesLocked = seriesSection.lockState?.toSerializedValue(),
                 charactersLocked = characterSection.lockState?.toSerializedValue(),
+                discsLocked = discSection.lockState?.toSerializedValue(),
                 tagsLocked = tagSection.lockState?.toSerializedValue(),
                 notesLocked = notesSection.lockState?.toSerializedValue(),
             )

@@ -7,6 +7,7 @@ import androidx.room.Fts4
 import androidx.room.PrimaryKey
 import com.squareup.moshi.JsonClass
 import com.thekeeperofpie.artistalleydatabase.android_utils.Converters
+import com.thekeeperofpie.artistalleydatabase.vgmdb.album.DiscEntry
 import kotlinx.serialization.Serializable
 import java.math.BigDecimal
 import java.util.Date
@@ -28,6 +29,8 @@ data class CdEntry(
     val seriesSearchable: List<String> = emptyList(),
     val characters: List<String> = emptyList(),
     val charactersSearchable: List<String> = emptyList(),
+    /** Encoded list of [DiscEntry] */
+    val discs: List<String> = emptyList(),
     val tags: List<String> = emptyList(),
     @Serializable(with = Converters.BigDecimalConverter::class)
     val price: BigDecimal? = null,
@@ -54,6 +57,7 @@ data class CdEntry(
         val composersLocked: Boolean? = false,
         val seriesLocked: Boolean? = false,
         val charactersLocked: Boolean? = false,
+        val discsLocked: Boolean? = false,
         val tagsLocked: Boolean? = false,
         val priceLocked: Boolean? = false,
         val notesLocked: Boolean? = false,
@@ -81,6 +85,8 @@ data class CdEntryFts(
     val seriesSearchable: List<String>,
     val characters: List<String>,
     val charactersSearchable: List<String>,
+    /** Encoded list of [DiscEntry] */
+    val discs: List<String> = emptyList(),
     val tags: List<String>,
     @Serializable(with = Converters.BigDecimalConverter::class)
     val price: BigDecimal?,

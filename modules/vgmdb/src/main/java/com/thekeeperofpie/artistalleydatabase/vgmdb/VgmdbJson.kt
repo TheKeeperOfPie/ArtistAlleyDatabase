@@ -4,6 +4,7 @@ import android.util.Log
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumColumnEntry
+import com.thekeeperofpie.artistalleydatabase.vgmdb.album.DiscEntry
 import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.ArtistColumnEntry
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
@@ -22,6 +23,15 @@ class VgmdbJson @Inject constructor(override val json: Json) : AppJson() {
     fun parseVocalistColumn(value: String?) = parseArtistColumn(value)
 
     fun parseComposerColumn(value: String?) = parseArtistColumn(value)
+
+    fun parseDiscColumn(value: String): DiscEntry? {
+        return try {
+            json.decodeFromString(value)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error parsing disc column: $value")
+            null
+        }
+    }
 
     private fun parseAlbumColumn(value: String?): Either<String, AlbumColumnEntry> {
         if (value?.contains("{") == true) {

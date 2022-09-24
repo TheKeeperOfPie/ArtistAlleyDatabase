@@ -303,4 +303,15 @@ sealed class EntrySection(lockState: LockState? = null) {
             }
         }
     }
+
+    abstract class Custom<OutputType>(lockState: LockState? = null) : EntrySection(lockState) {
+
+        @StringRes
+        abstract fun headerRes(): Int
+
+        @Composable
+        abstract fun Content(lockState: LockState?)
+
+        abstract fun serializedValue(): OutputType
+    }
 }

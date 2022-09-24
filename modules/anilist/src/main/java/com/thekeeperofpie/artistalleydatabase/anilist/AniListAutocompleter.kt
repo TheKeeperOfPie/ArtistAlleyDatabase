@@ -46,7 +46,7 @@ class AniListAutocompleter @Inject constructor(
         .mapNotNull { it?.data }
         .map(transform)
         .map { it.filterNotNull() }
-        .startWith(emptyList())
+        .startWith(item = emptyList())
 
     suspend fun querySeriesLocal(
         query: String,
@@ -134,7 +134,7 @@ class AniListAutocompleter @Inject constructor(
                 .mapNotNull { it?.aniListCharacter }
                 .mapNotNull(aniListDataConverter::characterEntry)
                 .map(::listOf)
-                .startWith(emptyList())
+                .startWith(item = emptyList())
             ) { result, character -> result + character }
         }
     }
@@ -143,54 +143,58 @@ class AniListAutocompleter @Inject constructor(
         seriesContents: StateFlow<List<Entry>>,
         characterValue: StateFlow<String>,
         queryCharactersLocal: suspend (query: String) -> List<String>,
-    ) = combine(
-        seriesContents.map { it.filterIsInstance<Entry.Prefilled<*>>() }
-            .map { it.mapNotNull(AniListUtils::mediaId) }
-            .distinctUntilChanged()
-            .flatMapLatest {
-                it.map {
-                    aniListApi.charactersByMedia(it)
-                        .map { it.map { aniListDataConverter.characterEntry((it)) } }
-                        .catch {}
-                        .startWith(emptyList())
-                }
-                    .let {
-                        combine(it) {
-                            it.fold(mutableListOf<Entry>()) { list, value ->
-                                list.apply { addAll(value) }
+    ): Flow<List<Entry>> {
+        return combine(
+            seriesContents.map { it.filterIsInstance<Entry.Prefilled<*>>() }
+                .map { it.mapNotNull(AniListUtils::mediaId) }
+                .distinctUntilChanged()
+                .flatMapLatest {
+                    it.map {
+                        aniListApi.charactersByMedia(it)
+                            .map { it.map { aniListDataConverter.characterEntry((it)) } }
+                            .catch {}
+                            .startWith(item = emptyList())
+                    }
+                        .let {
+                            combine(it) {
+                                it.fold(mutableListOf<Entry>()) { list, value ->
+                                    list.apply { addAll(value) }
+                                }
                             }
                         }
-                    }
+                }
+                .startWith(item = emptyList()),
+            characterValue.flatMapLatest { query ->
+                queryCharacters(query, queryCharactersLocal).map { query to it }
             }
-            .startWith(emptyList()),
-        characterValue.flatMapLatest { query ->
-            queryCharacters(query, queryCharactersLocal).map { query to it }
-        }
-    ) { series, (query, charactersPair) ->
-        val (charactersFirst, charactersSecond) = charactersPair
-        val (seriesFirst, seriesSecond) = series.toMutableList().apply {
-            removeAll { seriesCharacter ->
-                charactersFirst
-                    .any { character ->
-                        val seriesCharacterEntry = seriesCharacter as? Entry.Prefilled<*>
-                        if (seriesCharacterEntry != null) {
-                            seriesCharacterEntry.id == AniListUtils.characterId(character)
-                        } else {
-                            false
+        ) { series, (query, charactersPair) ->
+            val (charactersFirst, charactersSecond) = charactersPair
+            val (seriesFirst, seriesSecond) = series.toMutableList().apply {
+                removeAll { seriesCharacter ->
+                    charactersFirst
+                        .any { character ->
+                            val seriesCharacterEntry = seriesCharacter as? Entry.Prefilled<*>
+                            if (seriesCharacterEntry != null) {
+                                AniListUtils.characterId(seriesCharacterEntry) ==
+                                        AniListUtils.characterId(character)
+                            } else {
+                                false
+                            }
+                        } || charactersSecond
+                        .any { character ->
+                            val seriesCharacterEntry = seriesCharacter as? Entry.Prefilled<*>
+                            if (seriesCharacterEntry != null) {
+                                AniListUtils.characterId(seriesCharacterEntry) ==
+                                        AniListUtils.characterId(character)
+                            } else {
+                                false
+                            }
                         }
-                    } || charactersSecond
-                    .any { character ->
-                        val seriesCharacterEntry = seriesCharacter as? Entry.Prefilled<*>
-                        if (seriesCharacterEntry != null) {
-                            seriesCharacterEntry.id == AniListUtils.characterId(character)
-                        } else {
-                            false
-                        }
-                    }
+                }
             }
+                .split { it.text.contains(query) }
+            (charactersFirst + seriesFirst + charactersSecond + seriesSecond).distinctBy { it.id }
         }
-            .split { it.text.contains(query) }
-        (charactersFirst + seriesFirst + charactersSecond + seriesSecond).distinctBy { it.id }
     }
 
     @WorkerThread

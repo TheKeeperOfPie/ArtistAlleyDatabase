@@ -14,18 +14,15 @@ import com.thekeeperofpie.artistalleydatabase.anilist.AniListDataConverter
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListJson
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
-import com.thekeeperofpie.artistalleydatabase.form.EntrySection
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbApi
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbAutocompleter
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbDataConverter
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbJson
-import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumEntry
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumRepository
 import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.ArtistRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -70,11 +67,10 @@ class CdAddEntryViewModel @Inject constructor(
 
     init {
         viewModelScope.launch(Dispatchers.Main) {
-            catalogIdSection.predictionChosen
-                .filterIsInstance<EntrySection.MultiText.Entry.Prefilled<AlbumEntry>>()
+            catalogAlbumChosen()
                 .flowOn(Dispatchers.IO)
                 .collectLatest {
-                    val imageUrl = it.value.coverFull?.toUri() ?: return@collectLatest
+                    val imageUrl = it.coverFull?.toUri() ?: return@collectLatest
                     imageUris.clear()
                     imageUris.add(imageUrl)
                 }
