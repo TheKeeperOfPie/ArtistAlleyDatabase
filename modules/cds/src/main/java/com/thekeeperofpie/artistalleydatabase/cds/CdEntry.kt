@@ -43,6 +43,7 @@ data class CdEntry(
     val notes: String? = null,
     @Embedded val locks: Locks = Locks.EMPTY,
 ) {
+    @delegate:Transient
     val imageWidthToHeightRatio by lazy {
         (imageHeight?.toFloat() ?: 1f) /
                 (imageWidth ?: 1).coerceAtLeast(1)

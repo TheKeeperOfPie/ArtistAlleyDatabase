@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.search.advanced
+package com.thekeeperofpie.artistalleydatabase.art.search
 
 import androidx.paging.PagingSource
 import androidx.room.Dao
@@ -16,7 +16,7 @@ interface ArtEntryAdvancedSearchDao : ArtEntryDao {
         private val WHITESPACE_REGEX = Regex("\\s+")
     }
 
-    fun search(query: AdvancedSearchQuery): PagingSource<Int, ArtEntry> {
+    fun search(query: ArtAdvancedSearchQuery): PagingSource<Int, ArtEntry> {
         val queryPieces = mutableListOf<String>()
 
         queryPieces += query.artists.flatMap { it.split(WHITESPACE_REGEX) }

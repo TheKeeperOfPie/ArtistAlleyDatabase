@@ -1,7 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.vgmdb
 
-import com.thekeeperofpie.artistalleydatabase.AppDatabase
-import com.thekeeperofpie.artistalleydatabase.CustomApplication
+import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumEntryDao
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumRepository
 import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.ArtistEntryDao
@@ -16,10 +15,10 @@ import dagger.hilt.components.SingletonComponent
 class VgmdbHiltModule {
 
     @Provides
-    fun provideAlbumEntryDao(appDatabase: AppDatabase) = appDatabase.albumEntryDao()
+    fun provideAlbumEntryDao(database: VgmdbDatabase) = database.albumEntryDao()
 
     @Provides
-    fun provideArtistEntryDao(appDatabase: AppDatabase) = appDatabase.artistEntryDao()
+    fun provideArtistEntryDao(database: VgmdbDatabase) = database.artistEntryDao()
 
     @Provides
     fun provideVgmdbApi(
@@ -41,14 +40,14 @@ class VgmdbHiltModule {
 
     @Provides
     fun provideAlbumRepository(
-        application: CustomApplication,
+        application: ScopedApplication,
         albumEntryDao: AlbumEntryDao,
         vgmdbApi: VgmdbApi
     ) = AlbumRepository(application, albumEntryDao, vgmdbApi)
 
     @Provides
     fun provideArtistRepository(
-        application: CustomApplication,
+        application: ScopedApplication,
         artistEntryDao: ArtistEntryDao,
         vgmdbApi: VgmdbApi
     ) = ArtistRepository(application, artistEntryDao, vgmdbApi)

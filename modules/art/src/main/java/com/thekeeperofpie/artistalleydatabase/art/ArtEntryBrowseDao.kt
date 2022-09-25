@@ -1,11 +1,9 @@
-package com.thekeeperofpie.artistalleydatabase.browse
+package com.thekeeperofpie.artistalleydatabase.art
 
 import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Query
 import com.thekeeperofpie.artistalleydatabase.android_utils.RoomUtils.wrapLikeQuery
-import com.thekeeperofpie.artistalleydatabase.art.ArtEntry
-import com.thekeeperofpie.artistalleydatabase.art.ArtEntryDao
 import kotlinx.coroutines.flow.Flow
 
 @Dao

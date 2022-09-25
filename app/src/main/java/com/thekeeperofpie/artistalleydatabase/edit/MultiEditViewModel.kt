@@ -15,6 +15,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.AniListDataConverter
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListJson
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
+import com.thekeeperofpie.artistalleydatabase.art.ArtEntryEditDao
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryUtils
 import com.thekeeperofpie.artistalleydatabase.art.SourceType
 import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryDetailsViewModel

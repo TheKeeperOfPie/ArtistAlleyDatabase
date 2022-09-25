@@ -13,6 +13,7 @@ import com.thekeeperofpie.artistalleydatabase.art.ArtEntry
 import com.thekeeperofpie.artistalleydatabase.art.PrintSize
 import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryDetailsDao
 import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryDetailsViewModel
+import com.thekeeperofpie.artistalleydatabase.art.search.ArtAdvancedSearchQuery
 import com.thekeeperofpie.artistalleydatabase.form.EntrySection
 import com.thekeeperofpie.artistalleydatabase.form.EntrySection.MultiText.Entry
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -65,7 +66,7 @@ class AdvancedSearchViewModel @Inject constructor(
 
         val seriesContents = seriesSection.finalContents()
         val characterContents = characterSection.finalContents()
-        val query = AdvancedSearchQuery(
+        val query = ArtAdvancedSearchQuery(
             artists = artistSection.finalContents().map { it.serializedValue },
             source = sourceItem,
             series = seriesContents.filterIsInstance<Entry.Custom>()

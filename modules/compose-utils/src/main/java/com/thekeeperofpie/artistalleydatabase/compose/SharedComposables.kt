@@ -49,7 +49,6 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.drawscope.ContentDrawScope
 import androidx.compose.ui.platform.debugInspectorInfo
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.thekeeperofpie.compose_proxy.R
@@ -286,7 +285,7 @@ fun TrailingDropdownIcon(
     @StringRes contentDescription: Int,
     onClick: () -> Unit = {}
 ) {
-    IconButton(onClick = onClick, modifier = Modifier.clearAndSetSemantics { }) {
+    IconButton(onClick = onClick) {
         Icon(
             Icons.Filled.ArrowDropDown,
             stringResource(contentDescription),

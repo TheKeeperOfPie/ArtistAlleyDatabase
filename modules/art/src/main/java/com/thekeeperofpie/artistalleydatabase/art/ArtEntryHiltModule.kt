@@ -1,15 +1,13 @@
 package com.thekeeperofpie.artistalleydatabase.art
 
 import android.app.Application
-import com.thekeeperofpie.artistalleydatabase.AppDatabase
-import com.thekeeperofpie.artistalleydatabase.SettingsProvider
+import com.squareup.moshi.Moshi
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.export.Exporter
 import com.thekeeperofpie.artistalleydatabase.android_utils.importer.Importer
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListDataConverter
 import com.thekeeperofpie.artistalleydatabase.art.export.ArtExporter
 import com.thekeeperofpie.artistalleydatabase.art.importer.ArtImporter
-import com.thekeeperofpie.artistalleydatabase.json.AppMoshi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -21,20 +19,20 @@ import dagger.multibindings.IntoSet
 object ArtEntryHiltModule {
 
     @Provides
-    fun provideArtEntryDao(appDatabase: AppDatabase) = appDatabase.artEntryDao()
+    fun provideArtEntryDao(database: ArtEntryDatabase) = database.artEntryDao()
 
     @Provides
-    fun provideArtEntryEditDao(appDatabase: AppDatabase) = appDatabase.artEntryEditDao()
+    fun provideArtEntryEditDao(database: ArtEntryDatabase) = database.artEntryEditDao()
 
     @Provides
-    fun provideArtEntryDetailsDao(appDatabase: AppDatabase) = appDatabase.artEntryDetailsDao()
+    fun provideArtEntryDetailsDao(database: ArtEntryDatabase) = database.artEntryDetailsDao()
 
     @Provides
-    fun provideArtEntryBrowseDao(appDatabase: AppDatabase) = appDatabase.artEntryBrowseDao()
+    fun provideArtEntryBrowseDao(database: ArtEntryDatabase) = database.artEntryBrowseDao()
 
     @Provides
-    fun provideArtEntryAdvancedSearchDao(appDatabase: AppDatabase) =
-        appDatabase.artEntryAdvancedSearchDao()
+    fun provideArtEntryAdvancedSearchDao(database: ArtEntryDatabase) =
+        database.artEntryAdvancedSearchDao()
 
     @IntoSet
     @Provides
@@ -55,14 +53,10 @@ object ArtEntryHiltModule {
     fun provideArtImporter(
         application: Application,
         artEntryDao: ArtEntryDao,
-        appMoshi: AppMoshi,
+        moshi: Moshi,
     ): Importer = ArtImporter(
         appContext = application,
         artEntryDao = artEntryDao,
-        moshi = appMoshi.moshi,
+        moshi = moshi,
     )
-
-    @Provides
-    fun provideArtAddEntryViewModelPersister(settingsProvider: SettingsProvider) =
-        settingsProvider as ArtAddEntryViewModel.Persister
 }

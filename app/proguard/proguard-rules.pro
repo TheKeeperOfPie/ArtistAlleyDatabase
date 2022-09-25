@@ -22,8 +22,16 @@
 
 -dontobfuscate
 
-# For AndroidX Paging library, seems to be a library config error
+# AGPBI META-INF/services warnings
+-dontwarn org.apache.xalan.extensions.bsf.BSFManager
+-dontwarn org.w3c.dom.DOMImplementationSourceList
+-dontwarn org.xml.sax.driver
+
+# For AndroidX Paging, seems to be a library config error
 -keep class org.xml.sax.helpers.NamespaceSupport$Context
+
+# For AndroidX Compose, seems to be a library config error
+-keep class org.xml.sax.helpers.AttributesImpl
 
 -dontwarn edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 -dontwarn java.awt.font.FontRenderContext

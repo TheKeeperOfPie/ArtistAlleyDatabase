@@ -1,7 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anilist
 
-import com.thekeeperofpie.artistalleydatabase.AppDatabase
-import com.thekeeperofpie.artistalleydatabase.CustomApplication
+import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterEntryDao
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaEntryDao
@@ -37,21 +36,21 @@ class AniListHiltModule {
     )
 
     @Provides
-    fun provideMediaEntryDao(appDatabase: AppDatabase) = appDatabase.mediaEntryDao()
+    fun provideMediaEntryDao(database: AniListDatabase) = database.mediaEntryDao()
 
     @Provides
     fun provideMediaRepository(
-        application: CustomApplication,
+        application: ScopedApplication,
         mediaEntryDao: MediaEntryDao,
         aniListApi: AniListApi
     ) = MediaRepository(application, mediaEntryDao, aniListApi)
 
     @Provides
-    fun provideCharacterEntryDao(appDatabase: AppDatabase) = appDatabase.characterEntryDao()
+    fun provideCharacterEntryDao(database: AniListDatabase) = database.characterEntryDao()
 
     @Provides
     fun provideCharacterRepository(
-        application: CustomApplication,
+        application: ScopedApplication,
         characterEntryDao: CharacterEntryDao,
         aniListApi: AniListApi
     ) = CharacterRepository(application, characterEntryDao, aniListApi)

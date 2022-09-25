@@ -1,15 +1,11 @@
-package com.thekeeperofpie.artistalleydatabase.cd
+package com.thekeeperofpie.artistalleydatabase.cds
 
 import android.app.Application
-import com.thekeeperofpie.artistalleydatabase.AppDatabase
+import com.squareup.moshi.Moshi
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.export.Exporter
 import com.thekeeperofpie.artistalleydatabase.android_utils.importer.Importer
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListDataConverter
-import com.thekeeperofpie.artistalleydatabase.cds.CdEntryDao
-import com.thekeeperofpie.artistalleydatabase.cds.CdExporter
-import com.thekeeperofpie.artistalleydatabase.cds.CdImporter
-import com.thekeeperofpie.artistalleydatabase.json.AppMoshi
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbDataConverter
 import dagger.Module
 import dagger.Provides
@@ -22,10 +18,10 @@ import dagger.multibindings.IntoSet
 object CdEntryHiltModule {
 
     @Provides
-    fun provideCdEntryDao(appDatabase: AppDatabase) = appDatabase.cdEntryDao()
+    fun provideCdEntryDao(database: CdEntryDatabase) = database.cdEntryDao()
 
     @Provides
-    fun provideCdEntryDetailsDao(appDatabase: AppDatabase) = appDatabase.cdEntryDetailsDao()
+    fun provideCdEntryDetailsDao(database: CdEntryDatabase) = database.cdEntryDetailsDao()
 
     @IntoSet
     @Provides
@@ -48,10 +44,10 @@ object CdEntryHiltModule {
     fun provideCdImporter(
         application: Application,
         cdEntryDao: CdEntryDao,
-        appMoshi: AppMoshi,
+        moshi: Moshi,
     ): Importer = CdImporter(
         appContext = application,
         cdEntryDao = cdEntryDao,
-        moshi = appMoshi.moshi,
+        moshi = moshi,
     )
 }

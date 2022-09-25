@@ -5,8 +5,13 @@ import androidx.room.Room
 import androidx.work.WorkManager
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListDatabase
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListJson
+import com.thekeeperofpie.artistalleydatabase.art.ArtAddEntryViewModel
+import com.thekeeperofpie.artistalleydatabase.art.ArtEntryDatabase
+import com.thekeeperofpie.artistalleydatabase.cds.CdEntryDatabase
 import com.thekeeperofpie.artistalleydatabase.json.AppMoshi
+import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbDatabase
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbJson
 import dagger.Module
 import dagger.Provides
@@ -31,10 +36,25 @@ class AppHiltModule {
             .build()
 
     @Provides
+    fun provideAniListDatabase(appDatabase: AppDatabase): AniListDatabase = appDatabase
+
+    @Provides
+    fun provideArtEntryDatabase(appDatabase: AppDatabase): ArtEntryDatabase = appDatabase
+
+    @Provides
+    fun provideCdEntryDatabase(appDatabase: AppDatabase): CdEntryDatabase = appDatabase
+
+    @Provides
+    fun provideVgmdbDatabase(appDatabase: AppDatabase): VgmdbDatabase = appDatabase
+
+    @Provides
     fun provideWorkManager(application: Application) = WorkManager.getInstance(application)
 
     @Provides
     fun provideAppMoshi() = AppMoshi()
+
+    @Provides
+    fun provideMoshi(appMoshi: AppMoshi) = appMoshi.moshi
 
     @Provides
     fun provideAppJson() = AppJson()
@@ -48,4 +68,8 @@ class AppHiltModule {
 
     @Provides
     fun provideVgmdbJson(appJson: AppJson) = VgmdbJson(appJson.json)
+
+    @Provides
+    fun provideArtAddEntryViewModelPersister(settingsProvider: SettingsProvider) =
+        settingsProvider as ArtAddEntryViewModel.Persister
 }

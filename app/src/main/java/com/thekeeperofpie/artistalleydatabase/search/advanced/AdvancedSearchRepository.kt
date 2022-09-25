@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.search.advanced
 
 import androidx.collection.LruCache
+import com.thekeeperofpie.artistalleydatabase.art.search.ArtAdvancedSearchQuery
 
 /**
  * Stores advanced search queries in memory so that navigation doesn't have to pass around large
@@ -8,9 +9,9 @@ import androidx.collection.LruCache
  */
 object AdvancedSearchRepository {
 
-    private val cache = LruCache<String, AdvancedSearchQuery>(10)
+    private val cache = LruCache<String, ArtAdvancedSearchQuery>(10)
 
-    fun registerQuery(query: AdvancedSearchQuery) {
+    fun registerQuery(query: ArtAdvancedSearchQuery) {
         cache.put(query.id, query)
     }
 

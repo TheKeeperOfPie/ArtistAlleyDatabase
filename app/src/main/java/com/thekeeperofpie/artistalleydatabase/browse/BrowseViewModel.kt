@@ -15,6 +15,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterReposit
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaColumnEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
+import com.thekeeperofpie.artistalleydatabase.art.ArtEntryBrowseDao
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryColumn
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers

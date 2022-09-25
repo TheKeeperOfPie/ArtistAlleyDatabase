@@ -1,8 +1,7 @@
-package com.thekeeperofpie.artistalleydatabase.edit
+package com.thekeeperofpie.artistalleydatabase.art
 
 import androidx.room.Dao
 import androidx.room.Query
-import com.thekeeperofpie.artistalleydatabase.art.ArtEntry
 import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryDetailsDao
 import java.util.Date
 
