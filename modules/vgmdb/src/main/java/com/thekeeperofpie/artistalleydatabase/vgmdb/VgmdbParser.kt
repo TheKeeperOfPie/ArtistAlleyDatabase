@@ -30,6 +30,7 @@ class VgmdbParser(private val json: Json) {
         private val LANGUAGE_MAPPING = mapOf(
             "English" to "en",
             "Japanese" to "ja",
+            "Romaji" to "ja-latn",
         )
     }
 
@@ -146,7 +147,7 @@ class VgmdbParser(private val json: Json) {
                         catalogId = if (innerA?.attribute("href") == "#") {
                             innerA.ownText
                         } else {
-                            catalogData?.ownText?.substringBefore("(alternate")
+                            catalogData?.ownText?.substringBefore("(")
                         }
                             ?.trim()
                             ?.takeIf { it.isNotBlank() }
@@ -154,14 +155,17 @@ class VgmdbParser(private val json: Json) {
                 }
             }
 
-        val vocalists = mutableListOf<ArtistColumnEntry>()
+        val performers = mutableListOf<ArtistColumnEntry>()
         val composers = mutableListOf<ArtistColumnEntry>()
 
         innerMain["#collapse_credits"]?.all("tr")?.map {
             val name = it["td", "b", "span"]?.ownText
             when (name?.lowercase(Locale.ENGLISH)) {
                 "vocals" -> {
-                    vocalists += parseArtistCredits(it)
+                    performers += parseArtistCredits(it)
+                }
+                "performer" -> {
+                    performers += parseArtistCredits(it)
                 }
                 "composer" -> {
                     composers += parseArtistCredits(it)
@@ -177,43 +181,66 @@ class VgmdbParser(private val json: Json) {
             val firstLanguageDiscs = languageSections.firstOrNull()?.let { section ->
                 val language = languages?.firstOrNull().orEmpty()
                     .let { LANGUAGE_MAPPING.getOrDefault(it, it) }
-                section.children
+                var index = 0
+                val children = section.children
                     .filter {
                         when (it.tagName) {
                             "span", "table" -> true
                             else -> false
                         }
                     }
-                    .windowed(size = 4, step = 4)
-                    .map { children ->
-                        val discNamePartOne = children.getOrNull(0)?.text
-                            ?.substringBefore("[")?.trim().orEmpty()
-                        val discNamePartTwo = children.getOrNull(1)?.text?.trim().orEmpty()
-                        val discName = listOfNotNull(
-                            discNamePartOne.takeIf { it.isNotBlank() },
-                            discNamePartTwo.takeIf { it.isNotBlank() },
-                        ).joinToString(separator = " ")
 
-                        val discDuration =
-                            children.lastOrNull()?.byIndex(1, "span")?.text.orEmpty()
+                val entries = mutableListOf<TempDiskEntry>()
 
-                        val tracks = children.getOrNull(2)?.all("tr")?.map {
-                            val tableData = it.all("td")
-                            TrackEntry(
-                                number = tableData.getOrNull(0)?.text?.trim().orEmpty(),
-                                titles = mapOf(
-                                    language to tableData.getOrNull(1)?.text?.trim().orEmpty()
-                                ),
-                                duration = tableData.getOrNull(2)?.text?.trim().orEmpty(),
-                            )
-                        }.orEmpty()
+                while (index < children.size) {
+                    val discSpanOne = children[index]
+                    val tableSpanOne =
+                        children.getOrNull(index + 1).takeIf { it?.tagName == "table" }
+                    val tableSpanTwo =
+                        children.getOrNull(index + 2).takeIf { it?.tagName == "table" }
+                    val tableSpan = tableSpanOne ?: tableSpanTwo
+                    if (tableSpan == null) {
+                        index = children.size
+                        continue
+                    }
 
-                        TempDiskEntry(
-                            name = discName,
-                            duration = discDuration,
-                            tracks = tracks,
+                    val discSpanTwo = children.getOrNull(index + 1).takeIf { it?.tagName == "span" }
+                    val discNamePartOne = discSpanOne.text.substringBefore("[").trim()
+                    val discNamePartTwo = discSpanTwo?.text?.trim().orEmpty()
+                    val discName = listOfNotNull(
+                        discNamePartOne.takeIf { it.isNotBlank() },
+                        discNamePartTwo.takeIf { it.isNotBlank() },
+                    ).joinToString(separator = " ")
+
+                    val durationIndex = if (tableSpanOne != null) index + 2 else index + 3
+                    val durationSpan = children.getOrNull(durationIndex)
+                    if (durationSpan == null) {
+                        index = children.size
+                        continue
+                    }
+                    val discDuration = durationSpan.byIndex(1, "span")?.text.orEmpty()
+
+                    val tracks = tableSpan.all("tr").map {
+                        val tableData = it.all("td")
+                        TrackEntry(
+                            number = tableData.getOrNull(0)?.text?.trim().orEmpty(),
+                            titles = mapOf(
+                                language to tableData.getOrNull(1)?.text?.trim().orEmpty()
+                            ),
+                            duration = tableData.getOrNull(2)?.text?.trim().orEmpty(),
                         )
                     }
+
+                    entries += TempDiskEntry(
+                        name = discName,
+                        duration = discDuration,
+                        tracks = tracks,
+                    )
+
+                    index = durationIndex + 1
+                }
+
+                entries
             }.orEmpty()
 
             val languageDiscsTitles: List<List<List<String>>> = languageSections.drop(1)
@@ -254,7 +281,7 @@ class VgmdbParser(private val json: Json) {
             catalogId = catalogId,
             names = names,
             coverArt = coverArt,
-            vocalists = vocalists.map(json::encodeToString),
+            performers = performers.map(json::encodeToString),
             composers = composers.map(json::encodeToString),
             discs = discs.map(json::encodeToString),
         )
@@ -302,7 +329,6 @@ class VgmdbParser(private val json: Json) {
 
         val leftAndRight = innerMain["div"]?.all("div")
         val leftColumn = leftAndRight?.getOrNull(0) ?: return@htmlDocument null
-        val rightColumn = leftAndRight.getOrNull(1) ?: return@htmlDocument null
 
         val japaneseName = leftColumn["span"]?.text
 

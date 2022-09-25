@@ -20,10 +20,6 @@ class VgmdbJson @Inject constructor(override val json: Json) : AppJson() {
 
     fun parseTitleColumn(value: String?) = parseAlbumColumn(value)
 
-    fun parseVocalistColumn(value: String?) = parseArtistColumn(value)
-
-    fun parseComposerColumn(value: String?) = parseArtistColumn(value)
-
     fun parseDiscColumn(value: String): DiscEntry? {
         return try {
             json.decodeFromString(value)
@@ -45,7 +41,7 @@ class VgmdbJson @Inject constructor(override val json: Json) : AppJson() {
         return Either.Left(value ?: "")
     }
 
-    private fun parseArtistColumn(value: String?): Either<String, ArtistColumnEntry> {
+    fun parseArtistColumn(value: String?): Either<String, ArtistColumnEntry> {
         if (value?.contains("{") == true) {
             try {
                 return Either.Right(json.decodeFromString(value))

@@ -12,7 +12,7 @@ data class AlbumEntry(
     val catalogId: String?,
     val names: Map<String, String> = emptyMap(),
     val coverArt: String? = null,
-    val vocalists: List<String> = emptyList(),
+    val performers: List<String> = emptyList(),
     val composers: List<String> = emptyList(),
 
     /** Encoded list of [DiscEntry] */

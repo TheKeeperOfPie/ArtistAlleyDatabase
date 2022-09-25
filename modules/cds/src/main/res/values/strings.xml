@@ -6,9 +6,9 @@
     <string name="cd_entry_series_header_zero">Series</string>
     <string name="cd_entry_series_header_one">Series</string>
     <string name="cd_entry_series_header_many">Series</string>
-    <string name="cd_entry_vocalists_header_zero">Vocalist</string>
-    <string name="cd_entry_vocalists_header_one">Vocalist</string>
-    <string name="cd_entry_vocalists_header_many">Vocalists</string>
+    <string name="cd_entry_performers_header_zero">Performer</string>
+    <string name="cd_entry_performers_header_one">Performer</string>
+    <string name="cd_entry_performers_header_many">Performers</string>
     <string name="cd_entry_composers_header_zero">Composer</string>
     <string name="cd_entry_composers_header_one">Composer</string>
     <string name="cd_entry_composers_header_many">Composers</string>

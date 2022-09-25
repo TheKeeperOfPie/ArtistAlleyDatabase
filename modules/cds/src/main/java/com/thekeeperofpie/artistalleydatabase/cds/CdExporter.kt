@@ -76,10 +76,10 @@ class CdExporter(
             .map(aniListDataConverter::databaseToCharacterEntry)
             .map { it.text }
 
-        val vocalists = entry.vocalists.map(vgmdbDataConverter::databaseToVocalistEntry)
-        val composers = entry.composers.map(vgmdbDataConverter::databaseToComposerEntry)
+        val performers = entry.performers.map(vgmdbDataConverter::databaseToArtistEntry)
+        val composers = entry.composers.map(vgmdbDataConverter::databaseToArtistEntry)
 
-        val artists = (vocalists + composers).map { it.text }
+        val artists = (performers + composers).map { it.text }
         val catalogId = listOfNotNull(entry.catalogId)
             .map(vgmdbDataConverter::databaseToCatalogIdEntry)
             .map { it.text }

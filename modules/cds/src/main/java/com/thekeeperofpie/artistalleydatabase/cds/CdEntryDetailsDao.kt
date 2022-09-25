@@ -7,26 +7,26 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.RoomUtils
 @Dao
 interface CdEntryDetailsDao : CdEntryDao {
 
-    suspend fun queryVocalists(
+    suspend fun queryPerformers(
         query: String,
         limit: Int = 5,
         offset: Int = 0
     ) = RoomUtils.queryListStringColumn(
         query,
-        { queryVocalistsViaMatch(it, limit, offset) },
-        { queryVocalistsViaLike(it, limit, offset) }
+        { queryPerformersViaMatch(it, limit, offset) },
+        { queryPerformersViaLike(it, limit, offset) }
     )
 
     @Query(
         """
-        SELECT DISTINCT (cd_entries.vocalists)
+        SELECT DISTINCT (cd_entries.performers)
         FROM cd_entries
         JOIN cd_entries_fts ON cd_entries.id = cd_entries_fts.id
-        WHERE cd_entries_fts.vocalistsSearchable MATCH :query
+        WHERE cd_entries_fts.performersSearchable MATCH :query
         LIMIT :limit OFFSET :offset
     """
     )
-    suspend fun queryVocalistsViaMatch(
+    suspend fun queryPerformersViaMatch(
         query: String,
         limit: Int = 5,
         offset: Int = 0
@@ -34,13 +34,13 @@ interface CdEntryDetailsDao : CdEntryDao {
 
     @Query(
         """
-        SELECT DISTINCT (cd_entries.vocalists)
+        SELECT DISTINCT (cd_entries.performers)
         FROM cd_entries
-        WHERE cd_entries.vocalistsSearchable LIKE :query
+        WHERE cd_entries.performersSearchable LIKE :query
         LIMIT :limit OFFSET :offset
     """
     )
-    suspend fun queryVocalistsViaLike(
+    suspend fun queryPerformersViaLike(
         query: String,
         limit: Int = 5,
         offset: Int = 0

@@ -6,4 +6,5 @@ import kotlinx.serialization.Serializable
 data class ArtistColumnEntry(
     val id: String,
     val names: Map<String, String>,
+    val manuallyChosen: Boolean = false,
 )

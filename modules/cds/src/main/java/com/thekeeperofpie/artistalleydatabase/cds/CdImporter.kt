@@ -65,8 +65,8 @@ class CdImporter(
                 while (reader.peek() == JsonReader.Token.BEGIN_OBJECT) {
                     var entry = cdEntryAdapter.fromJson(reader) ?: continue
 
-                    if (entry.vocalistsSearchable.isEmpty()) {
-                        entry = entry.copy(vocalistsSearchable = entry.vocalists)
+                    if (entry.performersSearchable.isEmpty()) {
+                        entry = entry.copy(performersSearchable = entry.performers)
                     }
 
                     if (entry.composersSearchable.isEmpty()) {

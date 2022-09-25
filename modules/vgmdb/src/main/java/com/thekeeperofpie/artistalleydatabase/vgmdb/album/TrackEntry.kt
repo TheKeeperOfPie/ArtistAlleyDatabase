@@ -11,5 +11,6 @@ data class TrackEntry(
     val duration: String,
 ) {
     val title
-        get() = titles["en"] ?: titles["ja"] ?: titles.values.firstOrNull() ?: ""
+        get() = titles["ja-latn"] ?: titles["en"] ?: titles["ja"]
+        ?: titles.values.firstOrNull() ?: ""
 }

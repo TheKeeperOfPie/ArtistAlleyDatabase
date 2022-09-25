@@ -4,6 +4,7 @@ import androidx.annotation.WorkerThread
 import com.hoc081098.flowext.startWith
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.form.EntrySection
+import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.ArtistColumnEntry
 import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.ArtistRepository
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emitAll
@@ -19,27 +20,27 @@ class VgmdbAutocompleter(
     private val artistRepository: ArtistRepository,
 ) {
 
-    suspend fun queryVocalistsLocal(
+    suspend fun queryPerformersLocal(
         query: String,
         queryLocal: suspend (query: String) -> List<String>
     ) = queryLocal(query).map {
-        val either = vgmdbJson.parseVocalistColumn(it)
+        val either = vgmdbJson.parseArtistColumn(it)
         if (either is Either.Right) {
             artistRepository.getEntry(either.value.id)
                 .filterNotNull()
-                .map(vgmdbDataConverter::vocalistEntry)
+                .map(vgmdbDataConverter::artistEntry)
                 .filterNotNull()
-                .startWith(vgmdbDataConverter.vocalistPlaceholder(either.value))
+                .startWith(vgmdbDataConverter.artistPlaceholder(either.value))
         } else {
             flowOf(EntrySection.MultiText.Entry.Custom(it))
         }
     }
 
-    suspend fun queryVocalistsNetwork(query: String) = flow {
+    suspend fun queryPerformersNetwork(query: String) = flow {
         emit(emptyList())
         vgmdbApi.searchArtists(query).map {
             flow { vgmdbApi.getArtist(it.id)?.let { emit(it) } }
-                .map(vgmdbDataConverter::vocalistEntry)
+                .map(vgmdbDataConverter::artistEntry)
                 .startWith(vgmdbDataConverter.artistPlaceholder(it))
         }.let { combine(it) { it.toList() } }
             .let { emitAll(it) }
@@ -49,13 +50,13 @@ class VgmdbAutocompleter(
         query: String,
         queryLocal: suspend (query: String) -> List<String>
     ) = queryLocal(query).map {
-        val either = vgmdbJson.parseComposerColumn(it)
+        val either = vgmdbJson.parseArtistColumn(it)
         if (either is Either.Right) {
             artistRepository.getEntry(either.value.id)
                 .filterNotNull()
-                .map(vgmdbDataConverter::composerEntry)
+                .map(vgmdbDataConverter::artistEntry)
                 .filterNotNull()
-                .startWith(vgmdbDataConverter.composerPlaceholder(either.value))
+                .startWith(vgmdbDataConverter.artistPlaceholder(either.value))
         } else {
             flowOf(EntrySection.MultiText.Entry.Custom(it))
         }
@@ -65,21 +66,15 @@ class VgmdbAutocompleter(
         emit(emptyList())
         vgmdbApi.searchArtists(query).map {
             flow { vgmdbApi.getArtist(it.id)?.let { emit(it) } }
-                .map(vgmdbDataConverter::composerEntry)
+                .map(vgmdbDataConverter::artistEntry)
                 .startWith(vgmdbDataConverter.artistPlaceholder(it))
         }.let { combine(it) { it.toList() } }
             .let { emitAll(it) }
     }
 
     @WorkerThread
-    suspend fun fillVocalistField(artistId: String) =
-        artistRepository.getEntry(artistId)
+    suspend fun fillArtistField(artist: ArtistColumnEntry) =
+        artistRepository.getEntry(artist.id)
             .filterNotNull()
-            .map(vgmdbDataConverter::vocalistEntry)
-
-    @WorkerThread
-    suspend fun fillComposerField(artistId: String) =
-        artistRepository.getEntry(artistId)
-            .filterNotNull()
-            .map(vgmdbDataConverter::composerEntry)
+            .map { vgmdbDataConverter.artistEntry(it, artist.manuallyChosen) }
 }
