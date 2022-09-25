@@ -42,7 +42,7 @@ android {
 
 dependencies {
     implementation("androidx.compose.material:material:1.3.0-beta03")
-    implementation("androidx.compose.material3:material3:1.0.0-beta03")
+    implementation("androidx.compose.material3:material3:1.0.0-beta02")
     implementation("com.google.accompanist:accompanist-pager-indicators:0.26.1-alpha")
 
     implementation("androidx.paging:paging-runtime:3.2.0-alpha02")
