@@ -180,6 +180,7 @@ class VgmdbParser(private val json: Json) {
             val languageSections = trackDivs.getOrNull(1)?.all(".tl").orEmpty()
             val firstLanguageDiscs = languageSections.firstOrNull()?.let { section ->
                 val language = languages?.firstOrNull().orEmpty()
+                    .substringBefore("/")
                     .let { LANGUAGE_MAPPING.getOrDefault(it, it) }
                 var index = 0
                 val children = section.children
@@ -287,20 +288,36 @@ class VgmdbParser(private val json: Json) {
         )
     }
 
-    private fun parseArtistCredits(element: DocElement) = mutableListOf<ArtistColumnEntry>().apply {
-        element.byIndex(1, "td")?.all("a")?.map {
+    private fun parseArtistCredits(element: DocElement): MutableList<ArtistColumnEntry> {
+        val allNamesWithHoles = element.byIndex(1, "td")?.ownText?.split(",")
+            ?.map { it.trim() }.orEmpty().toMutableList()
+        val artistsWithIds = element.byIndex(1, "td")?.all("a")?.mapNotNull {
             val artistId = it.attribute("href").substringAfter("artist/")
             if (artistId.isNotBlank()) {
                 val artistNames = it.all("span")
                     .associate { it.attribute("lang") to it.ownText }
                     .filter { it.key.isNotBlank() && it.value.isNotBlank() }
                     .ifEmpty { mapOf("en" to it.text) }
-                this += ArtistColumnEntry(
+                ArtistColumnEntry(
                     id = artistId,
                     names = artistNames,
                 )
-            }
+            } else null
         }.orEmpty()
+
+        val artists = mutableListOf<ArtistColumnEntry>()
+        if (allNamesWithHoles.size >= artistsWithIds.size) {
+            var withIdsIndex = 0
+            allNamesWithHoles.forEach {
+                artists += if (it.isEmpty() && withIdsIndex < artistsWithIds.size) {
+                    artistsWithIds[withIdsIndex++]
+                } else {
+                    ArtistColumnEntry(id = null, names = mapOf("unknown" to it))
+                }
+            }
+        }
+
+        return artists
     }
 
     private fun parseAlbumTitles(selectable: CssSelectable) =

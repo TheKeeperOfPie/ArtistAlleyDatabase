@@ -154,10 +154,16 @@ class VgmdbDataConverter @Inject constructor(
         artist: SearchResults.ArtistResult
     ): Entry.Prefilled<SearchResults.ArtistResult> {
         val serializedValue =
-            vgmdbJson.json.encodeToString(ArtistColumnEntry(artist.id, mapOf("en" to artist.name)))
+            vgmdbJson.json.encodeToString(
+                ArtistColumnEntry(
+                    artist.id,
+                    mapOf("en" to artist.name),
+                    manuallyChosen = true
+                )
+            )
         return Entry.Prefilled(
             value = artist,
-            id = artistEntryId(artist.id),
+            id = artistEntryId(artist),
             text = artist.name,
             imageLink = "https://vgmdb.net/artist/${artist.id}",
             serializedValue = serializedValue,
@@ -171,9 +177,9 @@ class VgmdbDataConverter @Inject constructor(
         val serializedValue = vgmdbJson.json.encodeToString(artist)
         return Entry.Prefilled(
             value = artist,
-            id = artistEntryId(artist.id),
+            id = artistEntryId(artist),
             text = artist.name,
-            imageLink = "https://vgmdb.net/artist/${artist.id}",
+            imageLink = artist.id?.let { "https://vgmdb.net/artist/${it}" },
             serializedValue = serializedValue,
             searchableValue = artist.names.values
                 .filterNot(String?::isNullOrBlank)
@@ -189,7 +195,7 @@ class VgmdbDataConverter @Inject constructor(
             .encodeToString(ArtistColumnEntry(artist.id, artist.names, manualChoice))
         return Entry.Prefilled(
             value = artist,
-            id = artistEntryId(artist.id),
+            id = artistEntryId(artist),
             text = artist.name,
             image = artist.pictureThumb,
             imageLink = "https://vgmdb.net/artist/${artist.id}",
@@ -209,7 +215,10 @@ class VgmdbDataConverter @Inject constructor(
 
     fun discEntries(album: AlbumEntry) = album.discs.mapNotNull(vgmdbJson::parseDiscColumn)
 
-    private fun artistEntryId(id: String) = "vgmdbArtist_$id"
+    private fun artistEntryId(artist: SearchResults.ArtistResult) = "vgmdbArtist_${artist.id}"
+    private fun artistEntryId(artist: ArtistColumnEntry) = "vgmdbArtist_${artist.id ?: artist.name}"
+    private fun artistEntryId(artist: ArtistEntry) = "vgmdbArtist_${artist.id}"
+
     private fun albumEntryId(id: String) = "vgmdbAlbum_$id"
 
     private val AlbumEntry.title get() = names["ja-latn"] ?: names["en"] ?: names["jp"] ?: ""

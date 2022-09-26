@@ -12,6 +12,7 @@ import com.hoc081098.flowext.startWith
 import com.thekeeperofpie.artistalleydatabase.android_utils.ImageUtils
 import com.thekeeperofpie.artistalleydatabase.android_utils.emitNotNull
 import com.thekeeperofpie.artistalleydatabase.android_utils.mapLatestNotNull
+import com.thekeeperofpie.artistalleydatabase.android_utils.suspend1
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListAutocompleter
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListDataConverter
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListJson
@@ -188,60 +189,46 @@ abstract class CdEntryDetailsViewModel(
                 .collectLatest { titleSection.addOrReplaceContent(it) }
         }
 
-        viewModelScope.launch(Dispatchers.Main) {
-            @Suppress("OPT_IN_USAGE")
-            catalogAlbumChosen()
-                .flatMapLatest {
-                    combine(
-                        it.performers
-                            .mapNotNull { vgmdbJson.parseArtistColumn(it).rightOrNull() }
-                            .map {
-                                artistRepository.getEntry(it.id)
-                                    .map { it?.let(vgmdbDataConverter::artistEntry) }
-                                    .catch {}
-                                    .startWith(vgmdbDataConverter.artistPlaceholder(it))
-                            }
-                    ) { it.toList().filterNotNull() }
-                }
-                .flowOn(Dispatchers.IO)
-                .collectLatest { performerSection.addOrReplaceContents(it) }
+        mapOf(
+            { album: AlbumEntry -> album.performers } to performerSection,
+            { album: AlbumEntry -> album.composers } to composerSection,
+        ).forEach { (entryFunction, formSection) ->
+            viewModelScope.launch(Dispatchers.Main) {
+                @Suppress("OPT_IN_USAGE")
+                catalogAlbumChosen()
+                    .flatMapLatest {
+                        combine(
+                            entryFunction(it)
+                                .mapNotNull { vgmdbJson.parseArtistColumn(it).rightOrNull() }
+                                .map {
+                                    val placeholder = vgmdbDataConverter.artistPlaceholder(it)
+                                    val artistId = it.id
+                                    if (artistId == null) {
+                                        flowOf(placeholder)
+                                    } else {
+                                        artistRepository.getEntry(artistId)
+                                            .map { it?.let(vgmdbDataConverter::artistEntry) }
+                                            .catch {}
+                                            .startWith(placeholder)
+                                    }
+                                }
+                        ) { it.toList().filterNotNull() }
+                    }
+                    .flowOn(Dispatchers.IO)
+                    .collectLatest { formSection.addOrReplaceContents(it) }
+            }
         }
 
-        viewModelScope.launch(Dispatchers.Main) {
-            @Suppress("OPT_IN_USAGE")
-            catalogAlbumChosen()
-                .flatMapLatest {
-                    combine(
-                        it.composers
-                            .mapNotNull { vgmdbJson.parseArtistColumn(it).rightOrNull() }
-                            .map {
-                                artistRepository.getEntry(it.id)
-                                    .map { it?.let(vgmdbDataConverter::artistEntry) }
-                                    .catch {}
-                                    .startWith(vgmdbDataConverter.artistPlaceholder(it))
-                            }
-                    ) { it.toList().filterNotNull() }
-                }
-                .flowOn(Dispatchers.IO)
-                .collectLatest { composerSection.addOrReplaceContents(it) }
-        }
-
-        viewModelScope.launch(Dispatchers.IO) {
-            performerSection.subscribePredictions(
-                localCall = {
-                    vgmdbAutocompleter.queryPerformersLocal(it, cdEntryDao::queryPerformers)
-                },
-                networkCall = vgmdbAutocompleter::queryPerformersNetwork
-            )
-        }
-
-        viewModelScope.launch(Dispatchers.IO) {
-            composerSection.subscribePredictions(
-                localCall = {
-                    vgmdbAutocompleter.queryComposersLocal(it, cdEntryDao::queryComposers)
-                },
-                networkCall = vgmdbAutocompleter::queryComposersNetwork
-            )
+        mapOf(
+            performerSection to suspend1(cdEntryDao::queryPerformers),
+            composerSection to suspend1(cdEntryDao::queryComposers),
+        ).forEach { (section, function) ->
+            viewModelScope.launch(Dispatchers.IO) {
+                section.subscribePredictions(
+                    localCall = { vgmdbAutocompleter.queryArtistsLocal(it, function) },
+                    networkCall = vgmdbAutocompleter::queryArtistsNetwork
+                )
+            }
         }
 
         viewModelScope.launch(Dispatchers.IO) {

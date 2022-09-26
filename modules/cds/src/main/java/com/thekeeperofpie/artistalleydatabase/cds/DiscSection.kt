@@ -347,7 +347,7 @@ class DiscSection(private val json: Json, lockState: LockState? = null) :
                 TrackEntry(
                     number = (index + 1).toString(),
                     titles = mapOf("unknown" to track.title),
-                    duration = it.duration,
+                    duration = track.duration,
                 )
             }.map(json::encodeToString)
         )

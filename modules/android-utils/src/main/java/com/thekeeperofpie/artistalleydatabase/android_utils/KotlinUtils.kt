@@ -39,3 +39,8 @@ inline fun <T, R> Flow<T>.flatMapLatestNotNull(crossinline transform: suspend (v
 suspend fun <T> FlowCollector<T>.emitNotNull(value: T?) {
     if (value != null) emit(value)
 }
+
+@Suppress("NOTHING_TO_INLINE")
+inline fun <Input, Output> suspend1(
+    noinline block: suspend (Input) -> Output
+): suspend (Input) -> Output = block
