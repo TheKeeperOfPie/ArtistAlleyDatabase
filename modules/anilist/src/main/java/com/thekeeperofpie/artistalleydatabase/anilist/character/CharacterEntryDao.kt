@@ -17,4 +17,7 @@ interface CharacterEntryDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertEntries(vararg entries: CharacterEntry)
+
+    @Query("DELETE FROM character_entries")
+    suspend fun deleteAll()
 }

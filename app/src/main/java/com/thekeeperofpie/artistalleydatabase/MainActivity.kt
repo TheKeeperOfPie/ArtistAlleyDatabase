@@ -73,6 +73,8 @@ import com.thekeeperofpie.artistalleydatabase.search.advanced.AdvancedSearchScre
 import com.thekeeperofpie.artistalleydatabase.search.advanced.AdvancedSearchViewModel
 import com.thekeeperofpie.artistalleydatabase.search.results.SearchResultsScreen
 import com.thekeeperofpie.artistalleydatabase.search.results.SearchResultsViewModel
+import com.thekeeperofpie.artistalleydatabase.settings.SettingsScreen
+import com.thekeeperofpie.artistalleydatabase.settings.SettingsViewModel
 import com.thekeeperofpie.artistalleydatabase.ui.theme.ArtistAlleyDatabaseTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -168,6 +170,7 @@ class MainActivity : ComponentActivity() {
                                             onErrorDismiss = { viewModel.errorResource = null }
                                         )
                                     }
+                                    NavDrawerItems.Settings -> SettingsScreen(::onClickNav)
                                 }.run { /* exhaust */ }
                             }
 
@@ -476,6 +479,16 @@ class MainActivity : ComponentActivity() {
                 addEditScreen(navController)
             }
         }
+    }
+
+    @Composable
+    private fun SettingsScreen(onClickNav: () -> Unit) {
+        val viewModel = hiltViewModel<SettingsViewModel>()
+        SettingsScreen(
+            onClickNav = onClickNav,
+            onClickAniListClear = viewModel::clearAniListCache,
+            onClickVgmdbClear = viewModel::clearVgmdbCache,
+        )
     }
 
     private fun NavGraphBuilder.addArtDetailsScreen(navController: NavHostController) {

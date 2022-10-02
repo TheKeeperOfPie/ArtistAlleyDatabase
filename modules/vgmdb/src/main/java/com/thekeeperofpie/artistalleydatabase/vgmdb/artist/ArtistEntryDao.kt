@@ -21,4 +21,7 @@ interface ArtistEntryDao {
 
     @Update
     suspend fun updateEntry(entry: ArtistEntry)
+
+    @Query("DELETE FROM artist_entries")
+    suspend fun deleteAll()
 }

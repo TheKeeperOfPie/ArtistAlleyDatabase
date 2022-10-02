@@ -17,4 +17,7 @@ interface MediaEntryDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertEntries(vararg entries: MediaEntry)
+
+    @Query("DELETE FROM media_entries")
+    suspend fun deleteAll()
 }

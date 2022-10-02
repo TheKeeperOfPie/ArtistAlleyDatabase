@@ -21,4 +21,7 @@ interface AlbumEntryDao {
 
     @Update
     suspend fun updateEntry(entry: AlbumEntry)
+
+    @Query("DELETE FROM album_entries")
+    suspend fun deleteAll()
 }
