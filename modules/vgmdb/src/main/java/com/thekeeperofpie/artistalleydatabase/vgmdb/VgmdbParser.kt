@@ -288,9 +288,20 @@ class VgmdbParser(private val json: Json) {
         )
     }
 
+    private fun String.removeMatchingResults(regex: Regex) = regex.findAll(this)
+        .toList()
+        .fold(this) { stripped, result ->
+            stripped.removeRange(result.range)
+        }
+
     private fun parseArtistCredits(element: DocElement): MutableList<ArtistColumnEntry> {
-        val allNamesWithHoles = element.byIndex(1, "td")?.ownText?.split(",")
-            ?.map { it.trim() }.orEmpty().toMutableList()
+        val allNames = element.byIndex(1, "td")?.text
+        val parenthesesRegex = Regex("""(\([^()]*\)(?=,|\z))""")
+        val strippedAllNames = allNames?.removeMatchingResults(parenthesesRegex)
+
+        val allNamesWithHoles = strippedAllNames?.split(",")
+            ?.map { it.trim() }.orEmpty()
+
         val artistsWithIds = element.byIndex(1, "td")?.all("a")?.mapNotNull {
             val artistId = it.attribute("href").substringAfter("artist/")
             if (artistId.isNotBlank()) {
@@ -306,17 +317,11 @@ class VgmdbParser(private val json: Json) {
         }.orEmpty()
 
         val artists = mutableListOf<ArtistColumnEntry>()
-        if (allNamesWithHoles.size >= artistsWithIds.size) {
-            var withIdsIndex = 0
-            allNamesWithHoles.forEach {
-                artists += if (it.isEmpty() && withIdsIndex < artistsWithIds.size) {
-                    artistsWithIds[withIdsIndex++]
-                } else {
-                    ArtistColumnEntry(id = null, names = mapOf("unknown" to it))
-                }
-            }
+        allNamesWithHoles.map { name ->
+            val split = name.split("/").map(String::trim)
+            artists += artistsWithIds.find { split.any(it.names::containsValue) }
+                ?: ArtistColumnEntry(id = null, names = mapOf("unknown" to name))
         }
-
         return artists
     }
 

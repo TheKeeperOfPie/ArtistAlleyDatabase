@@ -1085,6 +1085,210 @@ class ParserTest {
     }
 
     @Test
+    fun parseAlbum4() {
+        val actual = runBlocking { parser.parseAlbum("59653") }
+        assertThat(actual).isEqualTo(
+            AlbumEntry(
+                id = "59653",
+                catalogId = "HMCD-0005",
+                names = mapOf(
+                    "en" to "HATSUNE MIKU EXPO 2016 E.P.",
+                    "ja" to "HATSUNE MIKU EXPO 2016 E.P.",
+                    "ja-latn" to "HATSUNE MIKU EXPO 2016 E.P.",
+                ),
+                coverArt = "https://medium-media.vgm.io/albums/35/59653/59653-1466021248.png",
+                performers = listOf(
+                    ArtistColumnEntry(
+                        id = "2466",
+                        names = mapOf(
+                            "en" to "Miku Hatsune",
+                            "ja" to "初音ミク",
+                        )
+                    ),
+                ).map(json::encodeToString),
+                composers = listOf(
+                    ArtistColumnEntry(
+                        id = "11654",
+                        names = mapOf(
+                            "en" to "Hachioji P",
+                            "ja" to "八王子P",
+                        )
+                    ),
+                    ArtistColumnEntry(
+                        id = null,
+                        names = mapOf(
+                            "unknown" to "BIGHEAD",
+                        )
+                    ),
+                    ArtistColumnEntry(
+                        id = null,
+                        names = mapOf(
+                            "unknown" to "GuitarHeroPianoZero",
+                        )
+                    ),
+                    ArtistColumnEntry(
+                        id = "9553",
+                        names = mapOf(
+                            "en" to "cosMo@bousouP",
+                            "ja" to "cosMo@暴走P",
+                        )
+                    ),
+                    ArtistColumnEntry(
+                        id = "2934",
+                        names = mapOf(
+                            "en" to "Eiji Hirasawa",
+                            "ja" to "平沢栄司",
+                        )
+                    ),
+                    ArtistColumnEntry(
+                        id = null,
+                        names = mapOf(
+                            "unknown" to "CircusP",
+                        )
+                    ),
+                    ArtistColumnEntry(
+                        id = null,
+                        names = mapOf(
+                            "unknown" to "Render/ Monk/ Lola Fair",
+                        )
+                    ),
+                    ArtistColumnEntry(
+                        id = null,
+                        names = mapOf(
+                            "unknown" to "Xiao-Ming",
+                        )
+                    ),
+                    ArtistColumnEntry(
+                        id = "16741",
+                        names = mapOf(
+                            "en" to "YZYX",
+                        )
+                    ),
+                    ArtistColumnEntry(
+                        id = null,
+                        names = mapOf(
+                            "unknown" to "AlexTrip Sands",
+                        )
+                    ),
+                    ArtistColumnEntry(
+                        id = "6457",
+                        names = mapOf(
+                            "en" to "Anamanaguchi",
+                        )
+                    ),
+                    ArtistColumnEntry(
+                        id = "9553",
+                        names = mapOf(
+                            "en" to "cosMo@bosoP",
+                        )
+                    ),
+                ).map(json::encodeToString),
+                discs = listOf(
+                    DiscEntry(
+                        name = "Disc 1 Original Work",
+                        duration = "51:57",
+                        tracks = listOf(
+                            TrackEntry(
+                                number = "01",
+                                titles = mapOf(
+                                    "en" to "Blue Star",
+                                ),
+                                duration = "3:41",
+                            ),
+                            TrackEntry(
+                                number = "02",
+                                titles = mapOf(
+                                    "en" to "Sharing The World",
+                                ),
+                                duration = "4:07",
+                            ),
+                            TrackEntry(
+                                number = "03",
+                                titles = mapOf(
+                                    "en" to "Glass Wall",
+                                ),
+                                duration = "4:41",
+                            ),
+                            TrackEntry(
+                                number = "04",
+                                titles = mapOf(
+                                    "en" to "The Disappearance of Hatsune Miku",
+                                    "ja" to "初音ミクの消失",
+                                ),
+                                duration = "4:47",
+                            ),
+                            TrackEntry(
+                                number = "05",
+                                titles = mapOf(
+                                    "en" to "Fragments of Stars (piano ver.)",
+                                    "ja" to "星のカケラ (piano ver.)",
+                                ),
+                                duration = "4:00",
+                            ),
+                            TrackEntry(
+                                number = "06",
+                                titles = mapOf(
+                                    "en" to "Ten Thousand Stars",
+                                ),
+                                duration = "3:54",
+                            ),
+                            TrackEntry(
+                                number = "07",
+                                titles = mapOf(
+                                    "en" to "Constellation",
+                                ),
+                                duration = "3:36",
+                            ),
+                            TrackEntry(
+                                number = "08",
+                                titles = mapOf(
+                                    "en" to "Together, Make The Magic!",
+                                ),
+                                duration = "3:42",
+                            ),
+                            TrackEntry(
+                                number = "09",
+                                titles = mapOf(
+                                    "en" to "ALL IS MUSIC!",
+                                ),
+                                duration = "4:13",
+                            ),
+                            TrackEntry(
+                                number = "10",
+                                titles = mapOf(
+                                    "en" to "MikuMambo",
+                                ),
+                                duration = "3:26",
+                            ),
+                            TrackEntry(
+                                number = "11",
+                                titles = mapOf(
+                                    "en" to "Miku",
+                                ),
+                                duration = "3:40",
+                            ),
+                            TrackEntry(
+                                number = "12",
+                                titles = mapOf(
+                                    "en" to "Blue Star (Carpainter/TREKKIE TRAX Remix)",
+                                ),
+                                duration = "3:34",
+                            ),
+                            TrackEntry(
+                                number = "13",
+                                titles = mapOf(
+                                    "en" to "Blue Star (Mark Redito Remix)",
+                                ),
+                                duration = "4:36",
+                            ),
+                        ).map(json::encodeToString)
+                    ),
+                ).map(json::encodeToString),
+            )
+        )
+    }
+
+    @Test
     fun parseArtist() {
         val actual = runBlocking { parser.parseArtist("29051") }
         assertThat(actual).isEqualTo(

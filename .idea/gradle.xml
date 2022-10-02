@@ -4,20 +4,6 @@
   <component name="GradleSettings">
     <option name="linkedExternalProjectsSettings">
       <GradleProjectSettings>
-        <compositeConfiguration>
-          <compositeBuild compositeDefinitionSource="SCRIPT">
-            <builds>
-              <build path="$PROJECT_DIR$/composite" name="Artist Alley Database Composite Build">
-                <projects>
-                  <project path="$PROJECT_DIR$/composite" />
-                  <project path="$PROJECT_DIR$/composite/json-schema" />
-                  <project path="$PROJECT_DIR$/composite/raml" />
-                  <project path="$PROJECT_DIR$/composite/utils" />
-                </projects>
-              </build>
-            </builds>
-          </compositeBuild>
-        </compositeConfiguration>
         <option name="testRunner" value="GRADLE" />
         <option name="distributionType" value="DEFAULT_WRAPPED" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
@@ -26,10 +12,6 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/app" />
-            <option value="$PROJECT_DIR$/composite" />
-            <option value="$PROJECT_DIR$/composite/json-schema" />
-            <option value="$PROJECT_DIR$/composite/raml" />
-            <option value="$PROJECT_DIR$/composite/utils" />
             <option value="$PROJECT_DIR$/modules" />
             <option value="$PROJECT_DIR$/modules/android-utils" />
             <option value="$PROJECT_DIR$/modules/anilist" />

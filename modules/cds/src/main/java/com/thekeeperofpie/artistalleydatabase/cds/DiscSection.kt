@@ -274,7 +274,7 @@ class DiscSection(private val json: Json, lockState: LockState? = null) :
             EntryTextField(
                 text = track.title,
                 onValueChange = { track.title = it },
-                labelRes = R.string.cd_entry_track_title_label,
+                labelRes = R.string.cd_entry_track_title_label.takeIf { index == 0 },
                 placeholderRes = null,
                 onDone = onDone,
                 lockState = lockState,
@@ -283,12 +283,13 @@ class DiscSection(private val json: Json, lockState: LockState? = null) :
             EntryTextField(
                 text = track.duration,
                 onValueChange = { track.duration = it },
-                labelRes = R.string.cd_entry_track_duration_label,
+                labelRes = R.string.cd_entry_track_duration_label.takeIf { index == 0 },
                 placeholderRes = R.string.cd_entry_track_duration_placeholder,
                 singleLine = true,
                 onDone = onDone,
                 lockState = lockState,
                 modifier = Modifier.fillMaxHeight()
+                    .wrapContentWidth()
             )
 
             AnimatedVisibility(
@@ -313,7 +314,7 @@ class DiscSection(private val json: Json, lockState: LockState? = null) :
     private fun EntryTextField(
         text: String,
         onValueChange: (String) -> Unit,
-        @StringRes labelRes: Int,
+        @StringRes labelRes: Int?,
         @StringRes placeholderRes: Int?,
         singleLine: Boolean = false,
         onDone: (() -> Unit)? = {},
@@ -323,7 +324,7 @@ class DiscSection(private val json: Json, lockState: LockState? = null) :
         CustomOutlinedTextField(
             value = text,
             onValueChange = onValueChange,
-            label = { Text(stringResource(labelRes)) },
+            label = { labelRes?.let { Text(stringResource(it)) } },
             placeholder = placeholderRes?.let { { Text(stringResource(it)) } },
             singleLine = singleLine,
             readOnly = lockState?.editable == false,

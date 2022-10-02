@@ -7,7 +7,7 @@ pluginManagement {
         mavenCentral()
     }
 
-    includeBuild("composite")
+//    includeBuild("composite")
 }
 
 dependencyResolutionManagement {
