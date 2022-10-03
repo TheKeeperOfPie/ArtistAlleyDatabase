@@ -2,8 +2,8 @@ package com.thekeeperofpie.artistalleydatabase.cds.grid
 
 import android.app.Application
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
-import com.thekeeperofpie.artistalleydatabase.cds.CdEntry
-import com.thekeeperofpie.artistalleydatabase.cds.CdEntryUtils
+import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntry
+import com.thekeeperofpie.artistalleydatabase.cds.utils.CdEntryUtils
 import com.thekeeperofpie.artistalleydatabase.form.grid.EntryGridModel
 import java.io.File
 

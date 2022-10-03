@@ -39,8 +39,8 @@ import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
 import com.thekeeperofpie.artistalleydatabase.R
-import com.thekeeperofpie.artistalleydatabase.art.ArtStringR
-import com.thekeeperofpie.artistalleydatabase.art.details.SampleArtEntrySectionsProvider
+import com.thekeeperofpie.artistalleydatabase.art.utils.ArtStringR
+import com.thekeeperofpie.artistalleydatabase.art.utils.SampleArtEntrySectionsProvider
 import com.thekeeperofpie.artistalleydatabase.compose.HorizontalPagerIndicator
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
 import com.thekeeperofpie.artistalleydatabase.compose.topBorder

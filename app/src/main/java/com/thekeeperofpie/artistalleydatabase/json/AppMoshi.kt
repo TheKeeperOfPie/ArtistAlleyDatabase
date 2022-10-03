@@ -16,5 +16,5 @@ class AppMoshi {
             .build()!!
     }
 
-    val jsonElementAdapter by lazy { moshi.adapter(JsonElement::class.java)!!.indent("    ") }
+    val jsonElementAdapter by lazy { moshi.adapter(JsonElement::class.java).indent("    ")!! }
 }

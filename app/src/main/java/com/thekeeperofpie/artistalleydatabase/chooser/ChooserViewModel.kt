@@ -8,10 +8,10 @@ import android.net.Uri
 import androidx.core.content.FileProvider
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.ImageUtils
-import com.thekeeperofpie.artistalleydatabase.art.ArtEntryDao
-import com.thekeeperofpie.artistalleydatabase.art.ArtEntryUtils
+import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryDao
 import com.thekeeperofpie.artistalleydatabase.art.grid.ArtEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.art.search.ArtSearchViewModel
+import com.thekeeperofpie.artistalleydatabase.art.utils.ArtEntryUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 

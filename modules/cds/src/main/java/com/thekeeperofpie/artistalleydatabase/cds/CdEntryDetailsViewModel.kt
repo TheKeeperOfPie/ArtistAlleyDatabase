@@ -19,6 +19,11 @@ import com.thekeeperofpie.artistalleydatabase.anilist.AniListJson
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
+import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntry
+import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDetailsDao
+import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryModel
+import com.thekeeperofpie.artistalleydatabase.cds.section.DiscSection
+import com.thekeeperofpie.artistalleydatabase.cds.utils.CdEntryUtils
 import com.thekeeperofpie.artistalleydatabase.form.EntrySection
 import com.thekeeperofpie.artistalleydatabase.form.EntrySection.MultiText.Entry
 import com.thekeeperofpie.artistalleydatabase.vgmdb.SearchResults

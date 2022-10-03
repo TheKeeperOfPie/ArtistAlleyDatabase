@@ -5,9 +5,9 @@ import androidx.room.Dao
 import androidx.sqlite.db.SimpleSQLiteQuery
 import com.thekeeperofpie.artistalleydatabase.android_utils.RoomUtils.toBit
 import com.thekeeperofpie.artistalleydatabase.android_utils.RoomUtils.wrapMatchQuery
-import com.thekeeperofpie.artistalleydatabase.art.ArtEntry
-import com.thekeeperofpie.artistalleydatabase.art.ArtEntryDao
-import com.thekeeperofpie.artistalleydatabase.art.SourceType
+import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntry
+import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryDao
+import com.thekeeperofpie.artistalleydatabase.art.sections.SourceType
 
 @Dao
 interface ArtEntryAdvancedSearchDao : ArtEntryDao {

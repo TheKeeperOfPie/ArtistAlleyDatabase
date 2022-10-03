@@ -4,8 +4,8 @@ import android.app.Application
 import android.content.Context
 import android.util.Log
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
-import com.thekeeperofpie.artistalleydatabase.art.ArtAddEntryViewModel
-import com.thekeeperofpie.artistalleydatabase.art.ArtEntry
+import com.thekeeperofpie.artistalleydatabase.art.ArtEntryAddViewModel
+import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntry
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import okio.buffer
@@ -15,7 +15,7 @@ import java.io.ByteArrayOutputStream
 class SettingsProvider(
     application: Application,
     private val appJson: AppJson,
-) : ArtAddEntryViewModel.Persister {
+) : ArtEntryAddViewModel.Persister {
 
     companion object {
         private const val KEY_ART_ENTRY_TEMPLATE = "art_entry_template"

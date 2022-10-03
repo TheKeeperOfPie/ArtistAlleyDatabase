@@ -47,20 +47,20 @@ import com.mxalbert.sharedelements.SharedElementsRoot
 import com.thekeeperofpie.artistalleydatabase.add.AddEntryScreen
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
-import com.thekeeperofpie.artistalleydatabase.art.ArtAddEntryViewModel
-import com.thekeeperofpie.artistalleydatabase.art.ArtEntryColumn
+import com.thekeeperofpie.artistalleydatabase.art.ArtEntryAddViewModel
+import com.thekeeperofpie.artistalleydatabase.art.ArtEntryEditViewModel
+import com.thekeeperofpie.artistalleydatabase.art.ArtEntryMultiEditViewModel
+import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryColumn
 import com.thekeeperofpie.artistalleydatabase.art.search.ArtSearchViewModel
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseScreen
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseViewModel
 import com.thekeeperofpie.artistalleydatabase.browse.selection.BrowseSelectionScreen
 import com.thekeeperofpie.artistalleydatabase.browse.selection.BrowseSelectionViewModel
-import com.thekeeperofpie.artistalleydatabase.cds.CdAddEntryViewModel
-import com.thekeeperofpie.artistalleydatabase.cds.CdDetailsViewModel
+import com.thekeeperofpie.artistalleydatabase.cds.CdEntryAddViewModel
+import com.thekeeperofpie.artistalleydatabase.cds.CdEntryEditViewModel
 import com.thekeeperofpie.artistalleydatabase.cds.search.CdSearchViewModel
 import com.thekeeperofpie.artistalleydatabase.detail.DetailsScreen
-import com.thekeeperofpie.artistalleydatabase.detail.DetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.edit.MultiEditScreen
-import com.thekeeperofpie.artistalleydatabase.edit.MultiEditViewModel
 import com.thekeeperofpie.artistalleydatabase.export.ExportScreen
 import com.thekeeperofpie.artistalleydatabase.export.ExportViewModel
 import com.thekeeperofpie.artistalleydatabase.form.grid.EntryGridModel
@@ -234,7 +234,7 @@ class MainActivity : ComponentActivity() {
                 }
 
                 composable(NavDestinations.ADD_ENTRY) {
-                    val viewModel = hiltViewModel<ArtAddEntryViewModel>()
+                    val viewModel = hiltViewModel<ArtEntryAddViewModel>()
                     AddEntryScreen(
                         imageUris = { viewModel.imageUris },
                         onImagesSelected = {
@@ -293,7 +293,7 @@ class MainActivity : ComponentActivity() {
                 }
 
                 composable(NavDestinations.ADD_ENTRY) {
-                    val viewModel = hiltViewModel<CdAddEntryViewModel>()
+                    val viewModel = hiltViewModel<CdEntryAddViewModel>()
                     AddEntryScreen(
                         imageUris = { viewModel.imageUris },
                         onImagesSelected = {
@@ -313,7 +313,7 @@ class MainActivity : ComponentActivity() {
                 }
 
                 entryDetailsComposable { id, imageFile, imageRatio ->
-                    val viewModel = hiltViewModel<CdDetailsViewModel>().initialize(id)
+                    val viewModel = hiltViewModel<CdEntryEditViewModel>().initialize(id)
                     DetailsScreen(
                         { id },
                         { imageFile },
@@ -493,7 +493,7 @@ class MainActivity : ComponentActivity() {
 
     private fun NavGraphBuilder.addArtDetailsScreen(navController: NavHostController) {
         entryDetailsComposable { id, imageFile, imageRatio ->
-            val viewModel = hiltViewModel<DetailsViewModel>().initialize(id, imageRatio)
+            val viewModel = hiltViewModel<ArtEntryEditViewModel>().initialize(id, imageRatio)
             DetailsScreen(
                 { id },
                 { imageFile },
@@ -530,7 +530,7 @@ class MainActivity : ComponentActivity() {
             val arguments = it.arguments!!
             val entryIds = arguments.getString("entry_ids")!!.split(',')
 
-            val viewModel = hiltViewModel<MultiEditViewModel>()
+            val viewModel = hiltViewModel<ArtEntryMultiEditViewModel>()
             viewModel.initialize(entryIds)
 
             MultiEditScreen(

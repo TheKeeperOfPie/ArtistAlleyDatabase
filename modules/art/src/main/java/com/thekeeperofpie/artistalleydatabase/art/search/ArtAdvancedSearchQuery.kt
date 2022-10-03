@@ -1,6 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.art.search
 
-import com.thekeeperofpie.artistalleydatabase.art.SourceType
+import com.thekeeperofpie.artistalleydatabase.art.sections.SourceType
 import kotlinx.serialization.Serializable
 import java.util.UUID
 

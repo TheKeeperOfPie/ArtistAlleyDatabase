@@ -3,8 +3,8 @@ package com.thekeeperofpie.artistalleydatabase.art.grid
 import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.thekeeperofpie.artistalleydatabase.art.ArtEntryDao
-import com.thekeeperofpie.artistalleydatabase.art.ArtEntryUtils
+import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryDao
+import com.thekeeperofpie.artistalleydatabase.art.utils.ArtEntryUtils
 import com.thekeeperofpie.artistalleydatabase.form.grid.EntryGridSelectionController
 import com.thekeeperofpie.artistalleydatabase.form.grid.EntryGridViewModel
 

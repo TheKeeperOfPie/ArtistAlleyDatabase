@@ -6,8 +6,10 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.export.Exporter
 import com.thekeeperofpie.artistalleydatabase.android_utils.importer.Importer
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListDataConverter
-import com.thekeeperofpie.artistalleydatabase.art.export.ArtExporter
-import com.thekeeperofpie.artistalleydatabase.art.importer.ArtImporter
+import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryDao
+import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryDatabase
+import com.thekeeperofpie.artistalleydatabase.art.persistence.ArtExporter
+import com.thekeeperofpie.artistalleydatabase.art.persistence.ArtImporter
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

@@ -9,9 +9,9 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.map
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
-import com.thekeeperofpie.artistalleydatabase.cds.CdEntryDao
-import com.thekeeperofpie.artistalleydatabase.cds.CdEntryUtils
+import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDao
 import com.thekeeperofpie.artistalleydatabase.cds.grid.CdEntryGridModel
+import com.thekeeperofpie.artistalleydatabase.cds.utils.CdEntryUtils
 import com.thekeeperofpie.artistalleydatabase.form.grid.EntryGridSelectionController
 import com.thekeeperofpie.artistalleydatabase.form.search.EntrySearchOption
 import com.thekeeperofpie.artistalleydatabase.form.search.EntrySearchViewModel

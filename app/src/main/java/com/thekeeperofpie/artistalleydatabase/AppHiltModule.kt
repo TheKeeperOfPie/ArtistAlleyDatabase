@@ -7,9 +7,9 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListDatabase
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListJson
-import com.thekeeperofpie.artistalleydatabase.art.ArtAddEntryViewModel
-import com.thekeeperofpie.artistalleydatabase.art.ArtEntryDatabase
-import com.thekeeperofpie.artistalleydatabase.cds.CdEntryDatabase
+import com.thekeeperofpie.artistalleydatabase.art.ArtEntryAddViewModel
+import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryDatabase
+import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDatabase
 import com.thekeeperofpie.artistalleydatabase.json.AppMoshi
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbDatabase
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbJson
@@ -71,5 +71,5 @@ class AppHiltModule {
 
     @Provides
     fun provideArtAddEntryViewModelPersister(settingsProvider: SettingsProvider) =
-        settingsProvider as ArtAddEntryViewModel.Persister
+        settingsProvider as ArtEntryAddViewModel.Persister
 }

@@ -9,11 +9,11 @@ import com.thekeeperofpie.artistalleydatabase.anilist.AniListJson
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
-import com.thekeeperofpie.artistalleydatabase.art.ArtEntry
-import com.thekeeperofpie.artistalleydatabase.art.PrintSize
-import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryDetailsDao
-import com.thekeeperofpie.artistalleydatabase.art.details.ArtEntryDetailsViewModel
+import com.thekeeperofpie.artistalleydatabase.art.ArtEntryDetailsViewModel
+import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntry
+import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryDetailsDao
 import com.thekeeperofpie.artistalleydatabase.art.search.ArtAdvancedSearchQuery
+import com.thekeeperofpie.artistalleydatabase.art.sections.PrintSize
 import com.thekeeperofpie.artistalleydatabase.form.EntrySection
 import com.thekeeperofpie.artistalleydatabase.form.EntrySection.MultiText.Entry
 import dagger.hilt.android.lifecycle.HiltViewModel

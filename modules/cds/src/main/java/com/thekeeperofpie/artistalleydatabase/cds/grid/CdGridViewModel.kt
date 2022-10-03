@@ -3,8 +3,8 @@ package com.thekeeperofpie.artistalleydatabase.cds.grid
 import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.thekeeperofpie.artistalleydatabase.cds.CdEntryDao
-import com.thekeeperofpie.artistalleydatabase.cds.CdEntryUtils
+import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDao
+import com.thekeeperofpie.artistalleydatabase.cds.utils.CdEntryUtils
 import com.thekeeperofpie.artistalleydatabase.form.grid.EntryGridSelectionController
 import com.thekeeperofpie.artistalleydatabase.form.grid.EntryGridViewModel
 

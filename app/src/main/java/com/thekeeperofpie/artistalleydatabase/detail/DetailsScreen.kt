@@ -48,8 +48,8 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.R
-import com.thekeeperofpie.artistalleydatabase.art.ArtStringR
-import com.thekeeperofpie.artistalleydatabase.art.details.SampleArtEntrySectionsProvider
+import com.thekeeperofpie.artistalleydatabase.art.utils.ArtStringR
+import com.thekeeperofpie.artistalleydatabase.art.utils.SampleArtEntrySectionsProvider
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
 import com.thekeeperofpie.artistalleydatabase.compose.topBorder
 import com.thekeeperofpie.artistalleydatabase.form.EntryForm
