@@ -58,11 +58,11 @@ dependencies {
     kapt("com.google.dagger:hilt-compiler:2.43.2")
     kapt("androidx.hilt:hilt-compiler:1.0.0")
 
-    implementation("androidx.room:room-runtime:2.5.0-alpha03")
-    ksp("androidx.room:room-compiler:2.5.0-alpha03")
-    implementation("androidx.room:room-ktx:2.5.0-alpha03")
-    testImplementation("androidx.room:room-testing:2.5.0-alpha03")
-    implementation("androidx.room:room-paging:2.5.0-alpha03")
+    implementation("androidx.room:room-runtime:2.5.0-beta01")
+    ksp("androidx.room:room-compiler:2.5.0-beta01")
+    implementation("androidx.room:room-ktx:2.5.0-beta01")
+    testImplementation("androidx.room:room-testing:2.5.0-beta01")
+    implementation("androidx.room:room-paging:2.5.0-beta01")
 
     implementation("com.squareup.moshi:moshi:1.13.0")
     implementation("com.squareup.moshi:moshi-kotlin:1.13.0")

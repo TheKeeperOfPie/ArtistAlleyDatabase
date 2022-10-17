@@ -665,6 +665,7 @@ private fun OpenSectionField(
                             onDone(value)
                             true
                         }
+
                         else -> false
                     }
                 } else false
@@ -690,16 +691,19 @@ private fun DropdownSection(section: EntrySection.Dropdown) {
         ExposedDropdownMenuBox(
             expanded = section.expanded && editable,
             onExpandedChange = {
-                if (editable) {
+                if (section.lockState?.editable != false) {
                     section.expanded = !section.expanded
                 }
             },
             Modifier.fillMaxWidth()
         ) {
             TextField(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .menuAnchor(),
                 readOnly = true,
                 value = section.selectedItem().fieldText(),
-                onValueChange = { },
+                onValueChange = {},
                 trailingIcon = {
                     AnimatedVisibility(
                         visible = editable,
@@ -713,7 +717,6 @@ private fun DropdownSection(section: EntrySection.Dropdown) {
                     }
                 },
                 colors = ExposedDropdownMenuDefaults.textFieldColors(),
-                modifier = Modifier.fillMaxWidth()
             )
             ExposedDropdownMenu(
                 expanded = section.expanded,

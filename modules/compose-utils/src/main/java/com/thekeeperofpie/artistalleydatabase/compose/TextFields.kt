@@ -93,15 +93,15 @@ fun CustomOutlinedTextField(
                     interactionSource = interactionSource,
                     colors = colors,
                     contentPadding = contentPadding,
-                    border = {
-                        TextFieldDefaults.BorderBox(
+                    container = {
+                        TextFieldDefaults.OutlinedBorderContainerBox(
                             enabled,
                             isError,
                             interactionSource,
                             colors,
-                            shape
+                            shape,
                         )
-                    }
+                    },
                 )
             }
         ))
