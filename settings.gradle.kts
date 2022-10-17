@@ -24,6 +24,7 @@ include(
     ":app",
     ":modules:anilist",
     ":modules:art",
+    ":modules:browse",
     ":modules:compose-utils",
     ":modules:cds",
     ":modules:form",

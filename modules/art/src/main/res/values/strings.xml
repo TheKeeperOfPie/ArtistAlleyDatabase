@@ -54,4 +54,9 @@
     <string name="art_search_option_other">Other</string>
     <string name="art_search_option_locked">Locked</string>
     <string name="art_search_option_unlocked">Unlocked</string>
+    <string name="art_browse_tab_artists">Artists</string>
+    <string name="art_browse_tab_source">Source</string>
+    <string name="art_browse_tab_series">Series</string>
+    <string name="art_browse_tab_characters">Characters</string>
+    <string name="art_browse_tab_tags">Tags</string>
 </resources>

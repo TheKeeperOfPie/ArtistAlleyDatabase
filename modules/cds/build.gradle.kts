@@ -47,6 +47,7 @@ android {
 dependencies {
     implementation(project(":modules:android-utils"))
     implementation(project(":modules:anilist"))
+    implementation(project(":modules:browse"))
     implementation(project(":modules:compose-utils"))
     implementation(project(":modules:form"))
     api(project(":modules:vgmdb"))
@@ -55,6 +56,7 @@ dependencies {
     implementation("com.google.dagger:hilt-android:2.43.2")
     kapt("com.google.dagger:hilt-compiler:2.43.2")
     kapt("androidx.hilt:hilt-compiler:1.0.0")
+    implementation("androidx.hilt:hilt-navigation-compose:1.0.0")
 
     implementation("androidx.navigation:navigation-compose:2.5.2")
 

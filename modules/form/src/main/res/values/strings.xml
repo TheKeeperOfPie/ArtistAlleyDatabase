@@ -9,6 +9,7 @@
     <string name="move_up">Move up</string>
     <string name="confirm">Confirm</string>
     <string name="delete">Delete</string>
+    <string name="save">Save</string>
     <string name="cancel">Cancel</string>
     <string name="different">Different</string>
     <string name="label_open_entry_link">Open entry link</string>
@@ -18,4 +19,6 @@
     <string name="long_press_multi_select_label">Multi select entry</string>
     <string name="selected_content_description">Selected</string>
     <string name="delete_dialog_title">Delete entry?</string>
+    <string name="entry_no_image_content_description">No image available</string>
+    <string name="entry_open_full_image_content_description">Open full image</string>
 </resources>

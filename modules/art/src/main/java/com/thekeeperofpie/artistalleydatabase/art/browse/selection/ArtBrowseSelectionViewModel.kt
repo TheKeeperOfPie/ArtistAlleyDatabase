@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.browse.selection
+package com.thekeeperofpie.artistalleydatabase.art.browse.selection
 
 import android.app.Application
 import androidx.compose.runtime.getValue
@@ -30,7 +30,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class BrowseSelectionViewModel @Inject constructor(
+class ArtBrowseSelectionViewModel @Inject constructor(
     application: Application,
     private val artEntryBrowseDao: ArtEntryBrowseDao,
     private val appJson: AppJson,

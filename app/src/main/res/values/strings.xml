@@ -8,7 +8,6 @@
     <string name="export_destination">Export destination</string>
     <string name="export">Export</string>
     <string name="invalid_export_destination">Invalid export destination</string>
-    <string name="delete">Delete</string>
     <string name="nav_drawer_home">Home</string>
     <string name="nav_drawer_art">Art</string>
     <string name="nav_drawer_cds">CDs</string>
@@ -22,11 +21,6 @@
     <string name="clear">Clear</string>
     <string name="search_filter_content_description">Filter options</string>
     <string name="export_user_readable">User readable</string>
-    <string name="browse_tab_artists">Artists</string>
-    <string name="browse_tab_source">Source</string>
-    <string name="browse_tab_series">Series</string>
-    <string name="browse_tab_characters">Characters</string>
-    <string name="browse_tab_tags">Tags</string>
     <string name="progress">Progress</string>
     <string name="import_dry_run">Dry run</string>
     <string name="import_last_failed">Last import failed</string>
@@ -34,7 +28,6 @@
     <string name="export_last_failed">Last export failed</string>
     <string name="export_last_canceled">Last export canceled</string>
     <string name="add_entry_save_template">Save template</string>
-    <string name="art_entry_open_full_image_content_description">Open full image</string>
     <string name="select">Select</string>
     <string name="error_launching_generic_uri">Could not launch generic URI</string>
     <string name="search_results">Results</string>

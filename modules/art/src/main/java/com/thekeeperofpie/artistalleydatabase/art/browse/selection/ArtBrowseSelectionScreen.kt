@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.browse.selection
+package com.thekeeperofpie.artistalleydatabase.art.browse.selection
 
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.Box
@@ -16,7 +16,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.AppBar
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
 import com.thekeeperofpie.artistalleydatabase.form.grid.EntryGrid
 
-object BrowseSelectionScreen {
+object ArtBrowseSelectionScreen {
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable

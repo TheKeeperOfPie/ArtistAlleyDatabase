@@ -6,6 +6,7 @@
       <module name="Artist_Alley_Database.modules.android-utils" target="11" />
       <module name="Artist_Alley_Database.modules.anilist" target="11" />
       <module name="Artist_Alley_Database.modules.art" target="11" />
+      <module name="Artist_Alley_Database.modules.browse" target="11" />
       <module name="Artist_Alley_Database.modules.cds" target="11" />
       <module name="Artist_Alley_Database.modules.compose-utils" target="11" />
       <module name="Artist_Alley_Database.modules.form" target="11" />

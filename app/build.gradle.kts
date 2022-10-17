@@ -138,6 +138,7 @@ dependencies {
     implementation(project(":modules:android-utils"))
     implementation(project(":modules:anilist"))
     implementation(project(":modules:art"))
+    implementation(project(":modules:browse"))
     implementation(project(":modules:cds"))
     implementation(project(":modules:compose-utils"))
     implementation(project(":modules:form"))

@@ -24,11 +24,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
-import com.thekeeperofpie.artistalleydatabase.R
-import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryColumn
 import com.thekeeperofpie.artistalleydatabase.compose.AppBar
 import com.thekeeperofpie.artistalleydatabase.form.EntryImage
 import kotlinx.coroutines.launch
@@ -40,7 +39,7 @@ object BrowseScreen {
     operator fun invoke(
         onClickNav: () -> Unit = {},
         tabs: List<TabContent>,
-        onClick: (column: ArtEntryColumn, value: BrowseEntryModel) -> Unit = { _, _ -> },
+        onClick: (tabContent: TabContent, value: BrowseEntryModel) -> Unit = { _, _ -> },
     ) {
         val pagerState = rememberPagerState()
         val selectedTabIndex = pagerState.currentPage
@@ -49,7 +48,7 @@ object BrowseScreen {
                 Column {
                     val colors = TopAppBarDefaults.smallTopAppBarColors()
                     AppBar(
-                        text = stringResource(R.string.nav_drawer_browse),
+                        text = stringResource(R.string.browse),
                         colors = colors,
                         onClickNav = onClickNav
                     )
@@ -89,7 +88,7 @@ object BrowseScreen {
                             image = { value.image },
                             link = { value.link },
                             text = { value.text },
-                            onClick = { onClick(tab.type, value) }
+                            onClick = { onClick(tab, value) }
                         )
                     }
                 }
@@ -127,8 +126,9 @@ object BrowseScreen {
 
     @Immutable
     data class TabContent(
-        val type: ArtEntryColumn,
+        val id: String,
         @StringRes val textRes: () -> Int,
         val content: () -> List<BrowseEntryModel>,
+        val onSelected: (NavHostController, BrowseEntryModel) -> Unit,
     )
 }

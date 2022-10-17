@@ -16,6 +16,7 @@
             <option value="$PROJECT_DIR$/modules/android-utils" />
             <option value="$PROJECT_DIR$/modules/anilist" />
             <option value="$PROJECT_DIR$/modules/art" />
+            <option value="$PROJECT_DIR$/modules/browse" />
             <option value="$PROJECT_DIR$/modules/cds" />
             <option value="$PROJECT_DIR$/modules/compose-utils" />
             <option value="$PROJECT_DIR$/modules/form" />

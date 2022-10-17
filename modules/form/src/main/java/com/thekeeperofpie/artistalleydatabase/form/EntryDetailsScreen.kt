@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.detail
+package com.thekeeperofpie.artistalleydatabase.form
 
 import android.net.Uri
 import androidx.compose.animation.AnimatedVisibility
@@ -41,25 +41,16 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.mxalbert.sharedelements.SharedElement
-import com.thekeeperofpie.artistalleydatabase.R
-import com.thekeeperofpie.artistalleydatabase.art.utils.ArtStringR
-import com.thekeeperofpie.artistalleydatabase.art.utils.SampleArtEntrySectionsProvider
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
 import com.thekeeperofpie.artistalleydatabase.compose.topBorder
-import com.thekeeperofpie.artistalleydatabase.form.EntryForm
-import com.thekeeperofpie.artistalleydatabase.form.EntrySection
-import com.thekeeperofpie.artistalleydatabase.form.ImageSelectBox
 import com.thekeeperofpie.artistalleydatabase.form.grid.EntryGrid
-import com.thekeeperofpie.artistalleydatabase.navigation.NavDestinations
 import java.io.File
 
-object DetailsScreen {
+object EntryDetailsScreen {
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
@@ -196,7 +187,7 @@ object DetailsScreen {
                             }
                             .build(),
                         contentDescription = stringResource(
-                            ArtStringR.art_entry_image_content_description
+                            R.string.entry_image_content_description
                         ),
                         contentScale = ContentScale.FillWidth,
                         modifier = Modifier
@@ -212,7 +203,7 @@ object DetailsScreen {
                         val entryId = entryId()
                         SharedElement(
                             key = "${entryId}_image",
-                            screenKey = NavDestinations.ENTRY_DETAILS
+                            screenKey = "artEntryDetails"
                         ) {
                             val configuration = LocalConfiguration.current
                             val screenWidth = configuration.screenWidthDp.dp
@@ -223,7 +214,7 @@ object DetailsScreen {
                                     .placeholderMemoryCacheKey("coil_memory_entry_image_home_$entryId")
                                     .build(),
                                 contentDescription = stringResource(
-                                    ArtStringR.art_entry_image_content_description
+                                    R.string.entry_image_content_description
                                 ),
                                 contentScale = ContentScale.FillWidth,
                                 modifier = Modifier
@@ -241,7 +232,7 @@ object DetailsScreen {
                         Icon(
                             imageVector = Icons.Default.ImageNotSupported,
                             contentDescription = stringResource(
-                                ArtStringR.art_entry_no_image_content_description
+                                R.string.entry_no_image_content_description
                             ),
                             Modifier
                                 .size(48.dp)
@@ -265,19 +256,11 @@ object DetailsScreen {
                     Icon(
                         imageVector = Icons.Default.OpenInNew,
                         contentDescription = stringResource(
-                            R.string.art_entry_open_full_image_content_description
+                            R.string.entry_open_full_image_content_description
                         ),
                     )
                 }
             }
         }
     }
-}
-
-@Preview
-@Composable
-fun Preview(
-    @PreviewParameter(SampleArtEntrySectionsProvider::class) sections: List<EntrySection>
-) {
-    DetailsScreen(sections = { sections })
 }

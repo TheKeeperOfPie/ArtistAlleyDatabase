@@ -6,10 +6,20 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.export.Exporter
 import com.thekeeperofpie.artistalleydatabase.android_utils.importer.Importer
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListDataConverter
+import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
+import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
+import com.thekeeperofpie.artistalleydatabase.art.browse.ArtBrowseTabArtists
+import com.thekeeperofpie.artistalleydatabase.art.browse.ArtBrowseTabCharacters
+import com.thekeeperofpie.artistalleydatabase.art.browse.ArtBrowseTabSeries
+import com.thekeeperofpie.artistalleydatabase.art.browse.ArtBrowseTabTags
+import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryBrowseDao
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryDao
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryDatabase
 import com.thekeeperofpie.artistalleydatabase.art.persistence.ArtExporter
 import com.thekeeperofpie.artistalleydatabase.art.persistence.ArtImporter
+import com.thekeeperofpie.artistalleydatabase.browse.BrowseSelectionNavigator
+import com.thekeeperofpie.artistalleydatabase.browse.BrowseTabViewModel
+import com.thekeeperofpie.artistalleydatabase.form.EntryNavigator
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -61,4 +71,58 @@ object ArtEntryHiltModule {
         artEntryDao = artEntryDao,
         moshi = moshi,
     )
+
+    @IntoSet
+    @Provides
+    fun provideArtBrowseArtists(
+        artEntryBrowseDao: ArtEntryBrowseDao,
+        artEntryNavigator: ArtEntryNavigator,
+    ): BrowseTabViewModel = ArtBrowseTabArtists(artEntryBrowseDao, artEntryNavigator)
+
+    @IntoSet
+    @Provides
+    fun provideArtBrowseCharacters(
+        artEntryBrowseDao: ArtEntryBrowseDao,
+        artEntryNavigator: ArtEntryNavigator,
+        appJson: AppJson,
+        characterRepository: CharacterRepository,
+    ): BrowseTabViewModel = ArtBrowseTabCharacters(
+        artEntryBrowseDao,
+        artEntryNavigator,
+        appJson,
+        characterRepository
+    )
+
+    @IntoSet
+    @Provides
+    fun provideArtBrowseSeries(
+        artEntryBrowseDao: ArtEntryBrowseDao,
+        artEntryNavigator: ArtEntryNavigator,
+        appJson: AppJson,
+        mediaRepository: MediaRepository,
+    ): BrowseTabViewModel =
+        ArtBrowseTabSeries(artEntryBrowseDao, artEntryNavigator, appJson, mediaRepository)
+
+    @IntoSet
+    @Provides
+    fun provideArtBrowseTags(
+        artEntryBrowseDao: ArtEntryBrowseDao,
+        artEntryNavigator: ArtEntryNavigator,
+    ): BrowseTabViewModel = ArtBrowseTabTags(artEntryBrowseDao, artEntryNavigator)
+
+    @Provides
+    fun provideArtEntryNavigator() = ArtEntryNavigator()
+
+    @IntoSet
+    @Provides
+    fun bindArtEntryNavigatorAsBrowseSelectionNavigator(
+        artEntryNavigator: ArtEntryNavigator
+    ): BrowseSelectionNavigator =
+        artEntryNavigator
+
+    @IntoSet
+    @Provides
+    fun bindArtEntryNavigatorAsEntryNavigator(
+        artEntryNavigator: ArtEntryNavigator
+    ): EntryNavigator = artEntryNavigator
 }

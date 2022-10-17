@@ -1,10 +1,8 @@
 package com.thekeeperofpie.artistalleydatabase
 
-import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.annotation.MainThread
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -33,7 +31,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.core.content.FileProvider
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
@@ -45,24 +42,21 @@ import androidx.navigation.navArgument
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.mxalbert.sharedelements.SharedElementsRoot
 import com.thekeeperofpie.artistalleydatabase.add.AddEntryScreen
-import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryAddViewModel
-import com.thekeeperofpie.artistalleydatabase.art.ArtEntryEditViewModel
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryMultiEditViewModel
-import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryColumn
+import com.thekeeperofpie.artistalleydatabase.art.ArtEntryNavigator
 import com.thekeeperofpie.artistalleydatabase.art.search.ArtSearchViewModel
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseScreen
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseViewModel
-import com.thekeeperofpie.artistalleydatabase.browse.selection.BrowseSelectionScreen
-import com.thekeeperofpie.artistalleydatabase.browse.selection.BrowseSelectionViewModel
 import com.thekeeperofpie.artistalleydatabase.cds.CdEntryAddViewModel
-import com.thekeeperofpie.artistalleydatabase.cds.CdEntryEditViewModel
+import com.thekeeperofpie.artistalleydatabase.cds.CdEntryNavigator
 import com.thekeeperofpie.artistalleydatabase.cds.search.CdSearchViewModel
-import com.thekeeperofpie.artistalleydatabase.detail.DetailsScreen
 import com.thekeeperofpie.artistalleydatabase.edit.MultiEditScreen
 import com.thekeeperofpie.artistalleydatabase.export.ExportScreen
 import com.thekeeperofpie.artistalleydatabase.export.ExportViewModel
+import com.thekeeperofpie.artistalleydatabase.form.EntryNavigator
+import com.thekeeperofpie.artistalleydatabase.form.EntryUtils.navToEntryDetails
 import com.thekeeperofpie.artistalleydatabase.form.grid.EntryGridModel
 import com.thekeeperofpie.artistalleydatabase.home.HomeScreen
 import com.thekeeperofpie.artistalleydatabase.importing.ImportScreen
@@ -78,7 +72,7 @@ import com.thekeeperofpie.artistalleydatabase.settings.SettingsViewModel
 import com.thekeeperofpie.artistalleydatabase.ui.theme.ArtistAlleyDatabaseTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import java.io.File
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -86,6 +80,10 @@ class MainActivity : ComponentActivity() {
     companion object {
         const val STARTING_NAV_DESTINATION = "starting_nav_destination"
     }
+
+    @Inject lateinit var entryNavigators: Set<@JvmSuppressWildcards EntryNavigator>
+    @Inject lateinit var artEntryNavigator: ArtEntryNavigator
+    @Inject lateinit var cdEntryNavigator: CdEntryNavigator
 
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -223,7 +221,7 @@ class MainActivity : ComponentActivity() {
                             if (viewModel.selectedEntries.isNotEmpty()) {
                                 viewModel.selectEntry(index, entry)
                             } else {
-                                navController.navToEntryDetails(entry)
+                                navController.navToEntryDetails(route = "artEntryDetails", entry)
                             }
                         },
                         onLongClickEntry = viewModel::selectEntry,
@@ -254,8 +252,10 @@ class MainActivity : ComponentActivity() {
                     )
                 }
 
-                addArtDetailsScreen(navController)
-                addEditScreen(navController)
+                artEntryNavigator.initialize(navController, this)
+
+                // TODO: Modular multi-edit
+//                addEditScreen(navController)
             }
         }
     }
@@ -282,7 +282,7 @@ class MainActivity : ComponentActivity() {
                             if (viewModel.selectedEntries.isNotEmpty()) {
                                 viewModel.selectEntry(index, entry)
                             } else {
-                                navController.navToEntryDetails(entry)
+                                navController.navToEntryDetails(route = "cdEntryDetails", entry)
                             }
                         },
                         onLongClickEntry = viewModel::selectEntry,
@@ -312,27 +312,7 @@ class MainActivity : ComponentActivity() {
                     )
                 }
 
-                entryDetailsComposable { id, imageFile, imageRatio ->
-                    val viewModel = hiltViewModel<CdEntryEditViewModel>().initialize(id)
-                    DetailsScreen(
-                        { id },
-                        { imageFile },
-                        { imageRatio },
-                        imageUri = { viewModel.imageUri },
-                        onImageSelected = { viewModel.imageUri = it },
-                        onImageSelectError = {
-                            viewModel.errorResource = UtilsStringR.error_fail_to_load_image to it
-                        },
-                        onImageClickOpen = { imageFile?.let(::openInternalImage) },
-                        areSectionsLoading = { viewModel.areSectionsLoading },
-                        sections = { viewModel.sections },
-                        saving = { viewModel.saving },
-                        onClickSave = { viewModel.onClickSave(navController) },
-                        errorRes = { viewModel.errorResource },
-                        onErrorDismiss = { viewModel.errorResource = null },
-                        onConfirmDelete = { viewModel.onConfirmDelete(navController) }
-                    )
-                }
+                cdEntryNavigator.initialize(navController, this)
             }
         }
     }
@@ -347,80 +327,16 @@ class MainActivity : ComponentActivity() {
                     BrowseScreen(
                         onClickNav = onClickNav,
                         tabs = viewModel.tabs,
-                        onClick = { column, value ->
-                            val query = value.queryIdOrString
-                            val queryParam = if (query is Either.Left) {
-                                "&queryId=${query.value}"
-                            } else {
-                                "&queryString=${query.rightOrNull()}"
-                            }
-                            navController.navigate(
-                                "selection" +
-                                        "?column=$column" +
-                                        "&title=${value.text}" +
-                                        queryParam
-                            )
+                        onClick = { tabContent, entry ->
+                            viewModel.onSelectEntry(navController, tabContent, entry)
                         },
                     )
                 }
 
-                composable(
-                    "selection" +
-                            "?column={column}" +
-                            "&title={title}" +
-                            "&queryId={queryId}" +
-                            "&queryString={queryString}",
-                    arguments = listOf(
-                        navArgument("column") {
-                            type = NavType.StringType
-                        },
-                        navArgument("title") {
-                            type = NavType.StringType
-                        },
-                        navArgument("queryId") {
-                            type = NavType.StringType
-                            nullable = true
-                        },
-                        navArgument("queryString") {
-                            type = NavType.StringType
-                            nullable = true
-                        },
-                    )
-                ) {
-                    val arguments = it.arguments!!
-                    val column = ArtEntryColumn.valueOf(arguments.getString("column")!!)
-                    val title = arguments.getString("title")!!
-                    val queryId = arguments.getString("queryId")
-                    val queryString = arguments.getString("queryString")
-                    val viewModel = hiltViewModel<BrowseSelectionViewModel>()
-                    val query: Either<String, String> = if (queryId != null) {
-                        Either.Left(queryId)
-                    } else {
-                        Either.Right(queryString!!)
-                    }
+                entryNavigators.forEach { it.initialize(navController, this) }
 
-                    viewModel.initialize(column, query)
-                    BrowseSelectionScreen(
-                        title = { title },
-                        loading = { viewModel.loading },
-                        entries = { viewModel.entries.collectAsLazyPagingItems() },
-                        selectedItems = { viewModel.selectedEntries.keys },
-                        onClickEntry = { index, entry ->
-                            if (viewModel.selectedEntries.isNotEmpty()) {
-                                viewModel.selectEntry(index, entry)
-                            } else {
-                                navController.navToEntryDetails(entry)
-                            }
-                        },
-                        onLongClickEntry = viewModel::selectEntry,
-                        onClickClear = viewModel::clearSelected,
-                        onClickEdit = { editSelected(navController, viewModel.selectedEntries) },
-                        onConfirmDelete = viewModel::onDeleteSelected,
-                    )
-                }
-
-                addArtDetailsScreen(navController)
-                addEditScreen(navController)
+                // TODO: Modular multi-edit
+//                addEditScreen(navController)
             }
         }
     }
@@ -465,7 +381,7 @@ class MainActivity : ComponentActivity() {
                             if (viewModel.selectedEntries.isNotEmpty()) {
                                 viewModel.selectEntry(index, entry)
                             } else {
-                                navController.navToEntryDetails(entry)
+                                navController.navToEntryDetails(route = "artEntryDetails", entry)
                             }
                         },
                         onLongClickEntry = viewModel::selectEntry,
@@ -475,8 +391,10 @@ class MainActivity : ComponentActivity() {
                     )
                 }
 
-                addArtDetailsScreen(navController)
-                addEditScreen(navController)
+                entryNavigators.forEach { it.initialize(navController, this) }
+
+                // TODO: Modular multi-edit
+//                addEditScreen(navController)
             }
         }
     }
@@ -489,31 +407,6 @@ class MainActivity : ComponentActivity() {
             onClickAniListClear = viewModel::clearAniListCache,
             onClickVgmdbClear = viewModel::clearVgmdbCache,
         )
-    }
-
-    private fun NavGraphBuilder.addArtDetailsScreen(navController: NavHostController) {
-        entryDetailsComposable { id, imageFile, imageRatio ->
-            val viewModel = hiltViewModel<ArtEntryEditViewModel>().initialize(id, imageRatio)
-            DetailsScreen(
-                { id },
-                { imageFile },
-                { imageRatio },
-                imageUri = { viewModel.imageUri },
-                onImageSelected = { viewModel.imageUri = it },
-                onImageSelectError = {
-                    viewModel.errorResource = UtilsStringR.error_fail_to_load_image to it
-                },
-                onImageSizeResult = viewModel::onImageSizeResult,
-                onImageClickOpen = { imageFile?.let(::openInternalImage) },
-                areSectionsLoading = { viewModel.areSectionsLoading },
-                sections = { viewModel.sections },
-                saving = { viewModel.saving },
-                onClickSave = { viewModel.onClickSave(navController) },
-                errorRes = { viewModel.errorResource },
-                onErrorDismiss = { viewModel.errorResource = null },
-                onConfirmDelete = { viewModel.onConfirmDelete(navController) }
-            )
-        }
     }
 
     private fun NavGraphBuilder.addEditScreen(navController: NavHostController) {
@@ -558,66 +451,5 @@ class MainActivity : ComponentActivity() {
             NavDestinations.MULTI_EDIT +
                     "?entry_ids=${entryIds.joinToString(",")}"
         )
-    }
-
-    private fun NavGraphBuilder.entryDetailsComposable(
-        block: @Composable (id: String, imageFile: File?, imageRatio: Float) -> Unit
-    ) = composable(
-        NavDestinations.ENTRY_DETAILS +
-                "?entry_id={entry_id}" +
-                "&entry_image_file={entry_image_file}" +
-                "&entry_image_ratio={entry_image_ratio}",
-        arguments = listOf(
-            navArgument("entry_id") {
-                type = NavType.StringType
-                nullable = false
-            },
-            navArgument("entry_image_file") {
-                type = NavType.StringType
-                nullable = true
-            },
-            navArgument("entry_image_ratio") {
-                type = NavType.FloatType
-            },
-        )
-    ) {
-        val arguments = it.arguments!!
-        val id = arguments.getString("entry_id")!!
-        val imageFile = arguments.getString("entry_image_file")?.let(::File)
-        val imageRatio = arguments.getFloat("entry_image_ratio", 1f)
-        block(id, imageFile, imageRatio)
-    }
-
-    private fun NavHostController.navToEntryDetails(entry: EntryGridModel) {
-        val imageRatio = entry.imageWidthToHeightRatio
-        val imageFileParameter = "&entry_image_file=${entry.localImageFile?.toPath()}"
-            .takeIf { entry.localImageFile != null }
-            .orEmpty()
-        navigate(
-            NavDestinations.ENTRY_DETAILS
-                    + "?entry_id=${entry.id}"
-                    + "&entry_image_ratio=$imageRatio"
-                    + imageFileParameter
-        )
-    }
-
-    @MainThread
-    private fun openInternalImage(file: File) {
-        val imageUri = FileProvider.getUriForFile(
-            this@MainActivity,
-            "$packageName.fileprovider",
-            file
-        )
-
-        val intent = Intent(Intent.ACTION_VIEW).apply {
-            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-            setDataAndType(imageUri, "image/*")
-        }
-
-        val chooserIntent = Intent.createChooser(
-            intent,
-            getString(R.string.art_entry_open_full_image_content_description)
-        )
-        startActivity(chooserIntent)
     }
 }

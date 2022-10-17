@@ -50,6 +50,8 @@ dependencies {
     api("androidx.compose.material:material-icons-extended:1.3.0-beta03")
     implementation("androidx.compose.material3:material3:1.0.0-beta02")
 
+    implementation("androidx.navigation:navigation-compose:2.5.2")
+
     implementation("androidx.paging:paging-runtime:3.2.0-alpha02")
     implementation("androidx.paging:paging-compose:1.0.0-alpha16")
 
