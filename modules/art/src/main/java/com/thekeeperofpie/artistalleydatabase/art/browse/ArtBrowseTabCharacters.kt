@@ -1,12 +1,15 @@
 package com.thekeeperofpie.artistalleydatabase.art.browse
 
+import android.app.Application
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.core.net.toUri
 import androidx.lifecycle.viewModelScope
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.android_utils.JsonUtils
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListDataConverter
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterColumnEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
@@ -15,24 +18,32 @@ import com.thekeeperofpie.artistalleydatabase.art.ArtEntryNavigator
 import com.thekeeperofpie.artistalleydatabase.art.R
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryBrowseDao
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryColumn
+import com.thekeeperofpie.artistalleydatabase.art.utils.ArtEntryUtils
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseEntryModel
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseScreen
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseTabViewModel
+import com.thekeeperofpie.artistalleydatabase.form.EntrySection
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
 import kotlinx.serialization.decodeFromString
 import javax.inject.Inject
 
 class ArtBrowseTabCharacters @Inject constructor(
+    context: Application,
     artEntryDao: ArtEntryBrowseDao,
     artEntryNavigator: ArtEntryNavigator,
+    aniListDataConverter: AniListDataConverter,
     appJson: AppJson,
     characterRepository: CharacterRepository,
 ) : BrowseTabViewModel() {
@@ -51,15 +62,36 @@ class ArtBrowseTabCharacters @Inject constructor(
 
     init {
         viewModelScope.launch(Dispatchers.Main) {
-            @Suppress("OPT_IN_USAGE")
-            artEntryDao.getCharacters()
+            @OptIn(ExperimentalCoroutinesApi::class)
+            initializationBarrier()
+                .flatMapLatest { artEntryDao.getCharacters() }
                 .flatMapLatest {
                     it.flatMap(JsonUtils::readStringList)
                         .map { databaseText ->
                             val entry = databaseText.takeIf { it.contains("{") }
                                 ?.let<String, CharacterColumnEntry>(appJson.json::decodeFromString)
-                            entry?.let {
-                                characterRepository.getEntry(it.id)
+                            if (entry == null) {
+                                // TODO: Search through the entire database rather than just the
+                                //  first 10, also need to fix series
+                                artEntryDao.getCharacterFlow(databaseText, limit = 10)
+                                    .flatMapLatest { it.asFlow() }
+                                    .filter {
+                                        it.characters
+                                            .map(aniListDataConverter::databaseToCharacterEntry)
+                                            .filterIsInstance<EntrySection.MultiText.Entry.Custom>()
+                                            .any { it.text.contains(databaseText) }
+                                    }
+                                    .take(1)
+                                    .map {
+                                        BrowseEntryModel(
+                                            image = ArtEntryUtils.getImageFile(context, it.id)
+                                                .toUri().toString(),
+                                            text = databaseText,
+                                            queryType = ArtEntryColumn.CHARACTERS.toString(),
+                                        )
+                                    }
+                            } else {
+                                characterRepository.getEntry(entry.id)
                                     .filterNotNull()
                                     .map {
                                         BrowseEntryModel(
@@ -72,7 +104,6 @@ class ArtBrowseTabCharacters @Inject constructor(
                                         )
                                     }
                             }
-                                .let { it ?: emptyFlow() }
                                 .onStart {
                                     if (entry == null) {
                                         BrowseEntryModel(
@@ -96,6 +127,7 @@ class ArtBrowseTabCharacters @Inject constructor(
                             }
                         }
                 }
+                .flowOn(Dispatchers.IO)
                 .collectLatest { characters = it }
         }
     }

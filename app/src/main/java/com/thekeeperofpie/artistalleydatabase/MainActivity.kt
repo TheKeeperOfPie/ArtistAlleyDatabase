@@ -330,6 +330,7 @@ class MainActivity : ComponentActivity() {
                         onClick = { tabContent, entry ->
                             viewModel.onSelectEntry(navController, tabContent, entry)
                         },
+                        onPageRequested = viewModel::onPageRequested,
                     )
                 }
 

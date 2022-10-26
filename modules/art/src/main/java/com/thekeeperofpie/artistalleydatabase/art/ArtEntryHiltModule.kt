@@ -75,20 +75,25 @@ object ArtEntryHiltModule {
     @IntoSet
     @Provides
     fun provideArtBrowseArtists(
+        application: Application,
         artEntryBrowseDao: ArtEntryBrowseDao,
         artEntryNavigator: ArtEntryNavigator,
-    ): BrowseTabViewModel = ArtBrowseTabArtists(artEntryBrowseDao, artEntryNavigator)
+    ): BrowseTabViewModel = ArtBrowseTabArtists(application, artEntryBrowseDao, artEntryNavigator)
 
     @IntoSet
     @Provides
     fun provideArtBrowseCharacters(
+        application: Application,
         artEntryBrowseDao: ArtEntryBrowseDao,
         artEntryNavigator: ArtEntryNavigator,
+        aniListDataConverter: AniListDataConverter,
         appJson: AppJson,
         characterRepository: CharacterRepository,
     ): BrowseTabViewModel = ArtBrowseTabCharacters(
+        application,
         artEntryBrowseDao,
         artEntryNavigator,
+        aniListDataConverter,
         appJson,
         characterRepository
     )
@@ -96,19 +101,28 @@ object ArtEntryHiltModule {
     @IntoSet
     @Provides
     fun provideArtBrowseSeries(
+        application: Application,
         artEntryBrowseDao: ArtEntryBrowseDao,
         artEntryNavigator: ArtEntryNavigator,
+        aniListDataConverter: AniListDataConverter,
         appJson: AppJson,
         mediaRepository: MediaRepository,
-    ): BrowseTabViewModel =
-        ArtBrowseTabSeries(artEntryBrowseDao, artEntryNavigator, appJson, mediaRepository)
+    ): BrowseTabViewModel = ArtBrowseTabSeries(
+        application,
+        artEntryBrowseDao,
+        artEntryNavigator,
+        aniListDataConverter,
+        appJson,
+        mediaRepository
+    )
 
     @IntoSet
     @Provides
     fun provideArtBrowseTags(
+        application: Application,
         artEntryBrowseDao: ArtEntryBrowseDao,
         artEntryNavigator: ArtEntryNavigator,
-    ): BrowseTabViewModel = ArtBrowseTabTags(artEntryBrowseDao, artEntryNavigator)
+    ): BrowseTabViewModel = ArtBrowseTabTags(application, artEntryBrowseDao, artEntryNavigator)
 
     @Provides
     fun provideArtEntryNavigator() = ArtEntryNavigator()

@@ -69,7 +69,10 @@ class ArtBrowseSelectionViewModel @Inject constructor(
                                     .filterIsInstance<Entry.Prefilled<MediaColumnEntry>>()
                                     .any { it.value.id == queryIdOrString.value }
                                 is Either.Right -> {
-                                    it.series.any { it.contains(queryIdOrString.value) }
+                                    it.series
+                                        .map(aniListDataConverter::databaseToSeriesEntry)
+                                        .filterIsInstance<Entry.Custom>()
+                                        .any { it.text.contains(queryIdOrString.value) }
                                 }
                             }
                             ArtEntryColumn.CHARACTERS -> when (queryIdOrString) {
@@ -78,7 +81,10 @@ class ArtBrowseSelectionViewModel @Inject constructor(
                                     .filterIsInstance<Entry.Prefilled<CharacterColumnEntry>>()
                                     .any { it.value.id == queryIdOrString.value }
                                 is Either.Right -> {
-                                    it.characters.any { it.contains(queryIdOrString.value) }
+                                    it.characters
+                                        .map(aniListDataConverter::databaseToCharacterEntry)
+                                        .filterIsInstance<Entry.Custom>()
+                                        .any { it.text.contains(queryIdOrString.value) }
                                 }
                             }
                             ArtEntryColumn.TAGS -> it.tags.contains(queryValue)

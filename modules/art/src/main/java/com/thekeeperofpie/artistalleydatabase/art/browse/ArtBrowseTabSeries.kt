@@ -1,12 +1,15 @@
 package com.thekeeperofpie.artistalleydatabase.art.browse
 
+import android.app.Application
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.core.net.toUri
 import androidx.lifecycle.viewModelScope
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.android_utils.JsonUtils
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListDataConverter
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaColumnEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
@@ -14,24 +17,32 @@ import com.thekeeperofpie.artistalleydatabase.art.ArtEntryNavigator
 import com.thekeeperofpie.artistalleydatabase.art.R
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryBrowseDao
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryColumn
+import com.thekeeperofpie.artistalleydatabase.art.utils.ArtEntryUtils
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseEntryModel
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseScreen
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseTabViewModel
+import com.thekeeperofpie.artistalleydatabase.form.EntrySection
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
 import kotlinx.serialization.decodeFromString
 import javax.inject.Inject
 
 class ArtBrowseTabSeries @Inject constructor(
+    context: Application,
     artEntryDao: ArtEntryBrowseDao,
     artEntryNavigator: ArtEntryNavigator,
+    aniListDataConverter: AniListDataConverter,
     appJson: AppJson,
     mediaRepository: MediaRepository,
 ) : BrowseTabViewModel() {
@@ -50,16 +61,35 @@ class ArtBrowseTabSeries @Inject constructor(
 
     init {
         viewModelScope.launch(Dispatchers.Main) {
-            @Suppress("OPT_IN_USAGE")
-            artEntryDao.getSeries()
+            @OptIn(ExperimentalCoroutinesApi::class)
+            initializationBarrier()
+                .flatMapLatest { artEntryDao.getSeries() }
                 .flatMapLatest {
                     it.flatMap(JsonUtils::readStringList)
                         .distinct()
                         .map { databaseText ->
                             val entry = databaseText.takeIf { it.contains("{") }
                                 ?.let<String, MediaColumnEntry>(appJson.json::decodeFromString)
-                            entry?.let {
-                                mediaRepository.getEntry(it.id)
+                            if (entry == null) {
+                                artEntryDao.getSeriesFlow(databaseText, limit = 10)
+                                    .flatMapLatest { it.asFlow() }
+                                    .filter {
+                                        it.series
+                                            .map(aniListDataConverter::databaseToSeriesEntry)
+                                            .filterIsInstance<EntrySection.MultiText.Entry.Custom>()
+                                            .any { it.text.contains(databaseText) }
+                                    }
+                                    .take(1)
+                                    .map {
+                                        BrowseEntryModel(
+                                            image = ArtEntryUtils.getImageFile(context, it.id)
+                                                .toUri().toString(),
+                                            text = databaseText,
+                                            queryType = ArtEntryColumn.SERIES.toString(),
+                                        )
+                                    }
+                            } else {
+                                mediaRepository.getEntry(entry.id)
                                     .filterNotNull()
                                     .map {
                                         BrowseEntryModel(
@@ -71,7 +101,6 @@ class ArtBrowseTabSeries @Inject constructor(
                                         )
                                     }
                             }
-                                .let { it ?: emptyFlow() }
                                 .onStart {
                                     if (entry == null) {
                                         BrowseEntryModel(
@@ -93,6 +122,7 @@ class ArtBrowseTabSeries @Inject constructor(
                             }
                         }
                 }
+                .flowOn(Dispatchers.IO)
                 .collectLatest { series = it }
         }
     }

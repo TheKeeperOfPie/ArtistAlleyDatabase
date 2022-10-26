@@ -1,7 +1,9 @@
 package com.thekeeperofpie.artistalleydatabase.browse
 
+import androidx.compose.runtime.Immutable
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 
+@Immutable
 data class BrowseEntryModel(
     val image: String? = null,
     val link: String? = null,

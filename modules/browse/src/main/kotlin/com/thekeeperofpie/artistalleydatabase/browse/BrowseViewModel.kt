@@ -10,8 +10,10 @@ class BrowseViewModel @Inject constructor(
     tabViewModels: Set<@JvmSuppressWildcards BrowseTabViewModel>,
 ) : ViewModel() {
 
-    val tabs = tabViewModels.sortedWith(compareBy({ it.priorityMajor }, { it.priorityMinor }))
-            .map { it.tab }
+    private val sortedModels = tabViewModels.toList()
+        .sortedWith(compareBy({ it.priorityMajor }, { it.priorityMinor }))
+
+    val tabs = sortedModels.map { it.tab }
 
     fun onSelectEntry(
         navController: NavHostController,
@@ -19,5 +21,11 @@ class BrowseViewModel @Inject constructor(
         entry: BrowseEntryModel
     ) {
         tabContent.onSelected(navController, entry)
+    }
+
+    fun onPageRequested(page: Int) {
+        ((page - 1).coerceAtLeast(0)..(page + 1).coerceAtMost(sortedModels.size - 1)).forEach {
+            sortedModels[it].startLoad()
+        }
     }
 }

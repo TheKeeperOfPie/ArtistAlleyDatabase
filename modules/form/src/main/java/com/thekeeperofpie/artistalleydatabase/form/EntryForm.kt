@@ -596,6 +596,7 @@ fun EntryImage(
     image: () -> String?,
     modifier: Modifier = Modifier,
     link: () -> String?,
+    contentScale: ContentScale = ContentScale.FillWidth,
 ) {
     val uriHandler = LocalUriHandler.current
     Box(
@@ -622,15 +623,14 @@ fun EntryImage(
 
         if (image != null) {
             AsyncImage(
-                model =
-                ImageRequest.Builder(LocalContext.current)
+                model = ImageRequest.Builder(LocalContext.current)
                     .data(image)
                     .crossfade(true)
                     .build(),
                 contentDescription = stringResource(R.string.entry_image_content_description),
                 onLoading = { showPlaceholder = true },
                 onSuccess = { showPlaceholder = false },
-                contentScale = ContentScale.FillWidth,
+                contentScale = contentScale,
                 modifier = Modifier
                     .matchParentSize()
             )

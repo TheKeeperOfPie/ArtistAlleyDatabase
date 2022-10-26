@@ -19,9 +19,12 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
@@ -30,6 +33,7 @@ import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
 import com.thekeeperofpie.artistalleydatabase.compose.AppBar
 import com.thekeeperofpie.artistalleydatabase.form.EntryImage
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 object BrowseScreen {
@@ -40,8 +44,12 @@ object BrowseScreen {
         onClickNav: () -> Unit = {},
         tabs: List<TabContent>,
         onClick: (tabContent: TabContent, value: BrowseEntryModel) -> Unit = { _, _ -> },
+        onPageRequested: (page: Int) -> Unit = {},
     ) {
         val pagerState = rememberPagerState()
+        LaunchedEffect(pagerState) {
+            snapshotFlow { pagerState.currentPage }.collectLatest(onPageRequested)
+        }
         val selectedTabIndex = pagerState.currentPage
         Scaffold(
             topBar = {
@@ -75,6 +83,7 @@ object BrowseScreen {
             HorizontalPager(
                 count = tabs.size,
                 state = pagerState,
+                key = { tabs[it].id },
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(it),
@@ -110,6 +119,7 @@ object BrowseScreen {
             EntryImage(
                 image = image,
                 link = link,
+                contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .fillMaxHeight()
                     .heightIn(min = 54.dp)
