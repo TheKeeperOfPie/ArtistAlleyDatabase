@@ -72,12 +72,12 @@ interface ArtEntryDao {
 
         val lockOptions = if (lockedValue == null) emptyList() else {
             mutableListOf<String>().apply {
-                if (includeAll || query.includeArtists) this += "artistsLocked:$lockedValue"
-                if (includeAll || query.includeSources) this += "sourceLocked:$lockedValue"
-                if (includeAll || query.includeSeries) this += "seriesLocked:$lockedValue"
-                if (includeAll || query.includeCharacters) this += "charactersLocked:$lockedValue"
-                if (includeAll || query.includeTags) this += "tagsLocked:$lockedValue"
-                if (includeAll || query.includeNotes) this += "notesLocked:$lockedValue"
+                if (query.includeArtists) this += "artistsLocked:$lockedValue"
+                if (query.includeSources) this += "sourceLocked:$lockedValue"
+                if (query.includeSeries) this += "seriesLocked:$lockedValue"
+                if (query.includeCharacters) this += "charactersLocked:$lockedValue"
+                if (query.includeTags) this += "tagsLocked:$lockedValue"
+                if (query.includeNotes) this += "notesLocked:$lockedValue"
             }
         }
 

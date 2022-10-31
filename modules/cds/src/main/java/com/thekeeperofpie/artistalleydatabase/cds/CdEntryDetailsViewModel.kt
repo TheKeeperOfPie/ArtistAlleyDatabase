@@ -187,7 +187,6 @@ abstract class CdEntryDetailsViewModel(
         }
 
         viewModelScope.launch(Dispatchers.Main) {
-            @Suppress("OPT_IN_USAGE")
             catalogAlbumChosen()
                 .map(vgmdbDataConverter::titleEntry)
                 .flowOn(Dispatchers.IO)

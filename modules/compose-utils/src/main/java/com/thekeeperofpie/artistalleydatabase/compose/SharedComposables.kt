@@ -28,10 +28,10 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.SmallTopAppBar
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarColors
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
@@ -61,7 +61,7 @@ fun AppBar(
     colors: TopAppBarColors = TopAppBarDefaults.smallTopAppBarColors(),
     onClickNav: (() -> Unit)? = null
 ) {
-    SmallTopAppBar(
+    TopAppBar(
         title = { Text(text = text, maxLines = 1) },
         navigationIcon = { onClickNav?.let { NavMenuIconButton(it) } },
         scrollBehavior = scrollBehavior,

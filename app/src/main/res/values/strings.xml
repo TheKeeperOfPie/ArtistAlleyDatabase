@@ -20,7 +20,6 @@
     <string name="invalid_import_source">Invalid import source</string>
     <string name="clear">Clear</string>
     <string name="search_filter_content_description">Filter options</string>
-    <string name="export_user_readable">User readable</string>
     <string name="progress">Progress</string>
     <string name="import_dry_run">Dry run</string>
     <string name="import_last_failed">Last import failed</string>

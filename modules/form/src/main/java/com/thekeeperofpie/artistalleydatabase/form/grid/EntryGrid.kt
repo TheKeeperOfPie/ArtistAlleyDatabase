@@ -107,6 +107,8 @@ object EntryGrid {
             // TODO: Find a better way to calculate the optimal image size
             LocalConfiguration.current.screenWidthDp.dp.roundToPx() / columnCount
         }.let(::Dimension)
+
+        @Suppress("RemoveExplicitTypeArguments") // Kotlin can't infer it.id below
         LazyStaggeredGrid<T>(
             columnCount = columnCount,
             modifier = modifier

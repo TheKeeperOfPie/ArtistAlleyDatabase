@@ -8,7 +8,7 @@ object ExportUtils {
         .map { it.filter { it.isNotBlank() } }
         .filter { it.isNotEmpty() }
         .map {
-            it.map {
+            it.joinToString(separator = "-") {
                 it.replace("\\", "\u29F5")
                     .replace("/", "\u2215")
                     .replace(":", "\uA789")
@@ -19,7 +19,6 @@ object ExportUtils {
                     .replace(">", "\uFF1E")
                     .replace("|", "\u23D0")
             }
-                .joinToString(separator = "-")
                 .take(120)
         }
         .fold(mutableListOf<String>()) { list, next ->

@@ -23,7 +23,6 @@
     <string name="cd_entry_discs_header_zero">Disc</string>
     <string name="cd_entry_discs_header_one">Disc</string>
     <string name="cd_entry_discs_header_many">Discs</string>
-    <string name="cd_entry_add_disc">Add disc</string>
     <string name="cd_entry_disc_name_label">Disc name</string>
     <string name="cd_entry_disc_name_placeholder">Disc 1 (CD) Vocal</string>
     <string name="cd_entry_disc_duration_label">Disc duration</string>
@@ -31,6 +30,4 @@
     <string name="cd_entry_track_title_label">Track title</string>
     <string name="cd_entry_track_duration_label">Duration</string>
     <string name="cd_entry_track_duration_placeholder">00:39</string>
-    <string name="cd_entry_tracks_header">Tracks</string>
-    <string name="cd_entry_add_track">Add track</string>
 </resources>

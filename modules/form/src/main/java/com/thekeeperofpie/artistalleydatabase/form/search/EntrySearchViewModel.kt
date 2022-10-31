@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
 
-abstract class EntrySearchViewModel<SearchQuery : EntrySearchQuery, GridModel : EntryGridModel>() :
+abstract class EntrySearchViewModel<SearchQuery : EntrySearchQuery, GridModel : EntryGridModel> :
     ViewModel(), EntryGridViewModel<GridModel> {
 
     val query = MutableStateFlow<SearchQuery?>(null)

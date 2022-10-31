@@ -1,5 +1,3 @@
-@file:Suppress("OPT_IN_USAGE")
-
 package com.thekeeperofpie.artistalleydatabase
 
 import androidx.room.Database

@@ -9,7 +9,6 @@
     <string name="print_size_13x19_inches">13\" x 19\"</string>
     <string name="print_size_19x13_inches">19\" x 13\"</string>
     <string name="art_entry_image_content_description">Art entry image</string>
-    <string name="art_entry_no_image_content_description">No image available</string>
     <string name="art_entry_artists_header_zero">Artist</string>
     <string name="art_entry_artists_header_one">Artist</string>
     <string name="art_entry_artists_header_many">Artists</string>

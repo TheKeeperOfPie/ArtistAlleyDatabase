@@ -73,7 +73,6 @@ object ImportScreen {
         }
     }
 
-    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     private fun Content(
         paddingValues: PaddingValues,
