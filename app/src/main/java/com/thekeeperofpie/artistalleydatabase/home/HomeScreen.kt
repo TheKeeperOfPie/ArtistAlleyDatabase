@@ -79,6 +79,7 @@ object HomeScreen {
             EntryGrid(
                 imageScreenKey = NavDestinations.HOME,
                 entries = entries,
+                entriesSize = { entries().itemCount.takeIf { query().isNotEmpty() }},
                 paddingValues = it,
                 selectedItems = selectedItems,
                 onClickEntry = onClickEntry,

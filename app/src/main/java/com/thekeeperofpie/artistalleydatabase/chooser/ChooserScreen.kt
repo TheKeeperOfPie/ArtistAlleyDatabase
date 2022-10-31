@@ -39,6 +39,7 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.R
 import com.thekeeperofpie.artistalleydatabase.art.grid.ArtEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.compose.ButtonFooter
+import com.thekeeperofpie.artistalleydatabase.compose.LazyStaggeredGrid.rememberLazyStaggeredGridState
 import com.thekeeperofpie.artistalleydatabase.compose.bottomBorder
 import com.thekeeperofpie.artistalleydatabase.form.grid.EntryGrid
 import com.thekeeperofpie.artistalleydatabase.form.search.EntrySearchOption
@@ -71,11 +72,11 @@ object ChooserScreen {
             Column {
                 EntryGrid.EntriesGrid(
                     imageScreenKey = "chooser",
-                    columnCount = columnCount,
                     entries = entries,
                     selectedItems = selectedItems,
                     onClickEntry = onClickEntry,
                     onLongClickEntry = onLongClickEntry,
+                    lazyStaggeredGridState = rememberLazyStaggeredGridState(columnCount),
                     modifier = Modifier
                         .padding(paddingValues)
                         .weight(1f, true)

@@ -21,4 +21,8 @@
     <string name="delete_dialog_title">Delete entry?</string>
     <string name="entry_no_image_content_description">No image available</string>
     <string name="entry_open_full_image_content_description">Open full image</string>
+
+    <string name="entry_results_zero">No results</string>
+    <string name="entry_results_one">%1$s result</string>
+    <string name="entry_results_multiple">%1$s results</string>
 </resources>

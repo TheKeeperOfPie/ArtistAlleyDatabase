@@ -5,25 +5,28 @@ import android.os.Parcel
 import android.os.Parcelable
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.ScrollableDefaults
+import androidx.compose.foundation.gestures.ScrollableState
 import androidx.compose.foundation.gestures.rememberScrollableState
 import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyItemScope
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.paging.compose.LazyPagingItems
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.collectLatest
 
 object LazyStaggeredGrid {
 
     @Composable
     operator fun <T : Any> invoke(
-        columnCount: Int,
+        state: LazyStaggeredGridState,
         modifier: Modifier,
         content: @Composable LazyStaggeredGridScope<T>.() -> Unit,
     ) {
@@ -35,30 +38,31 @@ object LazyStaggeredGrid {
         val key = gridScope.key
         if (items == null || itemContent == null || key == null) return
 
-        val flow = remember { MutableStateFlow(0f) }
-        val scroll = rememberScrollableState { delta ->
-            flow.tryEmit(delta)
-            delta
-        }
-
         Row(
             modifier = modifier
                 .scrollable(
-                    scroll,
+                    state.scrollableState,
                     Orientation.Vertical,
                     flingBehavior = ScrollableDefaults.flingBehavior()
                 )
         ) {
+            val columnCount = state.columnCount
             for (columnIndex in 0 until columnCount) {
-                val state = rememberLazyListState()
+                val listState = rememberLazyListState()
+                state.addListState(listState)
                 LaunchedEffect(key1 = Unit) {
-                    flow.collectLatest { delta ->
-                        state.dispatchRawDelta(-delta)
+                    state.scrollFlow.collectLatest { delta ->
+                        listState.dispatchRawDelta(-delta)
+                    }
+                }
+                LaunchedEffect(key1 = Unit) {
+                    state.scrollToIndexFlows[columnIndex].collectLatest { (index, offset) ->
+                        listState.animateScrollToItem(index, offset)
                     }
                 }
                 LazyColumn(
                     userScrollEnabled = false,
-                    state = state,
+                    state = listState,
                     modifier = Modifier.weight(1f)
                 ) {
                     val itemCount = items.itemCount
@@ -95,6 +99,49 @@ object LazyStaggeredGrid {
             this.items = items
             this.key = key
             this.itemContent = itemContent
+        }
+    }
+
+    @Composable
+    fun rememberLazyStaggeredGridState(columnCount: Int): LazyStaggeredGridState {
+        val scrollFlow = remember { MutableSharedFlow<Float>(1, 1) }
+        val scrollableState = rememberScrollableState { delta ->
+            scrollFlow.tryEmit(delta)
+            delta
+        }
+        val scrollToTopFlows = (0 until columnCount)
+            .map { remember { MutableSharedFlow<Pair<Int, Int>>(1, 1) } }
+        return LazyStaggeredGridState(columnCount, scrollFlow, scrollableState, scrollToTopFlows)
+    }
+
+    class LazyStaggeredGridState(
+        val columnCount: Int,
+        internal val scrollFlow: SharedFlow<Float>,
+        internal val scrollableState: ScrollableState,
+        internal val scrollToIndexFlows: List<MutableSharedFlow<Pair<Int, Int>>>,
+    ) {
+        private var lastScrollPositions = Array(columnCount) { 0 }
+        private var lastScrollOffsets = Array(columnCount) { 0 }
+        private var lazyListStates = mutableListOf<LazyListState>()
+
+        fun scrollToTop() {
+            if (lazyListStates.first().firstVisibleItemIndex == 0) {
+                scrollToIndexFlows.forEachIndexed { index, flow ->
+                    flow.tryEmit(lastScrollPositions[index] to lastScrollOffsets[index])
+                }
+            } else {
+                lazyListStates.forEachIndexed { index, lazyListState ->
+                    lastScrollPositions[index] = lazyListState.firstVisibleItemIndex
+                    lastScrollOffsets[index] = lazyListState.firstVisibleItemScrollOffset
+                }
+                scrollToIndexFlows.forEach { it.tryEmit(0 to 0) }
+            }
+        }
+
+        fun addListState(state: LazyListState) {
+            if (lazyListStates.size < columnCount) {
+                lazyListStates.add(state)
+            }
         }
     }
 

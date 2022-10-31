@@ -5,6 +5,8 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,6 +16,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.AlertDialog
@@ -45,15 +49,17 @@ import coil.size.Dimension
 import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.compose.ButtonFooter
 import com.thekeeperofpie.artistalleydatabase.compose.LazyStaggeredGrid
+import com.thekeeperofpie.artistalleydatabase.compose.LazyStaggeredGrid.rememberLazyStaggeredGridState
 import com.thekeeperofpie.artistalleydatabase.form.R
 
 object EntryGrid {
 
     @Composable
-    operator fun <T: EntryGridModel> invoke(
+    operator fun <T : EntryGridModel> invoke(
         imageScreenKey: String,
         columnCount: Int = 2,
         entries: @Composable () -> LazyPagingItems<T>,
+        entriesSize: @Composable () -> Int?,
         paddingValues: PaddingValues,
         selectedItems: () -> Collection<Int> = { emptyList() },
         onClickEntry: (index: Int, entry: T) -> Unit = { _, _ -> },
@@ -64,24 +70,57 @@ object EntryGrid {
     ) {
         var showDeleteDialog by rememberSaveable { mutableStateOf(false) }
 
-        Column {
-            EntriesGrid(
-                imageScreenKey = imageScreenKey,
-                columnCount = columnCount,
-                entries = entries,
-                selectedItems = selectedItems,
-                onClickEntry = onClickEntry,
-                onLongClickEntry = onLongClickEntry,
-                modifier = Modifier
-                    .padding(paddingValues)
-                    .weight(1f, true)
-            )
+        Box(
+            modifier = Modifier
+                .padding(paddingValues)
+        ) {
+            val lazyStaggeredGridState = rememberLazyStaggeredGridState(columnCount = columnCount)
+            Column {
+                EntriesGrid(
+                    imageScreenKey = imageScreenKey,
+                    entries = entries,
+                    selectedItems = selectedItems,
+                    onClickEntry = onClickEntry,
+                    onLongClickEntry = onLongClickEntry,
+                    lazyStaggeredGridState = lazyStaggeredGridState,
+                    modifier = Modifier
+                        .weight(1f, true)
+                )
 
-            if (selectedItems().isNotEmpty()) {
-                ButtonFooter(
-                    R.string.delete to { showDeleteDialog = true },
-                    R.string.edit to onClickEdit,
-                    R.string.clear to onClickClear,
+                if (selectedItems().isNotEmpty()) {
+                    ButtonFooter(
+                        R.string.delete to { showDeleteDialog = true },
+                        R.string.edit to onClickEdit,
+                        R.string.clear to onClickClear,
+                    )
+                }
+            }
+
+            entriesSize()?.let { size ->
+                val stringRes = when (size) {
+                    0 -> R.string.entry_results_zero
+                    1 -> R.string.entry_results_one
+                    else -> R.string.entry_results_multiple
+                }
+
+                Text(
+                    text = stringResource(stringRes, size),
+                    color = MaterialTheme.colorScheme.onSecondary,
+                    modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .wrapContentSize()
+                        .padding(top = 8.dp)
+                        .background(
+                            MaterialTheme.colorScheme.secondary,
+                            RoundedCornerShape(8.dp)
+                        )
+                        .border(
+                            1.dp,
+                            MaterialTheme.colorScheme.secondaryContainer,
+                            RoundedCornerShape(8.dp)
+                        )
+                        .clickable { lazyStaggeredGridState.scrollToTop() }
+                        .padding(8.dp)
                 )
             }
         }
@@ -94,24 +133,25 @@ object EntryGrid {
     }
 
     @Composable
-    fun <T: EntryGridModel> EntriesGrid(
+    fun <T : EntryGridModel> EntriesGrid(
         imageScreenKey: String,
-        columnCount: Int,
         modifier: Modifier = Modifier,
         entries: @Composable () -> LazyPagingItems<T>,
         selectedItems: () -> Collection<Int> = { emptyList() },
         onClickEntry: (index: Int, entry: T) -> Unit = { _, _ -> },
         onLongClickEntry: (index: Int, entry: T) -> Unit = { _, _ -> },
+        lazyStaggeredGridState: LazyStaggeredGrid.LazyStaggeredGridState,
     ) {
         val expectedWidth = LocalDensity.current.run {
             // TODO: Find a better way to calculate the optimal image size
-            LocalConfiguration.current.screenWidthDp.dp.roundToPx() / columnCount
+            LocalConfiguration.current.screenWidthDp.dp.roundToPx() /
+                    lazyStaggeredGridState.columnCount
         }.let(::Dimension)
 
         @Suppress("RemoveExplicitTypeArguments") // Kotlin can't infer it.id below
         LazyStaggeredGrid<T>(
-            columnCount = columnCount,
-            modifier = modifier
+            state = lazyStaggeredGridState,
+            modifier = modifier,
         ) {
             items(entries(), key = { it.id }) { index, item ->
                 Entry(
@@ -129,7 +169,7 @@ object EntryGrid {
 
     @OptIn(ExperimentalFoundationApi::class)
     @Composable
-    private fun <T: EntryGridModel> Entry(
+    private fun <T : EntryGridModel> Entry(
         imageScreenKey: String,
         expectedWidth: Dimension.Pixels,
         index: Int,

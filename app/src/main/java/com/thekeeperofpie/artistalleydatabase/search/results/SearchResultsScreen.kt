@@ -56,6 +56,7 @@ object SearchResultsScreen {
                             imageScreenKey = "results",
                             paddingValues = paddingValues,
                             entries = entries,
+                            entriesSize = { entries().itemCount },
                             selectedItems = selectedItems,
                             onClickEntry = onClickEntry,
                             onLongClickEntry = onLongClickEntry,
