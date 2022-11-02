@@ -301,11 +301,11 @@ abstract class ArtEntryDetailsViewModel(
         entry.series
             .map { aniListJson.parseSeriesColumn(it) }
             .mapNotNull { it.rightOrNull()?.id }
-            .forEach(mediaRepository::ensureSaved)
+            .let { mediaRepository.ensureSaved(it) }
         entry.characters
             .map { aniListJson.parseCharacterColumn(it) }
             .mapNotNull { it.rightOrNull()?.id }
-            .forEach(characterRepository::ensureSaved)
+            .let { characterRepository.ensureSaved(it) }
         artEntryDao.insertEntries(entry)
         return true
     }

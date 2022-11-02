@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.android_utils.importer
+package com.thekeeperofpie.artistalleydatabase.android_utils.persistence
 
 import java.io.InputStream
 

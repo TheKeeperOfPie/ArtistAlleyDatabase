@@ -19,6 +19,7 @@
     <string name="import_source">Import source</string>
     <string name="invalid_import_source">Invalid import source</string>
     <string name="clear">Clear</string>
+    <string name="fetch">Fetch</string>
     <string name="search_filter_content_description">Filter options</string>
     <string name="progress">Progress</string>
     <string name="import_dry_run">Dry run</string>
@@ -38,10 +39,18 @@
     <string name="notification_channel_export_description">Ongoing data export operations</string>
     <string name="notification_channel_import_name">Import</string>
     <string name="notification_channel_import_description">Ongoing data import operations</string>
+    <string name="notification_channel_sync_name">Sync</string>
+    <string name="notification_channel_sync_description">Ongoing data sync operations</string>
     <string name="notification_export_ongoing_title">Exporting</string>
     <string name="notification_export_finished_title">Export finished</string>
+    <string name="notification_export_failed_title">Export failed</string>
     <string name="notification_import_ongoing_title">Importing</string>
     <string name="notification_import_finished_title">Import finished</string>
+    <string name="notification_import_failed_title">Import failed</string>
+    <string name="notification_sync_ongoing_title">Syncing</string>
+    <string name="notification_sync_finished_title">Sync finished</string>
+    <string name="notification_sync_failed_title">Sync failed</string>
     <string name="settings_clear_aniList_cache">Clear AniList cache</string>
     <string name="settings_clear_vgmdb_cache">Clear VGMdb cache</string>
+    <string name="settings_database_fetch">Sync remote models to local database</string>
 </resources>

@@ -3,7 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.art.persistence
 import android.content.Context
 import com.squareup.moshi.JsonReader
 import com.squareup.moshi.Moshi
-import com.thekeeperofpie.artistalleydatabase.android_utils.importer.Importer
+import com.thekeeperofpie.artistalleydatabase.android_utils.persistence.Importer
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntry
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryDao
 import com.thekeeperofpie.artistalleydatabase.art.utils.ArtEntryUtils

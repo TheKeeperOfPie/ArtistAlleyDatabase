@@ -33,6 +33,7 @@ object SettingsScreen {
         onErrorDismiss: () -> Unit = {},
         onClickAniListClear: () -> Unit = {},
         onClickVgmdbClear: () -> Unit = {},
+        onClickDatabaseFetch: () -> Unit = {},
     ) {
         Scaffold(
             topBar = {
@@ -63,6 +64,19 @@ object SettingsScreen {
                     title = R.string.settings_clear_vgmdb_cache,
                     buttonText = R.string.clear,
                     onClick = onClickVgmdbClear
+                )
+
+                Spacer(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(1.dp)
+                        .background(MaterialTheme.colorScheme.inverseOnSurface)
+                )
+
+                ButtonRow(
+                    title = R.string.settings_database_fetch,
+                    buttonText = R.string.fetch,
+                    onClick = onClickDatabaseFetch
                 )
             }
         }

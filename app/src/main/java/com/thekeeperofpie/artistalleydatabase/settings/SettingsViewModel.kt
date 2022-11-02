@@ -2,6 +2,10 @@ package com.thekeeperofpie.artistalleydatabase.settings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.OutOfQuotaPolicy
+import androidx.work.WorkManager
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterEntryDao
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaEntryDao
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumEntryDao
@@ -17,6 +21,7 @@ class SettingsViewModel @Inject constructor(
     private val characterEntryDao: CharacterEntryDao,
     private val albumEntryDao: AlbumEntryDao,
     private val artistEntryDao: ArtistEntryDao,
+    private val workManager: WorkManager,
 ) : ViewModel() {
 
     fun clearAniListCache() {
@@ -31,5 +36,17 @@ class SettingsViewModel @Inject constructor(
             albumEntryDao.deleteAll()
             artistEntryDao.deleteAll()
         }
+    }
+
+    fun onClickDatabaseFetch() {
+        val request = OneTimeWorkRequestBuilder<DatabaseSyncWorker>()
+            .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
+            .build()
+
+        workManager.enqueueUniqueWork(
+            DatabaseSyncWorker.UNIQUE_WORK_NAME,
+            ExistingWorkPolicy.REPLACE,
+            request
+        )
     }
 }

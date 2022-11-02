@@ -6,11 +6,11 @@ import android.util.Log
 import androidx.hilt.work.HiltWorker
 import androidx.work.WorkerParameters
 import com.thekeeperofpie.artistalleydatabase.R
-import com.thekeeperofpie.artistalleydatabase.android_utils.importer.Importer
+import com.thekeeperofpie.artistalleydatabase.android_utils.persistence.Importer
 import com.thekeeperofpie.artistalleydatabase.navigation.NavDrawerItems
-import com.thekeeperofpie.artistalleydatabase.utils.ImportExportWorker
 import com.thekeeperofpie.artistalleydatabase.utils.NotificationChannels
 import com.thekeeperofpie.artistalleydatabase.utils.NotificationIds
+import com.thekeeperofpie.artistalleydatabase.utils.NotificationProgressWorker
 import com.thekeeperofpie.artistalleydatabase.utils.PendingIntentRequestCodes
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
@@ -24,15 +24,17 @@ class ImportWorker @AssistedInject constructor(
     @Assisted private val appContext: Context,
     @Assisted private val params: WorkerParameters,
     private val importers: Set<@JvmSuppressWildcards Importer>,
-) : ImportExportWorker(
+) : NotificationProgressWorker(
     appContext = appContext,
     params = params,
     progressKey = ImportUtils.KEY_PROGRESS,
     notificationChannel = NotificationChannels.IMPORT,
     notificationIdOngoing = NotificationIds.IMPORT_ONGOING,
     notificationIdFinished = NotificationIds.IMPORT_FINISHED,
+    smallIcon = R.drawable.baseline_import_export_24,
     ongoingTitle = R.string.notification_import_ongoing_title,
-    finishedTitle = R.string.notification_import_finished_title,
+    successTitle = R.string.notification_import_finished_title,
+    failureTitle = R.string.notification_import_failed_title,
     notificationClickDestination = NavDrawerItems.Import,
     pendingIntentRequestCode = PendingIntentRequestCodes.IMPORT_MAIN_ACTIVITY_OPEN,
 ) {
@@ -41,7 +43,7 @@ class ImportWorker @AssistedInject constructor(
         private const val TAG = "ImportWorker"
     }
 
-    override suspend fun doWork(): Result {
+    override suspend fun doWorkInternal(): Result {
         val inputUri = params.inputData.getString(ImportUtils.KEY_INPUT_CONTENT_URI)
             ?.let(Uri::parse)
             ?: return Result.failure()
@@ -105,8 +107,6 @@ class ImportWorker @AssistedInject constructor(
                 }
             }
         }
-
-        notifyComplete()
 
         return Result.success()
     }

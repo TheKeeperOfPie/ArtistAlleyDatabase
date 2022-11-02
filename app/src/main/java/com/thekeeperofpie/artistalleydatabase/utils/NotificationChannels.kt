@@ -4,6 +4,7 @@ object NotificationChannels {
 
     val EXPORT = NotificationChannel("export")
     val IMPORT = NotificationChannel("import")
+    val SYNC = NotificationChannel("sync")
 }
 
 @JvmInline

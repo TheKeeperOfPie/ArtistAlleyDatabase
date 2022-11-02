@@ -51,7 +51,15 @@ class CustomApplication : Application(), Configuration.Provider, ScopedApplicati
                         .setName(getString(R.string.notification_channel_import_name))
                         .setDescription(getString(R.string.notification_channel_import_description))
                         .setShowBadge(false)
-                        .build()
+                        .build(),
+                    NotificationChannelCompat.Builder(
+                        NotificationChannels.SYNC.channel,
+                        NotificationManagerCompat.IMPORTANCE_LOW
+                    )
+                        .setName(getString(R.string.notification_channel_sync_name))
+                        .setDescription(getString(R.string.notification_channel_sync_description))
+                        .setShowBadge(false)
+                        .build(),
                 )
             )
     }

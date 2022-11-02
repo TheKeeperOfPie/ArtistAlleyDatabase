@@ -15,6 +15,9 @@ interface MediaEntryDao {
     @Query("""SELECT * FROM media_entries WHERE id in (:ids)""")
     fun getEntries(ids: Collection<String>): Flow<List<MediaEntry>>
 
+    @Query("""SELECT DISTINCT (id) FROM media_entries WHERE id in (:ids)""")
+    suspend fun getEntriesById(ids: Collection<String>): List<String>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertEntries(vararg entries: MediaEntry)
 

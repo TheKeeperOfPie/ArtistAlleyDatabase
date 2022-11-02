@@ -1,36 +1,204 @@
 fragment AniListCharacter on Character {
-  id
-  name {
-    first
-    middle
-    last
-    full
-    native
-    alternative
-  }
-  image {
-    large
-    medium
-  }
-
-  media(page: $mediaPage, perPage: $mediaPerPage) {
-    nodes {
-      ...AniListMedia
+    id
+    name {
+        first
+        middle
+        last
+        full
+        native
+        alternative
     }
-  }
+    image {
+        large
+        medium
+    }
+
+    media(page: $mediaPage, perPage: $mediaPerPage) {
+        nodes {
+            ...AniListMedia
+        }
+    }
 }
 
 query CharactersSearch($search: String, $perPage: Int, $page: Int, $mediaPage: Int,
     $mediaPerPage: Int) {
-  Page(perPage: $perPage, page: $page) @nonnull {
-    characters(search: $search) @nonnull {
-      ...AniListCharacter
+    Page(perPage: $perPage, page: $page) @nonnull {
+        characters(search: $search) @nonnull {
+            ...AniListCharacter
+        }
     }
-  }
 }
 
 query CharacterById($id: Int, $mediaPage: Int, $mediaPerPage: Int) {
-  Character(id: $id) {
-    ...AniListCharacter
-  }
+    Character(id: $id) {
+        ...AniListCharacter
+    }
+}
+
+query CharacterByIds5(
+    $mediaPage: Int,
+    $mediaPerPage: Int,
+    $id0: Int,
+    $id1: Int,
+    $id2: Int,
+    $id3: Int,
+    $id4: Int,
+) {
+
+    character0:Character(id: $id0) {
+        ...AniListCharacter
+    }
+
+    character1:Character(id: $id1) {
+        ...AniListCharacter
+    }
+
+    character2:Character(id: $id2) {
+        ...AniListCharacter
+    }
+
+    character3:Character(id: $id3) {
+        ...AniListCharacter
+    }
+
+    character4:Character(id: $id4) {
+        ...AniListCharacter
+    }
+}
+
+query CharacterByIds10(
+    $mediaPage: Int,
+    $mediaPerPage: Int,
+    $id0: Int,
+    $id1: Int,
+    $id2: Int,
+    $id3: Int,
+    $id4: Int,
+    $id5: Int,
+    $id6: Int,
+    $id7: Int,
+    $id8: Int,
+    $id9: Int,
+) {
+
+    character0:Character(id: $id0) {
+        ...AniListCharacter
+    }
+
+    character1:Character(id: $id1) {
+        ...AniListCharacter
+    }
+
+    character2:Character(id: $id2) {
+        ...AniListCharacter
+    }
+
+    character3:Character(id: $id3) {
+        ...AniListCharacter
+    }
+
+    character4:Character(id: $id4) {
+        ...AniListCharacter
+    }
+
+    character5:Character(id: $id5) {
+        ...AniListCharacter
+    }
+
+    character6:Character(id: $id6) {
+        ...AniListCharacter
+    }
+
+    character7:Character(id: $id7) {
+        ...AniListCharacter
+    }
+
+    character8:Character(id: $id8) {
+        ...AniListCharacter
+    }
+
+    character9:Character(id: $id9) {
+        ...AniListCharacter
+    }
+}
+
+query CharacterByIds15(
+    $mediaPage: Int,
+    $mediaPerPage: Int,
+    $id0: Int,
+    $id1: Int,
+    $id2: Int,
+    $id3: Int,
+    $id4: Int,
+    $id5: Int,
+    $id6: Int,
+    $id7: Int,
+    $id8: Int,
+    $id9: Int,
+    $id10: Int,
+    $id11: Int,
+    $id12: Int,
+    $id13: Int,
+    $id14: Int,
+) {
+
+    character0:Character(id: $id0) {
+        ...AniListCharacter
+    }
+
+    character1:Character(id: $id1) {
+        ...AniListCharacter
+    }
+
+    character2:Character(id: $id2) {
+        ...AniListCharacter
+    }
+
+    character3:Character(id: $id3) {
+        ...AniListCharacter
+    }
+
+    character4:Character(id: $id4) {
+        ...AniListCharacter
+    }
+
+    character5:Character(id: $id5) {
+        ...AniListCharacter
+    }
+
+    character6:Character(id: $id6) {
+        ...AniListCharacter
+    }
+
+    character7:Character(id: $id7) {
+        ...AniListCharacter
+    }
+
+    character8:Character(id: $id8) {
+        ...AniListCharacter
+    }
+
+    character9:Character(id: $id9) {
+        ...AniListCharacter
+    }
+
+    character10:Character(id: $id10) {
+        ...AniListCharacter
+    }
+
+    character11:Character(id: $id11) {
+        ...AniListCharacter
+    }
+
+    character12:Character(id: $id12) {
+        ...AniListCharacter
+    }
+
+    character13:Character(id: $id13) {
+        ...AniListCharacter
+    }
+
+    character14:Character(id: $id14) {
+        ...AniListCharacter
+    }
 }

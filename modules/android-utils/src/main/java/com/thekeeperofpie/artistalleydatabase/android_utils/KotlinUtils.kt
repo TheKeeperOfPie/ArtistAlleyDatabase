@@ -20,6 +20,13 @@ fun <T> Iterable<T>.split(predicate: (T) -> Boolean): Pair<List<T>, List<T>> {
     return filtered to remaining
 }
 
+fun <T> List<T>.splitAtIndex(index: Int) =
+    if (index == size - 1) {
+        this to emptyList()
+    } else {
+        subList(0, index) to subList(index, size)
+    }
+
 @ExperimentalCoroutinesApi
 fun <T, R> Flow<T>.mapLatestNotNull(transform: suspend (value: T) -> R) =
     transformLatest {

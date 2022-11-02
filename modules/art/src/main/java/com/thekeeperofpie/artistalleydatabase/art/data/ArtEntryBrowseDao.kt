@@ -13,9 +13,10 @@ interface ArtEntryBrowseDao : ArtEntryDao {
         """
             SELECT DISTINCT (art_entries.artists)
             FROM art_entries
+            LIMIT :limit OFFSET :offset
         """
     )
-    fun getArtists(): Flow<List<String>>
+    fun getArtists(limit: Int = Int.MAX_VALUE, offset: Int = 0): Flow<List<String>>
 
     @Query(
         """
@@ -37,25 +38,28 @@ interface ArtEntryBrowseDao : ArtEntryDao {
         """
             SELECT DISTINCT (art_entries.series)
             FROM art_entries
+            LIMIT :limit OFFSET :offset
         """
     )
-    fun getSeries(): Flow<List<String>>
+    suspend fun getSeries(limit: Int = Int.MAX_VALUE, offset: Int = 0): List<String>
 
     @Query(
         """
             SELECT DISTINCT (art_entries.characters)
             FROM art_entries
+            LIMIT :limit OFFSET :offset
         """
     )
-    fun getCharacters(): Flow<List<String>>
+    fun getCharacters(limit: Int = Int.MAX_VALUE, offset: Int = 0): Flow<List<String>>
 
     @Query(
         """
             SELECT DISTINCT (art_entries.tags)
             FROM art_entries
+            LIMIT :limit OFFSET :offset
         """
     )
-    fun getTags(): Flow<List<String>>
+    fun getTags(limit: Int = Int.MAX_VALUE, offset: Int = 0): Flow<List<String>>
 
     fun getArtist(query: String) = getArtistInternal(wrapLikeQuery(query))
 

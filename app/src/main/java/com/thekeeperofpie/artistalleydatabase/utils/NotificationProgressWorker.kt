@@ -3,6 +3,8 @@ package com.thekeeperofpie.artistalleydatabase.utils
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.util.Log
+import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -11,37 +13,68 @@ import androidx.work.Data
 import androidx.work.ForegroundInfo
 import androidx.work.WorkerParameters
 import com.thekeeperofpie.artistalleydatabase.MainActivity
-import com.thekeeperofpie.artistalleydatabase.R
 import com.thekeeperofpie.artistalleydatabase.navigation.NavDrawerItems
 
-abstract class ImportExportWorker(
+abstract class NotificationProgressWorker(
     private val appContext: Context,
     params: WorkerParameters,
     private val progressKey: String,
     private val notificationChannel: NotificationChannel,
     private val notificationIdOngoing: NotificationId,
     private val notificationIdFinished: NotificationId,
+    @DrawableRes private val smallIcon: Int,
     @StringRes ongoingTitle: Int,
-    @StringRes private val finishedTitle: Int,
+    @StringRes private val successTitle: Int,
+    @StringRes private val failureTitle: Int,
     private val notificationClickDestination: NavDrawerItems,
     private val pendingIntentRequestCode: PendingIntentRequestCode,
 ) : CoroutineWorker(appContext, params) {
 
+    companion object {
+        private val TAG = NotificationProgressWorker::class.java.name
+    }
+
     private val cachedNotificationBuilder =
         NotificationCompat.Builder(appContext, notificationChannel.channel)
             .setContentTitle(appContext.getString(ongoingTitle))
-            .setSmallIcon(R.drawable.baseline_import_export_24)
+            .setSmallIcon(smallIcon)
             .setOngoing(true)
 
-    protected fun notifyComplete() {
+    final override suspend fun doWork() = try {
+        try {
+            setForeground(getForegroundInfo())
+        } catch (ignored: Exception) {
+        }
+
+        doWorkInternal()
+    } catch (e: Exception) {
+        Log.d(TAG, "Error running ${this.javaClass.name}", e)
+        Result.failure()
+    }.also {
+        when (it) {
+            is Result.Success -> notifyComplete(successTitle)
+            is Result.Failure -> notifyComplete(failureTitle)
+            else -> cancelNotification()
+        }
+    }
+
+    abstract suspend fun doWorkInternal(): Result
+
+    private fun cancelNotification() {
+        NotificationManagerCompat.from(appContext).apply {
+            cancel(notificationIdOngoing.id)
+        }
+    }
+
+    private fun notifyComplete(@StringRes titleRes: Int) {
         NotificationManagerCompat.from(appContext).apply {
             cancel(notificationIdOngoing.id)
             notify(
                 notificationIdFinished.id,
                 NotificationCompat.Builder(appContext, notificationChannel.channel)
                     .setAutoCancel(true)
-                    .setContentTitle(appContext.getString(finishedTitle))
-                    .setSmallIcon(R.drawable.baseline_import_export_24)
+                    .setContentTitle(appContext.getString(titleRes))
+                    .setSmallIcon(smallIcon)
                     .setContentIntent(
                         PendingIntent.getActivity(
                             appContext,

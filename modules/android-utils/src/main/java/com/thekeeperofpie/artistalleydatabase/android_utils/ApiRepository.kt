@@ -6,7 +6,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.drop
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flatMapMerge
 import kotlinx.coroutines.flow.onEach
@@ -48,12 +47,5 @@ abstract class ApiRepository<DataType>(protected val application: ScopedApplicat
             }
         }
 
-    fun ensureSaved(id: String) {
-        application.scope.launch(Dispatchers.IO) {
-            val entry = getLocal(id).first()
-            if (entry == null) {
-                fetchFlow.emit(id)
-            }
-        }
-    }
+    abstract suspend fun ensureSaved(ids: List<String>)
 }

@@ -427,19 +427,19 @@ abstract class CdEntryDetailsViewModel(
 
     suspend fun saveEntry(imageUri: Uri?, id: String): Boolean {
         val entry = makeEntry(imageUri, id) ?: return false
-        entry.catalogId?.let(albumRepository::ensureSaved)
+        entry.catalogId?.let { albumRepository.ensureSaved(listOf(it)) }
         entry.series
             .map { aniListJson.parseSeriesColumn(it) }
             .mapNotNull { it.rightOrNull()?.id }
-            .forEach(mediaRepository::ensureSaved)
+            .let { mediaRepository.ensureSaved(it) }
         entry.characters
             .map { aniListJson.parseCharacterColumn(it) }
             .mapNotNull { it.rightOrNull()?.id }
-            .forEach(characterRepository::ensureSaved)
+            .let { characterRepository.ensureSaved(it) }
         listOf(entry.performers, entry.composers).forEach {
             it.map { vgmdbJson.parseArtistColumn(it) }
                 .mapNotNull { it.rightOrNull()?.id }
-                .forEach(artistRepository::ensureSaved)
+                .let { artistRepository.ensureSaved(it) }
         }
         cdEntryDao.insertEntries(entry)
         return true

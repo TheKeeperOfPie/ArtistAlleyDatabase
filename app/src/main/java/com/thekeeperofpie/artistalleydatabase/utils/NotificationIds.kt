@@ -7,6 +7,9 @@ object NotificationIds {
 
     val IMPORT_ONGOING = NotificationId(2001)
     val IMPORT_FINISHED = NotificationId(2002)
+
+    val SYNC_ONGOING = NotificationId(3001)
+    val SYNC_FINISHED = NotificationId(3002)
 }
 
 @JvmInline

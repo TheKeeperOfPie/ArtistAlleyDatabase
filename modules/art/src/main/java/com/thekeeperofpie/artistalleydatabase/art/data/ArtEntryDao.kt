@@ -106,7 +106,7 @@ interface ArtEntryDao {
         OFFSET :offset
         """
     )
-    fun getEntries(limit: Int = 50, offset: Int = 0): List<ArtEntry>
+    suspend fun getEntries(limit: Int = 50, offset: Int = 0): List<ArtEntry>
 
     @Query(
         """

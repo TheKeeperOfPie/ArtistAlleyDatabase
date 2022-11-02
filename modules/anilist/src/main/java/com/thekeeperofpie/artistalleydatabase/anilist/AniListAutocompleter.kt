@@ -131,7 +131,7 @@ class AniListAutocompleter @Inject constructor(
         return if (queryAsId == null) search else {
             combine(search, aniListApi.getCharacter(queryAsId.toString())
                 .catch {}
-                .mapNotNull { it?.aniListCharacter }
+                .filterNotNull()
                 .mapNotNull(aniListDataConverter::characterEntry)
                 .map(::listOf)
                 .startWith(item = emptyList())

@@ -13,6 +13,7 @@ import androidx.work.OutOfQuotaPolicy
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import com.thekeeperofpie.artistalleydatabase.R
+import com.thekeeperofpie.artistalleydatabase.settings.DatabaseSyncWorker
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
@@ -76,7 +77,7 @@ class ImportViewModel @Inject constructor(
             return
         }
 
-        val request = OneTimeWorkRequestBuilder<ImportWorker>()
+        val importRequest = OneTimeWorkRequestBuilder<ImportWorker>()
             .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
             .setInputData(
                 Data.Builder()
@@ -87,11 +88,17 @@ class ImportViewModel @Inject constructor(
             )
             .build()
 
-        workManager.enqueueUniqueWork(
+        val syncRequest = OneTimeWorkRequestBuilder<DatabaseSyncWorker>()
+            .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
+            .build()
+
+        workManager.beginUniqueWork(
             ImportUtils.UNIQUE_WORK_NAME,
             ExistingWorkPolicy.REPLACE,
-            request
+            importRequest
         )
+            .then(syncRequest)
+            .enqueue()
         importRequested = true
         importProgress = 0f
     }

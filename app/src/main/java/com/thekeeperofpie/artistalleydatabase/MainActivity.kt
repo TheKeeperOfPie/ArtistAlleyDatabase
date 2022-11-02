@@ -407,6 +407,7 @@ class MainActivity : ComponentActivity() {
             onClickNav = onClickNav,
             onClickAniListClear = viewModel::clearAniListCache,
             onClickVgmdbClear = viewModel::clearVgmdbCache,
+            onClickDatabaseFetch = viewModel::onClickDatabaseFetch,
         )
     }
 

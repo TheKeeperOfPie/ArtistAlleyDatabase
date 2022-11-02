@@ -63,7 +63,7 @@ class ArtBrowseTabSeries @Inject constructor(
         viewModelScope.launch(Dispatchers.Main) {
             @OptIn(ExperimentalCoroutinesApi::class)
             initializationBarrier()
-                .flatMapLatest { artEntryDao.getSeries() }
+                .map { artEntryDao.getSeries() }
                 .flatMapLatest {
                     it.flatMap(JsonUtils::readStringList)
                         .distinct()

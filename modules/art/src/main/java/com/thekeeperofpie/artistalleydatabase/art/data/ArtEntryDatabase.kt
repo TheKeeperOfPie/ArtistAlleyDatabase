@@ -7,5 +7,6 @@ interface ArtEntryDatabase {
     fun artEntryEditDao(): ArtEntryEditDao
     fun artEntryDetailsDao(): ArtEntryDetailsDao
     fun artEntryBrowseDao(): ArtEntryBrowseDao
+    fun artEntrySyncDao(): ArtEntrySyncDao
     fun artEntryAdvancedSearchDao(): ArtEntryAdvancedSearchDao
 }

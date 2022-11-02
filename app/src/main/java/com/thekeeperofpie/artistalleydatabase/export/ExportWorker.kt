@@ -6,12 +6,12 @@ import androidx.hilt.work.HiltWorker
 import androidx.work.WorkerParameters
 import com.squareup.moshi.JsonWriter
 import com.thekeeperofpie.artistalleydatabase.R
-import com.thekeeperofpie.artistalleydatabase.android_utils.export.Exporter
+import com.thekeeperofpie.artistalleydatabase.android_utils.persistence.Exporter
 import com.thekeeperofpie.artistalleydatabase.json.AppMoshi
 import com.thekeeperofpie.artistalleydatabase.navigation.NavDrawerItems
-import com.thekeeperofpie.artistalleydatabase.utils.ImportExportWorker
 import com.thekeeperofpie.artistalleydatabase.utils.NotificationChannels
 import com.thekeeperofpie.artistalleydatabase.utils.NotificationIds
+import com.thekeeperofpie.artistalleydatabase.utils.NotificationProgressWorker
 import com.thekeeperofpie.artistalleydatabase.utils.PendingIntentRequestCodes
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
@@ -27,20 +27,22 @@ class ExportWorker @AssistedInject constructor(
     @Assisted private val params: WorkerParameters,
     private val appMoshi: AppMoshi,
     private val exporters: Set<@JvmSuppressWildcards Exporter>,
-) : ImportExportWorker(
+) : NotificationProgressWorker(
     appContext = appContext,
     params = params,
     progressKey = ExportUtils.KEY_PROGRESS,
     notificationChannel = NotificationChannels.EXPORT,
     notificationIdOngoing = NotificationIds.EXPORT_ONGOING,
     notificationIdFinished = NotificationIds.EXPORT_FINISHED,
+    smallIcon = R.drawable.baseline_import_export_24,
     ongoingTitle = R.string.notification_export_ongoing_title,
-    finishedTitle = R.string.notification_export_finished_title,
+    successTitle = R.string.notification_export_finished_title,
+    failureTitle = R.string.notification_export_failed_title,
     notificationClickDestination = NavDrawerItems.Export,
     pendingIntentRequestCode = PendingIntentRequestCodes.EXPORT_MAIN_ACTIVITY_OPEN,
 ) {
 
-    override suspend fun doWork(): Result {
+    override suspend fun doWorkInternal(): Result {
         val outputUri = params.inputData.getString(ExportUtils.KEY_OUTPUT_CONTENT_URI)
             ?.let(Uri::parse)
             ?: return Result.failure()
@@ -49,11 +51,6 @@ class ExportWorker @AssistedInject constructor(
         appContext.contentResolver.openOutputStream(outputUri)
             ?.closeQuietly()
             ?: return Result.failure()
-
-        try {
-            setForeground(getForegroundInfo())
-        } catch (ignored: Exception) {
-        }
 
         val dateTime = ExportUtils.currentDateTimeFileName()
         val appFilesDir = appContext.filesDir
@@ -129,8 +126,6 @@ class ExportWorker @AssistedInject constructor(
                     input.copyTo(output)
                 }
             } ?: return Result.failure()
-
-            notifyComplete()
 
             return Result.success()
         } finally {

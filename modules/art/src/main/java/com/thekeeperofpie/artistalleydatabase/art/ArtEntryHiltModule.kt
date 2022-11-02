@@ -3,10 +3,13 @@ package com.thekeeperofpie.artistalleydatabase.art
 import android.app.Application
 import com.squareup.moshi.Moshi
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
-import com.thekeeperofpie.artistalleydatabase.android_utils.export.Exporter
-import com.thekeeperofpie.artistalleydatabase.android_utils.importer.Importer
+import com.thekeeperofpie.artistalleydatabase.android_utils.persistence.DatabaseSyncer
+import com.thekeeperofpie.artistalleydatabase.android_utils.persistence.Exporter
+import com.thekeeperofpie.artistalleydatabase.android_utils.persistence.Importer
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListDataConverter
+import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterEntryDao
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
+import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaEntryDao
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
 import com.thekeeperofpie.artistalleydatabase.art.browse.ArtBrowseTabArtists
 import com.thekeeperofpie.artistalleydatabase.art.browse.ArtBrowseTabCharacters
@@ -15,8 +18,10 @@ import com.thekeeperofpie.artistalleydatabase.art.browse.ArtBrowseTabTags
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryBrowseDao
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryDao
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryDatabase
+import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntrySyncDao
 import com.thekeeperofpie.artistalleydatabase.art.persistence.ArtExporter
 import com.thekeeperofpie.artistalleydatabase.art.persistence.ArtImporter
+import com.thekeeperofpie.artistalleydatabase.art.persistence.ArtSyncer
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseSelectionNavigator
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseTabViewModel
 import com.thekeeperofpie.artistalleydatabase.form.EntryNavigator
@@ -41,6 +46,9 @@ object ArtEntryHiltModule {
 
     @Provides
     fun provideArtEntryBrowseDao(database: ArtEntryDatabase) = database.artEntryBrowseDao()
+
+    @Provides
+    fun provideArtEntrySyncDao(database: ArtEntryDatabase) = database.artEntrySyncDao()
 
     @Provides
     fun provideArtEntryAdvancedSearchDao(database: ArtEntryDatabase) =
@@ -126,6 +134,24 @@ object ArtEntryHiltModule {
 
     @Provides
     fun provideArtEntryNavigator() = ArtEntryNavigator()
+
+    @IntoSet
+    @Provides
+    fun provideArtSyncer(
+        appJson: AppJson,
+        artEntrySyncDao: ArtEntrySyncDao,
+        characterRepository: CharacterRepository,
+        characterEntryDao: CharacterEntryDao,
+        mediaRepository: MediaRepository,
+        mediaEntryDao: MediaEntryDao,
+    ): DatabaseSyncer = ArtSyncer(
+        appJson,
+        artEntrySyncDao,
+        characterRepository,
+        characterEntryDao,
+        mediaRepository,
+        mediaEntryDao
+    )
 
     @IntoSet
     @Provides
