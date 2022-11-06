@@ -48,22 +48,22 @@ dependencies {
     implementation(project(":modules:compose-utils"))
     implementation(project(":modules:form"))
 
-    implementation("androidx.navigation:navigation-compose:2.5.2")
+    implementation("androidx.navigation:navigation-compose:2.5.3")
 
     implementation("com.google.dagger:hilt-android:2.43.2")
     kapt("com.google.dagger:hilt-compiler:2.43.2")
     kapt("androidx.hilt:hilt-compiler:1.0.0")
 
-    implementation("androidx.activity:activity-compose:1.6.0")
+    implementation("androidx.activity:activity-compose:1.6.1")
     implementation("androidx.core:core-ktx:1.9.0")
-    implementation("androidx.compose.ui:ui:1.3.0-rc01")
-    implementation("androidx.compose.ui:ui-tooling-preview:1.3.0-rc01")
-    api("androidx.compose.material:material-icons-core:1.3.0-rc01")
-    api("androidx.compose.material:material-icons-extended:1.3.0-rc01")
-    implementation("androidx.compose.material3:material3:1.0.0-rc01")
+    implementation("androidx.compose.ui:ui:1.4.0-alpha01")
+    implementation("androidx.compose.ui:ui-tooling-preview:1.4.0-alpha01")
+    api("androidx.compose.material:material-icons-core:1.4.0-alpha01")
+    api("androidx.compose.material:material-icons-extended:1.4.0-alpha01")
+    implementation("androidx.compose.material3:material3:1.1.0-alpha01")
 
-    implementation("androidx.paging:paging-runtime:3.2.0-alpha02")
-    implementation("androidx.paging:paging-compose:1.0.0-alpha16")
+    implementation("androidx.paging:paging-runtime:3.2.0-alpha03")
+    implementation("androidx.paging:paging-compose:1.0.0-alpha17")
 
     implementation("io.coil-kt:coil:2.2.0")
     implementation("io.coil-kt:coil-compose:2.2.0")
