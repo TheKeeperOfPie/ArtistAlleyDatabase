@@ -49,6 +49,7 @@ dependencies {
     implementation(project(":modules:anilist"))
     implementation(project(":modules:browse"))
     implementation(project(":modules:compose-utils"))
+    implementation(project(":modules:data"))
     implementation(project(":modules:form"))
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3")
 

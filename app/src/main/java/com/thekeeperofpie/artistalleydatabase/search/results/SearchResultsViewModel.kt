@@ -9,6 +9,7 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
+import androidx.paging.filter
 import androidx.paging.map
 import com.thekeeperofpie.artistalleydatabase.R
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
@@ -50,9 +51,25 @@ class SearchResultsViewModel @Inject constructor(
                 Pager(PagingConfig(pageSize = 20)) { artEntrySearchDao.search(query) }
                     .flow.cachedIn(viewModelScope)
                     .map {
-                        it.map {
-                            ArtEntryGridModel.buildFromEntry(application, appJson, it)
+                        it.filter {
+                            if (query.seriesById.isNotEmpty()
+                                && it.series(appJson).none { query.seriesById.contains(it.id) }
+                            ) {
+                                return@filter false
+                            }
+
+                            if (query.charactersById.isNotEmpty()
+                                && it.characters(appJson)
+                                    .none { query.charactersById.contains(it.id) }
+                            ) {
+                                return@filter false
+                            }
+
+                            true
                         }
+                            .map {
+                                ArtEntryGridModel.buildFromEntry(application, appJson, it)
+                            }
                     }
                     .onEach {
                         if (loading) {

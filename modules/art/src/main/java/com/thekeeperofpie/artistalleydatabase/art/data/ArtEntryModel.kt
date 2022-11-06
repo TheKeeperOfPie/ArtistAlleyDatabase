@@ -3,7 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.art.data
 import com.thekeeperofpie.artistalleydatabase.art.sections.SourceType
 import com.thekeeperofpie.artistalleydatabase.form.EntrySection
 
-class ArtEntryModel(
+data class ArtEntryModel(
     val artists: List<EntrySection.MultiText.Entry>,
     val series: List<EntrySection.MultiText.Entry>,
     val characters: List<EntrySection.MultiText.Entry>,

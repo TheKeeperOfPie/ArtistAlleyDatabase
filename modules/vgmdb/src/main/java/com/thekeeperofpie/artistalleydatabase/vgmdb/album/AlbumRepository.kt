@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.vgmdb.album
 
 import com.thekeeperofpie.artistalleydatabase.android_utils.ApiRepository
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
+import com.thekeeperofpie.artistalleydatabase.vgmdb.R
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -23,7 +24,7 @@ class AlbumRepository(
 
     override suspend fun insertCachedEntry(value: AlbumEntry) = albumEntryDao.insertEntries(value)
 
-    override suspend fun ensureSaved(ids: List<String>) {
+    override suspend fun ensureSaved(ids: List<String>) = try {
         withContext(Dispatchers.IO) {
             ids.map {
                 async {
@@ -32,5 +33,8 @@ class AlbumRepository(
                 }
             }.awaitAll()
         }
+        null
+    } catch (e: Exception) {
+        R.string.vgmdb_error_fetching_album to e
     }
 }

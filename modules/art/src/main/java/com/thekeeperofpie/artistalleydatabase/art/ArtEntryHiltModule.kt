@@ -6,7 +6,6 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.persistence.DatabaseSyncer
 import com.thekeeperofpie.artistalleydatabase.android_utils.persistence.Exporter
 import com.thekeeperofpie.artistalleydatabase.android_utils.persistence.Importer
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListDataConverter
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterEntryDao
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaEntryDao
@@ -24,6 +23,7 @@ import com.thekeeperofpie.artistalleydatabase.art.persistence.ArtImporter
 import com.thekeeperofpie.artistalleydatabase.art.persistence.ArtSyncer
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseSelectionNavigator
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseTabViewModel
+import com.thekeeperofpie.artistalleydatabase.data.DataConverter
 import com.thekeeperofpie.artistalleydatabase.form.EntryNavigator
 import dagger.Module
 import dagger.Provides
@@ -59,12 +59,12 @@ object ArtEntryHiltModule {
     fun provideArtExporter(
         application: Application,
         artEntryDao: ArtEntryDao,
-        aniListDataConverter: AniListDataConverter,
+        dataConverter: DataConverter,
         appJson: AppJson
     ): Exporter = ArtExporter(
         appContext = application,
         artEntryDao = artEntryDao,
-        aniListDataConverter = aniListDataConverter,
+        dataConverter = dataConverter,
         appJson = appJson
     )
 
@@ -94,14 +94,12 @@ object ArtEntryHiltModule {
         application: Application,
         artEntryBrowseDao: ArtEntryBrowseDao,
         artEntryNavigator: ArtEntryNavigator,
-        aniListDataConverter: AniListDataConverter,
         appJson: AppJson,
         characterRepository: CharacterRepository,
     ): BrowseTabViewModel = ArtBrowseTabCharacters(
         application,
         artEntryBrowseDao,
         artEntryNavigator,
-        aniListDataConverter,
         appJson,
         characterRepository
     )
@@ -112,14 +110,12 @@ object ArtEntryHiltModule {
         application: Application,
         artEntryBrowseDao: ArtEntryBrowseDao,
         artEntryNavigator: ArtEntryNavigator,
-        aniListDataConverter: AniListDataConverter,
         appJson: AppJson,
         mediaRepository: MediaRepository,
     ): BrowseTabViewModel = ArtBrowseTabSeries(
         application,
         artEntryBrowseDao,
         artEntryNavigator,
-        aniListDataConverter,
         appJson,
         mediaRepository
     )

@@ -12,7 +12,7 @@ interface ArtEntryEditDao : ArtEntryDetailsDao {
 
     @Query(
         """
-            SELECT COUNT(DISTINCT series)
+            SELECT COUNT(DISTINCT seriesSerialized)
             FROM art_entries
             WHERE id IN (:ids)
         """
@@ -21,7 +21,7 @@ interface ArtEntryEditDao : ArtEntryDetailsDao {
 
     @Query(
         """
-            SELECT COUNT(DISTINCT characters)
+            SELECT COUNT(DISTINCT charactersSerialized)
             FROM art_entries
             WHERE id IN (:ids)
         """
@@ -157,7 +157,7 @@ interface ArtEntryEditDao : ArtEntryDetailsDao {
     @Query(
         """
             UPDATE art_entries
-            SET series = :series, seriesSearchable = :seriesSearchable
+            SET seriesSerialized = :series, seriesSearchable = :seriesSearchable
             WHERE id IN (:ids)
         """
     )
@@ -170,7 +170,7 @@ interface ArtEntryEditDao : ArtEntryDetailsDao {
     @Query(
         """
             UPDATE art_entries
-            SET characters = :characters, charactersSearchable = :charactersSearchable
+            SET charactersSerialized = :characters, charactersSearchable = :charactersSearchable
             WHERE id IN (:ids)
         """
     )

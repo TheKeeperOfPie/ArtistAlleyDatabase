@@ -6,10 +6,10 @@ import com.squareup.moshi.JsonWriter
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.persistence.ExportUtils
 import com.thekeeperofpie.artistalleydatabase.android_utils.persistence.Exporter
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListDataConverter
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntry
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDao
 import com.thekeeperofpie.artistalleydatabase.cds.utils.CdEntryUtils
+import com.thekeeperofpie.artistalleydatabase.data.DataConverter
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbDataConverter
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.encodeToJsonElement
@@ -19,7 +19,7 @@ import java.io.InputStream
 class CdExporter(
     private val appContext: Context,
     private val cdEntryDao: CdEntryDao,
-    private val aniListDataConverter: AniListDataConverter,
+    private val dataConverter: DataConverter,
     private val vgmdbDataConverter: VgmdbDataConverter,
     private val appJson: AppJson,
 ) : Exporter {
@@ -70,14 +70,13 @@ class CdExporter(
         imageFile: File,
         writeEntry: suspend (String, InputStream) -> Unit,
     ) {
-        val series = entry.series
-            .map(aniListDataConverter::databaseToSeriesEntry)
+        val series = dataConverter.seriesEntries(entry.series(appJson))
             .map { it.text }
             .sorted()
 
-        val characters = entry.characters
-            .map(aniListDataConverter::databaseToCharacterEntry)
+        val characters = dataConverter.characterEntries(entry.characters(appJson))
             .map { it.text }
+            .sorted()
 
         val performers = entry.performers.map(vgmdbDataConverter::databaseToArtistEntry)
         val composers = entry.composers.map(vgmdbDataConverter::databaseToArtistEntry)

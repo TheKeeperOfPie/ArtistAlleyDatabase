@@ -34,6 +34,7 @@
     <string name="error_loading_entries">Error loading entries</string>
     <string name="nav_drawer_search">Search</string>
     <string name="import_replace_all">Replace all</string>
+    <string name="import_sync_after">Sync database afterwards</string>
     <string name="debug_variant">DEBUG</string>
     <string name="notification_channel_export_name">Export</string>
     <string name="notification_channel_export_description">Ongoing data export operations</string>

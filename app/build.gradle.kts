@@ -141,6 +141,7 @@ dependencies {
     implementation(project(":modules:browse"))
     implementation(project(":modules:cds"))
     implementation(project(":modules:compose-utils"))
+    implementation(project(":modules:data"))
     implementation(project(":modules:form"))
     implementation(kotlin("reflect"))
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3")

@@ -5,12 +5,12 @@ import com.squareup.moshi.Moshi
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.persistence.Exporter
 import com.thekeeperofpie.artistalleydatabase.android_utils.persistence.Importer
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListDataConverter
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseSelectionNavigator
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDao
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDatabase
 import com.thekeeperofpie.artistalleydatabase.cds.persistence.CdExporter
 import com.thekeeperofpie.artistalleydatabase.cds.persistence.CdImporter
+import com.thekeeperofpie.artistalleydatabase.data.DataConverter
 import com.thekeeperofpie.artistalleydatabase.form.EntryNavigator
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbDataConverter
 import dagger.Module
@@ -34,13 +34,13 @@ object CdEntryHiltModule {
     fun provideCdExporter(
         application: Application,
         cdEntryDao: CdEntryDao,
-        aniListDataConverter: AniListDataConverter,
+        dataConverter: DataConverter,
         vgmdbDataConverter: VgmdbDataConverter,
         appJson: AppJson
     ): Exporter = CdExporter(
         appContext = application,
         cdEntryDao = cdEntryDao,
-        aniListDataConverter = aniListDataConverter,
+        dataConverter = dataConverter,
         vgmdbDataConverter = vgmdbDataConverter,
         appJson = appJson
     )

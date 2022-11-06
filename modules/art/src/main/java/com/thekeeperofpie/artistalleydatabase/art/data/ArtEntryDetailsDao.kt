@@ -86,7 +86,7 @@ interface ArtEntryDetailsDao : ArtEntryDao {
 
     @Query(
         """
-        SELECT DISTINCT (art_entries.series)
+        SELECT DISTINCT (art_entries.seriesSerialized)
         FROM art_entries
         JOIN art_entries_fts ON art_entries.id = art_entries_fts.id
         WHERE art_entries_fts.seriesSearchable MATCH :query
@@ -101,7 +101,7 @@ interface ArtEntryDetailsDao : ArtEntryDao {
 
     @Query(
         """
-        SELECT DISTINCT (art_entries.series)
+        SELECT DISTINCT (art_entries.seriesSerialized)
         FROM art_entries
         WHERE art_entries.seriesSearchable LIKE :query
         LIMIT :limit OFFSET :offset
@@ -125,7 +125,7 @@ interface ArtEntryDetailsDao : ArtEntryDao {
 
     @Query(
         """
-        SELECT DISTINCT (art_entries.characters)
+        SELECT DISTINCT (art_entries.charactersSerialized)
         FROM art_entries
         JOIN art_entries_fts ON art_entries.id = art_entries_fts.id
         WHERE art_entries_fts.charactersSearchable MATCH :query
@@ -140,7 +140,7 @@ interface ArtEntryDetailsDao : ArtEntryDao {
 
     @Query(
         """
-        SELECT DISTINCT (art_entries.characters)
+        SELECT DISTINCT (art_entries.charactersSerialized)
         FROM art_entries
         WHERE art_entries.charactersSearchable LIKE :query
         LIMIT :limit OFFSET :offset

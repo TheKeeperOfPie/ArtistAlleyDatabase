@@ -31,6 +31,7 @@ class ImportViewModel @Inject constructor(
     var importUriString by mutableStateOf<String?>(null)
     var dryRun by mutableStateOf(true)
     var replaceAll by mutableStateOf(false)
+    var syncAfter by mutableStateOf(true)
     var importRequested by mutableStateOf(false)
     var importProgress by mutableStateOf<Float?>(null)
     var errorResource by mutableStateOf<Pair<Int, Exception?>?>(null)
@@ -88,16 +89,22 @@ class ImportViewModel @Inject constructor(
             )
             .build()
 
-        val syncRequest = OneTimeWorkRequestBuilder<DatabaseSyncWorker>()
-            .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
-            .build()
+        val additionalRequests = if (syncAfter) {
+            listOf(
+                OneTimeWorkRequestBuilder<DatabaseSyncWorker>()
+                    .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
+                    .build()
+            )
+        } else {
+            emptyList()
+        }
 
         workManager.beginUniqueWork(
             ImportUtils.UNIQUE_WORK_NAME,
             ExistingWorkPolicy.REPLACE,
             importRequest
         )
-            .then(syncRequest)
+            .then(additionalRequests)
             .enqueue()
         importRequested = true
         importProgress = 0f

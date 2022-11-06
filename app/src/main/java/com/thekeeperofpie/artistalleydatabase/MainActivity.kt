@@ -147,6 +147,10 @@ class MainActivity : ComponentActivity() {
                                             onToggleReplaceAll = {
                                                 viewModel.replaceAll = !viewModel.replaceAll
                                             },
+                                            syncAfter = { viewModel.syncAfter },
+                                            onToggleSyncAfter = {
+                                                viewModel.syncAfter = !viewModel.syncAfter
+                                            },
                                             onClickImport = viewModel::onClickImport,
                                             importProgress = { viewModel.importProgress },
                                             errorRes = viewModel.errorResource,

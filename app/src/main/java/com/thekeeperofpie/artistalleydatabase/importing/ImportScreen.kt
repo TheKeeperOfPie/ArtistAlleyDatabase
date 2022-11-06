@@ -42,6 +42,8 @@ object ImportScreen {
         onToggleDryRun: (Boolean) -> Unit = {},
         replaceAll: () -> Boolean = { false },
         onToggleReplaceAll: (Boolean) -> Unit = {},
+        syncAfter: () -> Boolean = { false },
+        onToggleSyncAfter: (Boolean) -> Unit = {},
         onClickImport: () -> Unit = {},
         importProgress: () -> Float? = { 0.5f },
         errorRes: Pair<Int, Exception?>? = null,
@@ -67,6 +69,8 @@ object ImportScreen {
                 onToggleDryRun = onToggleDryRun,
                 replaceAll = replaceAll,
                 onToggleReplaceAll = onToggleReplaceAll,
+                syncAfter = syncAfter,
+                onToggleSyncAfter = onToggleSyncAfter,
                 onClickImport = onClickImport,
                 importProgress = importProgress,
             )
@@ -83,6 +87,8 @@ object ImportScreen {
         onToggleDryRun: (Boolean) -> Unit = {},
         replaceAll: () -> Boolean = { false },
         onToggleReplaceAll: (Boolean) -> Unit = {},
+        syncAfter: () -> Boolean = { false },
+        onToggleSyncAfter: (Boolean) -> Unit = {},
         onClickImport: () -> Unit = {},
         importProgress: () -> Float? = { 0.5f }
     ) {
@@ -149,6 +155,28 @@ object ImportScreen {
                     )
 
                     Text(stringResource(R.string.import_replace_all))
+                }
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            onToggleSyncAfter(!syncAfter())
+                        }
+                ) {
+                    Checkbox(
+                        checked = syncAfter(),
+                        onCheckedChange = null,
+                        Modifier.padding(
+                            start = 16.dp,
+                            end = 16.dp,
+                            top = 8.dp,
+                            bottom = 8.dp
+                        )
+                    )
+
+                    Text(stringResource(R.string.import_sync_after))
                 }
 
                 LinearProgressWithIndicator(

@@ -13,14 +13,12 @@ import androidx.paging.filter
 import androidx.paging.map
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListDataConverter
-import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterColumnEntry
-import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaColumnEntry
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryBrowseDao
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryColumn
 import com.thekeeperofpie.artistalleydatabase.art.grid.ArtEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.art.grid.ArtEntryGridViewModel
-import com.thekeeperofpie.artistalleydatabase.form.EntrySection.MultiText.Entry
+import com.thekeeperofpie.artistalleydatabase.data.Character
+import com.thekeeperofpie.artistalleydatabase.data.Series
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -34,7 +32,6 @@ class ArtBrowseSelectionViewModel @Inject constructor(
     application: Application,
     private val artEntryBrowseDao: ArtEntryBrowseDao,
     private val appJson: AppJson,
-    private val aniListDataConverter: AniListDataConverter,
 ) : ArtEntryGridViewModel(application, artEntryBrowseDao) {
 
     lateinit var column: ArtEntryColumn
@@ -64,26 +61,20 @@ class ArtBrowseSelectionViewModel @Inject constructor(
                             ArtEntryColumn.ARTISTS -> it.artists.contains(queryValue)
                             ArtEntryColumn.SOURCE -> TODO()
                             ArtEntryColumn.SERIES -> when (queryIdOrString) {
-                                is Either.Left -> it.series.asSequence()
-                                    .map(aniListDataConverter::databaseToSeriesEntry)
-                                    .filterIsInstance<Entry.Prefilled<MediaColumnEntry>>()
-                                    .any { it.value.id == queryIdOrString.value }
+                                is Either.Left -> it.series(appJson)
+                                    .filterIsInstance<Series.AniList>()
+                                    .any { it.id == queryIdOrString.value }
                                 is Either.Right -> {
-                                    it.series
-                                        .map(aniListDataConverter::databaseToSeriesEntry)
-                                        .filterIsInstance<Entry.Custom>()
+                                    it.series(appJson)
                                         .any { it.text.contains(queryIdOrString.value) }
                                 }
                             }
                             ArtEntryColumn.CHARACTERS -> when (queryIdOrString) {
-                                is Either.Left -> it.characters.asSequence()
-                                    .map(aniListDataConverter::databaseToCharacterEntry)
-                                    .filterIsInstance<Entry.Prefilled<CharacterColumnEntry>>()
-                                    .any { it.value.id == queryIdOrString.value }
+                                is Either.Left -> it.characters(appJson)
+                                    .filterIsInstance<Character.AniList>()
+                                    .any { it.id == queryIdOrString.value }
                                 is Either.Right -> {
-                                    it.characters
-                                        .map(aniListDataConverter::databaseToCharacterEntry)
-                                        .filterIsInstance<Entry.Custom>()
+                                    it.characters(appJson)
                                         .any { it.text.contains(queryIdOrString.value) }
                                 }
                             }

@@ -69,11 +69,11 @@ class ArtImporter(
                     var entry = artEntryAdapter.fromJson(reader) ?: continue
 
                     if (entry.seriesSearchable.isEmpty()) {
-                        entry = entry.copy(seriesSearchable = entry.series)
+                        entry = entry.copy(seriesSearchable = entry.seriesSerialized)
                     }
 
                     if (entry.charactersSearchable.isEmpty()) {
-                        entry = entry.copy(charactersSearchable = entry.characters)
+                        entry = entry.copy(charactersSearchable = entry.charactersSerialized)
                     }
 
                     count++

@@ -3,14 +3,13 @@ package com.thekeeperofpie.artistalleydatabase.art.persistence
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.JsonUtils
 import com.thekeeperofpie.artistalleydatabase.android_utils.persistence.DatabaseSyncer
-import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterColumnEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterEntryDao
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
-import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaColumnEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaEntryDao
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntrySyncDao
-import kotlinx.serialization.decodeFromString
+import com.thekeeperofpie.artistalleydatabase.data.Character
+import com.thekeeperofpie.artistalleydatabase.data.Series
 
 class ArtSyncer(
     private val appJson: AppJson,
@@ -35,19 +34,15 @@ class ArtSyncer(
         val characterIds = mutableListOf<String>()
         val mediaIds = mutableListOf<String>()
         repeatToLimit(artEntryDao::getCharactersAndSeries) {
-            characterIds += it.map { it.characters }
+            characterIds += it.map { it.charactersSerialized }
                 .flatMap(JsonUtils::readStringList)
+                .map { Character.parseSingle(appJson, it).id }
                 .distinct()
-                .filter { it.contains("{") }
-                .map<String, CharacterColumnEntry>(appJson.json::decodeFromString)
-                .map { it.id }
                 .toList()
-            mediaIds += it.map { it.series }
+            mediaIds += it.map { it.seriesSerialized }
                 .flatMap(JsonUtils::readStringList)
+                .map { Series.parseSingle(appJson, it).id }
                 .distinct()
-                .filter { it.contains("{") }
-                .map<String, MediaColumnEntry>(appJson.json::decodeFromString)
-                .map { it.id }
                 .toList()
         }
 

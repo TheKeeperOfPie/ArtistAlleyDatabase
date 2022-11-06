@@ -4,6 +4,7 @@ import com.anilist.fragment.AniListMedia
 import com.thekeeperofpie.artistalleydatabase.android_utils.ApiRepository
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListApi
+import com.thekeeperofpie.artistalleydatabase.anilist.R
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 
@@ -21,12 +22,15 @@ class MediaRepository(
 
     override suspend fun insertCachedEntry(value: MediaEntry) = mediaEntryDao.insertEntries(value)
 
-    override suspend fun ensureSaved(ids: List<String>) {
+    override suspend fun ensureSaved(ids: List<String>) = try {
         (ids - mediaEntryDao.getEntriesById(ids).toSet())
             .map(String::toInt)
             .let { aniListApi.getMedias(it) }
             .map(::makeEntry)
             .forEach { insertCachedEntry(it) }
+        null
+    } catch (e: Exception) {
+        R.string.aniList_error_fetching_series to e
     }
 
     private fun makeEntry(media: AniListMedia) = MediaEntry(

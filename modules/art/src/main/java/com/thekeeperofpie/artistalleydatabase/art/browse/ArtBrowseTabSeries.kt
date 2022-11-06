@@ -9,7 +9,6 @@ import androidx.lifecycle.viewModelScope
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.android_utils.JsonUtils
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListDataConverter
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaColumnEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
@@ -21,7 +20,7 @@ import com.thekeeperofpie.artistalleydatabase.art.utils.ArtEntryUtils
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseEntryModel
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseScreen
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseTabViewModel
-import com.thekeeperofpie.artistalleydatabase.form.EntrySection
+import com.thekeeperofpie.artistalleydatabase.data.Series
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.asFlow
@@ -42,7 +41,6 @@ class ArtBrowseTabSeries @Inject constructor(
     context: Application,
     artEntryDao: ArtEntryBrowseDao,
     artEntryNavigator: ArtEntryNavigator,
-    aniListDataConverter: AniListDataConverter,
     appJson: AppJson,
     mediaRepository: MediaRepository,
 ) : BrowseTabViewModel() {
@@ -74,9 +72,8 @@ class ArtBrowseTabSeries @Inject constructor(
                                 artEntryDao.getSeriesFlow(databaseText, limit = 10)
                                     .flatMapLatest { it.asFlow() }
                                     .filter {
-                                        it.series
-                                            .map(aniListDataConverter::databaseToSeriesEntry)
-                                            .filterIsInstance<EntrySection.MultiText.Entry.Custom>()
+                                        it.series(appJson)
+                                            .filterIsInstance<Series.Custom>()
                                             .any { it.text.contains(databaseText) }
                                     }
                                     .take(1)

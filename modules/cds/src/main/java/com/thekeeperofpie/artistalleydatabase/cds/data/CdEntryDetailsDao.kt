@@ -97,7 +97,7 @@ interface CdEntryDetailsDao : CdEntryDao {
 
     @Query(
         """
-        SELECT DISTINCT (cd_entries.series)
+        SELECT DISTINCT (cd_entries.seriesSerialized)
         FROM cd_entries
         JOIN cd_entries_fts ON cd_entries.id = cd_entries_fts.id
         WHERE cd_entries_fts.seriesSearchable MATCH :query
@@ -112,7 +112,7 @@ interface CdEntryDetailsDao : CdEntryDao {
 
     @Query(
         """
-        SELECT DISTINCT (cd_entries.series)
+        SELECT DISTINCT (cd_entries.seriesSerialized)
         FROM cd_entries
         WHERE cd_entries.seriesSearchable LIKE :query
         LIMIT :limit OFFSET :offset
@@ -136,7 +136,7 @@ interface CdEntryDetailsDao : CdEntryDao {
 
     @Query(
         """
-        SELECT DISTINCT (cd_entries.characters)
+        SELECT DISTINCT (cd_entries.charactersSerialized)
         FROM cd_entries
         JOIN cd_entries_fts ON cd_entries.id = cd_entries_fts.id
         WHERE cd_entries_fts.charactersSearchable MATCH :query
@@ -151,7 +151,7 @@ interface CdEntryDetailsDao : CdEntryDao {
 
     @Query(
         """
-        SELECT DISTINCT (cd_entries.characters)
+        SELECT DISTINCT (cd_entries.charactersSerialized)
         FROM cd_entries
         WHERE cd_entries.charactersSearchable LIKE :query
         LIMIT :limit OFFSET :offset

@@ -4,9 +4,13 @@ import androidx.room.ColumnInfo
 import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.Fts4
+import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import com.squareup.moshi.JsonClass
+import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.Converters
+import com.thekeeperofpie.artistalleydatabase.data.Character
+import com.thekeeperofpie.artistalleydatabase.data.Series
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.DiscEntry
 import kotlinx.serialization.Serializable
 import java.math.BigDecimal
@@ -25,9 +29,9 @@ data class CdEntry(
     val performersSearchable: List<String> = emptyList(),
     val composers: List<String> = emptyList(),
     val composersSearchable: List<String> = emptyList(),
-    val series: List<String> = emptyList(),
+    val seriesSerialized: List<String> = emptyList(),
     val seriesSearchable: List<String> = emptyList(),
-    val characters: List<String> = emptyList(),
+    val charactersSerialized: List<String> = emptyList(),
     val charactersSearchable: List<String> = emptyList(),
     /** Encoded list of [DiscEntry] */
     val discs: List<String> = emptyList(),
@@ -47,6 +51,32 @@ data class CdEntry(
     val imageWidthToHeightRatio by lazy {
         (imageHeight?.toFloat() ?: 1f) /
                 (imageWidth ?: 1).coerceAtLeast(1)
+    }
+
+    @Ignore
+    @Transient
+    @kotlinx.serialization.Transient
+    private lateinit var _series: List<Series>
+
+    @Ignore
+    @Transient
+    @kotlinx.serialization.Transient
+    private lateinit var _characters: List<Character>
+
+    fun series(appJson: AppJson): List<Series> {
+        if (!::_series.isInitialized) {
+            _series = Series.parse(appJson, seriesSerialized)
+        }
+
+        return _series
+    }
+
+    fun characters(appJson: AppJson): List<Character> {
+        if (!::_characters.isInitialized) {
+            _characters = Character.parse(appJson, charactersSerialized)
+        }
+
+        return _characters
     }
 
     @Serializable
@@ -82,9 +112,9 @@ data class CdEntryFts(
     val performersSearchable: List<String> = emptyList(),
     val composers: List<String> = emptyList(),
     val composersSearchable: List<String> = emptyList(),
-    val series: List<String>,
+    val seriesSerialized: List<String>,
     val seriesSearchable: List<String>,
-    val characters: List<String>,
+    val charactersSerialized: List<String>,
     val charactersSearchable: List<String>,
     /** Encoded list of [DiscEntry] */
     val discs: List<String> = emptyList(),

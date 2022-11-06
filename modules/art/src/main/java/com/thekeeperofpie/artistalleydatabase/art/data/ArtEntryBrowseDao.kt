@@ -36,7 +36,7 @@ interface ArtEntryBrowseDao : ArtEntryDao {
 
     @Query(
         """
-            SELECT DISTINCT (art_entries.series)
+            SELECT DISTINCT (art_entries.seriesSerialized)
             FROM art_entries
             LIMIT :limit OFFSET :offset
         """
@@ -45,7 +45,7 @@ interface ArtEntryBrowseDao : ArtEntryDao {
 
     @Query(
         """
-            SELECT DISTINCT (art_entries.characters)
+            SELECT DISTINCT (art_entries.charactersSerialized)
             FROM art_entries
             LIMIT :limit OFFSET :offset
         """
@@ -94,7 +94,7 @@ interface ArtEntryBrowseDao : ArtEntryDao {
         """
             SELECT *
             FROM art_entries
-            WHERE series LIKE :query
+            WHERE seriesSerialized LIKE :query
         """
     )
     fun getSeriesInternal(query: String): PagingSource<Int, ArtEntry>
@@ -103,7 +103,7 @@ interface ArtEntryBrowseDao : ArtEntryDao {
         """
             SELECT *
             FROM art_entries
-            WHERE series LIKE :query
+            WHERE seriesSerialized LIKE :query
             LIMIT :limit
         """
     )
@@ -118,7 +118,7 @@ interface ArtEntryBrowseDao : ArtEntryDao {
         """
             SELECT *
             FROM art_entries
-            WHERE characters LIKE :query
+            WHERE charactersSerialized LIKE :query
         """
     )
     fun getCharacterInternal(query: String): PagingSource<Int, ArtEntry>
@@ -127,7 +127,7 @@ interface ArtEntryBrowseDao : ArtEntryDao {
         """
             SELECT *
             FROM art_entries
-            WHERE characters LIKE :query
+            WHERE charactersSerialized LIKE :query
             LIMIT :limit
         """
     )

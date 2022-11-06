@@ -27,6 +27,7 @@ include(
     ":modules:browse",
     ":modules:compose-utils",
     ":modules:cds",
+    ":modules:data",
     ":modules:form",
     ":modules:android-utils",
     ":modules:vgmdb",

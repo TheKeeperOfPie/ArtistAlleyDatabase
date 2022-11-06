@@ -7,13 +7,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
+import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListAutocompleter
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListDataConverter
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListJson
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntry
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryDetailsDao
+import com.thekeeperofpie.artistalleydatabase.data.DataConverter
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -24,20 +24,20 @@ import javax.inject.Inject
 @HiltViewModel
 class ArtEntryEditViewModel @Inject constructor(
     application: Application,
+    appJson: AppJson,
     artEntryDao: ArtEntryDetailsDao,
+    dataConverter: DataConverter,
     mediaRepository: MediaRepository,
     characterRepository: CharacterRepository,
-    aniListJson: AniListJson,
     aniListAutocompleter: AniListAutocompleter,
-    aniListDataConverter: AniListDataConverter,
 ) : ArtEntryDetailsViewModel(
     application,
+    appJson,
     artEntryDao,
+    dataConverter,
     mediaRepository,
     characterRepository,
-    aniListJson,
     aniListAutocompleter,
-    aniListDataConverter,
 ) {
 
     var entryId: String? = null

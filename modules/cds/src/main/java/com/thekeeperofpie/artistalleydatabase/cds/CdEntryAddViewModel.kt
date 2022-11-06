@@ -9,12 +9,12 @@ import androidx.compose.runtime.setValue
 import androidx.core.net.toUri
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
+import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListAutocompleter
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListDataConverter
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListJson
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDetailsDao
+import com.thekeeperofpie.artistalleydatabase.data.DataConverter
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbApi
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbAutocompleter
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbDataConverter
@@ -34,8 +34,7 @@ import javax.inject.Inject
 class CdEntryAddViewModel @Inject constructor(
     application: Application,
     cdEntryDao: CdEntryDetailsDao,
-    aniListJson: AniListJson,
-    aniListDataConverter: AniListDataConverter,
+    appJson: AppJson,
     aniListAutocompleter: AniListAutocompleter,
     vgmdbApi: VgmdbApi,
     vgmdbJson: VgmdbJson,
@@ -45,11 +44,11 @@ class CdEntryAddViewModel @Inject constructor(
     artistRepository: ArtistRepository,
     mediaRepository: MediaRepository,
     characterRepository: CharacterRepository,
+    dataConverter: DataConverter,
 ) : CdEntryDetailsViewModel(
     application,
     cdEntryDao,
-    aniListJson,
-    aniListDataConverter,
+    appJson,
     aniListAutocompleter,
     vgmdbApi,
     vgmdbJson,
@@ -59,6 +58,7 @@ class CdEntryAddViewModel @Inject constructor(
     artistRepository,
     mediaRepository,
     characterRepository,
+    dataConverter,
 ) {
 
     val imageUris = mutableStateListOf<Uri>()

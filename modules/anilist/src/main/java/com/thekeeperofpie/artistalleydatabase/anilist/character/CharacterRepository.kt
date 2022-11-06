@@ -4,6 +4,7 @@ import com.anilist.fragment.AniListCharacter
 import com.thekeeperofpie.artistalleydatabase.android_utils.ApiRepository
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListApi
+import com.thekeeperofpie.artistalleydatabase.anilist.R
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 
@@ -22,12 +23,15 @@ class CharacterRepository(
     override suspend fun insertCachedEntry(value: CharacterEntry) =
         characterEntryDao.insertEntries(value)
 
-    override suspend fun ensureSaved(ids: List<String>) {
+    override suspend fun ensureSaved(ids: List<String>) = try {
         (ids - characterEntryDao.getEntriesById(ids).toSet())
             .map(String::toInt)
             .let { aniListApi.getCharacters(it) }
             .map(::makeEntry)
             .forEach { insertCachedEntry(it) }
+        null
+    } catch (e: Exception) {
+        R.string.aniList_error_fetching_character to e
     }
 
     private fun makeEntry(character: AniListCharacter) = CharacterEntry(

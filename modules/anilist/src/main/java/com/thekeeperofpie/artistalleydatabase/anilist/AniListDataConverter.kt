@@ -6,7 +6,6 @@ import androidx.compose.material.icons.filled.Monitor
 import com.anilist.fragment.AniListCharacter
 import com.anilist.fragment.AniListMedia
 import com.anilist.type.MediaType
-import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterColumnEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterUtils
@@ -18,18 +17,6 @@ import javax.inject.Inject
 class AniListDataConverter @Inject constructor(
     private val aniListJson: AniListJson
 ) {
-
-    fun databaseToSeriesEntry(value: String) =
-        when (val either = aniListJson.parseSeriesColumn(value)) {
-            is Either.Right -> seriesEntry(either.value)
-            is Either.Left -> Entry.Custom(either.value)
-        }
-
-    fun databaseToCharacterEntry(value: String) =
-        when (val either = aniListJson.parseCharacterColumn(value)) {
-            is Either.Right -> characterEntry(either.value)
-            is Either.Left -> Entry.Custom(either.value)
-        }
 
     fun seriesEntry(media: AniListMedia): Entry {
         val title = media.title?.romaji ?: media.id.toString()

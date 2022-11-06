@@ -22,10 +22,10 @@ object ArtEntryUtils {
 
         val info = if (artists.isNotEmpty()) {
             artists.joinToString("\n")
-        } else if (series.isNotEmpty()) {
-            series.joinToString("\n")
-        } else if (characters.isNotEmpty()) {
-            characters.joinToString("\n")
+        } else if (seriesSerialized.isNotEmpty()) {
+            seriesSerialized.joinToString("\n")
+        } else if (charactersSerialized.isNotEmpty()) {
+            charactersSerialized.joinToString("\n")
         } else if (tags.isNotEmpty()) {
             tags.take(10).joinToString("\n")
         } else ""

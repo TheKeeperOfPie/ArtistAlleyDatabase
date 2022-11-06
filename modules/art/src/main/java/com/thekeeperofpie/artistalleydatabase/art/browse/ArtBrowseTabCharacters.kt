@@ -9,7 +9,6 @@ import androidx.lifecycle.viewModelScope
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.android_utils.JsonUtils
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListDataConverter
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterColumnEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
@@ -22,7 +21,7 @@ import com.thekeeperofpie.artistalleydatabase.art.utils.ArtEntryUtils
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseEntryModel
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseScreen
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseTabViewModel
-import com.thekeeperofpie.artistalleydatabase.form.EntrySection
+import com.thekeeperofpie.artistalleydatabase.data.Character
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.asFlow
@@ -43,7 +42,6 @@ class ArtBrowseTabCharacters @Inject constructor(
     context: Application,
     artEntryDao: ArtEntryBrowseDao,
     artEntryNavigator: ArtEntryNavigator,
-    aniListDataConverter: AniListDataConverter,
     appJson: AppJson,
     characterRepository: CharacterRepository,
 ) : BrowseTabViewModel() {
@@ -76,9 +74,8 @@ class ArtBrowseTabCharacters @Inject constructor(
                                 artEntryDao.getCharacterFlow(databaseText, limit = 10)
                                     .flatMapLatest { it.asFlow() }
                                     .filter {
-                                        it.characters
-                                            .map(aniListDataConverter::databaseToCharacterEntry)
-                                            .filterIsInstance<EntrySection.MultiText.Entry.Custom>()
+                                        it.characters(appJson)
+                                            .filterIsInstance<Character.Custom>()
                                             .any { it.text.contains(databaseText) }
                                     }
                                     .take(1)

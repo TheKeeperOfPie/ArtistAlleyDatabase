@@ -9,13 +9,12 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hoc081098.flowext.startWith
+import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.ImageUtils
 import com.thekeeperofpie.artistalleydatabase.android_utils.emitNotNull
 import com.thekeeperofpie.artistalleydatabase.android_utils.mapLatestNotNull
 import com.thekeeperofpie.artistalleydatabase.android_utils.suspend1
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListAutocompleter
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListDataConverter
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListJson
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
@@ -24,6 +23,9 @@ import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDetailsDao
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryModel
 import com.thekeeperofpie.artistalleydatabase.cds.section.DiscSection
 import com.thekeeperofpie.artistalleydatabase.cds.utils.CdEntryUtils
+import com.thekeeperofpie.artistalleydatabase.data.Character
+import com.thekeeperofpie.artistalleydatabase.data.DataConverter
+import com.thekeeperofpie.artistalleydatabase.data.Series
 import com.thekeeperofpie.artistalleydatabase.form.EntrySection
 import com.thekeeperofpie.artistalleydatabase.form.EntrySection.MultiText.Entry
 import com.thekeeperofpie.artistalleydatabase.vgmdb.SearchResults
@@ -57,8 +59,7 @@ import java.util.Date
 abstract class CdEntryDetailsViewModel(
     protected val application: Application,
     protected val cdEntryDao: CdEntryDetailsDao,
-    private val aniListJson: AniListJson,
-    private val aniListDataConverter: AniListDataConverter,
+    private val appJson: AppJson,
     private val aniListAutocompleter: AniListAutocompleter,
     private val vgmdbApi: VgmdbApi,
     private val vgmdbJson: VgmdbJson,
@@ -68,6 +69,7 @@ abstract class CdEntryDetailsViewModel(
     private val artistRepository: ArtistRepository,
     private val mediaRepository: MediaRepository,
     private val characterRepository: CharacterRepository,
+    private val dataConverter: DataConverter,
 ) : ViewModel() {
 
     companion object {
@@ -293,8 +295,8 @@ abstract class CdEntryDetailsViewModel(
         val titles = entry.titles.map(vgmdbDataConverter::databaseToTitleEntry)
         val performers = entry.performers.map(vgmdbDataConverter::databaseToArtistEntry)
         val composers = entry.composers.map(vgmdbDataConverter::databaseToArtistEntry)
-        val series = entry.series.map(aniListDataConverter::databaseToSeriesEntry)
-        val characters = entry.characters.map(aniListDataConverter::databaseToCharacterEntry)
+        val series = dataConverter.seriesEntries(entry.series(appJson))
+        val characters = dataConverter.characterEntries(entry.characters(appJson))
         val discs = entry.discs.mapNotNull(vgmdbDataConverter::databaseToDiscEntry)
         val tags = entry.tags.map(Entry::Custom)
 
@@ -399,10 +401,10 @@ abstract class CdEntryDetailsViewModel(
             titles = titleSection.finalContents().map { it.serializedValue },
             performers = performerSection.finalContents().map { it.serializedValue },
             composers = composerSection.finalContents().map { it.serializedValue },
-            series = seriesSection.finalContents().map { it.serializedValue },
+            seriesSerialized = seriesSection.finalContents().map { it.serializedValue },
             seriesSearchable = seriesSection.finalContents().map { it.searchableValue }
                 .filterNot(String?::isNullOrBlank),
-            characters = characterSection.finalContents().map { it.serializedValue },
+            charactersSerialized = characterSection.finalContents().map { it.serializedValue },
             charactersSearchable = characterSection.finalContents().map { it.searchableValue }
                 .filterNot(String?::isNullOrBlank),
             discs = discSection.serializedValue(),
@@ -428,18 +430,34 @@ abstract class CdEntryDetailsViewModel(
     suspend fun saveEntry(imageUri: Uri?, id: String): Boolean {
         val entry = makeEntry(imageUri, id) ?: return false
         entry.catalogId?.let { albumRepository.ensureSaved(listOf(it)) }
-        entry.series
-            .map { aniListJson.parseSeriesColumn(it) }
-            .mapNotNull { it.rightOrNull()?.id }
+            ?.let {
+                errorResource = it
+                return false
+            }
+        entry.series(appJson)
+            .filterIsInstance<Series.AniList>()
+            .map { it.id }
             .let { mediaRepository.ensureSaved(it) }
-        entry.characters
-            .map { aniListJson.parseCharacterColumn(it) }
-            .mapNotNull { it.rightOrNull()?.id }
+            ?.let {
+                errorResource = it
+                return false
+            }
+        entry.characters(appJson)
+            .filterIsInstance<Character.AniList>()
+            .map { it.id }
             .let { characterRepository.ensureSaved(it) }
+            ?.let {
+                errorResource = it
+                return false
+            }
         listOf(entry.performers, entry.composers).forEach {
             it.map { vgmdbJson.parseArtistColumn(it) }
                 .mapNotNull { it.rightOrNull()?.id }
                 .let { artistRepository.ensureSaved(it) }
+                ?.let {
+                    errorResource = it
+                    return false
+                }
         }
         cdEntryDao.insertEntries(entry)
         return true

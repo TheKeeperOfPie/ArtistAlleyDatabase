@@ -2,4 +2,6 @@
 <resources>
     <string name="aniList_entry_anime_indicator_content_description">Anime type indicator</string>
     <string name="aniList_entry_manga_indicator_content_description">Manga type indicator</string>
+    <string name="aniList_error_fetching_character">Error fetching character</string>
+    <string name="aniList_error_fetching_series">Error fetching series</string>
 </resources>

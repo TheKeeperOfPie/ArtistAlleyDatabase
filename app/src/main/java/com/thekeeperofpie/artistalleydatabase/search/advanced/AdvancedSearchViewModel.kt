@@ -3,9 +3,8 @@ package com.thekeeperofpie.artistalleydatabase.search.advanced
 import android.app.Application
 import androidx.lifecycle.viewModelScope
 import com.thekeeperofpie.artistalleydatabase.SettingsProvider
+import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListAutocompleter
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListDataConverter
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListJson
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
@@ -14,6 +13,8 @@ import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntry
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryDetailsDao
 import com.thekeeperofpie.artistalleydatabase.art.search.ArtAdvancedSearchQuery
 import com.thekeeperofpie.artistalleydatabase.art.sections.PrintSize
+import com.thekeeperofpie.artistalleydatabase.art.sections.SourceType
+import com.thekeeperofpie.artistalleydatabase.data.DataConverter
 import com.thekeeperofpie.artistalleydatabase.form.EntrySection
 import com.thekeeperofpie.artistalleydatabase.form.EntrySection.MultiText.Entry
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -24,22 +25,22 @@ import javax.inject.Inject
 @HiltViewModel
 class AdvancedSearchViewModel @Inject constructor(
     application: Application,
+    appJson: AppJson,
     artEntryDao: ArtEntryDetailsDao,
+    dataConverter: DataConverter,
     mediaRepository: MediaRepository,
     characterRepository: CharacterRepository,
-    aniListJson: AniListJson,
     aniListAutocompleter: AniListAutocompleter,
-    aniListDataConverter: AniListDataConverter,
     private val searchRepository: AdvancedSearchRepository,
     private val settingsProvider: SettingsProvider,
 ) : ArtEntryDetailsViewModel(
     application,
+    appJson,
     artEntryDao,
+    dataConverter,
     mediaRepository,
     characterRepository,
-    aniListJson,
     aniListAutocompleter,
-    aniListDataConverter,
 ) {
 
     init {
@@ -58,7 +59,10 @@ class AdvancedSearchViewModel @Inject constructor(
     }
 
     fun onClickClear() {
-        initializeForm(buildModel(ArtEntry()))
+        initializeForm(
+            buildModel(ArtEntry(locks = ArtEntry.Locks(locked = null)))
+                .copy(source = SourceType.Different)
+        )
     }
 
     fun onClickSearch(): String {

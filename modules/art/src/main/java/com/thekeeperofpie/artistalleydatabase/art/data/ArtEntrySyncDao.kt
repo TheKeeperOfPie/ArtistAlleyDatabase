@@ -8,7 +8,7 @@ interface ArtEntrySyncDao : ArtEntryDao {
 
     @Query(
         """
-            SELECT DISTINCT art_entries.characters, art_entries.series
+            SELECT DISTINCT art_entries.charactersSerialized, art_entries.seriesSerialized
             FROM art_entries
             LIMIT :limit OFFSET :offset
         """
@@ -19,7 +19,7 @@ interface ArtEntrySyncDao : ArtEntryDao {
     ): List<CharactersAndSeries>
 
     data class CharactersAndSeries(
-        val characters: String,
-        val series: String,
+        val charactersSerialized: String,
+        val seriesSerialized: String,
     )
 }

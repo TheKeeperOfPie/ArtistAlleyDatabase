@@ -47,5 +47,5 @@ abstract class ApiRepository<DataType>(protected val application: ScopedApplicat
             }
         }
 
-    abstract suspend fun ensureSaved(ids: List<String>)
+    abstract suspend fun ensureSaved(ids: List<String>): Pair<Int, Exception?>?
 }
