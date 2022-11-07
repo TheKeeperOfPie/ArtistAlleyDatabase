@@ -58,9 +58,9 @@ class ArtSyncer(
         //  or add a note in the completion notification indicating where it stopped
         characterIdsToFetch
             .windowed(size = FETCH_PAGE_SIZE, step = FETCH_PAGE_SIZE, partialWindows = true)
-            .forEachIndexed { index, ids ->
-                characterRepository.ensureSaved(ids)
-                realProgress += ids.size
+            .forEach {
+                characterRepository.ensureSaved(it)
+                realProgress += it.size
                 setProgress(
                     setProgress,
                     initialProgress,
@@ -73,9 +73,9 @@ class ArtSyncer(
 
         mediaIdsToFetch
             .windowed(size = FETCH_PAGE_SIZE, step = FETCH_PAGE_SIZE, partialWindows = true)
-            .forEachIndexed { index, ids ->
-                mediaRepository.ensureSaved(ids)
-                realProgress += ids.size
+            .forEach {
+                mediaRepository.ensureSaved(it)
+                realProgress += it.size
                 setProgress(
                     setProgress,
                     initialProgress,

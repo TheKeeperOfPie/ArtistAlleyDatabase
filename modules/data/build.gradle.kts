@@ -39,7 +39,7 @@ android {
 }
 
 dependencies {
-    implementation(project(":modules:android-utils"))
+    api(project(":modules:android-utils"))
     api(project(":modules:anilist"))
     api(project(":modules:form"))
 

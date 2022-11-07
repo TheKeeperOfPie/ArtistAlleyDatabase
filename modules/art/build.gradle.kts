@@ -45,12 +45,12 @@ android {
 }
 
 dependencies {
-    implementation(project(":modules:android-utils"))
-    implementation(project(":modules:anilist"))
-    implementation(project(":modules:browse"))
+    api(project(":modules:android-utils"))
+    api(project(":modules:anilist"))
+    api(project(":modules:browse"))
     implementation(project(":modules:compose-utils"))
-    implementation(project(":modules:data"))
-    implementation(project(":modules:form"))
+    api(project(":modules:data"))
+    api(project(":modules:form"))
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3")
 
     implementation("com.google.dagger:hilt-android:2.43.2")
@@ -60,31 +60,21 @@ dependencies {
 
     implementation("androidx.navigation:navigation-compose:2.5.3")
 
-    implementation("androidx.activity:activity-compose:1.6.1")
     implementation("androidx.core:core-ktx:1.9.0")
     implementation("androidx.compose.ui:ui:1.4.0-alpha01")
-    implementation("androidx.compose.ui:ui-tooling-preview:1.4.0-alpha01")
-    implementation("androidx.compose.material:material-icons-core:1.4.0-alpha01")
-    implementation("androidx.compose.material:material-icons-extended:1.4.0-alpha01")
+    api("androidx.compose.ui:ui-tooling-preview:1.4.0-alpha01")
     implementation("androidx.compose.material3:material3:1.1.0-alpha01")
 
-    implementation("androidx.paging:paging-runtime:3.2.0-alpha03")
-    implementation("androidx.paging:paging-compose:1.0.0-alpha17")
-
-    implementation("androidx.room:room-runtime:2.5.0-beta01")
+    runtimeOnly("androidx.room:room-runtime:2.5.0-beta01")
     ksp("androidx.room:room-compiler:2.5.0-beta01")
     implementation("androidx.room:room-ktx:2.5.0-beta01")
     testImplementation("androidx.room:room-testing:2.5.0-beta01")
     implementation("androidx.room:room-paging:2.5.0-beta01")
 
-    implementation("com.squareup.moshi:moshi:1.13.0")
-    implementation("com.squareup.moshi:moshi-kotlin:1.13.0")
+    implementation("androidx.paging:paging-compose:1.0.0-alpha17")
+
+    api("com.squareup.moshi:moshi-kotlin:1.13.0")
     ksp("com.squareup.moshi:moshi-kotlin-codegen:1.13.0")
-
-    implementation("io.coil-kt:coil:2.2.0")
-    implementation("io.coil-kt:coil-compose:2.2.0")
-
-    implementation("com.mxalbert.sharedelements:shared-elements:0.1.0-SNAPSHOT")
 
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.3")

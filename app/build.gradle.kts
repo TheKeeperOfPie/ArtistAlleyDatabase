@@ -134,6 +134,8 @@ tasks.register<Exec>("launchDebug") {
     outputs.upToDateWhen { false }
 }
 
+tasks.getByPath("preBuild").dependsOn(":copyGitHooks")
+
 dependencies {
     implementation(project(":modules:android-utils"))
     implementation(project(":modules:anilist"))
@@ -143,9 +145,9 @@ dependencies {
     implementation(project(":modules:compose-utils"))
     implementation(project(":modules:data"))
     implementation(project(":modules:form"))
-    implementation(kotlin("reflect"))
+    runtimeOnly(kotlin("reflect"))
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4")
+    runtimeOnly("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4")
 
     implementation("androidx.navigation:navigation-compose:2.5.3")
 
@@ -164,16 +166,15 @@ dependencies {
     implementation("androidx.compose.material:material-icons-extended:1.4.0-alpha01")
     implementation("androidx.compose.material3:material3:1.1.0-alpha01")
 
-    implementation("androidx.paging:paging-runtime:3.2.0-alpha03")
+    runtimeOnly("androidx.paging:paging-runtime:3.2.0-alpha03")
     implementation("androidx.paging:paging-compose:1.0.0-alpha17")
 
-    implementation("androidx.room:room-runtime:2.5.0-beta01")
+    runtimeOnly("androidx.room:room-runtime:2.5.0-beta01")
     ksp("androidx.room:room-compiler:2.5.0-beta01")
     implementation("androidx.room:room-ktx:2.5.0-beta01")
     testImplementation("androidx.room:room-testing:2.5.0-beta01")
     implementation("androidx.room:room-paging:2.5.0-beta01")
 
-    implementation("io.coil-kt:coil:2.2.0")
     implementation("io.coil-kt:coil-compose:2.2.0")
 
     testImplementation("junit:junit:4.13.2")
@@ -181,7 +182,7 @@ dependencies {
     androidTestImplementation("androidx.test.espresso:espresso-core:3.4.0")
     androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.4.0-alpha01")
     debugImplementation("androidx.compose.ui:ui-tooling:1.4.0-alpha01")
-    debugImplementation("androidx.compose.ui:ui-test-manifest:1.4.0-alpha01")
+    debugRuntimeOnly("androidx.compose.ui:ui-test-manifest:1.4.0-alpha01")
 
     implementation("com.mxalbert.sharedelements:shared-elements:0.1.0-SNAPSHOT")
 
@@ -189,7 +190,6 @@ dependencies {
     implementation("androidx.work:work-runtime-ktx:2.7.1")
     androidTestImplementation("androidx.work:work-testing:2.7.1")
 
-    implementation("com.squareup.moshi:moshi:1.13.0")
     implementation("com.squareup.moshi:moshi-kotlin:1.13.0")
     ksp("com.squareup.moshi:moshi-kotlin-codegen:1.13.0")
 

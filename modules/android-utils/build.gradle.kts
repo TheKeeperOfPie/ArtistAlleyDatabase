@@ -36,21 +36,19 @@ android {
 }
 
 dependencies {
-    api("androidx.work:work-runtime:2.7.1")
+    runtimeOnly("androidx.work:work-runtime:2.7.1")
     api("androidx.work:work-runtime-ktx:2.7.1")
     api("io.github.hoc081098:FlowExt:0.4.0")
 
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4")
+    runtimeOnly("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4")
 
-    implementation("androidx.room:room-runtime:2.5.0-beta01")
+    runtimeOnly("androidx.room:room-runtime:2.5.0-beta01")
     ksp("androidx.room:room-compiler:2.5.0-beta01")
     implementation("androidx.room:room-ktx:2.5.0-beta01")
     testImplementation("androidx.room:room-testing:2.5.0-beta01")
     implementation("androidx.room:room-paging:2.5.0-beta01")
 
-    implementation("com.squareup.moshi:moshi:1.13.0")
-    implementation("com.squareup.moshi:moshi-kotlin:1.13.0")
     ksp("com.squareup.moshi:moshi-kotlin-codegen:1.13.0")
 
     testImplementation("junit:junit:4.13.2")
