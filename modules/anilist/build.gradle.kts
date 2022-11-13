@@ -77,6 +77,7 @@ dependencies {
     testImplementation("androidx.room:room-testing:2.5.0-beta01")
     implementation("androidx.room:room-paging:2.5.0-beta01")
 
+    api("com.squareup.moshi:moshi-kotlin:1.13.0")
     ksp("com.squareup.moshi:moshi-kotlin-codegen:1.13.0")
 
     testImplementation("junit:junit:4.13.2")

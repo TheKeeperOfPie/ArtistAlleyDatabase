@@ -16,13 +16,16 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class AniListAutocompleter @Inject constructor(
@@ -129,7 +132,7 @@ class AniListAutocompleter @Inject constructor(
         // AniList IDs are integers
         val queryAsId = query.toIntOrNull()
         return if (queryAsId == null) search else {
-            combine(search, aniListApi.getCharacter(queryAsId.toString())
+            combine(search, flow { emit(aniListApi.getCharacter(queryAsId.toString())) }
                 .catch {}
                 .filterNotNull()
                 .mapNotNull(aniListDataConverter::characterEntry)
@@ -144,6 +147,7 @@ class AniListAutocompleter @Inject constructor(
         characterValue: StateFlow<String>,
         queryCharactersLocal: suspend (query: String) -> List<String>,
     ): Flow<List<Entry>> {
+        @Suppress("OPT_IN_USAGE")
         return combine(
             seriesContents.map { it.filterIsInstance<Entry.Prefilled<*>>() }
                 .map { it.mapNotNull(AniListUtils::mediaId) }
@@ -164,9 +168,11 @@ class AniListAutocompleter @Inject constructor(
                         }
                 }
                 .startWith(item = emptyList()),
-            characterValue.flatMapLatest { query ->
-                queryCharacters(query, queryCharactersLocal).map { query to it }
-            }
+            characterValue
+                .debounce(2.seconds)
+                .flatMapLatest { query ->
+                    queryCharacters(query, queryCharactersLocal).map { query to it }
+                }
         ) { series, (query, charactersPair) ->
             val (charactersFirst, charactersSecond) = charactersPair
             val (seriesFirst, seriesSecond) = series.toMutableList().apply {

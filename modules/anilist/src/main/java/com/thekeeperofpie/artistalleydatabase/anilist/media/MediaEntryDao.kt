@@ -23,4 +23,7 @@ interface MediaEntryDao {
 
     @Query("DELETE FROM media_entries")
     suspend fun deleteAll()
+
+    @Query("DELETE FROM media_entries WHERE id = :id")
+    suspend fun delete(id: String)
 }

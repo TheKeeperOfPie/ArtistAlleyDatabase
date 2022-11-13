@@ -8,20 +8,34 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.thekeeperofpie.artistalleydatabase.R
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListStringR
 import com.thekeeperofpie.artistalleydatabase.compose.AppBar
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
+import com.thekeeperofpie.artistalleydatabase.compose.dropdown.DropdownMenuItem
+import com.thekeeperofpie.artistalleydatabase.form.FormStringR
+import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbStringR
 
 object SettingsScreen {
 
@@ -34,6 +48,7 @@ object SettingsScreen {
         onClickAniListClear: () -> Unit = {},
         onClickVgmdbClear: () -> Unit = {},
         onClickDatabaseFetch: () -> Unit = {},
+        onClickClearDatabaseById: (DatabaseType, String) -> Unit = { _, _ -> },
     ) {
         Scaffold(
             topBar = {
@@ -53,12 +68,7 @@ object SettingsScreen {
                     onClick = onClickAniListClear
                 )
 
-                Spacer(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(1.dp)
-                        .background(MaterialTheme.colorScheme.inverseOnSurface)
-                )
+                Divider()
 
                 ButtonRow(
                     title = R.string.settings_clear_vgmdb_cache,
@@ -66,24 +76,23 @@ object SettingsScreen {
                     onClick = onClickVgmdbClear
                 )
 
-                Spacer(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(1.dp)
-                        .background(MaterialTheme.colorScheme.inverseOnSurface)
-                )
+                Divider()
 
                 ButtonRow(
                     title = R.string.settings_database_fetch,
                     buttonText = R.string.fetch,
                     onClick = onClickDatabaseFetch
                 )
+
+                Divider()
+
+                ClearDatabaseByIdRow(onClickClearDatabaseById)
             }
         }
     }
 
     @Composable
-    fun ButtonRow(@StringRes title: Int, @StringRes buttonText: Int, onClick: () -> Unit) {
+    private fun ButtonRow(@StringRes title: Int, @StringRes buttonText: Int, onClick: () -> Unit) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 10.dp, bottom = 10.dp)
@@ -95,6 +104,92 @@ object SettingsScreen {
             )
             FilledTonalButton(onClick = onClick) { Text(text = stringResource(buttonText)) }
         }
+    }
+
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Composable
+    private fun ClearDatabaseByIdRow(
+        onClickClearDatabaseById: (DatabaseType, String) -> Unit = { _, _ -> },
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(
+                start = 16.dp,
+                end = 16.dp,
+                top = 10.dp,
+                bottom = 10.dp
+            )
+        ) {
+            var expanded by remember { mutableStateOf(false) }
+            var selectedDatabaseTypeIndex by rememberSaveable { mutableStateOf(0) }
+            ExposedDropdownMenuBox(
+                expanded = expanded,
+                onExpandedChange = { expanded = !expanded },
+                modifier = Modifier.wrapContentWidth()
+                    .fillMaxWidth(0.5f),
+            ) {
+                TextField(
+                    value = stringResource(
+                        DatabaseType.values()[selectedDatabaseTypeIndex].labelRes
+                    ),
+                    onValueChange = {},
+                    label = { Text(stringResource(R.string.label_database_type)) },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                    colors = ExposedDropdownMenuDefaults.textFieldColors(),
+                    modifier = Modifier
+                        .menuAnchor(),
+                )
+                ExposedDropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false },
+                ) {
+                    DatabaseType.values().forEachIndexed { index, databaseType ->
+                        DropdownMenuItem(
+                            text = { Text(stringResource(databaseType.labelRes)) },
+                            onClick = {
+                                selectedDatabaseTypeIndex = index
+                                expanded = false
+                            },
+                            contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+            var clearDatabaseId by remember { mutableStateOf("") }
+            TextField(
+                value = clearDatabaseId,
+                onValueChange = { clearDatabaseId = it },
+                label = { Text(stringResource(id = R.string.label_id)) },
+                modifier = Modifier.weight(1f),
+            )
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            FilledTonalButton(onClick = {
+                onClickClearDatabaseById(
+                    DatabaseType.values()[selectedDatabaseTypeIndex],
+                    clearDatabaseId
+                )
+            }) { Text(text = stringResource(FormStringR.delete)) }
+        }
+    }
+
+    @Composable
+    private fun Divider() {
+        Spacer(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(1.dp)
+                .background(MaterialTheme.colorScheme.inverseOnSurface)
+        )
+    }
+
+    enum class DatabaseType(@StringRes val labelRes: Int) {
+        ANILIST(AniListStringR.aniList),
+        VGMDB(VgmdbStringR.vgmdb),
     }
 }
 

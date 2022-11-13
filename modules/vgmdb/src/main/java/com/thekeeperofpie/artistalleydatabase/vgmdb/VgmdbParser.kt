@@ -161,13 +161,13 @@ class VgmdbParser(private val json: Json) {
         innerMain["#collapse_credits"]?.all("tr")?.map {
             val name = it["td", "b", "span"]?.ownText
             when (name?.lowercase(Locale.ENGLISH)) {
-                "vocals" -> {
+                "vocals", "vocalist" -> {
                     performers += parseArtistCredits(it)
                 }
-                "performer" -> {
+                "performer", "performed by" -> {
                     performers += parseArtistCredits(it)
                 }
-                "composer" -> {
+                "composer", "composed by" -> {
                     composers += parseArtistCredits(it)
                 }
             }
@@ -290,6 +290,7 @@ class VgmdbParser(private val json: Json) {
 
     private fun String.removeMatchingResults(regex: Regex) = regex.findAll(this)
         .toList()
+        .reversed()
         .fold(this) { stripped, result ->
             stripped.removeRange(result.range)
         }

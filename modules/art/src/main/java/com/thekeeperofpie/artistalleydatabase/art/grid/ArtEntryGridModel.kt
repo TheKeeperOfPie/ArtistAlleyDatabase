@@ -28,7 +28,7 @@ class ArtEntryGridModel(
 
             // Placeholder text is generally only useful without an image
             val placeholderText = if (localImageFile == null) {
-                ArtEntryUtils.buildPlaceholderText(appJson.json, entry)
+                ArtEntryUtils.buildPlaceholderText(appJson, entry)
             } else ""
 
             return ArtEntryGridModel(

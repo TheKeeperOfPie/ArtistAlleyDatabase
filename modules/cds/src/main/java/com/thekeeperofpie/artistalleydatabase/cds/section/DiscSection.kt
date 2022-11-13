@@ -356,6 +356,7 @@ class DiscSection(private val json: Json, lockState: LockState? = null) :
     }.map(json::encodeToString)
 
     fun setDiscs(discs: List<DiscEntry>, lockState: LockState? = this.lockState) {
+        if (this.lockState == LockState.LOCKED) return
         this.lockState = lockState
         this.discs.clear()
         this.discs.addAll(

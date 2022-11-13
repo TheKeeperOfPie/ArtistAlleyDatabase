@@ -1,17 +1,17 @@
 package com.thekeeperofpie.artistalleydatabase.art.utils
 
 import android.content.Context
+import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntry
 import com.thekeeperofpie.artistalleydatabase.art.sections.SourceType
-import kotlinx.serialization.json.Json
 
 object ArtEntryUtils {
 
     fun getImageFile(context: Context, id: String) = context.filesDir
         .resolve("art_entry_images/${id}")
 
-    fun buildPlaceholderText(json: Json, entry: ArtEntry) = entry.run {
-        val source = when (val source = SourceType.fromEntry(json, this)) {
+    fun buildPlaceholderText(appJson: AppJson, entry: ArtEntry) = entry.run {
+        val source = when (val source = SourceType.fromEntry(appJson.json, this)) {
             is SourceType.Convention -> (source.name + (source.year?.let { " $it" }
                 ?: "") + "\n" + source.hall + " " + source.booth).trim()
             is SourceType.Custom -> source.value
@@ -20,12 +20,14 @@ object ArtEntryUtils {
             SourceType.Different -> ""
         }
 
+        val series = series(appJson)
+        val characters = characters(appJson)
         val info = if (artists.isNotEmpty()) {
             artists.joinToString("\n")
-        } else if (seriesSerialized.isNotEmpty()) {
-            seriesSerialized.joinToString("\n")
-        } else if (charactersSerialized.isNotEmpty()) {
-            charactersSerialized.joinToString("\n")
+        } else if (series.isNotEmpty()) {
+            series.joinToString("\n") { it.text }
+        } else if (characters.isNotEmpty()) {
+            characters.joinToString("\n") { it.text }
         } else if (tags.isNotEmpty()) {
             tags.take(10).joinToString("\n")
         } else ""

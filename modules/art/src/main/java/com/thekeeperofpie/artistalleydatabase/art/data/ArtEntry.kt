@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.art.data
 
+import androidx.annotation.Discouraged
 import androidx.room.ColumnInfo
 import androidx.room.Embedded
 import androidx.room.Entity
@@ -25,9 +26,11 @@ data class ArtEntry(
     val artists: List<String> = emptyList(),
     val sourceType: String? = null,
     val sourceValue: String? = null,
+    @Discouraged("Use #series(AppJson) instead")
     val seriesSerialized: List<String> = emptyList(),
     val seriesSearchable: List<String> = emptyList(),
-    val charactersSerialized: List<String> = emptyList(),
+    @Discouraged("Use #characters(AppJson) instead")
+    val charactersSerialized: List<String> =emptyList(),
     val charactersSearchable: List<String> = emptyList(),
     val tags: List<String> = emptyList(),
     @Serializable(with = Converters.BigDecimalConverter::class)

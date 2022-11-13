@@ -5,8 +5,6 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.ApiRepository
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.R
-import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.map
 
 class CharacterRepository(
     application: ScopedApplication,
@@ -14,9 +12,7 @@ class CharacterRepository(
     private val aniListApi: AniListApi,
 ) : ApiRepository<CharacterEntry>(application) {
 
-    override suspend fun fetch(id: String) = aniListApi.getCharacter(id)
-        .filterNotNull()
-        .map(::makeEntry)
+    override suspend fun fetch(id: String) = aniListApi.getCharacter(id)?.let(::makeEntry)
 
     override suspend fun getLocal(id: String) = characterEntryDao.getEntry(id.toInt())
 

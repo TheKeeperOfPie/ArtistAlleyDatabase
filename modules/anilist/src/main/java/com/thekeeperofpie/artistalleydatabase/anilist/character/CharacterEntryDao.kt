@@ -23,4 +23,7 @@ interface CharacterEntryDao {
 
     @Query("DELETE FROM character_entries")
     suspend fun deleteAll()
+
+    @Query("DELETE FROM character_entries WHERE id = :id")
+    suspend fun delete(id: String)
 }

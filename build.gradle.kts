@@ -61,6 +61,14 @@ dependencyAnalysis {
             }
         }
 
+        project(":modules:anilist") {
+            onUnusedDependencies {
+                exclude(
+                    "com.squareup.moshi:moshi-kotlin",
+                )
+            }
+        }
+
         project(":modules:art") {
             onUnusedDependencies {
                 exclude(

@@ -262,7 +262,7 @@ abstract class CdEntryDetailsViewModel(
             catalogAlbumChosen()
                 .map(vgmdbDataConverter::discEntries)
                 .flowOn(Dispatchers.IO)
-                .collectLatest { discSection.setDiscs(it) }
+                .collectLatest { discSection.setDiscs(it, EntrySection.LockState.LOCKED) }
         }
 
         viewModelScope.launch(Dispatchers.IO) {

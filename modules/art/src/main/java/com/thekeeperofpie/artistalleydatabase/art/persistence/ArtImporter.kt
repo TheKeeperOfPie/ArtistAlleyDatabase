@@ -66,16 +66,7 @@ class ArtImporter(
                 reader.beginArray()
 
                 while (reader.peek() == JsonReader.Token.BEGIN_OBJECT) {
-                    var entry = artEntryAdapter.fromJson(reader) ?: continue
-
-                    if (entry.seriesSearchable.isEmpty()) {
-                        entry = entry.copy(seriesSearchable = entry.seriesSerialized)
-                    }
-
-                    if (entry.charactersSearchable.isEmpty()) {
-                        entry = entry.copy(charactersSearchable = entry.charactersSerialized)
-                    }
-
+                    val entry = artEntryAdapter.fromJson(reader) ?: continue
                     count++
                     insertEntry(entry)
                 }

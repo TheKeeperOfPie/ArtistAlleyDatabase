@@ -15,7 +15,6 @@ import com.anilist.MediaWithCharactersQuery
 import com.apollographql.apollo3.ApolloClient
 import com.apollographql.apollo3.api.Optional
 import com.thekeeperofpie.artistalleydatabase.android_utils.splitAtIndex
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 
 class AniListApi {
@@ -28,9 +27,9 @@ class AniListApi {
         .serverUrl(SERVER_URL)
         .build()
 
-    fun getMedia(id: String) = apolloClient.query(MediaByIdQuery(Optional.Present(id.toInt())))
-        .toFlow()
-        .map { it.data?.Media?.aniListMedia }
+    suspend fun getMedia(id: String) =
+        apolloClient.query(MediaByIdQuery(Optional.Present(id.toInt()))).execute()
+            .data?.Media?.aniListMedia
 
     suspend fun getMedias(ids: List<Int>) = getMultiple(
         ids = ids,
@@ -40,10 +39,9 @@ class AniListApi {
         get15 = ::getMedias15,
     )
 
-    fun getCharacter(id: String) =
-        apolloClient.query(CharacterByIdQuery(Optional.Present(id.toInt())))
-            .toFlow()
-            .map { it.data?.Character?.aniListCharacter }
+    suspend fun getCharacter(id: String) =
+        apolloClient.query(CharacterByIdQuery(Optional.Present(id.toInt()))).execute()
+            .data?.Character?.aniListCharacter
 
     suspend fun getCharacters(ids: List<Int>) = getMultiple(
         ids = ids,

@@ -5,8 +5,6 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.ApiRepository
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.R
-import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.map
 
 class MediaRepository(
     application: ScopedApplication,
@@ -14,9 +12,7 @@ class MediaRepository(
     private val aniListApi: AniListApi,
 ) : ApiRepository<MediaEntry>(application) {
 
-    override suspend fun fetch(id: String) = aniListApi.getMedia(id)
-        .filterNotNull()
-        .map(::makeEntry)
+    override suspend fun fetch(id: String) = aniListApi.getMedia(id)?.let(::makeEntry)
 
     override suspend fun getLocal(id: String) = mediaEntryDao.getEntry(id.toInt())
 

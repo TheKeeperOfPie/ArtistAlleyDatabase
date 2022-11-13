@@ -91,9 +91,11 @@ class CdEntryAddViewModel @Inject constructor(
                 }
             }
 
-            if (success) {
-                withContext(Dispatchers.Main) {
+            withContext(Dispatchers.Main) {
+                if (success) {
                     navHostController.popBackStack()
+                } else {
+                    saving = false
                 }
             }
         }

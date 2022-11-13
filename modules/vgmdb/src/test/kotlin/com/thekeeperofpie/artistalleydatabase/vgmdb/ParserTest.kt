@@ -69,6 +69,26 @@ class ParserTest {
     }
 
     @Test
+    fun searchOneAlbum2() {
+        val actual = runBlocking { parser.search("LACM-14644") }
+        assertThat(actual).isEqualTo(
+            SearchResults(
+                albums = listOf(
+                    SearchResults.AlbumResult(
+                        id = "68192",
+                        catalogId = "LACM-14644",
+                        names = mapOf(
+                            "en" to "You & I / Ayaka Ohashi [Ady Edition]",
+                            "ja" to "ユー&アイ / 大橋彩香 [アディ盤]",
+                            "ja-latn" to "You & I / Ayaka Ohashi [Ady Edition]"
+                        ),
+                    )
+                )
+            )
+        )
+    }
+
+    @Test
     fun searchArtist() {
         val actual = runBlocking { parser.search("Honey") }?.artists.orEmpty()
         assertWithMessage(actual.joinToString("\n"))
@@ -1280,6 +1300,128 @@ class ParserTest {
                                     "en" to "Blue Star (Mark Redito Remix)",
                                 ),
                                 duration = "4:36",
+                            ),
+                        ).map(json::encodeToString)
+                    ),
+                ).map(json::encodeToString),
+            )
+        )
+    }
+
+    /**
+     * Tests "Composed By"
+     */
+    @Test
+    fun parseAlbum5() {
+        val actual = runBlocking { parser.parseAlbum("65600") }
+        assertThat(actual).isEqualTo(
+            AlbumEntry(
+                id = "65600",
+                catalogId = "KIGA-30",
+                names = mapOf(
+                    "en" to "Pure3: Feel Classics ~Naoya Shimokawa~",
+                    "ja" to "Pure3: Feel Classics ~Naoya Shimokawa~",
+                    "ja-latn" to "Pure3: Feel Classics ~Naoya Shimokawa~",
+                ),
+                coverArt = "https://medium-media.vgm.io/albums/00/65600/65600-312cb4cf07e6.jpg",
+                performers = emptyList(),
+                composers = listOf(
+                    ArtistColumnEntry(
+                        id = "28",
+                        names = mapOf(
+                            "en" to "Naoya Shimokawa",
+                            "ja" to "下川直哉",
+                        )
+                    ),
+                ).map(json::encodeToString),
+                discs = listOf(
+                    DiscEntry(
+                        name = "Disc 1",
+                        duration = "50:48",
+                        tracks = listOf(
+                            TrackEntry(
+                                number = "01",
+                                titles = mapOf(
+                                    "ja" to "Feeling Heart",
+                                ),
+                                duration = "3:56",
+                            ),
+                            TrackEntry(
+                                number = "02",
+                                titles = mapOf(
+                                    "ja" to "心はいつもあなたのそばに",
+                                ),
+                                duration = "4:13",
+                            ),
+                            TrackEntry(
+                                number = "03",
+                                titles = mapOf(
+                                    "ja" to "ありがとう",
+                                ),
+                                duration = "4:56",
+                            ),
+                            TrackEntry(
+                                number = "04",
+                                titles = mapOf(
+                                    "ja" to "時の魔法",
+                                ),
+                                duration = "4:21",
+                            ),
+                            TrackEntry(
+                                number = "05",
+                                titles = mapOf(
+                                    "ja" to "POWDER SNOW",
+                                ),
+                                duration = "3:45",
+                            ),
+                            TrackEntry(
+                                number = "06",
+                                titles = mapOf(
+                                    "ja" to "Free and Dream",
+                                ),
+                                duration = "2:56",
+                            ),
+                            TrackEntry(
+                                number = "07",
+                                titles = mapOf(
+                                    "ja" to "君をのせて",
+                                ),
+                                duration = "4:45",
+                            ),
+                            TrackEntry(
+                                number = "08",
+                                titles = mapOf(
+                                    "ja" to "ヒトリ",
+                                ),
+                                duration = "4:31",
+                            ),
+                            TrackEntry(
+                                number = "09",
+                                titles = mapOf(
+                                    "ja" to "さよならのこと",
+                                ),
+                                duration = "3:30",
+                            ),
+                            TrackEntry(
+                                number = "10",
+                                titles = mapOf(
+                                    "ja" to "キミガタメ",
+                                ),
+                                duration = "4:56",
+                            ),
+                            TrackEntry(
+                                number = "11",
+                                titles = mapOf(
+                                    "ja" to "closing",
+                                ),
+                                duration = "5:04",
+                            ),
+                            TrackEntry(
+                                number = "12",
+                                titles = mapOf(
+                                    "ja" to "Feeling Heart (another mix)",
+                                ),
+                                duration = "3:55",
                             ),
                         ).map(json::encodeToString)
                     ),

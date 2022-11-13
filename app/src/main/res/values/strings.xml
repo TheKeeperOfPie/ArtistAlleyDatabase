@@ -54,4 +54,6 @@
     <string name="settings_clear_aniList_cache">Clear AniList cache</string>
     <string name="settings_clear_vgmdb_cache">Clear VGMdb cache</string>
     <string name="settings_database_fetch">Sync remote models to local database</string>
+    <string name="label_id">ID</string>
+    <string name="label_database_type">Database</string>
 </resources>

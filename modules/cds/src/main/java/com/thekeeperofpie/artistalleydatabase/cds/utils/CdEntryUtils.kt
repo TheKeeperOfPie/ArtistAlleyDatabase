@@ -10,6 +10,6 @@ object CdEntryUtils {
         .resolve("cd_entry_images/${id}")
 
     fun buildPlaceholderText(json: Json, entry: CdEntry) = entry.run {
-        titles.joinToString()
+        "$catalogId ${titles.joinToString()}"
     }
 }

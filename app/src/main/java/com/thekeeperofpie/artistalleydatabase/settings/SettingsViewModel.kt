@@ -49,4 +49,19 @@ class SettingsViewModel @Inject constructor(
             request
         )
     }
+
+    fun onClickClearDatabaseById(databaseType: SettingsScreen.DatabaseType, id: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            when (databaseType) {
+                SettingsScreen.DatabaseType.ANILIST -> {
+                    mediaEntryDao.delete(id)
+                    characterEntryDao.delete(id)
+                }
+                SettingsScreen.DatabaseType.VGMDB -> {
+                    albumEntryDao.delete(id)
+                    artistEntryDao.delete(id)
+                }
+            }
+        }
+    }
 }

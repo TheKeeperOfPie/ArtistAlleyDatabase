@@ -12,6 +12,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import com.hoc081098.flowext.startWith
 import com.thekeeperofpie.artistalleydatabase.compose.observableStateOf
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.BufferOverflow
@@ -22,9 +23,11 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.withContext
+import kotlin.time.Duration.Companion.seconds
 
 sealed class EntrySection(lockState: LockState? = null) {
 
@@ -133,16 +136,12 @@ sealed class EntrySection(lockState: LockState? = null) {
         }
 
         fun addOrReplaceContent(entry: Entry.Prefilled<*>) {
-            val index = indexOf(entry)
-            if (index >= 0) {
-                contents[index] = entry
-            } else {
-                contents += entry
-            }
-            contentUpdates.tryEmit(contents.toList())
+            addOrReplaceContents(listOf(entry))
         }
 
         fun addOrReplaceContents(entries: Collection<Entry.Prefilled<*>>) {
+            if (lockState == LockState.LOCKED) return
+            val wasEmpty = contents.isEmpty()
             entries.forEach {
                 val index = indexOf(it)
                 if (index >= 0) {
@@ -150,6 +149,9 @@ sealed class EntrySection(lockState: LockState? = null) {
                 } else {
                     contents += it
                 }
+            }
+            if (wasEmpty && contents.isNotEmpty()) {
+                lockState = LockState.LOCKED
             }
             contentUpdates.tryEmit(contents.toList())
         }
@@ -189,6 +191,7 @@ sealed class EntrySection(lockState: LockState? = null) {
         ) {
             @Suppress("OPT_IN_USAGE")
             valueUpdates()
+                .debounce(2.seconds)
                 .flatMapLatest { query ->
                     val localFlows = localCall(query)
                     val database = if (localFlows.isEmpty()) {
@@ -197,6 +200,7 @@ sealed class EntrySection(lockState: LockState? = null) {
                         combine(localFlows) { it.toList() }
                     }
                     val aniList = if (query.isBlank()) flowOf(emptyList()) else networkCall(query)
+                        .startWith(emptyList())
                     combine(database, aniList) { local, network ->
                         (local + network).filterNotNull().distinctBy { it.id }
                     }

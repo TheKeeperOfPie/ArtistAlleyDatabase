@@ -11,10 +11,16 @@ import kotlinx.coroutines.flow.Flow
 interface AlbumEntryDao {
 
     @Query("""SELECT * FROM album_entries WHERE id = :id""")
-    fun getEntry(id: String): Flow<AlbumEntry?>
+    fun getEntry(id: String): AlbumEntry?
+
+    @Query("""SELECT * FROM album_entries WHERE id = :id""")
+    fun getEntryFlow(id: String): Flow<AlbumEntry?>
 
     @Query("""SELECT * FROM album_entries WHERE id in (:ids)""")
     fun getEntries(ids: Collection<String>): Flow<List<AlbumEntry>>
+
+    @Query("""SELECT DISTINCT (id) FROM album_entries WHERE id in (:ids)""")
+    suspend fun getEntriesById(ids: Collection<String>): List<String>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertEntries(vararg entries: AlbumEntry)
@@ -24,4 +30,7 @@ interface AlbumEntryDao {
 
     @Query("DELETE FROM album_entries")
     suspend fun deleteAll()
+
+    @Query("DELETE FROM album_entries WHERE id = :id")
+    suspend fun delete(id: String)
 }
