@@ -32,6 +32,9 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.whenResumed
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -52,12 +55,14 @@ import com.thekeeperofpie.artistalleydatabase.browse.BrowseViewModel
 import com.thekeeperofpie.artistalleydatabase.cds.CdEntryAddViewModel
 import com.thekeeperofpie.artistalleydatabase.cds.CdEntryNavigator
 import com.thekeeperofpie.artistalleydatabase.cds.search.CdSearchViewModel
+import com.thekeeperofpie.artistalleydatabase.compose.LazyStaggeredGrid
 import com.thekeeperofpie.artistalleydatabase.edit.MultiEditScreen
 import com.thekeeperofpie.artistalleydatabase.export.ExportScreen
 import com.thekeeperofpie.artistalleydatabase.export.ExportViewModel
 import com.thekeeperofpie.artistalleydatabase.form.EntryNavigator
 import com.thekeeperofpie.artistalleydatabase.form.EntryUtils.navToEntryDetails
 import com.thekeeperofpie.artistalleydatabase.form.grid.EntryGridModel
+import com.thekeeperofpie.artistalleydatabase.form.search.EntrySearchViewModel
 import com.thekeeperofpie.artistalleydatabase.home.HomeScreen
 import com.thekeeperofpie.artistalleydatabase.importing.ImportScreen
 import com.thekeeperofpie.artistalleydatabase.importing.ImportViewModel
@@ -71,6 +76,8 @@ import com.thekeeperofpie.artistalleydatabase.settings.SettingsScreen
 import com.thekeeperofpie.artistalleydatabase.settings.SettingsViewModel
 import com.thekeeperofpie.artistalleydatabase.ui.theme.ArtistAlleyDatabaseTheme
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -81,9 +88,12 @@ class MainActivity : ComponentActivity() {
         const val STARTING_NAV_DESTINATION = "starting_nav_destination"
     }
 
-    @Inject lateinit var entryNavigators: Set<@JvmSuppressWildcards EntryNavigator>
-    @Inject lateinit var artEntryNavigator: ArtEntryNavigator
-    @Inject lateinit var cdEntryNavigator: CdEntryNavigator
+    @Inject
+    lateinit var entryNavigators: Set<@JvmSuppressWildcards EntryNavigator>
+    @Inject
+    lateinit var artEntryNavigator: ArtEntryNavigator
+    @Inject
+    lateinit var cdEntryNavigator: CdEntryNavigator
 
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -210,6 +220,8 @@ class MainActivity : ComponentActivity() {
             NavHost(navController = navController, startDestination = NavDestinations.HOME) {
                 composable(NavDestinations.HOME) {
                     val viewModel = hiltViewModel<ArtSearchViewModel>()
+                    val lazyStaggeredGridState =
+                        LazyStaggeredGrid.rememberLazyStaggeredGridState(columnCount = 2)
                     HomeScreen(
                         onClickNav = onClickNav,
                         query = { viewModel.query.collectAsState().value?.query.orEmpty() },
@@ -232,7 +244,10 @@ class MainActivity : ComponentActivity() {
                         onClickClear = viewModel::clearSelected,
                         onClickEdit = { editSelected(navController, viewModel.selectedEntries) },
                         onConfirmDelete = viewModel::deleteSelected,
+                        lazyStaggeredGridState = lazyStaggeredGridState,
                     )
+
+                    attachInvalidateScroll(it, viewModel, lazyStaggeredGridState)
                 }
 
                 composable(NavDestinations.ADD_ENTRY) {
@@ -271,6 +286,8 @@ class MainActivity : ComponentActivity() {
             NavHost(navController = navController, startDestination = NavDestinations.HOME) {
                 composable(NavDestinations.HOME) {
                     val viewModel = hiltViewModel<CdSearchViewModel>()
+                    val lazyStaggeredGridState =
+                        LazyStaggeredGrid.rememberLazyStaggeredGridState(columnCount = 2)
                     HomeScreen(
                         onClickNav = onClickNav,
                         query = { viewModel.query.collectAsState().value?.query.orEmpty() },
@@ -293,7 +310,10 @@ class MainActivity : ComponentActivity() {
                         onClickClear = viewModel::clearSelected,
                         onClickEdit = { editSelected(navController, viewModel.selectedEntries) },
                         onConfirmDelete = viewModel::deleteSelected,
+                        lazyStaggeredGridState = lazyStaggeredGridState,
                     )
+
+                    attachInvalidateScroll(it, viewModel, lazyStaggeredGridState)
                 }
 
                 composable(NavDestinations.ADD_ENTRY) {
@@ -458,5 +478,25 @@ class MainActivity : ComponentActivity() {
             NavDestinations.MULTI_EDIT +
                     "?entry_ids=${entryIds.joinToString(",")}"
         )
+    }
+
+    private fun attachInvalidateScroll(
+        it: NavBackStackEntry,
+        viewModel: EntrySearchViewModel<*, *>,
+        lazyStaggeredGridState: LazyStaggeredGrid.LazyStaggeredGridState
+    ) {
+        viewModel.viewModelScope.launch(Dispatchers.Main) {
+            it.whenResumed {
+                val firstListState = lazyStaggeredGridState.lazyListStates.firstOrNull()
+                val scrollToTop = firstListState != null
+                        && firstListState.firstVisibleItemIndex == 0
+                        && firstListState.firstVisibleItemScrollOffset == 0
+                viewModel.invalidate()
+                if (scrollToTop) {
+                    delay(500)
+                    lazyStaggeredGridState.scrollToTop()
+                }
+            }
+        }
     }
 }

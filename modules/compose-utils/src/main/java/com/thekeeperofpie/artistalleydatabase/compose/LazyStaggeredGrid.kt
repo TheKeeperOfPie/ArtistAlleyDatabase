@@ -120,9 +120,9 @@ object LazyStaggeredGrid {
         internal val scrollableState: ScrollableState,
         internal val scrollToIndexFlows: List<MutableSharedFlow<Pair<Int, Int>>>,
     ) {
-        private var lastScrollPositions = Array(columnCount) { 0 }
-        private var lastScrollOffsets = Array(columnCount) { 0 }
-        private var lazyListStates = mutableListOf<LazyListState>()
+        private val lastScrollPositions = Array(columnCount) { 0 }
+        private val lastScrollOffsets = Array(columnCount) { 0 }
+        val lazyListStates = mutableListOf<LazyListState>()
 
         fun scrollToTop() {
             if (lazyListStates.first().firstVisibleItemIndex == 0) {

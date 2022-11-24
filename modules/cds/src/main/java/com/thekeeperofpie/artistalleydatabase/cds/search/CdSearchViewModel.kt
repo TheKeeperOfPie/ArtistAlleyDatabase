@@ -47,7 +47,9 @@ class CdSearchViewModel @Inject constructor(
     )
 
     override fun mapQuery(query: CdSearchQuery?): Flow<PagingData<CdEntryGridModel>> =
-        Pager(PagingConfig(pageSize = 20)) { cdEntryDao.getEntries(query ?: CdSearchQuery()) }
+        Pager(PagingConfig(pageSize = 20)) {
+            trackPagingSource { cdEntryDao.getEntries(query ?: CdSearchQuery()) }
+        }
             .flow.cachedIn(viewModelScope)
             .onEach {
                 viewModelScope.launch(Dispatchers.Main) {

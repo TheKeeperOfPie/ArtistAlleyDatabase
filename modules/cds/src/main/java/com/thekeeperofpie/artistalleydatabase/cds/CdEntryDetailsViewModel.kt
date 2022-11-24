@@ -185,7 +185,10 @@ abstract class CdEntryDetailsViewModel(
                 }
                 .map(vgmdbDataConverter::catalogEntry)
                 .flowOn(Dispatchers.IO)
-                .collectLatest { catalogIdSection.addOrReplaceContent(it) }
+                .collectLatest {
+                    catalogIdSection.addOrReplaceContent(it)
+                    catalogIdSection.lockState = EntrySection.LockState.LOCKED
+                }
         }
 
         viewModelScope.launch(Dispatchers.Main) {

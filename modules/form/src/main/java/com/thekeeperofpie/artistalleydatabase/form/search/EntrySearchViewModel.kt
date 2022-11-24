@@ -4,6 +4,7 @@ import androidx.annotation.MainThread
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
+import androidx.paging.PagingSource
 import com.thekeeperofpie.artistalleydatabase.form.grid.EntryGridModel
 import com.thekeeperofpie.artistalleydatabase.form.grid.EntryGridViewModel
 import kotlinx.coroutines.Dispatchers
@@ -11,6 +12,10 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import java.util.WeakHashMap
 
 abstract class EntrySearchViewModel<SearchQuery : EntrySearchQuery, GridModel : EntryGridModel> :
     ViewModel(), EntryGridViewModel<GridModel> {
@@ -20,6 +25,9 @@ abstract class EntrySearchViewModel<SearchQuery : EntrySearchQuery, GridModel : 
     val results = MutableStateFlow(PagingData.empty<GridModel>())
 
     abstract val options: List<EntrySearchOption>
+
+    private val weakMap = WeakHashMap<PagingSource<*, *>, Unit>()
+    private val weakMapLock = Mutex(false)
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
@@ -40,6 +48,21 @@ abstract class EntrySearchViewModel<SearchQuery : EntrySearchQuery, GridModel : 
         clearSelected()
         this.query.tryEmit(buildQueryWrapper(query.value?.query))
     }
+
+    suspend fun invalidate() = weakMapLock.withLock(this) {
+        weakMap.keys.toList()
+    }.forEach { it.invalidate() }
+
+    protected fun <Key : Any, Value : Any> trackPagingSource(
+        block: () -> PagingSource<Key, Value>
+    ) = block().apply {
+        runBlocking { weakMapLock.withLock(this) { weakMap[this@apply] = Unit } }
+    }
+
+    protected suspend fun <Key : Any, Value : Any> PagingSource<Key, Value>.track() =
+        weakMapLock.withLock(this) {
+            apply { weakMap[this] = Unit }
+        }
 
     @MainThread
     abstract fun buildQueryWrapper(query: String?): SearchQuery

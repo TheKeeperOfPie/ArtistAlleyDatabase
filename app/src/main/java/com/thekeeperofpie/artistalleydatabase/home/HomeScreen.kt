@@ -39,6 +39,7 @@ import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.R
+import com.thekeeperofpie.artistalleydatabase.compose.LazyStaggeredGrid
 import com.thekeeperofpie.artistalleydatabase.compose.NavMenuIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.bottomBorder
 import com.thekeeperofpie.artistalleydatabase.form.grid.EntryGrid
@@ -66,6 +67,7 @@ object HomeScreen {
         onClickClear: () -> Unit = {},
         onClickEdit: () -> Unit = {},
         onConfirmDelete: () -> Unit = {},
+        lazyStaggeredGridState: LazyStaggeredGrid.LazyStaggeredGridState,
     ) {
         Chrome(
             onClickNav = onClickNav,
@@ -87,6 +89,7 @@ object HomeScreen {
                 onClickClear = onClickClear,
                 onClickEdit = onClickEdit,
                 onConfirmDelete = onConfirmDelete,
+                lazyStaggeredGridState = lazyStaggeredGridState,
             )
         }
     }

@@ -10,7 +10,11 @@ import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.ArtistEntry
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import org.junit.Rule
 import org.junit.jupiter.api.Test
+import org.junit.rules.TemporaryFolder
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.mock
 
 class ParserTest {
 
@@ -19,7 +23,13 @@ class ParserTest {
         prettyPrint = true
     }
 
-    private val parser = VgmdbParser(json)
+    @get:Rule
+    val tempFolder = TemporaryFolder()
+
+    private val parser = VgmdbParser(
+        mock { on { cacheDir } doReturn tempFolder.newFolder() },
+        json
+    )
 
     @Test
     fun searchAlbum() {

@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anilist
 
+import android.app.Application
 import androidx.annotation.Size
 import com.anilist.CharacterByIdQuery
 import com.anilist.CharacterByIds10Query
@@ -14,10 +15,14 @@ import com.anilist.MediaSearchQuery
 import com.anilist.MediaWithCharactersQuery
 import com.apollographql.apollo3.ApolloClient
 import com.apollographql.apollo3.api.Optional
+import com.apollographql.apollo3.network.http.DefaultHttpEngine
 import com.thekeeperofpie.artistalleydatabase.android_utils.splitAtIndex
 import kotlinx.coroutines.flow.mapNotNull
+import okhttp3.Cache
+import okhttp3.OkHttpClient
+import java.io.File
 
-class AniListApi {
+class AniListApi(application: Application) {
 
     companion object {
         private const val SERVER_URL = "https://graphql.anilist.co/"
@@ -25,6 +30,17 @@ class AniListApi {
 
     private val apolloClient = ApolloClient.Builder()
         .serverUrl(SERVER_URL)
+        .canBeBatched(true)
+        .httpEngine(
+            DefaultHttpEngine(
+                OkHttpClient.Builder().cache(
+                    Cache(
+                        directory = File(application.cacheDir, "aniList"),
+                        maxSize = 500L * 1024L * 1024L // 500 MiB
+                    )
+                ).build()
+            )
+        )
         .build()
 
     suspend fun getMedia(id: String) =

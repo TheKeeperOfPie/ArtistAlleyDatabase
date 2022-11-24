@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anilist
 
+import android.app.Application
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterEntryDao
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
@@ -15,7 +16,7 @@ import dagger.hilt.components.SingletonComponent
 class AniListHiltModule {
 
     @Provides
-    fun provideAniListApi() = AniListApi()
+    fun provideAniListApi(application: Application) = AniListApi(application)
 
     @Provides
     fun provideAniListDataConverter(aniListJson: AniListJson) = AniListDataConverter(aniListJson)

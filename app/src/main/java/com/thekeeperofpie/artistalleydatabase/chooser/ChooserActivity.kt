@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.chooser
 
-import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -8,10 +7,18 @@ import androidx.activity.compose.setContent
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.collectAsState
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.whenResumed
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.mxalbert.sharedelements.SharedElementsRoot
+import com.thekeeperofpie.artistalleydatabase.navigation.NavDestinations
 import com.thekeeperofpie.artistalleydatabase.ui.theme.ArtistAlleyDatabaseTheme
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class ChooserActivity : ComponentActivity() {
@@ -30,38 +37,52 @@ class ChooserActivity : ComponentActivity() {
         setContent {
             ArtistAlleyDatabaseTheme {
                 Surface {
+                    val navController = rememberNavController()
                     SharedElementsRoot {
-                        val viewModel = hiltViewModel<ChooserViewModel>()
-                        ChooserScreen(
-                            query = { viewModel.query.collectAsState().value?.query.orEmpty() },
-                            onQueryChange = viewModel::onQuery,
-                            options = { viewModel.options },
-                            onOptionChanged = { viewModel.refreshQuery() },
-                            entries = { viewModel.results.collectAsLazyPagingItems() },
-                            selectedItems = { viewModel.selectedEntries.keys },
-                            onClickEntry = { index, entry ->
-                                if (allowMultiple) {
-                                    viewModel.selectEntry(index, entry)
-                                } else {
-                                    viewModel.getResult(entry)?.let {
-                                        setResult(Activity.RESULT_OK, it)
-                                        finish()
-                                    }
+                        NavHost(
+                            navController = navController,
+                            startDestination = NavDestinations.HOME
+                        ) {
+                            composable(NavDestinations.HOME) {
+                                val viewModel = hiltViewModel<ChooserViewModel>()
+                                ChooserScreen(
+                                    query = {
+                                        viewModel.query.collectAsState().value?.query.orEmpty()
+                                    },
+                                    onQueryChange = viewModel::onQuery,
+                                    options = { viewModel.options },
+                                    onOptionChanged = { viewModel.refreshQuery() },
+                                    entries = { viewModel.results.collectAsLazyPagingItems() },
+                                    selectedItems = { viewModel.selectedEntries.keys },
+                                    onClickEntry = { index, entry ->
+                                        if (allowMultiple) {
+                                            viewModel.selectEntry(index, entry)
+                                        } else {
+                                            viewModel.getResult(entry)?.let {
+                                                setResult(RESULT_OK, it)
+                                                finish()
+                                            }
+                                        }
+                                    },
+                                    onLongClickEntry = { index, entry ->
+                                        if (allowMultiple) {
+                                            viewModel.selectEntry(index, entry)
+                                        }
+                                    },
+                                    onClickClear = viewModel::clearSelected,
+                                    onClickSelect = {
+                                        viewModel.getResults()?.let {
+                                            setResult(RESULT_OK, it)
+                                            finish()
+                                        }
+                                    },
+                                )
+
+                                viewModel.viewModelScope.launch(Dispatchers.Main) {
+                                    it.whenResumed { viewModel.invalidate() }
                                 }
-                            },
-                            onLongClickEntry = { index, entry ->
-                                if (allowMultiple) {
-                                    viewModel.selectEntry(index, entry)
-                                }
-                            },
-                            onClickClear = viewModel::clearSelected,
-                            onClickSelect = {
-                                viewModel.getResults()?.let {
-                                    setResult(Activity.RESULT_OK, it)
-                                    finish()
-                                }
-                            },
-                        )
+                            }
+                        }
                     }
                 }
             }

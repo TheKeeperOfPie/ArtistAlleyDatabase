@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.vgmdb
 
+import android.app.Application
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumEntry
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.DiscEntry
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.TrackEntry
@@ -17,12 +18,15 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import java.net.URL
+import okhttp3.Cache
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import java.io.File
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.util.Locale
 
-class VgmdbParser(private val json: Json) {
+class VgmdbParser(application: Application, private val json: Json) {
 
     companion object {
         private const val BASE_URL = "https://vgmdb.net"
@@ -34,16 +38,23 @@ class VgmdbParser(private val json: Json) {
         )
     }
 
+    private val okHttpClient =
+        OkHttpClient.Builder().cache(
+            Cache(
+                directory = File(application.cacheDir, "vgmdb"),
+                maxSize = 500L * 1024L * 1024L // 500 MiB
+            )
+        ).build()
+
     suspend fun search(query: String) = withContext(Dispatchers.IO) {
         val encodedQuery = URLEncoder.encode(query, StandardCharsets.UTF_8.toString())
-        val urlConnection = URL("$BASE_URL/search?q=$encodedQuery").openConnection()
-        val text = urlConnection.getInputStream().use {
-            it.bufferedReader().use {
-                it.readText()
-            }
-        }
+        val request = Request.Builder()
+            .url("$BASE_URL/search?q=$encodedQuery")
+            .build()
 
-        val finalPath = urlConnection.url.path
+        val (finalPath, text) = okHttpClient.newCall(request).execute()
+            .use { it.request.url.encodedPath to it.body?.string().orEmpty() }
+
         if (finalPath.startsWith("/search")) {
             parseSearchHtml(text)
         } else if (finalPath.startsWith("/album")) {

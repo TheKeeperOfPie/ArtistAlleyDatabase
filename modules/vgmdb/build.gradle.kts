@@ -53,6 +53,8 @@ dependencies {
     api(project(":modules:android-utils"))
     api(project(":modules:form"))
 
+    implementation("com.squareup.okhttp3:okhttp:4.10.0")
+
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3")
     implementation("com.google.dagger:hilt-android:2.43.2")
     kapt("com.google.dagger:hilt-compiler:2.43.2")
@@ -68,6 +70,8 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.2")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.2")
     testImplementation("com.google.truth:truth:1.1.3")
+    testImplementation("org.mockito:mockito-core:4.9.0")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:4.0.0")
 
     androidTestImplementation("androidx.test:runner:1.4.0")
     androidTestImplementation("de.mannodermaus.junit5:android-test-core:1.3.0")

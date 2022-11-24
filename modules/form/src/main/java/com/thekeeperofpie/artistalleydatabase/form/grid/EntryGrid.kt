@@ -49,7 +49,6 @@ import coil.size.Dimension
 import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.compose.ButtonFooter
 import com.thekeeperofpie.artistalleydatabase.compose.LazyStaggeredGrid
-import com.thekeeperofpie.artistalleydatabase.compose.LazyStaggeredGrid.rememberLazyStaggeredGridState
 import com.thekeeperofpie.artistalleydatabase.form.R
 
 object EntryGrid {
@@ -57,7 +56,6 @@ object EntryGrid {
     @Composable
     operator fun <T : EntryGridModel> invoke(
         imageScreenKey: String,
-        columnCount: Int = 2,
         entries: @Composable () -> LazyPagingItems<T>,
         entriesSize: @Composable () -> Int?,
         paddingValues: PaddingValues,
@@ -67,6 +65,7 @@ object EntryGrid {
         onClickClear: () -> Unit = {},
         onClickEdit: () -> Unit = {},
         onConfirmDelete: () -> Unit = {},
+        lazyStaggeredGridState: LazyStaggeredGrid.LazyStaggeredGridState,
     ) {
         var showDeleteDialog by rememberSaveable { mutableStateOf(false) }
 
@@ -74,7 +73,6 @@ object EntryGrid {
             modifier = Modifier
                 .padding(paddingValues)
         ) {
-            val lazyStaggeredGridState = rememberLazyStaggeredGridState(columnCount = columnCount)
             Column {
                 EntriesGrid(
                     imageScreenKey = imageScreenKey,

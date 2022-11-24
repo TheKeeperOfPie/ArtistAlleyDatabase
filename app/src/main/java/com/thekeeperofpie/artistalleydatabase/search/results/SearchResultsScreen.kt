@@ -15,6 +15,7 @@ import androidx.paging.compose.LazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.R
 import com.thekeeperofpie.artistalleydatabase.art.grid.ArtEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.compose.AppBar
+import com.thekeeperofpie.artistalleydatabase.compose.LazyStaggeredGrid
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
 import com.thekeeperofpie.artistalleydatabase.form.grid.EntryGrid
 
@@ -63,6 +64,8 @@ object SearchResultsScreen {
                             onClickClear = onClickClear,
                             onClickEdit = onClickEdit,
                             onConfirmDelete = onConfirmDelete,
+                            lazyStaggeredGridState =
+                            LazyStaggeredGrid.rememberLazyStaggeredGridState(columnCount = 2),
                         )
                     }
                 }

@@ -76,7 +76,9 @@ open class ArtSearchViewModel @Inject constructor(
     )
 
     override fun mapQuery(query: ArtSearchQuery?): Flow<PagingData<ArtEntryGridModel>> =
-        Pager(PagingConfig(pageSize = 20)) { artEntryDao.getEntries(query ?: ArtSearchQuery()) }
+        Pager(PagingConfig(pageSize = 20)) {
+            trackPagingSource { artEntryDao.getEntries(query ?: ArtSearchQuery()) }
+        }
             .flow.cachedIn(viewModelScope)
             .onEach {
                 viewModelScope.launch(Dispatchers.Main) {

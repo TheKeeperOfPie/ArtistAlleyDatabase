@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
@@ -66,12 +67,25 @@ class AniListAutocompleter @Inject constructor(
         }
     }
 
-    fun querySeriesNetwork(query: String) =
-        aniListCall({ aniListApi.searchSeries(query) }) {
+    fun querySeriesNetwork(query: String): Flow<List<Entry>> {
+        val search = aniListCall({ aniListApi.searchSeries(query) }) {
             it.Page.media
                 .mapNotNull { it?.aniListMedia }
                 .map(aniListDataConverter::seriesEntry)
         }
+
+        // AniList IDs are integers
+        val queryAsId = query.toIntOrNull()
+        return if (queryAsId == null) search else {
+            val fetchById = flow { emit(aniListApi.getMedia(query)) }
+                .catch {}
+                .filterNotNull()
+                .mapNotNull(aniListDataConverter::seriesEntry)
+                .map(::listOf)
+                .startWith(item = emptyList())
+            combine(fetchById, search) { result, series -> result + series }
+        }
+    }
 
     private suspend fun queryCharacters(
         query: String,
@@ -132,13 +146,13 @@ class AniListAutocompleter @Inject constructor(
         // AniList IDs are integers
         val queryAsId = query.toIntOrNull()
         return if (queryAsId == null) search else {
-            combine(search, flow { emit(aniListApi.getCharacter(queryAsId.toString())) }
+            val fetchById = flow { emit(aniListApi.getCharacter(queryAsId.toString())) }
                 .catch {}
                 .filterNotNull()
                 .mapNotNull(aniListDataConverter::characterEntry)
                 .map(::listOf)
                 .startWith(item = emptyList())
-            ) { result, character -> result + character }
+            combine(fetchById, search) { result, character -> result + character }
         }
     }
 
@@ -153,6 +167,9 @@ class AniListAutocompleter @Inject constructor(
                 .map { it.mapNotNull(AniListUtils::mediaId) }
                 .distinctUntilChanged()
                 .flatMapLatest {
+                    // For entries with multiple series, ignore predictions by series
+                    // since it can flood the predictions with unuseful results
+                    if (it.size > 1) return@flatMapLatest emptyFlow()
                     it.map {
                         aniListApi.charactersByMedia(it)
                             .map { it.map { aniListDataConverter.characterEntry((it)) } }

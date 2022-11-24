@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.vgmdb
 
+import android.app.Application
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumEntryDao
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumRepository
@@ -22,10 +23,11 @@ class VgmdbHiltModule {
 
     @Provides
     fun provideVgmdbApi(
+        application: Application,
         albumEntryDao: AlbumEntryDao,
         artistEntryDao: ArtistEntryDao,
         vgmdbJson: VgmdbJson
-    ) = VgmdbApi(albumEntryDao, artistEntryDao, vgmdbJson)
+    ) = VgmdbApi(application, albumEntryDao, artistEntryDao, vgmdbJson)
 
     @Provides
     fun provideVgmdbDataConverter(vgmdbJson: VgmdbJson) = VgmdbDataConverter(vgmdbJson)

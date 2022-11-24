@@ -4,6 +4,7 @@ import android.net.Uri
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -145,24 +147,30 @@ object AddEntryScreen {
                     count = imageUris.size,
                     modifier = Modifier.heightIn(min = 200.dp, max = 400.dp)
                 ) {
-                    AsyncImage(
-                        model = ImageRequest.Builder(LocalContext.current)
-                            .data(imageUris[it])
-                            .crossfade(true)
-                            .listener { _, result ->
-                                onImageSizeResult(
-                                    result.drawable.intrinsicWidth,
-                                    result.drawable.intrinsicHeight,
-                                )
-                            }
-                            .build(),
-                        contentDescription = stringResource(
-                            ArtStringR.art_entry_image_content_description
-                        ),
-                        contentScale = ContentScale.FillWidth,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                    )
+                    Box(
+                        Modifier
+                            .wrapContentHeight()
+                            .verticalScroll(rememberScrollState())
+                    ) {
+                        AsyncImage(
+                            model = ImageRequest.Builder(LocalContext.current)
+                                .data(imageUris[it])
+                                .crossfade(true)
+                                .listener { _, result ->
+                                    onImageSizeResult(
+                                        result.drawable.intrinsicWidth,
+                                        result.drawable.intrinsicHeight,
+                                    )
+                                }
+                                .build(),
+                            contentDescription = stringResource(
+                                ArtStringR.art_entry_image_content_description
+                            ),
+                            contentScale = ContentScale.FillWidth,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                        )
+                    }
                 }
 
                 if (imageUris.size > 1) {
