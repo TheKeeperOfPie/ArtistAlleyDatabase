@@ -59,11 +59,11 @@ dependencies {
     implementation("com.google.dagger:hilt-android:2.43.2")
     kapt("com.google.dagger:hilt-compiler:2.43.2")
 
-    runtimeOnly("androidx.room:room-runtime:2.5.0-beta01")
-    ksp("androidx.room:room-compiler:2.5.0-beta01")
-    implementation("androidx.room:room-ktx:2.5.0-beta01")
-    testImplementation("androidx.room:room-testing:2.5.0-beta01")
-    implementation("androidx.room:room-paging:2.5.0-beta01")
+    runtimeOnly("androidx.room:room-runtime:2.5.0-beta02")
+    ksp("androidx.room:room-compiler:2.5.0-beta02")
+    implementation("androidx.room:room-ktx:2.5.0-beta02")
+    testImplementation("androidx.room:room-testing:2.5.0-beta02")
+    implementation("androidx.room:room-paging:2.5.0-beta02")
 
     implementation("it.skrape:skrapeit:1.2.2")
 
@@ -73,7 +73,7 @@ dependencies {
     testImplementation("org.mockito:mockito-core:4.9.0")
     testImplementation("org.mockito.kotlin:mockito-kotlin:4.0.0")
 
-    androidTestImplementation("androidx.test:runner:1.4.0")
+    androidTestImplementation("androidx.test:runner:1.5.1")
     androidTestImplementation("de.mannodermaus.junit5:android-test-core:1.3.0")
     androidTestRuntimeOnly("de.mannodermaus.junit5:android-test-runner:1.3.0")
 }

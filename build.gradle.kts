@@ -6,8 +6,8 @@ buildscript {
 }
 
 plugins {
-    id("com.android.application") version "8.0.0-alpha07" apply false
-    id("com.android.library") version "8.0.0-alpha07" apply false
+    id("com.android.application") version "8.0.0-alpha08" apply false
+    id("com.android.library") version "8.0.0-alpha08" apply false
     id("org.jetbrains.kotlin.android") version "1.7.20-Beta" apply false
     id("org.jetbrains.kotlin.jvm") version "1.7.20-Beta" apply false
     id("com.autonomousapps.dependency-analysis") version "1.13.1"
@@ -41,6 +41,7 @@ dependencyAnalysis {
                 exclude(
                     "androidx.compose.ui:ui-tooling-preview",
                     "com.google.dagger:hilt-android",
+                    "com.squareup.moshi:moshi-kotlin",
                 )
             }
             onUnusedAnnotationProcessors {
@@ -56,23 +57,6 @@ dependencyAnalysis {
                 exclude(
                     "androidx.compose.ui:ui-tooling",
                     "androidx.lifecycle:lifecycle-runtime-ktx",
-                    "com.squareup.moshi:moshi-kotlin",
-                )
-            }
-        }
-
-        project(":modules:anilist") {
-            onUnusedDependencies {
-                exclude(
-                    "com.squareup.moshi:moshi-kotlin",
-                )
-            }
-        }
-
-        project(":modules:art") {
-            onUnusedDependencies {
-                exclude(
-                    "com.squareup.moshi:moshi-kotlin",
                 )
             }
         }
@@ -81,14 +65,6 @@ dependencyAnalysis {
             onUnusedDependencies {
                 exclude(
                     "androidx.navigation:navigation-compose",
-                )
-            }
-        }
-
-        project(":modules:cds") {
-            onUnusedDependencies {
-                exclude(
-                    "com.squareup.moshi:moshi-kotlin",
                 )
             }
         }

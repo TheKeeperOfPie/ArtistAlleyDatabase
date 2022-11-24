@@ -61,15 +61,15 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.5.3")
 
     implementation("androidx.core:core-ktx:1.9.0")
-    implementation("androidx.compose.ui:ui:1.4.0-alpha01")
-    api("androidx.compose.ui:ui-tooling-preview:1.4.0-alpha01")
-    implementation("androidx.compose.material3:material3:1.1.0-alpha01")
+    implementation("androidx.compose.ui:ui:1.4.0-alpha02")
+    api("androidx.compose.ui:ui-tooling-preview:1.4.0-alpha02")
+    implementation("androidx.compose.material3:material3:1.1.0-alpha02")
 
-    runtimeOnly("androidx.room:room-runtime:2.5.0-beta01")
-    ksp("androidx.room:room-compiler:2.5.0-beta01")
-    implementation("androidx.room:room-ktx:2.5.0-beta01")
-    testImplementation("androidx.room:room-testing:2.5.0-beta01")
-    implementation("androidx.room:room-paging:2.5.0-beta01")
+    runtimeOnly("androidx.room:room-runtime:2.5.0-beta02")
+    ksp("androidx.room:room-compiler:2.5.0-beta02")
+    implementation("androidx.room:room-ktx:2.5.0-beta02")
+    testImplementation("androidx.room:room-testing:2.5.0-beta02")
+    implementation("androidx.room:room-paging:2.5.0-beta02")
 
     implementation("androidx.paging:paging-compose:1.0.0-alpha17")
 
@@ -77,6 +77,6 @@ dependencies {
     ksp("com.squareup.moshi:moshi-kotlin-codegen:1.13.0")
 
     testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.1.3")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.4.0")
+    androidTestImplementation("androidx.test.ext:junit:1.1.4")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.0")
 }

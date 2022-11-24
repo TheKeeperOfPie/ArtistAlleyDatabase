@@ -43,15 +43,16 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3")
     runtimeOnly("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4")
 
-    runtimeOnly("androidx.room:room-runtime:2.5.0-beta01")
-    ksp("androidx.room:room-compiler:2.5.0-beta01")
-    implementation("androidx.room:room-ktx:2.5.0-beta01")
-    testImplementation("androidx.room:room-testing:2.5.0-beta01")
-    implementation("androidx.room:room-paging:2.5.0-beta01")
+    runtimeOnly("androidx.room:room-runtime:2.5.0-beta02")
+    ksp("androidx.room:room-compiler:2.5.0-beta02")
+    implementation("androidx.room:room-ktx:2.5.0-beta02")
+    testImplementation("androidx.room:room-testing:2.5.0-beta02")
+    implementation("androidx.room:room-paging:2.5.0-beta02")
 
+    api("com.squareup.moshi:moshi-kotlin:1.13.0")
     ksp("com.squareup.moshi:moshi-kotlin-codegen:1.13.0")
 
     testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.1.3")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.4.0")
+    androidTestImplementation("androidx.test.ext:junit:1.1.4")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.0")
 }

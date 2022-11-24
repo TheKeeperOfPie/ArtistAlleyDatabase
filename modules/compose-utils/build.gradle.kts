@@ -41,8 +41,8 @@ android {
 }
 
 dependencies {
-    api("androidx.compose.material:material:1.4.0-alpha01")
-    api("androidx.compose.material3:material3:1.1.0-alpha01")
+    api("androidx.compose.material:material:1.4.0-alpha02")
+    api("androidx.compose.material3:material3:1.1.0-alpha02")
     implementation("com.google.accompanist:accompanist-pager-indicators:0.26.1-alpha")
 
     api("androidx.paging:paging-compose:1.0.0-alpha17")

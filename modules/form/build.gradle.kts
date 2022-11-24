@@ -45,11 +45,11 @@ dependencies {
     api("io.github.hoc081098:FlowExt:0.4.0")
     implementation("androidx.activity:activity-compose:1.6.1")
     implementation("androidx.core:core-ktx:1.9.0")
-    api("androidx.compose.ui:ui:1.4.0-alpha01")
-    implementation("androidx.compose.ui:ui-tooling-preview:1.4.0-alpha01")
-    implementation("androidx.compose.material:material-icons-core:1.4.0-alpha01")
-    implementation("androidx.compose.material:material-icons-extended:1.4.0-alpha01")
-    implementation("androidx.compose.material3:material3:1.1.0-alpha01")
+    api("androidx.compose.ui:ui:1.4.0-alpha02")
+    implementation("androidx.compose.ui:ui-tooling-preview:1.4.0-alpha02")
+    implementation("androidx.compose.material:material-icons-core:1.4.0-alpha02")
+    implementation("androidx.compose.material:material-icons-extended:1.4.0-alpha02")
+    implementation("androidx.compose.material3:material3:1.1.0-alpha02")
 
     implementation("androidx.navigation:navigation-compose:2.5.3")
 
@@ -60,6 +60,6 @@ dependencies {
     implementation("com.mxalbert.sharedelements:shared-elements:0.1.0-SNAPSHOT")
 
     testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.1.3")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.4.0")
+    androidTestImplementation("androidx.test.ext:junit:1.1.4")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.0")
 }
