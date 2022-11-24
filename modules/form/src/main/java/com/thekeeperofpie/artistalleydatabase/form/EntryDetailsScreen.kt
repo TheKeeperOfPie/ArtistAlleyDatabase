@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -40,12 +41,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
+import com.thekeeperofpie.artistalleydatabase.compose.pullRefresh
+import com.thekeeperofpie.artistalleydatabase.compose.rememberPullRefreshState
 import com.thekeeperofpie.artistalleydatabase.compose.topBorder
 import com.thekeeperofpie.artistalleydatabase.form.grid.EntryGrid
 import java.io.File
@@ -70,6 +74,7 @@ object EntryDetailsScreen {
         errorRes: () -> Pair<Int, Exception?>? = { null },
         onErrorDismiss: () -> Unit = {},
         onConfirmDelete: () -> Unit = {},
+        onPullDown: () -> Unit,
     ) {
         Scaffold(
             snackbarHost = {
@@ -79,6 +84,13 @@ object EntryDetailsScreen {
         ) {
             var showDeleteDialog by rememberSaveable { mutableStateOf(false) }
 
+            val pullRefreshState = rememberPullRefreshState(
+                refreshing = false,
+                onRefresh = { onPullDown() }
+            )
+
+            val offsetY = LocalDensity.current.run { pullRefreshState.position.toDp() }
+
             Column(
                 Modifier
                     .padding(it)
@@ -86,8 +98,10 @@ object EntryDetailsScreen {
             ) {
                 Column(
                     modifier = Modifier
+                        .offset(y = offsetY)
                         .weight(1f, true)
                         .fillMaxWidth()
+                        .pullRefresh(pullRefreshState)
                         .verticalScroll(rememberScrollState())
                 ) {
                     HeaderImage(
@@ -102,7 +116,13 @@ object EntryDetailsScreen {
                         onImageClickOpen = onImageClickOpen,
                     )
 
-                    EntryForm(areSectionsLoading, sections)
+                    AnimatedVisibility(
+                        visible = true,
+                        enter = fadeIn(),
+                        exit = fadeOut(),
+                    ) {
+                        EntryForm(areSectionsLoading, sections)
+                    }
                 }
 
                 AnimatedVisibility(
@@ -116,6 +136,7 @@ object EntryDetailsScreen {
                         modifier = Modifier
                             .fillMaxWidth()
                             .topBorder(1.dp, MaterialTheme.colorScheme.inversePrimary)
+                            .background(MaterialTheme.colorScheme.background)
                     ) {
                         TextButton(onClick = { showDeleteDialog = true }) {
                             Text(
@@ -171,7 +192,7 @@ object EntryDetailsScreen {
         onImageClickOpen: () -> Unit,
     ) {
         Box {
-            ImageSelectBox(onImageSelected, onImageSelectError) {
+            ImageSelectBox(onImageSelected, onImageSelectError, loading) {
                 @Suppress("NAME_SHADOWING")
                 val imageUri = imageUri()
                 if (imageUri != null) {
@@ -199,6 +220,7 @@ object EntryDetailsScreen {
                     if (entryImageFile != null) {
                         @Suppress("NAME_SHADOWING")
                         val entryImageRatio = entryImageRatio()
+
                         @Suppress("NAME_SHADOWING")
                         val entryId = entryId()
                         SharedElement(

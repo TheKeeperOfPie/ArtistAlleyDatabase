@@ -25,4 +25,5 @@
     <string name="entry_results_zero">No results</string>
     <string name="entry_results_one">%1$s result</string>
     <string name="entry_results_multiple">%1$s results</string>
+    <string name="entry_image_expand_content_description">Expand image</string>
 </resources>

@@ -7,15 +7,20 @@ import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.CallSuper
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.with
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -23,7 +28,6 @@ import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -33,6 +37,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.relocation.BringIntoViewRequester
@@ -58,6 +63,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -79,11 +85,14 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.PopupProperties
 import coil.compose.AsyncImage
@@ -95,29 +104,41 @@ import com.thekeeperofpie.artistalleydatabase.compose.dropdown.DropdownMenuItem
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
-fun ColumnScope.EntryForm(
+fun EntryForm(
     areSectionsLoading: () -> Boolean = { false },
     sections: () -> List<EntrySection> = { emptyList() },
 ) {
-    if (areSectionsLoading()) {
-        CircularProgressIndicator(
-            Modifier
-                .padding(16.dp)
-                .align(Alignment.CenterHorizontally)
-        )
-    } else {
-        Column {
-            sections().forEach {
-                when (it) {
-                    is EntrySection.MultiText -> MultiTextSection(it)
-                    is EntrySection.LongText -> LongTextSection(it)
-                    is EntrySection.Dropdown -> DropdownSection(it)
-                    is EntrySection.Custom<*> -> CustomSection(it)
+    AnimatedContent(targetState = areSectionsLoading(),
+        transitionSpec = {
+            fadeIn(animationSpec = tween(durationMillis = 200, delayMillis = 150)) with
+                    fadeOut(animationSpec = tween(100))
+        }
+    ) {
+        if (it) {
+            AnimatedVisibility(visible = true, enter = fadeIn(), exit = fadeOut()) {
+                Box(Modifier.fillMaxWidth()) {
+                    CircularProgressIndicator(
+                        Modifier
+                            .padding(16.dp)
+                            .align(Alignment.Center)
+                    )
                 }
             }
+        } else {
+            Column {
+                sections().forEach {
+                    when (it) {
+                        is EntrySection.MultiText -> MultiTextSection(it)
+                        is EntrySection.LongText -> LongTextSection(it)
+                        is EntrySection.Dropdown -> DropdownSection(it)
+                        is EntrySection.Custom<*> -> CustomSection(it)
+                    }
+                }
 
-            Spacer(Modifier.height(24.dp))
+                Spacer(Modifier.height(24.dp))
+            }
         }
     }
 }
@@ -763,6 +784,7 @@ private fun CustomSection(section: EntrySection.Custom<*>) {
 fun ImagesSelectBox(
     onImagesSelected: (List<Uri>) -> Unit,
     onImageSelectError: (Exception?) -> Unit,
+    loading: () -> Boolean = { false },
     content: @Composable BoxScope.() -> Unit,
 ) {
     val imageSelectLauncher = rememberLauncherForActivityResult(
@@ -773,7 +795,8 @@ fun ImagesSelectBox(
     ImageSelectBoxInner(
         launcher = imageSelectLauncher,
         onImageSelectError = onImageSelectError,
-        content
+        loading = loading,
+        content = content,
     )
 }
 
@@ -781,6 +804,7 @@ fun ImagesSelectBox(
 fun ImageSelectBox(
     onImageSelected: (Uri?) -> Unit,
     onImageSelectError: (Exception?) -> Unit,
+    loading: () -> Boolean = { false },
     content: @Composable BoxScope.() -> Unit,
 ) {
     val imageSelectLauncher = rememberLauncherForActivityResult(
@@ -791,30 +815,97 @@ fun ImageSelectBox(
     ImageSelectBoxInner(
         launcher = imageSelectLauncher,
         onImageSelectError = onImageSelectError,
-        content
+        loading = loading,
+        content = content,
     )
 }
+
+
+private const val SLIDE_DELAY_MS = 325
+private const val SLIDE_DURATION_MS = 300
 
 @Composable
 private fun ImageSelectBoxInner(
     launcher: ManagedActivityResultLauncher<String, *>,
     onImageSelectError: (Exception?) -> Unit,
+    loading: () -> Boolean = { false },
     content: @Composable BoxScope.() -> Unit,
 ) {
-    Box(
-        Modifier
-            .wrapContentHeight()
-            .heightIn(0.dp, 400.dp)
-            .verticalScroll(rememberScrollState())
-            .clickable(onClick = {
-                try {
-                    launcher.launch("image/*")
-                } catch (e: Exception) {
-                    onImageSelectError(e)
+    var previouslyRunHeight by rememberSaveable { mutableStateOf(false) }
+    var maxHeight by remember { mutableStateOf(0) }
+    val finalMaxHeight = LocalDensity.current.run { 400.dp.roundToPx() }
+    val heightAnimation = remember {
+        // If maxHeight was already calculated (this composition
+        // is a result of an orientation change), skip the animation
+        Animatable(if (previouslyRunHeight) 0f else 1f)
+    }
+
+    LaunchedEffect(maxHeight) {
+        if (maxHeight == 0 || finalMaxHeight > maxHeight) return@LaunchedEffect
+        heightAnimation.animateTo(
+            0f,
+            animationSpec = tween(
+                durationMillis = SLIDE_DURATION_MS,
+                delayMillis = SLIDE_DELAY_MS
+            ),
+        )
+    }
+
+    Box {
+        Box(
+            Modifier
+                .wrapContentHeight()
+                .let {
+                    if (maxHeight > 0) {
+                        val animatedHeight =
+                            if (maxHeight < finalMaxHeight) maxHeight.toFloat() else
+                                ((maxHeight - finalMaxHeight) * heightAnimation.value + finalMaxHeight)
+                        it.height(LocalDensity.current.run { animatedHeight.toDp() })
+                    } else {
+                        it
+                            .heightIn(Dp.Unspecified, 10000.dp)
+                    }
                 }
-            })
-    ) {
-        content()
+                .verticalScroll(rememberScrollState())
+                .animateContentSize()
+                .onGloballyPositioned {
+                    if (maxHeight == 0) {
+                        maxHeight = it.size.height
+                        previouslyRunHeight = true
+                    }
+                }
+                .clickable(onClick = {
+                    try {
+                        launcher.launch("image/*")
+                    } catch (e: Exception) {
+                        onImageSelectError(e)
+                    }
+                })
+        ) {
+            content()
+        }
+
+        AnimatedVisibility(
+            visible = maxHeight > finalMaxHeight && !loading(),
+            enter = fadeIn(animationSpec = tween(durationMillis = 200, delayMillis = 150)),
+            exit = fadeOut(),
+            modifier = Modifier.align(Alignment.BottomCenter)
+        ) {
+            var expanded by remember { mutableStateOf(false) }
+            LaunchedEffect(expanded) {
+                if (maxHeight == 0) return@LaunchedEffect
+                heightAnimation.animateTo(
+                    if (expanded) 1f else 0f,
+                    animationSpec = tween(durationMillis = SLIDE_DURATION_MS),
+                )
+            }
+            TrailingDropdownIcon(
+                expanded = expanded,
+                contentDescription = R.string.entry_image_expand_content_description,
+                onClick = { expanded = !expanded },
+                modifier = Modifier.size(60.dp)
+            )
+        }
     }
 }
 

@@ -72,6 +72,7 @@ object MultiEditScreen {
                         .imePadding(),
                 ) {
                     HeaderImage(
+                        loading,
                         imageUris,
                         onImageSelected,
                         onImageSelectError,
@@ -114,6 +115,7 @@ object MultiEditScreen {
     @OptIn(ExperimentalPagerApi::class)
     @Composable
     private fun HeaderImage(
+        loading: () -> Boolean = { false },
         imageUris: () -> List<Either<File, Uri?>> = { emptyList() },
         onImageSelected: (index: Int, uri: Uri?) -> Unit = { _, _ -> },
         onImageSelectError: (Exception?) -> Unit = {},
@@ -127,7 +129,7 @@ object MultiEditScreen {
                 count = imageUris.size,
                 modifier = Modifier.heightIn(min = 200.dp, max = 400.dp)
             ) { index ->
-                ImageSelectBox({ onImageSelected(index, it) }, onImageSelectError) {
+                ImageSelectBox({ onImageSelected(index, it) }, onImageSelectError, loading) {
                     AsyncImage(
                         model = ImageRequest.Builder(LocalContext.current)
                             .data(imageUris[index].eitherValueUnchecked())

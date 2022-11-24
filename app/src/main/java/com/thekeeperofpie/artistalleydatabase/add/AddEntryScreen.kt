@@ -137,7 +137,7 @@ object AddEntryScreen {
         onImageSelectError: (Exception?) -> Unit = {},
         onImageSizeResult: (Int, Int) -> Unit = { _, _ -> },
     ) {
-        ImagesSelectBox(onImagesSelected, onImageSelectError) {
+        ImagesSelectBox(onImagesSelected, onImageSelectError, loading = { false }) {
             @Suppress("NAME_SHADOWING")
             val imageUris = imageUris()
             if (imageUris.isNotEmpty()) {

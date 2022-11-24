@@ -26,6 +26,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
@@ -47,6 +48,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.drawscope.ContentDrawScope
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.debugInspectorInfo
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
@@ -283,13 +285,17 @@ fun Modifier.border(
 fun TrailingDropdownIcon(
     expanded: Boolean,
     @StringRes contentDescription: Int,
-    onClick: () -> Unit = {}
+    modifier: Modifier = Modifier,
+    icon: ImageVector = Icons.Filled.ArrowDropDown,
+    iconTint: Color = LocalContentColor.current,
+    onClick: () -> Unit = {},
 ) {
-    IconButton(onClick = onClick) {
+    IconButton(onClick = onClick, modifier = modifier) {
         Icon(
-            Icons.Filled.ArrowDropDown,
-            stringResource(contentDescription),
-            Modifier.rotate(if (expanded) 180f else 0f)
+            imageVector = icon,
+            tint = iconTint,
+            contentDescription = stringResource(contentDescription),
+            modifier = Modifier.rotate(if (expanded) 180f else 0f)
         )
     }
 }

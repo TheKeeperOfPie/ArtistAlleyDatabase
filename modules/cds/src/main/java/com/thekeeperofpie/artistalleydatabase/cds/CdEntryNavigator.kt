@@ -37,7 +37,8 @@ class CdEntryNavigator : EntryNavigator, BrowseSelectionNavigator {
                 onClickSave = { viewModel.onClickSave(navHostController) },
                 errorRes = { viewModel.errorResource },
                 onErrorDismiss = { viewModel.errorResource = null },
-                onConfirmDelete = { viewModel.onConfirmDelete(navHostController) }
+                onConfirmDelete = { viewModel.onConfirmDelete(navHostController) },
+                onPullDown = { navHostController.popBackStack() },
             )
         }
     }
