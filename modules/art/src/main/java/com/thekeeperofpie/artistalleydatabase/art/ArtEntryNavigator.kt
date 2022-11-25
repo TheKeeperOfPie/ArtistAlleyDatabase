@@ -114,7 +114,6 @@ class ArtEntryNavigator : EntryNavigator, BrowseSelectionNavigator {
                 errorRes = { viewModel.errorResource },
                 onErrorDismiss = { viewModel.errorResource = null },
                 onConfirmDelete = { viewModel.onConfirmDelete(navHostController) },
-                onPullDown = { navHostController.popBackStack() },
             )
         }
 

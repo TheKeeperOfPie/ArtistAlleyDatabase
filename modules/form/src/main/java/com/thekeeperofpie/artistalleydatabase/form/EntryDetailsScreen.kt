@@ -1,8 +1,11 @@
 package com.thekeeperofpie.artistalleydatabase.form
 
 import android.net.Uri
+import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
@@ -33,11 +36,13 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -46,12 +51,18 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.mxalbert.sharedelements.FadeMode
+import com.mxalbert.sharedelements.ProgressThresholds
 import com.mxalbert.sharedelements.SharedElement
+import com.mxalbert.sharedelements.SharedElementsTransitionSpec
+import com.thekeeperofpie.artistalleydatabase.compose.AddBackPressTransitionStage
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
 import com.thekeeperofpie.artistalleydatabase.compose.pullRefresh
 import com.thekeeperofpie.artistalleydatabase.compose.rememberPullRefreshState
 import com.thekeeperofpie.artistalleydatabase.compose.topBorder
 import com.thekeeperofpie.artistalleydatabase.form.grid.EntryGrid
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.io.File
 
 object EntryDetailsScreen {
@@ -74,7 +85,6 @@ object EntryDetailsScreen {
         errorRes: () -> Pair<Int, Exception?>? = { null },
         onErrorDismiss: () -> Unit = {},
         onConfirmDelete: () -> Unit = {},
-        onPullDown: () -> Unit,
     ) {
         Scaffold(
             snackbarHost = {
@@ -83,11 +93,22 @@ object EntryDetailsScreen {
             modifier = Modifier.imePadding()
         ) {
             var showDeleteDialog by rememberSaveable { mutableStateOf(false) }
-
+            val backPressedDispatcher = LocalOnBackPressedDispatcherOwner.current
+                ?.onBackPressedDispatcher
             val pullRefreshState = rememberPullRefreshState(
                 refreshing = false,
-                onRefresh = { onPullDown() }
+                onRefresh = { backPressedDispatcher?.onBackPressed() }
             )
+
+            val alphaAnimation = remember { Animatable(1f) }
+            AddBackPressTransitionStage(terminal = true) {
+                it.launch {
+                    delay(100)
+                    remove()
+                    backPressedDispatcher?.onBackPressed()
+                }
+                alphaAnimation.animateTo(0f, tween(250))
+            }
 
             val offsetY = LocalDensity.current.run { pullRefreshState.position.toDp() }
 
@@ -120,6 +141,7 @@ object EntryDetailsScreen {
                         visible = true,
                         enter = fadeIn(),
                         exit = fadeOut(),
+                        modifier = Modifier.graphicsLayer { alpha = alphaAnimation.value }
                     ) {
                         EntryForm(areSectionsLoading, sections)
                     }
@@ -192,6 +214,9 @@ object EntryDetailsScreen {
         onImageClickOpen: () -> Unit,
     ) {
         Box {
+            val alphaAnimation = remember { Animatable(1f) }
+            AddBackPressTransitionStage { alphaAnimation.animateTo(0f, tween(250)) }
+
             ImageSelectBox(onImageSelected, onImageSelectError, loading) {
                 @Suppress("NAME_SHADOWING")
                 val imageUri = imageUri()
@@ -225,7 +250,12 @@ object EntryDetailsScreen {
                         val entryId = entryId()
                         SharedElement(
                             key = "${entryId}_image",
-                            screenKey = "artEntryDetails"
+                            screenKey = "artEntryDetails",
+                            // Try to disable the fade animation
+                            transitionSpec = SharedElementsTransitionSpec(
+                                fadeMode = FadeMode.In,
+                                fadeProgressThresholds = ProgressThresholds(0f, 0f),
+                            )
                         ) {
                             val configuration = LocalConfiguration.current
                             val screenWidth = configuration.screenWidthDp.dp
@@ -233,6 +263,7 @@ object EntryDetailsScreen {
                             AsyncImage(
                                 ImageRequest.Builder(LocalContext.current)
                                     .data(entryImageFile)
+                                    .crossfade(false)
                                     .placeholderMemoryCacheKey("coil_memory_entry_image_home_$entryId")
                                     .build(),
                                 contentDescription = stringResource(
@@ -268,7 +299,9 @@ object EntryDetailsScreen {
                 visible = !loading() && entryImageFile() != null,
                 enter = fadeIn(),
                 exit = fadeOut(),
-                modifier = Modifier.align(Alignment.BottomEnd)
+                modifier = Modifier
+                    .graphicsLayer { alpha = alphaAnimation.value }
+                    .align(Alignment.BottomEnd)
             ) {
                 FloatingActionButton(
                     onClick = onImageClickOpen,

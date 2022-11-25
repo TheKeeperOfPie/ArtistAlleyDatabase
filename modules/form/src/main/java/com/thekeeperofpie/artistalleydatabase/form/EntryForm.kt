@@ -3,6 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.form
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.provider.Settings
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -97,6 +98,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.PopupProperties
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.thekeeperofpie.artistalleydatabase.compose.AddBackPressTransitionStage
 import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIcon
 import com.thekeeperofpie.artistalleydatabase.compose.bottomBorder
 import com.thekeeperofpie.artistalleydatabase.compose.dropdown.DropdownMenu
@@ -820,8 +822,6 @@ fun ImageSelectBox(
     )
 }
 
-
-private const val SLIDE_DELAY_MS = 325
 private const val SLIDE_DURATION_MS = 300
 
 @Composable
@@ -831,6 +831,20 @@ private fun ImageSelectBoxInner(
     loading: () -> Boolean = { false },
     content: @Composable BoxScope.() -> Unit,
 ) {
+    val contentResolver = LocalContext.current.contentResolver
+
+    // Compose animation spec delay doesn't seem to account for animator scale,
+    // necessary to ensure height animation doesn't overlap shared element transition
+    val slideDelayMs by rememberSaveable {
+        mutableStateOf(
+            (350 * Settings.Global.getFloat(
+                contentResolver,
+                Settings.Global.ANIMATOR_DURATION_SCALE,
+                1f
+            )).toInt()
+        )
+    }
+
     var previouslyRunHeight by rememberSaveable { mutableStateOf(false) }
     var maxHeight by remember { mutableStateOf(0) }
     val finalMaxHeight = LocalDensity.current.run { 400.dp.roundToPx() }
@@ -840,13 +854,15 @@ private fun ImageSelectBoxInner(
         Animatable(if (previouslyRunHeight) 0f else 1f)
     }
 
+    AddBackPressTransitionStage { heightAnimation.animateTo(1f, tween(250)) }
+
     LaunchedEffect(maxHeight) {
         if (maxHeight == 0 || finalMaxHeight > maxHeight) return@LaunchedEffect
         heightAnimation.animateTo(
             0f,
             animationSpec = tween(
                 durationMillis = SLIDE_DURATION_MS,
-                delayMillis = SLIDE_DELAY_MS
+                delayMillis = slideDelayMs
             ),
         )
     }
@@ -896,7 +912,7 @@ private fun ImageSelectBoxInner(
                 if (maxHeight == 0) return@LaunchedEffect
                 heightAnimation.animateTo(
                     if (expanded) 1f else 0f,
-                    animationSpec = tween(durationMillis = SLIDE_DURATION_MS),
+                    animationSpec = tween(SLIDE_DURATION_MS),
                 )
             }
             TrailingDropdownIcon(

@@ -46,7 +46,10 @@ import androidx.paging.compose.LazyPagingItems
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import coil.size.Dimension
+import com.mxalbert.sharedelements.FadeMode
+import com.mxalbert.sharedelements.ProgressThresholds
 import com.mxalbert.sharedelements.SharedElement
+import com.mxalbert.sharedelements.SharedElementsTransitionSpec
 import com.thekeeperofpie.artistalleydatabase.compose.ButtonFooter
 import com.thekeeperofpie.artistalleydatabase.compose.LazyStaggeredGrid
 import com.thekeeperofpie.artistalleydatabase.form.R
@@ -222,6 +225,11 @@ object EntryGrid {
                     SharedElement(
                         key = "${entry.id}_image",
                         screenKey = imageScreenKey,
+                        // Try to disable the fade animation
+                        transitionSpec = SharedElementsTransitionSpec(
+                            fadeMode = FadeMode.In,
+                            fadeProgressThresholds = ProgressThresholds(0f, 0f),
+                        )
                     ) {
                         AsyncImage(
                             model = ImageRequest.Builder(LocalContext.current)
