@@ -11,19 +11,19 @@ import kotlinx.coroutines.withContext
 
 class ArtistRepository(
     application: ScopedApplication,
-    private val artistEntryDao: ArtistEntryDao,
+    private val vgmdbArtistDao: VgmdbArtistDao,
     private val vgmdbApi: VgmdbApi,
-) : ApiRepository<ArtistEntry>(application) {
+) : ApiRepository<VgmdbArtist>(application) {
 
     override suspend fun fetch(id: String) = vgmdbApi.getArtist(id)
 
-    override suspend fun getLocal(id: String) = artistEntryDao.getEntryFlow(id)
+    override suspend fun getLocal(id: String) = vgmdbArtistDao.getEntryFlow(id)
 
-    override suspend fun insertCachedEntry(value: ArtistEntry) = artistEntryDao.insertEntries(value)
+    override suspend fun insertCachedEntry(value: VgmdbArtist) = vgmdbArtistDao.insertEntries(value)
 
     override suspend fun ensureSaved(ids: List<String>) = try {
         withContext(Dispatchers.IO) {
-            (ids - artistEntryDao.getEntriesById(ids).toSet())
+            (ids - vgmdbArtistDao.getEntriesById(ids).toSet())
                 .map { async { fetch(it)?.let { insertCachedEntry(it) } } }
                 .awaitAll()
         }

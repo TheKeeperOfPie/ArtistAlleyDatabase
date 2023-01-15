@@ -298,23 +298,27 @@ abstract class ArtEntryDetailsViewModel(
     }
 
     @CheckReturnValue
-    suspend fun saveEntry(imageUri: Uri?, id: String): Boolean {
+    suspend fun saveEntry(imageUri: Uri?, id: String, skipIgnoreableErrors: Boolean = false): Boolean {
         val entry = makeEntry(imageUri, id) ?: return false
         entry.series(appJson)
             .filterIsInstance<Series.AniList>()
             .map { it.id }
             .let { mediaRepository.ensureSaved(it) }
             ?.let {
-                errorResource = it
-                return false
+                if (!skipIgnoreableErrors) {
+                    errorResource = it
+                    return false
+                }
             }
         entry.characters(appJson)
             .filterIsInstance<Character.AniList>()
             .map { it.id }
             .let { characterRepository.ensureSaved(it) }
             ?.let {
-                errorResource = it
-                return false
+                if (!skipIgnoreableErrors) {
+                    errorResource = it
+                    return false
+                }
             }
         artEntryDao.insertEntries(entry)
         return true

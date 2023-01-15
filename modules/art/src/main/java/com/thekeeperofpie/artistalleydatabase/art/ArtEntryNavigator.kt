@@ -111,6 +111,7 @@ class ArtEntryNavigator : EntryNavigator, BrowseSelectionNavigator {
                 sections = { viewModel.sections },
                 saving = { viewModel.saving },
                 onClickSave = { viewModel.onClickSave(navHostController) },
+                onLongClickSave = { viewModel.onLongClickSave(navHostController) },
                 errorRes = { viewModel.errorResource },
                 onErrorDismiss = { viewModel.errorResource = null },
                 onConfirmDelete = { viewModel.onConfirmDelete(navHostController) },

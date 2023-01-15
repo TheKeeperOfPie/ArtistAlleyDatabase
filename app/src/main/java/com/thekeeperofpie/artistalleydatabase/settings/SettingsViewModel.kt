@@ -6,10 +6,16 @@ import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.OutOfQuotaPolicy
 import androidx.work.WorkManager
+import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterEntryDao
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaEntryDao
+import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntry
+import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDao
+import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtist
+import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistDao
+import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbJson
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumEntryDao
-import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.ArtistEntryDao
+import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.VgmdbArtistDao
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -20,7 +26,10 @@ class SettingsViewModel @Inject constructor(
     private val mediaEntryDao: MediaEntryDao,
     private val characterEntryDao: CharacterEntryDao,
     private val albumEntryDao: AlbumEntryDao,
-    private val artistEntryDao: ArtistEntryDao,
+    private val cdEntryDao: CdEntryDao,
+    private val musicalArtistDao: MusicalArtistDao,
+    private val vgmdbArtistDao: VgmdbArtistDao,
+    private val vgmdbJson: VgmdbJson,
     private val workManager: WorkManager,
 ) : ViewModel() {
 
@@ -34,7 +43,7 @@ class SettingsViewModel @Inject constructor(
     fun clearVgmdbCache() {
         viewModelScope.launch(Dispatchers.IO) {
             albumEntryDao.deleteAll()
-            artistEntryDao.deleteAll()
+            vgmdbArtistDao.deleteAll()
         }
     }
 
@@ -59,7 +68,60 @@ class SettingsViewModel @Inject constructor(
                 }
                 SettingsScreen.DatabaseType.VGMDB -> {
                     albumEntryDao.delete(id)
-                    artistEntryDao.delete(id)
+                    vgmdbArtistDao.delete(id)
+                }
+                SettingsScreen.DatabaseType.MUSICAL_ARTISTS -> {
+                    musicalArtistDao.delete(id)
+                }
+            }
+        }
+    }
+
+    fun onClickRebuildDatabase(databaseType: SettingsScreen.DatabaseType) {
+        viewModelScope.launch(Dispatchers.IO) {
+            when (databaseType) {
+                SettingsScreen.DatabaseType.ANILIST,
+                SettingsScreen.DatabaseType.VGMDB -> {
+                    // TODO: Rebuild?
+                }
+                SettingsScreen.DatabaseType.MUSICAL_ARTISTS -> {
+                    musicalArtistDao.deleteAll()
+                    cdEntryDao.iterateEntriesNoTransaction { index: Int, cdEntry: CdEntry ->
+                        val musicalArtists = cdEntry.performers.map(vgmdbJson::parseArtistColumn)
+                            .map {
+                                when (it) {
+                                    is Either.Left -> {
+                                        MusicalArtist(
+                                            id = "custom_${it.value}",
+                                            name = it.value,
+                                            type = MusicalArtist.Type.CUSTOM,
+                                        )
+                                    }
+                                    is Either.Right -> {
+                                        val artistId = it.value.id
+                                        val artistEntry = vgmdbArtistDao.getEntry(artistId)
+                                        if (artistEntry == null) {
+                                            MusicalArtist(
+                                                id = "vgmdb_$artistId",
+                                                name = it.value.name ?: "",
+                                                type = MusicalArtist.Type.VGMDB,
+                                            )
+                                        } else {
+                                            MusicalArtist(
+                                                id = "vgmdb_${artistEntry.id}",
+                                                name = artistEntry.name,
+                                                type = MusicalArtist.Type.VGMDB,
+                                                image = artistEntry.pictureThumb,
+                                            )
+                                        }
+                                }
+                            }
+                        }
+
+                        cdEntry.performers.forEach {
+                            musicalArtistDao.insert(musicalArtists)
+                        }
+                    }
                 }
             }
         }

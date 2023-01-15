@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.settings
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -35,6 +36,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.AppBar
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
 import com.thekeeperofpie.artistalleydatabase.compose.dropdown.DropdownMenuItem
 import com.thekeeperofpie.artistalleydatabase.form.FormStringR
+import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistsStringR
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbStringR
 
 object SettingsScreen {
@@ -49,6 +51,7 @@ object SettingsScreen {
         onClickVgmdbClear: () -> Unit = {},
         onClickDatabaseFetch: () -> Unit = {},
         onClickClearDatabaseById: (DatabaseType, String) -> Unit = { _, _ -> },
+        onClickRebuildDatabase: (DatabaseType) -> Unit = {},
     ) {
         Scaffold(
             topBar = {
@@ -87,6 +90,10 @@ object SettingsScreen {
                 Divider()
 
                 ClearDatabaseByIdRow(onClickClearDatabaseById)
+
+                Divider()
+
+                RebuildDatabaseRow(onClickRebuildDatabase)
             }
         }
     }
@@ -108,6 +115,51 @@ object SettingsScreen {
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
+    private fun DatabaseDropdown(
+        modifier: Modifier = Modifier,
+        onSelectDatabase: (DatabaseType) -> Unit,
+    ) {
+        var expanded by remember { mutableStateOf(false) }
+        var selectedDatabaseTypeIndex by rememberSaveable { mutableStateOf(0) }
+        ExposedDropdownMenuBox(
+            expanded = expanded,
+            onExpandedChange = { expanded = !expanded },
+            modifier = modifier,
+        ) {
+            TextField(
+                value = stringResource(
+                    DatabaseType.values()[selectedDatabaseTypeIndex].labelRes
+                ),
+                onValueChange = {},
+                label = { Text(stringResource(R.string.label_database_type)) },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                colors = ExposedDropdownMenuDefaults.textFieldColors(),
+                readOnly = true,
+                modifier = Modifier
+                    .menuAnchor()
+                    .clickable(false) {},
+            )
+            ExposedDropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false },
+            ) {
+                DatabaseType.values().forEachIndexed { index, databaseType ->
+                    DropdownMenuItem(
+                        text = { Text(stringResource(databaseType.labelRes)) },
+                        onClick = {
+                            selectedDatabaseTypeIndex = index
+                            expanded = false
+                            onSelectDatabase(DatabaseType.values()[selectedDatabaseTypeIndex])
+                        },
+                        contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                    )
+                }
+            }
+        }
+    }
+
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Composable
     private fun ClearDatabaseByIdRow(
         onClickClearDatabaseById: (DatabaseType, String) -> Unit = { _, _ -> },
     ) {
@@ -120,41 +172,15 @@ object SettingsScreen {
                 bottom = 10.dp
             )
         ) {
-            var expanded by remember { mutableStateOf(false) }
-            var selectedDatabaseTypeIndex by rememberSaveable { mutableStateOf(0) }
-            ExposedDropdownMenuBox(
-                expanded = expanded,
-                onExpandedChange = { expanded = !expanded },
-                modifier = Modifier.wrapContentWidth()
-                    .fillMaxWidth(0.5f),
-            ) {
-                TextField(
-                    value = stringResource(
-                        DatabaseType.values()[selectedDatabaseTypeIndex].labelRes
-                    ),
-                    onValueChange = {},
-                    label = { Text(stringResource(R.string.label_database_type)) },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-                    colors = ExposedDropdownMenuDefaults.textFieldColors(),
-                    modifier = Modifier
-                        .menuAnchor(),
-                )
-                ExposedDropdownMenu(
-                    expanded = expanded,
-                    onDismissRequest = { expanded = false },
-                ) {
-                    DatabaseType.values().forEachIndexed { index, databaseType ->
-                        DropdownMenuItem(
-                            text = { Text(stringResource(databaseType.labelRes)) },
-                            onClick = {
-                                selectedDatabaseTypeIndex = index
-                                expanded = false
-                            },
-                            contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
-                        )
-                    }
-                }
+            var selectedDatabase by rememberSaveable {
+                mutableStateOf(DatabaseType.values().first())
             }
+
+            DatabaseDropdown(
+                Modifier
+                    .wrapContentWidth()
+                    .fillMaxWidth(0.5f)
+            ) { selectedDatabase = it }
 
             Spacer(modifier = Modifier.width(16.dp))
 
@@ -169,11 +195,36 @@ object SettingsScreen {
             Spacer(modifier = Modifier.width(8.dp))
 
             FilledTonalButton(onClick = {
-                onClickClearDatabaseById(
-                    DatabaseType.values()[selectedDatabaseTypeIndex],
-                    clearDatabaseId
-                )
+                onClickClearDatabaseById(selectedDatabase, clearDatabaseId)
             }) { Text(text = stringResource(FormStringR.delete)) }
+        }
+    }
+
+    @Composable
+    private fun RebuildDatabaseRow(onClickRebuildDatabase: (DatabaseType) -> Unit) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(
+                start = 16.dp,
+                end = 16.dp,
+                top = 10.dp,
+                bottom = 10.dp
+            )
+        ) {
+            var selectedDatabase by rememberSaveable {
+                mutableStateOf(DatabaseType.values().first())
+            }
+
+            DatabaseDropdown(
+                Modifier
+                    .weight(1f, true)
+            ) { selectedDatabase = it }
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            FilledTonalButton(onClick = { onClickRebuildDatabase(selectedDatabase) }) {
+                Text(text = stringResource(FormStringR.rebuild))
+            }
         }
     }
 
@@ -190,6 +241,7 @@ object SettingsScreen {
     enum class DatabaseType(@StringRes val labelRes: Int) {
         ANILIST(AniListStringR.aniList),
         VGMDB(VgmdbStringR.vgmdb),
+        MUSICAL_ARTISTS(MusicalArtistsStringR.musical_artists),
     }
 }
 

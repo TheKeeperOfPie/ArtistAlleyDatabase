@@ -72,7 +72,6 @@ import com.thekeeperofpie.artistalleydatabase.search.advanced.AdvancedSearchScre
 import com.thekeeperofpie.artistalleydatabase.search.advanced.AdvancedSearchViewModel
 import com.thekeeperofpie.artistalleydatabase.search.results.SearchResultsScreen
 import com.thekeeperofpie.artistalleydatabase.search.results.SearchResultsViewModel
-import com.thekeeperofpie.artistalleydatabase.settings.SettingsScreen
 import com.thekeeperofpie.artistalleydatabase.settings.SettingsViewModel
 import com.thekeeperofpie.artistalleydatabase.ui.theme.ArtistAlleyDatabaseTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -427,12 +426,13 @@ class MainActivity : ComponentActivity() {
     @Composable
     private fun SettingsScreen(onClickNav: () -> Unit) {
         val viewModel = hiltViewModel<SettingsViewModel>()
-        SettingsScreen(
+        com.thekeeperofpie.artistalleydatabase.settings.SettingsScreen(
             onClickNav = onClickNav,
             onClickAniListClear = viewModel::clearAniListCache,
             onClickVgmdbClear = viewModel::clearVgmdbCache,
             onClickDatabaseFetch = viewModel::onClickDatabaseFetch,
             onClickClearDatabaseById = viewModel::onClickClearDatabaseById,
+            onClickRebuildDatabase = viewModel::onClickRebuildDatabase,
         )
     }
 

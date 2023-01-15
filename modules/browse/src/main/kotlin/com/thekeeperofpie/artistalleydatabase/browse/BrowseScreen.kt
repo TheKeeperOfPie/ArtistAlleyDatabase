@@ -28,9 +28,12 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.items
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
+import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.compose.AppBar
 import com.thekeeperofpie.artistalleydatabase.form.EntryImage
 import kotlinx.coroutines.flow.collectLatest
@@ -88,17 +91,29 @@ object BrowseScreen {
                     .fillMaxSize()
                     .padding(it),
             ) {
+                val tab = tabs[it]
+                val content = tab.content()
                 LazyColumn(Modifier.fillMaxSize()) {
-                    val tab = tabs[it]
-                    val content = tab.content()
-                    items(content.size) {
-                        val value = content[it]
-                        EntryRow(
-                            image = { value.image },
-                            link = { value.link },
-                            text = { value.text },
-                            onClick = { onClick(tab, value) }
-                        )
+                    if (content is Either.Left) {
+                        val items = content.value
+                        items(items.size) {
+                            val value = items[it]
+                            EntryRow(
+                                image = { value.image },
+                                link = { value.link },
+                                text = { value.text },
+                                onClick = { onClick(tab, value) }
+                            )
+                        }
+                    } else if (content is Either.Right) {
+                        items(content.value) {
+                            EntryRow(
+                                image = { it?.image },
+                                link = { it?.link },
+                                text = { it?.text ?: "" },
+                                onClick = { it?.let { onClick(tab, it) } }
+                            )
+                        }
                     }
                 }
             }
@@ -138,7 +153,8 @@ object BrowseScreen {
     data class TabContent(
         val id: String,
         @StringRes val textRes: () -> Int,
-        val content: () -> List<BrowseEntryModel>,
+        val content: @Composable () -> Either<List<BrowseEntryModel>,
+                LazyPagingItems<BrowseEntryModel>>,
         val onSelected: (NavHostController, BrowseEntryModel) -> Unit,
     )
 }

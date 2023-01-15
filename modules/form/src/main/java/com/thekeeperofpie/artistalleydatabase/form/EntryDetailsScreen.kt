@@ -8,7 +8,9 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -67,7 +69,7 @@ import java.io.File
 
 object EntryDetailsScreen {
 
-    @OptIn(ExperimentalMaterial3Api::class)
+    @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
     @Composable
     operator fun invoke(
         entryId: () -> String = { "" },
@@ -82,6 +84,7 @@ object EntryDetailsScreen {
         sections: () -> List<EntrySection> = { emptyList() },
         saving: () -> Boolean = { false },
         onClickSave: () -> Unit = {},
+        onLongClickSave: () -> Unit = {},
         errorRes: () -> Pair<Int, Exception?>? = { null },
         onErrorDismiss: () -> Unit = {},
         onConfirmDelete: () -> Unit = {},
@@ -172,7 +175,14 @@ object EntryDetailsScreen {
                             )
                         }
 
-                        TextButton(onClick = onClickSave) {
+                        TextButton(
+                            onClick = onClickSave,
+                            modifier = Modifier.combinedClickable(
+                                onClick = onClickSave,
+                                onLongClick = onLongClickSave,
+                                onLongClickLabel = stringResource(R.string.save_skip_errors)
+                            )
+                        ) {
                             Crossfade(targetState = saving()) {
                                 if (it) {
                                     CircularProgressIndicator()

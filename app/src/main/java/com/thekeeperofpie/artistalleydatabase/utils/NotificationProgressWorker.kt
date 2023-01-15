@@ -105,6 +105,7 @@ abstract class NotificationProgressWorker(
     }
 
     protected fun setProgress(progress: Int, max: Int) {
+        // TODO: Throttle this before it hits system server
         setProgressAsync(
             Data.Builder()
                 .putFloat(progressKey, progress / max.coerceAtLeast(1).toFloat())

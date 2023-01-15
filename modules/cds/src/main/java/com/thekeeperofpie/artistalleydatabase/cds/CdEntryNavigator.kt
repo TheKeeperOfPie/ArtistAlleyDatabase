@@ -3,9 +3,17 @@ package com.thekeeperofpie.artistalleydatabase.cds
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
+import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
+import androidx.paging.compose.collectAsLazyPagingItems
+import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseEntryModel
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseSelectionNavigator
+import com.thekeeperofpie.artistalleydatabase.cds.browse.selection.CdBrowseSelectionScreen
+import com.thekeeperofpie.artistalleydatabase.cds.browse.selection.CdBrowseSelectionViewModel
+import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryColumn
 import com.thekeeperofpie.artistalleydatabase.form.EntryDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.form.EntryNavigator
 import com.thekeeperofpie.artistalleydatabase.form.EntryUtils
@@ -17,6 +25,70 @@ class CdEntryNavigator : EntryNavigator, BrowseSelectionNavigator {
         navHostController: NavHostController,
         navGraphBuilder: NavGraphBuilder
     ) {
+        navGraphBuilder.composable(
+            "cdEntrySelection" +
+                    "?queryType={queryType}" +
+                    "&title={title}" +
+                    "&queryId={queryId}" +
+                    "&queryString={queryString}",
+            arguments = listOf(
+                navArgument("queryType") {
+                    type = NavType.StringType
+                },
+                navArgument("title") {
+                    type = NavType.StringType
+                },
+                navArgument("queryId") {
+                    type = NavType.StringType
+                    nullable = true
+                },
+                navArgument("queryString") {
+                    type = NavType.StringType
+                    nullable = true
+                },
+            )
+        ) {
+            val arguments = it.arguments!!
+            val column = CdEntryColumn.valueOf(arguments.getString("queryType")!!)
+            val title = arguments.getString("title")!!
+            val queryId = arguments.getString("queryId")
+            val queryString = arguments.getString("queryString")
+            val viewModel = hiltViewModel<CdBrowseSelectionViewModel>()
+            val query: Either<String, String> = if (queryId != null) {
+                Either.Left(queryId)
+            } else {
+                Either.Right(queryString!!)
+            }
+
+            viewModel.initialize(column, query)
+            CdBrowseSelectionScreen(
+                title = { title },
+                loading = { viewModel.loading },
+                entries = { viewModel.entries.collectAsLazyPagingItems() },
+                selectedItems = { viewModel.selectedEntries.keys },
+                onClickEntry = { index, entry ->
+                    if (viewModel.selectedEntries.isNotEmpty()) {
+                        viewModel.selectEntry(index, entry)
+                    } else {
+                        val imageRatio = entry.imageWidthToHeightRatio
+                        val imageFileParameter =
+                            "&entry_image_file=${entry.localImageFile?.toPath()}"
+                                .takeIf { entry.localImageFile != null }
+                                .orEmpty()
+                        navHostController.navigate(
+                            "cdEntryDetails"
+                                    + "?entry_id=${entry.id}"
+                                    + "&entry_image_ratio=$imageRatio"
+                                    + imageFileParameter
+                        )
+                    }
+                },
+                onLongClickEntry = viewModel::selectEntry,
+                onClickClear = viewModel::clearSelected,
+                onConfirmDelete = viewModel::onDeleteSelected,
+            )
+        }
+
         navGraphBuilder.entryDetailsComposable("cdEntryDetails") { id, imageFile, imageRatio ->
             val viewModel = hiltViewModel<CdEntryEditViewModel>().initialize(id)
             EntryDetailsScreen(
@@ -43,6 +115,17 @@ class CdEntryNavigator : EntryNavigator, BrowseSelectionNavigator {
     }
 
     override fun navigate(navHostController: NavHostController, entry: BrowseEntryModel) {
-        TODO("Not yet implemented")
+        val query = entry.queryIdOrString
+        val queryParam = if (query is Either.Left) {
+            "&queryId=${query.value}"
+        } else {
+            "&queryString=${query.rightOrNull()}"
+        }
+        navHostController.navigate(
+            "cdEntrySelection" +
+                    "?queryType=${entry.queryType}" +
+                    "&title=${entry.text}" +
+                    queryParam
+        )
     }
 }

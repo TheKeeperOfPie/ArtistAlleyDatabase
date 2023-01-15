@@ -7,6 +7,7 @@ import androidx.compose.runtime.setValue
 import androidx.core.net.toUri
 import androidx.lifecycle.viewModelScope
 import com.hoc081098.flowext.startWith
+import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.android_utils.JsonUtils
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryNavigator
 import com.thekeeperofpie.artistalleydatabase.art.R
@@ -40,7 +41,7 @@ class ArtBrowseTabTags @Inject constructor(
     override val tab = BrowseScreen.TabContent(
         "art_entry_browse_tags",
         { R.string.art_browse_tab_tags },
-        { tags },
+        { Either.Left(tags) },
         artEntryNavigator::navigate,
     )
 

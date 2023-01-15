@@ -10,12 +10,14 @@
     <string name="confirm">Confirm</string>
     <string name="delete">Delete</string>
     <string name="save">Save</string>
+    <string name="save_skip_errors">Save skipping errors</string>
     <string name="cancel">Cancel</string>
     <string name="different">Different</string>
     <string name="label_open_entry_link">Open entry link</string>
     <string name="entry_image_content_description">Entry cover image</string>
     <string name="clear">Clear</string>
     <string name="edit">Edit</string>
+    <string name="rebuild">Rebuild</string>
     <string name="long_press_multi_select_label">Multi select entry</string>
     <string name="selected_content_description">Selected</string>
     <string name="delete_dialog_title">Delete entry?</string>

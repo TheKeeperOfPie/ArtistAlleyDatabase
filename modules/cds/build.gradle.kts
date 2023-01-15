@@ -51,6 +51,7 @@ dependencies {
     implementation(project(":modules:compose-utils"))
     api(project(":modules:data"))
     api(project(":modules:form"))
+    api(project(":modules:musical-artists"))
     api(project(":modules:vgmdb"))
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3")
 

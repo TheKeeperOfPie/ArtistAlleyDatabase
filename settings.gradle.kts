@@ -22,6 +22,7 @@ dependencyResolutionManagement {
 rootProject.name = "Artist Alley Database"
 include(
     ":app",
+    ":modules:android-utils",
     ":modules:anilist",
     ":modules:art",
     ":modules:browse",
@@ -29,7 +30,7 @@ include(
     ":modules:cds",
     ":modules:data",
     ":modules:form",
-    ":modules:android-utils",
+    ":modules:musical-artists",
     ":modules:vgmdb",
     ":modules:web-infra",
 )

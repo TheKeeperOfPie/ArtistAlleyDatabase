@@ -4,8 +4,8 @@ import android.app.Application
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumEntryDao
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumRepository
-import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.ArtistEntryDao
 import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.ArtistRepository
+import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.VgmdbArtistDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -25,9 +25,9 @@ class VgmdbHiltModule {
     fun provideVgmdbApi(
         application: Application,
         albumEntryDao: AlbumEntryDao,
-        artistEntryDao: ArtistEntryDao,
+        vgmdbArtistDao: VgmdbArtistDao,
         vgmdbJson: VgmdbJson
-    ) = VgmdbApi(application, albumEntryDao, artistEntryDao, vgmdbJson)
+    ) = VgmdbApi(application, albumEntryDao, vgmdbArtistDao, vgmdbJson)
 
     @Provides
     fun provideVgmdbDataConverter(vgmdbJson: VgmdbJson) = VgmdbDataConverter(vgmdbJson)
@@ -50,7 +50,7 @@ class VgmdbHiltModule {
     @Provides
     fun provideArtistRepository(
         application: ScopedApplication,
-        artistEntryDao: ArtistEntryDao,
+        vgmdbArtistDao: VgmdbArtistDao,
         vgmdbApi: VgmdbApi
-    ) = ArtistRepository(application, artistEntryDao, vgmdbApi)
+    ) = ArtistRepository(application, vgmdbArtistDao, vgmdbApi)
 }

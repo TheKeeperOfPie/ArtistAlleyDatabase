@@ -211,15 +211,10 @@ abstract class CdEntryDetailsViewModel(
                                 .mapNotNull { vgmdbJson.parseArtistColumn(it).rightOrNull() }
                                 .map {
                                     val placeholder = vgmdbDataConverter.artistPlaceholder(it)
-                                    val artistId = it.id
-                                    if (artistId == null) {
-                                        flowOf(placeholder)
-                                    } else {
-                                        artistRepository.getEntry(artistId)
-                                            .map { it?.let(vgmdbDataConverter::artistEntry) }
-                                            .catch {}
-                                            .startWith(placeholder)
-                                    }
+                                    artistRepository.getEntry(it.id)
+                                        .map { it?.let(vgmdbDataConverter::artistEntry) }
+                                        .catch {}
+                                        .startWith(placeholder)
                                 }
                         ) { it.toList().filterNotNull() }
                     }

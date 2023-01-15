@@ -2,12 +2,12 @@ package com.thekeeperofpie.artistalleydatabase.vgmdb
 
 import android.app.Application
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumEntryDao
-import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.ArtistEntryDao
+import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.VgmdbArtistDao
 
 class VgmdbApi(
     application: Application,
     private val albumEntryDao: AlbumEntryDao,
-    private val artistEntryDao: ArtistEntryDao,
+    private val vgmdbArtistDao: VgmdbArtistDao,
     vgmdbJson: VgmdbJson,
 ) {
 
@@ -22,5 +22,5 @@ class VgmdbApi(
     suspend fun getAlbum(id: String) = parser.parseAlbum(id)?.also { albumEntryDao.updateEntry(it) }
 
     suspend fun getArtist(id: String) =
-        parser.parseArtist(id)?.also { artistEntryDao.updateEntry(it) }
+        parser.parseArtist(id)?.also { vgmdbArtistDao.updateEntry(it) }
 }

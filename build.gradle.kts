@@ -68,5 +68,13 @@ dependencyAnalysis {
                 )
             }
         }
+
+        project(":modules:musical-artists") {
+            onUnusedDependencies {
+                exclude(
+                    "org.jetbrains.kotlinx:kotlinx-serialization-json",
+                )
+            }
+        }
     }
 }

@@ -51,7 +51,7 @@ class ArtBrowseTabSeries @Inject constructor(
     override val tab = BrowseScreen.TabContent(
         "art_entry_browse_series",
         { R.string.art_browse_tab_series },
-        { series },
+        { Either.Left(series) },
         artEntryNavigator::navigate,
     )
 
@@ -106,6 +106,8 @@ class ArtBrowseTabSeries @Inject constructor(
                                         )
                                     } else {
                                         BrowseEntryModel(
+                                            // TODO: Missing entry type
+                                            // link = AniListUtils.mediaUrl(entry.type, entry.id),
                                             text = entry.title,
                                             queryType = ArtEntryColumn.SERIES.toString(),
                                             queryIdOrString = Either.Left(entry.id),

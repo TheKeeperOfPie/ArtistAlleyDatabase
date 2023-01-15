@@ -5,7 +5,7 @@ import com.thekeeperofpie.artistalleydatabase.form.EntrySection.MultiText.Entry
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumColumnEntry
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumEntry
 import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.ArtistColumnEntry
-import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.ArtistEntry
+import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.VgmdbArtist
 import kotlinx.serialization.encodeToString
 import javax.inject.Inject
 
@@ -36,7 +36,7 @@ class VgmdbDataConverter @Inject constructor(
             text = titleText,
             titleText = titleText,
             subtitleText = subtitleText,
-            imageLink = "https://vgmdb.net/album/${album.id}",
+            imageLink = VgmdbUtils.albumUrl(album.id),
             serializedValue = serializedValue,
             searchableValue = album.names.values
                 .filterNot(String?::isNullOrBlank)
@@ -65,7 +65,7 @@ class VgmdbDataConverter @Inject constructor(
             text = titleText,
             subtitleText = subtitleText,
             image = album.coverThumb,
-            imageLink = "https://vgmdb.net/album/${album.id}",
+            imageLink = VgmdbUtils.albumUrl(album.id),
             serializedValue = serializedValue,
             searchableValue = album.names.values
                 .filterNot(String?::isNullOrBlank)
@@ -93,7 +93,7 @@ class VgmdbDataConverter @Inject constructor(
             id = albumEntryId(album.id),
             text = titleText,
             subtitleText = subtitleText,
-            imageLink = "https://vgmdb.net/album/${album.id}",
+            imageLink = VgmdbUtils.albumUrl(album.id),
             serializedValue = serializedValue,
             searchableValue = album.title,
         )
@@ -108,7 +108,7 @@ class VgmdbDataConverter @Inject constructor(
             id = albumEntryId(album.id),
             text = album.title,
             image = album.coverThumb,
-            imageLink = "https://vgmdb.net/album/${album.id}",
+            imageLink = VgmdbUtils.albumUrl(album.id),
             serializedValue = serializedValue,
             searchableValue = album.names.values
                 .filterNot(String?::isNullOrBlank)
@@ -124,7 +124,7 @@ class VgmdbDataConverter @Inject constructor(
             value = album,
             id = albumEntryId(album.id),
             text = album.title,
-            imageLink = "https://vgmdb.net/album/${album.id}",
+            imageLink = VgmdbUtils.albumUrl(album.id),
             serializedValue = serializedValue,
             searchableValue = album.title,
         )
@@ -148,6 +148,8 @@ class VgmdbDataConverter @Inject constructor(
             is Either.Left -> Entry.Custom(either.value)
         }
 
+    fun databaseToArtistColumn(value: String) = vgmdbJson.parseArtistColumn(value)
+
     fun databaseToDiscEntry(value: String) = vgmdbJson.parseDiscColumn(value)
 
     fun artistPlaceholder(
@@ -165,7 +167,7 @@ class VgmdbDataConverter @Inject constructor(
             value = artist,
             id = artistEntryId(artist),
             text = artist.name,
-            imageLink = "https://vgmdb.net/artist/${artist.id}",
+            imageLink = VgmdbUtils.artistUrl(artist.id),
             serializedValue = serializedValue,
             searchableValue = artist.name
         )
@@ -178,8 +180,8 @@ class VgmdbDataConverter @Inject constructor(
         return Entry.Prefilled(
             value = artist,
             id = artistEntryId(artist),
-            text = artist.name,
-            imageLink = artist.id?.let { "https://vgmdb.net/artist/${it}" },
+            text = artist.name ?: artist.id,
+            imageLink = VgmdbUtils.artistUrl(artist.id),
             serializedValue = serializedValue,
             searchableValue = artist.names.values
                 .filterNot(String?::isNullOrBlank)
@@ -188,9 +190,9 @@ class VgmdbDataConverter @Inject constructor(
     }
 
     fun artistEntry(
-        artist: ArtistEntry,
+        artist: VgmdbArtist,
         manualChoice: Boolean = false,
-    ): Entry.Prefilled<ArtistEntry> {
+    ): Entry.Prefilled<VgmdbArtist> {
         val serializedValue = vgmdbJson.json
             .encodeToString(ArtistColumnEntry(artist.id, artist.names, manualChoice))
         return Entry.Prefilled(
@@ -198,7 +200,7 @@ class VgmdbDataConverter @Inject constructor(
             id = artistEntryId(artist),
             text = artist.name,
             image = artist.pictureThumb,
-            imageLink = "https://vgmdb.net/artist/${artist.id}",
+            imageLink = VgmdbUtils.artistUrl(artist.id),
             serializedValue = serializedValue,
             searchableValue = artist.names.values
                 .filterNot(String?::isNullOrBlank)
@@ -207,7 +209,7 @@ class VgmdbDataConverter @Inject constructor(
     }
 
     fun artistColumnData(entry: Entry) = when ((entry as? Entry.Prefilled<*>)?.value) {
-        is ArtistEntry, is ArtistColumnEntry -> {
+        is VgmdbArtist, is ArtistColumnEntry -> {
             vgmdbJson.parseArtistColumn(entry.serializedValue).rightOrNull()
         }
         else -> null
@@ -216,8 +218,8 @@ class VgmdbDataConverter @Inject constructor(
     fun discEntries(album: AlbumEntry) = album.discs.mapNotNull(vgmdbJson::parseDiscColumn)
 
     private fun artistEntryId(artist: SearchResults.ArtistResult) = "vgmdbArtist_${artist.id}"
-    private fun artistEntryId(artist: ArtistColumnEntry) = "vgmdbArtist_${artist.id ?: artist.name}"
-    private fun artistEntryId(artist: ArtistEntry) = "vgmdbArtist_${artist.id}"
+    private fun artistEntryId(artist: ArtistColumnEntry) = "vgmdbArtist_${artist.id}"
+    private fun artistEntryId(artist: VgmdbArtist) = "vgmdbArtist_${artist.id}"
 
     private fun albumEntryId(id: String) = "vgmdbAlbum_$id"
 
@@ -225,10 +227,4 @@ class VgmdbDataConverter @Inject constructor(
 
     private val SearchResults.AlbumResult.name
         get() = names["ja-latn"] ?: names["en"] ?: names["jp"] ?: ""
-
-    private val ArtistColumnEntry.name
-        get() = names["ja-latn"] ?: names["en"] ?: names["jp"] ?: names.values.firstOrNull() ?: ""
-
-    private val ArtistEntry.name
-        get() = names["ja-latn"] ?: names["en"] ?: names["jp"] ?: names.values.firstOrNull() ?: ""
 }

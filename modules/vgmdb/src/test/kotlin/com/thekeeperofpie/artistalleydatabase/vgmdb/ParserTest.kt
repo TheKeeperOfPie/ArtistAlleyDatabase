@@ -2,14 +2,15 @@ package com.thekeeperofpie.artistalleydatabase.vgmdb
 
 import com.google.common.truth.Truth.assertThat
 import com.google.common.truth.Truth.assertWithMessage
+import com.squareup.moshi.rawType
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumEntry
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.DiscEntry
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.TrackEntry
 import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.ArtistColumnEntry
-import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.ArtistEntry
+import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.VgmdbArtist
 import kotlinx.coroutines.runBlocking
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.serializer
 import org.junit.Rule
 import org.junit.jupiter.api.Test
 import org.junit.rules.TemporaryFolder
@@ -26,10 +27,17 @@ class ParserTest {
     @get:Rule
     val tempFolder = TemporaryFolder()
 
-    private val parser = VgmdbParser(
-        mock { on { cacheDir } doReturn tempFolder.newFolder() },
-        json
-    )
+    private val parser by lazy {
+        VgmdbParser(
+            mock {
+                on { cacheDir } doReturn tempFolder.apply {
+                    // TODO: Figure out why tempFolder Rule is not executed
+                    create()
+                }.newFolder()
+            },
+            json
+        )
+    }
 
     @Test
     fun searchAlbum() {
@@ -132,7 +140,7 @@ class ParserTest {
                             "ja" to "ナナヲアカリ",
                         ),
                     )
-                ).map(json::encodeToString),
+                ).encodeListToString(),
                 composers = listOf(
                     ArtistColumnEntry(
                         id = "29243",
@@ -153,7 +161,7 @@ class ParserTest {
                             "en" to "LASTorder",
                         )
                     ),
-                ).map(json::encodeToString),
+                ).encodeListToString(),
                 discs = listOf(
                     DiscEntry(
                         name = "Disc 1 (CD) Vocal",
@@ -185,7 +193,7 @@ class ParserTest {
                                 titles = mapOf("en" to "Higher's High (TV Size ver.)"),
                                 duration = "1:32",
                             ),
-                        ).map(json::encodeToString)
+                        ).encodeListToString()
                     ),
                     DiscEntry(
                         name = "Disc 2 (Blu-ray) Vocal, Video",
@@ -199,9 +207,9 @@ class ParserTest {
                                 ),
                                 duration = "3:38",
                             ),
-                        ).map(json::encodeToString)
+                        ).encodeListToString()
                     ),
-                ).map(json::encodeToString),
+                ).encodeListToString(),
             )
         )
     }
@@ -253,7 +261,7 @@ class ParserTest {
                             "ja" to "早見沙織",
                         )
                     ),
-                ).map(json::encodeToString),
+                ).encodeListToString(),
                 composers = listOf(
                     ArtistColumnEntry(
                         id = "11997",
@@ -281,7 +289,7 @@ class ParserTest {
                             "ja" to "町田紀彦",
                         )
                     ),
-                ).map(json::encodeToString),
+                ).encodeListToString(),
                 discs = listOf(
                     DiscEntry(
                         name = "Disc 1",
@@ -431,9 +439,9 @@ class ParserTest {
                                 ),
                                 duration = "4:43",
                             ),
-                        ).map(json::encodeToString)
+                        ).encodeListToString()
                     ),
-                ).map(json::encodeToString),
+                ).encodeListToString(),
             )
         )
     }
@@ -452,121 +460,31 @@ class ParserTest {
                 ),
                 coverArt = "https://medium-media.vgm.io/albums/07/105570/105570-72831c9b1ce1.jpg",
                 performers = listOf(
-                    ArtistColumnEntry(
-                        id = null,
-                        names = mapOf(
-                            "unknown" to "Michael Blunck",
-                        )
-                    ),
-                    ArtistColumnEntry(
-                        id = null,
-                        names = mapOf(
-                            "unknown" to "T-ache",
-                        )
-                    ),
-                    ArtistColumnEntry(
-                        id = null,
-                        names = mapOf(
-                            "unknown" to "Hyeryun",
-                        )
-                    ),
+                    "Michael Blunck",
+                    "T-ache",
+                    "Hyeryun",
                     ArtistColumnEntry(
                         id = "5302",
                         names = mapOf(
                             "en" to "NieN",
                         )
                     ),
-                    ArtistColumnEntry(
-                        id = null,
-                        names = mapOf(
-                            "unknown" to "Ruka Kimura",
-                        )
-                    ),
-                    ArtistColumnEntry(
-                        id = null,
-                        names = mapOf(
-                            "unknown" to "Sara * M",
-                        )
-                    ),
-                    ArtistColumnEntry(
-                        id = null,
-                        names = mapOf(
-                            "unknown" to "Naoki Hashimoto",
-                        )
-                    ),
-                    ArtistColumnEntry(
-                        id = null,
-                        names = mapOf(
-                            "unknown" to "So Fly",
-                        )
-                    ),
-                    ArtistColumnEntry(
-                        id = null,
-                        names = mapOf(
-                            "unknown" to "JC",
-                        )
-                    ),
-                    ArtistColumnEntry(
-                        id = null,
-                        names = mapOf(
-                            "unknown" to "Lim Ryu",
-                        )
-                    ),
-                    ArtistColumnEntry(
-                        id = null,
-                        names = mapOf(
-                            "unknown" to "Kate Lesing",
-                        )
-                    ),
-                    ArtistColumnEntry(
-                        id = null,
-                        names = mapOf(
-                            "unknown" to "MYULEE",
-                        )
-                    ),
-                    ArtistColumnEntry(
-                        id = null,
-                        names = mapOf(
-                            "unknown" to "OneStar",
-                        )
-                    ),
-                    ArtistColumnEntry(
-                        id = null,
-                        names = mapOf(
-                            "unknown" to "Lucy",
-                        )
-                    ),
-                    ArtistColumnEntry(
-                        id = null,
-                        names = mapOf(
-                            "unknown" to "Suri",
-                        )
-                    ),
-                    ArtistColumnEntry(
-                        id = null,
-                        names = mapOf(
-                            "unknown" to "Kjun",
-                        )
-                    ),
-                    ArtistColumnEntry(
-                        id = null,
-                        names = mapOf(
-                            "unknown" to "Flash Finger",
-                        )
-                    ),
-                    ArtistColumnEntry(
-                        id = null,
-                        names = mapOf(
-                            "unknown" to "E.Q.P",
-                        )
-                    ),
-                    ArtistColumnEntry(
-                        id = null,
-                        names = mapOf(
-                            "unknown" to "Bangkoon",
-                        )
-                    ),
-                ).map(json::encodeToString),
+                    "Ruka Kimura",
+                    "Sara * M",
+                    "Naoki Hashimoto",
+                    "So Fly",
+                    "JC",
+                    "Lim Ryu",
+                    "Kate Lesing",
+                    "MYULEE",
+                    "OneStar",
+                    "Lucy",
+                    "Suri",
+                    "Kjun",
+                    "Flash Finger",
+                    "E.Q.P",
+                    "Bangkoon",
+                ).encodeListToString(),
                 composers = listOf(
                     ArtistColumnEntry(
                         id = "7345",
@@ -593,24 +511,14 @@ class ParserTest {
                             "en" to "NieN",
                         )
                     ),
-                    ArtistColumnEntry(
-                        id = null,
-                        names = mapOf(
-                            "unknown" to "NDLee",
-                        )
-                    ),
+                    "NDLee",
                     ArtistColumnEntry(
                         id = "47206",
                         names = mapOf(
                             "en" to "Cranky",
                         )
                     ),
-                    ArtistColumnEntry(
-                        id = null,
-                        names = mapOf(
-                            "unknown" to "Mr.Funky",
-                        )
-                    ),
+                    "Mr.Funky",
                     ArtistColumnEntry(
                         id = "3946",
                         names = mapOf(
@@ -623,12 +531,7 @@ class ParserTest {
                             "en" to "Sampling Masters MEGA",
                         )
                     ),
-                    ArtistColumnEntry(
-                        id = null,
-                        names = mapOf(
-                            "unknown" to "Paul Bazooka",
-                        )
-                    ),
+                    "Paul Bazooka",
                     ArtistColumnEntry(
                         id = "3941",
                         names = mapOf(
@@ -660,43 +563,12 @@ class ParserTest {
                             "ja" to "石渡太輔",
                         )
                     ),
-                    ArtistColumnEntry(
-                        id = null,
-                        names = mapOf(
-                            "unknown" to "3rd Coast",
-                        ),
-                    ),
-                    ArtistColumnEntry(
-                        id = null,
-                        names = mapOf(
-                            "unknown" to "Flash Finger",
-                        ),
-                    ),
-                    ArtistColumnEntry(
-                        id = null,
-                        names = mapOf(
-                            "unknown" to "J.Williams",
-                        ),
-                    ),
-                    ArtistColumnEntry(
-                        id = null,
-                        names = mapOf(
-                            "unknown" to "Spike",
-                        ),
-                    ),
-                    ArtistColumnEntry(
-                        id = null,
-                        names = mapOf(
-                            "unknown" to "Tsukasa",
-                        ),
-                    ),
-                    ArtistColumnEntry(
-                        id = null,
-                        names = mapOf(
-                            "unknown" to "Plastik",
-                        ),
-                    ),
-                ).map(json::encodeToString),
+                    "3rd Coast",
+                    "Flash Finger", "J.Williams",
+                    "Spike",
+                    "Tsukasa",
+                    "Plastik",
+                ).encodeListToString(),
                 discs = listOf(
                     DiscEntry(
                         name = "Disc 1",
@@ -891,7 +763,7 @@ class ParserTest {
                                 ),
                                 duration = "2:02",
                             ),
-                        ).map(json::encodeToString)
+                        ).encodeListToString()
                     ),
                     DiscEntry(
                         name = "Disc 2",
@@ -1107,9 +979,9 @@ class ParserTest {
                                 ),
                                 duration = "2:51",
                             ),
-                        ).map(json::encodeToString)
+                        ).encodeListToString()
                     ),
-                ).map(json::encodeToString),
+                ).encodeListToString(),
             )
         )
     }
@@ -1135,7 +1007,7 @@ class ParserTest {
                             "ja" to "初音ミク",
                         )
                     ),
-                ).map(json::encodeToString),
+                ).encodeListToString(),
                 composers = listOf(
                     ArtistColumnEntry(
                         id = "11654",
@@ -1144,18 +1016,8 @@ class ParserTest {
                             "ja" to "八王子P",
                         )
                     ),
-                    ArtistColumnEntry(
-                        id = null,
-                        names = mapOf(
-                            "unknown" to "BIGHEAD",
-                        )
-                    ),
-                    ArtistColumnEntry(
-                        id = null,
-                        names = mapOf(
-                            "unknown" to "GuitarHeroPianoZero",
-                        )
-                    ),
+                    "BIGHEAD",
+                    "GuitarHeroPianoZero",
                     ArtistColumnEntry(
                         id = "9553",
                         names = mapOf(
@@ -1170,36 +1032,16 @@ class ParserTest {
                             "ja" to "平沢栄司",
                         )
                     ),
-                    ArtistColumnEntry(
-                        id = null,
-                        names = mapOf(
-                            "unknown" to "CircusP",
-                        )
-                    ),
-                    ArtistColumnEntry(
-                        id = null,
-                        names = mapOf(
-                            "unknown" to "Render/ Monk/ Lola Fair",
-                        )
-                    ),
-                    ArtistColumnEntry(
-                        id = null,
-                        names = mapOf(
-                            "unknown" to "Xiao-Ming",
-                        )
-                    ),
+                    "CircusP",
+                    "Render/ Monk/ Lola Fair",
+                    "Xiao-Ming",
                     ArtistColumnEntry(
                         id = "16741",
                         names = mapOf(
                             "en" to "YZYX",
                         )
                     ),
-                    ArtistColumnEntry(
-                        id = null,
-                        names = mapOf(
-                            "unknown" to "AlexTrip Sands",
-                        )
-                    ),
+                    "AlexTrip Sands",
                     ArtistColumnEntry(
                         id = "6457",
                         names = mapOf(
@@ -1212,7 +1054,7 @@ class ParserTest {
                             "en" to "cosMo@bosoP",
                         )
                     ),
-                ).map(json::encodeToString),
+                ).encodeListToString(),
                 discs = listOf(
                     DiscEntry(
                         name = "Disc 1 Original Work",
@@ -1311,9 +1153,9 @@ class ParserTest {
                                 ),
                                 duration = "4:36",
                             ),
-                        ).map(json::encodeToString)
+                        ).encodeListToString()
                     ),
-                ).map(json::encodeToString),
+                ).encodeListToString(),
             )
         )
     }
@@ -1343,7 +1185,7 @@ class ParserTest {
                             "ja" to "下川直哉",
                         )
                     ),
-                ).map(json::encodeToString),
+                ).encodeListToString(),
                 discs = listOf(
                     DiscEntry(
                         name = "Disc 1",
@@ -1433,9 +1275,9 @@ class ParserTest {
                                 ),
                                 duration = "3:55",
                             ),
-                        ).map(json::encodeToString)
+                        ).encodeListToString()
                     ),
-                ).map(json::encodeToString),
+                ).encodeListToString(),
             )
         )
     }
@@ -1444,7 +1286,7 @@ class ParserTest {
     fun parseArtist() {
         val actual = runBlocking { parser.parseArtist("29051") }
         assertThat(actual).isEqualTo(
-            ArtistEntry(
+            VgmdbArtist(
                 id = "29051",
                 names = mapOf(
                     "en" to "Akari Nanawo",
@@ -1453,5 +1295,13 @@ class ParserTest {
                 picture = "https://media.vgm.io/artists/15/29051/29051-1527082407.jpg"
             )
         )
+    }
+
+    @Suppress("OPT_IN_USAGE")
+    private fun List<Any>.encodeListToString() = map {
+        when (it) {
+            is String -> it
+            else -> json.encodeToString(json.serializersModule.serializer(it.javaClass.rawType), it)
+        }
     }
 }

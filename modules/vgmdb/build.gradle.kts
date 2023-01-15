@@ -73,7 +73,7 @@ dependencies {
     testImplementation("org.mockito:mockito-core:4.9.0")
     testImplementation("org.mockito.kotlin:mockito-kotlin:4.0.0")
 
-    androidTestImplementation("androidx.test:runner:1.5.1")
+    androidTestImplementation("androidx.test:runner:1.5.2")
     androidTestImplementation("de.mannodermaus.junit5:android-test-core:1.3.0")
     androidTestRuntimeOnly("de.mannodermaus.junit5:android-test-runner:1.3.0")
 }

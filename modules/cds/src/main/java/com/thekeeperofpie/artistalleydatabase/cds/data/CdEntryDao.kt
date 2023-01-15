@@ -49,7 +49,15 @@ interface CdEntryDao {
 
     @Transaction
     suspend fun iterateEntries(
-        entriesSize: (Int) -> Unit,
+        entriesSize: (Int) -> Unit = {},
+        limit: Int = 50,
+        block: suspend (index: Int, entry: CdEntry) -> Unit,
+    ) {
+        iterateEntriesNoTransaction(entriesSize, limit, block)
+    }
+
+    suspend fun iterateEntriesNoTransaction(
+        entriesSize: (Int) -> Unit = {},
         limit: Int = 50,
         block: suspend (index: Int, entry: CdEntry) -> Unit,
     ) {

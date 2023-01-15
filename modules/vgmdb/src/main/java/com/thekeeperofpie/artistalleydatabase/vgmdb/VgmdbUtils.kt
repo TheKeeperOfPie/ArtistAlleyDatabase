@@ -4,7 +4,7 @@ import com.thekeeperofpie.artistalleydatabase.form.EntrySection.MultiText.Entry
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumColumnEntry
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumEntry
 import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.ArtistColumnEntry
-import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.ArtistEntry
+import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.VgmdbArtist
 
 object VgmdbUtils {
 
@@ -15,8 +15,11 @@ object VgmdbUtils {
     }
 
     fun artistId(entry: Entry) = when (val value = (entry as? Entry.Prefilled<*>)?.value) {
-        is ArtistEntry -> value.id
+        is VgmdbArtist -> value.id
         is ArtistColumnEntry -> value.id
         else -> null
     }
+
+    fun artistUrl(id: String) = "https://vgmdb.net/artist/$id"
+    fun albumUrl(id: String) = "https://vgmdb.net/album/$id"
 }

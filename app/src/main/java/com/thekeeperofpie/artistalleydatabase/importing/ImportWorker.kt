@@ -50,7 +50,7 @@ class ImportWorker @AssistedInject constructor(
 
         // Default to safe values to avoid accidentally overwrites
         val dryRun = params.inputData.getBoolean(ImportUtils.KEY_DRY_RUN, true)
-        val replaceAll = params.inputData.getBoolean(ImportUtils.KEY_DRY_RUN, false)
+        val replaceAll = params.inputData.getBoolean(ImportUtils.KEY_REPLACE_ALL, false)
 
         var entriesSize = 0
         // First open only counts and inserts entries

@@ -21,6 +21,7 @@
             <option value="$PROJECT_DIR$/modules/compose-utils" />
             <option value="$PROJECT_DIR$/modules/data" />
             <option value="$PROJECT_DIR$/modules/form" />
+            <option value="$PROJECT_DIR$/modules/musical-artists" />
             <option value="$PROJECT_DIR$/modules/vgmdb" />
             <option value="$PROJECT_DIR$/modules/web-infra" />
           </set>

@@ -52,7 +52,7 @@ class ArtBrowseTabCharacters @Inject constructor(
     override val tab = BrowseScreen.TabContent(
         "art_entry_browse_characters",
         { R.string.art_browse_tab_characters },
-        { characters },
+        { Either.Left(characters) },
         artEntryNavigator::navigate,
     )
 
@@ -70,7 +70,7 @@ class ArtBrowseTabCharacters @Inject constructor(
                                 ?.let<String, CharacterColumnEntry>(appJson.json::decodeFromString)
                             if (entry == null) {
                                 // TODO: Search through the entire database rather than just the
-                                //  first 10, also need to fix series
+                                //  first 10, also need to fix other data types
                                 artEntryDao.getCharacterFlow(databaseText, limit = 10)
                                     .flatMapLatest { it.asFlow() }
                                     .filter {

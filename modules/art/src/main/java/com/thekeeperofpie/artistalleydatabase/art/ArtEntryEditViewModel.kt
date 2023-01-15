@@ -85,11 +85,20 @@ class ArtEntryEditViewModel @Inject constructor(
     }
 
     fun onClickSave(navHostController: NavHostController) {
+        save(navHostController, skipIgnoreableErrors = false)
+    }
+
+    fun onLongClickSave(navHostController: NavHostController) {
+        save(navHostController, skipIgnoreableErrors = true)
+    }
+
+    private fun save(navHostController: NavHostController, skipIgnoreableErrors: Boolean) {
         if (saving || deleting) return
         saving = true
 
         viewModelScope.launch(Dispatchers.IO) {
-            val success = saveEntry(imageUri, entryId!!)
+            val success =
+                saveEntry(imageUri, entryId!!, skipIgnoreableErrors = skipIgnoreableErrors)
             withContext(Dispatchers.Main) {
                 if (success) {
                     navHostController.popBackStack()

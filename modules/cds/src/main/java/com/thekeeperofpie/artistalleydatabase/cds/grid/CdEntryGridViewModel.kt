@@ -8,7 +8,7 @@ import com.thekeeperofpie.artistalleydatabase.cds.utils.CdEntryUtils
 import com.thekeeperofpie.artistalleydatabase.form.grid.EntryGridSelectionController
 import com.thekeeperofpie.artistalleydatabase.form.grid.EntryGridViewModel
 
-abstract class CdGridViewModel(
+abstract class CdEntryGridViewModel(
     protected val application: Application,
     protected val cdEntryDao: CdEntryDao,
 ): ViewModel(), EntryGridViewModel<CdEntryGridModel> {

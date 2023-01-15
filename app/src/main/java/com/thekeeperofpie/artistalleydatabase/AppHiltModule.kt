@@ -11,6 +11,7 @@ import com.thekeeperofpie.artistalleydatabase.art.ArtEntryAddViewModel
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryDatabase
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDatabase
 import com.thekeeperofpie.artistalleydatabase.json.AppMoshi
+import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistDatabase
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbDatabase
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbJson
 import dagger.Module
@@ -43,6 +44,9 @@ class AppHiltModule {
 
     @Provides
     fun provideCdEntryDatabase(appDatabase: AppDatabase): CdEntryDatabase = appDatabase
+
+    @Provides
+    fun provideMusicalArtistDatabase(appDatabase: AppDatabase): MusicalArtistDatabase = appDatabase
 
     @Provides
     fun provideVgmdbDatabase(appDatabase: AppDatabase): VgmdbDatabase = appDatabase

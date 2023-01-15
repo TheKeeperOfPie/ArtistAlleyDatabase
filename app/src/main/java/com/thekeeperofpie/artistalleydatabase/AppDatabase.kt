@@ -13,9 +13,11 @@ import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryFts
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntry
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDatabase
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryFts
+import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtist
+import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistDatabase
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbDatabase
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumEntry
-import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.ArtistEntry
+import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.VgmdbArtist
 
 @Database(
     entities = [
@@ -26,7 +28,8 @@ import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.ArtistEntry
         MediaEntry::class,
         CharacterEntry::class,
         AlbumEntry::class,
-        ArtistEntry::class,
+        VgmdbArtist::class,
+        MusicalArtist::class,
     ],
     exportSchema = false,
     version = 1
@@ -41,4 +44,4 @@ import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.ArtistEntry
     ]
 )
 abstract class AppDatabase : RoomDatabase(), AniListDatabase, ArtEntryDatabase, CdEntryDatabase,
-    VgmdbDatabase
+    MusicalArtistDatabase, VgmdbDatabase

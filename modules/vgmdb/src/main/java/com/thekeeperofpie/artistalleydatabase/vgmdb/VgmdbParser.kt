@@ -1,11 +1,12 @@
 package com.thekeeperofpie.artistalleydatabase.vgmdb
 
 import android.app.Application
+import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumEntry
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.DiscEntry
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.TrackEntry
 import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.ArtistColumnEntry
-import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.ArtistEntry
+import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.VgmdbArtist
 import it.skrape.core.htmlDocument
 import it.skrape.fetcher.BrowserFetcher
 import it.skrape.fetcher.response
@@ -166,8 +167,8 @@ class VgmdbParser(application: Application, private val json: Json) {
                 }
             }
 
-        val performers = mutableListOf<ArtistColumnEntry>()
-        val composers = mutableListOf<ArtistColumnEntry>()
+        val performers = mutableListOf<Either<String, ArtistColumnEntry>>()
+        val composers = mutableListOf<Either<String, ArtistColumnEntry>>()
 
         innerMain["#collapse_credits"]?.all("tr")?.map {
             val name = it["td", "b", "span"]?.ownText
@@ -293,8 +294,20 @@ class VgmdbParser(application: Application, private val json: Json) {
             catalogId = catalogId,
             names = names,
             coverArt = coverArt,
-            performers = performers.map(json::encodeToString),
-            composers = composers.map(json::encodeToString),
+            performers = performers.map {
+                if (it is Either.Left) {
+                    it.value
+                } else {
+                    json.encodeToString(it.rightOrNull())
+                }
+            },
+            composers = composers.map {
+                if (it is Either.Left) {
+                    it.value
+                } else {
+                    json.encodeToString(it.rightOrNull())
+                }
+            },
             discs = discs.map(json::encodeToString),
         )
     }
@@ -306,7 +319,9 @@ class VgmdbParser(application: Application, private val json: Json) {
             stripped.removeRange(result.range)
         }
 
-    private fun parseArtistCredits(element: DocElement): MutableList<ArtistColumnEntry> {
+    private fun parseArtistCredits(
+        element: DocElement
+    ): MutableList<Either<String, ArtistColumnEntry>> {
         val allNames = element.byIndex(1, "td")?.text
         val parenthesesRegex = Regex("""(\([^()]*\)(?=,|\z))""")
         val strippedAllNames = allNames?.removeMatchingResults(parenthesesRegex)
@@ -328,11 +343,15 @@ class VgmdbParser(application: Application, private val json: Json) {
             } else null
         }.orEmpty()
 
-        val artists = mutableListOf<ArtistColumnEntry>()
+        val artists = mutableListOf<Either<String, ArtistColumnEntry>>()
         allNamesWithHoles.map { name ->
             val split = name.split("/").map(String::trim)
-            artists += artistsWithIds.find { split.any(it.names::containsValue) }
-                ?: ArtistColumnEntry(id = null, names = mapOf("unknown" to name))
+            val artist = artistsWithIds.find { split.any(it.names::containsValue) }
+            artists += if (artist == null) {
+                Either.Left(name)
+            } else {
+                Either.Right(artist)
+            }
         }
         return artists
     }
@@ -373,7 +392,7 @@ class VgmdbParser(application: Application, private val json: Json) {
             "ja" to japaneseName?.trim().orEmpty(),
         ).filterNot { it.value.isBlank() }
 
-        ArtistEntry(
+        VgmdbArtist(
             id = id,
             names = names,
             picture = picture
