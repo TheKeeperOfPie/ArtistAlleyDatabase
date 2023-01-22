@@ -28,4 +28,8 @@
     <string name="entry_results_one">%1$s result</string>
     <string name="entry_results_multiple">%1$s results</string>
     <string name="entry_image_expand_content_description">Expand image</string>
+    <string name="entry_image_crop_title">Image crop</string>
+    <string name="entry_image_crop_text">Crop requires a shared read-writable file, located at
+        /sdcard/Download/ArtistAlleyDatabaseImageCrop.png. Select this in the following screen.
+    </string>
 </resources>

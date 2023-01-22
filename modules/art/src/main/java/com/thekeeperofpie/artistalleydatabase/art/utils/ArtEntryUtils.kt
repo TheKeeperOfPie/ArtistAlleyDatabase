@@ -10,6 +10,10 @@ object ArtEntryUtils {
     fun getImageFile(context: Context, id: String) = context.filesDir
         .resolve("art_entry_images/${id}")
 
+    // TODO: Store cropped images alongside originals instead of replacing
+    fun getCropTempFile(context: Context) = context.filesDir
+        .resolve("art_entry_images/crop")
+
     fun buildPlaceholderText(appJson: AppJson, entry: ArtEntry) = entry.run {
         val source = when (val source = SourceType.fromEntry(appJson.json, this)) {
             is SourceType.Convention -> (source.name + (source.year?.let { " $it" }

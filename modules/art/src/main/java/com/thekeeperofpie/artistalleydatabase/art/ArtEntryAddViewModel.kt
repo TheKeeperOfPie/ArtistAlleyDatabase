@@ -12,8 +12,8 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListAutocompleter
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
-import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntry
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryDetailsDao
+import com.thekeeperofpie.artistalleydatabase.art.persistence.ArtSettings
 import com.thekeeperofpie.artistalleydatabase.data.DataConverter
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -31,7 +31,7 @@ class ArtEntryAddViewModel @Inject constructor(
     mediaRepository: MediaRepository,
     characterRepository: CharacterRepository,
     aniListAutocompleter: AniListAutocompleter,
-    private val persister: Persister,
+    settings: ArtSettings,
 ) : ArtEntryDetailsViewModel(
     application,
     appJson,
@@ -40,6 +40,7 @@ class ArtEntryAddViewModel @Inject constructor(
     mediaRepository,
     characterRepository,
     aniListAutocompleter,
+    settings,
 ) {
 
     val imageUris = mutableStateListOf<Uri>()
@@ -49,7 +50,7 @@ class ArtEntryAddViewModel @Inject constructor(
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
-            val entry = persister.loadArtEntryTemplate() ?: return@launch
+            val entry = settings.loadArtEntryTemplate() ?: return@launch
             withContext(Dispatchers.Main) {
                 initializeForm(buildModel(entry))
             }
@@ -83,15 +84,8 @@ class ArtEntryAddViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.Main) {
             val entry = makeEntry(null, "template") ?: return@launch
             withContext(Dispatchers.IO) {
-                persister.saveArtEntryTemplate(entry)
+                settings.saveArtEntryTemplate(entry)
             }
         }
-    }
-
-    interface Persister {
-
-        fun saveArtEntryTemplate(entry: ArtEntry)
-
-        fun loadArtEntryTemplate(): ArtEntry?
     }
 }

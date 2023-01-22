@@ -1,11 +1,15 @@
 package com.thekeeperofpie.artistalleydatabase.form
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.Environment
+import android.provider.DocumentsContract
 import android.provider.Settings
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.CallSuper
 import androidx.compose.animation.AnimatedContent
@@ -25,6 +29,7 @@ import androidx.compose.animation.with
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -96,6 +101,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.PopupProperties
+import androidx.core.net.toUri
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.thekeeperofpie.artistalleydatabase.compose.AddBackPressTransitionStage
@@ -795,8 +801,10 @@ fun ImagesSelectBox(
     )
 
     ImageSelectBoxInner(
-        launcher = imageSelectLauncher,
+        imageSelectLauncher = imageSelectLauncher,
+        imageCropLauncher = null,
         onImageSelectError = onImageSelectError,
+        cropState = null,
         loading = loading,
         content = content,
     )
@@ -806,6 +814,7 @@ fun ImagesSelectBox(
 fun ImageSelectBox(
     onImageSelected: (Uri?) -> Unit,
     onImageSelectError: (Exception?) -> Unit,
+    cropState: CropUtils.CropState? = null,
     loading: () -> Boolean = { false },
     content: @Composable BoxScope.() -> Unit,
 ) {
@@ -814,20 +823,65 @@ fun ImageSelectBox(
         onImageSelected
     )
 
+    val imageCropDocumentLauncher = if (cropState?.imageCropNeedsDocument?.invoke() == true) {
+        rememberLauncherForActivityResult(
+            object : ActivityResultContracts.CreateDocument("image/png") {
+                override fun createIntent(context: Context, input: String): Intent {
+                    return super.createIntent(context, input)
+                        .putExtra(
+                            DocumentsContract.EXTRA_INITIAL_URI,
+                            Environment.getExternalStoragePublicDirectory(
+                                Environment.DIRECTORY_DOWNLOADS
+                            ).toUri()
+                        )
+                }
+            },
+            cropState.onImageCropDocumentChosen
+        )
+    } else null
+
+    val imageCropLauncher = rememberLauncherForActivityResult(
+        object : ActivityResultContract<Unit, Boolean>() {
+            override fun createIntent(context: Context, input: Unit) = CropUtils.cropIntent()
+
+            override fun parseResult(resultCode: Int, intent: Intent?) =
+                resultCode == Activity.RESULT_OK
+        }
+    ) { cropState?.onCropFinished?.invoke(it) }
+
     ImageSelectBoxInner(
-        launcher = imageSelectLauncher,
+        imageSelectLauncher = imageSelectLauncher,
+        imageCropLauncher = imageCropLauncher,
         onImageSelectError = onImageSelectError,
+        cropState = cropState,
         loading = loading,
         content = content,
     )
+
+    val cropDocumentRequested = cropState?.cropDocumentRequested?.invoke() == true
+    LaunchedEffect(cropDocumentRequested) {
+        if (cropDocumentRequested) {
+            imageCropDocumentLauncher?.launch(CropUtils.CROP_IMAGE_FILE_NAME)
+        }
+    }
+
+    val cropReady = cropState?.cropReady?.invoke() == true
+    LaunchedEffect(cropReady) {
+        if (cropReady) {
+            imageCropLauncher.launch(Unit)
+        }
+    }
 }
 
 private const val SLIDE_DURATION_MS = 300
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun ImageSelectBoxInner(
-    launcher: ManagedActivityResultLauncher<String, *>,
+    imageSelectLauncher: ManagedActivityResultLauncher<String, *>,
+    imageCropLauncher: ManagedActivityResultLauncher<Unit, *>?,
     onImageSelectError: (Exception?) -> Unit,
+    cropState: CropUtils.CropState? = null,
     loading: () -> Boolean = { false },
     content: @Composable BoxScope.() -> Unit,
 ) {
@@ -890,11 +944,19 @@ private fun ImageSelectBoxInner(
                         previouslyRunHeight = true
                     }
                 }
-                .clickable(onClick = {
+                .combinedClickable(onClick = {
                     try {
-                        launcher.launch("image/*")
+                        imageSelectLauncher.launch("image/*")
                     } catch (e: Exception) {
                         onImageSelectError(e)
+                    }
+                }, onLongClick = {
+                    if (cropState != null) {
+                        if (cropState.cropReady()) {
+                            imageCropLauncher?.launch(Unit)
+                        } else {
+                            cropState.onImageRequestCrop()
+                        }
                     }
                 })
         ) {

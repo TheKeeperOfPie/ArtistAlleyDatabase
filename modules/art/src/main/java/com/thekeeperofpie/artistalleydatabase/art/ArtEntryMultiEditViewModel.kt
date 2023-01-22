@@ -6,16 +6,17 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.core.net.toUri
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
-import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.android_utils.ImageUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListAutocompleter
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryEditDao
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryModel
+import com.thekeeperofpie.artistalleydatabase.art.persistence.ArtSettings
 import com.thekeeperofpie.artistalleydatabase.art.sections.SourceType
 import com.thekeeperofpie.artistalleydatabase.art.utils.ArtEntryUtils
 import com.thekeeperofpie.artistalleydatabase.data.DataConverter
@@ -24,7 +25,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.io.File
 import java.time.Instant
 import java.util.Date
 import javax.inject.Inject
@@ -38,6 +38,7 @@ class ArtEntryMultiEditViewModel @Inject constructor(
     mediaRepository: MediaRepository,
     characterRepository: CharacterRepository,
     aniListAutocompleter: AniListAutocompleter,
+    settings: ArtSettings,
 ) : ArtEntryDetailsViewModel(
     application,
     appJson,
@@ -46,11 +47,13 @@ class ArtEntryMultiEditViewModel @Inject constructor(
     mediaRepository,
     characterRepository,
     aniListAutocompleter,
+    settings,
 ) {
 
     private lateinit var entryIds: List<String>
 
-    val imageUris = mutableStateListOf<Either<File, Uri?>>()
+    val imageUris = mutableStateListOf<Uri?>()
+    private val originalImageUris = mutableStateListOf<Uri?>()
 
     var loading = true
         private set
@@ -64,9 +67,10 @@ class ArtEntryMultiEditViewModel @Inject constructor(
 
         imageUris.clear()
         imageUris.addAll(
-            entryIds.map { ArtEntryUtils.getImageFile(application, it) }
-                .map { Either.Left(it) }
+            entryIds.map { ArtEntryUtils.getImageFile(application, it).toUri() }
         )
+        originalImageUris.clear()
+        originalImageUris.addAll(imageUris)
 
         viewModelScope.launch(Dispatchers.IO) {
             val firstEntry = artEntryEditDao.getEntry(entryIds.first())
@@ -174,7 +178,7 @@ class ArtEntryMultiEditViewModel @Inject constructor(
     }
 
     fun setImageUri(index: Int, uri: Uri?) {
-        imageUris[index] = Either.Right(uri)
+        imageUris[index] = uri
     }
 
     fun onClickSave(navHostController: NavController) {
@@ -191,11 +195,9 @@ class ArtEntryMultiEditViewModel @Inject constructor(
         val printHeight = printSizeSection.finalHeight()
         val notes = notesSection.value
 
-        val newImages = imageUris.mapIndexedNotNull { index, either ->
-            if (either is Either.Right) {
-                index to either.value
-            } else null
-        }.map { (index, uri) -> entryIds[index] to uri }
+        val newImages = imageUris.withIndex()
+            .filterNot { originalImageUris.contains(it.value) }
+            .map { (index, uri) -> entryIds[index] to uri }
 
         viewModelScope.launch(Dispatchers.IO) {
             newImages.forEach { (entryId, uri) ->

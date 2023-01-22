@@ -14,6 +14,7 @@ import com.thekeeperofpie.artistalleydatabase.browse.BrowseSelectionNavigator
 import com.thekeeperofpie.artistalleydatabase.cds.browse.selection.CdBrowseSelectionScreen
 import com.thekeeperofpie.artistalleydatabase.cds.browse.selection.CdBrowseSelectionViewModel
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryColumn
+import com.thekeeperofpie.artistalleydatabase.form.CropUtils
 import com.thekeeperofpie.artistalleydatabase.form.EntryDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.form.EntryNavigator
 import com.thekeeperofpie.artistalleydatabase.form.EntryUtils
@@ -110,6 +111,15 @@ class CdEntryNavigator : EntryNavigator, BrowseSelectionNavigator {
                 errorRes = { viewModel.errorResource },
                 onErrorDismiss = { viewModel.errorResource = null },
                 onConfirmDelete = { viewModel.onConfirmDelete(navHostController) },
+                cropState = CropUtils.CropState(
+                    imageCropNeedsDocument = { false },
+                    onImageCropDocumentChosen = { TODO() },
+                    onImageRequestCrop = { TODO() },
+                    onCropFinished = { TODO() },
+                    cropReady = { false },
+                    onCropConfirmed = { TODO() },
+                    cropDocumentRequested = { false },
+                ),
             )
         }
     }

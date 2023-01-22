@@ -18,6 +18,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntry
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryDetailsDao
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryModel
+import com.thekeeperofpie.artistalleydatabase.art.persistence.ArtSettings
 import com.thekeeperofpie.artistalleydatabase.art.sections.PrintSizeDropdown
 import com.thekeeperofpie.artistalleydatabase.art.sections.SourceDropdown
 import com.thekeeperofpie.artistalleydatabase.art.sections.SourceType
@@ -52,6 +53,7 @@ abstract class ArtEntryDetailsViewModel(
     private val mediaRepository: MediaRepository,
     private val characterRepository: CharacterRepository,
     private val aniListAutocompleter: AniListAutocompleter,
+    protected val settings: ArtSettings,
 ) : ViewModel() {
 
     companion object {
@@ -107,9 +109,8 @@ abstract class ArtEntryDetailsViewModel(
 
     var errorResource by mutableStateOf<Pair<Int, Exception?>?>(null)
 
-    fun onImageSizeResult(width: Int, height: Int) {
-        printSizeSection.onSizeChange(width, height)
-    }
+    /** Shared utility to easily signal URI invalidation by appending a query param of this value */
+    protected var invalidateIteration = 0
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
@@ -208,6 +209,10 @@ abstract class ArtEntryDetailsViewModel(
         }
     }
 
+    fun onImageSizeResult(width: Int, height: Int) {
+        printSizeSection.onSizeChange(width, height)
+    }
+
     protected fun buildModel(entry: ArtEntry): ArtEntryModel {
         val artists = entry.artists.map(Entry::Custom)
         val series = dataConverter.seriesEntries(entry.series(appJson))
@@ -298,7 +303,11 @@ abstract class ArtEntryDetailsViewModel(
     }
 
     @CheckReturnValue
-    suspend fun saveEntry(imageUri: Uri?, id: String, skipIgnoreableErrors: Boolean = false): Boolean {
+    suspend fun saveEntry(
+        imageUri: Uri?,
+        id: String,
+        skipIgnoreableErrors: Boolean = false
+    ): Boolean {
         val entry = makeEntry(imageUri, id) ?: return false
         entry.series(appJson)
             .filterIsInstance<Series.AniList>()

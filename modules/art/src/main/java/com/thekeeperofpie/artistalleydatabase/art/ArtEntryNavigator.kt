@@ -115,9 +115,9 @@ class ArtEntryNavigator : EntryNavigator, BrowseSelectionNavigator {
                 errorRes = { viewModel.errorResource },
                 onErrorDismiss = { viewModel.errorResource = null },
                 onConfirmDelete = { viewModel.onConfirmDelete(navHostController) },
+                cropState = viewModel.cropState,
             )
         }
-
     }
 
     override fun navigate(navHostController: NavHostController, entry: BrowseEntryModel) {

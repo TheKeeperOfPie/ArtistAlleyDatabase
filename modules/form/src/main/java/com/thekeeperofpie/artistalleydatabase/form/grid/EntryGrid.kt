@@ -126,11 +126,12 @@ object EntryGrid {
             }
         }
 
-        DeleteDialog(
-            showDeleteDialog,
-            { showDeleteDialog = false },
-            onConfirmDelete
-        )
+        if (showDeleteDialog) {
+            DeleteDialog(
+                { showDeleteDialog = false },
+                onConfirmDelete
+            )
+        }
     }
 
     @Composable
@@ -248,7 +249,7 @@ object EntryGrid {
                                     if (entry.imageWidth != null) {
                                         (expectedWidth.px * entry.imageWidthToHeightRatio).toDp()
                                     } else {
-                                        0.dp
+                                        56.dp
                                     }
                                 })
                                 .alpha(if (selected) 0.38f else 1f)
@@ -277,28 +278,25 @@ object EntryGrid {
 
     @Composable
     fun DeleteDialog(
-        showDeleteDialog: Boolean,
         onDismiss: () -> Unit,
         onConfirmDelete: () -> Unit
     ) {
-        if (showDeleteDialog) {
-            AlertDialog(
-                onDismissRequest = onDismiss,
-                title = { Text(stringResource(R.string.delete_dialog_title)) },
-                confirmButton = {
-                    TextButton(onClick = {
-                        onDismiss()
-                        onConfirmDelete()
-                    }) {
-                        Text(stringResource(R.string.confirm))
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = onDismiss) {
-                        Text(stringResource(R.string.cancel))
-                    }
-                },
-            )
-        }
+        AlertDialog(
+            onDismissRequest = onDismiss,
+            title = { Text(stringResource(R.string.delete_dialog_title)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    onDismiss()
+                    onConfirmDelete()
+                }) {
+                    Text(stringResource(R.string.confirm))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = onDismiss) {
+                    Text(stringResource(R.string.cancel))
+                }
+            },
+        )
     }
 }

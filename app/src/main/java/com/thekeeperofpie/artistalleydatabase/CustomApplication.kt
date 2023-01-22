@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase
 
 import android.app.Application
+import android.os.StrictMode
 import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.hilt.work.HiltWorkerFactory
@@ -30,8 +31,12 @@ class CustomApplication : Application(), Configuration.Provider, ScopedApplicati
 
     override fun onCreate() {
         super.onCreate()
-        filesDir.toPath().resolve("art_entry_images").toFile().mkdirs()
-        filesDir.toPath().resolve("cd_entry_images").toFile().mkdirs()
+        filesDir.resolve("art_entry_images").mkdirs()
+        filesDir.resolve("cd_entry_images").mkdirs()
+
+        // TODO: Figure out a real StrictMode policy
+        // Ignore external file:// URIs policy
+        StrictMode.setVmPolicy(StrictMode.VmPolicy.Builder().build())
 
         NotificationManagerCompat.from(this)
             .createNotificationChannelsCompat(

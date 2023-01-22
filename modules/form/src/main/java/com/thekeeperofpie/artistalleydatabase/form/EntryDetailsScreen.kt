@@ -88,6 +88,7 @@ object EntryDetailsScreen {
         errorRes: () -> Pair<Int, Exception?>? = { null },
         onErrorDismiss: () -> Unit = {},
         onConfirmDelete: () -> Unit = {},
+        cropState: CropUtils.CropState,
     ) {
         Scaffold(
             snackbarHost = {
@@ -96,6 +97,7 @@ object EntryDetailsScreen {
             modifier = Modifier.imePadding()
         ) {
             var showDeleteDialog by rememberSaveable { mutableStateOf(false) }
+            var showCropDialog by rememberSaveable { mutableStateOf(false) }
             val backPressedDispatcher = LocalOnBackPressedDispatcherOwner.current
                 ?.onBackPressedDispatcher
             val pullRefreshState = rememberPullRefreshState(
@@ -138,6 +140,13 @@ object EntryDetailsScreen {
                         onImageSelectError = onImageSelectError,
                         onImageSizeResult = onImageSizeResult,
                         onImageClickOpen = onImageClickOpen,
+                        cropState = cropState.copy(onImageRequestCrop = {
+                            if (cropState.imageCropNeedsDocument()) {
+                                showCropDialog = true
+                            } else {
+                                cropState.onImageRequestCrop()
+                            }
+                        }),
                     )
 
                     AnimatedVisibility(
@@ -203,11 +212,17 @@ object EntryDetailsScreen {
                 }
             }
 
-            EntryGrid.DeleteDialog(
-                showDeleteDialog,
-                { showDeleteDialog = false },
-                onConfirmDelete
-            )
+            if (showDeleteDialog) {
+                EntryGrid.DeleteDialog(
+                    { showDeleteDialog = false },
+                    onConfirmDelete
+                )
+            } else if (showCropDialog) {
+                CropUtils.InstructionsDialog(
+                    onDismiss = { showCropDialog = false },
+                    onConfirm = cropState.onCropConfirmed,
+                )
+            }
         }
     }
 
@@ -222,14 +237,20 @@ object EntryDetailsScreen {
         onImageSelectError: (Exception?) -> Unit,
         onImageSizeResult: (Int, Int) -> Unit = { _, _ -> },
         onImageClickOpen: () -> Unit,
+        cropState: CropUtils.CropState,
     ) {
         Box {
             val alphaAnimation = remember { Animatable(1f) }
             AddBackPressTransitionStage { alphaAnimation.animateTo(0f, tween(250)) }
 
-            ImageSelectBox(onImageSelected, onImageSelectError, loading) {
-                @Suppress("NAME_SHADOWING")
-                val imageUri = imageUri()
+            @Suppress("NAME_SHADOWING")
+            val imageUri = imageUri()
+            ImageSelectBox(
+                onImageSelected = onImageSelected,
+                onImageSelectError = onImageSelectError,
+                cropState = cropState,
+                loading = loading
+            ) {
                 if (imageUri != null) {
                     AsyncImage(
                         model = ImageRequest.Builder(LocalContext.current)

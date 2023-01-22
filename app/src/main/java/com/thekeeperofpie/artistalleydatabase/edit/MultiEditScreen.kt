@@ -33,7 +33,6 @@ import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
 import com.thekeeperofpie.artistalleydatabase.R
-import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.art.utils.ArtStringR
 import com.thekeeperofpie.artistalleydatabase.art.utils.SampleArtEntrySectionsProvider
 import com.thekeeperofpie.artistalleydatabase.compose.HorizontalPagerIndicator
@@ -42,14 +41,13 @@ import com.thekeeperofpie.artistalleydatabase.compose.topBorder
 import com.thekeeperofpie.artistalleydatabase.form.EntryForm
 import com.thekeeperofpie.artistalleydatabase.form.EntrySection
 import com.thekeeperofpie.artistalleydatabase.form.ImageSelectBox
-import java.io.File
 
 object MultiEditScreen {
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     operator fun invoke(
-        imageUris: () -> List<Either<File, Uri?>> = { emptyList() },
+        imageUris: () -> List<Uri?> = { emptyList() },
         onImageSelected: (index: Int, uri: Uri?) -> Unit = { _, _ -> },
         onImageSelectError: (Exception?) -> Unit = {},
         loading: () -> Boolean = { false },
@@ -116,7 +114,7 @@ object MultiEditScreen {
     @Composable
     private fun HeaderImage(
         loading: () -> Boolean = { false },
-        imageUris: () -> List<Either<File, Uri?>> = { emptyList() },
+        imageUris: () -> List<Uri?> = { emptyList() },
         onImageSelected: (index: Int, uri: Uri?) -> Unit = { _, _ -> },
         onImageSelectError: (Exception?) -> Unit = {},
     ) {
@@ -129,10 +127,16 @@ object MultiEditScreen {
                 count = imageUris.size,
                 modifier = Modifier.heightIn(min = 200.dp, max = 400.dp)
             ) { index ->
-                ImageSelectBox({ onImageSelected(index, it) }, onImageSelectError, loading) {
+                ImageSelectBox(
+                    { onImageSelected(index, it) },
+                    onImageSelectError,
+                    // TODO: Crop for multi-edit
+                    cropState = null,
+                    loading = loading,
+                ) {
                     AsyncImage(
                         model = ImageRequest.Builder(LocalContext.current)
-                            .data(imageUris[index].eitherValueUnchecked())
+                            .data(imageUris[index])
                             .crossfade(true)
                             .build(),
                         contentDescription = stringResource(

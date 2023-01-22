@@ -41,6 +41,7 @@ class AdvancedSearchViewModel @Inject constructor(
     mediaRepository,
     characterRepository,
     aniListAutocompleter,
+    settingsProvider,
 ) {
 
     init {
