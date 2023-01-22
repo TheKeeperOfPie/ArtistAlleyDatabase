@@ -1,7 +1,5 @@
 @file:Suppress("UnstableApiUsage")
 
-import android.annotation.SuppressLint
-
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -18,9 +16,8 @@ android {
 
     defaultConfig {
         applicationId = "com.thekeeperofpie.artistalleydatabase"
-        minSdk = 31
-        @SuppressLint("OldTargetApi")
-        targetSdk = 32
+        minSdk = 33
+        targetSdk = 33
         versionCode = 1
         versionName = "1.0"
 
