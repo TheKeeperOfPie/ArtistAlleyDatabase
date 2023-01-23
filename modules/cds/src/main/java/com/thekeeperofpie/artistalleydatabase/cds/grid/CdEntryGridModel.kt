@@ -1,6 +1,8 @@
 package com.thekeeperofpie.artistalleydatabase.cds.grid
 
 import android.app.Application
+import android.net.Uri
+import androidx.core.net.toUri
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntry
 import com.thekeeperofpie.artistalleydatabase.cds.utils.CdEntryUtils
@@ -9,7 +11,7 @@ import java.io.File
 
 class CdEntryGridModel(
     val value: CdEntry,
-    override val localImageFile: File?,
+    override val imageUri: Uri?,
     override val placeholderText: String,
 ) : EntryGridModel {
 
@@ -23,17 +25,22 @@ class CdEntryGridModel(
             appJson: AppJson,
             entry: CdEntry
         ): CdEntryGridModel {
-            val localImageFile = CdEntryUtils.getImageFile(application, entry.id)
+            val imageUri = CdEntryUtils.getImageFile(application, entry.id)
                 .takeIf(File::exists)
+                ?.toUri()
+                ?.buildUpon()
+                ?.appendQueryParameter("width", entry.imageWidth.toString())
+                ?.appendQueryParameter("width", entry.imageHeight.toString())
+                ?.build()
 
             // Placeholder text is generally only useful without an image
-            val placeholderText = if (localImageFile == null) {
+            val placeholderText = if (imageUri == null) {
                 CdEntryUtils.buildPlaceholderText(appJson.json, entry)
             } else ""
 
             return CdEntryGridModel(
                 value = entry,
-                localImageFile = localImageFile,
+                imageUri = imageUri,
                 placeholderText = placeholderText,
             )
         }

@@ -65,7 +65,6 @@ import com.thekeeperofpie.artistalleydatabase.compose.topBorder
 import com.thekeeperofpie.artistalleydatabase.form.grid.EntryGrid
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import java.io.File
 
 object EntryDetailsScreen {
 
@@ -73,7 +72,6 @@ object EntryDetailsScreen {
     @Composable
     operator fun invoke(
         entryId: () -> String = { "" },
-        entryImageFile: () -> File? = { null },
         entryImageRatio: () -> Float = { 1f },
         imageUri: () -> Uri? = { null },
         onImageSelected: (Uri?) -> Unit = {},
@@ -132,7 +130,6 @@ object EntryDetailsScreen {
                 ) {
                     HeaderImage(
                         entryId = entryId,
-                        entryImageFile = entryImageFile,
                         entryImageRatio = entryImageRatio,
                         loading = areSectionsLoading,
                         imageUri = imageUri,
@@ -229,7 +226,6 @@ object EntryDetailsScreen {
     @Composable
     private fun HeaderImage(
         entryId: () -> String,
-        entryImageFile: () -> File?,
         entryImageRatio: () -> Float,
         loading: () -> Boolean = { false },
         imageUri: () -> Uri?,
@@ -246,88 +242,72 @@ object EntryDetailsScreen {
             @Suppress("NAME_SHADOWING")
             val imageUri = imageUri()
             ImageSelectBox(
+                imageRatio = entryImageRatio,
                 onImageSelected = onImageSelected,
                 onImageSelectError = onImageSelectError,
                 cropState = cropState,
                 loading = loading
             ) {
                 if (imageUri != null) {
-                    AsyncImage(
-                        model = ImageRequest.Builder(LocalContext.current)
-                            .data(imageUri)
-                            .crossfade(true)
-                            .listener { _, result ->
-                                onImageSizeResult(
-                                    result.drawable.intrinsicWidth,
-                                    result.drawable.intrinsicHeight,
-                                )
-                            }
-                            .build(),
-                        contentDescription = stringResource(
-                            R.string.entry_image_content_description
-                        ),
-                        contentScale = ContentScale.FillWidth,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                    )
-                } else {
                     @Suppress("NAME_SHADOWING")
-                    val entryImageFile = entryImageFile()
-                    if (entryImageFile != null) {
-                        @Suppress("NAME_SHADOWING")
-                        val entryImageRatio = entryImageRatio()
+                    val entryImageRatio = entryImageRatio()
 
-                        @Suppress("NAME_SHADOWING")
-                        val entryId = entryId()
-                        SharedElement(
-                            key = "${entryId}_image",
-                            screenKey = "artEntryDetails",
-                            // Try to disable the fade animation
-                            transitionSpec = SharedElementsTransitionSpec(
-                                fadeMode = FadeMode.In,
-                                fadeProgressThresholds = ProgressThresholds(0f, 0f),
-                            )
-                        ) {
-                            val configuration = LocalConfiguration.current
-                            val screenWidth = configuration.screenWidthDp.dp
-                            val minimumHeight = screenWidth * entryImageRatio
-                            AsyncImage(
-                                ImageRequest.Builder(LocalContext.current)
-                                    .data(entryImageFile)
-                                    .crossfade(false)
-                                    .placeholderMemoryCacheKey("coil_memory_entry_image_home_$entryId")
-                                    .build(),
-                                contentDescription = stringResource(
-                                    R.string.entry_image_content_description
-                                ),
-                                contentScale = ContentScale.FillWidth,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .heightIn(min = minimumHeight)
-                            )
-                        }
-                    } else {
-                        Spacer(
-                            Modifier
-                                .heightIn(200.dp, 200.dp)
-                                .fillMaxWidth()
-                                .background(Color.LightGray)
+                    @Suppress("NAME_SHADOWING")
+                    val entryId = entryId()
+                    SharedElement(
+                        key = "${entryId}_image",
+                        screenKey = "artEntryDetails",
+                        // Try to disable the fade animation
+                        transitionSpec = SharedElementsTransitionSpec(
+                            fadeMode = FadeMode.In,
+                            fadeProgressThresholds = ProgressThresholds(0f, 0f),
                         )
-                        Icon(
-                            imageVector = Icons.Default.ImageNotSupported,
+                    ) {
+                        val configuration = LocalConfiguration.current
+                        val screenWidth = configuration.screenWidthDp.dp
+                        val minimumHeight = screenWidth * entryImageRatio
+                        AsyncImage(
+                            ImageRequest.Builder(LocalContext.current)
+                                .data(imageUri)
+                                .crossfade(false)
+                                .placeholderMemoryCacheKey("coil_memory_entry_image_home_$entryId")
+                                .listener { _, result ->
+                                    onImageSizeResult(
+                                        result.drawable.intrinsicWidth,
+                                        result.drawable.intrinsicHeight,
+                                    )
+                                }
+                                .build(),
                             contentDescription = stringResource(
-                                R.string.entry_no_image_content_description
+                                R.string.entry_image_content_description
                             ),
-                            Modifier
-                                .size(48.dp)
-                                .align(Alignment.Center)
+                            contentScale = ContentScale.FillWidth,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .heightIn(min = minimumHeight)
                         )
                     }
+                } else {
+                    Spacer(
+                        Modifier
+                            .heightIn(200.dp, 200.dp)
+                            .fillMaxWidth()
+                            .background(Color.LightGray)
+                    )
+                    Icon(
+                        imageVector = Icons.Default.ImageNotSupported,
+                        contentDescription = stringResource(
+                            R.string.entry_no_image_content_description
+                        ),
+                        Modifier
+                            .size(48.dp)
+                            .align(Alignment.Center)
+                    )
                 }
             }
 
             AnimatedVisibility(
-                visible = !loading() && entryImageFile() != null,
+                visible = !loading() && imageUri != null,
                 enter = fadeIn(),
                 exit = fadeOut(),
                 modifier = Modifier

@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.art
 
+import android.app.Application
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
@@ -12,6 +13,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.art.browse.selection.ArtBrowseSelectionScreen
 import com.thekeeperofpie.artistalleydatabase.art.browse.selection.ArtBrowseSelectionViewModel
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryColumn
+import com.thekeeperofpie.artistalleydatabase.art.utils.ArtEntryUtils
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseEntryModel
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseSelectionNavigator
 import com.thekeeperofpie.artistalleydatabase.form.EntryDetailsScreen
@@ -19,7 +21,9 @@ import com.thekeeperofpie.artistalleydatabase.form.EntryNavigator
 import com.thekeeperofpie.artistalleydatabase.form.EntryUtils
 import com.thekeeperofpie.artistalleydatabase.form.EntryUtils.entryDetailsComposable
 
-class ArtEntryNavigator : EntryNavigator, BrowseSelectionNavigator {
+class ArtEntryNavigator(
+    private val application: Application,
+) : EntryNavigator, BrowseSelectionNavigator {
 
     override fun initialize(
         navHostController: NavHostController,
@@ -71,15 +75,10 @@ class ArtEntryNavigator : EntryNavigator, BrowseSelectionNavigator {
                         viewModel.selectEntry(index, entry)
                     } else {
                         val imageRatio = entry.imageWidthToHeightRatio
-                        val imageFileParameter =
-                            "&entry_image_file=${entry.localImageFile?.toPath()}"
-                                .takeIf { entry.localImageFile != null }
-                                .orEmpty()
                         navHostController.navigate(
                             "artEntryDetails"
                                     + "?entry_id=${entry.id}"
                                     + "&entry_image_ratio=$imageRatio"
-                                    + imageFileParameter
                         )
                     }
                 },
@@ -90,22 +89,20 @@ class ArtEntryNavigator : EntryNavigator, BrowseSelectionNavigator {
             )
         }
 
-        navGraphBuilder.entryDetailsComposable(
-            route = "artEntryDetails"
-        ) { id, imageFile, imageRatio ->
+        navGraphBuilder.entryDetailsComposable(route = "artEntryDetails") { id, imageRatio ->
             val viewModel = hiltViewModel<ArtEntryEditViewModel>().initialize(id, imageRatio)
             EntryDetailsScreen(
                 { id },
-                { imageFile },
-                { imageRatio },
+                { viewModel.entryImageRatio },
                 imageUri = { viewModel.imageUri },
-                onImageSelected = { viewModel.imageUri = it },
+                onImageSelected = { if (it != null) viewModel.imageUri = it },
                 onImageSelectError = {
                     viewModel.errorResource = UtilsStringR.error_fail_to_load_image to it
                 },
                 onImageSizeResult = viewModel::onImageSizeResult,
                 onImageClickOpen = {
-                    imageFile?.let { EntryUtils.openInternalImage(navHostController, it) }
+                    ArtEntryUtils.getImageFile(application, id).takeIf { it.exists() }
+                        ?.let { EntryUtils.openInternalImage(navHostController, it) }
                 },
                 areSectionsLoading = { viewModel.areSectionsLoading },
                 sections = { viewModel.sections },

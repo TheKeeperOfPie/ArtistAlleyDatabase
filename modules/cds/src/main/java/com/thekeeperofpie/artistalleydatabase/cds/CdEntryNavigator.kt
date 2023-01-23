@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.cds
 
+import android.app.Application
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
@@ -14,13 +15,16 @@ import com.thekeeperofpie.artistalleydatabase.browse.BrowseSelectionNavigator
 import com.thekeeperofpie.artistalleydatabase.cds.browse.selection.CdBrowseSelectionScreen
 import com.thekeeperofpie.artistalleydatabase.cds.browse.selection.CdBrowseSelectionViewModel
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryColumn
+import com.thekeeperofpie.artistalleydatabase.cds.utils.CdEntryUtils
 import com.thekeeperofpie.artistalleydatabase.form.CropUtils
 import com.thekeeperofpie.artistalleydatabase.form.EntryDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.form.EntryNavigator
 import com.thekeeperofpie.artistalleydatabase.form.EntryUtils
 import com.thekeeperofpie.artistalleydatabase.form.EntryUtils.entryDetailsComposable
 
-class CdEntryNavigator : EntryNavigator, BrowseSelectionNavigator {
+class CdEntryNavigator(
+    private val application: Application,
+) : EntryNavigator, BrowseSelectionNavigator {
 
     override fun initialize(
         navHostController: NavHostController,
@@ -72,15 +76,10 @@ class CdEntryNavigator : EntryNavigator, BrowseSelectionNavigator {
                         viewModel.selectEntry(index, entry)
                     } else {
                         val imageRatio = entry.imageWidthToHeightRatio
-                        val imageFileParameter =
-                            "&entry_image_file=${entry.localImageFile?.toPath()}"
-                                .takeIf { entry.localImageFile != null }
-                                .orEmpty()
                         navHostController.navigate(
                             "cdEntryDetails"
                                     + "?entry_id=${entry.id}"
                                     + "&entry_image_ratio=$imageRatio"
-                                    + imageFileParameter
                         )
                     }
                 },
@@ -90,19 +89,19 @@ class CdEntryNavigator : EntryNavigator, BrowseSelectionNavigator {
             )
         }
 
-        navGraphBuilder.entryDetailsComposable("cdEntryDetails") { id, imageFile, imageRatio ->
+        navGraphBuilder.entryDetailsComposable("cdEntryDetails") { id, imageRatio ->
             val viewModel = hiltViewModel<CdEntryEditViewModel>().initialize(id)
             EntryDetailsScreen(
                 { id },
-                { imageFile },
                 { imageRatio },
                 imageUri = { viewModel.imageUri },
-                onImageSelected = { viewModel.imageUri = it },
+                onImageSelected = { if (it != null) viewModel.imageUri = it },
                 onImageSelectError = {
                     viewModel.errorResource = UtilsStringR.error_fail_to_load_image to it
                 },
                 onImageClickOpen = {
-                    imageFile?.let { EntryUtils.openInternalImage(navHostController, it) }
+                    CdEntryUtils.getImageFile(application, id).takeIf { it.exists() }
+                        ?.let { EntryUtils.openInternalImage(navHostController, it) }
                 },
                 areSectionsLoading = { viewModel.areSectionsLoading },
                 sections = { viewModel.sections },

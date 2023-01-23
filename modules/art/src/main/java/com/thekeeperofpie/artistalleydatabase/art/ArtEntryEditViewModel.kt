@@ -3,6 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.art
 import android.app.Application
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.util.Log
 import androidx.compose.runtime.getValue
@@ -11,6 +12,7 @@ import androidx.compose.runtime.setValue
 import androidx.core.net.toUri
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
+import com.thekeeperofpie.artistalleydatabase.android_utils.AnimationUtils
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListAutocompleter
@@ -60,8 +62,9 @@ class ArtEntryEditViewModel @Inject constructor(
 
     var areSectionsLoading by mutableStateOf(true)
 
-    var imageCropUri by mutableStateOf<Uri?>(null)
+    var entryImageRatio by mutableStateOf(1f)
 
+    private var imageCropUri by mutableStateOf<Uri?>(null)
     private var cropDocumentRequested by mutableStateOf(false)
     private var cropReady by mutableStateOf(false)
 
@@ -83,6 +86,8 @@ class ArtEntryEditViewModel @Inject constructor(
     fun initialize(entryId: String, entryImageRatio: Float) = apply {
         if (this.entryId != null) return@apply
         this.entryId = entryId
+        this.entryImageRatio = entryImageRatio
+        imageUri = ArtEntryUtils.getImageFile(application, entryId).takeIf { it.exists() }?.toUri()
 
         if (entryImageRatio > 1f) {
             onImageSizeResult(1, 2)
@@ -92,7 +97,7 @@ class ArtEntryEditViewModel @Inject constructor(
 
         viewModelScope.launch(Dispatchers.IO) {
             entry = artEntryDao.getEntry(entryId)
-            delay(350)
+            delay(AnimationUtils.multipliedByAnimatorScale(application, 350L).coerceAtLeast(350L))
             withContext(Dispatchers.Main) {
                 initializeForm(buildModel(entry))
                 areSectionsLoading = false
@@ -221,7 +226,16 @@ class ArtEntryEditViewModel @Inject constructor(
                         .compress(Bitmap.CompressFormat.PNG, 100, it)
                 }
 
+                val widthHeightRatio = outputFile.inputStream().use {
+                    val options = BitmapFactory.Options().apply {
+                        inJustDecodeBounds = true
+                    }
+                    BitmapFactory.decodeStream(it, null, options)
+                    options.outHeight.toFloat() / options.outWidth
+                }
+
                 launch(Dispatchers.Main) {
+                    entryImageRatio = widthHeightRatio
                     imageUri = outputFile.toUri()
                         .buildUpon()
                         .appendQueryParameter(

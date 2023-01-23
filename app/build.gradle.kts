@@ -61,9 +61,9 @@ android {
         }
         getByName("release") {
             isDebuggable = false
-            isMinifyEnabled = false
-            isShrinkResources = false
-            isCrunchPngs = false
+            isMinifyEnabled = true
+            isShrinkResources = true
+            isCrunchPngs = true
             proguardFiles(*proguardFiles)
 
             if (debugKeystoreExists) {

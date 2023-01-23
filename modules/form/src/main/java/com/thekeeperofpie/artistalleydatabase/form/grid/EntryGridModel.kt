@@ -1,10 +1,10 @@
 package com.thekeeperofpie.artistalleydatabase.form.grid
 
-import java.io.File
+import android.net.Uri
 
 interface EntryGridModel {
     val id: String
-    val localImageFile: File?
+    val imageUri: Uri?
     val placeholderText: String
     val imageWidth: Int?
     val imageWidthToHeightRatio: Float

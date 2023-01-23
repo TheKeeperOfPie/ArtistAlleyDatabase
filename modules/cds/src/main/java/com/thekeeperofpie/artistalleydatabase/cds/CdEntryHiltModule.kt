@@ -65,7 +65,7 @@ object CdEntryHiltModule {
     )
 
     @Provides
-    fun provideCdEntryNavigator() = CdEntryNavigator()
+    fun provideCdEntryNavigator(application: Application) = CdEntryNavigator(application)
 
     @IntoSet
     @Provides

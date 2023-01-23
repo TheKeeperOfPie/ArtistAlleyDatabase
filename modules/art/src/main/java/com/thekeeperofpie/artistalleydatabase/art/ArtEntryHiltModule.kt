@@ -129,7 +129,7 @@ object ArtEntryHiltModule {
     ): BrowseTabViewModel = ArtBrowseTabTags(application, artEntryBrowseDao, artEntryNavigator)
 
     @Provides
-    fun provideArtEntryNavigator() = ArtEntryNavigator()
+    fun provideArtEntryNavigator(application: Application) = ArtEntryNavigator(application)
 
     @IntoSet
     @Provides

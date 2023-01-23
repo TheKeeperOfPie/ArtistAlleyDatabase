@@ -14,6 +14,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterReposit
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntry
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDetailsDao
+import com.thekeeperofpie.artistalleydatabase.cds.utils.CdEntryUtils
 import com.thekeeperofpie.artistalleydatabase.data.DataConverter
 import com.thekeeperofpie.artistalleydatabase.form.EntrySection
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbApi
@@ -89,6 +90,7 @@ class CdEntryEditViewModel @Inject constructor(
     fun initialize(entryId: String) = apply {
         if (this.entryId != null) return@apply
         this.entryId = entryId
+        imageUri = CdEntryUtils.getImageFile(application, entryId).takeIf { it.exists() }?.toUri()
 
         viewModelScope.launch(Dispatchers.IO) {
             entry = cdEntryDao.getEntry(entryId)

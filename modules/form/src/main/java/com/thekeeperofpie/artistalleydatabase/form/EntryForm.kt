@@ -6,7 +6,6 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Environment
 import android.provider.DocumentsContract
-import android.provider.Settings
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContract
@@ -104,6 +103,7 @@ import androidx.compose.ui.window.PopupProperties
 import androidx.core.net.toUri
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.thekeeperofpie.artistalleydatabase.android_utils.AnimationUtils
 import com.thekeeperofpie.artistalleydatabase.compose.AddBackPressTransitionStage
 import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIcon
 import com.thekeeperofpie.artistalleydatabase.compose.bottomBorder
@@ -111,6 +111,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.dropdown.DropdownMenu
 import com.thekeeperofpie.artistalleydatabase.compose.dropdown.DropdownMenuItem
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.math.absoluteValue
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
@@ -801,6 +802,7 @@ fun ImagesSelectBox(
     )
 
     ImageSelectBoxInner(
+        imageRatio = { 1f },
         imageSelectLauncher = imageSelectLauncher,
         imageCropLauncher = null,
         onImageSelectError = onImageSelectError,
@@ -812,6 +814,7 @@ fun ImagesSelectBox(
 
 @Composable
 fun ImageSelectBox(
+    imageRatio: () -> Float,
     onImageSelected: (Uri?) -> Unit,
     onImageSelectError: (Exception?) -> Unit,
     cropState: CropUtils.CropState? = null,
@@ -850,6 +853,7 @@ fun ImageSelectBox(
     ) { cropState?.onCropFinished?.invoke(it) }
 
     ImageSelectBoxInner(
+        imageRatio = imageRatio,
         imageSelectLauncher = imageSelectLauncher,
         imageCropLauncher = imageCropLauncher,
         onImageSelectError = onImageSelectError,
@@ -873,11 +877,12 @@ fun ImageSelectBox(
     }
 }
 
-private const val SLIDE_DURATION_MS = 300
+private const val SLIDE_DURATION_MS = 350
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun ImageSelectBoxInner(
+    imageRatio: () -> Float,
     imageSelectLauncher: ManagedActivityResultLauncher<String, *>,
     imageCropLauncher: ManagedActivityResultLauncher<Unit, *>?,
     onImageSelectError: (Exception?) -> Unit,
@@ -885,22 +890,17 @@ private fun ImageSelectBoxInner(
     loading: () -> Boolean = { false },
     content: @Composable BoxScope.() -> Unit,
 ) {
-    val contentResolver = LocalContext.current.contentResolver
+    val context = LocalContext.current
 
     // Compose animation spec delay doesn't seem to account for animator scale,
     // necessary to ensure height animation doesn't overlap shared element transition
     val slideDelayMs by rememberSaveable {
-        mutableStateOf(
-            (350 * Settings.Global.getFloat(
-                contentResolver,
-                Settings.Global.ANIMATOR_DURATION_SCALE,
-                1f
-            )).toInt()
-        )
+        mutableStateOf(AnimationUtils.multipliedByAnimatorScale(context, 400L))
     }
 
     var previouslyRunHeight by rememberSaveable { mutableStateOf(false) }
     var maxHeight by remember { mutableStateOf(0) }
+    var lastMaxHeight by remember { mutableStateOf(-1) }
     val finalMaxHeight = LocalDensity.current.run { 400.dp.roundToPx() }
     val heightAnimation = remember {
         // If maxHeight was already calculated (this composition
@@ -912,13 +912,24 @@ private fun ImageSelectBoxInner(
 
     LaunchedEffect(maxHeight) {
         if (maxHeight == 0 || finalMaxHeight > maxHeight) return@LaunchedEffect
+        delay(slideDelayMs)
         heightAnimation.animateTo(
             0f,
             animationSpec = tween(
                 durationMillis = SLIDE_DURATION_MS,
-                delayMillis = slideDelayMs
             ),
         )
+    }
+
+    // If the image ratio changes, reset maxHeight so it shrinks/grows properly
+    @Suppress("NAME_SHADOWING") val imageRatio = imageRatio()
+    var lastImageRatio by rememberSaveable { mutableStateOf(imageRatio) }
+    LaunchedEffect(imageRatio) {
+        if (imageRatio != lastImageRatio) {
+            lastImageRatio = imageRatio
+            lastMaxHeight = maxHeight
+            maxHeight = 0
+        }
     }
 
     Box {
@@ -932,14 +943,14 @@ private fun ImageSelectBoxInner(
                                 ((maxHeight - finalMaxHeight) * heightAnimation.value + finalMaxHeight)
                         it.height(LocalDensity.current.run { animatedHeight.toDp() })
                     } else {
-                        it
-                            .heightIn(Dp.Unspecified, 10000.dp)
+                        it.heightIn(Dp.Unspecified, 10000.dp)
                     }
                 }
                 .verticalScroll(rememberScrollState())
                 .animateContentSize()
                 .onGloballyPositioned {
-                    if (maxHeight == 0) {
+                    // Use a difference of 3 to determine when the height has been recalculated
+                    if (maxHeight == 0 && (lastMaxHeight - it.size.height).absoluteValue > 3) {
                         maxHeight = it.size.height
                         previouslyRunHeight = true
                     }

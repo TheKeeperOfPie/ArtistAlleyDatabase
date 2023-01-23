@@ -16,20 +16,15 @@ object EntryUtils {
 
     fun NavGraphBuilder.entryDetailsComposable(
         route: String,
-        block: @Composable (id: String, imageFile: File?, imageRatio: Float) -> Unit
+        block: @Composable (id: String, imageRatio: Float) -> Unit
     ) = composable(
         route +
                 "?entry_id={entry_id}" +
-                "&entry_image_file={entry_image_file}" +
                 "&entry_image_ratio={entry_image_ratio}",
         arguments = listOf(
             navArgument("entry_id") {
                 type = NavType.StringType
                 nullable = false
-            },
-            navArgument("entry_image_file") {
-                type = NavType.StringType
-                nullable = true
             },
             navArgument("entry_image_ratio") {
                 type = NavType.FloatType
@@ -38,21 +33,16 @@ object EntryUtils {
     ) {
         val arguments = it.arguments!!
         val id = arguments.getString("entry_id")!!
-        val imageFile = arguments.getString("entry_image_file")?.let(::File)
         val imageRatio = arguments.getFloat("entry_image_ratio", 1f)
-        block(id, imageFile, imageRatio)
+        block(id, imageRatio)
     }
 
     fun NavHostController.navToEntryDetails(route: String, entry: EntryGridModel) {
         val imageRatio = entry.imageWidthToHeightRatio
-        val imageFileParameter = "&entry_image_file=${entry.localImageFile?.toPath()}"
-            .takeIf { entry.localImageFile != null }
-            .orEmpty()
         navigate(
             route
                     + "?entry_id=${entry.id}"
                     + "&entry_image_ratio=$imageRatio"
-                    + imageFileParameter
         )
     }
 

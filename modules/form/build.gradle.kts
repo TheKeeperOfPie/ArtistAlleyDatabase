@@ -41,6 +41,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":modules:android-utils"))
     api(project(":modules:compose-utils"))
     api("io.github.hoc081098:FlowExt:0.4.0")
     implementation("androidx.activity:activity-compose:1.6.1")

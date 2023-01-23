@@ -128,6 +128,8 @@ object MultiEditScreen {
                 modifier = Modifier.heightIn(min = 200.dp, max = 400.dp)
             ) { index ->
                 ImageSelectBox(
+                    // Multi-edit doesn't dynamically adjust image ratio
+                    imageRatio = { 1f },
                     { onImageSelected(index, it) },
                     onImageSelectError,
                     // TODO: Crop for multi-edit

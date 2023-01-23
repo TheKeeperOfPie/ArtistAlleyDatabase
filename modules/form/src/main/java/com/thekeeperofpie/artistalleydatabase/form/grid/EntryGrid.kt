@@ -193,7 +193,7 @@ object EntryGrid {
                 Modifier
                     .fillMaxWidth()
                     .let {
-                        if (entry.localImageFile == null) {
+                        if (entry.imageUri == null) {
                             it.heightIn(min = 120.dp)
                         } else it
                     }
@@ -203,7 +203,7 @@ object EntryGrid {
                         onLongClickLabel = stringResource(R.string.long_press_multi_select_label)
                     )
             ) {
-                if (entry.localImageFile == null) {
+                if (entry.imageUri == null) {
                     // TODO: Better no-image placeholder
                     Text(
                         text = entry.placeholderText,
@@ -234,7 +234,7 @@ object EntryGrid {
                     ) {
                         AsyncImage(
                             model = ImageRequest.Builder(LocalContext.current)
-                                .data(entry.localImageFile)
+                                .data(entry.imageUri)
                                 .size(expectedWidth, Dimension.Undefined)
                                 .crossfade(false)
                                 .memoryCacheKey("coil_memory_entry_image_home_${entry.id}")
