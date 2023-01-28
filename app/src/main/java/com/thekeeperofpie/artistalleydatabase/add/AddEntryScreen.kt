@@ -55,10 +55,11 @@ object AddEntryScreen {
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     operator fun invoke(
+        imageRatio: () -> Float = { 1f },
         imageUris: () -> List<Uri> = { emptyList() },
         onImagesSelected: (List<Uri>) -> Unit = {},
         onImageSelectError: (Exception?) -> Unit = {},
-        onImageSizeResult: (Int, Int) -> Unit = { _, _ -> },
+        onImageSizeResult: (width: Int, height: Int) -> Unit = { _, _ -> },
         sections: () -> List<EntrySection> = { emptyList() },
         saving: () -> Boolean = { false },
         onClickSaveTemplate: () -> Unit = {},
@@ -79,10 +80,11 @@ object AddEntryScreen {
                         .imePadding(),
                 ) {
                     HeaderImage(
-                        imageUris,
-                        onImagesSelected,
-                        onImageSelectError,
-                        onImageSizeResult,
+                        imageRatio = imageRatio,
+                        imageUris = imageUris,
+                        onImagesSelected = onImagesSelected,
+                        onImageSelectError = onImageSelectError,
+                        onImageSizeResult = onImageSizeResult,
                     )
 
                     EntryForm({ false }, sections)
@@ -132,12 +134,18 @@ object AddEntryScreen {
     @OptIn(ExperimentalPagerApi::class)
     @Composable
     private fun HeaderImage(
+        imageRatio: () -> Float,
         imageUris: () -> List<Uri> = { emptyList() },
         onImagesSelected: (List<Uri>) -> Unit = {},
         onImageSelectError: (Exception?) -> Unit = {},
-        onImageSizeResult: (Int, Int) -> Unit = { _, _ -> },
+        onImageSizeResult: (width: Int, height: Int) -> Unit = { _, _ -> },
     ) {
-        ImagesSelectBox(onImagesSelected, onImageSelectError, loading = { false }) {
+        ImagesSelectBox(
+            imageRatio = imageRatio,
+            onImagesSelected = onImagesSelected,
+            onImageSelectError = onImageSelectError,
+            loading = { false }
+        ) {
             @Suppress("NAME_SHADOWING")
             val imageUris = imageUris()
             if (imageUris.isNotEmpty()) {

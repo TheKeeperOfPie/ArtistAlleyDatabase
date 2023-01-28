@@ -89,8 +89,10 @@ class MainActivity : ComponentActivity() {
 
     @Inject
     lateinit var entryNavigators: Set<@JvmSuppressWildcards EntryNavigator>
+
     @Inject
     lateinit var artEntryNavigator: ArtEntryNavigator
+
     @Inject
     lateinit var cdEntryNavigator: CdEntryNavigator
 
@@ -252,6 +254,7 @@ class MainActivity : ComponentActivity() {
                 composable(NavDestinations.ADD_ENTRY) {
                     val viewModel = hiltViewModel<ArtEntryAddViewModel>()
                     AddEntryScreen(
+                        imageRatio = { viewModel.imageWidthToHeightRatio },
                         imageUris = { viewModel.imageUris },
                         onImagesSelected = {
                             viewModel.imageUris.clear()
@@ -260,7 +263,9 @@ class MainActivity : ComponentActivity() {
                         onImageSelectError = {
                             viewModel.errorResource = UtilsStringR.error_fail_to_load_image to it
                         },
-                        onImageSizeResult = viewModel::onImageSizeResult,
+                        onImageSizeResult = { width, height ->
+                            viewModel.onImageSizeResult(height / width.toFloat())
+                        },
                         sections = { viewModel.sections },
                         saving = { viewModel.saving },
                         onClickSaveTemplate = viewModel::onClickSaveTemplate,
@@ -318,6 +323,7 @@ class MainActivity : ComponentActivity() {
                 composable(NavDestinations.ADD_ENTRY) {
                     val viewModel = hiltViewModel<CdEntryAddViewModel>()
                     AddEntryScreen(
+                        imageRatio = { viewModel.imageRatio },
                         imageUris = { viewModel.imageUris },
                         onImagesSelected = {
                             viewModel.imageUris.clear()
@@ -325,6 +331,9 @@ class MainActivity : ComponentActivity() {
                         },
                         onImageSelectError = {
                             viewModel.errorResource = UtilsStringR.error_fail_to_load_image to it
+                        },
+                        onImageSizeResult = { width, height ->
+                            viewModel.imageRatio = height / width.toFloat()
                         },
                         sections = { viewModel.sections },
                         saving = { viewModel.saving },

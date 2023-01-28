@@ -791,6 +791,7 @@ private fun CustomSection(section: EntrySection.Custom<*>) {
 
 @Composable
 fun ImagesSelectBox(
+    imageRatio: () -> Float,
     onImagesSelected: (List<Uri>) -> Unit,
     onImageSelectError: (Exception?) -> Unit,
     loading: () -> Boolean = { false },
@@ -802,7 +803,7 @@ fun ImagesSelectBox(
     )
 
     ImageSelectBoxInner(
-        imageRatio = { 1f },
+        imageRatio = imageRatio,
         imageSelectLauncher = imageSelectLauncher,
         imageCropLauncher = null,
         onImageSelectError = onImageSelectError,

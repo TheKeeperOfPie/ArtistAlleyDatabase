@@ -109,6 +109,9 @@ abstract class ArtEntryDetailsViewModel(
 
     var errorResource by mutableStateOf<Pair<Int, Exception?>?>(null)
 
+    var imageWidthToHeightRatio by mutableStateOf(1f)
+        private set
+
     /** Shared utility to easily signal URI invalidation by appending a query param of this value */
     protected var invalidateIteration = 0
 
@@ -209,8 +212,9 @@ abstract class ArtEntryDetailsViewModel(
         }
     }
 
-    fun onImageSizeResult(width: Int, height: Int) {
-        printSizeSection.onSizeChange(width, height)
+    fun onImageSizeResult(widthToHeightRatio: Float) {
+        imageWidthToHeightRatio = widthToHeightRatio
+        printSizeSection.onSizeChange(imageWidthToHeightRatio)
     }
 
     protected fun buildModel(entry: ArtEntry): ArtEntryModel {

@@ -61,6 +61,8 @@ class CdEntryAddViewModel @Inject constructor(
     dataConverter,
 ) {
 
+    var imageRatio by mutableStateOf(1f)
+
     val imageUris = mutableStateListOf<Uri>()
 
     var saving by mutableStateOf(false)

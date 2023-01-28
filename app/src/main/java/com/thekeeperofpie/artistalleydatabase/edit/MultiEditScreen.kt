@@ -19,6 +19,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -118,6 +122,7 @@ object MultiEditScreen {
         onImageSelected: (index: Int, uri: Uri?) -> Unit = { _, _ -> },
         onImageSelectError: (Exception?) -> Unit = {},
     ) {
+        var imageRatio by remember { mutableStateOf(1f) }
         Box {
             @Suppress("NAME_SHADOWING")
             val imageUris = imageUris()
@@ -128,8 +133,7 @@ object MultiEditScreen {
                 modifier = Modifier.heightIn(min = 200.dp, max = 400.dp)
             ) { index ->
                 ImageSelectBox(
-                    // Multi-edit doesn't dynamically adjust image ratio
-                    imageRatio = { 1f },
+                    imageRatio = { imageRatio },
                     { onImageSelected(index, it) },
                     onImageSelectError,
                     // TODO: Crop for multi-edit
@@ -140,6 +144,15 @@ object MultiEditScreen {
                         model = ImageRequest.Builder(LocalContext.current)
                             .data(imageUris[index])
                             .crossfade(true)
+                            .let {
+                                if (index == 0) {
+                                    it.listener { _, result ->
+                                        result.drawable.run {
+                                            imageRatio = intrinsicHeight / intrinsicWidth.toFloat()
+                                        }
+                                    }
+                                } else it
+                            }
                             .build(),
                         contentDescription = stringResource(
                             ArtStringR.art_entry_image_content_description

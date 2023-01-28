@@ -62,8 +62,6 @@ class ArtEntryEditViewModel @Inject constructor(
 
     var areSectionsLoading by mutableStateOf(true)
 
-    var entryImageRatio by mutableStateOf(1f)
-
     private var imageCropUri by mutableStateOf<Uri?>(null)
     private var cropDocumentRequested by mutableStateOf(false)
     private var cropReady by mutableStateOf(false)
@@ -86,14 +84,9 @@ class ArtEntryEditViewModel @Inject constructor(
     fun initialize(entryId: String, entryImageRatio: Float) = apply {
         if (this.entryId != null) return@apply
         this.entryId = entryId
-        this.entryImageRatio = entryImageRatio
         imageUri = ArtEntryUtils.getImageFile(application, entryId).takeIf { it.exists() }?.toUri()
 
-        if (entryImageRatio > 1f) {
-            onImageSizeResult(1, 2)
-        } else {
-            onImageSizeResult(2, 1)
-        }
+        onImageSizeResult(entryImageRatio)
 
         viewModelScope.launch(Dispatchers.IO) {
             entry = artEntryDao.getEntry(entryId)
@@ -231,11 +224,11 @@ class ArtEntryEditViewModel @Inject constructor(
                         inJustDecodeBounds = true
                     }
                     BitmapFactory.decodeStream(it, null, options)
-                    options.outHeight.toFloat() / options.outWidth
+                    options.outHeight / options.outWidth.toFloat()
                 }
 
                 launch(Dispatchers.Main) {
-                    entryImageRatio = widthHeightRatio
+                    onImageSizeResult(widthHeightRatio)
                     imageUri = outputFile.toUri()
                         .buildUpon()
                         .appendQueryParameter(

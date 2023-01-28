@@ -93,13 +93,15 @@ class ArtEntryNavigator(
             val viewModel = hiltViewModel<ArtEntryEditViewModel>().initialize(id, imageRatio)
             EntryDetailsScreen(
                 { id },
-                { viewModel.entryImageRatio },
+                { viewModel.imageWidthToHeightRatio },
                 imageUri = { viewModel.imageUri },
                 onImageSelected = { if (it != null) viewModel.imageUri = it },
                 onImageSelectError = {
                     viewModel.errorResource = UtilsStringR.error_fail_to_load_image to it
                 },
-                onImageSizeResult = viewModel::onImageSizeResult,
+                onImageSizeResult = { width, height ->
+                    viewModel.onImageSizeResult(height / width.toFloat())
+                },
                 onImageClickOpen = {
                     ArtEntryUtils.getImageFile(application, id).takeIf { it.exists() }
                         ?.let { EntryUtils.openInternalImage(navHostController, it) }

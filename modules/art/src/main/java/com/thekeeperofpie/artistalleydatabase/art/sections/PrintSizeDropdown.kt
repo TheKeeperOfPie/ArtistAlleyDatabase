@@ -38,8 +38,8 @@ class PrintSizeDropdown(lockState: LockState? = null) : EntrySection.Dropdown(
         this.lockState = lockState
     }
 
-    fun onSizeChange(width: Int, height: Int) {
-        if (width > height) {
+    fun onSizeChange(widthToHeightRatio: Float) {
+        if (widthToHeightRatio > 1f) {
             PrintSize.LANDSCAPES.forEachIndexed { index, printSize ->
                 options[index] = Item.Basic(printSize, printSize.textRes)
             }
