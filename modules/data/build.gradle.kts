@@ -5,8 +5,8 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("dagger.hilt.android.plugin")
     id("kotlin-kapt")
-    id("com.google.devtools.ksp") version "1.7.20-Beta-1.0.6"
-    kotlin("plugin.serialization") version "1.7.20-Beta"
+    id("com.google.devtools.ksp") version "1.8.0-1.0.9"
+    kotlin("plugin.serialization") version "1.8.0"
 }
 
 android {
@@ -30,12 +30,16 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_18
+        targetCompatibility = JavaVersion.VERSION_18
     }
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "18"
     }
+}
+
+kotlin {
+    jvmToolchain(18)
 }
 
 dependencies {
@@ -43,12 +47,11 @@ dependencies {
     api(project(":modules:anilist"))
     api(project(":modules:form"))
 
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3")
-    implementation("com.google.dagger:hilt-android:2.43.2")
-    kapt("com.google.dagger:hilt-compiler:2.43.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0-RC")
+    implementation("com.google.dagger:hilt-android:2.44.2")
+    kapt("com.google.dagger:hilt-compiler:2.44.2")
     kapt("androidx.hilt:hilt-compiler:1.0.0")
 
     testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.1.4")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.0")
+    androidTestImplementation("androidx.test.ext:junit:1.1.5")
 }

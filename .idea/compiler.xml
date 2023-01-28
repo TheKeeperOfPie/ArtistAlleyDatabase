@@ -1,18 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="CompilerConfiguration">
-    <bytecodeTargetLevel target="1.8">
-      <module name="Artist_Alley_Database.app" target="18" />
-      <module name="Artist_Alley_Database.modules.android-utils" target="18" />
-      <module name="Artist_Alley_Database.modules.anilist" target="18" />
-      <module name="Artist_Alley_Database.modules.art" target="18" />
-      <module name="Artist_Alley_Database.modules.browse" target="18" />
-      <module name="Artist_Alley_Database.modules.cds" target="18" />
-      <module name="Artist_Alley_Database.modules.compose-utils" target="18" />
-      <module name="Artist_Alley_Database.modules.data" target="18" />
-      <module name="Artist_Alley_Database.modules.form" target="18" />
-      <module name="Artist_Alley_Database.modules.musical-artists" target="18" />
-      <module name="Artist_Alley_Database.modules.vgmdb" target="18" />
+    <bytecodeTargetLevel target="18">
       <module name="Artist_Alley_Database_Composite_Build.json-schema" target="11" />
       <module name="Artist_Alley_Database_Composite_Build.json-schema.functionalTest" target="11" />
       <module name="Artist_Alley_Database_Composite_Build.json-schema.main" target="11" />

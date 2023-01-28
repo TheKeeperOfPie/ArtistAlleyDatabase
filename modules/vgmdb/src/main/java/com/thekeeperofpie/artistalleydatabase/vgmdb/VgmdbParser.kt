@@ -54,7 +54,7 @@ class VgmdbParser(application: Application, private val json: Json) {
             .build()
 
         val (finalPath, text) = okHttpClient.newCall(request).execute()
-            .use { it.request.url.encodedPath to it.body?.string().orEmpty() }
+            .use { it.request.url.encodedPath to it.body.string() }
 
         if (finalPath.startsWith("/search")) {
             parseSearchHtml(text)

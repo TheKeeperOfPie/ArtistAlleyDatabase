@@ -5,10 +5,11 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.whenResumed
+import androidx.lifecycle.withResumed
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -78,8 +79,14 @@ class ChooserActivity : ComponentActivity() {
                                     },
                                 )
 
-                                viewModel.viewModelScope.launch(Dispatchers.Main) {
-                                    it.whenResumed { viewModel.invalidate() }
+                                LaunchedEffect(true) {
+                                    viewModel.viewModelScope.launch(Dispatchers.Main) {
+                                        it.withResumed {
+                                            viewModel.viewModelScope.launch(Dispatchers.Main) {
+                                                viewModel.invalidate()
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }

@@ -8,7 +8,6 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.map
-import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDao
 import com.thekeeperofpie.artistalleydatabase.cds.grid.CdEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.cds.utils.CdEntryUtils
@@ -27,7 +26,6 @@ import javax.inject.Inject
 class CdSearchViewModel @Inject constructor(
     private val application: Application,
     private val cdEntryDao: CdEntryDao,
-    private val appJson: AppJson,
 ) : EntrySearchViewModel<CdSearchQuery, CdEntryGridModel>() {
 
     override val entryGridSelectionController =
@@ -59,7 +57,7 @@ class CdSearchViewModel @Inject constructor(
             }
             .map {
                 it.map {
-                    CdEntryGridModel.buildFromEntry(application, appJson, it)
+                    CdEntryGridModel.buildFromEntry(application, it)
                 }
             }
 }

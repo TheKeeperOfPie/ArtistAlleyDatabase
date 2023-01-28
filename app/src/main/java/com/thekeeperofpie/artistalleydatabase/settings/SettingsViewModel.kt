@@ -86,7 +86,7 @@ class SettingsViewModel @Inject constructor(
                 }
                 SettingsScreen.DatabaseType.MUSICAL_ARTISTS -> {
                     musicalArtistDao.deleteAll()
-                    cdEntryDao.iterateEntriesNoTransaction { index: Int, cdEntry: CdEntry ->
+                    cdEntryDao.iterateEntriesNoTransaction { _: Int, cdEntry: CdEntry ->
                         val musicalArtists = cdEntry.performers.map(vgmdbJson::parseArtistColumn)
                             .map {
                                 when (it) {

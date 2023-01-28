@@ -11,7 +11,6 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.filter
 import androidx.paging.map
-import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryBrowseDao
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryColumn
@@ -31,7 +30,6 @@ import javax.inject.Inject
 class CdBrowseSelectionViewModel @Inject constructor(
     application: Application,
     private val cdEntryBrowseDao: CdEntryBrowseDao,
-    private val appJson: AppJson,
     private val vgmdbDataConverter: VgmdbDataConverter,
 ) : CdEntryGridViewModel(application, cdEntryBrowseDao) {
 
@@ -78,7 +76,7 @@ class CdBrowseSelectionViewModel @Inject constructor(
                             }
                         }
                     }
-                        .map { CdEntryGridModel.buildFromEntry(application, appJson, it) }
+                        .map { CdEntryGridModel.buildFromEntry(application, it) }
                 }
                 .onEach {
                     if (loading) {

@@ -1,16 +1,24 @@
+import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
+
 buildscript {
     dependencies {
-        classpath("com.google.dagger:hilt-android-gradle-plugin:2.42")
+        classpath("com.google.dagger:hilt-android-gradle-plugin:2.44.2")
         classpath("de.mannodermaus.gradle.plugins:android-junit5:1.8.2.1")
     }
 }
 
 plugins {
-    id("com.android.application") version "8.0.0-alpha08" apply false
-    id("com.android.library") version "8.0.0-alpha08" apply false
-    id("org.jetbrains.kotlin.android") version "1.7.20-Beta" apply false
-    id("org.jetbrains.kotlin.jvm") version "1.7.20-Beta" apply false
-    id("com.autonomousapps.dependency-analysis") version "1.13.1"
+    id("com.android.application") version "8.1.0-alpha02" apply false
+    id("com.android.library") version "8.1.0-alpha02" apply false
+    id("org.jetbrains.kotlin.android") version "1.8.0" apply false
+    id("org.jetbrains.kotlin.jvm") version "1.8.0" apply false
+    id("com.autonomousapps.dependency-analysis") version "1.18.0"
+    id("com.github.ben-manes.versions") version "0.44.0"
+}
+
+tasks.named<DependencyUpdatesTask>("dependencyUpdates").configure {
+    checkForGradleUpdate = true
+    outputFormatter = "html"
 }
 
 tasks.register("copyGitHooks", Copy::class) {

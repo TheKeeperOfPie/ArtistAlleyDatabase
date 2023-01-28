@@ -60,7 +60,7 @@ import com.thekeeperofpie.compose_proxy.R
 fun AppBar(
     text: String,
     scrollBehavior: TopAppBarScrollBehavior? = null,
-    colors: TopAppBarColors = TopAppBarDefaults.smallTopAppBarColors(),
+    colors: TopAppBarColors = TopAppBarDefaults.topAppBarColors(),
     onClickNav: (() -> Unit)? = null
 ) {
     TopAppBar(

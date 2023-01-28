@@ -2,22 +2,25 @@
 
 plugins {
     `java-gradle-plugin`
-    id("org.jetbrains.kotlin.jvm") version "1.7.10"
-    id("org.gradle.kotlin.kotlin-dsl") version "2.4.1"
-    kotlin("plugin.serialization") version "1.7.10"
+    id("org.jetbrains.kotlin.jvm") version "1.8.0"
+    id("org.gradle.kotlin.kotlin-dsl") version "4.0.2"
+    kotlin("plugin.serialization") version "1.8.0"
 }
 
-kotlin.sourceSets.all {
-    languageSettings.optIn("kotlin.RequiresOptIn")
+kotlin {
+    jvmToolchain(18)
+    sourceSets.all {
+        languageSettings.optIn("kotlin.RequiresOptIn")
+    }
 }
 
 dependencies {
     implementation(project(":utils"))
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib")
     implementation("com.squareup:kotlinpoet:1.12.0")
-    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:1.7.10")
-    api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3")
+    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:1.8.0")
+    api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0-RC")
 }
 
 testing {

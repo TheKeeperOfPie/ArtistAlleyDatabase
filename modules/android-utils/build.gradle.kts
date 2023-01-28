@@ -3,7 +3,7 @@
 plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
-    id("com.google.devtools.ksp") version "1.7.20-Beta-1.0.6"
+    id("com.google.devtools.ksp") version "1.8.0-1.0.9"
 }
 
 android {
@@ -27,32 +27,35 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_18
+        targetCompatibility = JavaVersion.VERSION_18
     }
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "18"
     }
 }
 
-dependencies {
-    runtimeOnly("androidx.work:work-runtime:2.7.1")
-    api("androidx.work:work-runtime-ktx:2.7.1")
-    api("io.github.hoc081098:FlowExt:0.4.0")
+kotlin {
+    jvmToolchain(18)
+}
 
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3")
+dependencies {
+    runtimeOnly("androidx.work:work-runtime:2.8.0-rc01")
+    api("androidx.work:work-runtime-ktx:2.8.0-rc01")
+    api("io.github.hoc081098:FlowExt:0.5.0")
+
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0-RC")
     runtimeOnly("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4")
 
-    runtimeOnly("androidx.room:room-runtime:2.5.0-beta02")
-    ksp("androidx.room:room-compiler:2.5.0-beta02")
-    implementation("androidx.room:room-ktx:2.5.0-beta02")
-    testImplementation("androidx.room:room-testing:2.5.0-beta02")
-    implementation("androidx.room:room-paging:2.5.0-beta02")
+    runtimeOnly("androidx.room:room-runtime:2.5.0")
+    ksp("androidx.room:room-compiler:2.5.0")
+    implementation("androidx.room:room-ktx:2.5.0")
+    testImplementation("androidx.room:room-testing:2.5.0")
+    implementation("androidx.room:room-paging:2.5.0")
 
-    api("com.squareup.moshi:moshi-kotlin:1.13.0")
-    ksp("com.squareup.moshi:moshi-kotlin-codegen:1.13.0")
+    api("com.squareup.moshi:moshi-kotlin:1.14.0")
+    ksp("com.squareup.moshi:moshi-kotlin-codegen:1.14.0")
 
     testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.1.4")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.0")
+    androidTestImplementation("androidx.test.ext:junit:1.1.5")
 }

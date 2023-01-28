@@ -8,7 +8,6 @@ import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.ArtistColumnEntry
 import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.ArtistRepository
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emitAll
-import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
@@ -29,15 +28,11 @@ class VgmdbAutocompleter(
         if (either is Either.Right) {
             val placeholder = vgmdbDataConverter.artistPlaceholder(either.value)
             val artistId = either.value.id
-            if (artistId == null) {
-                flowOf(placeholder)
-            } else {
-                artistRepository.getEntry(artistId)
-                    .filterNotNull()
-                    .map { vgmdbDataConverter.artistEntry(it, manualChoice = true) }
-                    .filterNotNull()
-                    .startWith(placeholder)
-            }
+            artistRepository.getEntry(artistId)
+                .filterNotNull()
+                .map { vgmdbDataConverter.artistEntry(it, manualChoice = true) }
+                .filterNotNull()
+                .startWith(placeholder)
         } else {
             flowOf(Entry.Custom(it))
         }
@@ -54,11 +49,7 @@ class VgmdbAutocompleter(
     }
 
     @WorkerThread
-    suspend fun fillArtistField(artist: ArtistColumnEntry) = if (artist.id == null) {
-        emptyFlow()
-    } else {
-        artistRepository.getEntry(artist.id)
-            .filterNotNull()
-            .map { vgmdbDataConverter.artistEntry(it, artist.manuallyChosen) }
-    }
+    suspend fun fillArtistField(artist: ArtistColumnEntry) = artistRepository.getEntry(artist.id)
+        .filterNotNull()
+        .map { vgmdbDataConverter.artistEntry(it, artist.manuallyChosen) }
 }

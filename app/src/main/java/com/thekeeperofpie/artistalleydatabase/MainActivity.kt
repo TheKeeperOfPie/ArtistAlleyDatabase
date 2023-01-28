@@ -33,7 +33,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.whenResumed
+import androidx.lifecycle.withResumed
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
@@ -445,6 +445,7 @@ class MainActivity : ComponentActivity() {
         )
     }
 
+    @Suppress("unused")
     private fun NavGraphBuilder.addEditScreen(navController: NavHostController) {
         composable(
             NavDestinations.MULTI_EDIT +
@@ -495,15 +496,17 @@ class MainActivity : ComponentActivity() {
         lazyStaggeredGridState: LazyStaggeredGrid.LazyStaggeredGridState
     ) {
         viewModel.viewModelScope.launch(Dispatchers.Main) {
-            it.whenResumed {
-                val firstListState = lazyStaggeredGridState.lazyListStates.firstOrNull()
-                val scrollToTop = firstListState != null
-                        && firstListState.firstVisibleItemIndex == 0
-                        && firstListState.firstVisibleItemScrollOffset == 0
-                viewModel.invalidate()
-                if (scrollToTop) {
-                    delay(500)
-                    lazyStaggeredGridState.scrollToTop()
+            it.withResumed {
+                viewModel.viewModelScope.launch(Dispatchers.Main) {
+                    val firstListState = lazyStaggeredGridState.lazyListStates.firstOrNull()
+                    val scrollToTop = firstListState != null
+                            && firstListState.firstVisibleItemIndex == 0
+                            && firstListState.firstVisibleItemScrollOffset == 0
+                    viewModel.invalidate()
+                    if (scrollToTop) {
+                        delay(500)
+                        lazyStaggeredGridState.scrollToTop()
+                    }
                 }
             }
         }

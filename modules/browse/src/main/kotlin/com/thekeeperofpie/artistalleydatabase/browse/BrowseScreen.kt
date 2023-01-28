@@ -57,7 +57,7 @@ object BrowseScreen {
         Scaffold(
             topBar = {
                 Column {
-                    val colors = TopAppBarDefaults.smallTopAppBarColors()
+                    val colors = TopAppBarDefaults.topAppBarColors()
                     AppBar(
                         text = stringResource(R.string.browse),
                         colors = colors,

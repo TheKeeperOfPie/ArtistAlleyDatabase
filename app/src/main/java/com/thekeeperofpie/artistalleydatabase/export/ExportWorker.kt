@@ -48,6 +48,7 @@ class ExportWorker @AssistedInject constructor(
             ?: return Result.failure()
 
         // Immediately open the output URI to get permissions for it
+        // noinspection Recycle Lint check doesn't handle closeQuietly
         appContext.contentResolver.openOutputStream(outputUri)
             ?.closeQuietly()
             ?: return Result.failure()
@@ -97,7 +98,7 @@ class ExportWorker @AssistedInject constructor(
                                             input.use { it.copyTo(zip) }
                                             zip.closeEntry()
                                         }
-                                    ) { progress, max ->
+                                    ) { progress, _ ->
                                         setProgress(
                                             startingProgressIndex + progress,
                                             entriesSizeMax
