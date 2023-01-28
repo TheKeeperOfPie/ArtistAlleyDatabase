@@ -17,6 +17,7 @@ dependencyResolutionManagement {
         maven("https://androidx.dev/storage/compose-compiler/repository/")
         google()
         mavenCentral()
+        flatDir { dirs = setOf(rootProject.projectDir.resolve("libs")) }
     }
 }
 rootProject.name = "Artist Alley Database"

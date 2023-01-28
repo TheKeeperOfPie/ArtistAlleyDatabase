@@ -58,7 +58,8 @@ dependencies {
 
     implementation("io.coil-kt:coil-compose:2.2.0")
 
-    implementation("com.mxalbert.sharedelements:shared-elements:0.1.0-SNAPSHOT")
+//    implementation("com.mxalbert.sharedelements:shared-elements:0.1.0-SNAPSHOT")
+    implementation(group = "", name = "shared-elements-0.1.0-20221204.093513-11", ext = "aar")
 
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.4")

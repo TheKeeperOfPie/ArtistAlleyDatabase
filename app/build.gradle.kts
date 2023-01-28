@@ -182,7 +182,8 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-tooling:1.4.0-alpha02")
     debugRuntimeOnly("androidx.compose.ui:ui-test-manifest:1.4.0-alpha02")
 
-    implementation("com.mxalbert.sharedelements:shared-elements:0.1.0-SNAPSHOT")
+//    implementation("com.mxalbert.sharedelements:shared-elements:0.1.0-SNAPSHOT")
+    implementation(group = "", name = "shared-elements-0.1.0-20221204.093513-11", ext = "aar")
 
     implementation("androidx.work:work-runtime:2.7.1")
     implementation("androidx.work:work-runtime-ktx:2.7.1")
