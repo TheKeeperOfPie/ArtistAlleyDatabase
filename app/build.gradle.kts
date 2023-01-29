@@ -5,7 +5,6 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("dagger.hilt.android.plugin")
     id("kotlin-kapt")
-    id("com.github.jk1.dependency-license-report") version "2.1"
     id("com.google.devtools.ksp") version "1.8.0-1.0.9"
     kotlin("plugin.serialization") version "1.8.0"
 }

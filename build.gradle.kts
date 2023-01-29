@@ -1,19 +1,26 @@
 import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
-
-buildscript {
-    dependencies {
-        classpath("com.google.dagger:hilt-android-gradle-plugin:2.44.2")
-        classpath("de.mannodermaus.gradle.plugins:android-junit5:1.8.2.1")
-    }
-}
+import com.github.jk1.license.filter.DependencyFilter
+import com.github.jk1.license.filter.LicenseBundleNormalizer
+import com.github.jk1.license.render.InventoryHtmlReportRenderer
+import com.github.jk1.license.render.ReportRenderer
 
 plugins {
     id("com.android.application") version "8.1.0-alpha02" apply false
     id("com.android.library") version "8.1.0-alpha02" apply false
     id("org.jetbrains.kotlin.android") version "1.8.0" apply false
     id("org.jetbrains.kotlin.jvm") version "1.8.0" apply false
+    id("com.google.dagger.hilt.android") version "2.44.2" apply false
+    id("de.mannodermaus.android-junit5") version "1.8.2.1" apply false
     id("com.autonomousapps.dependency-analysis") version "1.18.0"
     id("com.github.ben-manes.versions") version "0.44.0"
+    id("com.github.jk1.dependency-license-report") version "2.1"
+}
+
+licenseReport {
+    renderers = arrayOf<ReportRenderer>(
+        InventoryHtmlReportRenderer("report.html", "Backend")
+    )
+    filters = arrayOf<DependencyFilter>(LicenseBundleNormalizer())
 }
 
 tasks.named<DependencyUpdatesTask>("dependencyUpdates").configure {
