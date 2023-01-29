@@ -57,6 +57,7 @@ import com.mxalbert.sharedelements.FadeMode
 import com.mxalbert.sharedelements.ProgressThresholds
 import com.mxalbert.sharedelements.SharedElement
 import com.mxalbert.sharedelements.SharedElementsTransitionSpec
+import com.thekeeperofpie.artistalleydatabase.android_utils.AnimationUtils
 import com.thekeeperofpie.artistalleydatabase.compose.AddBackPressTransitionStage
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
 import com.thekeeperofpie.artistalleydatabase.compose.pullRefresh
@@ -103,14 +104,15 @@ object EntryDetailsScreen {
                 onRefresh = { backPressedDispatcher?.onBackPressed() }
             )
 
+            val context = LocalContext.current
             val alphaAnimation = remember { Animatable(1f) }
             AddBackPressTransitionStage(terminal = true) {
                 it.launch {
-                    delay(100)
+                    delay(AnimationUtils.multipliedByAnimatorScale(context, 150L))
                     remove()
                     backPressedDispatcher?.onBackPressed()
                 }
-                alphaAnimation.animateTo(0f, tween(250))
+                alphaAnimation.animateTo(0f, tween(200))
             }
 
             val offsetY = LocalDensity.current.run { pullRefreshState.position.toDp() }

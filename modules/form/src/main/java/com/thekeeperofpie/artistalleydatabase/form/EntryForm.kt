@@ -103,7 +103,6 @@ import androidx.compose.ui.window.PopupProperties
 import androidx.core.net.toUri
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.thekeeperofpie.artistalleydatabase.android_utils.AnimationUtils
 import com.thekeeperofpie.artistalleydatabase.compose.AddBackPressTransitionStage
 import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIcon
 import com.thekeeperofpie.artistalleydatabase.compose.bottomBorder
@@ -891,14 +890,6 @@ private fun ImageSelectBoxInner(
     loading: () -> Boolean = { false },
     content: @Composable BoxScope.() -> Unit,
 ) {
-    val context = LocalContext.current
-
-    // Compose animation spec delay doesn't seem to account for animator scale,
-    // necessary to ensure height animation doesn't overlap shared element transition
-    val slideDelayMs by rememberSaveable {
-        mutableStateOf(AnimationUtils.multipliedByAnimatorScale(context, 400L))
-    }
-
     var previouslyRunHeight by rememberSaveable { mutableStateOf(false) }
     var maxHeight by remember { mutableStateOf(0) }
     var lastMaxHeight by remember { mutableStateOf(-1) }
@@ -911,22 +902,11 @@ private fun ImageSelectBoxInner(
 
     AddBackPressTransitionStage { heightAnimation.animateTo(1f, tween(250)) }
 
-    LaunchedEffect(maxHeight) {
-        if (maxHeight == 0 || finalMaxHeight > maxHeight) return@LaunchedEffect
-        delay(slideDelayMs)
-        heightAnimation.animateTo(
-            0f,
-            animationSpec = tween(
-                durationMillis = SLIDE_DURATION_MS,
-            ),
-        )
-    }
-
     // If the image ratio changes, reset maxHeight so it shrinks/grows properly
     @Suppress("NAME_SHADOWING") val imageRatio = imageRatio()
     var lastImageRatio by rememberSaveable { mutableStateOf(imageRatio) }
     LaunchedEffect(imageRatio) {
-        if (imageRatio != lastImageRatio) {
+        if ((imageRatio - lastImageRatio).absoluteValue > 0.01f) {
             lastImageRatio = imageRatio
             lastMaxHeight = maxHeight
             maxHeight = 0
@@ -984,6 +964,8 @@ private fun ImageSelectBoxInner(
             var expanded by remember { mutableStateOf(false) }
             LaunchedEffect(expanded) {
                 if (maxHeight == 0) return@LaunchedEffect
+                // This call will also implicitly kick the initial slide up
+                // due to maxHeight causing a recompose and running this effect
                 heightAnimation.animateTo(
                     if (expanded) 1f else 0f,
                     animationSpec = tween(SLIDE_DURATION_MS),
