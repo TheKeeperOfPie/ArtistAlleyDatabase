@@ -37,7 +37,11 @@ object CdBrowseSelectionScreen {
         Scaffold(
             topBar = { AppBar(text = title()) },
             snackbarHost = {
-                SnackbarErrorText(errorRes()?.first, onErrorDismiss = onErrorDismiss)
+                SnackbarErrorText(
+                    errorRes()?.first,
+                    errorRes()?.second,
+                    onErrorDismiss = onErrorDismiss
+                )
             },
         ) { paddingValues ->
             Box {

@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.art
 
-import android.app.Application
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
@@ -9,21 +8,18 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
-import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.art.browse.selection.ArtBrowseSelectionScreen
 import com.thekeeperofpie.artistalleydatabase.art.browse.selection.ArtBrowseSelectionViewModel
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryColumn
-import com.thekeeperofpie.artistalleydatabase.art.utils.ArtEntryUtils
+import com.thekeeperofpie.artistalleydatabase.art.grid.ArtEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseEntryModel
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseSelectionNavigator
 import com.thekeeperofpie.artistalleydatabase.form.EntryDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.form.EntryNavigator
-import com.thekeeperofpie.artistalleydatabase.form.EntryUtils
 import com.thekeeperofpie.artistalleydatabase.form.EntryUtils.entryDetailsComposable
+import com.thekeeperofpie.artistalleydatabase.form.EntryUtils.navToEntryDetails
 
-class ArtEntryNavigator(
-    private val application: Application,
-) : EntryNavigator, BrowseSelectionNavigator {
+class ArtEntryNavigator : EntryNavigator, BrowseSelectionNavigator {
 
     override fun initialize(
         navHostController: NavHostController,
@@ -74,39 +70,30 @@ class ArtEntryNavigator(
                     if (viewModel.selectedEntries.isNotEmpty()) {
                         viewModel.selectEntry(index, entry)
                     } else {
-                        val imageRatio = entry.imageWidthToHeightRatio
-                        navHostController.navigate(
-                            "artEntryDetails"
-                                    + "?entry_id=${entry.id}"
-                                    + "&entry_image_ratio=$imageRatio"
-                        )
+                        navHostController.navToEntryDetails("artEntryDetails", listOf(entry.id))
                     }
                 },
                 onLongClickEntry = viewModel::selectEntry,
                 onClickClear = viewModel::clearSelected,
-//                onClickEdit = { editSelected(navController, viewModel.selectedEntries) },
+                onClickEdit = {
+                    navHostController.navToEntryDetails(
+                        "artEntryDetails",
+                        viewModel.selectedEntries.values.map(ArtEntryGridModel::id)
+                    )
+                },
                 onConfirmDelete = viewModel::onDeleteSelected,
             )
         }
 
-        navGraphBuilder.entryDetailsComposable(route = "artEntryDetails") { id, imageRatio ->
-            val viewModel = hiltViewModel<ArtEntryEditViewModel>().initialize(id, imageRatio)
+        navGraphBuilder.entryDetailsComposable(route = "artEntryDetails") { entryIds ->
+            val viewModel = hiltViewModel<ArtEntryDetailsViewModel>()
+                .apply { initialize(entryIds) }
             EntryDetailsScreen(
-                { id },
-                { viewModel.imageWidthToHeightRatio },
-                imageUri = { viewModel.imageUri },
-                onImageSelected = { if (it != null) viewModel.imageUri = it },
-                onImageSelectError = {
-                    viewModel.errorResource = UtilsStringR.error_fail_to_load_image to it
-                },
-                onImageSizeResult = { width, height ->
-                    viewModel.onImageSizeResult(height / width.toFloat())
-                },
+                { viewModel.entryImageController.imageState },
                 onImageClickOpen = {
-                    ArtEntryUtils.getImageFile(application, id).takeIf { it.exists() }
-                        ?.let { EntryUtils.openInternalImage(navHostController, it) }
+                    viewModel.entryImageController.onImageClickOpen(navHostController, it)
                 },
-                areSectionsLoading = { viewModel.areSectionsLoading },
+                areSectionsLoading = { viewModel.sectionsLoading },
                 sections = { viewModel.sections },
                 saving = { viewModel.saving },
                 onClickSave = { viewModel.onClickSave(navHostController) },
@@ -114,7 +101,7 @@ class ArtEntryNavigator(
                 errorRes = { viewModel.errorResource },
                 onErrorDismiss = { viewModel.errorResource = null },
                 onConfirmDelete = { viewModel.onConfirmDelete(navHostController) },
-                cropState = viewModel.cropState,
+                cropState = viewModel.entryImageController.cropState,
             )
         }
     }

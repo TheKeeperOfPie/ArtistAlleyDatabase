@@ -7,5 +7,6 @@ interface EntryGridModel {
     val imageUri: Uri?
     val placeholderText: String
     val imageWidth: Int?
+    val imageHeight: Int?
     val imageWidthToHeightRatio: Float
 }

@@ -4,7 +4,6 @@ import com.thekeeperofpie.artistalleydatabase.art.search.ArtEntryAdvancedSearchD
 
 interface ArtEntryDatabase {
     fun artEntryDao(): ArtEntryDao
-    fun artEntryEditDao(): ArtEntryEditDao
     fun artEntryDetailsDao(): ArtEntryDetailsDao
     fun artEntryBrowseDao(): ArtEntryBrowseDao
     fun artEntrySyncDao(): ArtEntrySyncDao

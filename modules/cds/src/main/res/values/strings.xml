@@ -31,4 +31,5 @@
     <string name="cd_entry_track_duration_label">Duration</string>
     <string name="cd_entry_track_duration_placeholder">00:39</string>
     <string name="cd_browse_tab_musical_artists">Musical Artists</string>
+    <string name="cd_entry_image_content_description">CD entry image</string>
 </resources>

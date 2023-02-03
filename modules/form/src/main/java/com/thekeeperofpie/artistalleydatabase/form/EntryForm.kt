@@ -6,7 +6,6 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Environment
 import android.provider.DocumentsContract
-import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
@@ -38,6 +37,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -45,6 +45,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PagerState
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.rememberScrollState
@@ -53,6 +56,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ImageSearch
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.LockOpen
 import androidx.compose.material.icons.filled.LockReset
@@ -90,14 +94,13 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.PopupProperties
 import androidx.core.net.toUri
@@ -110,7 +113,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.dropdown.DropdownMenu
 import com.thekeeperofpie.artistalleydatabase.compose.dropdown.DropdownMenuItem
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlin.math.absoluteValue
+import kotlin.math.roundToInt
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
@@ -788,49 +791,34 @@ private fun CustomSection(section: EntrySection.Custom<*>) {
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun ImagesSelectBox(
-    imageRatio: () -> Float,
-    onImagesSelected: (List<Uri>) -> Unit,
-    onImageSelectError: (Exception?) -> Unit,
-    loading: () -> Boolean = { false },
-    content: @Composable BoxScope.() -> Unit,
+fun MultiImageSelectBox(
+    pagerState: PagerState = rememberPagerState(),
+    imageState: () -> ImageState,
+    cropState: () -> CropUtils.CropState,
+    loading: () -> Boolean,
+    imageContent: @Composable (image: EntryImage) -> Unit,
 ) {
-    val imageSelectLauncher = rememberLauncherForActivityResult(
+    val imageSelectMultipleLauncher = rememberLauncherForActivityResult(
         GetMultipleContentsChooser,
-        onImagesSelected
+        imageState().onMultipleSelected,
     )
+    val imageSelectSingleLauncher = rememberLauncherForActivityResult(
+        imageState().imageContentWithIndexChooser,
+    ) { (index, uri) -> imageState().onSelected(index, uri) }
 
-    ImageSelectBoxInner(
-        imageRatio = imageRatio,
-        imageSelectLauncher = imageSelectLauncher,
-        imageCropLauncher = null,
-        onImageSelectError = onImageSelectError,
-        cropState = null,
-        loading = loading,
-        content = content,
-    )
-}
-
-@Composable
-fun ImageSelectBox(
-    imageRatio: () -> Float,
-    onImageSelected: (Uri?) -> Unit,
-    onImageSelectError: (Exception?) -> Unit,
-    cropState: CropUtils.CropState? = null,
-    loading: () -> Boolean = { false },
-    content: @Composable BoxScope.() -> Unit,
-) {
-    val imageSelectLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.GetContent(),
-        onImageSelected
-    )
-
-    val imageCropDocumentLauncher = if (cropState?.imageCropNeedsDocument?.invoke() == true) {
+    val imageCropDocumentLauncher = if (cropState().imageCropNeedsDocument()) {
         rememberLauncherForActivityResult(
-            object : ActivityResultContracts.CreateDocument("image/png") {
-                override fun createIntent(context: Context, input: String): Intent {
-                    return super.createIntent(context, input)
+            object : ActivityResultContract<Int, Pair<Int, Uri?>>() {
+                private var chosenIndex = 0
+
+                @CallSuper
+                override fun createIntent(context: Context, input: Int): Intent {
+                    chosenIndex = input
+                    return Intent(Intent.ACTION_CREATE_DOCUMENT)
+                        .setType("image/png")
+                        .putExtra(Intent.EXTRA_TITLE, CropUtils.CROP_IMAGE_FILE_NAME)
                         .putExtra(
                             DocumentsContract.EXTRA_INITIAL_URI,
                             Environment.getExternalStoragePublicDirectory(
@@ -838,139 +826,165 @@ fun ImageSelectBox(
                             ).toUri()
                         )
                 }
-            },
-            cropState.onImageCropDocumentChosen
-        )
+
+                override fun parseResult(resultCode: Int, intent: Intent?): Pair<Int, Uri?> {
+                    return chosenIndex to intent.takeIf { resultCode == Activity.RESULT_OK }?.data
+                }
+            }
+        ) { (index, uri) -> cropState().onImageCropDocumentChosen(index, uri) }
     } else null
 
     val imageCropLauncher = rememberLauncherForActivityResult(
-        object : ActivityResultContract<Unit, Boolean>() {
-            override fun createIntent(context: Context, input: Unit) = CropUtils.cropIntent()
+        object : ActivityResultContract<Int, Int?>() {
+            private var chosenIndex = 0
+
+            override fun createIntent(context: Context, input: Int): Intent {
+                chosenIndex = input
+                return CropUtils.cropIntent()
+            }
 
             override fun parseResult(resultCode: Int, intent: Intent?) =
-                resultCode == Activity.RESULT_OK
+                chosenIndex.takeIf { resultCode == Activity.RESULT_OK }
         }
-    ) { cropState?.onCropFinished?.invoke(it) }
+    ) { cropState().onCropFinished(it) }
 
-    ImageSelectBoxInner(
-        imageRatio = imageRatio,
-        imageSelectLauncher = imageSelectLauncher,
-        imageCropLauncher = imageCropLauncher,
-        onImageSelectError = onImageSelectError,
-        cropState = cropState,
-        loading = loading,
-        content = content,
-    )
-
-    val cropDocumentRequested = cropState?.cropDocumentRequested?.invoke() == true
-    LaunchedEffect(cropDocumentRequested) {
-        if (cropDocumentRequested) {
-            imageCropDocumentLauncher?.launch(CropUtils.CROP_IMAGE_FILE_NAME)
+    val cropDocumentRequestedIndex = cropState().cropDocumentRequestedIndex()
+    LaunchedEffect(cropDocumentRequestedIndex) {
+        if (cropDocumentRequestedIndex != -1) {
+            imageCropDocumentLauncher?.launch(cropDocumentRequestedIndex)
         }
     }
 
-    val cropReady = cropState?.cropReady?.invoke() == true
-    LaunchedEffect(cropReady) {
-        if (cropReady) {
-            imageCropLauncher.launch(Unit)
+    val cropReadyIndex = cropState().cropReadyIndex()
+    LaunchedEffect(cropReadyIndex) {
+        if (cropReadyIndex != -1) {
+            imageCropLauncher.launch(cropReadyIndex)
         }
+    }
+
+    ImageSelectBoxInner(
+        imageState = imageState,
+        loading = loading,
+    ) {
+        val images = imageState().images()
+        val addAllowed = imageState().addAllowed()
+        val size = if (addAllowed) images.size + 1 else images.size
+        HorizontalPager(
+            pageCount = size,
+            state = pagerState,
+            modifier = Modifier.heightIn(max = 10000.dp)
+        ) { index ->
+            if (index == images.size) {
+                AddImagePagerPage {
+                    imageSelectMultipleLauncher.launch("image/*")
+                }
+            } else {
+                val image = images[index]
+                val uri = image.croppedUri ?: image.uri
+                if (uri == null) {
+                    // TODO: Null image placeholder
+                } else {
+                    Box(
+                        Modifier
+                            .wrapContentHeight()
+                            .verticalScroll(rememberScrollState())
+                            .combinedClickable(onClick = {
+                                try {
+                                    imageSelectSingleLauncher.launch(index)
+                                } catch (e: Exception) {
+                                    imageState().onSelectError(e)
+                                }
+                            }, onLongClick = {
+                                @Suppress("NAME_SHADOWING")
+                                val cropState = cropState()
+                                if (cropState.cropReadyIndex() == index) {
+                                    imageCropLauncher.launch(index)
+                                } else {
+                                    cropState.onImageRequestCrop(index)
+                                }
+                            })
+                    ) {
+                        imageContent(image)
+                    }
+                }
+            }
+        }
+
+        // TODO: Pager indicator? Might need to migrate back to Accompanist
+    }
+}
+
+@Composable
+private fun AddImagePagerPage(onAddClick: () -> Unit) {
+    Box(
+        Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .clickable(onClick = onAddClick)
+            .background(MaterialTheme.colorScheme.surfaceVariant)
+            .padding(top = 180.dp)
+    ) {
+        Icon(
+            imageVector = Icons.Default.ImageSearch,
+            contentDescription = stringResource(
+                R.string.entry_add_image_content_description
+            ),
+            Modifier
+                .size(48.dp)
+                .align(Alignment.TopCenter)
+        )
     }
 }
 
 private const val SLIDE_DURATION_MS = 350
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun ImageSelectBoxInner(
-    imageRatio: () -> Float,
-    imageSelectLauncher: ManagedActivityResultLauncher<String, *>,
-    imageCropLauncher: ManagedActivityResultLauncher<Unit, *>?,
-    onImageSelectError: (Exception?) -> Unit,
-    cropState: CropUtils.CropState? = null,
+fun ImageSelectBoxInner(
+    imageState: () -> ImageState,
     loading: () -> Boolean = { false },
     content: @Composable BoxScope.() -> Unit,
 ) {
-    var previouslyRunHeight by rememberSaveable { mutableStateOf(false) }
-    var maxHeight by remember { mutableStateOf(0) }
-    var lastMaxHeight by remember { mutableStateOf(-1) }
-    val finalMaxHeight = LocalDensity.current.run { 400.dp.roundToPx() }
-    val heightAnimation = remember {
-        // If maxHeight was already calculated (this composition
-        // is a result of an orientation change), skip the animation
-        Animatable(if (previouslyRunHeight) 0f else 1f)
-    }
-
-    AddBackPressTransitionStage { heightAnimation.animateTo(1f, tween(250)) }
-
     // If the image ratio changes, reset maxHeight so it shrinks/grows properly
-    @Suppress("NAME_SHADOWING") val imageRatio = imageRatio()
-    var lastImageRatio by rememberSaveable { mutableStateOf(imageRatio) }
-    LaunchedEffect(imageRatio) {
-        if ((imageRatio - lastImageRatio).absoluteValue > 0.01f) {
-            lastImageRatio = imageRatio
-            lastMaxHeight = maxHeight
-            maxHeight = 0
-        }
+    val imageRatio = imageState().images().firstOrNull()?.widthToHeightRatio ?: 1f
+    val screenWidthPx = LocalDensity.current.run {
+        LocalConfiguration.current.screenWidthDp.dp.roundToPx()
     }
+    val startingHeight = (screenWidthPx * imageRatio).roundToInt()
+    val targetHeight = LocalDensity.current.run { 400.dp.roundToPx() }.coerceAtMost(startingHeight)
+    val heightAnimation = remember { Animatable(1f) }
+
+    AddBackPressTransitionStage { heightAnimation.animateTo(1f, tween(2500)) }
 
     Box {
         Box(
             Modifier
-                .wrapContentHeight()
                 .let {
-                    if (maxHeight > 0) {
-                        val animatedHeight =
-                            if (maxHeight < finalMaxHeight) maxHeight.toFloat() else
-                                ((maxHeight - finalMaxHeight) * heightAnimation.value + finalMaxHeight)
-                        it.height(LocalDensity.current.run { animatedHeight.toDp() })
-                    } else {
-                        it.heightIn(Dp.Unspecified, 10000.dp)
-                    }
+                    val animatedHeight =
+                        (startingHeight - targetHeight) * heightAnimation.value + targetHeight
+                    it.height(LocalDensity.current.run { animatedHeight.toDp() })
                 }
                 .verticalScroll(rememberScrollState())
                 .animateContentSize()
-                .onGloballyPositioned {
-                    // Use a difference of 3 to determine when the height has been recalculated
-                    if (maxHeight == 0 && (lastMaxHeight - it.size.height).absoluteValue > 3) {
-                        maxHeight = it.size.height
-                        previouslyRunHeight = true
-                    }
-                }
-                .combinedClickable(onClick = {
-                    try {
-                        imageSelectLauncher.launch("image/*")
-                    } catch (e: Exception) {
-                        onImageSelectError(e)
-                    }
-                }, onLongClick = {
-                    if (cropState != null) {
-                        if (cropState.cropReady()) {
-                            imageCropLauncher?.launch(Unit)
-                        } else {
-                            cropState.onImageRequestCrop()
-                        }
-                    }
-                })
         ) {
             content()
         }
 
+        var expanded by remember { mutableStateOf(false) }
+        LaunchedEffect(expanded, loading()) {
+            // This call will also implicitly kick the initial slide up
+            // due to maxHeight causing a recompose and running this effect
+            heightAnimation.animateTo(
+                if (expanded || loading()) 1f else 0f,
+                animationSpec = tween(SLIDE_DURATION_MS),
+            )
+        }
+
         AnimatedVisibility(
-            visible = maxHeight > finalMaxHeight && !loading(),
+            visible = startingHeight > (targetHeight + 10f) && !loading(),
             enter = fadeIn(animationSpec = tween(durationMillis = 200, delayMillis = 150)),
             exit = fadeOut(),
             modifier = Modifier.align(Alignment.BottomCenter)
         ) {
-            var expanded by remember { mutableStateOf(false) }
-            LaunchedEffect(expanded) {
-                if (maxHeight == 0) return@LaunchedEffect
-                // This call will also implicitly kick the initial slide up
-                // due to maxHeight causing a recompose and running this effect
-                heightAnimation.animateTo(
-                    if (expanded) 1f else 0f,
-                    animationSpec = tween(SLIDE_DURATION_MS),
-                )
-            }
             TrailingDropdownIcon(
                 expanded = expanded,
                 contentDescription = R.string.entry_image_expand_content_description,
@@ -981,9 +995,37 @@ private fun ImageSelectBoxInner(
     }
 }
 
+data class ImageState(
+    val images: () -> List<EntryImage> = { emptyList() },
+    val onSelected: (index: Int, Uri?) -> Unit = { _, _ -> },
+    val onSelectError: (Exception?) -> Unit,
+    val addAllowed: () -> Boolean = { false },
+    val onMultipleSelected: (List<Uri>) -> Unit,
+    val onSizeResult: (width: Int, height: Int) -> Unit = { _, _ -> },
+) {
+    val imageContentWithIndexChooser: ActivityResultContract<Int, Pair<Int, Uri?>> =
+        GetImageContentWithIndexChooser()
+}
+
 private object GetMultipleContentsChooser : ActivityResultContracts.GetMultipleContents() {
     @CallSuper
     override fun createIntent(context: Context, input: String): Intent {
         return Intent.createChooser(super.createIntent(context, input), null)
     }
+}
+
+private class GetImageContentWithIndexChooser : ActivityResultContract<Int, Pair<Int, Uri?>>() {
+    private var chosenIndex = 0
+
+    @CallSuper
+    override fun createIntent(context: Context, input: Int): Intent {
+        chosenIndex = input
+        return Intent.createChooser(
+            Intent(Intent.ACTION_GET_CONTENT).addCategory(Intent.CATEGORY_OPENABLE)
+                .setType("image/*"), null
+        )
+    }
+
+    override fun parseResult(resultCode: Int, intent: Intent?) =
+        chosenIndex to intent.takeIf { resultCode == Activity.RESULT_OK }?.data
 }

@@ -32,4 +32,6 @@
     <string name="entry_image_crop_text">Crop requires a shared read-writable file, located at
         /sdcard/Download/ArtistAlleyDatabaseImageCrop.png. Select this in the following screen.
     </string>
+    <string name="entry_select_image_content_description">Click to select image</string>
+    <string name="entry_add_image_content_description">Click to add image</string>
 </resources>

@@ -10,6 +10,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.AniListJson
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryDatabase
 import com.thekeeperofpie.artistalleydatabase.art.persistence.ArtSettings
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDatabase
+import com.thekeeperofpie.artistalleydatabase.form.EntrySettings
 import com.thekeeperofpie.artistalleydatabase.json.AppMoshi
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistDatabase
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbDatabase
@@ -75,4 +76,7 @@ class AppHiltModule {
 
     @Provides
     fun provideArtSettings(settingsProvider: SettingsProvider) = settingsProvider as ArtSettings
+
+    @Provides
+    fun provideEntrySettings(settingsProvider: SettingsProvider) = settingsProvider as EntrySettings
 }

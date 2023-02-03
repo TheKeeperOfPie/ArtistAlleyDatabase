@@ -78,6 +78,9 @@ interface CdEntryDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertEntries(vararg entries: CdEntry)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertEntries(entries: Collection<CdEntry>)
+
     suspend fun insertEntriesDeferred(
         dryRun: Boolean,
         replaceAll: Boolean,

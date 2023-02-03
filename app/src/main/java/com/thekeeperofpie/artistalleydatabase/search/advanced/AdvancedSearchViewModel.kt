@@ -42,6 +42,7 @@ class AdvancedSearchViewModel @Inject constructor(
     characterRepository,
     aniListAutocompleter,
     settingsProvider,
+    settingsProvider,
 ) {
 
     init {
@@ -101,7 +102,7 @@ class AdvancedSearchViewModel @Inject constructor(
         )
         searchRepository.registerQuery(query)
         viewModelScope.launch(Dispatchers.IO) {
-            makeEntry(null, query.id)?.let(settingsProvider::saveSearchQuery)
+            makeBaseEntry().let(settingsProvider::saveSearchQuery)
         }
         return query.id
     }

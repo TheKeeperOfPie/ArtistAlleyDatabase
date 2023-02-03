@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.form
 
-import android.net.Uri
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
@@ -22,6 +21,7 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -72,13 +72,8 @@ object EntryDetailsScreen {
     @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
     @Composable
     operator fun invoke(
-        entryId: () -> String = { "" },
-        entryImageRatio: () -> Float = { 1f },
-        imageUri: () -> Uri? = { null },
-        onImageSelected: (Uri?) -> Unit = {},
-        onImageSelectError: (Exception?) -> Unit = {},
-        onImageSizeResult: (Int, Int) -> Unit = { _, _ -> },
-        onImageClickOpen: () -> Unit = {},
+        imageState: () -> ImageState,
+        onImageClickOpen: (index: Int) -> Unit = {},
         areSectionsLoading: () -> Boolean = { false },
         sections: () -> List<EntrySection> = { emptyList() },
         saving: () -> Boolean = { false },
@@ -91,12 +86,16 @@ object EntryDetailsScreen {
     ) {
         Scaffold(
             snackbarHost = {
-                SnackbarErrorText(errorRes()?.first, onErrorDismiss = onErrorDismiss)
+                SnackbarErrorText(
+                    errorRes()?.first,
+                    errorRes()?.second,
+                    onErrorDismiss = onErrorDismiss
+                )
             },
             modifier = Modifier.imePadding()
         ) {
             var showDeleteDialog by rememberSaveable { mutableStateOf(false) }
-            var showCropDialog by rememberSaveable { mutableStateOf(false) }
+            var showCropDialogIndex by rememberSaveable { mutableStateOf(-1) }
             val backPressedDispatcher = LocalOnBackPressedDispatcherOwner.current
                 ?.onBackPressedDispatcher
             val pullRefreshState = rememberPullRefreshState(
@@ -131,21 +130,18 @@ object EntryDetailsScreen {
                         .verticalScroll(rememberScrollState())
                 ) {
                     HeaderImage(
-                        entryId = entryId,
-                        entryImageRatio = entryImageRatio,
+                        imageState = imageState,
                         loading = areSectionsLoading,
-                        imageUri = imageUri,
-                        onImageSelected = onImageSelected,
-                        onImageSelectError = onImageSelectError,
-                        onImageSizeResult = onImageSizeResult,
                         onImageClickOpen = onImageClickOpen,
-                        cropState = cropState.copy(onImageRequestCrop = {
-                            if (cropState.imageCropNeedsDocument()) {
-                                showCropDialog = true
-                            } else {
-                                cropState.onImageRequestCrop()
-                            }
-                        }),
+                        cropState = {
+                            cropState.copy(onImageRequestCrop = { index ->
+                                if (cropState.imageCropNeedsDocument()) {
+                                    showCropDialogIndex = index
+                                } else {
+                                    cropState.onImageRequestCrop(index)
+                                }
+                            })
+                        },
                     )
 
                     AnimatedVisibility(
@@ -216,48 +212,37 @@ object EntryDetailsScreen {
                     { showDeleteDialog = false },
                     onConfirmDelete
                 )
-            } else if (showCropDialog) {
+            } else if (showCropDialogIndex != -1) {
                 CropUtils.InstructionsDialog(
-                    onDismiss = { showCropDialog = false },
-                    onConfirm = cropState.onCropConfirmed,
+                    onDismiss = { showCropDialogIndex = -1 },
+                    onConfirm = { cropState.onCropConfirmed(showCropDialogIndex) },
                 )
             }
         }
     }
 
+    @OptIn(ExperimentalFoundationApi::class)
     @Composable
     private fun HeaderImage(
-        entryId: () -> String,
-        entryImageRatio: () -> Float,
+        imageState: () -> ImageState,
         loading: () -> Boolean = { false },
-        imageUri: () -> Uri?,
-        onImageSelected: (Uri?) -> Unit,
-        onImageSelectError: (Exception?) -> Unit,
-        onImageSizeResult: (Int, Int) -> Unit = { _, _ -> },
-        onImageClickOpen: () -> Unit,
-        cropState: CropUtils.CropState,
+        onImageClickOpen: (index: Int) -> Unit = {},
+        cropState: () -> CropUtils.CropState,
     ) {
         Box {
             val alphaAnimation = remember { Animatable(1f) }
             AddBackPressTransitionStage { alphaAnimation.animateTo(0f, tween(250)) }
-
-            @Suppress("NAME_SHADOWING")
-            val imageUri = imageUri()
-            ImageSelectBox(
-                imageRatio = entryImageRatio,
-                onImageSelected = onImageSelected,
-                onImageSelectError = onImageSelectError,
+            val pagerState = rememberPagerState()
+            MultiImageSelectBox(
+                pagerState = pagerState,
+                imageState = imageState,
                 cropState = cropState,
-                loading = loading
+                loading = loading,
             ) {
-                if (imageUri != null) {
-                    @Suppress("NAME_SHADOWING")
-                    val entryImageRatio = entryImageRatio()
-
-                    @Suppress("NAME_SHADOWING")
-                    val entryId = entryId()
+                val uri = it.croppedUri ?: it.uri
+                if (uri != null) {
                     SharedElement(
-                        key = "${entryId}_image",
+                        key = "${it.entryId}_image",
                         screenKey = "artEntryDetails",
                         // Try to disable the fade animation
                         transitionSpec = SharedElementsTransitionSpec(
@@ -267,14 +252,16 @@ object EntryDetailsScreen {
                     ) {
                         val configuration = LocalConfiguration.current
                         val screenWidth = configuration.screenWidthDp.dp
-                        val minimumHeight = screenWidth * entryImageRatio
+                        val minimumHeight = screenWidth * (it.height / it.width)
                         AsyncImage(
                             ImageRequest.Builder(LocalContext.current)
-                                .data(imageUri)
+                                .data(uri)
                                 .crossfade(false)
-                                .placeholderMemoryCacheKey("coil_memory_entry_image_home_$entryId")
+                                .placeholderMemoryCacheKey(
+                                    "coil_memory_entry_image_home_${it.entryId}"
+                                )
                                 .listener { _, result ->
-                                    onImageSizeResult(
+                                    imageState().onSizeResult(
                                         result.drawable.intrinsicWidth,
                                         result.drawable.intrinsicHeight,
                                     )
@@ -309,7 +296,7 @@ object EntryDetailsScreen {
             }
 
             AnimatedVisibility(
-                visible = !loading() && imageUri != null,
+                visible = !loading() && imageState().images().isNotEmpty(),
                 enter = fadeIn(),
                 exit = fadeOut(),
                 modifier = Modifier
@@ -317,7 +304,7 @@ object EntryDetailsScreen {
                     .align(Alignment.BottomEnd)
             ) {
                 FloatingActionButton(
-                    onClick = onImageClickOpen,
+                    onClick = { onImageClickOpen(pagerState.currentPage) },
                     modifier = Modifier
                         .padding(16.dp)
                 ) {

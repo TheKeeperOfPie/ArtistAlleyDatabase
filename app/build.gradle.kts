@@ -176,8 +176,6 @@ dependencies {
     testImplementation("androidx.room:room-testing:2.5.0")
     implementation("androidx.room:room-paging:2.5.0")
 
-    implementation("io.coil-kt:coil-compose:2.2.1")
-
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     debugImplementation("androidx.compose.ui:ui-tooling:1.4.0-alpha05")
@@ -191,8 +189,4 @@ dependencies {
 
     implementation("com.squareup.moshi:moshi-kotlin:1.14.0")
     ksp("com.squareup.moshi:moshi-kotlin-codegen:1.14.0")
-
-    implementation("com.google.accompanist:accompanist-pager:0.29.0-alpha")
-    // TODO: Re-add official pager-indicator library once it migrates to material3
-    // implementation("com.google.accompanist:accompanist-pager-indicators:0.24.13-rc")
 }

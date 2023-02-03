@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.compose
 
+import android.util.Log
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDropDown
@@ -109,14 +111,20 @@ fun ButtonFooter(vararg pairs: Pair<Int, () -> Unit>) {
 }
 
 @Composable
-fun SnackbarErrorText(@StringRes errorRes: Int?, onErrorDismiss: () -> Unit) {
+fun SnackbarErrorText(
+    @StringRes errorRes: Int?,
+    exception: Exception?,
+    onErrorDismiss: () -> Unit
+) {
     if (errorRes != null) {
         val dismissState = rememberDismissState(errorRes, onErrorDismiss)
         SwipeToDismiss(state = dismissState, background = {
             Surface(
                 color = MaterialTheme.colorScheme.background,
                 contentColor = contentColorFor(MaterialTheme.colorScheme.background),
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(color = MaterialTheme.colorScheme.secondary)
             ) {
 
             }
@@ -125,8 +133,7 @@ fun SnackbarErrorText(@StringRes errorRes: Int?, onErrorDismiss: () -> Unit) {
                 text = stringResource(id = errorRes),
                 color = MaterialTheme.colorScheme.onSecondary,
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .background(color = MaterialTheme.colorScheme.secondary)
+                    .weight(1f)
                     .padding(
                         start = 16.dp,
                         end = 16.dp,
@@ -134,6 +141,19 @@ fun SnackbarErrorText(@StringRes errorRes: Int?, onErrorDismiss: () -> Unit) {
                         bottom = 12.dp
                     )
             )
+
+            val errorString = stringResource(id = errorRes)
+            TextButton(
+                onClick = { Log.d("ArtistAlleyDatabase", errorString, exception) },
+                modifier = Modifier
+                    .wrapContentWidth()
+                    .align(Alignment.CenterVertically),
+            ) {
+                Text(
+                    text = stringResource(R.string.log_exception).uppercase(),
+                    color = MaterialTheme.colorScheme.onSecondary
+                )
+            }
         }
     }
 }

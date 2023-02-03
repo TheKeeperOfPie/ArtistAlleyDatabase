@@ -1,16 +1,17 @@
 package com.thekeeperofpie.artistalleydatabase.cds
 
 import android.app.Application
-import android.net.Uri
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.NavHostController
 import com.hoc081098.flowext.startWith
+import com.thekeeperofpie.artistalleydatabase.android_utils.AnimationUtils
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
-import com.thekeeperofpie.artistalleydatabase.android_utils.ImageUtils
 import com.thekeeperofpie.artistalleydatabase.android_utils.emitNotNull
 import com.thekeeperofpie.artistalleydatabase.android_utils.mapLatestNotNull
 import com.thekeeperofpie.artistalleydatabase.android_utils.suspend1
@@ -26,8 +27,10 @@ import com.thekeeperofpie.artistalleydatabase.cds.utils.CdEntryUtils
 import com.thekeeperofpie.artistalleydatabase.data.Character
 import com.thekeeperofpie.artistalleydatabase.data.DataConverter
 import com.thekeeperofpie.artistalleydatabase.data.Series
+import com.thekeeperofpie.artistalleydatabase.form.EntryImageController
 import com.thekeeperofpie.artistalleydatabase.form.EntrySection
 import com.thekeeperofpie.artistalleydatabase.form.EntrySection.MultiText.Entry
+import com.thekeeperofpie.artistalleydatabase.form.EntrySettings
 import com.thekeeperofpie.artistalleydatabase.vgmdb.SearchResults
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbApi
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbAutocompleter
@@ -38,6 +41,7 @@ import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumEntry
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumRepository
 import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.ArtistRepository
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
@@ -70,66 +74,74 @@ abstract class CdEntryDetailsViewModel(
     private val mediaRepository: MediaRepository,
     private val characterRepository: CharacterRepository,
     private val dataConverter: DataConverter,
+    entrySettings: EntrySettings,
 ) : ViewModel() {
 
     companion object {
         private const val TAG = "CdEntryDetailsViewModel"
     }
 
+    private enum class Type {
+        ADD, SINGLE_EDIT, MULTI_EDIT
+    }
+
+    private lateinit var entryIds: List<String>
+    private lateinit var type: Type
+
     // TODO: Enforce single value
-    protected val catalogIdSection = EntrySection.MultiText(
+    private val catalogIdSection = EntrySection.MultiText(
         R.string.cd_entry_catalog_header,
         R.string.cd_entry_catalog_header,
         R.string.cd_entry_catalog_header,
         lockState = EntrySection.LockState.UNLOCKED,
     )
 
-    protected val titleSection = EntrySection.MultiText(
+    private val titleSection = EntrySection.MultiText(
         R.string.cd_entry_title_header_zero,
         R.string.cd_entry_title_header_one,
         R.string.cd_entry_title_header_many,
         lockState = EntrySection.LockState.UNLOCKED,
     )
 
-    protected val performerSection = EntrySection.MultiText(
+    private val performerSection = EntrySection.MultiText(
         R.string.cd_entry_performers_header_zero,
         R.string.cd_entry_performers_header_one,
         R.string.cd_entry_performers_header_many,
         lockState = EntrySection.LockState.UNLOCKED,
     )
 
-    protected val composerSection = EntrySection.MultiText(
+    private val composerSection = EntrySection.MultiText(
         R.string.cd_entry_composers_header_zero,
         R.string.cd_entry_composers_header_one,
         R.string.cd_entry_composers_header_many,
         lockState = EntrySection.LockState.UNLOCKED,
     )
 
-    protected val seriesSection = EntrySection.MultiText(
+    private val seriesSection = EntrySection.MultiText(
         R.string.cd_entry_series_header_zero,
         R.string.cd_entry_series_header_one,
         R.string.cd_entry_series_header_many,
         lockState = EntrySection.LockState.UNLOCKED,
     )
 
-    protected val characterSection = EntrySection.MultiText(
+    private val characterSection = EntrySection.MultiText(
         R.string.cd_entry_characters_header_zero,
         R.string.cd_entry_characters_header_one,
         R.string.cd_entry_characters_header_many,
         lockState = EntrySection.LockState.UNLOCKED,
     )
 
-    protected val discSection =
+    private val discSection =
         DiscSection(json = vgmdbJson.json, lockState = EntrySection.LockState.UNLOCKED)
 
-    protected val tagSection = EntrySection.MultiText(
+    private val tagSection = EntrySection.MultiText(
         R.string.cd_entry_tags_header_zero,
         R.string.cd_entry_tags_header_one,
         R.string.cd_entry_tags_header_many,
         lockState = EntrySection.LockState.UNLOCKED,
     )
 
-    protected val notesSection = EntrySection.LongText(
+    private val notesSection = EntrySection.LongText(
         headerRes = R.string.cd_entry_notes_header,
         lockState = EntrySection.LockState.UNLOCKED
     )
@@ -147,6 +159,23 @@ abstract class CdEntryDetailsViewModel(
     )
 
     var errorResource by mutableStateOf<Pair<Int, Exception?>?>(null)
+
+    var sectionsLoading by mutableStateOf(true)
+        private set
+
+    var saving by mutableStateOf(false)
+        private set
+
+    private var deleting by mutableStateOf(false)
+
+    val entryImageController = EntryImageController(
+        scopeProvider = { viewModelScope },
+        application = application,
+        settings = entrySettings,
+        entryTypeId = CdEntryUtils.TYPE_ID,
+        onError = { errorResource = it },
+        imageContentDescriptionRes = R.string.cd_entry_image_content_description,
+    )
 
     init {
         viewModelScope.launch(Dispatchers.Main) {
@@ -188,6 +217,17 @@ abstract class CdEntryDetailsViewModel(
                 .collectLatest {
                     catalogIdSection.addOrReplaceContent(it)
                     catalogIdSection.lockState = EntrySection.LockState.LOCKED
+                }
+        }
+
+        viewModelScope.launch(Dispatchers.IO) {
+            catalogAlbumChosen()
+                .collectLatest {
+                    if (entryIds.size == 1)  {
+                        it.coverFull?.toUri()?.let {
+                            entryImageController.replaceMainImage(entryIds[0], it)
+                        }
+                    }
                 }
         }
 
@@ -275,8 +315,40 @@ abstract class CdEntryDetailsViewModel(
         }
     }
 
+    fun initialize(entryIds: List<String>) {
+        if (this::entryIds.isInitialized) return
+        this.entryIds = entryIds
+        this.type = when (entryIds.size) {
+            0 -> Type.ADD
+            1 -> Type.SINGLE_EDIT
+            else -> Type.MULTI_EDIT
+        }
+
+        viewModelScope.launch(Dispatchers.IO) {
+            val model = when (type) {
+                Type.ADD -> null
+                Type.SINGLE_EDIT -> {
+                    // TODO: Move this delay into the UI layer
+                    // Delay to allow the shared element transition to finish
+                    delay(
+                        AnimationUtils.multipliedByAnimatorScale(application, 350L)
+                            .coerceAtLeast(350L)
+                    )
+                    buildModel(cdEntryDao.getEntry(entryIds.single()))
+                }
+                Type.MULTI_EDIT -> TODO("CD multi-edit support")
+            }
+            withContext(Dispatchers.Main) {
+                model?.run(::initializeForm)
+                sectionsLoading = false
+            }
+        }
+
+        entryImageController.initialize(entryIds)
+    }
+
     @Suppress("OPT_IN_USAGE")
-    protected fun catalogAlbumChosen() = catalogIdSection.predictionChosen
+    private fun catalogAlbumChosen() = catalogIdSection.predictionChosen
         .filterIsInstance<Entry.Prefilled<*>>()
         .flatMapLatest {
             when (val value = it.value) {
@@ -311,7 +383,7 @@ abstract class CdEntryDetailsViewModel(
         )
     }
 
-    protected fun initializeForm(entry: CdEntryModel) {
+    private fun initializeForm(entry: CdEntryModel) {
         catalogIdSection.setContents(listOf(entry.catalogId), entry.titlesLocked)
         titleSection.setContents(entry.titles, entry.titlesLocked)
         performerSection.setContents(entry.performers, entry.performersLocked)
@@ -381,20 +453,9 @@ abstract class CdEntryDetailsViewModel(
             }
     }
 
-    protected suspend fun makeEntry(imageUri: Uri?, id: String): CdEntry? {
-        val outputFile = CdEntryUtils.getImageFile(application, id)
-        val error = ImageUtils.writeEntryImage(application, outputFile, imageUri)
-        if (error != null) {
-            Log.e(TAG, "${application.getString(error.first)}: $imageUri", error.second)
-            withContext(Dispatchers.Main) {
-                errorResource = error
-            }
-            return null
-        }
-        val (imageWidth, imageHeight) = ImageUtils.getImageSize(outputFile)
-
+    private fun makeBaseEntry(): CdEntry {
         return CdEntry(
-            id = id,
+            id = "",
             catalogId = catalogIdSection.finalContents().firstOrNull()?.serializedValue,
             titles = titleSection.finalContents().map { it.serializedValue },
             performers = performerSection.finalContents().map { it.serializedValue },
@@ -408,8 +469,8 @@ abstract class CdEntryDetailsViewModel(
             discs = discSection.serializedValue(),
             tags = tagSection.finalContents().map { it.serializedValue },
             lastEditTime = Date.from(Instant.now()),
-            imageWidth = imageWidth,
-            imageHeight = imageHeight,
+            imageWidth = null,
+            imageHeight = null,
             notes = notesSection.value.trim(),
             locks = CdEntry.Locks(
                 catalogIdLocked = catalogIdSection.lockState?.toSerializedValue(),
@@ -425,39 +486,108 @@ abstract class CdEntryDetailsViewModel(
         )
     }
 
-    suspend fun saveEntry(imageUri: Uri?, id: String): Boolean {
-        val entry = makeEntry(imageUri, id) ?: return false
-        entry.catalogId?.let { albumRepository.ensureSaved(listOf(it)) }
-            ?.let {
-                errorResource = it
-                return false
+    fun onConfirmDelete(navHostController: NavHostController) {
+        if (deleting || saving) return
+        if (type != Type.SINGLE_EDIT) {
+            // Don't delete from details page unless editing a single entry to avoid mistakes
+            return
+        }
+
+        deleting = true
+
+        viewModelScope.launch(Dispatchers.IO) {
+            cdEntryDao.delete(entryIds.single())
+            withContext(Dispatchers.Main) {
+                navHostController.popBackStack()
             }
-        entry.series(appJson)
+        }
+    }
+
+    fun onClickSave(navHostController: NavHostController) {
+        save(navHostController, skipIgnoreableErrors = false)
+    }
+
+    fun onLongClickSave(navHostController: NavHostController) {
+        save(navHostController, skipIgnoreableErrors = true)
+    }
+
+    private fun save(navHostController: NavHostController, skipIgnoreableErrors: Boolean) {
+        if (saving || deleting) return
+        saving = true
+
+        viewModelScope.launch(Dispatchers.IO) {
+            val success = if (type == Type.MULTI_EDIT) {
+                TODO("Multi edit support")
+            } else {
+                saveEntry(skipIgnoreableErrors = skipIgnoreableErrors)
+            }
+            withContext(Dispatchers.Main) {
+                if (success) {
+                    navHostController.popBackStack()
+                } else {
+                    saving = false
+                }
+            }
+        }
+    }
+
+    private suspend fun saveEntry(skipIgnoreableErrors: Boolean = false): Boolean {
+        val saveImagesResult = entryImageController.saveImages() ?: return false
+
+        val baseEntry = makeBaseEntry()
+        baseEntry.catalogId?.let { albumRepository.ensureSaved(listOf(it)) }
+            ?.let {
+                if (!skipIgnoreableErrors) {
+                    errorResource = it
+                    return false
+                }
+            }
+        baseEntry.series(appJson)
             .filterIsInstance<Series.AniList>()
             .map { it.id }
             .let { mediaRepository.ensureSaved(it) }
             ?.let {
-                errorResource = it
-                return false
+                if (!skipIgnoreableErrors) {
+                    errorResource = it
+                    return false
+                }
             }
-        entry.characters(appJson)
+        baseEntry.characters(appJson)
             .filterIsInstance<Character.AniList>()
             .map { it.id }
             .let { characterRepository.ensureSaved(it) }
             ?.let {
-                errorResource = it
-                return false
+                if (!skipIgnoreableErrors) {
+                    errorResource = it
+                    return false
+                }
             }
-        listOf(entry.performers, entry.composers).forEach {
+        listOf(baseEntry.performers, baseEntry.composers).forEach {
             it.map { vgmdbJson.parseArtistColumn(it) }
                 .mapNotNull { it.rightOrNull()?.id }
                 .let { artistRepository.ensureSaved(it) }
                 ?.let {
-                    errorResource = it
-                    return false
+                    if (!skipIgnoreableErrors) {
+                        errorResource = it
+                        return false
+                    }
                 }
         }
-        cdEntryDao.insertEntries(entry)
+
+        val allEntryIds = (entryIds + saveImagesResult.keys).toSet()
+        val entryImages = entryImageController.images.groupBy { it.entryId }
+        val entries = allEntryIds.map {
+            val entryImage = entryImages[it]?.firstOrNull()
+            baseEntry.copy(
+                id = it,
+                imageWidth = entryImage?.croppedWidth ?: entryImage?.width,
+                imageHeight = entryImage?.croppedHeight ?: entryImage?.height
+            )
+        }
+        cdEntryDao.insertEntries(entries)
+
+        entryImageController.cleanUpImages(entryIds, saveImagesResult)
+
         return true
     }
 }

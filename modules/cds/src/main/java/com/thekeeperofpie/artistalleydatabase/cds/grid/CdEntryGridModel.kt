@@ -16,6 +16,7 @@ class CdEntryGridModel(
 
     override val id get() = value.id
     override val imageWidth get() = value.imageWidth
+    override val imageHeight get() = value.imageHeight
     override val imageWidthToHeightRatio get() = value.imageWidthToHeightRatio
 
     companion object {

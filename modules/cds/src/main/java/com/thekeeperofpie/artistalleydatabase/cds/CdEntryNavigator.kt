@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.cds
 
-import android.app.Application
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
@@ -9,22 +8,18 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
-import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseEntryModel
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseSelectionNavigator
 import com.thekeeperofpie.artistalleydatabase.cds.browse.selection.CdBrowseSelectionScreen
 import com.thekeeperofpie.artistalleydatabase.cds.browse.selection.CdBrowseSelectionViewModel
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryColumn
-import com.thekeeperofpie.artistalleydatabase.cds.utils.CdEntryUtils
-import com.thekeeperofpie.artistalleydatabase.form.CropUtils
+import com.thekeeperofpie.artistalleydatabase.cds.grid.CdEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.form.EntryDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.form.EntryNavigator
-import com.thekeeperofpie.artistalleydatabase.form.EntryUtils
 import com.thekeeperofpie.artistalleydatabase.form.EntryUtils.entryDetailsComposable
+import com.thekeeperofpie.artistalleydatabase.form.EntryUtils.navToEntryDetails
 
-class CdEntryNavigator(
-    private val application: Application,
-) : EntryNavigator, BrowseSelectionNavigator {
+class CdEntryNavigator : EntryNavigator, BrowseSelectionNavigator {
 
     override fun initialize(
         navHostController: NavHostController,
@@ -75,50 +70,37 @@ class CdEntryNavigator(
                     if (viewModel.selectedEntries.isNotEmpty()) {
                         viewModel.selectEntry(index, entry)
                     } else {
-                        val imageRatio = entry.imageWidthToHeightRatio
-                        navHostController.navigate(
-                            "cdEntryDetails"
-                                    + "?entry_id=${entry.id}"
-                                    + "&entry_image_ratio=$imageRatio"
-                        )
+                        navHostController.navToEntryDetails("cdEntryDetails", listOf(entry.id))
                     }
                 },
                 onLongClickEntry = viewModel::selectEntry,
                 onClickClear = viewModel::clearSelected,
+                onClickEdit = {
+                    navHostController.navToEntryDetails(
+                        "cdEntryDetails",
+                        viewModel.selectedEntries.values.map(CdEntryGridModel::id)
+                    )
+                },
                 onConfirmDelete = viewModel::onDeleteSelected,
             )
         }
 
-        navGraphBuilder.entryDetailsComposable("cdEntryDetails") { id, imageRatio ->
-            val viewModel = hiltViewModel<CdEntryEditViewModel>().initialize(id)
+        navGraphBuilder.entryDetailsComposable("cdEntryDetails") { entryIds ->
+            val viewModel = hiltViewModel<CdEntryDetailsViewModel>().apply { initialize(entryIds) }
             EntryDetailsScreen(
-                { id },
-                { imageRatio },
-                imageUri = { viewModel.imageUri },
-                onImageSelected = { if (it != null) viewModel.imageUri = it },
-                onImageSelectError = {
-                    viewModel.errorResource = UtilsStringR.error_fail_to_load_image to it
-                },
+                { viewModel.entryImageController.imageState },
                 onImageClickOpen = {
-                    CdEntryUtils.getImageFile(application, id).takeIf { it.exists() }
-                        ?.let { EntryUtils.openInternalImage(navHostController, it) }
+                    viewModel.entryImageController.onImageClickOpen(navHostController, it)
                 },
-                areSectionsLoading = { viewModel.areSectionsLoading },
+                areSectionsLoading = { viewModel.sectionsLoading },
                 sections = { viewModel.sections },
                 saving = { viewModel.saving },
                 onClickSave = { viewModel.onClickSave(navHostController) },
+                onLongClickSave = { viewModel.onLongClickSave(navHostController) },
                 errorRes = { viewModel.errorResource },
                 onErrorDismiss = { viewModel.errorResource = null },
                 onConfirmDelete = { viewModel.onConfirmDelete(navHostController) },
-                cropState = CropUtils.CropState(
-                    imageCropNeedsDocument = { false },
-                    onImageCropDocumentChosen = { TODO() },
-                    onImageRequestCrop = { TODO() },
-                    onCropFinished = { TODO() },
-                    cropReady = { false },
-                    onCropConfirmed = { TODO() },
-                    cropDocumentRequested = { false },
-                ),
+                cropState = viewModel.entryImageController.cropState,
             )
         }
     }

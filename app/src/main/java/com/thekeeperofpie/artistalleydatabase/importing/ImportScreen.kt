@@ -46,7 +46,7 @@ object ImportScreen {
         onToggleSyncAfter: (Boolean) -> Unit = {},
         onClickImport: () -> Unit = {},
         importProgress: () -> Float? = { 0.5f },
-        errorRes: Pair<Int, Exception?>? = null,
+        errorRes: () -> Pair<Int, Exception?>? = { null },
         onErrorDismiss: () -> Unit = { },
     ) {
         Scaffold(
@@ -57,7 +57,11 @@ object ImportScreen {
                 )
             },
             snackbarHost = {
-                SnackbarErrorText(errorRes?.first, onErrorDismiss = onErrorDismiss)
+                SnackbarErrorText(
+                    errorRes()?.first,
+                    errorRes()?.second,
+                    onErrorDismiss = onErrorDismiss
+                )
             },
         ) {
             Content(

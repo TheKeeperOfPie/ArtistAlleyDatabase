@@ -38,7 +38,11 @@ object SearchResultsScreen {
         Scaffold(
             topBar = { AppBar(text = stringResource(R.string.search_results)) },
             snackbarHost = {
-                SnackbarErrorText(errorRes()?.first, onErrorDismiss = onErrorDismiss)
+                SnackbarErrorText(
+                    errorRes()?.first,
+                    errorRes()?.second,
+                    onErrorDismiss = onErrorDismiss
+                )
             },
         ) { paddingValues ->
             Box {

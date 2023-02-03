@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.DrawerValue
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
@@ -35,8 +34,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.withResumed
 import androidx.navigation.NavBackStackEntry
-import androidx.navigation.NavGraphBuilder
-import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -44,24 +41,19 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.mxalbert.sharedelements.SharedElementsRoot
-import com.thekeeperofpie.artistalleydatabase.add.AddEntryScreen
-import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
-import com.thekeeperofpie.artistalleydatabase.art.ArtEntryAddViewModel
-import com.thekeeperofpie.artistalleydatabase.art.ArtEntryMultiEditViewModel
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryNavigator
+import com.thekeeperofpie.artistalleydatabase.art.grid.ArtEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.art.search.ArtSearchViewModel
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseScreen
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseViewModel
-import com.thekeeperofpie.artistalleydatabase.cds.CdEntryAddViewModel
 import com.thekeeperofpie.artistalleydatabase.cds.CdEntryNavigator
+import com.thekeeperofpie.artistalleydatabase.cds.grid.CdEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.cds.search.CdSearchViewModel
 import com.thekeeperofpie.artistalleydatabase.compose.LazyStaggeredGrid
-import com.thekeeperofpie.artistalleydatabase.edit.MultiEditScreen
 import com.thekeeperofpie.artistalleydatabase.export.ExportScreen
 import com.thekeeperofpie.artistalleydatabase.export.ExportViewModel
 import com.thekeeperofpie.artistalleydatabase.form.EntryNavigator
 import com.thekeeperofpie.artistalleydatabase.form.EntryUtils.navToEntryDetails
-import com.thekeeperofpie.artistalleydatabase.form.grid.EntryGridModel
 import com.thekeeperofpie.artistalleydatabase.form.search.EntrySearchViewModel
 import com.thekeeperofpie.artistalleydatabase.home.HomeScreen
 import com.thekeeperofpie.artistalleydatabase.importing.ImportScreen
@@ -96,7 +88,6 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var cdEntryNavigator: CdEntryNavigator
 
-    @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -164,7 +155,7 @@ class MainActivity : ComponentActivity() {
                                             },
                                             onClickImport = viewModel::onClickImport,
                                             importProgress = { viewModel.importProgress },
-                                            errorRes = viewModel.errorResource,
+                                            errorRes = { viewModel.errorResource },
                                             onErrorDismiss = { viewModel.errorResource = null }
                                         )
                                     }
@@ -179,7 +170,7 @@ class MainActivity : ComponentActivity() {
                                             },
                                             onClickExport = viewModel::onClickExport,
                                             exportProgress = { viewModel.exportProgress },
-                                            errorRes = viewModel.errorResource,
+                                            errorRes = { viewModel.errorResource },
                                             onErrorDismiss = { viewModel.errorResource = null }
                                         )
                                     }
@@ -232,18 +223,26 @@ class MainActivity : ComponentActivity() {
                         entries = { viewModel.results.collectAsLazyPagingItems() },
                         selectedItems = { viewModel.selectedEntries.keys },
                         onClickAddFab = {
-                            navController.navigate(NavDestinations.ADD_ENTRY)
+                            navController.navToEntryDetails(route = "artEntryDetails", emptyList())
                         },
                         onClickEntry = { index, entry ->
                             if (viewModel.selectedEntries.isNotEmpty()) {
                                 viewModel.selectEntry(index, entry)
                             } else {
-                                navController.navToEntryDetails(route = "artEntryDetails", entry)
+                                navController.navToEntryDetails(
+                                    route = "artEntryDetails",
+                                    listOf(entry.id)
+                                )
                             }
                         },
                         onLongClickEntry = viewModel::selectEntry,
                         onClickClear = viewModel::clearSelected,
-                        onClickEdit = { editSelected(navController, viewModel.selectedEntries) },
+                        onClickEdit = {
+                            navController.navToEntryDetails(
+                                "artEntryDetails",
+                                viewModel.selectedEntries.values.map(ArtEntryGridModel::id)
+                            )
+                        },
                         onConfirmDelete = viewModel::deleteSelected,
                         lazyStaggeredGridState = lazyStaggeredGridState,
                     )
@@ -251,34 +250,7 @@ class MainActivity : ComponentActivity() {
                     attachInvalidateScroll(it, viewModel, lazyStaggeredGridState)
                 }
 
-                composable(NavDestinations.ADD_ENTRY) {
-                    val viewModel = hiltViewModel<ArtEntryAddViewModel>()
-                    AddEntryScreen(
-                        imageRatio = { viewModel.imageWidthToHeightRatio },
-                        imageUris = { viewModel.imageUris },
-                        onImagesSelected = {
-                            viewModel.imageUris.clear()
-                            viewModel.imageUris.addAll(it)
-                        },
-                        onImageSelectError = {
-                            viewModel.errorResource = UtilsStringR.error_fail_to_load_image to it
-                        },
-                        onImageSizeResult = { width, height ->
-                            viewModel.onImageSizeResult(height / width.toFloat())
-                        },
-                        sections = { viewModel.sections },
-                        saving = { viewModel.saving },
-                        onClickSaveTemplate = viewModel::onClickSaveTemplate,
-                        onClickSave = { viewModel.onClickSave(navController) },
-                        errorRes = { viewModel.errorResource },
-                        onErrorDismiss = { viewModel.errorResource = null }
-                    )
-                }
-
                 artEntryNavigator.initialize(navController, this)
-
-                // TODO: Modular multi-edit
-//                addEditScreen(navController)
             }
         }
     }
@@ -307,41 +279,25 @@ class MainActivity : ComponentActivity() {
                             if (viewModel.selectedEntries.isNotEmpty()) {
                                 viewModel.selectEntry(index, entry)
                             } else {
-                                navController.navToEntryDetails(route = "cdEntryDetails", entry)
+                                navController.navToEntryDetails(
+                                    route = "cdEntryDetails",
+                                    listOf(entry.id)
+                                )
                             }
                         },
                         onLongClickEntry = viewModel::selectEntry,
                         onClickClear = viewModel::clearSelected,
-                        onClickEdit = { editSelected(navController, viewModel.selectedEntries) },
+                        onClickEdit = {
+                            navController.navToEntryDetails(
+                                "cdEntryDetails",
+                                viewModel.selectedEntries.values.map(CdEntryGridModel::id)
+                            )
+                        },
                         onConfirmDelete = viewModel::deleteSelected,
                         lazyStaggeredGridState = lazyStaggeredGridState,
                     )
 
                     attachInvalidateScroll(it, viewModel, lazyStaggeredGridState)
-                }
-
-                composable(NavDestinations.ADD_ENTRY) {
-                    val viewModel = hiltViewModel<CdEntryAddViewModel>()
-                    AddEntryScreen(
-                        imageRatio = { viewModel.imageRatio },
-                        imageUris = { viewModel.imageUris },
-                        onImagesSelected = {
-                            viewModel.imageUris.clear()
-                            viewModel.imageUris.addAll(it)
-                        },
-                        onImageSelectError = {
-                            viewModel.errorResource = UtilsStringR.error_fail_to_load_image to it
-                        },
-                        onImageSizeResult = { width, height ->
-                            viewModel.imageRatio = height / width.toFloat()
-                        },
-                        sections = { viewModel.sections },
-                        saving = { viewModel.saving },
-                        onClickSaveTemplate = { TODO() },
-                        onClickSave = { viewModel.onClickSave(navController) },
-                        errorRes = { viewModel.errorResource },
-                        onErrorDismiss = { viewModel.errorResource = null }
-                    )
                 }
 
                 cdEntryNavigator.initialize(navController, this)
@@ -414,12 +370,20 @@ class MainActivity : ComponentActivity() {
                             if (viewModel.selectedEntries.isNotEmpty()) {
                                 viewModel.selectEntry(index, entry)
                             } else {
-                                navController.navToEntryDetails(route = "artEntryDetails", entry)
+                                navController.navToEntryDetails(
+                                    route = "artEntryDetails",
+                                    listOf(entry.id)
+                                )
                             }
                         },
                         onLongClickEntry = viewModel::selectEntry,
                         onClickClear = viewModel::clearSelected,
-                        onClickEdit = { editSelected(navController, viewModel.selectedEntries) },
+                        onClickEdit = {
+                            navController.navToEntryDetails(
+                                "artEntryDetails",
+                                viewModel.selectedEntries.values.map(ArtEntryGridModel::id)
+                            )
+                        },
                         onConfirmDelete = viewModel::onDeleteSelected,
                     )
                 }
@@ -442,51 +406,6 @@ class MainActivity : ComponentActivity() {
             onClickDatabaseFetch = viewModel::onClickDatabaseFetch,
             onClickClearDatabaseById = viewModel::onClickClearDatabaseById,
             onClickRebuildDatabase = viewModel::onClickRebuildDatabase,
-        )
-    }
-
-    @Suppress("unused")
-    private fun NavGraphBuilder.addEditScreen(navController: NavHostController) {
-        composable(
-            NavDestinations.MULTI_EDIT +
-                    "?entry_ids={entry_ids}",
-            arguments = listOf(
-                navArgument("entry_ids") {
-                    type = NavType.StringType
-                    nullable = false
-                },
-            )
-        ) {
-            val arguments = it.arguments!!
-            val entryIds = arguments.getString("entry_ids")!!.split(',')
-
-            val viewModel = hiltViewModel<ArtEntryMultiEditViewModel>()
-            viewModel.initialize(entryIds)
-
-            MultiEditScreen(
-                imageUris = { viewModel.imageUris },
-                onImageSelected = { index, uri -> viewModel.setImageUri(index, uri) },
-                onImageSelectError = {
-                    viewModel.errorResource = UtilsStringR.error_fail_to_load_image to it
-                },
-                loading = { viewModel.loading },
-                sections = { viewModel.sections },
-                saving = { viewModel.saving },
-                onClickSave = { viewModel.onClickSave(navController) },
-                errorRes = { viewModel.errorResource },
-                onErrorDismiss = { viewModel.errorResource = null },
-            )
-        }
-    }
-
-    private fun editSelected(
-        navController: NavHostController,
-        values: Map<Int, EntryGridModel>,
-    ) {
-        val entryIds = values.map { it.value.id }
-        navController.navigate(
-            NavDestinations.MULTI_EDIT +
-                    "?entry_ids=${entryIds.joinToString(",")}"
         )
     }
 

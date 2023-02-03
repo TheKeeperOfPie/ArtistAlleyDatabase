@@ -34,7 +34,7 @@ object ExportScreen {
         onContentUriSelected: (Uri?) -> Unit = {},
         onClickExport: () -> Unit = {},
         exportProgress: () -> Float? = { 0.5f },
-        errorRes: Pair<Int, Exception?>? = null,
+        errorRes: () -> Pair<Int, Exception?>? = { null },
         onErrorDismiss: () -> Unit = { },
     ) {
         Scaffold(
@@ -45,7 +45,11 @@ object ExportScreen {
                 )
             },
             snackbarHost = {
-                SnackbarErrorText(errorRes?.first, onErrorDismiss = onErrorDismiss)
+                SnackbarErrorText(
+                    errorRes()?.first,
+                    errorRes()?.second,
+                    onErrorDismiss = onErrorDismiss
+                )
             },
         ) {
             Content(

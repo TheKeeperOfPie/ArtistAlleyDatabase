@@ -39,9 +39,6 @@ object ArtEntryHiltModule {
     fun provideArtEntryDao(database: ArtEntryDatabase) = database.artEntryDao()
 
     @Provides
-    fun provideArtEntryEditDao(database: ArtEntryDatabase) = database.artEntryEditDao()
-
-    @Provides
     fun provideArtEntryDetailsDao(database: ArtEntryDatabase) = database.artEntryDetailsDao()
 
     @Provides
@@ -129,7 +126,7 @@ object ArtEntryHiltModule {
     ): BrowseTabViewModel = ArtBrowseTabTags(application, artEntryBrowseDao, artEntryNavigator)
 
     @Provides
-    fun provideArtEntryNavigator(application: Application) = ArtEntryNavigator(application)
+    fun provideArtEntryNavigator() = ArtEntryNavigator()
 
     @IntoSet
     @Provides

@@ -4,15 +4,14 @@ import android.content.Context
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntry
 import com.thekeeperofpie.artistalleydatabase.art.sections.SourceType
+import com.thekeeperofpie.artistalleydatabase.form.EntryUtils
 
 object ArtEntryUtils {
 
-    fun getImageFile(context: Context, id: String) = context.filesDir
-        .resolve("art_entry_images/${id}")
+    const val TYPE_ID = "art_entry_images"
 
-    // TODO: Store cropped images alongside originals instead of replacing
-    fun getCropTempFile(context: Context) = context.filesDir
-        .resolve("art_entry_images/crop")
+    fun getImageFile(context: Context, entryId: String) =
+        EntryUtils.getImageFile(context, TYPE_ID, entryId)
 
     fun buildPlaceholderText(appJson: AppJson, entry: ArtEntry) = entry.run {
         val source = when (val source = SourceType.fromEntry(appJson.json, this)) {

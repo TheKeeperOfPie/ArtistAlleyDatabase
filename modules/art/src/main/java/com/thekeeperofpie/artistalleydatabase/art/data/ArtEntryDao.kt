@@ -139,6 +139,9 @@ interface ArtEntryDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertEntries(vararg entries: ArtEntry)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertEntries(entries: Collection<ArtEntry>)
+
     suspend fun insertEntriesDeferred(
         dryRun: Boolean,
         replaceAll: Boolean,

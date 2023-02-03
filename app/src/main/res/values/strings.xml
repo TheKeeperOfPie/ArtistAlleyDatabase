@@ -1,6 +1,5 @@
 <resources>
     <string name="app_name">Artist Alley Database</string>
-    <string name="add_entry_select_image_content_description">Click to select image</string>
     <string name="save">Save</string>
     <string name="search">Search</string>
     <string name="search_add_entry">Add new entry</string>

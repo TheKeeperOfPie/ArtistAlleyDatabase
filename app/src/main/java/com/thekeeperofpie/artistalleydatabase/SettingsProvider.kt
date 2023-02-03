@@ -8,6 +8,7 @@ import androidx.core.net.toUri
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntry
 import com.thekeeperofpie.artistalleydatabase.art.persistence.ArtSettings
+import com.thekeeperofpie.artistalleydatabase.form.EntrySettings
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import okio.buffer
@@ -17,7 +18,7 @@ import java.io.ByteArrayOutputStream
 class SettingsProvider(
     application: Application,
     private val appJson: AppJson,
-) : ArtSettings {
+) : ArtSettings, EntrySettings {
 
     companion object {
         private const val KEY_ART_ENTRY_TEMPLATE = "art_entry_template"

@@ -77,11 +77,11 @@ object CropUtils {
 
     data class CropState(
         val imageCropNeedsDocument: () -> Boolean,
-        val onImageCropDocumentChosen: (Uri?) -> Unit,
-        val onImageRequestCrop: () -> Unit,
-        val onCropFinished: (Boolean) -> Unit,
-        val cropReady: () -> Boolean,
-        val onCropConfirmed: () -> Unit,
-        val cropDocumentRequested: () -> Boolean,
+        val onImageCropDocumentChosen: (index: Int, Uri?) -> Unit = { _, _ -> },
+        val onImageRequestCrop: (index: Int) -> Unit,
+        val onCropFinished: (index: Int?) -> Unit,
+        val cropReadyIndex: () -> Int,
+        val onCropConfirmed: (index: Int) -> Unit,
+        val cropDocumentRequestedIndex: () -> Int,
     )
 }

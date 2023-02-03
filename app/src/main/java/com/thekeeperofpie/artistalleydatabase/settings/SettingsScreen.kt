@@ -61,7 +61,11 @@ object SettingsScreen {
                 )
             },
             snackbarHost = {
-                SnackbarErrorText(errorRes()?.first, onErrorDismiss = onErrorDismiss)
+                SnackbarErrorText(
+                    errorRes()?.first,
+                    errorRes()?.second,
+                    onErrorDismiss = onErrorDismiss
+                )
             },
         ) {
             Column(Modifier.padding(it)) {

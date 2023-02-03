@@ -19,8 +19,8 @@ object AnimationUtils {
     }
 
     fun multipliedByAnimatorScale(context: Context, value: Int) =
-        value * getAnimatorScale(context).toInt()
+        (value * getAnimatorScale(context)).toInt()
 
     fun multipliedByAnimatorScale(context: Context, value: Long) =
-        value * getAnimatorScale(context).toLong()
+        (value * getAnimatorScale(context)).toLong()
 }

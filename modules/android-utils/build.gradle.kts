@@ -40,6 +40,8 @@ kotlin {
 }
 
 dependencies {
+    implementation("androidx.core:core-ktx:1.9.0")
+
     runtimeOnly("androidx.work:work-runtime:2.8.0-rc01")
     api("androidx.work:work-runtime-ktx:2.8.0-rc01")
     api("io.github.hoc081098:FlowExt:0.5.0")
