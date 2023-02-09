@@ -156,7 +156,7 @@ object EntryGrid {
             state = lazyStaggeredGridState,
             modifier = modifier,
         ) {
-            items(entries(), key = { it.id }) { index, item ->
+            items(entries(), key = { it.id.scopedId }) { index, item ->
                 Entry(
                     imageScreenKey,
                     expectedWidth,
@@ -225,7 +225,7 @@ object EntryGrid {
                     }
                 } else {
                     SharedElement(
-                        key = "${entry.id}_image",
+                        key = "${entry.id.scopedId}_image",
                         screenKey = imageScreenKey,
                         // Try to disable the fade animation
                         transitionSpec = SharedElementsTransitionSpec(

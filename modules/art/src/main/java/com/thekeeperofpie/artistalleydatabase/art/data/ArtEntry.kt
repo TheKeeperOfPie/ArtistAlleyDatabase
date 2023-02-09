@@ -10,8 +10,10 @@ import androidx.room.PrimaryKey
 import com.squareup.moshi.JsonClass
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.Converters
+import com.thekeeperofpie.artistalleydatabase.art.utils.ArtEntryUtils
 import com.thekeeperofpie.artistalleydatabase.data.Character
 import com.thekeeperofpie.artistalleydatabase.data.Series
+import com.thekeeperofpie.artistalleydatabase.form.EntryId
 import kotlinx.serialization.Serializable
 import java.math.BigDecimal
 import java.util.Date
@@ -21,6 +23,7 @@ import java.util.UUID
 @JsonClass(generateAdapter = true)
 @Entity(tableName = "art_entries")
 data class ArtEntry(
+    @Discouraged("Prefer entryId")
     @PrimaryKey
     val id: String = UUID.randomUUID().toString(),
     val artists: List<String> = emptyList(),
@@ -46,6 +49,9 @@ data class ArtEntry(
     val notes: String? = null,
     @Embedded val locks: Locks = Locks.EMPTY,
 ) {
+    @delegate:Transient
+    val entryId by lazy { EntryId(ArtEntryUtils.SCOPED_ID_TYPE, id) }
+
     @delegate:Transient
     val imageWidthToHeightRatio by lazy {
         (imageHeight?.toFloat() ?: 1f) /

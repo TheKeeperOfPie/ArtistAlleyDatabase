@@ -17,7 +17,7 @@ import kotlinx.coroutines.withContext
 
 abstract class EntryDetailsViewModel<Entry, Model>(
     protected val application: Application,
-    entryTypeId: String,
+    scopedIdType: String,
     @StringRes private val imageContentDescriptionRes: Int,
     entrySettings: EntrySettings,
 ) : ViewModel() {
@@ -26,7 +26,7 @@ abstract class EntryDetailsViewModel<Entry, Model>(
         ADD, SINGLE_EDIT, MULTI_EDIT
     }
 
-    protected lateinit var entryIds: List<String>
+    protected lateinit var entryIds: List<EntryId>
     protected lateinit var type: Type
 
     var errorResource by mutableStateOf<Pair<Int, Exception?>?>(null)
@@ -43,13 +43,13 @@ abstract class EntryDetailsViewModel<Entry, Model>(
         scopeProvider = { viewModelScope },
         application = application,
         settings = entrySettings,
-        entryTypeId = entryTypeId,
+        scopedIdType = scopedIdType,
         onError = { errorResource = it },
         imageContentDescriptionRes = imageContentDescriptionRes,
         onImageSizeResult = { width, height -> onImageSizeResult(height / width.toFloat()) }
     )
 
-    fun initialize(entryIds: List<String>) {
+    fun initialize(entryIds: List<EntryId>) {
         if (this::entryIds.isInitialized) return
         this.entryIds = entryIds
         this.type = when (entryIds.size) {
@@ -84,7 +84,7 @@ abstract class EntryDetailsViewModel<Entry, Model>(
 
     abstract suspend fun buildAddModel(): Model?
 
-    abstract suspend fun buildSingleEditModel(entryId: String): Model
+    abstract suspend fun buildSingleEditModel(entryId: EntryId): Model
 
     abstract suspend fun buildMultiEditModel(): Model
 
@@ -143,14 +143,14 @@ abstract class EntryDetailsViewModel<Entry, Model>(
     }
 
     abstract suspend fun saveSingleEntry(
-        saveImagesResult: Map<String, EntryImageController.SaveResult>,
+        saveImagesResult: Map<EntryId, EntryImageController.SaveResult>,
         skipIgnoreableErrors: Boolean = false
     ): Boolean
 
     abstract suspend fun saveMultiEditEntry(
-        saveImagesResult: Map<String, EntryImageController.SaveResult>,
+        saveImagesResult: Map<EntryId, EntryImageController.SaveResult>,
         skipIgnoreableErrors: Boolean = false
     ): Boolean
 
-    abstract suspend fun deleteEntry(entryId: String)
+    abstract suspend fun deleteEntry(entryId: EntryId)
 }

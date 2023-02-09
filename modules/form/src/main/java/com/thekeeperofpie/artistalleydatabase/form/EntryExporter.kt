@@ -9,14 +9,12 @@ import java.io.InputStream
 
 abstract class EntryExporter(protected val appContext: Context) : Exporter {
 
-    abstract val entryTypeId: String
-
     protected suspend fun writeImages(
-        entryId: String,
+        entryId: EntryId,
         writeEntry: suspend (String, InputStream) -> Unit,
         vararg values: List<String>
     ) {
-        EntryUtils.getImages(appContext, entryTypeId, entryId, 0)
+        EntryUtils.getImages(appContext, entryId, 0)
             .forEachIndexed { index, image ->
                 if (image.uri != null) {
                     writeImage(
@@ -49,7 +47,7 @@ abstract class EntryExporter(protected val appContext: Context) : Exporter {
     }
 
     private suspend fun writeImage(
-        entryId: String,
+        entryId: EntryId,
         uri: Uri,
         index: Int,
         width: Int,
@@ -63,7 +61,7 @@ abstract class EntryExporter(protected val appContext: Context) : Exporter {
             if (cropped) "$it-cropped" else it
         }
         val filePath = ExportUtils.buildEntryFilePath(
-            lastPathSegments = "$entryId${File.separator}$fileName",
+            lastPathSegments = "${entryId.valueId}${File.separator}$fileName",
             values = values
         )
 

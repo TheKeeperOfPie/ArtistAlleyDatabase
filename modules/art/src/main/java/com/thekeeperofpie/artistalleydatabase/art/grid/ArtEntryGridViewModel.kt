@@ -17,7 +17,7 @@ abstract class ArtEntryGridViewModel(
         EntryGridSelectionController<ArtEntryGridModel>({ viewModelScope }) {
             val toDelete = it.map { it.value }
             toDelete.forEach {
-                ArtEntryUtils.getImageFile(application, it.id).delete()
+                ArtEntryUtils.getImageFile(application, it.entryId).delete()
             }
             artEntryDao.delete(toDelete)
         }

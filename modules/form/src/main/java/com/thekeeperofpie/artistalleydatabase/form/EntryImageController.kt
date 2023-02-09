@@ -31,7 +31,7 @@ class EntryImageController(
     private val scopeProvider: () -> CoroutineScope,
     private val application: Application,
     private val settings: EntrySettings,
-    private val entryTypeId: String,
+    private val scopedIdType: String,
     private val onError: (Pair<Int, Exception?>) -> Unit,
     @StringRes private val imageContentDescriptionRes: Int,
     onImageSizeResult: (Int, Int) -> Unit = { _, _ -> },
@@ -43,7 +43,7 @@ class EntryImageController(
 
     private var initialized = false
 
-    private val entryIds = mutableListOf<String>()
+    private val entryIds = mutableListOf<EntryId>()
 
     var images = mutableStateListOf<EntryImage>()
 
@@ -95,14 +95,14 @@ class EntryImageController(
     /** Shared utility to easily signal URI invalidation by appending a query param of this value */
     private var invalidateIteration = 0
 
-    fun initialize(entryIds: List<String>) {
+    fun initialize(entryIds: List<EntryId>) {
         if (initialized) return
         initialized = true
         this.entryIds += entryIds
 
         entryIds.firstOrNull()?.let {
             val entryImages =
-                EntryUtils.getImages(application, entryTypeId, it, imageContentDescriptionRes)
+                EntryUtils.getImages(application, it, imageContentDescriptionRes)
                     .toMutableList()
 
             val firstImage = entryImages.firstOrNull()
@@ -118,7 +118,7 @@ class EntryImageController(
 
             images += entryImages
             images += entryIds.drop(1).flatMap {
-                EntryUtils.getImages(application, entryTypeId, it, imageContentDescriptionRes)
+                EntryUtils.getImages(application, it, imageContentDescriptionRes)
             }
         }
 
@@ -242,9 +242,10 @@ class EntryImageController(
         index ?: return
         val imageCropUri = imageCropUri ?: return
         scopeProvider().launch(Dispatchers.IO) {
-            val entryId = images[index].entryId ?: UUID.randomUUID().toString()
+            val entryId =
+                images[index].entryId ?: EntryId(scopedIdType, UUID.randomUUID().toString())
             val outputFile =
-                EntryUtils.getCropTempFile(application, entryTypeId, entryId, index)
+                EntryUtils.getCropTempFile(application, entryId, index)
             application.contentResolver.openInputStream(imageCropUri)?.use { input ->
                 outputFile.outputStream().use { output -> input.copyTo(output) }
             }
@@ -284,7 +285,7 @@ class EntryImageController(
     }
 
     @WorkerThread
-    suspend fun replaceMainImage(entryId: String, uri: Uri) {
+    suspend fun replaceMainImage(entryId: EntryId, uri: Uri) {
         val entryIdsSize = withContext(Dispatchers.Main) { entryIds.size }
         if (entryIdsSize != 1) return
 
@@ -310,15 +311,15 @@ class EntryImageController(
      * @return List of files written.
      */
     @OptIn(ExperimentalCoroutinesApi::class)
-    suspend fun saveImages(): Map<String, SaveResult>? {
+    suspend fun saveImages(): Map<EntryId, SaveResult>? {
         val results = withContext(Dispatchers.IO.limitedParallelism(4)) {
             images.mapIndexed { index, entryImage ->
                 async {
                     // Generate a new ID for new entries
-                    val entryId = entryImage.entryId ?: UUID.randomUUID().toString()
+                    val entryId =
+                        entryImage.entryId ?: EntryId(scopedIdType, UUID.randomUUID().toString())
                     val originalFile = EntryUtils.getImageFile(
                         context = application,
-                        entryTypeId = entryTypeId,
                         entryId = entryId,
                         index = index,
                         width = entryImage.width,
@@ -330,7 +331,6 @@ class EntryImageController(
                     val croppedFile = if (entryImage.croppedUri != null) {
                         EntryUtils.getImageFile(
                             context = application,
-                            entryTypeId = entryTypeId,
                             entryId = entryId,
                             index = index,
                             width = entryImage.croppedWidth ?: 1,
@@ -374,11 +374,11 @@ class EntryImageController(
     }
 
     fun cleanUpImages(
-        entryIds: List<String>,
-        saveImagesResult: Map<String, SaveResult>
+        entryIds: List<EntryId>,
+        saveImagesResult: Map<EntryId, SaveResult>
     ) {
         entryIds.forEach {
-            val entryFolder = EntryUtils.getEntryFolder(application, entryTypeId, it)
+            val entryFolder = EntryUtils.getEntryImageFolder(application, it)
             if (entryFolder.exists() && entryFolder.isDirectory) {
                 val result = saveImagesResult[it]
                 val writtenFiles = listOfNotNull(result?.originalFile, result?.croppedFile)
@@ -391,7 +391,7 @@ class EntryImageController(
     }
 
     data class SaveResult(
-        val entryId: String,
+        val entryId: EntryId,
         val newEntryId: Boolean,
         val originalFile: File?,
         val croppedFile: File?,

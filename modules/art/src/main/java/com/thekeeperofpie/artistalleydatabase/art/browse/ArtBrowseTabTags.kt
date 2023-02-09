@@ -60,7 +60,7 @@ class ArtBrowseTabTags @Inject constructor(
                                 .take(1)
                                 .map {
                                     BrowseEntryModel(
-                                        image = ArtEntryUtils.getImageFile(context, it.id)
+                                        image = ArtEntryUtils.getImageFile(context, it.entryId)
                                             .toUri().toString(),
                                         text = entry,
                                         queryType = ArtEntryColumn.TAGS.toString(),

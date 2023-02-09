@@ -9,8 +9,10 @@ import androidx.room.PrimaryKey
 import com.squareup.moshi.JsonClass
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.Converters
+import com.thekeeperofpie.artistalleydatabase.cds.utils.CdEntryUtils
 import com.thekeeperofpie.artistalleydatabase.data.Character
 import com.thekeeperofpie.artistalleydatabase.data.Series
+import com.thekeeperofpie.artistalleydatabase.form.EntryId
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.DiscEntry
 import kotlinx.serialization.Serializable
 import java.math.BigDecimal
@@ -47,6 +49,9 @@ data class CdEntry(
     val notes: String? = null,
     @Embedded val locks: Locks = Locks.EMPTY,
 ) {
+    @delegate:Transient
+    val entryId by lazy { EntryId(CdEntryUtils.SCOPED_ID_TYPE, id) }
+
     @delegate:Transient
     val imageWidthToHeightRatio by lazy {
         (imageHeight?.toFloat() ?: 1f) /

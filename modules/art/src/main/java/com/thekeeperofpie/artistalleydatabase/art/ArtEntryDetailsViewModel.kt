@@ -20,6 +20,7 @@ import com.thekeeperofpie.artistalleydatabase.data.Character
 import com.thekeeperofpie.artistalleydatabase.data.DataConverter
 import com.thekeeperofpie.artistalleydatabase.data.Series
 import com.thekeeperofpie.artistalleydatabase.form.EntryDetailsViewModel
+import com.thekeeperofpie.artistalleydatabase.form.EntryId
 import com.thekeeperofpie.artistalleydatabase.form.EntryImageController
 import com.thekeeperofpie.artistalleydatabase.form.EntrySection
 import com.thekeeperofpie.artistalleydatabase.form.EntrySection.MultiText.Entry
@@ -55,7 +56,7 @@ open class ArtEntryDetailsViewModel @Inject constructor(
     entrySettings: EntrySettings,
 ) : EntryDetailsViewModel<ArtEntry, ArtEntryModel>(
     application,
-    ArtEntryUtils.TYPE_ID,
+    ArtEntryUtils.SCOPED_ID_TYPE,
     R.string.art_entry_image_content_description,
     entrySettings,
 ) {
@@ -206,27 +207,28 @@ open class ArtEntryDetailsViewModel @Inject constructor(
 
     override suspend fun buildAddModel() = artSettings.loadArtEntryTemplate()?.let(::buildModel)
 
-    override suspend fun buildSingleEditModel(entryId: String) =
-        buildModel(artEntryDao.getEntry(entryId))
+    override suspend fun buildSingleEditModel(entryId: EntryId) =
+        buildModel(artEntryDao.getEntry(entryId.valueId))
 
     override suspend fun buildMultiEditModel(): ArtEntryModel {
-        val firstEntry = artEntryDao.getEntry(entryIds.first())
+        val firstEntry = artEntryDao.getEntry(entryIds.first().valueId)
         val differentValue = listOf(Entry.Different)
 
-        val series = artEntryDao.distinctCountSeries(entryIds)
+        val entryValueIds = entryIds.map { it.valueId }
+        val series = artEntryDao.distinctCountSeries(entryValueIds)
             .takeIf { it == 1 }
             ?.let { firstEntry.series(appJson) }
             ?.let(dataConverter::seriesEntries)
             ?: differentValue
 
-        val characters = artEntryDao.distinctCountCharacters(entryIds)
+        val characters = artEntryDao.distinctCountCharacters(entryValueIds)
             .takeIf { it == 1 }
             ?.let { firstEntry.characters(appJson) }
             ?.let(dataConverter::characterEntries)
             ?: differentValue
 
-        val sourceTypeSame = artEntryDao.distinctCountSourceType(entryIds) == 1
-        val sourceValueSame = artEntryDao.distinctCountSourceValue(entryIds) == 1
+        val sourceTypeSame = artEntryDao.distinctCountSourceType(entryValueIds) == 1
+        val sourceValueSame = artEntryDao.distinctCountSourceValue(entryValueIds) == 1
 
         val source = if (sourceTypeSame && sourceValueSame) {
             SourceType.fromEntry(appJson.json, firstEntry)
@@ -235,57 +237,57 @@ open class ArtEntryDetailsViewModel @Inject constructor(
         }
 
         val artists = firstEntry.artists
-            .takeIf { artEntryDao.distinctCountArtists(entryIds) == 1 }
+            .takeIf { artEntryDao.distinctCountArtists(entryValueIds) == 1 }
             ?.map(Entry::Custom)
             ?: differentValue
 
         val tags = firstEntry.tags
-            .takeIf { artEntryDao.distinctCountTags(entryIds) == 1 }
+            .takeIf { artEntryDao.distinctCountTags(entryValueIds) == 1 }
             ?.map(Entry::Custom)
             ?: differentValue
 
         val printWidth = firstEntry.printWidth
-            ?.takeIf { artEntryDao.distinctCountPrintWidth(entryIds) == 1 }
+            ?.takeIf { artEntryDao.distinctCountPrintWidth(entryValueIds) == 1 }
 
         val printHeight = firstEntry.printHeight
-            ?.takeIf { artEntryDao.distinctCountPrintHeight(entryIds) == 1 }
+            ?.takeIf { artEntryDao.distinctCountPrintHeight(entryValueIds) == 1 }
 
         val notes = firstEntry.notes
-            ?.takeIf { artEntryDao.distinctCountNotes(entryIds) == 1 }
+            ?.takeIf { artEntryDao.distinctCountNotes(entryValueIds) == 1 }
             ?: "Different"
 
         val artistsLocked = firstEntry.locks.artistsLocked
-            .takeIf { artEntryDao.distinctCountArtistsLocked(entryIds) == 1 }
+            .takeIf { artEntryDao.distinctCountArtistsLocked(entryValueIds) == 1 }
             ?.let(EntrySection.LockState::from)
             ?: EntrySection.LockState.DIFFERENT
 
         val sourceLocked = firstEntry.locks.sourceLocked
-            .takeIf { artEntryDao.distinctCountSourceLocked(entryIds) == 1 }
+            .takeIf { artEntryDao.distinctCountSourceLocked(entryValueIds) == 1 }
             ?.let(EntrySection.LockState::from)
             ?: EntrySection.LockState.DIFFERENT
 
         val seriesLocked = firstEntry.locks.seriesLocked
-            .takeIf { artEntryDao.distinctCountSeriesLocked(entryIds) == 1 }
+            .takeIf { artEntryDao.distinctCountSeriesLocked(entryValueIds) == 1 }
             ?.let(EntrySection.LockState::from)
             ?: EntrySection.LockState.DIFFERENT
 
         val charactersLocked = firstEntry.locks.charactersLocked
-            .takeIf { artEntryDao.distinctCountCharactersLocked(entryIds) == 1 }
+            .takeIf { artEntryDao.distinctCountCharactersLocked(entryValueIds) == 1 }
             ?.let(EntrySection.LockState::from)
             ?: EntrySection.LockState.DIFFERENT
 
         val tagsLocked = firstEntry.locks.tagsLocked
-            .takeIf { artEntryDao.distinctCountTagsLocked(entryIds) == 1 }
+            .takeIf { artEntryDao.distinctCountTagsLocked(entryValueIds) == 1 }
             ?.let(EntrySection.LockState::from)
             ?: EntrySection.LockState.DIFFERENT
 
         val notesLocked = firstEntry.locks.notesLocked
-            .takeIf { artEntryDao.distinctCountNotesLocked(entryIds) == 1 }
+            .takeIf { artEntryDao.distinctCountNotesLocked(entryValueIds) == 1 }
             ?.let(EntrySection.LockState::from)
             ?: EntrySection.LockState.DIFFERENT
 
         val printSizeLocked = firstEntry.locks.printSizeLocked
-            .takeIf { artEntryDao.distinctCountPrintSizeLocked(entryIds) == 1 }
+            .takeIf { artEntryDao.distinctCountPrintSizeLocked(entryValueIds) == 1 }
             ?.let(EntrySection.LockState::from)
             ?: EntrySection.LockState.DIFFERENT
 
@@ -309,7 +311,7 @@ open class ArtEntryDetailsViewModel @Inject constructor(
     }
 
     override suspend fun saveSingleEntry(
-        saveImagesResult: Map<String, EntryImageController.SaveResult>,
+        saveImagesResult: Map<EntryId, EntryImageController.SaveResult>,
         skipIgnoreableErrors: Boolean
     ): Boolean {
         val baseEntry = makeBaseEntry()
@@ -339,7 +341,7 @@ open class ArtEntryDetailsViewModel @Inject constructor(
         val entries = allEntryIds.map {
             val entryImage = entryImages[it]?.firstOrNull()
             baseEntry.copy(
-                id = it,
+                id = it.valueId,
                 imageWidth = entryImage?.croppedWidth ?: entryImage?.width,
                 imageHeight = entryImage?.croppedHeight ?: entryImage?.height
             )
@@ -349,7 +351,7 @@ open class ArtEntryDetailsViewModel @Inject constructor(
     }
 
     override suspend fun saveMultiEditEntry(
-        saveImagesResult: Map<String, EntryImageController.SaveResult>,
+        saveImagesResult: Map<EntryId, EntryImageController.SaveResult>,
         skipIgnoreableErrors: Boolean
     ): Boolean {
         val series = seriesSection.finalContents()
@@ -362,12 +364,14 @@ open class ArtEntryDetailsViewModel @Inject constructor(
         val printHeight = printSizeSection.finalHeight()
         val notes = notesSection.value
 
+        val entryValueIds = entryIds.map { it.valueId }
+
         // TODO: Better communicate to user that "Different" value must be deleted,
         //  append is not currently supported.
         if (series.isNotEmpty()) {
             if (series.none { it is Entry.Different }) {
                 artEntryDao.updateSeries(
-                    entryIds,
+                    entryValueIds,
                     series.map { it.serializedValue },
                     series.map { it.searchableValue },
                 )
@@ -377,7 +381,7 @@ open class ArtEntryDetailsViewModel @Inject constructor(
         if (characters.isNotEmpty()) {
             if (characters.none { it is Entry.Different }) {
                 artEntryDao.updateCharacters(
-                    entryIds,
+                    entryValueIds,
                     characters.map { it.serializedValue },
                     characters.map { it.searchableValue },
                 )
@@ -386,7 +390,7 @@ open class ArtEntryDetailsViewModel @Inject constructor(
 
         if (sourceItem != SourceType.Different) {
             artEntryDao.updateSource(
-                entryIds,
+                entryValueIds,
                 sourceItem.serializedType,
                 sourceItem.serializedValue(appJson.json)
             )
@@ -394,80 +398,80 @@ open class ArtEntryDetailsViewModel @Inject constructor(
 
         if (artists.isNotEmpty()) {
             if (artists.none { it is Entry.Different }) {
-                artEntryDao.updateArtists(entryIds, artists.map { it.serializedValue })
+                artEntryDao.updateArtists(entryValueIds, artists.map { it.serializedValue })
             }
         }
 
         if (tags.isNotEmpty()) {
             if (tags.none { it is Entry.Different }) {
-                artEntryDao.updateTags(entryIds, tags.map { it.serializedValue })
+                artEntryDao.updateTags(entryValueIds, tags.map { it.serializedValue })
             }
         }
 
         if (artistSection.lockState != EntrySection.LockState.DIFFERENT) {
             artEntryDao.updateArtistsLocked(
-                entryIds,
+                entryValueIds,
                 artistSection.lockState?.toSerializedValue() ?: false
             )
         }
 
         if (sourceSection.lockState != EntrySection.LockState.DIFFERENT) {
             artEntryDao.updateSourceLocked(
-                entryIds,
+                entryValueIds,
                 sourceSection.lockState?.toSerializedValue() ?: false
             )
         }
 
         if (seriesSection.lockState != EntrySection.LockState.DIFFERENT) {
             artEntryDao.updateSeriesLocked(
-                entryIds,
+                entryValueIds,
                 seriesSection.lockState?.toSerializedValue() ?: false
             )
         }
 
         if (characterSection.lockState != EntrySection.LockState.DIFFERENT) {
             artEntryDao.updateCharactersLocked(
-                entryIds,
+                entryValueIds,
                 characterSection.lockState?.toSerializedValue() ?: false
             )
         }
 
         if (tagSection.lockState != EntrySection.LockState.DIFFERENT) {
             artEntryDao.updateTagsLocked(
-                entryIds,
+                entryValueIds,
                 tagSection.lockState?.toSerializedValue() ?: false
             )
         }
 
         if (notesSection.lockState != EntrySection.LockState.DIFFERENT) {
             artEntryDao.updateNotesLocked(
-                entryIds,
+                entryValueIds,
                 notesSection.lockState?.toSerializedValue() ?: false
             )
 
             // TODO: Real notes different value tracking
             if (notes.isNotEmpty() && notes.trim() != "Different") {
-                artEntryDao.updateNotes(entryIds, notes)
+                artEntryDao.updateNotes(entryValueIds, notes)
             }
         }
 
         if (printSizeSection.lockState != EntrySection.LockState.DIFFERENT) {
             artEntryDao.updatePrintSizeLocked(
-                entryIds,
+                entryValueIds,
                 printSizeSection.lockState?.toSerializedValue() ?: false
             )
 
             // TODO: Real print size different value tracking
             if (printWidth != null || printHeight != null) {
-                artEntryDao.updatePrintSize(entryIds, printWidth, printHeight)
+                artEntryDao.updatePrintSize(entryValueIds, printWidth, printHeight)
             }
         }
 
-        artEntryDao.updateLastEditTime(entryIds, Date.from(Instant.now()))
+        artEntryDao.updateLastEditTime(entryValueIds, Date.from(Instant.now()))
         return true
     }
 
-    override suspend fun deleteEntry(entryId: String) = artEntryDao.delete(entryId)
+    override suspend fun deleteEntry(entryId: EntryId) = artEntryDao.delete(entryId.valueId)
 
     override fun onImageSizeResult(widthToHeightRatio: Float) {
         printSizeSection.onSizeChange(widthToHeightRatio)

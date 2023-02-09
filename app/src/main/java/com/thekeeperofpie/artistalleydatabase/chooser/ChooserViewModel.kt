@@ -60,7 +60,7 @@ class ChooserViewModel @Inject constructor(
         appPackageName: String,
         entry: ArtEntryGridModel
     ): Pair<Uri, String>? {
-        val file = ArtEntryUtils.getImageFile(application, entry.value.id)
+        val file = ArtEntryUtils.getImageFile(application, entry.value.entryId)
         if (!file.exists()) {
             return null
         }

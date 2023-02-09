@@ -8,7 +8,7 @@ import java.util.UUID
 
 abstract class EntryImporter(protected val appContext: Context) : Importer {
 
-    abstract val entryTypeId: String
+    abstract val scopedIdType: String
 
     override suspend fun readInnerFile(input: InputStream, fileName: String, dryRun: Boolean) {
         if (!dryRun) {
@@ -19,14 +19,16 @@ abstract class EntryImporter(protected val appContext: Context) : Importer {
                 // and if success, consider it a legacy name
                 UUID.fromString(entryName)
 
-                val outputFile = EntryUtils.getEntryFolder(appContext, entryTypeId, entryName)
-                    .apply(File::mkdirs)
+                val outputFile = EntryUtils.getEntryImageFolder(
+                    appContext,
+                    EntryId(scopedIdType, entryName),
+                ).apply(File::mkdirs)
                     .resolve("0-1-1")
                 outputFile.outputStream().use(input::copyTo)
                 EntryUtils.fixImageName(appContext, outputFile)
             } catch (e: Exception) {
                 val entryId = pathSegments[pathSegments.size - 2]
-                EntryUtils.getEntryFolder(appContext, entryTypeId, entryId)
+                EntryUtils.getEntryImageFolder(appContext, EntryId(scopedIdType, entryId))
                     .apply(File::mkdirs)
                     .resolve(entryName)
                     .outputStream()

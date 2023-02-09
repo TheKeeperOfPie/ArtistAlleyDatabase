@@ -11,10 +11,11 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.art.browse.selection.ArtBrowseSelectionScreen
 import com.thekeeperofpie.artistalleydatabase.art.browse.selection.ArtBrowseSelectionViewModel
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryColumn
-import com.thekeeperofpie.artistalleydatabase.art.grid.ArtEntryGridModel
+import com.thekeeperofpie.artistalleydatabase.art.utils.ArtEntryUtils
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseEntryModel
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseSelectionNavigator
 import com.thekeeperofpie.artistalleydatabase.form.EntryDetailsScreen
+import com.thekeeperofpie.artistalleydatabase.form.EntryId
 import com.thekeeperofpie.artistalleydatabase.form.EntryNavigator
 import com.thekeeperofpie.artistalleydatabase.form.EntryUtils.entryDetailsComposable
 import com.thekeeperofpie.artistalleydatabase.form.EntryUtils.navToEntryDetails
@@ -70,7 +71,10 @@ class ArtEntryNavigator : EntryNavigator, BrowseSelectionNavigator {
                     if (viewModel.selectedEntries.isNotEmpty()) {
                         viewModel.selectEntry(index, entry)
                     } else {
-                        navHostController.navToEntryDetails("artEntryDetails", listOf(entry.id))
+                        navHostController.navToEntryDetails(
+                            "artEntryDetails",
+                            listOf(entry.id.valueId)
+                        )
                     }
                 },
                 onLongClickEntry = viewModel::selectEntry,
@@ -78,7 +82,7 @@ class ArtEntryNavigator : EntryNavigator, BrowseSelectionNavigator {
                 onClickEdit = {
                     navHostController.navToEntryDetails(
                         "artEntryDetails",
-                        viewModel.selectedEntries.values.map(ArtEntryGridModel::id)
+                        viewModel.selectedEntries.values.map { it.id.valueId }
                     )
                 },
                 onConfirmDelete = viewModel::onDeleteSelected,
@@ -87,7 +91,7 @@ class ArtEntryNavigator : EntryNavigator, BrowseSelectionNavigator {
 
         navGraphBuilder.entryDetailsComposable(route = "artEntryDetails") { entryIds ->
             val viewModel = hiltViewModel<ArtEntryDetailsViewModel>()
-                .apply { initialize(entryIds) }
+                .apply { initialize(entryIds.map { EntryId(ArtEntryUtils.SCOPED_ID_TYPE, it) }) }
             EntryDetailsScreen(
                 { viewModel.entryImageController.imageState },
                 onImageClickOpen = {

@@ -42,12 +42,10 @@ import androidx.navigation.navArgument
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.mxalbert.sharedelements.SharedElementsRoot
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryNavigator
-import com.thekeeperofpie.artistalleydatabase.art.grid.ArtEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.art.search.ArtSearchViewModel
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseScreen
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseViewModel
 import com.thekeeperofpie.artistalleydatabase.cds.CdEntryNavigator
-import com.thekeeperofpie.artistalleydatabase.cds.grid.CdEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.cds.search.CdSearchViewModel
 import com.thekeeperofpie.artistalleydatabase.compose.LazyStaggeredGrid
 import com.thekeeperofpie.artistalleydatabase.export.ExportScreen
@@ -231,7 +229,7 @@ class MainActivity : ComponentActivity() {
                             } else {
                                 navController.navToEntryDetails(
                                     route = "artEntryDetails",
-                                    listOf(entry.id)
+                                    listOf(entry.id.valueId)
                                 )
                             }
                         },
@@ -240,7 +238,7 @@ class MainActivity : ComponentActivity() {
                         onClickEdit = {
                             navController.navToEntryDetails(
                                 "artEntryDetails",
-                                viewModel.selectedEntries.values.map(ArtEntryGridModel::id)
+                                viewModel.selectedEntries.values.map { it.id.valueId }
                             )
                         },
                         onConfirmDelete = viewModel::deleteSelected,
@@ -281,7 +279,7 @@ class MainActivity : ComponentActivity() {
                             } else {
                                 navController.navToEntryDetails(
                                     route = "cdEntryDetails",
-                                    listOf(entry.id)
+                                    listOf(entry.id.valueId)
                                 )
                             }
                         },
@@ -290,7 +288,7 @@ class MainActivity : ComponentActivity() {
                         onClickEdit = {
                             navController.navToEntryDetails(
                                 "cdEntryDetails",
-                                viewModel.selectedEntries.values.map(CdEntryGridModel::id)
+                                viewModel.selectedEntries.values.map { it.id.valueId }
                             )
                         },
                         onConfirmDelete = viewModel::deleteSelected,
@@ -372,7 +370,7 @@ class MainActivity : ComponentActivity() {
                             } else {
                                 navController.navToEntryDetails(
                                     route = "artEntryDetails",
-                                    listOf(entry.id)
+                                    listOf(entry.id.valueId)
                                 )
                             }
                         },
@@ -381,7 +379,7 @@ class MainActivity : ComponentActivity() {
                         onClickEdit = {
                             navController.navToEntryDetails(
                                 "artEntryDetails",
-                                viewModel.selectedEntries.values.map(ArtEntryGridModel::id)
+                                viewModel.selectedEntries.values.map { it.id.valueId }
                             )
                         },
                         onConfirmDelete = viewModel::onDeleteSelected,

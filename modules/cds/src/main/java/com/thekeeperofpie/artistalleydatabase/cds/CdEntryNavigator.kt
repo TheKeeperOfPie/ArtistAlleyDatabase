@@ -13,8 +13,9 @@ import com.thekeeperofpie.artistalleydatabase.browse.BrowseSelectionNavigator
 import com.thekeeperofpie.artistalleydatabase.cds.browse.selection.CdBrowseSelectionScreen
 import com.thekeeperofpie.artistalleydatabase.cds.browse.selection.CdBrowseSelectionViewModel
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryColumn
-import com.thekeeperofpie.artistalleydatabase.cds.grid.CdEntryGridModel
+import com.thekeeperofpie.artistalleydatabase.cds.utils.CdEntryUtils
 import com.thekeeperofpie.artistalleydatabase.form.EntryDetailsScreen
+import com.thekeeperofpie.artistalleydatabase.form.EntryId
 import com.thekeeperofpie.artistalleydatabase.form.EntryNavigator
 import com.thekeeperofpie.artistalleydatabase.form.EntryUtils.entryDetailsComposable
 import com.thekeeperofpie.artistalleydatabase.form.EntryUtils.navToEntryDetails
@@ -70,7 +71,10 @@ class CdEntryNavigator : EntryNavigator, BrowseSelectionNavigator {
                     if (viewModel.selectedEntries.isNotEmpty()) {
                         viewModel.selectEntry(index, entry)
                     } else {
-                        navHostController.navToEntryDetails("cdEntryDetails", listOf(entry.id))
+                        navHostController.navToEntryDetails(
+                            "cdEntryDetails",
+                            listOf(entry.id.valueId)
+                        )
                     }
                 },
                 onLongClickEntry = viewModel::selectEntry,
@@ -78,7 +82,7 @@ class CdEntryNavigator : EntryNavigator, BrowseSelectionNavigator {
                 onClickEdit = {
                     navHostController.navToEntryDetails(
                         "cdEntryDetails",
-                        viewModel.selectedEntries.values.map(CdEntryGridModel::id)
+                        viewModel.selectedEntries.values.map { it.id.valueId }
                     )
                 },
                 onConfirmDelete = viewModel::onDeleteSelected,
@@ -86,7 +90,8 @@ class CdEntryNavigator : EntryNavigator, BrowseSelectionNavigator {
         }
 
         navGraphBuilder.entryDetailsComposable("cdEntryDetails") { entryIds ->
-            val viewModel = hiltViewModel<CdEntryDetailsViewModel>().apply { initialize(entryIds) }
+            val viewModel = hiltViewModel<CdEntryDetailsViewModel>()
+                .apply { initialize(entryIds.map { EntryId(CdEntryUtils.SCOPED_ID_TYPE, it) }) }
             EntryDetailsScreen(
                 { viewModel.entryImageController.imageState },
                 onImageClickOpen = {

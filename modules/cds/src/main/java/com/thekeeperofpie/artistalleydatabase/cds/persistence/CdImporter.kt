@@ -19,7 +19,7 @@ class CdImporter(
 
     override val zipEntryName = "cd_entries"
 
-    override val entryTypeId = CdEntryUtils.TYPE_ID
+    override val scopedIdType = CdEntryUtils.SCOPED_ID_TYPE
 
     private val cdEntryAdapter = moshi.adapter(CdEntry::class.java)!!
 

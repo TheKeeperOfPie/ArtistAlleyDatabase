@@ -242,7 +242,7 @@ object EntryDetailsScreen {
                 val uri = it.croppedUri ?: it.uri
                 if (uri != null) {
                     SharedElement(
-                        key = "${it.entryId}_image",
+                        key = "${it.entryId?.scopedId}_image",
                         screenKey = "artEntryDetails",
                         // Try to disable the fade animation
                         transitionSpec = SharedElementsTransitionSpec(

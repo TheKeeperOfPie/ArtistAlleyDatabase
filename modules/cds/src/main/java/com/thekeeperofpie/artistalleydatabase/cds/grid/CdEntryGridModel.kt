@@ -5,6 +5,7 @@ import android.net.Uri
 import androidx.core.net.toUri
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntry
 import com.thekeeperofpie.artistalleydatabase.cds.utils.CdEntryUtils
+import com.thekeeperofpie.artistalleydatabase.form.EntryId
 import com.thekeeperofpie.artistalleydatabase.form.grid.EntryGridModel
 import java.io.File
 
@@ -14,7 +15,7 @@ class CdEntryGridModel(
     override val placeholderText: String,
 ) : EntryGridModel {
 
-    override val id get() = value.id
+    override val id = EntryId("cd_entry", value.id)
     override val imageWidth get() = value.imageWidth
     override val imageHeight get() = value.imageHeight
     override val imageWidthToHeightRatio get() = value.imageWidthToHeightRatio
@@ -24,7 +25,7 @@ class CdEntryGridModel(
             application: Application,
             entry: CdEntry
         ): CdEntryGridModel {
-            val imageUri = CdEntryUtils.getImageFile(application, entry.id)
+            val imageUri = CdEntryUtils.getImageFile(application, entry.entryId)
                 .takeIf(File::exists)
                 ?.toUri()
                 ?.buildUpon()

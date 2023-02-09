@@ -6,7 +6,6 @@ import com.squareup.moshi.JsonWriter
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntry
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryDao
-import com.thekeeperofpie.artistalleydatabase.art.utils.ArtEntryUtils
 import com.thekeeperofpie.artistalleydatabase.data.DataConverter
 import com.thekeeperofpie.artistalleydatabase.form.EntryExporter
 import kotlinx.serialization.json.JsonElement
@@ -21,8 +20,6 @@ class ArtExporter(
 ) : EntryExporter(appContext) {
 
     override val zipEntryName = "art_entries"
-
-    override val entryTypeId = ArtEntryUtils.TYPE_ID
 
     override suspend fun entriesSize() = artEntryDao.getEntriesSize()
 
@@ -74,6 +71,6 @@ class ArtExporter(
 
         val tags = entry.tags
 
-        writeImages(entryId = entry.id, writeEntry = writeEntry, series, characters, tags)
+        writeImages(entryId = entry.entryId, writeEntry = writeEntry, series, characters, tags)
     }
 }

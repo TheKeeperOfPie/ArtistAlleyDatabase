@@ -6,7 +6,6 @@ import com.squareup.moshi.JsonWriter
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntry
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDao
-import com.thekeeperofpie.artistalleydatabase.cds.utils.CdEntryUtils
 import com.thekeeperofpie.artistalleydatabase.data.DataConverter
 import com.thekeeperofpie.artistalleydatabase.form.EntryExporter
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbDataConverter
@@ -23,8 +22,6 @@ class CdExporter(
 ) : EntryExporter(appContext) {
 
     override val zipEntryName = "cd_entries"
-
-    override val entryTypeId = CdEntryUtils.TYPE_ID
 
     override suspend fun entriesSize() = cdEntryDao.getEntriesSize()
 
@@ -85,7 +82,7 @@ class CdExporter(
         val tags = entry.tags
 
         writeImages(
-            entryId = entry.id,
+            entryId = entry.entryId,
             writeEntry = writeEntry,
             series,
             characters,

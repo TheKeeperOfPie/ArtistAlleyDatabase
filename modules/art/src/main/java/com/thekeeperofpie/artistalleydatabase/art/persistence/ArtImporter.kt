@@ -19,7 +19,7 @@ class ArtImporter(
 
     override val zipEntryName = "art_entries"
 
-    override val entryTypeId = ArtEntryUtils.TYPE_ID
+    override val scopedIdType = ArtEntryUtils.SCOPED_ID_TYPE
 
     private val artEntryAdapter = moshi.adapter(ArtEntry::class.java)!!
 

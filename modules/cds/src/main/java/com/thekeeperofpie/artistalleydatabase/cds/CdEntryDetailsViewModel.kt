@@ -22,6 +22,7 @@ import com.thekeeperofpie.artistalleydatabase.data.Character
 import com.thekeeperofpie.artistalleydatabase.data.DataConverter
 import com.thekeeperofpie.artistalleydatabase.data.Series
 import com.thekeeperofpie.artistalleydatabase.form.EntryDetailsViewModel
+import com.thekeeperofpie.artistalleydatabase.form.EntryId
 import com.thekeeperofpie.artistalleydatabase.form.EntryImageController
 import com.thekeeperofpie.artistalleydatabase.form.EntrySection
 import com.thekeeperofpie.artistalleydatabase.form.EntrySection.MultiText.Entry
@@ -74,7 +75,7 @@ class CdEntryDetailsViewModel @Inject constructor(
     entrySettings: EntrySettings,
 ) : EntryDetailsViewModel<CdEntry, CdEntryModel>(
     application,
-    CdEntryUtils.TYPE_ID,
+    CdEntryUtils.SCOPED_ID_TYPE,
     R.string.cd_entry_image_content_description,
     entrySettings
 ) {
@@ -305,15 +306,15 @@ class CdEntryDetailsViewModel @Inject constructor(
 
     override suspend fun buildAddModel() = null
 
-    override suspend fun buildSingleEditModel(entryId: String) =
-        buildModel(cdEntryDao.getEntry(entryId))
+    override suspend fun buildSingleEditModel(entryId: EntryId) =
+        buildModel(cdEntryDao.getEntry(entryId.valueId))
 
     override suspend fun buildMultiEditModel(): CdEntryModel {
         TODO("Not yet implemented")
     }
 
     override suspend fun saveSingleEntry(
-        saveImagesResult: Map<String, EntryImageController.SaveResult>,
+        saveImagesResult: Map<EntryId, EntryImageController.SaveResult>,
         skipIgnoreableErrors: Boolean
     ): Boolean {
         val baseEntry = makeBaseEntry()
@@ -361,7 +362,7 @@ class CdEntryDetailsViewModel @Inject constructor(
         val entries = allEntryIds.map {
             val entryImage = entryImages[it]?.firstOrNull()
             baseEntry.copy(
-                id = it,
+                id = it.valueId,
                 imageWidth = entryImage?.croppedWidth ?: entryImage?.width,
                 imageHeight = entryImage?.croppedHeight ?: entryImage?.height
             )
@@ -371,13 +372,13 @@ class CdEntryDetailsViewModel @Inject constructor(
     }
 
     override suspend fun saveMultiEditEntry(
-        saveImagesResult: Map<String, EntryImageController.SaveResult>,
+        saveImagesResult: Map<EntryId, EntryImageController.SaveResult>,
         skipIgnoreableErrors: Boolean
     ): Boolean {
         TODO("Not yet implemented")
     }
 
-    override suspend fun deleteEntry(entryId: String) = cdEntryDao.delete(entryId)
+    override suspend fun deleteEntry(entryId: EntryId) = cdEntryDao.delete(entryId.valueId)
 
     private fun buildModel(entry: CdEntry): CdEntryModel {
         val catalogId = vgmdbDataConverter.databaseToCatalogIdEntry(entry.catalogId)

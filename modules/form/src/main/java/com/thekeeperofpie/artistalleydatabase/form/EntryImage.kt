@@ -4,7 +4,7 @@ import android.net.Uri
 import androidx.annotation.StringRes
 
 data class EntryImage(
-    val entryId: String?,
+    val entryId: EntryId?,
     val uri: Uri?,
     val width: Int,
     val height: Int,

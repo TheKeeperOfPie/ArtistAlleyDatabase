@@ -29,17 +29,24 @@ object EntryUtils {
         val cropped: Boolean,
     )
 
+    // TODO: Remove this and migrate the folder naming?
+    private val EntryId.imageFolderName: String
+        get() = when (type) {
+            "art_entry" -> "art_entry_images"
+            "cd_entry" -> "cd_entry_images"
+            else -> throw IllegalArgumentException("Unrecognized type $type")
+        }
+
     @WorkerThread
-    fun getEntryFolder(context: Context, entryTypeId: String, entryId: String) =
-        context.filesDir.resolve("$entryTypeId/$entryId")
+    fun getEntryImageFolder(context: Context, entryId: EntryId) =
+        context.filesDir.resolve("${entryId.imageFolderName}/${entryId.valueId}")
 
     @WorkerThread
     fun getImages(
         context: Context,
-        entryTypeId: String,
-        entryId: String,
+        entryId: EntryId,
         @StringRes contentDescriptionRes: Int
-    ) = getEntryFolder(context, entryTypeId, entryId)
+    ) = getEntryImageFolder(context, entryId)
         .let {
             if (!it.exists()) {
                 emptyList()
@@ -107,8 +114,8 @@ object EntryUtils {
             }
         }
 
-    fun getImageFile(context: Context, entryTypeId: String, entryId: String) =
-        getEntryFolder(context, entryTypeId, entryId)
+    fun getImageFile(context: Context, entryId: EntryId) =
+        getEntryImageFolder(context, entryId)
             .let {
                 if (!it.exists()) {
                     null
@@ -123,27 +130,27 @@ object EntryUtils {
                         ?: it.listFiles()?.firstOrNull()
                 } else null
             }
-            ?: getEntryFolder(context, entryTypeId, entryId).resolve("0-1-1")
+            ?: getEntryImageFolder(context, entryId).resolve("0-1-1")
 
     fun getImageFile(
         context: Context,
-        entryTypeId: String,
-        entryId: String,
+        entryId: EntryId,
         index: Int,
         width: Int,
         height: Int,
         label: String,
         cropped: Boolean,
-    ) = context.filesDir.resolve("$entryTypeId/$entryId/$index-$width-$height-$label".let {
-        if (cropped) "$it-cropped" else it
-    })
+    ) =
+        context.filesDir.resolve(("${entryId.imageFolderName}/${entryId.valueId}/" +
+                "$index-$width-$height-$label")
+            .let { if (cropped) "$it-cropped" else it })
 
     // TODO: Store cropped images alongside originals instead of replacing
-    fun getCropTempFile(context: Context, entryTypeId: String, entryId: String, index: Int) =
+    fun getCropTempFile(context: Context, entryId: EntryId, index: Int) =
         context.filesDir
-            .resolve("$entryTypeId/crop/")
+            .resolve("${entryId.imageFolderName}/crop/")
             .apply { mkdirs() }
-            .resolve("$entryId-$index")
+            .resolve("${entryId.valueId}-$index")
 
     fun NavGraphBuilder.entryDetailsComposable(
         route: String,
@@ -211,7 +218,7 @@ object EntryUtils {
 
     // TODO: The cache keys don't account for crop state or image changes in general, so
     //  the wrong image is loaded whenever a crop/image change is saved
-    fun getImageCacheKey(it: EntryImage) = "coil_memory_entry_image_home_${it.entryId}"
+    fun getImageCacheKey(it: EntryImage) = "coil_memory_entry_image_home_${it.entryId?.scopedId}"
 
-    fun getImageCacheKey(it: EntryGridModel) = "coil_memory_entry_image_home_${it.id}"
+    fun getImageCacheKey(it: EntryGridModel) = "coil_memory_entry_image_home_${it.id.scopedId}"
 }
