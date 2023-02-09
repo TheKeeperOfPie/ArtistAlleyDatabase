@@ -66,8 +66,8 @@ object CropUtils {
             text = { Text(stringResource(R.string.entry_image_crop_text)) },
             confirmButton = {
                 TextButton(onClick = {
-                    onDismiss()
                     onConfirm()
+                    onDismiss()
                 }) {
                     Text(stringResource(R.string.confirm))
                 }

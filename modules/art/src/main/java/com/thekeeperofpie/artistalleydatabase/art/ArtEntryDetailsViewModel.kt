@@ -1,14 +1,8 @@
 package com.thekeeperofpie.artistalleydatabase.art
 
 import android.app.Application
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.NavHostController
 import com.hoc081098.flowext.withLatestFrom
-import com.thekeeperofpie.artistalleydatabase.android_utils.AnimationUtils
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListAutocompleter
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
@@ -25,6 +19,7 @@ import com.thekeeperofpie.artistalleydatabase.art.utils.ArtEntryUtils
 import com.thekeeperofpie.artistalleydatabase.data.Character
 import com.thekeeperofpie.artistalleydatabase.data.DataConverter
 import com.thekeeperofpie.artistalleydatabase.data.Series
+import com.thekeeperofpie.artistalleydatabase.form.EntryDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.form.EntryImageController
 import com.thekeeperofpie.artistalleydatabase.form.EntrySection
 import com.thekeeperofpie.artistalleydatabase.form.EntrySection.MultiText.Entry
@@ -32,7 +27,6 @@ import com.thekeeperofpie.artistalleydatabase.form.EntrySettings
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filter
@@ -45,13 +39,12 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.decodeFromString
 import java.time.Instant
 import java.util.Date
-import javax.annotation.CheckReturnValue
 import javax.inject.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 open class ArtEntryDetailsViewModel @Inject constructor(
-    protected val application: Application,
+    application: Application,
     protected val appJson: AppJson,
     protected val artEntryDao: ArtEntryDetailsDao,
     private val dataConverter: DataConverter,
@@ -60,14 +53,12 @@ open class ArtEntryDetailsViewModel @Inject constructor(
     private val aniListAutocompleter: AniListAutocompleter,
     private val artSettings: ArtSettings,
     entrySettings: EntrySettings,
-) : ViewModel() {
-
-    private enum class Type {
-        ADD, SINGLE_EDIT, MULTI_EDIT
-    }
-
-    private lateinit var entryIds: List<String>
-    private lateinit var type: Type
+) : EntryDetailsViewModel<ArtEntry, ArtEntryModel>(
+    application,
+    ArtEntryUtils.TYPE_ID,
+    R.string.art_entry_image_content_description,
+    entrySettings,
+) {
 
     protected val seriesSection = EntrySection.MultiText(
         R.string.art_entry_series_header_zero,
@@ -114,26 +105,6 @@ open class ArtEntryDetailsViewModel @Inject constructor(
         tagSection,
         printSizeSection,
         notesSection,
-    )
-
-    var errorResource by mutableStateOf<Pair<Int, Exception?>?>(null)
-
-    var sectionsLoading by mutableStateOf(true)
-        private set
-
-    var saving by mutableStateOf(false)
-        private set
-
-    private var deleting by mutableStateOf(false)
-
-    val entryImageController = EntryImageController(
-        scopeProvider = { viewModelScope },
-        application = application,
-        settings = entrySettings,
-        entryTypeId = ArtEntryUtils.TYPE_ID,
-        onError = { errorResource = it },
-        imageContentDescriptionRes = R.string.art_entry_image_content_description,
-        onImageSizeResult = { width, height -> onImageSizeResult(height / width.toFloat()) }
     )
 
     init {
@@ -233,39 +204,12 @@ open class ArtEntryDetailsViewModel @Inject constructor(
         }
     }
 
-    fun initialize(entryIds: List<String>) {
-        if (this::entryIds.isInitialized) return
-        this.entryIds = entryIds
-        this.type = when (entryIds.size) {
-            0 -> Type.ADD
-            1 -> Type.SINGLE_EDIT
-            else -> Type.MULTI_EDIT
-        }
+    override suspend fun buildAddModel() = artSettings.loadArtEntryTemplate()?.let(::buildModel)
 
-        viewModelScope.launch(Dispatchers.IO) {
-            val model = when (type) {
-                Type.ADD -> artSettings.loadArtEntryTemplate()?.let(::buildModel)
-                Type.SINGLE_EDIT -> {
-                    // TODO: Move this delay into the UI layer
-                    // Delay to allow the shared element transition to finish
-                    delay(
-                        AnimationUtils.multipliedByAnimatorScale(application, 350L)
-                            .coerceAtLeast(350L)
-                    )
-                    buildModel(artEntryDao.getEntry(entryIds.single()))
-                }
-                Type.MULTI_EDIT -> readMultiEditEntry()
-            }
-            withContext(Dispatchers.Main) {
-                model?.run(::initializeForm)
-                sectionsLoading = false
-            }
-        }
+    override suspend fun buildSingleEditModel(entryId: String) =
+        buildModel(artEntryDao.getEntry(entryId))
 
-        entryImageController.initialize(entryIds)
-    }
-
-    private suspend fun readMultiEditEntry(): ArtEntryModel {
+    override suspend fun buildMultiEditModel(): ArtEntryModel {
         val firstEntry = artEntryDao.getEntry(entryIds.first())
         val differentValue = listOf(Entry.Different)
 
@@ -364,139 +308,10 @@ open class ArtEntryDetailsViewModel @Inject constructor(
         )
     }
 
-    // TODO: Read image ratio from EntryImage directly for section
-    private fun onImageSizeResult(widthToHeightRatio: Float) {
-        printSizeSection.onSizeChange(widthToHeightRatio)
-    }
-
-    protected fun buildModel(entry: ArtEntry): ArtEntryModel {
-        val artists = entry.artists.map(Entry::Custom)
-        val series = dataConverter.seriesEntries(entry.series(appJson))
-        val characters = dataConverter.characterEntries(entry.characters(appJson))
-        val tags = entry.tags.map(Entry::Custom)
-
-        return ArtEntryModel(
-            entry = entry,
-            artists = artists,
-            series = series,
-            characters = characters,
-            tags = tags,
-            source = SourceType.fromEntry(appJson.json, entry)
-        )
-    }
-
-    protected fun initializeForm(entry: ArtEntryModel) {
-        artistSection.setContents(entry.artists, entry.artistsLocked)
-        sourceSection.initialize(entry, entry.sourceLocked)
-        seriesSection.setContents(entry.series, entry.seriesLocked)
-        characterSection.setContents(entry.characters, entry.charactersLocked)
-        printSizeSection.initialize(entry.printWidth, entry.printHeight, entry.printSizeLocked)
-        tagSection.setContents(entry.tags, entry.tagsLocked)
-        notesSection.setContents(entry.notes, entry.notesLocked)
-
-        entry.characters.filterIsInstance<Entry.Prefilled<*>>()
-            .mapNotNull(AniListUtils::characterId)
-            .forEach {
-                viewModelScope.launch(Dispatchers.Main) {
-                    aniListAutocompleter.fillCharacterField(it)
-                        .flowOn(Dispatchers.IO)
-                        .collectLatest(characterSection::replaceContent)
-                }
-            }
-
-        entry.series.filterIsInstance<Entry.Prefilled<*>>()
-            .mapNotNull(AniListUtils::mediaId)
-            .forEach {
-                viewModelScope.launch(Dispatchers.Main) {
-                    aniListAutocompleter.fillMediaField(it)
-                        .flowOn(Dispatchers.IO)
-                        .collectLatest(seriesSection::replaceContent)
-                }
-            }
-    }
-
-    fun onConfirmDelete(navHostController: NavHostController) {
-        if (deleting || saving) return
-        if (type != Type.SINGLE_EDIT) {
-            // Don't delete from details page unless editing a single entry to avoid mistakes
-            return
-        }
-
-        deleting = true
-
-        viewModelScope.launch(Dispatchers.IO) {
-            artEntryDao.delete(entryIds.single())
-            withContext(Dispatchers.Main) {
-                navHostController.popBackStack()
-            }
-        }
-    }
-
-    fun onClickSave(navHostController: NavHostController) {
-        save(navHostController, skipIgnoreableErrors = false)
-    }
-
-    fun onLongClickSave(navHostController: NavHostController) {
-        save(navHostController, skipIgnoreableErrors = true)
-    }
-
-    private fun save(navHostController: NavHostController, skipIgnoreableErrors: Boolean) {
-        if (saving || deleting) return
-        saving = true
-
-        viewModelScope.launch(Dispatchers.IO) {
-            val success = if (type == Type.MULTI_EDIT) {
-                saveMultiEditEntry()
-            } else {
-                saveEntry(skipIgnoreableErrors = skipIgnoreableErrors)
-            }
-            withContext(Dispatchers.Main) {
-                if (success) {
-                    navHostController.popBackStack()
-                } else {
-                    saving = false
-                }
-            }
-        }
-    }
-
-    protected fun makeBaseEntry(): ArtEntry {
-        val sourceItem = sourceSection.selectedItem().toSource()
-
-        return ArtEntry(
-            id = "",
-            artists = artistSection.finalContents().map { it.serializedValue },
-            sourceType = sourceItem.serializedType,
-            sourceValue = sourceItem.serializedValue(appJson.json),
-            seriesSerialized = seriesSection.finalContents().map { it.serializedValue },
-            seriesSearchable = seriesSection.finalContents().map { it.searchableValue }
-                .filterNot(String?::isNullOrBlank),
-            charactersSerialized = characterSection.finalContents().map { it.serializedValue },
-            charactersSearchable = characterSection.finalContents().map { it.searchableValue }
-                .filterNot(String?::isNullOrBlank),
-            tags = tagSection.finalContents().map { it.serializedValue },
-            lastEditTime = Date.from(Instant.now()),
-            imageWidth = null,
-            imageHeight = null,
-            printWidth = printSizeSection.finalWidth(),
-            printHeight = printSizeSection.finalHeight(),
-            notes = notesSection.value.trim(),
-            locks = ArtEntry.Locks(
-                artistsLocked = artistSection.lockState?.toSerializedValue(),
-                seriesLocked = seriesSection.lockState?.toSerializedValue(),
-                charactersLocked = characterSection.lockState?.toSerializedValue(),
-                sourceLocked = sourceSection.lockState?.toSerializedValue(),
-                tagsLocked = tagSection.lockState?.toSerializedValue(),
-                notesLocked = notesSection.lockState?.toSerializedValue(),
-                printSizeLocked = printSizeSection.lockState?.toSerializedValue(),
-            )
-        )
-    }
-
-    @CheckReturnValue
-    private suspend fun saveEntry(skipIgnoreableErrors: Boolean = false): Boolean {
-        val saveImagesResult = entryImageController.saveImages() ?: return false
-
+    override suspend fun saveSingleEntry(
+        saveImagesResult: Map<String, EntryImageController.SaveResult>,
+        skipIgnoreableErrors: Boolean
+    ): Boolean {
         val baseEntry = makeBaseEntry()
         baseEntry.series(appJson)
             .filterIsInstance<Series.AniList>()
@@ -530,13 +345,13 @@ open class ArtEntryDetailsViewModel @Inject constructor(
             )
         }
         artEntryDao.insertEntries(entries)
-
-        entryImageController.cleanUpImages(entryIds, saveImagesResult)
-
         return true
     }
 
-    private suspend fun saveMultiEditEntry(): Boolean {
+    override suspend fun saveMultiEditEntry(
+        saveImagesResult: Map<String, EntryImageController.SaveResult>,
+        skipIgnoreableErrors: Boolean
+    ): Boolean {
         val series = seriesSection.finalContents()
         val characters = characterSection.finalContents()
         val tags = tagSection.finalContents()
@@ -546,8 +361,6 @@ open class ArtEntryDetailsViewModel @Inject constructor(
         val printWidth = printSizeSection.finalWidth()
         val printHeight = printSizeSection.finalHeight()
         val notes = notesSection.value
-
-        val saveImagesResult = entryImageController.saveImages() ?: return false
 
         // TODO: Better communicate to user that "Different" value must be deleted,
         //  append is not currently supported.
@@ -651,8 +464,91 @@ open class ArtEntryDetailsViewModel @Inject constructor(
         }
 
         artEntryDao.updateLastEditTime(entryIds, Date.from(Instant.now()))
-
-        entryImageController.cleanUpImages(entryIds, saveImagesResult)
         return true
+    }
+
+    override suspend fun deleteEntry(entryId: String) = artEntryDao.delete(entryId)
+
+    override fun onImageSizeResult(widthToHeightRatio: Float) {
+        printSizeSection.onSizeChange(widthToHeightRatio)
+    }
+
+    protected fun buildModel(entry: ArtEntry): ArtEntryModel {
+        val artists = entry.artists.map(Entry::Custom)
+        val series = dataConverter.seriesEntries(entry.series(appJson))
+        val characters = dataConverter.characterEntries(entry.characters(appJson))
+        val tags = entry.tags.map(Entry::Custom)
+
+        return ArtEntryModel(
+            entry = entry,
+            artists = artists,
+            series = series,
+            characters = characters,
+            tags = tags,
+            source = SourceType.fromEntry(appJson.json, entry)
+        )
+    }
+
+    override fun initializeForm(model: ArtEntryModel) {
+        artistSection.setContents(model.artists, model.artistsLocked)
+        sourceSection.initialize(model, model.sourceLocked)
+        seriesSection.setContents(model.series, model.seriesLocked)
+        characterSection.setContents(model.characters, model.charactersLocked)
+        printSizeSection.initialize(model.printWidth, model.printHeight, model.printSizeLocked)
+        tagSection.setContents(model.tags, model.tagsLocked)
+        notesSection.setContents(model.notes, model.notesLocked)
+
+        model.characters.filterIsInstance<Entry.Prefilled<*>>()
+            .mapNotNull(AniListUtils::characterId)
+            .forEach {
+                viewModelScope.launch(Dispatchers.Main) {
+                    aniListAutocompleter.fillCharacterField(it)
+                        .flowOn(Dispatchers.IO)
+                        .collectLatest(characterSection::replaceContent)
+                }
+            }
+
+        model.series.filterIsInstance<Entry.Prefilled<*>>()
+            .mapNotNull(AniListUtils::mediaId)
+            .forEach {
+                viewModelScope.launch(Dispatchers.Main) {
+                    aniListAutocompleter.fillMediaField(it)
+                        .flowOn(Dispatchers.IO)
+                        .collectLatest(seriesSection::replaceContent)
+                }
+            }
+    }
+
+    protected fun makeBaseEntry(): ArtEntry {
+        val sourceItem = sourceSection.selectedItem().toSource()
+
+        return ArtEntry(
+            id = "",
+            artists = artistSection.finalContents().map { it.serializedValue },
+            sourceType = sourceItem.serializedType,
+            sourceValue = sourceItem.serializedValue(appJson.json),
+            seriesSerialized = seriesSection.finalContents().map { it.serializedValue },
+            seriesSearchable = seriesSection.finalContents().map { it.searchableValue }
+                .filterNot(String?::isNullOrBlank),
+            charactersSerialized = characterSection.finalContents().map { it.serializedValue },
+            charactersSearchable = characterSection.finalContents().map { it.searchableValue }
+                .filterNot(String?::isNullOrBlank),
+            tags = tagSection.finalContents().map { it.serializedValue },
+            lastEditTime = Date.from(Instant.now()),
+            imageWidth = null,
+            imageHeight = null,
+            printWidth = printSizeSection.finalWidth(),
+            printHeight = printSizeSection.finalHeight(),
+            notes = notesSection.value.trim(),
+            locks = ArtEntry.Locks(
+                artistsLocked = artistSection.lockState?.toSerializedValue(),
+                seriesLocked = seriesSection.lockState?.toSerializedValue(),
+                charactersLocked = characterSection.lockState?.toSerializedValue(),
+                sourceLocked = sourceSection.lockState?.toSerializedValue(),
+                tagsLocked = tagSection.lockState?.toSerializedValue(),
+                notesLocked = notesSection.lockState?.toSerializedValue(),
+                printSizeLocked = printSizeSection.lockState?.toSerializedValue(),
+            )
+        )
     }
 }

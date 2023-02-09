@@ -8,5 +8,9 @@ interface Importer {
 
     suspend fun readEntries(input: InputStream, dryRun: Boolean, replaceAll: Boolean): Int
 
-    suspend fun readInnerFile(input: InputStream, fileName: String, dryRun: Boolean)
+    suspend fun readInnerFile(
+        input: InputStream,
+        fileName: String,
+        dryRun: Boolean
+    )
 }

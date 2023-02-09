@@ -3,21 +3,23 @@ package com.thekeeperofpie.artistalleydatabase.art.persistence
 import android.content.Context
 import com.squareup.moshi.JsonReader
 import com.squareup.moshi.Moshi
-import com.thekeeperofpie.artistalleydatabase.android_utils.persistence.Importer
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntry
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryDao
 import com.thekeeperofpie.artistalleydatabase.art.utils.ArtEntryUtils
+import com.thekeeperofpie.artistalleydatabase.form.EntryImporter
 import okio.buffer
 import okio.source
 import java.io.InputStream
 
 class ArtImporter(
-    private val appContext: Context,
+    appContext: Context,
     private val artEntryDao: ArtEntryDao,
     moshi: Moshi,
-) : Importer {
+) : EntryImporter(appContext) {
 
     override val zipEntryName = "art_entries"
+
+    override val entryTypeId = ArtEntryUtils.TYPE_ID
 
     private val artEntryAdapter = moshi.adapter(ArtEntry::class.java)!!
 
@@ -35,14 +37,6 @@ class ArtImporter(
             }
         }
         return count
-    }
-
-    override suspend fun readInnerFile(input: InputStream, fileName: String, dryRun: Boolean) {
-        if (!dryRun) {
-            ArtEntryUtils.getImageFile(appContext, fileName)
-                .outputStream()
-                .use { input.copyTo(it) }
-        }
     }
 
     /**

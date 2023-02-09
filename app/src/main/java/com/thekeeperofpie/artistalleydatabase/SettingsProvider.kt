@@ -53,9 +53,15 @@ class SettingsProvider(
         }
     }
 
-    override fun saveCropDocumentUri(uri: Uri) {
+    override fun saveCropDocumentUri(uri: Uri?) {
         sharedPreferences.edit()
-            .putString(KEY_ART_ENTRY_CROP_DOCUMENT_URI, uri.toString())
+            .run {
+                if (uri == null) {
+                    remove(KEY_ART_ENTRY_CROP_DOCUMENT_URI)
+                } else {
+                    putString(KEY_ART_ENTRY_CROP_DOCUMENT_URI, uri.toString())
+                }
+            }
             .apply()
     }
 

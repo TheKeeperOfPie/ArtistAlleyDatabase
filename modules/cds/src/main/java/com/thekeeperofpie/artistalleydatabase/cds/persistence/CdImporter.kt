@@ -3,21 +3,23 @@ package com.thekeeperofpie.artistalleydatabase.cds.persistence
 import android.content.Context
 import com.squareup.moshi.JsonReader
 import com.squareup.moshi.Moshi
-import com.thekeeperofpie.artistalleydatabase.android_utils.persistence.Importer
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntry
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDao
 import com.thekeeperofpie.artistalleydatabase.cds.utils.CdEntryUtils
+import com.thekeeperofpie.artistalleydatabase.form.EntryImporter
 import okio.buffer
 import okio.source
 import java.io.InputStream
 
 class CdImporter(
-    private val appContext: Context,
+    appContext: Context,
     private val cdEntryDao: CdEntryDao,
     moshi: Moshi,
-) : Importer {
+) : EntryImporter(appContext) {
 
     override val zipEntryName = "cd_entries"
+
+    override val entryTypeId = CdEntryUtils.TYPE_ID
 
     private val cdEntryAdapter = moshi.adapter(CdEntry::class.java)!!
 
@@ -35,14 +37,6 @@ class CdImporter(
             }
         }
         return count
-    }
-
-    override suspend fun readInnerFile(input: InputStream, fileName: String, dryRun: Boolean) {
-        if (!dryRun) {
-            CdEntryUtils.getImageFile(appContext, fileName)
-                .outputStream()
-                .use { input.copyTo(it) }
-        }
     }
 
     /**

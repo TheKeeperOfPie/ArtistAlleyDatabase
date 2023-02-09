@@ -2,15 +2,9 @@ package com.thekeeperofpie.artistalleydatabase.cds
 
 import android.app.Application
 import android.util.Log
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.core.net.toUri
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.NavHostController
 import com.hoc081098.flowext.startWith
-import com.thekeeperofpie.artistalleydatabase.android_utils.AnimationUtils
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.emitNotNull
 import com.thekeeperofpie.artistalleydatabase.android_utils.mapLatestNotNull
@@ -27,6 +21,7 @@ import com.thekeeperofpie.artistalleydatabase.cds.utils.CdEntryUtils
 import com.thekeeperofpie.artistalleydatabase.data.Character
 import com.thekeeperofpie.artistalleydatabase.data.DataConverter
 import com.thekeeperofpie.artistalleydatabase.data.Series
+import com.thekeeperofpie.artistalleydatabase.form.EntryDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.form.EntryImageController
 import com.thekeeperofpie.artistalleydatabase.form.EntrySection
 import com.thekeeperofpie.artistalleydatabase.form.EntrySection.MultiText.Entry
@@ -40,8 +35,8 @@ import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbUtils
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumEntry
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumRepository
 import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.ArtistRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
@@ -59,10 +54,12 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.Instant
 import java.util.Date
+import javax.inject.Inject
 
-abstract class CdEntryDetailsViewModel(
-    protected val application: Application,
-    protected val cdEntryDao: CdEntryDetailsDao,
+@HiltViewModel
+class CdEntryDetailsViewModel @Inject constructor(
+    application: Application,
+    private val cdEntryDao: CdEntryDetailsDao,
     private val appJson: AppJson,
     private val aniListAutocompleter: AniListAutocompleter,
     private val vgmdbApi: VgmdbApi,
@@ -75,18 +72,15 @@ abstract class CdEntryDetailsViewModel(
     private val characterRepository: CharacterRepository,
     private val dataConverter: DataConverter,
     entrySettings: EntrySettings,
-) : ViewModel() {
-
+) : EntryDetailsViewModel<CdEntry, CdEntryModel>(
+    application,
+    CdEntryUtils.TYPE_ID,
+    R.string.cd_entry_image_content_description,
+    entrySettings
+) {
     companion object {
         private const val TAG = "CdEntryDetailsViewModel"
     }
-
-    private enum class Type {
-        ADD, SINGLE_EDIT, MULTI_EDIT
-    }
-
-    private lateinit var entryIds: List<String>
-    private lateinit var type: Type
 
     // TODO: Enforce single value
     private val catalogIdSection = EntrySection.MultiText(
@@ -158,25 +152,6 @@ abstract class CdEntryDetailsViewModel(
         notesSection
     )
 
-    var errorResource by mutableStateOf<Pair<Int, Exception?>?>(null)
-
-    var sectionsLoading by mutableStateOf(true)
-        private set
-
-    var saving by mutableStateOf(false)
-        private set
-
-    private var deleting by mutableStateOf(false)
-
-    val entryImageController = EntryImageController(
-        scopeProvider = { viewModelScope },
-        application = application,
-        settings = entrySettings,
-        entryTypeId = CdEntryUtils.TYPE_ID,
-        onError = { errorResource = it },
-        imageContentDescriptionRes = R.string.cd_entry_image_content_description,
-    )
-
     init {
         viewModelScope.launch(Dispatchers.Main) {
             @Suppress("OPT_IN_USAGE")
@@ -223,7 +198,7 @@ abstract class CdEntryDetailsViewModel(
         viewModelScope.launch(Dispatchers.IO) {
             catalogAlbumChosen()
                 .collectLatest {
-                    if (entryIds.size == 1)  {
+                    if (entryIds.size == 1) {
                         it.coverFull?.toUri()?.let {
                             entryImageController.replaceMainImage(entryIds[0], it)
                         }
@@ -315,38 +290,6 @@ abstract class CdEntryDetailsViewModel(
         }
     }
 
-    fun initialize(entryIds: List<String>) {
-        if (this::entryIds.isInitialized) return
-        this.entryIds = entryIds
-        this.type = when (entryIds.size) {
-            0 -> Type.ADD
-            1 -> Type.SINGLE_EDIT
-            else -> Type.MULTI_EDIT
-        }
-
-        viewModelScope.launch(Dispatchers.IO) {
-            val model = when (type) {
-                Type.ADD -> null
-                Type.SINGLE_EDIT -> {
-                    // TODO: Move this delay into the UI layer
-                    // Delay to allow the shared element transition to finish
-                    delay(
-                        AnimationUtils.multipliedByAnimatorScale(application, 350L)
-                            .coerceAtLeast(350L)
-                    )
-                    buildModel(cdEntryDao.getEntry(entryIds.single()))
-                }
-                Type.MULTI_EDIT -> TODO("CD multi-edit support")
-            }
-            withContext(Dispatchers.Main) {
-                model?.run(::initializeForm)
-                sectionsLoading = false
-            }
-        }
-
-        entryImageController.initialize(entryIds)
-    }
-
     @Suppress("OPT_IN_USAGE")
     private fun catalogAlbumChosen() = catalogIdSection.predictionChosen
         .filterIsInstance<Entry.Prefilled<*>>()
@@ -360,180 +303,19 @@ abstract class CdEntryDetailsViewModel(
             }
         }
 
-    protected fun buildModel(entry: CdEntry): CdEntryModel {
-        val catalogId = vgmdbDataConverter.databaseToCatalogIdEntry(entry.catalogId)
-        val titles = entry.titles.map(vgmdbDataConverter::databaseToTitleEntry)
-        val performers = entry.performers.map(vgmdbDataConverter::databaseToArtistEntry)
-        val composers = entry.composers.map(vgmdbDataConverter::databaseToArtistEntry)
-        val series = dataConverter.seriesEntries(entry.series(appJson))
-        val characters = dataConverter.characterEntries(entry.characters(appJson))
-        val discs = entry.discs.mapNotNull(vgmdbDataConverter::databaseToDiscEntry)
-        val tags = entry.tags.map(Entry::Custom)
+    override suspend fun buildAddModel() = null
 
-        return CdEntryModel(
-            entry = entry,
-            catalogId = catalogId,
-            titles = titles,
-            performers = performers,
-            composers = composers,
-            series = series,
-            characters = characters,
-            discs = discs,
-            tags = tags,
-        )
+    override suspend fun buildSingleEditModel(entryId: String) =
+        buildModel(cdEntryDao.getEntry(entryId))
+
+    override suspend fun buildMultiEditModel(): CdEntryModel {
+        TODO("Not yet implemented")
     }
 
-    private fun initializeForm(entry: CdEntryModel) {
-        catalogIdSection.setContents(listOf(entry.catalogId), entry.titlesLocked)
-        titleSection.setContents(entry.titles, entry.titlesLocked)
-        performerSection.setContents(entry.performers, entry.performersLocked)
-        composerSection.setContents(entry.composers, entry.composersLocked)
-        seriesSection.setContents(entry.series, entry.seriesLocked)
-        characterSection.setContents(entry.characters, entry.charactersLocked)
-        discSection.setDiscs(entry.discs, entry.discsLocked)
-        tagSection.setContents(entry.tags, entry.tagsLocked)
-        notesSection.setContents(entry.notes, entry.notesLocked)
-
-        val albumId = VgmdbUtils.albumId(entry.catalogId)
-        if (albumId != null) {
-            viewModelScope.launch(Dispatchers.Main) {
-                albumRepository.getEntry(albumId)
-                    .filterNotNull()
-                    .map(vgmdbDataConverter::catalogEntry)
-                    .flowOn(Dispatchers.IO)
-                    .collectLatest(catalogIdSection::replaceContent)
-            }
-        }
-
-        entry.titles
-            .mapNotNull(VgmdbUtils::albumId)
-            .forEach {
-                viewModelScope.launch(Dispatchers.Main) {
-                    albumRepository.getEntry(it)
-                        .filterNotNull()
-                        .map(vgmdbDataConverter::titleEntry)
-                        .flowOn(Dispatchers.IO)
-                        .collectLatest(titleSection::replaceContent)
-                }
-            }
-
-        mapOf(
-            entry.performers to performerSection,
-            entry.composers to composerSection,
-        ).forEach { (entrySection, formSection) ->
-            entrySection
-                .mapNotNull { vgmdbDataConverter.artistColumnData(it) }
-                .forEach {
-                    viewModelScope.launch(Dispatchers.Main) {
-                        vgmdbAutocompleter.fillArtistField(it)
-                            .flowOn(Dispatchers.IO)
-                            .collectLatest(formSection::replaceContent)
-                    }
-                }
-        }
-
-        entry.characters
-            .mapNotNull(AniListUtils::characterId)
-            .forEach {
-                viewModelScope.launch(Dispatchers.Main) {
-                    aniListAutocompleter.fillCharacterField(it)
-                        .flowOn(Dispatchers.IO)
-                        .collectLatest(characterSection::replaceContent)
-                }
-            }
-
-        entry.series
-            .mapNotNull(AniListUtils::mediaId)
-            .forEach {
-                viewModelScope.launch(Dispatchers.Main) {
-                    aniListAutocompleter.fillMediaField(it)
-                        .flowOn(Dispatchers.IO)
-                        .collectLatest(seriesSection::replaceContent)
-                }
-            }
-    }
-
-    private fun makeBaseEntry(): CdEntry {
-        return CdEntry(
-            id = "",
-            catalogId = catalogIdSection.finalContents().firstOrNull()?.serializedValue,
-            titles = titleSection.finalContents().map { it.serializedValue },
-            performers = performerSection.finalContents().map { it.serializedValue },
-            composers = composerSection.finalContents().map { it.serializedValue },
-            seriesSerialized = seriesSection.finalContents().map { it.serializedValue },
-            seriesSearchable = seriesSection.finalContents().map { it.searchableValue }
-                .filterNot(String?::isNullOrBlank),
-            charactersSerialized = characterSection.finalContents().map { it.serializedValue },
-            charactersSearchable = characterSection.finalContents().map { it.searchableValue }
-                .filterNot(String?::isNullOrBlank),
-            discs = discSection.serializedValue(),
-            tags = tagSection.finalContents().map { it.serializedValue },
-            lastEditTime = Date.from(Instant.now()),
-            imageWidth = null,
-            imageHeight = null,
-            notes = notesSection.value.trim(),
-            locks = CdEntry.Locks(
-                catalogIdLocked = catalogIdSection.lockState?.toSerializedValue(),
-                titlesLocked = titleSection.lockState?.toSerializedValue(),
-                performersLocked = performerSection.lockState?.toSerializedValue(),
-                composersLocked = composerSection.lockState?.toSerializedValue(),
-                seriesLocked = seriesSection.lockState?.toSerializedValue(),
-                charactersLocked = characterSection.lockState?.toSerializedValue(),
-                discsLocked = discSection.lockState?.toSerializedValue(),
-                tagsLocked = tagSection.lockState?.toSerializedValue(),
-                notesLocked = notesSection.lockState?.toSerializedValue(),
-            )
-        )
-    }
-
-    fun onConfirmDelete(navHostController: NavHostController) {
-        if (deleting || saving) return
-        if (type != Type.SINGLE_EDIT) {
-            // Don't delete from details page unless editing a single entry to avoid mistakes
-            return
-        }
-
-        deleting = true
-
-        viewModelScope.launch(Dispatchers.IO) {
-            cdEntryDao.delete(entryIds.single())
-            withContext(Dispatchers.Main) {
-                navHostController.popBackStack()
-            }
-        }
-    }
-
-    fun onClickSave(navHostController: NavHostController) {
-        save(navHostController, skipIgnoreableErrors = false)
-    }
-
-    fun onLongClickSave(navHostController: NavHostController) {
-        save(navHostController, skipIgnoreableErrors = true)
-    }
-
-    private fun save(navHostController: NavHostController, skipIgnoreableErrors: Boolean) {
-        if (saving || deleting) return
-        saving = true
-
-        viewModelScope.launch(Dispatchers.IO) {
-            val success = if (type == Type.MULTI_EDIT) {
-                TODO("Multi edit support")
-            } else {
-                saveEntry(skipIgnoreableErrors = skipIgnoreableErrors)
-            }
-            withContext(Dispatchers.Main) {
-                if (success) {
-                    navHostController.popBackStack()
-                } else {
-                    saving = false
-                }
-            }
-        }
-    }
-
-    private suspend fun saveEntry(skipIgnoreableErrors: Boolean = false): Boolean {
-        val saveImagesResult = entryImageController.saveImages() ?: return false
-
+    override suspend fun saveSingleEntry(
+        saveImagesResult: Map<String, EntryImageController.SaveResult>,
+        skipIgnoreableErrors: Boolean
+    ): Boolean {
         val baseEntry = makeBaseEntry()
         baseEntry.catalogId?.let { albumRepository.ensureSaved(listOf(it)) }
             ?.let {
@@ -585,9 +367,141 @@ abstract class CdEntryDetailsViewModel(
             )
         }
         cdEntryDao.insertEntries(entries)
-
-        entryImageController.cleanUpImages(entryIds, saveImagesResult)
-
         return true
+    }
+
+    override suspend fun saveMultiEditEntry(
+        saveImagesResult: Map<String, EntryImageController.SaveResult>,
+        skipIgnoreableErrors: Boolean
+    ): Boolean {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun deleteEntry(entryId: String) = cdEntryDao.delete(entryId)
+
+    private fun buildModel(entry: CdEntry): CdEntryModel {
+        val catalogId = vgmdbDataConverter.databaseToCatalogIdEntry(entry.catalogId)
+        val titles = entry.titles.map(vgmdbDataConverter::databaseToTitleEntry)
+        val performers = entry.performers.map(vgmdbDataConverter::databaseToArtistEntry)
+        val composers = entry.composers.map(vgmdbDataConverter::databaseToArtistEntry)
+        val series = dataConverter.seriesEntries(entry.series(appJson))
+        val characters = dataConverter.characterEntries(entry.characters(appJson))
+        val discs = entry.discs.mapNotNull(vgmdbDataConverter::databaseToDiscEntry)
+        val tags = entry.tags.map(Entry::Custom)
+
+        return CdEntryModel(
+            entry = entry,
+            catalogId = catalogId,
+            titles = titles,
+            performers = performers,
+            composers = composers,
+            series = series,
+            characters = characters,
+            discs = discs,
+            tags = tags,
+        )
+    }
+
+    override fun initializeForm(model: CdEntryModel) {
+        catalogIdSection.setContents(listOf(model.catalogId), model.titlesLocked)
+        titleSection.setContents(model.titles, model.titlesLocked)
+        performerSection.setContents(model.performers, model.performersLocked)
+        composerSection.setContents(model.composers, model.composersLocked)
+        seriesSection.setContents(model.series, model.seriesLocked)
+        characterSection.setContents(model.characters, model.charactersLocked)
+        discSection.setDiscs(model.discs, model.discsLocked)
+        tagSection.setContents(model.tags, model.tagsLocked)
+        notesSection.setContents(model.notes, model.notesLocked)
+
+        val albumId = VgmdbUtils.albumId(model.catalogId)
+        if (albumId != null) {
+            viewModelScope.launch(Dispatchers.Main) {
+                albumRepository.getEntry(albumId)
+                    .filterNotNull()
+                    .map(vgmdbDataConverter::catalogEntry)
+                    .flowOn(Dispatchers.IO)
+                    .collectLatest(catalogIdSection::replaceContent)
+            }
+        }
+
+        model.titles
+            .mapNotNull(VgmdbUtils::albumId)
+            .forEach {
+                viewModelScope.launch(Dispatchers.Main) {
+                    albumRepository.getEntry(it)
+                        .filterNotNull()
+                        .map(vgmdbDataConverter::titleEntry)
+                        .flowOn(Dispatchers.IO)
+                        .collectLatest(titleSection::replaceContent)
+                }
+            }
+
+        mapOf(
+            model.performers to performerSection,
+            model.composers to composerSection,
+        ).forEach { (entrySection, formSection) ->
+            entrySection
+                .mapNotNull { vgmdbDataConverter.artistColumnData(it) }
+                .forEach {
+                    viewModelScope.launch(Dispatchers.Main) {
+                        vgmdbAutocompleter.fillArtistField(it)
+                            .flowOn(Dispatchers.IO)
+                            .collectLatest(formSection::replaceContent)
+                    }
+                }
+        }
+
+        model.characters
+            .mapNotNull(AniListUtils::characterId)
+            .forEach {
+                viewModelScope.launch(Dispatchers.Main) {
+                    aniListAutocompleter.fillCharacterField(it)
+                        .flowOn(Dispatchers.IO)
+                        .collectLatest(characterSection::replaceContent)
+                }
+            }
+
+        model.series
+            .mapNotNull(AniListUtils::mediaId)
+            .forEach {
+                viewModelScope.launch(Dispatchers.Main) {
+                    aniListAutocompleter.fillMediaField(it)
+                        .flowOn(Dispatchers.IO)
+                        .collectLatest(seriesSection::replaceContent)
+                }
+            }
+    }
+
+    private fun makeBaseEntry(): CdEntry {
+        return CdEntry(
+            id = "",
+            catalogId = catalogIdSection.finalContents().firstOrNull()?.serializedValue,
+            titles = titleSection.finalContents().map { it.serializedValue },
+            performers = performerSection.finalContents().map { it.serializedValue },
+            composers = composerSection.finalContents().map { it.serializedValue },
+            seriesSerialized = seriesSection.finalContents().map { it.serializedValue },
+            seriesSearchable = seriesSection.finalContents().map { it.searchableValue }
+                .filterNot(String?::isNullOrBlank),
+            charactersSerialized = characterSection.finalContents().map { it.serializedValue },
+            charactersSearchable = characterSection.finalContents().map { it.searchableValue }
+                .filterNot(String?::isNullOrBlank),
+            discs = discSection.serializedValue(),
+            tags = tagSection.finalContents().map { it.serializedValue },
+            lastEditTime = Date.from(Instant.now()),
+            imageWidth = null,
+            imageHeight = null,
+            notes = notesSection.value.trim(),
+            locks = CdEntry.Locks(
+                catalogIdLocked = catalogIdSection.lockState?.toSerializedValue(),
+                titlesLocked = titleSection.lockState?.toSerializedValue(),
+                performersLocked = performerSection.lockState?.toSerializedValue(),
+                composersLocked = composerSection.lockState?.toSerializedValue(),
+                seriesLocked = seriesSection.lockState?.toSerializedValue(),
+                charactersLocked = characterSection.lockState?.toSerializedValue(),
+                discsLocked = discSection.lockState?.toSerializedValue(),
+                tagsLocked = tagSection.lockState?.toSerializedValue(),
+                notesLocked = notesSection.lockState?.toSerializedValue(),
+            )
+        )
     }
 }

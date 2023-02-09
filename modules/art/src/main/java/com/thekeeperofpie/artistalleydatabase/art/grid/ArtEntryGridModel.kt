@@ -31,7 +31,7 @@ class ArtEntryGridModel(
                 ?.toUri()
                 ?.buildUpon()
                 ?.appendQueryParameter("width", entry.imageWidth.toString())
-                ?.appendQueryParameter("width", entry.imageHeight.toString())
+                ?.appendQueryParameter("height", entry.imageHeight.toString())
                 ?.build()
 
             // Placeholder text is generally only useful without an image

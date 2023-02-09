@@ -15,9 +15,7 @@ import com.thekeeperofpie.artistalleydatabase.utils.PendingIntentRequestCodes
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import java.io.FilterInputStream
-import java.nio.file.Paths
 import java.util.zip.ZipInputStream
-import kotlin.io.path.nameWithoutExtension
 
 @HiltWorker
 class ImportWorker @AssistedInject constructor(
@@ -88,19 +86,20 @@ class ImportWorker @AssistedInject constructor(
                 var count = 0
                 var entry = zipInput.nextEntry
                 while (entry != null) {
-                    val entryInputStream = object : FilterInputStream(zipInput) {
-                        override fun close() {
-                            // Do nothing
+                    if (!entry.isDirectory) {
+                        val entryInputStream = object : FilterInputStream(zipInput) {
+                            override fun close() {
+                                // Do nothing
+                            }
                         }
-                    }
 
-                    val fileName = Paths.get(entry.name).nameWithoutExtension
-                    importers.find { entry.name.startsWith(it.zipEntryName + "/") }
-                        ?.readInnerFile(entryInputStream, fileName, dryRun)
-                        ?.also {
-                            count++
-                            setProgress(count, entriesSize)
-                        }
+                        importers.find { entry.name.startsWith(it.zipEntryName + "/") }
+                            ?.readInnerFile(entryInputStream, entry.name, dryRun)
+                            ?.also {
+                                count++
+                                setProgress(count, entriesSize)
+                            }
+                    }
 
                     zipInput.closeEntry()
                     entry = zipInput.nextEntry

@@ -24,6 +24,8 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+
+        resourceConfigurations += "en"
     }
 
     val proguardFiles = (file("proguard/").listFiles().orEmpty().toList() +
@@ -60,8 +62,8 @@ android {
         }
         getByName("release") {
             isDebuggable = false
-            isMinifyEnabled = true
-            isShrinkResources = true
+            isMinifyEnabled = false
+            isShrinkResources = false
             isCrunchPngs = true
             proguardFiles(*proguardFiles)
 

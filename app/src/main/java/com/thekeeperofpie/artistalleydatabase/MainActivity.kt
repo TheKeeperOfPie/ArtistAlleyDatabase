@@ -406,6 +406,7 @@ class MainActivity : ComponentActivity() {
             onClickDatabaseFetch = viewModel::onClickDatabaseFetch,
             onClickClearDatabaseById = viewModel::onClickClearDatabaseById,
             onClickRebuildDatabase = viewModel::onClickRebuildDatabase,
+            onClickCropClear = viewModel::onClickCropClear,
         )
     }
 
@@ -421,8 +422,8 @@ class MainActivity : ComponentActivity() {
                     val scrollToTop = firstListState != null
                             && firstListState.firstVisibleItemIndex == 0
                             && firstListState.firstVisibleItemScrollOffset == 0
-                    viewModel.invalidate()
                     if (scrollToTop) {
+                        viewModel.invalidate()
                         delay(500)
                         lazyStaggeredGridState.scrollToTop()
                     }

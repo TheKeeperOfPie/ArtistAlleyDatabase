@@ -4,7 +4,7 @@ import android.net.Uri
 
 interface EntrySettings {
 
-    fun saveCropDocumentUri(uri: Uri)
+    fun saveCropDocumentUri(uri: Uri?)
 
     fun loadCropDocumentUri(): Uri?
 }

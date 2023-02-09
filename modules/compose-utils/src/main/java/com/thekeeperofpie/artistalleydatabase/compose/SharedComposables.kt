@@ -6,7 +6,6 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -120,13 +119,11 @@ fun SnackbarErrorText(
         val dismissState = rememberDismissState(errorRes, onErrorDismiss)
         SwipeToDismiss(state = dismissState, background = {
             Surface(
-                color = MaterialTheme.colorScheme.background,
-                contentColor = contentColorFor(MaterialTheme.colorScheme.background),
+                color = MaterialTheme.colorScheme.secondary,
+                contentColor = contentColorFor(MaterialTheme.colorScheme.secondary),
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(color = MaterialTheme.colorScheme.secondary)
             ) {
-
             }
         }) {
             Text(
@@ -142,17 +139,19 @@ fun SnackbarErrorText(
                     )
             )
 
-            val errorString = stringResource(id = errorRes)
-            TextButton(
-                onClick = { Log.d("ArtistAlleyDatabase", errorString, exception) },
-                modifier = Modifier
-                    .wrapContentWidth()
-                    .align(Alignment.CenterVertically),
-            ) {
-                Text(
-                    text = stringResource(R.string.log_exception).uppercase(),
-                    color = MaterialTheme.colorScheme.onSecondary
-                )
+            if (exception != null) {
+                val errorString = stringResource(id = errorRes)
+                TextButton(
+                    onClick = { Log.d("ArtistAlleyDatabase", errorString, exception) },
+                    modifier = Modifier
+                        .wrapContentWidth()
+                        .align(Alignment.CenterVertically),
+                ) {
+                    Text(
+                        text = stringResource(R.string.log_exception).uppercase(),
+                        color = MaterialTheme.colorScheme.onSecondary
+                    )
+                }
             }
         }
     }

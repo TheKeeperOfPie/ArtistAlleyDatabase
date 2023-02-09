@@ -52,6 +52,7 @@ import com.mxalbert.sharedelements.SharedElement
 import com.mxalbert.sharedelements.SharedElementsTransitionSpec
 import com.thekeeperofpie.artistalleydatabase.compose.ButtonFooter
 import com.thekeeperofpie.artistalleydatabase.compose.LazyStaggeredGrid
+import com.thekeeperofpie.artistalleydatabase.form.EntryUtils
 import com.thekeeperofpie.artistalleydatabase.form.R
 
 object EntryGrid {
@@ -237,7 +238,7 @@ object EntryGrid {
                                 .data(entry.imageUri)
                                 .size(expectedWidth, Dimension.Undefined)
                                 .crossfade(false)
-                                .memoryCacheKey("coil_memory_entry_image_home_${entry.id}")
+                                .memoryCacheKey(EntryUtils.getImageCacheKey(entry))
                                 .build(),
                             contentDescription = stringResource(
                                 R.string.entry_image_content_description

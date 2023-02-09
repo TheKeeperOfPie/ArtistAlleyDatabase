@@ -14,6 +14,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.thekeeperofpie.artistalleydatabase.android_utils.ImageUtils
+import com.thekeeperofpie.artistalleydatabase.form.grid.EntryGridModel
 import java.io.File
 
 object EntryUtils {
@@ -201,4 +203,15 @@ object EntryUtils {
         )
         context.startActivity(chooserIntent)
     }
+
+    fun fixImageName(context: Context, file: File) {
+        val (width, height) = ImageUtils.getImageWidthHeight(context, file.toUri())
+        file.renameTo(file.resolveSibling("0-${width ?: 1}-${height ?: 1}"))
+    }
+
+    // TODO: The cache keys don't account for crop state or image changes in general, so
+    //  the wrong image is loaded whenever a crop/image change is saved
+    fun getImageCacheKey(it: EntryImage) = "coil_memory_entry_image_home_${it.entryId}"
+
+    fun getImageCacheKey(it: EntryGridModel) = "coil_memory_entry_image_home_${it.id}"
 }

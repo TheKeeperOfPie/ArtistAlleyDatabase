@@ -4,7 +4,7 @@ import java.io.File
 
 object ExportUtils {
 
-    fun buildEntryFilePath(entryId: String, vararg values: List<String>) = values
+    fun buildEntryFilePath(lastPathSegments: String, vararg values: List<String>) = values
         .map { it.filter { it.isNotBlank() } }
         .filter { it.isNotEmpty() }
         .map {
@@ -28,5 +28,5 @@ object ExportUtils {
         }
         .joinToString(
             separator = File.separator,
-        ).ifBlank { "Unknown" } + "${File.separator}$entryId.jpg"
+        ).ifBlank { "Unknown" } + "${File.separator}$lastPathSegments.jpg"
 }

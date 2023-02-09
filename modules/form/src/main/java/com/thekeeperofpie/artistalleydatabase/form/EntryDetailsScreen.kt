@@ -257,9 +257,7 @@ object EntryDetailsScreen {
                             ImageRequest.Builder(LocalContext.current)
                                 .data(uri)
                                 .crossfade(false)
-                                .placeholderMemoryCacheKey(
-                                    "coil_memory_entry_image_home_${it.entryId}"
-                                )
+                                .placeholderMemoryCacheKey(EntryUtils.getImageCacheKey(it))
                                 .listener { _, result ->
                                     imageState().onSizeResult(
                                         result.drawable.intrinsicWidth,

@@ -52,6 +52,7 @@ object SettingsScreen {
         onClickDatabaseFetch: () -> Unit = {},
         onClickClearDatabaseById: (DatabaseType, String) -> Unit = { _, _ -> },
         onClickRebuildDatabase: (DatabaseType) -> Unit = {},
+        onClickCropClear: () -> Unit = {},
     ) {
         Scaffold(
             topBar = {
@@ -98,6 +99,14 @@ object SettingsScreen {
                 Divider()
 
                 RebuildDatabaseRow(onClickRebuildDatabase)
+
+                Divider()
+
+                ButtonRow(
+                    title = R.string.settings_crop_clear,
+                    buttonText = R.string.clear,
+                    onClick = onClickCropClear
+                )
             }
         }
     }

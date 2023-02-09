@@ -4,27 +4,27 @@ import android.content.Context
 import androidx.work.CoroutineWorker
 import com.squareup.moshi.JsonWriter
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
-import com.thekeeperofpie.artistalleydatabase.android_utils.persistence.ExportUtils
-import com.thekeeperofpie.artistalleydatabase.android_utils.persistence.Exporter
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntry
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDao
 import com.thekeeperofpie.artistalleydatabase.cds.utils.CdEntryUtils
 import com.thekeeperofpie.artistalleydatabase.data.DataConverter
+import com.thekeeperofpie.artistalleydatabase.form.EntryExporter
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbDataConverter
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.encodeToJsonElement
-import java.io.File
 import java.io.InputStream
 
 class CdExporter(
-    private val appContext: Context,
+    appContext: Context,
     private val cdEntryDao: CdEntryDao,
     private val dataConverter: DataConverter,
     private val vgmdbDataConverter: VgmdbDataConverter,
     private val appJson: AppJson,
-) : Exporter {
+) : EntryExporter(appContext) {
 
     override val zipEntryName = "cd_entries"
+
+    override val entryTypeId = CdEntryUtils.TYPE_ID
 
     override suspend fun entriesSize() = cdEntryDao.getEntriesSize()
 
@@ -46,10 +46,7 @@ class CdExporter(
                 return@iterateEntries
             }
 
-            val imageFile = CdEntryUtils.getImageFile(appContext, entry.id)
-            if (imageFile.exists()) {
-                writeImage(entry, imageFile, writeEntry)
-            }
+            writeImages(entry, writeEntry)
 
             updateProgress(index, entriesSize)
 
@@ -65,9 +62,8 @@ class CdExporter(
         return true
     }
 
-    private suspend fun writeImage(
+    private suspend fun writeImages(
         entry: CdEntry,
-        imageFile: File,
         writeEntry: suspend (String, InputStream) -> Unit,
     ) {
         val series = dataConverter.seriesEntries(entry.series(appJson))
@@ -88,14 +84,14 @@ class CdExporter(
 
         val tags = entry.tags
 
-        val entryFileName = ExportUtils.buildEntryFilePath(
-            entry.id,
+        writeImages(
+            entryId = entry.id,
+            writeEntry = writeEntry,
             series,
             characters,
             artists,
             catalogId,
             tags
         )
-        writeEntry(entryFileName, imageFile.inputStream())
     }
 }

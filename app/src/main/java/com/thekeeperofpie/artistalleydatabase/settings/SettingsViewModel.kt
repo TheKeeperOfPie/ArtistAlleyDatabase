@@ -6,6 +6,7 @@ import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.OutOfQuotaPolicy
 import androidx.work.WorkManager
+import com.thekeeperofpie.artistalleydatabase.SettingsProvider
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterEntryDao
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaEntryDao
@@ -31,6 +32,7 @@ class SettingsViewModel @Inject constructor(
     private val vgmdbArtistDao: VgmdbArtistDao,
     private val vgmdbJson: VgmdbJson,
     private val workManager: WorkManager,
+    private val settingsProvider: SettingsProvider,
 ) : ViewModel() {
 
     fun clearAniListCache() {
@@ -125,5 +127,9 @@ class SettingsViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    fun onClickCropClear() {
+        settingsProvider.saveCropDocumentUri(null)
     }
 }
