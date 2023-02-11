@@ -2,8 +2,8 @@ package com.thekeeperofpie.artistalleydatabase.cds.utils
 
 import android.content.Context
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntry
-import com.thekeeperofpie.artistalleydatabase.form.EntryId
-import com.thekeeperofpie.artistalleydatabase.form.EntryUtils
+import com.thekeeperofpie.artistalleydatabase.entry.EntryId
+import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils
 
 object CdEntryUtils {
 

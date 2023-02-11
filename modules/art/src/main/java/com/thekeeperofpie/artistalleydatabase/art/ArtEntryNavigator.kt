@@ -14,11 +14,11 @@ import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryColumn
 import com.thekeeperofpie.artistalleydatabase.art.utils.ArtEntryUtils
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseEntryModel
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseSelectionNavigator
-import com.thekeeperofpie.artistalleydatabase.form.EntryDetailsScreen
-import com.thekeeperofpie.artistalleydatabase.form.EntryId
-import com.thekeeperofpie.artistalleydatabase.form.EntryNavigator
-import com.thekeeperofpie.artistalleydatabase.form.EntryUtils.entryDetailsComposable
-import com.thekeeperofpie.artistalleydatabase.form.EntryUtils.navToEntryDetails
+import com.thekeeperofpie.artistalleydatabase.entry.EntryDetailsScreen
+import com.thekeeperofpie.artistalleydatabase.entry.EntryId
+import com.thekeeperofpie.artistalleydatabase.entry.EntryNavigator
+import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils.entryDetailsComposable
+import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils.navToEntryDetails
 
 class ArtEntryNavigator : EntryNavigator, BrowseSelectionNavigator {
 

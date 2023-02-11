@@ -1,6 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.cds.data
 
-import com.thekeeperofpie.artistalleydatabase.form.EntrySection
+import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.DiscEntry
 import java.math.BigDecimal
 import java.util.Date

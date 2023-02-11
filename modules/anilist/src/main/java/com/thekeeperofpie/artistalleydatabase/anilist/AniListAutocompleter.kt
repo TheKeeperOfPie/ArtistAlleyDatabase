@@ -10,7 +10,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.nullable
 import com.thekeeperofpie.artistalleydatabase.android_utils.split
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
-import com.thekeeperofpie.artistalleydatabase.form.EntrySection.MultiText.Entry
+import com.thekeeperofpie.artistalleydatabase.entry.EntrySection.MultiText.Entry
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow

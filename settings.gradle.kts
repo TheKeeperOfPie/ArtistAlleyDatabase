@@ -30,7 +30,7 @@ include(
     ":modules:compose-utils",
     ":modules:cds",
     ":modules:data",
-    ":modules:form",
+    ":modules:entry",
     ":modules:musical-artists",
     ":modules:vgmdb",
     ":modules:web-infra",

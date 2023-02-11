@@ -21,7 +21,7 @@ import androidx.compose.ui.unit.dp
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.art.BuildConfig
 import com.thekeeperofpie.artistalleydatabase.art.R
-import com.thekeeperofpie.artistalleydatabase.form.EntrySection
+import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
 import kotlin.math.roundToInt
 
 sealed class PrintSize(

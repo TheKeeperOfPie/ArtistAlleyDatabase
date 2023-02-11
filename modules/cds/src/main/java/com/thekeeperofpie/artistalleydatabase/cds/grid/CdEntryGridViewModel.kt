@@ -5,8 +5,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDao
 import com.thekeeperofpie.artistalleydatabase.cds.utils.CdEntryUtils
-import com.thekeeperofpie.artistalleydatabase.form.grid.EntryGridSelectionController
-import com.thekeeperofpie.artistalleydatabase.form.grid.EntryGridViewModel
+import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridSelectionController
+import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridViewModel
 
 abstract class CdEntryGridViewModel(
     protected val application: Application,

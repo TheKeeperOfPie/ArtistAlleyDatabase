@@ -50,7 +50,7 @@ kotlin {
 dependencies {
     api(project(":modules:android-utils"))
     implementation(project(":modules:compose-utils"))
-    implementation(project(":modules:form"))
+    implementation(project(":modules:entry"))
 
     api("androidx.navigation:navigation-compose:2.6.0-alpha04")
 

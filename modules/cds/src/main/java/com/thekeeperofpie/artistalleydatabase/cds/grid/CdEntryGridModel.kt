@@ -5,8 +5,8 @@ import android.net.Uri
 import androidx.core.net.toUri
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntry
 import com.thekeeperofpie.artistalleydatabase.cds.utils.CdEntryUtils
-import com.thekeeperofpie.artistalleydatabase.form.EntryId
-import com.thekeeperofpie.artistalleydatabase.form.grid.EntryGridModel
+import com.thekeeperofpie.artistalleydatabase.entry.EntryId
+import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridModel
 import java.io.File
 
 class CdEntryGridModel(

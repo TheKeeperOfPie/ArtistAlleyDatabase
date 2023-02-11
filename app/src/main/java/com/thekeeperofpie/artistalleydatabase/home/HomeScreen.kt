@@ -42,9 +42,9 @@ import com.thekeeperofpie.artistalleydatabase.R
 import com.thekeeperofpie.artistalleydatabase.compose.LazyStaggeredGrid
 import com.thekeeperofpie.artistalleydatabase.compose.NavMenuIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.bottomBorder
-import com.thekeeperofpie.artistalleydatabase.form.grid.EntryGrid
-import com.thekeeperofpie.artistalleydatabase.form.grid.EntryGridModel
-import com.thekeeperofpie.artistalleydatabase.form.search.EntrySearchOption
+import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGrid
+import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridModel
+import com.thekeeperofpie.artistalleydatabase.entry.search.EntrySearchOption
 import com.thekeeperofpie.artistalleydatabase.navigation.NavDestinations
 import kotlinx.coroutines.flow.emptyFlow
 

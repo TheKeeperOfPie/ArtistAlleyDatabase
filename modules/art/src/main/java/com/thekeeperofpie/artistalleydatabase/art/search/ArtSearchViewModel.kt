@@ -13,9 +13,9 @@ import com.thekeeperofpie.artistalleydatabase.art.R
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryDao
 import com.thekeeperofpie.artistalleydatabase.art.grid.ArtEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.art.utils.ArtEntryUtils
-import com.thekeeperofpie.artistalleydatabase.form.grid.EntryGridSelectionController
-import com.thekeeperofpie.artistalleydatabase.form.search.EntrySearchOption
-import com.thekeeperofpie.artistalleydatabase.form.search.EntrySearchViewModel
+import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridSelectionController
+import com.thekeeperofpie.artistalleydatabase.entry.search.EntrySearchOption
+import com.thekeeperofpie.artistalleydatabase.entry.search.EntrySearchViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow

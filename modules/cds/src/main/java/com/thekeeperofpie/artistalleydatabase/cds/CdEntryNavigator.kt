@@ -14,11 +14,11 @@ import com.thekeeperofpie.artistalleydatabase.cds.browse.selection.CdBrowseSelec
 import com.thekeeperofpie.artistalleydatabase.cds.browse.selection.CdBrowseSelectionViewModel
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryColumn
 import com.thekeeperofpie.artistalleydatabase.cds.utils.CdEntryUtils
-import com.thekeeperofpie.artistalleydatabase.form.EntryDetailsScreen
-import com.thekeeperofpie.artistalleydatabase.form.EntryId
-import com.thekeeperofpie.artistalleydatabase.form.EntryNavigator
-import com.thekeeperofpie.artistalleydatabase.form.EntryUtils.entryDetailsComposable
-import com.thekeeperofpie.artistalleydatabase.form.EntryUtils.navToEntryDetails
+import com.thekeeperofpie.artistalleydatabase.entry.EntryDetailsScreen
+import com.thekeeperofpie.artistalleydatabase.entry.EntryId
+import com.thekeeperofpie.artistalleydatabase.entry.EntryNavigator
+import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils.entryDetailsComposable
+import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils.navToEntryDetails
 
 class CdEntryNavigator : EntryNavigator, BrowseSelectionNavigator {
 

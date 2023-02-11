@@ -24,7 +24,7 @@ import androidx.compose.ui.unit.dp
 import com.thekeeperofpie.artistalleydatabase.art.R
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryModel
 import com.thekeeperofpie.artistalleydatabase.compose.observableStateOf
-import com.thekeeperofpie.artistalleydatabase.form.EntrySection
+import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 

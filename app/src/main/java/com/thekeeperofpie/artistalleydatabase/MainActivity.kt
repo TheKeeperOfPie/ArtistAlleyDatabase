@@ -48,11 +48,11 @@ import com.thekeeperofpie.artistalleydatabase.browse.BrowseViewModel
 import com.thekeeperofpie.artistalleydatabase.cds.CdEntryNavigator
 import com.thekeeperofpie.artistalleydatabase.cds.search.CdSearchViewModel
 import com.thekeeperofpie.artistalleydatabase.compose.LazyStaggeredGrid
+import com.thekeeperofpie.artistalleydatabase.entry.EntryNavigator
+import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils.navToEntryDetails
+import com.thekeeperofpie.artistalleydatabase.entry.search.EntrySearchViewModel
 import com.thekeeperofpie.artistalleydatabase.export.ExportScreen
 import com.thekeeperofpie.artistalleydatabase.export.ExportViewModel
-import com.thekeeperofpie.artistalleydatabase.form.EntryNavigator
-import com.thekeeperofpie.artistalleydatabase.form.EntryUtils.navToEntryDetails
-import com.thekeeperofpie.artistalleydatabase.form.search.EntrySearchViewModel
 import com.thekeeperofpie.artistalleydatabase.home.HomeScreen
 import com.thekeeperofpie.artistalleydatabase.importing.ImportScreen
 import com.thekeeperofpie.artistalleydatabase.importing.ImportViewModel

@@ -7,7 +7,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntry
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryDao
 import com.thekeeperofpie.artistalleydatabase.data.DataConverter
-import com.thekeeperofpie.artistalleydatabase.form.EntryExporter
+import com.thekeeperofpie.artistalleydatabase.entry.EntryExporter
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.encodeToJsonElement
 import java.io.InputStream

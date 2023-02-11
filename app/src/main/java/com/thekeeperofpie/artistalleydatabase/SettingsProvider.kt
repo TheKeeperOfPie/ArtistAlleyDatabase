@@ -8,7 +8,7 @@ import androidx.core.net.toUri
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntry
 import com.thekeeperofpie.artistalleydatabase.art.persistence.ArtSettings
-import com.thekeeperofpie.artistalleydatabase.form.EntrySettings
+import com.thekeeperofpie.artistalleydatabase.entry.EntrySettings
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import okio.buffer

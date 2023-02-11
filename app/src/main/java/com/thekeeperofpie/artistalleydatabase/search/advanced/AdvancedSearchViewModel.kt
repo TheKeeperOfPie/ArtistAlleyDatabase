@@ -15,8 +15,8 @@ import com.thekeeperofpie.artistalleydatabase.art.search.ArtAdvancedSearchQuery
 import com.thekeeperofpie.artistalleydatabase.art.sections.PrintSize
 import com.thekeeperofpie.artistalleydatabase.art.sections.SourceType
 import com.thekeeperofpie.artistalleydatabase.data.DataConverter
-import com.thekeeperofpie.artistalleydatabase.form.EntrySection
-import com.thekeeperofpie.artistalleydatabase.form.EntrySection.MultiText.Entry
+import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
+import com.thekeeperofpie.artistalleydatabase.entry.EntrySection.MultiText.Entry
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

@@ -13,7 +13,7 @@ import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDatabase
 import com.thekeeperofpie.artistalleydatabase.cds.persistence.CdExporter
 import com.thekeeperofpie.artistalleydatabase.cds.persistence.CdImporter
 import com.thekeeperofpie.artistalleydatabase.data.DataConverter
-import com.thekeeperofpie.artistalleydatabase.form.EntryNavigator
+import com.thekeeperofpie.artistalleydatabase.entry.EntryNavigator
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistDao
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbDataConverter
 import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.VgmdbArtistDao

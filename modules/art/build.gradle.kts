@@ -58,7 +58,7 @@ dependencies {
     api(project(":modules:browse"))
     implementation(project(":modules:compose-utils"))
     api(project(":modules:data"))
-    api(project(":modules:form"))
+    api(project(":modules:entry"))
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0-RC")
 
     implementation("com.google.dagger:hilt-android:2.44.2")

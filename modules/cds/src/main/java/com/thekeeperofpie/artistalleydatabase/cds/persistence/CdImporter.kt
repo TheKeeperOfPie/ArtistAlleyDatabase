@@ -6,7 +6,7 @@ import com.squareup.moshi.Moshi
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntry
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDao
 import com.thekeeperofpie.artistalleydatabase.cds.utils.CdEntryUtils
-import com.thekeeperofpie.artistalleydatabase.form.EntryImporter
+import com.thekeeperofpie.artistalleydatabase.entry.EntryImporter
 import okio.buffer
 import okio.source
 import java.io.InputStream

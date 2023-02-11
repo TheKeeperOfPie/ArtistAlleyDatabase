@@ -7,8 +7,8 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import com.thekeeperofpie.artistalleydatabase.art.R
 import com.thekeeperofpie.artistalleydatabase.art.sections.PrintSizeDropdown
-import com.thekeeperofpie.artistalleydatabase.form.EntryForm
-import com.thekeeperofpie.artistalleydatabase.form.EntrySection
+import com.thekeeperofpie.artistalleydatabase.entry.EntryForm
+import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
 
 class SampleArtEntrySectionsProvider : PreviewParameterProvider<List<EntrySection>> {
     override val values = sequenceOf(

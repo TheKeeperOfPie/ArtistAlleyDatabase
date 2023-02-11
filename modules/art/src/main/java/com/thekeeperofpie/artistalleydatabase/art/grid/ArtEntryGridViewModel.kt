@@ -5,8 +5,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryDao
 import com.thekeeperofpie.artistalleydatabase.art.utils.ArtEntryUtils
-import com.thekeeperofpie.artistalleydatabase.form.grid.EntryGridSelectionController
-import com.thekeeperofpie.artistalleydatabase.form.grid.EntryGridViewModel
+import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridSelectionController
+import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridViewModel
 
 abstract class ArtEntryGridViewModel(
     protected val application: Application,

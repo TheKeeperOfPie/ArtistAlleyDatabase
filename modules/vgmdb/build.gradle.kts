@@ -55,7 +55,7 @@ kotlin {
 
 dependencies {
     api(project(":modules:android-utils"))
-    api(project(":modules:form"))
+    api(project(":modules:entry"))
 
     implementation("com.squareup.okhttp3:okhttp:5.0.0-alpha.11")
 

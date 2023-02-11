@@ -13,7 +13,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.Converters
 import com.thekeeperofpie.artistalleydatabase.art.utils.ArtEntryUtils
 import com.thekeeperofpie.artistalleydatabase.data.Character
 import com.thekeeperofpie.artistalleydatabase.data.Series
-import com.thekeeperofpie.artistalleydatabase.form.EntryId
+import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 import kotlinx.serialization.Serializable
 import java.math.BigDecimal
 import java.util.Date

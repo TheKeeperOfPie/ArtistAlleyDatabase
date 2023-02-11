@@ -35,7 +35,7 @@ import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.compose.AppBar
-import com.thekeeperofpie.artistalleydatabase.form.EntryImage
+import com.thekeeperofpie.artistalleydatabase.entry.EntryImage
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 

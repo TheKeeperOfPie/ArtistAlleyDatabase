@@ -2,7 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.art.sections
 
 import androidx.compose.runtime.toMutableStateList
 import com.thekeeperofpie.artistalleydatabase.art.R
-import com.thekeeperofpie.artistalleydatabase.form.EntrySection
+import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
 
 class PrintSizeDropdown(lockState: LockState? = null) : EntrySection.Dropdown(
     R.string.art_entry_size_header,

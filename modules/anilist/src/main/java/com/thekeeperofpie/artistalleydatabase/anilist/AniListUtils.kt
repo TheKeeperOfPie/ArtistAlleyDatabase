@@ -5,7 +5,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterColumnE
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaColumnEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaEntry
-import com.thekeeperofpie.artistalleydatabase.form.EntrySection.MultiText.Entry
+import com.thekeeperofpie.artistalleydatabase.entry.EntrySection.MultiText.Entry
 
 object AniListUtils {
 

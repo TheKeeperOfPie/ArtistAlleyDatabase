@@ -40,8 +40,8 @@ import androidx.compose.ui.unit.dp
 import com.thekeeperofpie.artistalleydatabase.cds.R
 import com.thekeeperofpie.artistalleydatabase.compose.CustomOutlinedTextField
 import com.thekeeperofpie.artistalleydatabase.compose.dropdown.DropdownMenuItem
-import com.thekeeperofpie.artistalleydatabase.form.EntrySection
-import com.thekeeperofpie.artistalleydatabase.form.FormStringR
+import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
+import com.thekeeperofpie.artistalleydatabase.entry.EntryStringR
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.DiscEntry
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.TrackEntry
 import kotlinx.serialization.decodeFromString
@@ -100,7 +100,7 @@ class DiscSection(private val json: Json, lockState: LockState? = null) :
                     onDismissRequest = { showOverflow = false },
                 ) {
                     DropdownMenuItem(
-                        text = { Text(stringResource(FormStringR.delete)) },
+                        text = { Text(stringResource(EntryStringR.delete)) },
                         onClick = {
                             discs.removeAt(index)
                             showOverflow = false
@@ -108,7 +108,7 @@ class DiscSection(private val json: Json, lockState: LockState? = null) :
                     )
                     if (index > 0) {
                         DropdownMenuItem(
-                            text = { Text(stringResource(FormStringR.move_up)) },
+                            text = { Text(stringResource(EntryStringR.move_up)) },
                             onClick = {
                                 val oldValue = discs[index]
                                 discs[index] = discs[index - 1]
@@ -119,7 +119,7 @@ class DiscSection(private val json: Json, lockState: LockState? = null) :
                     }
                     if (index < discs.size - 1) {
                         DropdownMenuItem(
-                            text = { Text(stringResource(FormStringR.move_down)) },
+                            text = { Text(stringResource(EntryStringR.move_down)) },
                             onClick = {
                                 val oldValue = discs[index]
                                 discs[index] = discs[index + 1]
@@ -182,7 +182,7 @@ class DiscSection(private val json: Json, lockState: LockState? = null) :
                     Icon(
                         imageVector = Icons.Default.MoreVert,
                         contentDescription = stringResource(
-                            FormStringR.more_actions_content_description
+                            EntryStringR.more_actions_content_description
                         ),
                     )
                 }
@@ -222,7 +222,7 @@ class DiscSection(private val json: Json, lockState: LockState? = null) :
                             onDismissRequest = { showOverflow = false },
                         ) {
                             DropdownMenuItem(
-                                text = { Text(stringResource(FormStringR.delete)) },
+                                text = { Text(stringResource(EntryStringR.delete)) },
                                 onClick = {
                                     tracks.removeAt(index)
                                     showOverflow = false
@@ -230,7 +230,7 @@ class DiscSection(private val json: Json, lockState: LockState? = null) :
                             )
                             if (index > 0) {
                                 DropdownMenuItem(
-                                    text = { Text(stringResource(FormStringR.move_up)) },
+                                    text = { Text(stringResource(EntryStringR.move_up)) },
                                     onClick = {
                                         val oldValue = tracks[index]
                                         tracks[index] = tracks[index - 1]
@@ -241,7 +241,7 @@ class DiscSection(private val json: Json, lockState: LockState? = null) :
                             }
                             if (index < tracks.size - 1) {
                                 DropdownMenuItem(
-                                    text = { Text(stringResource(FormStringR.move_down)) },
+                                    text = { Text(stringResource(EntryStringR.move_down)) },
                                     onClick = {
                                         val oldValue = tracks[index]
                                         tracks[index] = tracks[index + 1]
@@ -302,7 +302,7 @@ class DiscSection(private val json: Json, lockState: LockState? = null) :
                     Icon(
                         imageVector = Icons.Default.MoreVert,
                         contentDescription = stringResource(
-                            FormStringR.more_actions_content_description
+                            EntryStringR.more_actions_content_description
                         ),
                     )
                 }

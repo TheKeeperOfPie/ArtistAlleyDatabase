@@ -1,7 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.data
 
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListDataConverter
-import com.thekeeperofpie.artistalleydatabase.form.EntrySection
+import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
 import javax.inject.Inject
 
 class DataConverter @Inject constructor(

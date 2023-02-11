@@ -4,8 +4,8 @@ import android.content.Context
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntry
 import com.thekeeperofpie.artistalleydatabase.art.sections.SourceType
-import com.thekeeperofpie.artistalleydatabase.form.EntryId
-import com.thekeeperofpie.artistalleydatabase.form.EntryUtils
+import com.thekeeperofpie.artistalleydatabase.entry.EntryId
+import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils
 
 object ArtEntryUtils {
 

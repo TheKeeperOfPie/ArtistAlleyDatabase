@@ -35,7 +35,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.AniListStringR
 import com.thekeeperofpie.artistalleydatabase.compose.AppBar
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
 import com.thekeeperofpie.artistalleydatabase.compose.dropdown.DropdownMenuItem
-import com.thekeeperofpie.artistalleydatabase.form.FormStringR
+import com.thekeeperofpie.artistalleydatabase.entry.EntryStringR
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistsStringR
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbStringR
 
@@ -209,7 +209,7 @@ object SettingsScreen {
 
             FilledTonalButton(onClick = {
                 onClickClearDatabaseById(selectedDatabase, clearDatabaseId)
-            }) { Text(text = stringResource(FormStringR.delete)) }
+            }) { Text(text = stringResource(EntryStringR.delete)) }
         }
     }
 
@@ -236,7 +236,7 @@ object SettingsScreen {
             Spacer(modifier = Modifier.width(8.dp))
 
             FilledTonalButton(onClick = { onClickRebuildDatabase(selectedDatabase) }) {
-                Text(text = stringResource(FormStringR.rebuild))
+                Text(text = stringResource(EntryStringR.rebuild))
             }
         }
     }

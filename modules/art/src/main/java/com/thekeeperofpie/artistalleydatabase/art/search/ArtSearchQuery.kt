@@ -1,6 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.art.search
 
-import com.thekeeperofpie.artistalleydatabase.form.search.EntrySearchQuery
+import com.thekeeperofpie.artistalleydatabase.entry.search.EntrySearchQuery
 
 data class ArtSearchQuery(
     override val query: String = "",

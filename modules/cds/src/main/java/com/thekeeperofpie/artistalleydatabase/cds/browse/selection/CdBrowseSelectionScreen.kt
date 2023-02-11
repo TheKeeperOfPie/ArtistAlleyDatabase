@@ -15,7 +15,7 @@ import com.thekeeperofpie.artistalleydatabase.cds.grid.CdEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.compose.AppBar
 import com.thekeeperofpie.artistalleydatabase.compose.LazyStaggeredGrid
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
-import com.thekeeperofpie.artistalleydatabase.form.grid.EntryGrid
+import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGrid
 
 object CdBrowseSelectionScreen {
 

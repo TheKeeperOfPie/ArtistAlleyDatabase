@@ -11,9 +11,9 @@ import androidx.paging.map
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDao
 import com.thekeeperofpie.artistalleydatabase.cds.grid.CdEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.cds.utils.CdEntryUtils
-import com.thekeeperofpie.artistalleydatabase.form.grid.EntryGridSelectionController
-import com.thekeeperofpie.artistalleydatabase.form.search.EntrySearchOption
-import com.thekeeperofpie.artistalleydatabase.form.search.EntrySearchViewModel
+import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridSelectionController
+import com.thekeeperofpie.artistalleydatabase.entry.search.EntrySearchOption
+import com.thekeeperofpie.artistalleydatabase.entry.search.EntrySearchViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow

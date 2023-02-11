@@ -17,8 +17,8 @@ import androidx.compose.ui.res.stringResource
 import com.thekeeperofpie.artistalleydatabase.R
 import com.thekeeperofpie.artistalleydatabase.compose.AppBar
 import com.thekeeperofpie.artistalleydatabase.compose.ButtonFooter
-import com.thekeeperofpie.artistalleydatabase.form.EntryForm
-import com.thekeeperofpie.artistalleydatabase.form.EntrySection
+import com.thekeeperofpie.artistalleydatabase.entry.EntryForm
+import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
 
 object AdvancedSearchScreen {
 
