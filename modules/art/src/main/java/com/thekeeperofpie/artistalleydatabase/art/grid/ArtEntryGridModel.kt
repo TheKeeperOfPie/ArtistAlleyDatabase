@@ -7,6 +7,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntry
 import com.thekeeperofpie.artistalleydatabase.art.utils.ArtEntryUtils
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
+import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridModel
 import java.io.File
 
@@ -27,7 +28,7 @@ class ArtEntryGridModel(
             appJson: AppJson,
             entry: ArtEntry
         ): ArtEntryGridModel {
-            val imageUri = ArtEntryUtils.getImageFile(application, entry.entryId)
+            val imageUri = EntryUtils.getImageFile(application, entry.entryId)
                 .takeIf(File::exists)
                 ?.toUri()
                 ?.buildUpon()

@@ -4,7 +4,7 @@ import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDao
-import com.thekeeperofpie.artistalleydatabase.cds.utils.CdEntryUtils
+import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridSelectionController
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridViewModel
 
@@ -15,10 +15,9 @@ abstract class CdEntryGridViewModel(
 
     override val entryGridSelectionController =
         EntryGridSelectionController<CdEntryGridModel>({ viewModelScope }) {
-            val toDelete = it.map { it.value }
-            toDelete.forEach {
-                CdEntryUtils.getImageFile(application, it.entryId).delete()
+            it.forEach {
+                EntryUtils.getImageFile(application, it.id).delete()
+                cdEntryDao.delete(it.id.valueId)
             }
-            cdEntryDao.delete(toDelete)
         }
 }

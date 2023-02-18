@@ -1,17 +1,12 @@
 package com.thekeeperofpie.artistalleydatabase.art.utils
 
-import android.content.Context
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntry
 import com.thekeeperofpie.artistalleydatabase.art.sections.SourceType
-import com.thekeeperofpie.artistalleydatabase.entry.EntryId
-import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils
 
 object ArtEntryUtils {
 
     const val SCOPED_ID_TYPE = "art_entry"
-
-    fun getImageFile(context: Context, entryId: EntryId) = EntryUtils.getImageFile(context, entryId)
 
     fun buildPlaceholderText(appJson: AppJson, entry: ArtEntry) = entry.run {
         val source = when (val source = SourceType.fromEntry(appJson.json, this)) {

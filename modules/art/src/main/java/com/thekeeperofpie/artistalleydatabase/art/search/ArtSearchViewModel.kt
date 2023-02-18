@@ -12,7 +12,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.art.R
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryDao
 import com.thekeeperofpie.artistalleydatabase.art.grid.ArtEntryGridModel
-import com.thekeeperofpie.artistalleydatabase.art.utils.ArtEntryUtils
+import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridSelectionController
 import com.thekeeperofpie.artistalleydatabase.entry.search.EntrySearchOption
 import com.thekeeperofpie.artistalleydatabase.entry.search.EntrySearchViewModel
@@ -33,11 +33,10 @@ open class ArtSearchViewModel @Inject constructor(
 
     override val entryGridSelectionController =
         EntryGridSelectionController<ArtEntryGridModel>({ viewModelScope }) {
-            val toDelete = it.map { it.value }
-            toDelete.forEach {
-                ArtEntryUtils.getImageFile(application, it.entryId).delete()
+            it.forEach {
+                EntryUtils.getImageFile(application, it.id).delete()
+                artEntryDao.delete(it.id.valueId)
             }
-            artEntryDao.delete(toDelete)
         }
 
     private val artistsOption = EntrySearchOption(R.string.art_search_option_artists)

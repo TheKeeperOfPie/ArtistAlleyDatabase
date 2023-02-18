@@ -32,4 +32,15 @@
     <string name="cd_entry_track_duration_placeholder">00:39</string>
     <string name="cd_browse_tab_musical_artists">Musical Artists</string>
     <string name="cd_entry_image_content_description">CD entry image</string>
+    <string name="cd_search_option_titles">Titles</string>
+    <string name="cd_search_option_performers">Performers</string>
+    <string name="cd_search_option_composers">Composers</string>
+    <string name="cd_search_option_series">Series</string>
+    <string name="cd_search_option_characters">Characters</string>
+    <string name="cd_search_option_discs">Discs</string>
+    <string name="cd_search_option_tags">Tags</string>
+    <string name="cd_search_option_notes">Notes</string>
+    <string name="cd_search_option_other">Other</string>
+    <string name="cd_search_option_locked">Locked</string>
+    <string name="cd_search_option_unlocked">Unlocked</string>
 </resources>

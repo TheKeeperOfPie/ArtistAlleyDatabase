@@ -16,11 +16,11 @@ import com.thekeeperofpie.artistalleydatabase.art.ArtEntryNavigator
 import com.thekeeperofpie.artistalleydatabase.art.R
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryBrowseDao
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryColumn
-import com.thekeeperofpie.artistalleydatabase.art.utils.ArtEntryUtils
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseEntryModel
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseScreen
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseTabViewModel
 import com.thekeeperofpie.artistalleydatabase.data.Series
+import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.asFlow
@@ -79,7 +79,7 @@ class ArtBrowseTabSeries @Inject constructor(
                                     .take(1)
                                     .map {
                                         BrowseEntryModel(
-                                            image = ArtEntryUtils.getImageFile(context, it.entryId)
+                                            image = EntryUtils.getImageFile(context, it.entryId)
                                                 .toUri().toString(),
                                             text = databaseText,
                                             queryType = ArtEntryColumn.SERIES.toString(),

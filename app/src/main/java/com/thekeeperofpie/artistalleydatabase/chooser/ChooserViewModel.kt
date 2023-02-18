@@ -11,7 +11,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.ImageUtils
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryDao
 import com.thekeeperofpie.artistalleydatabase.art.grid.ArtEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.art.search.ArtSearchViewModel
-import com.thekeeperofpie.artistalleydatabase.art.utils.ArtEntryUtils
+import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
@@ -60,7 +60,7 @@ class ChooserViewModel @Inject constructor(
         appPackageName: String,
         entry: ArtEntryGridModel
     ): Pair<Uri, String>? {
-        val file = ArtEntryUtils.getImageFile(application, entry.value.entryId)
+        val file = EntryUtils.getImageFile(application, entry.value.entryId)
         if (!file.exists()) {
             return null
         }

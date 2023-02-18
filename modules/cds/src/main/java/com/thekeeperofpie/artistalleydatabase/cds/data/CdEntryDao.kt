@@ -6,7 +6,10 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.RawQuery
 import androidx.room.Transaction
+import androidx.sqlite.db.SimpleSQLiteQuery
+import androidx.sqlite.db.SupportSQLiteQuery
 import com.thekeeperofpie.artistalleydatabase.cds.search.CdSearchQuery
 import kotlinx.coroutines.yield
 
@@ -15,6 +18,9 @@ interface CdEntryDao {
 
     @Query("""SELECT * FROM cd_entries WHERE id = :id""")
     suspend fun getEntry(id: String): CdEntry
+
+    @RawQuery([CdEntry::class])
+    fun getEntries(query: SupportSQLiteQuery): PagingSource<Int, CdEntry>
 
     @Query(
         """
@@ -26,7 +32,63 @@ interface CdEntryDao {
     fun getEntries(): PagingSource<Int, CdEntry>
 
     fun getEntries(query: CdSearchQuery): PagingSource<Int, CdEntry> {
-        return getEntries()
+        val includeAll = query.includeAll
+        val lockedValue = when {
+            includeAll -> null
+            query.locked && query.unlocked -> null
+            query.locked -> "1"
+            query.unlocked -> "0"
+            else -> null
+        }
+
+        val options = query.query.split(Regex("\\s+"))
+            .filter(String::isNotBlank)
+            .map { "*$it*" }
+            .map { queryValue ->
+                mutableListOf<String>().apply {
+                    if (includeAll || query.includeTitles) this += "titles:$queryValue"
+                    if (includeAll || query.includePerformers) this += "performersSearchable:$queryValue"
+                    if (includeAll || query.includeComposers) this += "composersSearchable:$queryValue"
+                    if (includeAll || query.includeSeries) this += "seriesSearchable:$queryValue"
+                    if (includeAll || query.includeCharacters) this += "charactersSearchable:$queryValue"
+                    if (includeAll || query.includeDiscs) this += "discs:$queryValue"
+                    if (includeAll || query.includeTags) this += "tags:$queryValue"
+                    if (includeAll || query.includeNotes) this += "notes:$queryValue"
+                }
+            }
+
+        if (options.isEmpty() && lockedValue == null) {
+            return getEntries()
+        }
+
+        val lockOptions = if (lockedValue == null) emptyList() else {
+            mutableListOf<String>().apply {
+                if (query.includeTitles) this += "titlesLocked:$lockedValue"
+                if (query.includePerformers) this += "performersLocked:$lockedValue"
+                if (query.includeComposers) this += "composersLocked:$lockedValue"
+                if (query.includeSeries) this += "seriesLocked:$lockedValue"
+                if (query.includeCharacters) this += "charactersLocked:$lockedValue"
+                if (query.includeDiscs) this += "discsLocked:$lockedValue"
+                if (query.includeTags) this += "tagsLocked:$lockedValue"
+                if (query.includeNotes) this += "notesLocked:$lockedValue"
+            }
+        }
+
+        val bindArguments = (options.ifEmpty { listOf(listOf("")) }).map {
+            it.joinToString(separator = " OR ") + " " +
+                    lockOptions.joinToString(separator = " ")
+        }
+
+        val statement = bindArguments.joinToString("\nINTERSECT\n") {
+            """
+                SELECT *
+                FROM cd_entries
+                JOIN cd_entries_fts ON cd_entries.id = cd_entries_fts.id
+                WHERE cd_entries_fts MATCH ?
+                """.trimIndent()
+        } + "\nORDER BY cd_entries.lastEditTime DESC"
+
+        return getEntries(SimpleSQLiteQuery(statement, bindArguments.toTypedArray()))
     }
 
     @Query(
