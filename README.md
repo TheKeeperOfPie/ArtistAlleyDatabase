@@ -26,6 +26,14 @@ stabilized, nor that the data is safe from corruption or bugs. Use and update at
    ```https://s01.oss.sonatype.org/content/repositories/snapshots/com/mxalbert/sharedelements/shared-elements/0.1.0-SNAPSHOT/shared-elements-0.1.0-20221204.093513-11.aar```
 4. Install like any other Android application via `./gradlew :app:installDebug`
 
+### Regenerate verification-metadata.xml
+
+1. `./gradlew --write-verification-metadata pgp,sha256 clean`
+2. `./gradlew --no-build-cache --write-verification-metadata pgp,sha256 resetVerificationMetadata`
+
+If an error like the following is shown, it can be safely ignored:
+> The root project is not yet available for build.
+
 ## Features
 
 - Image associated with entry, which is copied into the application's private data dir

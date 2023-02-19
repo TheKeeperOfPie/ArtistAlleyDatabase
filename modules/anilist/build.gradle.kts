@@ -1,46 +1,16 @@
 @file:Suppress("UnstableApiUsage")
 
 plugins {
-    id("com.android.library")
-    id("org.jetbrains.kotlin.android")
+    id("module-library")
     id("dagger.hilt.android.plugin")
     id("kotlin-kapt")
     id("com.apollographql.apollo3") version "3.7.4"
-    id("com.google.devtools.ksp") version "1.8.0-1.0.9"
-    kotlin("plugin.serialization") version "1.8.0"
+    id("com.google.devtools.ksp")
+    kotlin("plugin.serialization")
 }
 
 android {
     namespace = "com.thekeeperofpie.artistalleydatabase.anilist"
-    compileSdk = 33
-
-    defaultConfig {
-        minSdk = 33
-
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        consumerProguardFiles("consumer-rules.pro")
-    }
-
-    buildTypes {
-        release {
-            isMinifyEnabled = false
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
-        }
-    }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_18
-        targetCompatibility = JavaVersion.VERSION_18
-    }
-    kotlinOptions {
-        jvmTarget = "18"
-    }
-}
-
-kotlin {
-    jvmToolchain(18)
 }
 
 val aniListSchemaFile = project.layout.buildDirectory.file("graphql/aniList.graphqls").get().asFile
@@ -57,7 +27,7 @@ apollo {
 
 tasks.register("downloadAniListSchema") {
     if (!aniListSchemaFile.exists()) {
-        finalizedBy("downloadAniListApolloSchemaFromIntrospection")
+        dependsOn("downloadAniListApolloSchemaFromIntrospection")
     }
 }
 
@@ -69,11 +39,11 @@ dependencies {
     api(project(":modules:entry"))
 
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0-RC")
-    implementation("com.google.dagger:hilt-android:2.44.2")
-    kapt("com.google.dagger:hilt-compiler:2.44.2")
+    implementation("com.google.dagger:hilt-android:2.45")
+    kapt("com.google.dagger:hilt-compiler:2.45")
     kapt("androidx.hilt:hilt-compiler:1.0.0")
-    implementation("androidx.compose.material:material-icons-core:1.4.0-alpha05")
-    implementation("androidx.compose.material:material-icons-extended:1.4.0-alpha05")
+    implementation("androidx.compose.material:material-icons-core:1.4.0-beta01")
+    implementation("androidx.compose.material:material-icons-extended:1.4.0-beta01")
 
     runtimeOnly("androidx.room:room-runtime:2.5.0")
     ksp("androidx.room:room-compiler:2.5.0")

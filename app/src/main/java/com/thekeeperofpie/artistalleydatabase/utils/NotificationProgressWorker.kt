@@ -3,11 +3,13 @@ package com.thekeeperofpie.artistalleydatabase.utils
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.util.Log
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import androidx.work.CoroutineWorker
 import androidx.work.Data
 import androidx.work.ForegroundInfo
@@ -69,6 +71,16 @@ abstract class NotificationProgressWorker(
     private fun notifyComplete(@StringRes titleRes: Int) {
         NotificationManagerCompat.from(appContext).apply {
             cancel(notificationIdOngoing.id)
+
+            // TODO: Prompt user for POST_NOTIFICATIONS permission
+            if (ContextCompat.checkSelfPermission(
+                    appContext,
+                    android.Manifest.permission.POST_NOTIFICATIONS
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                return@apply
+            }
+
             notify(
                 notificationIdFinished.id,
                 NotificationCompat.Builder(appContext, notificationChannel.channel)
@@ -111,9 +123,15 @@ abstract class NotificationProgressWorker(
                 .putFloat(progressKey, progress / max.coerceAtLeast(1).toFloat())
                 .build()
         )
-        NotificationManagerCompat.from(appContext).notify(
-            notificationIdOngoing.id,
-            cachedNotificationBuilder.setProgress(max, progress, false).build()
-        )
+        if (ContextCompat.checkSelfPermission(
+                appContext,
+                android.Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            NotificationManagerCompat.from(appContext).notify(
+                notificationIdOngoing.id,
+                cachedNotificationBuilder.setProgress(max, progress, false).build()
+            )
+        }
     }
 }

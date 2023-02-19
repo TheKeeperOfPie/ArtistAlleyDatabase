@@ -1,49 +1,19 @@
 @file:Suppress("UnstableApiUsage")
 
 plugins {
-    id("com.android.library")
-    id("org.jetbrains.kotlin.android")
-    id("com.google.devtools.ksp") version "1.8.0-1.0.9"
+    id("module-library")
+    id("com.google.devtools.ksp")
 }
 
 android {
     namespace = "com.thekeeperofpie.artistalleydatabase.android_utils"
-    compileSdk = 33
-
-    defaultConfig {
-        minSdk = 33
-
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        consumerProguardFiles("consumer-rules.pro")
-    }
-
-    buildTypes {
-        release {
-            isMinifyEnabled = true
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
-        }
-    }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_18
-        targetCompatibility = JavaVersion.VERSION_18
-    }
-    kotlinOptions {
-        jvmTarget = "18"
-    }
-}
-
-kotlin {
-    jvmToolchain(18)
 }
 
 dependencies {
     implementation("androidx.core:core-ktx:1.9.0")
 
-    runtimeOnly("androidx.work:work-runtime:2.8.0-rc01")
-    api("androidx.work:work-runtime-ktx:2.8.0-rc01")
+    runtimeOnly("androidx.work:work-runtime:2.8.0")
+    api("androidx.work:work-runtime-ktx:2.8.0")
     api("io.github.hoc081098:FlowExt:0.5.0")
 
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0-RC")

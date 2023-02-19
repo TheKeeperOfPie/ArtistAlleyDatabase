@@ -6,12 +6,10 @@ pluginManagement {
         google()
         mavenCentral()
     }
-
-//    includeBuild("composite")
 }
 
 dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
     repositories {
         maven("https://s01.oss.sonatype.org/content/repositories/snapshots")
         maven("https://androidx.dev/storage/compose-compiler/repository/")

@@ -1,16 +1,12 @@
 plugins {
     id("java-library")
     id("org.jetbrains.kotlin.jvm")
-    kotlin("plugin.serialization") version "1.8.0"
+    kotlin("plugin.serialization")
 }
 
 java {
     sourceCompatibility = JavaVersion.VERSION_18
     targetCompatibility = JavaVersion.VERSION_18
-}
-
-kotlin {
-    jvmToolchain(18)
 }
 
 dependencies {
