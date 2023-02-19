@@ -199,9 +199,9 @@ class CdEntryDetailsViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             catalogAlbumChosen()
                 .collectLatest {
-                    if (entryIds.size == 1) {
+                    if (entryIds.size <= 1) {
                         it.coverFull?.toUri()?.let {
-                            entryImageController.replaceMainImage(entryIds[0], it)
+                            entryImageController.replaceMainImage(entryIds.firstOrNull(), it)
                         }
                     }
                 }

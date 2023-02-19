@@ -4,6 +4,7 @@ import com.thekeeperofpie.artistalleydatabase.entry.search.EntrySearchQuery
 
 data class CdSearchQuery(
     override val query: String = "",
+    val includeCatalogIds: Boolean = false,
     val includeTitles: Boolean = false,
     val includePerformers: Boolean = false,
     val includeComposers: Boolean = false,
@@ -16,7 +17,7 @@ data class CdSearchQuery(
     val locked: Boolean = false,
     val unlocked: Boolean = false,
 ): EntrySearchQuery {
-    val includeAll = !includeTitles && !includePerformers && !includeComposers
-            && !includeSeries && !includeCharacters && !includeDiscs && !includeTags
-            && !includeNotes && !includeOther && !locked && !unlocked
+    val includeAll = !includeCatalogIds && !includeTitles && !includePerformers
+            && !includeComposers && !includeSeries && !includeCharacters && !includeDiscs
+            && !includeTags && !includeNotes && !includeOther && !locked && !unlocked
 }

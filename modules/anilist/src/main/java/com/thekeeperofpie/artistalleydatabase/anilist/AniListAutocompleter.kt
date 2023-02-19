@@ -215,8 +215,8 @@ class AniListAutocompleter @Inject constructor(
                         }
                 }
             }
-                .split { it.text.contains(query) }
-            (charactersFirst + seriesFirst + charactersSecond + seriesSecond).distinctBy { it.id }
+                .split { it.text.contains(query, ignoreCase = true) }
+            (seriesFirst + charactersFirst + seriesSecond + charactersSecond).distinctBy { it.id }
         }
     }
 

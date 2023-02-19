@@ -32,6 +32,7 @@
     <string name="cd_entry_track_duration_placeholder">00:39</string>
     <string name="cd_browse_tab_musical_artists">Musical Artists</string>
     <string name="cd_entry_image_content_description">CD entry image</string>
+    <string name="cd_search_option_catalog_ids">Catalog IDs</string>
     <string name="cd_search_option_titles">Titles</string>
     <string name="cd_search_option_performers">Performers</string>
     <string name="cd_search_option_composers">Composers</string>

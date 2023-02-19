@@ -1,5 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.anilist
 
+import com.anilist.fragment.AniListCharacter
+import com.anilist.fragment.AniListMedia
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterColumnEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterEntry
@@ -29,12 +31,14 @@ object AniListUtils {
     fun mangaUrl(id: String) = "$ANILIST_BASE_URL/manga/$id"
 
     fun mediaId(entry: Entry) = when (val value = (entry as? Entry.Prefilled<*>)?.value) {
+        is AniListMedia -> value.id.toString()
         is MediaEntry -> value.id
         is MediaColumnEntry -> value.id
         else -> null
     }
 
     fun characterId(entry: Entry) = when (val value = (entry as? Entry.Prefilled<*>)?.value) {
+        is AniListCharacter -> value.id.toString()
         is CharacterEntry -> value.id
         is CharacterColumnEntry -> value.id
         else -> null

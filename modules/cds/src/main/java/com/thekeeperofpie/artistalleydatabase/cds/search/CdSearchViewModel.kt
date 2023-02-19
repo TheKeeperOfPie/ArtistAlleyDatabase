@@ -37,6 +37,7 @@ class CdSearchViewModel @Inject constructor(
             }
         }
 
+    private val catalogIdsOption = EntrySearchOption(R.string.cd_search_option_catalog_ids)
     private val titlesOption = EntrySearchOption(R.string.cd_search_option_titles)
     private val performersOption = EntrySearchOption(R.string.cd_search_option_performers)
     private val composersOption = EntrySearchOption(R.string.cd_search_option_composers)
@@ -50,6 +51,7 @@ class CdSearchViewModel @Inject constructor(
     private val unlockedOption = EntrySearchOption(R.string.cd_search_option_unlocked)
 
     override val options = listOf(
+        catalogIdsOption,
         titlesOption,
         performersOption,
         composersOption,
@@ -66,6 +68,7 @@ class CdSearchViewModel @Inject constructor(
     @MainThread
     override fun buildQueryWrapper(query: String?) = CdSearchQuery(
         query = query.orEmpty(),
+        includeCatalogIds = catalogIdsOption.enabled,
         includeTitles = titlesOption.enabled,
         includePerformers = performersOption.enabled,
         includeComposers = composersOption.enabled,

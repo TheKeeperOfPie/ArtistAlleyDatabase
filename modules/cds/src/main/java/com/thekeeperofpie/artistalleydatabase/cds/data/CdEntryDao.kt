@@ -46,6 +46,7 @@ interface CdEntryDao {
             .map { "*$it*" }
             .map { queryValue ->
                 mutableListOf<String>().apply {
+                    if (includeAll || query.includeCatalogIds) this += "catalogId:$queryValue"
                     if (includeAll || query.includeTitles) this += "titles:$queryValue"
                     if (includeAll || query.includePerformers) this += "performersSearchable:$queryValue"
                     if (includeAll || query.includeComposers) this += "composersSearchable:$queryValue"
@@ -63,6 +64,7 @@ interface CdEntryDao {
 
         val lockOptions = if (lockedValue == null) emptyList() else {
             mutableListOf<String>().apply {
+                if (query.includeCatalogIds) this += "catalogIdLocked:$lockedValue"
                 if (query.includeTitles) this += "titlesLocked:$lockedValue"
                 if (query.includePerformers) this += "performersLocked:$lockedValue"
                 if (query.includeComposers) this += "composersLocked:$lockedValue"

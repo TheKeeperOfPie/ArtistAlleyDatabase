@@ -254,6 +254,10 @@ sealed class EntrySection(lockState: LockState? = null) {
                 serializedValue = serializedValue,
                 searchableValue = searchableValue,
             )
+
+            override fun toString(): String {
+                return "Entry(id='$id', text='$text')"
+            }
         }
     }
 

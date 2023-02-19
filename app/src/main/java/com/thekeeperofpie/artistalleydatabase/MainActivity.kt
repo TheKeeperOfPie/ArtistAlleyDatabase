@@ -271,7 +271,7 @@ class MainActivity : ComponentActivity() {
                         entries = { viewModel.results.collectAsLazyPagingItems() },
                         selectedItems = { viewModel.selectedEntries.keys },
                         onClickAddFab = {
-                            navController.navigate(NavDestinations.ADD_ENTRY)
+                            navController.navToEntryDetails(route = "cdEntryDetails", emptyList())
                         },
                         onClickEntry = { index, entry ->
                             if (viewModel.selectedEntries.isNotEmpty()) {

@@ -285,9 +285,9 @@ class EntryImageController(
     }
 
     @WorkerThread
-    suspend fun replaceMainImage(entryId: EntryId, uri: Uri) {
+    suspend fun replaceMainImage(entryId: EntryId?, uri: Uri) {
         val entryIdsSize = withContext(Dispatchers.Main) { entryIds.size }
-        if (entryIdsSize != 1) return
+        if (entryIdsSize > 1) return
 
         val (width, height) = ImageUtils.getImageWidthHeight(application, uri)
         val newImage = EntryImage(
