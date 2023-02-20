@@ -25,6 +25,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.DropdownMenuItem
@@ -106,6 +108,7 @@ fun DropdownMenu(
     modifier: Modifier = Modifier,
     offset: DpOffset = DpOffset(0.dp, 0.dp),
     properties: PopupProperties = PopupProperties(focusable = true),
+    listState: LazyListState = rememberLazyListState(),
     content: LazyListScope.() -> Unit
 ) {
     val expandedStates = remember { MutableTransitionState(false) }
@@ -129,6 +132,7 @@ fun DropdownMenu(
             DropdownMenuContent(
                 expandedStates = expandedStates,
                 transformOriginState = transformOriginState,
+                listState = listState,
                 modifier = modifier,
                 content = content
             )
@@ -192,6 +196,7 @@ fun DropdownMenuItem(
 internal fun DropdownMenuContent(
     expandedStates: MutableTransitionState<Boolean>,
     transformOriginState: MutableState<TransformOrigin>,
+    listState: LazyListState,
     modifier: Modifier = Modifier,
     content: LazyListScope.() -> Unit
 ) {
@@ -256,6 +261,7 @@ internal fun DropdownMenuContent(
         shadowElevation = 3.0.dp
     ) {
         LazyColumn(
+            state = listState,
             modifier = modifier
                 .padding(vertical = DropdownMenuVerticalPadding)
                 .fillMaxWidth(),
@@ -306,7 +312,8 @@ internal fun DropdownMenuItemContent(
             }
             CompositionLocalProvider(LocalContentColor provides colors.textColor(enabled).value) {
                 Box(
-                    Modifier.weight(1f)
+                    Modifier
+                        .weight(1f)
                         .padding(
                             start = if (leadingIcon != null) {
                                 DropdownMenuItemHorizontalPadding

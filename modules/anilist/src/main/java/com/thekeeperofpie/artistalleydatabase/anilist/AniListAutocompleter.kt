@@ -163,6 +163,7 @@ class AniListAutocompleter @Inject constructor(
     ): Flow<List<Entry>> {
         @Suppress("OPT_IN_USAGE")
         return combine(
+            characterValue,
             seriesContents.map { it.filterIsInstance<Entry.Prefilled<*>>() }
                 .map { it.mapNotNull(AniListUtils::mediaId) }
                 .distinctUntilChanged()
@@ -188,10 +189,10 @@ class AniListAutocompleter @Inject constructor(
             characterValue
                 .debounce(2.seconds)
                 .flatMapLatest { query ->
-                    queryCharacters(query, queryCharactersLocal).map { query to it }
+                    queryCharacters(query, queryCharactersLocal)
                 }
-        ) { series, (query, charactersPair) ->
-            val (charactersFirst, charactersSecond) = charactersPair
+                .startWith(flowOf(emptyList<Entry>() to emptyList()))
+        ) { query, series, (charactersFirst, charactersSecond) ->
             val (seriesFirst, seriesSecond) = series.toMutableList().apply {
                 removeAll { seriesCharacter ->
                     charactersFirst

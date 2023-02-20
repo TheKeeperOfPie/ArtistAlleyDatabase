@@ -15,6 +15,8 @@ import androidx.compose.ui.res.stringResource
 import com.hoc081098.flowext.startWith
 import com.thekeeperofpie.artistalleydatabase.compose.observableStateOf
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -24,6 +26,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.withContext
@@ -183,33 +186,36 @@ sealed class EntrySection(lockState: LockState? = null) {
         fun finalContents() = (contents + Entry.Custom(pendingValue.trim()))
             .filterNot { it.serializedValue.isBlank() }
 
+        @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
         suspend fun subscribePredictions(
             localCall: suspend (String) -> List<Flow<Entry?>>,
             networkCall: suspend (query: String) -> Flow<List<Entry>> = {
                 flowOf(emptyList())
             },
         ) {
-            @Suppress("OPT_IN_USAGE")
-            valueUpdates()
-                .debounce(2.seconds)
-                .flatMapLatest { query ->
-                    val localFlows = localCall(query)
-                    val database = if (localFlows.isEmpty()) {
-                        flowOf(emptyList())
-                    } else {
-                        combine(localFlows) { it.toList() }
+            combine(
+                valueUpdates()
+                    .flatMapLatest {
+                        val localFlows = localCall(it)
+                        if (localFlows.isEmpty()) {
+                            flowOf(emptyList())
+                        } else {
+                            combine(localFlows, Array<Entry?>::toList)
+                        }
                     }
-                    val aniList = if (query.isBlank()) flowOf(emptyList()) else networkCall(query)
-                        .startWith(emptyList())
-                    combine(database, aniList) { local, network ->
-                        (local + network).filterNotNull().distinctBy { it.id }
-                    }
+                    .startWith(flowOf(emptyList())),
+                valueUpdates()
+                    .debounce(2.seconds)
+                    .filter(String::isNotBlank)
+                    .flatMapLatest(networkCall)
+                    .startWith(flowOf(emptyList()))
+            ) { (local, network) ->
+                (local + network).filterNotNull().distinctBy { it.id }
+            }.collectLatest {
+                withContext(Dispatchers.Main) {
+                    predictions = it.toMutableList()
                 }
-                .collectLatest {
-                    withContext(Dispatchers.Main) {
-                        predictions = it.toMutableList()
-                    }
-                }
+            }
         }
 
         private fun indexOf(entry: Entry.Prefilled<*>) =

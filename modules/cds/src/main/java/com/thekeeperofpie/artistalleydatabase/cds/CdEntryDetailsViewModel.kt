@@ -214,6 +214,8 @@ class CdEntryDetailsViewModel @Inject constructor(
                 .collectLatest { titleSection.addOrReplaceContent(it) }
         }
 
+        // TODO: Compare VGMdb performer names to AniList media -> character -> VA
+        //  to automatically fill character section
         mapOf(
             { album: AlbumEntry -> album.performers } to performerSection,
             { album: AlbumEntry -> album.composers } to composerSection,

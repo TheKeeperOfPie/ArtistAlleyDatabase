@@ -45,6 +45,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
@@ -306,10 +307,12 @@ private fun MultiTextSection(section: EntrySection.MultiText) {
                 && section.pendingValue.isNotBlank()
                 && section.predictions.isNotEmpty()
             ) {
+                val listState = rememberLazyListState()
                 DropdownMenu(
                     expanded = focused,
                     onDismissRequest = { focusRequester.freeFocus() },
                     properties = PopupProperties(focusable = false),
+                    listState = listState,
                     modifier = Modifier
                         .fillMaxWidth()
                         .heightIn(max = 240.dp)
@@ -402,6 +405,11 @@ private fun MultiTextSection(section: EntrySection.MultiText) {
                             contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp)
                         )
                     }
+                }
+
+                // Scroll to the top each time the predictions change to show highest priority
+                LaunchedEffect(section.predictions) {
+                    listState.scrollToItem(0)
                 }
             }
         }
