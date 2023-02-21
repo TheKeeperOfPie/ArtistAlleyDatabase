@@ -31,7 +31,7 @@ import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.VgmdbArtist
         VgmdbArtist::class,
         MusicalArtist::class,
     ],
-    exportSchema = false,
+    exportSchema = true,
     version = 1
 )
 @TypeConverters(
