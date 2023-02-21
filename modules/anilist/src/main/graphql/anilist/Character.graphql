@@ -1,12 +1,16 @@
+fragment AniListCharacterName on CharacterName {
+    first
+    middle
+    last
+    full
+    native
+    alternative
+}
+
 fragment AniListCharacter on Character {
     id
     name {
-        first
-        middle
-        last
-        full
-        native
-        alternative
+        ...AniListCharacterName
     }
     image {
         large
@@ -16,6 +20,23 @@ fragment AniListCharacter on Character {
     media(page: $mediaPage, perPage: $mediaPerPage) {
         nodes {
             ...AniListMedia
+        }
+        edges {
+            id
+            voiceActors {
+                id
+                languageV2
+                name {
+                    ...AniListStaffName
+                }
+                image {
+                    large
+                    medium
+                }
+            }
+            node {
+                id
+            }
         }
     }
 }

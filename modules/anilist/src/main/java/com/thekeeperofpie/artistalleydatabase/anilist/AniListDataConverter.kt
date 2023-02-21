@@ -96,19 +96,25 @@ class AniListDataConverter @Inject constructor(
         )
     }
 
-    fun characterEntry(character: AniListCharacter): Entry.Prefilled<AniListCharacter> =
-        characterEntry(
+    fun characterEntry(character: AniListCharacter): Entry.Prefilled<AniListCharacter> {
+        val firstMedia = character.media?.nodes?.firstOrNull()?.aniListMedia
+        val voiceActor = CharacterUtils.findVoiceActor(character, firstMedia)
+        return characterEntry(
             value = character,
             id = character.id.toString(),
             image = character.image?.medium,
-            first = character.name?.first,
-            middle = character.name?.middle,
-            last = character.name?.last,
-            full = character.name?.full,
-            native = character.name?.native,
-            alternative = character.name?.alternative?.filterNotNull(),
-            mediaTitle = character.media?.nodes?.firstOrNull()?.aniListMedia?.title?.romaji
+            first = character.name?.aniListCharacterName?.first,
+            middle = character.name?.aniListCharacterName?.middle,
+            last = character.name?.aniListCharacterName?.last,
+            full = character.name?.aniListCharacterName?.full,
+            native = character.name?.aniListCharacterName?.native,
+            alternative = character.name?.aniListCharacterName?.alternative?.filterNotNull(),
+            mediaTitle = firstMedia?.title?.romaji,
+            staffId = voiceActor?.id,
+            staffName = voiceActor?.name?.full,
+            staffImage = voiceActor?.image?.medium,
         )
+    }
 
     fun characterEntry(entry: CharacterColumnEntry): Entry.Prefilled<CharacterColumnEntry> =
         characterEntry(
@@ -122,10 +128,18 @@ class AniListDataConverter @Inject constructor(
             native = entry.name?.native,
             alternative = emptyList(),
             mediaTitle = null,
+            staffId = null,
+            staffName = null,
+            staffImage = null,
         )
 
-    fun characterEntry(entry: CharacterEntry, media: List<MediaEntry>) =
-        characterEntry(
+    fun characterEntry(
+        entry: CharacterEntry,
+        media: List<MediaEntry>
+    ): Entry.Prefilled<CharacterEntry> {
+        val firstMedia = media.firstOrNull()
+        val voiceActor = CharacterUtils.findVoiceActor(aniListJson, entry, firstMedia)
+        return characterEntry(
             value = entry,
             id = entry.id,
             image = entry.image?.medium,
@@ -135,8 +149,12 @@ class AniListDataConverter @Inject constructor(
             full = entry.name?.full,
             native = entry.name?.native,
             alternative = entry.name?.alternative,
-            mediaTitle = media.firstOrNull()?.title?.romaji,
+            mediaTitle = firstMedia?.title?.romaji,
+            staffId = voiceActor?.id,
+            staffName = voiceActor?.name?.full,
+            staffImage = voiceActor?.image?.medium
         )
+    }
 
     private fun <T> characterEntry(
         value: T,
@@ -148,7 +166,10 @@ class AniListDataConverter @Inject constructor(
         full: String?,
         native: String?,
         alternative: List<String>?,
-        mediaTitle: String?
+        mediaTitle: String?,
+        staffId: String?,
+        staffName: String?,
+        staffImage: String?,
     ): Entry.Prefilled<T> {
         val canonicalName = CharacterUtils.buildCanonicalName(
             first = first,
@@ -175,13 +196,16 @@ class AniListDataConverter @Inject constructor(
             text = canonicalName,
             image = image,
             imageLink = AniListUtils.characterUrl(id),
+            secondaryImage = staffImage,
+            secondaryImageLink = staffId?.let(AniListUtils::staffUrl),
             titleText = displayName,
-            subtitleText = mediaTitle,
+            subtitleText = listOfNotNull(mediaTitle, staffName).joinToString(separator = " / ")
+                .ifEmpty { null },
             serializedValue = serializedValue,
             searchableValue = (listOf(last, middle, first) + alternative.orEmpty())
                 .filterNot(String?::isNullOrBlank)
                 .mapNotNull { it?.trim() }
-                .joinToString()
+                .joinToString(),
         )
     }
 

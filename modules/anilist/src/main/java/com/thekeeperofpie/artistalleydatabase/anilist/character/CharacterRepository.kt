@@ -2,12 +2,14 @@ package com.thekeeperofpie.artistalleydatabase.anilist.character
 
 import com.anilist.fragment.AniListCharacter
 import com.thekeeperofpie.artistalleydatabase.android_utils.ApiRepository
+import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListApi
 import com.thekeeperofpie.artistalleydatabase.anilist.R
 
 class CharacterRepository(
     application: ScopedApplication,
+    private val appJson: AppJson,
     private val characterEntryDao: CharacterEntryDao,
     private val aniListApi: AniListApi,
 ) : ApiRepository<CharacterEntry>(application) {
@@ -31,20 +33,7 @@ class CharacterRepository(
     }
 
     private fun makeEntry(character: AniListCharacter) = CharacterEntry(
-        id = character.id.toString(),
-        name = CharacterEntry.Name(
-            first = character.name?.first?.trim(),
-            middle = character.name?.middle?.trim(),
-            last = character.name?.last?.trim(),
-            full = character.name?.full?.trim(),
-            native = character.name?.native?.trim(),
-            alternative = character.name?.alternative?.filterNotNull()
-                ?.map(String::trim),
-        ),
-        image = CharacterEntry.Image(
-            large = character.image?.large,
-            medium = character.image?.medium,
-        ),
-        mediaIds = character.media?.nodes?.mapNotNull { it?.aniListMedia?.id?.toString() }
+        character = character,
+        appJson = appJson,
     )
 }

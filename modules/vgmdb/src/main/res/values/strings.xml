@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="vgmdb">VGMdb</string>
+    <string name="vgmdb_albums">VGMdb Albums</string>
+    <string name="vgmdb_artists">VGMdb Artists</string>
     <string name="vgmdb_error_fetching_album">Error fetching album</string>
     <string name="vgmdb_error_fetching_artist">Error fetching artist</string>
 </resources>

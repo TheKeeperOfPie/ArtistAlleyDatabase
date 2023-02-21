@@ -246,6 +246,8 @@ sealed class EntrySection(lockState: LockState? = null) {
                 text: String,
                 val image: String? = null,
                 val imageLink: String? = null,
+                val secondaryImage: String? = null,
+                val secondaryImageLink: String? = null,
                 val titleText: String = text,
                 val subtitleText: String? = null,
                 trailingIcon: ImageVector? = null,

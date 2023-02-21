@@ -33,7 +33,7 @@ data class ArtEntry(
     val seriesSerialized: List<String> = emptyList(),
     val seriesSearchable: List<String> = emptyList(),
     @Discouraged("Use #characters(AppJson) instead")
-    val charactersSerialized: List<String> =emptyList(),
+    val charactersSerialized: List<String> = emptyList(),
     val charactersSearchable: List<String> = emptyList(),
     val tags: List<String> = emptyList(),
     @Serializable(with = Converters.BigDecimalConverter::class)

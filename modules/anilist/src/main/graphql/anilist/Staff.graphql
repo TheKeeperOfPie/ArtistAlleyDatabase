@@ -1,0 +1,8 @@
+fragment AniListStaffName on StaffName {
+    first
+    middle
+    last
+    full
+    native
+    alternative
+}

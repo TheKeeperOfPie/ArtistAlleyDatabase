@@ -252,8 +252,10 @@ object SettingsScreen {
     }
 
     enum class DatabaseType(@StringRes val labelRes: Int) {
-        ANILIST(AniListStringR.aniList),
-        VGMDB(VgmdbStringR.vgmdb),
+        ANILIST_CHARACTERS(AniListStringR.aniList_characters),
+        ANILIST_MEDIA(AniListStringR.aniList_media),
+        VGMDB_ALBUMS(VgmdbStringR.vgmdb_albums),
+        VGMDB_ARTISTS(VgmdbStringR.vgmdb_artists),
         MUSICAL_ARTISTS(MusicalArtistsStringR.musical_artists),
     }
 }

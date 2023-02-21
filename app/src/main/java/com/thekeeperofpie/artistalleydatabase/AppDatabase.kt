@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase
 
+import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
@@ -32,7 +33,10 @@ import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.VgmdbArtist
         MusicalArtist::class,
     ],
     exportSchema = true,
-    version = 1
+    version = 2,
+    autoMigrations = [
+        AutoMigration(from = 1, to = 2),
+    ]
 )
 @TypeConverters(
     value = [

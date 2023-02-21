@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.anilist
 
 import android.app.Application
+import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterEntryDao
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
@@ -52,7 +53,8 @@ class AniListHiltModule {
     @Provides
     fun provideCharacterRepository(
         application: ScopedApplication,
+        appJson: AppJson,
         characterEntryDao: CharacterEntryDao,
         aniListApi: AniListApi
-    ) = CharacterRepository(application, characterEntryDao, aniListApi)
+    ) = CharacterRepository(application, appJson, characterEntryDao, aniListApi)
 }

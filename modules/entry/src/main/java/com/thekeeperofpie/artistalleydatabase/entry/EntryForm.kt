@@ -330,27 +330,25 @@ private fun MultiTextSection(section: EntrySection.MultiText) {
                             },
                             text = {
                                 val titleText: @Composable () -> String
-                                val subtitleText: () -> String?
-                                val image: () -> String?
-                                val imageLink: () -> String?
+                                var subtitleText: () -> String? = { null }
+                                var image: () -> String? = { null }
+                                var imageLink: () -> String? = { null }
+                                var secondaryImage: (() -> String?)? = null
+                                var secondaryImageLink: () -> String? = { null }
                                 when (entry) {
                                     is EntrySection.MultiText.Entry.Custom -> {
                                         titleText = { entry.text }
-                                        subtitleText = { null }
-                                        image = { null }
-                                        imageLink = { null }
                                     }
                                     is EntrySection.MultiText.Entry.Prefilled<*> -> {
                                         titleText = { entry.titleText }
                                         subtitleText = { entry.subtitleText }
                                         image = { entry.image }
                                         imageLink = { entry.imageLink }
+                                        secondaryImage = { entry.secondaryImage }
+                                        secondaryImageLink = { entry.secondaryImageLink }
                                     }
                                     EntrySection.MultiText.Entry.Different -> {
                                         titleText = { stringResource(R.string.different) }
-                                        subtitleText = { null }
-                                        image = { null }
-                                        imageLink = { null }
                                     }
                                 }.run { /*exhaust*/ }
 
@@ -398,6 +396,17 @@ private fun MultiTextSection(section: EntrySection.MultiText) {
                                             imageVector = imageVector,
                                             contentDescription = entry.trailingIconContentDescription
                                                 ?.let { stringResource(it) },
+                                        )
+                                    }
+
+                                    if (secondaryImage != null) {
+                                        EntryImage(
+                                            image = secondaryImage,
+                                            link = secondaryImageLink,
+                                            modifier = Modifier
+                                                .fillMaxHeight()
+                                                .heightIn(min = 54.dp)
+                                                .width(42.dp)
                                         )
                                     }
                                 }
@@ -542,7 +551,19 @@ private fun PrefilledSectionField(
                     )
                 }
 
-                if (entry.trailingIcon == null) {
+                val secondaryImage = entry.secondaryImage
+                if (secondaryImage != null) {
+                    EntryImage(
+                        image = { secondaryImage },
+                        link = { entry.secondaryImageLink },
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .heightIn(min = 72.dp)
+                            .width(56.dp)
+                    )
+                }
+
+                if (entry.trailingIcon == null && secondaryImage == null) {
                     val alpha by animateFloatAsState(
                         targetValue = if (editable) 1f else 0f,
                     )
@@ -577,12 +598,14 @@ private fun PrefilledSectionField(
                         }
                     }
 
-                    AnimatedVisibility(
-                        visible = !editable,
-                        enter = expandHorizontally(),
-                        exit = shrinkHorizontally(),
-                    ) {
-                        Spacer(Modifier.width(16.dp))
+                    if (secondaryImage == null) {
+                        AnimatedVisibility(
+                            visible = !editable,
+                            enter = expandHorizontally(),
+                            exit = shrinkHorizontally(),
+                        ) {
+                            Spacer(Modifier.width(16.dp))
+                        }
                     }
                 }
             }

@@ -63,17 +63,21 @@ class SettingsViewModel @Inject constructor(
 
     fun onClickClearDatabaseById(databaseType: SettingsScreen.DatabaseType, id: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            when (databaseType) {
-                SettingsScreen.DatabaseType.ANILIST -> {
-                    mediaEntryDao.delete(id)
-                    characterEntryDao.delete(id)
+            if (id.isBlank()) {
+                when (databaseType) {
+                    SettingsScreen.DatabaseType.ANILIST_CHARACTERS -> characterEntryDao.deleteAll()
+                    SettingsScreen.DatabaseType.ANILIST_MEDIA -> mediaEntryDao.deleteAll()
+                    SettingsScreen.DatabaseType.VGMDB_ALBUMS -> albumEntryDao.deleteAll()
+                    SettingsScreen.DatabaseType.VGMDB_ARTISTS -> vgmdbArtistDao.deleteAll()
+                    SettingsScreen.DatabaseType.MUSICAL_ARTISTS -> musicalArtistDao.deleteAll()
                 }
-                SettingsScreen.DatabaseType.VGMDB -> {
-                    albumEntryDao.delete(id)
-                    vgmdbArtistDao.delete(id)
-                }
-                SettingsScreen.DatabaseType.MUSICAL_ARTISTS -> {
-                    musicalArtistDao.delete(id)
+            } else {
+                when (databaseType) {
+                    SettingsScreen.DatabaseType.ANILIST_CHARACTERS -> characterEntryDao.delete(id)
+                    SettingsScreen.DatabaseType.ANILIST_MEDIA -> mediaEntryDao.delete(id)
+                    SettingsScreen.DatabaseType.VGMDB_ALBUMS -> albumEntryDao.delete(id)
+                    SettingsScreen.DatabaseType.VGMDB_ARTISTS -> vgmdbArtistDao.delete(id)
+                    SettingsScreen.DatabaseType.MUSICAL_ARTISTS -> musicalArtistDao.delete(id)
                 }
             }
         }
@@ -82,8 +86,10 @@ class SettingsViewModel @Inject constructor(
     fun onClickRebuildDatabase(databaseType: SettingsScreen.DatabaseType) {
         viewModelScope.launch(Dispatchers.IO) {
             when (databaseType) {
-                SettingsScreen.DatabaseType.ANILIST,
-                SettingsScreen.DatabaseType.VGMDB -> {
+                SettingsScreen.DatabaseType.ANILIST_CHARACTERS,
+                SettingsScreen.DatabaseType.ANILIST_MEDIA,
+                SettingsScreen.DatabaseType.VGMDB_ALBUMS,
+                SettingsScreen.DatabaseType.VGMDB_ARTISTS -> {
                     // TODO: Rebuild?
                 }
                 SettingsScreen.DatabaseType.MUSICAL_ARTISTS -> {
