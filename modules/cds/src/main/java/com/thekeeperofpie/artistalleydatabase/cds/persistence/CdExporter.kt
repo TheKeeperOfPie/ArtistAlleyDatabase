@@ -29,7 +29,7 @@ class CdExporter(
         worker: CoroutineWorker,
         jsonWriter: JsonWriter,
         jsonElementConverter: (JsonElement) -> Any?,
-        writeEntry: suspend (String, InputStream) -> Unit,
+        writeEntry: suspend (String, () -> InputStream) -> Unit,
         updateProgress: suspend (progress: Int, max: Int) -> Unit,
     ): Boolean {
         jsonWriter.beginObject()
@@ -61,7 +61,7 @@ class CdExporter(
 
     private suspend fun writeImages(
         entry: CdEntry,
-        writeEntry: suspend (String, InputStream) -> Unit,
+        writeEntry: suspend (String, () -> InputStream) -> Unit,
     ) {
         val series = dataConverter.seriesEntries(entry.series(appJson))
             .map { it.text }

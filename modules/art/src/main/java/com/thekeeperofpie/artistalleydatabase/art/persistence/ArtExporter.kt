@@ -27,7 +27,7 @@ class ArtExporter(
         worker: CoroutineWorker,
         jsonWriter: JsonWriter,
         jsonElementConverter: (JsonElement) -> Any?,
-        writeEntry: suspend (String, InputStream) -> Unit,
+        writeEntry: suspend (String, () -> InputStream) -> Unit,
         updateProgress: suspend (progress: Int, max: Int) -> Unit,
     ): Boolean {
         jsonWriter.beginObject()
@@ -59,7 +59,7 @@ class ArtExporter(
 
     private suspend fun writeImages(
         entry: ArtEntry,
-        writeEntry: suspend (String, InputStream) -> Unit,
+        writeEntry: suspend (String, () -> InputStream) -> Unit,
     ) {
         val series = dataConverter.seriesEntries(entry.series(appJson))
             .map { it.text }

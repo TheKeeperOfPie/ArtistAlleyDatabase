@@ -7,6 +7,7 @@ import androidx.hilt.work.HiltWorker
 import androidx.work.WorkerParameters
 import com.thekeeperofpie.artistalleydatabase.R
 import com.thekeeperofpie.artistalleydatabase.android_utils.persistence.Importer
+import com.thekeeperofpie.artistalleydatabase.export.ExportUtils
 import com.thekeeperofpie.artistalleydatabase.navigation.NavDrawerItems
 import com.thekeeperofpie.artistalleydatabase.utils.NotificationChannels
 import com.thekeeperofpie.artistalleydatabase.utils.NotificationIds
@@ -14,8 +15,13 @@ import com.thekeeperofpie.artistalleydatabase.utils.NotificationProgressWorker
 import com.thekeeperofpie.artistalleydatabase.utils.PendingIntentRequestCodes
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
-import java.io.FilterInputStream
-import java.util.zip.ZipInputStream
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.withContext
+import org.apache.commons.compress.archivers.zip.ZipFile
+import java.nio.channels.FileChannel
 
 @HiltWorker
 class ImportWorker @AssistedInject constructor(
@@ -39,74 +45,72 @@ class ImportWorker @AssistedInject constructor(
 
     companion object {
         private const val TAG = "ImportWorker"
+        private const val PARALLELISM = 8
     }
 
-    override suspend fun doWorkInternal(): Result {
-        val inputUri = params.inputData.getString(ImportUtils.KEY_INPUT_CONTENT_URI)
-            ?.let(Uri::parse)
-            ?: return Result.failure()
+    @OptIn(ExperimentalCoroutinesApi::class)
+    override suspend fun doWorkInternal() =
+        withContext(Dispatchers.IO.limitedParallelism(PARALLELISM)) {
+            val inputUri = params.inputData.getString(ImportUtils.KEY_INPUT_CONTENT_URI)
+                ?.let(Uri::parse)
+                ?: return@withContext Result.failure()
 
-        // Default to safe values to avoid accidentally overwrites
-        val dryRun = params.inputData.getBoolean(ImportUtils.KEY_DRY_RUN, true)
-        val replaceAll = params.inputData.getBoolean(ImportUtils.KEY_REPLACE_ALL, false)
+            // Default to safe values to avoid accidentally overwrites
+            val dryRun = params.inputData.getBoolean(ImportUtils.KEY_DRY_RUN, true)
+            val replaceAll = params.inputData.getBoolean(ImportUtils.KEY_REPLACE_ALL, false)
 
-        var entriesSize = 0
-        // First open only counts and inserts entries
-        val firstPass = appContext.contentResolver.openInputStream(inputUri)
-            ?: throw IllegalArgumentException("Cannot open input URI $inputUri")
-        try {
-            firstPass.use { fileInput ->
-                ZipInputStream(fileInput).use { zipInput ->
-                    var entry = zipInput.nextEntry
-                    while (entry != null) {
-                        val entryInputStream = object : FilterInputStream(zipInput) {
-                            override fun close() {
-                                // Do nothing
-                            }
-                        }
-
-                        entriesSize += importers.find { "${it.zipEntryName}.json" == entry.name }
-                            ?.readEntries(entryInputStream, dryRun, replaceAll) ?: 0
-
-                        zipInput.closeEntry()
-                        entry = zipInput.nextEntry
-                    }
+            val dateTime = ExportUtils.currentDateTimeFileName()
+            val appFilesDir = appContext.filesDir
+            val privateImportDir = appFilesDir.resolve("import")
+                .apply {
+                    mkdirs()
+                    deleteOnExit()
                 }
-            }
-        } catch (e: Exception) {
-            Log.d(TAG, "Failure inserting entries", e)
-            throw RuntimeException(e)
-        }
 
-        // Second pass uses previous count to determine progress and does image copying
-        val secondPass = appContext.contentResolver.openInputStream(inputUri)
-            ?: throw IllegalArgumentException("Cannot open input URI $inputUri")
-        secondPass.use { fileInput ->
-            ZipInputStream(fileInput).use { zipInput ->
-                var count = 0
-                var entry = zipInput.nextEntry
-                while (entry != null) {
-                    if (!entry.isDirectory) {
-                        val entryInputStream = object : FilterInputStream(zipInput) {
-                            override fun close() {
-                                // Do nothing
+            val tempZipFile = privateImportDir.resolve("$dateTime.zip")
+            appContext.contentResolver.openInputStream(inputUri)?.use { input ->
+                tempZipFile.outputStream().use(input::copyTo)
+            } ?: throw IllegalArgumentException("Cannot open input URI $inputUri")
+
+            try {
+                // Warning doesn't handle limitedParallelism
+                @Suppress("BlockingMethodInNonBlockingContext")
+                FileChannel.open(tempZipFile.toPath()).use {
+                    ZipFile(it).use { zipFile ->
+                        val entriesSize = try {
+                            importers.sumOf {
+                                val entry =
+                                    zipFile.getEntry("${it.zipEntryName}.json") ?: return@sumOf 0
+                                it.readEntries(zipFile.getInputStream(entry), dryRun, replaceAll)
                             }
+                        } catch (e: Exception) {
+                            Log.d(TAG, "Failure inserting entries", e)
+                            throw RuntimeException(e)
                         }
 
-                        importers.find { entry.name.startsWith(it.zipEntryName + "/") }
-                            ?.readInnerFile(entryInputStream, entry.name, dryRun)
-                            ?.also {
-                                count++
+                        var count = 0
+                        zipFile.entries.asSequence()
+                            .chunked(PARALLELISM)
+                            .forEach { entries ->
+                                entries.map { entry ->
+                                    async {
+                                        importers.find { entry.name.startsWith(it.zipEntryName + "/") }
+                                            ?.readInnerFile(
+                                                zipFile.getInputStream(entry),
+                                                entry.name,
+                                                dryRun
+                                            )
+                                    }
+                                }.awaitAll()
+                                count += entries.size
                                 setProgress(count, entriesSize)
                             }
                     }
-
-                    zipInput.closeEntry()
-                    entry = zipInput.nextEntry
                 }
+            } finally {
+                privateImportDir.deleteRecursively()
             }
-        }
 
-        return Result.success()
-    }
+            return@withContext Result.success()
+        }
 }

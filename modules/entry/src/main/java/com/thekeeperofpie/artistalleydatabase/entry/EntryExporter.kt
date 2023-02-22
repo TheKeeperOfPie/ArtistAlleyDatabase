@@ -11,7 +11,7 @@ abstract class EntryExporter(protected val appContext: Context) : Exporter {
 
     protected suspend fun writeImages(
         entryId: EntryId,
-        writeEntry: suspend (String, InputStream) -> Unit,
+        writeEntry: suspend (String, () -> InputStream) -> Unit,
         vararg values: List<String>
     ) {
         EntryUtils.getImages(appContext, entryId, 0)
@@ -54,7 +54,7 @@ abstract class EntryExporter(protected val appContext: Context) : Exporter {
         height: Int,
         label: String,
         cropped: Boolean,
-        writeEntry: suspend (String, InputStream) -> Unit,
+        writeEntry: suspend (String, () -> InputStream) -> Unit,
         vararg values: List<String>,
     ) {
         val fileName = "$index-$width-$height-$label".let {
@@ -65,8 +65,6 @@ abstract class EntryExporter(protected val appContext: Context) : Exporter {
             values = values
         )
 
-        appContext.contentResolver.openInputStream(uri)!!.use {
-            writeEntry(filePath, it)
-        }
+        writeEntry(filePath) { appContext.contentResolver.openInputStream(uri)!! }
     }
 }

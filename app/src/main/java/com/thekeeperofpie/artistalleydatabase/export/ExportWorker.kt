@@ -15,11 +15,19 @@ import com.thekeeperofpie.artistalleydatabase.utils.NotificationProgressWorker
 import com.thekeeperofpie.artistalleydatabase.utils.PendingIntentRequestCodes
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.asExecutor
+import kotlinx.coroutines.withContext
 import okhttp3.internal.closeQuietly
 import okio.buffer
 import okio.sink
-import java.util.zip.ZipEntry
-import java.util.zip.ZipOutputStream
+import org.apache.commons.compress.archivers.zip.ParallelScatterZipCreator
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry
+import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream
+import org.apache.commons.compress.archivers.zip.ZipMethod
+import java.util.concurrent.AbstractExecutorService
+import java.util.concurrent.TimeUnit
 
 @HiltWorker
 class ExportWorker @AssistedInject constructor(
@@ -42,95 +50,103 @@ class ExportWorker @AssistedInject constructor(
     pendingIntentRequestCode = PendingIntentRequestCodes.EXPORT_MAIN_ACTIVITY_OPEN,
 ) {
 
+    companion object {
+        private const val PARALLELISM = 8
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
     override suspend fun doWorkInternal(): Result {
-        val outputUri = params.inputData.getString(ExportUtils.KEY_OUTPUT_CONTENT_URI)
-            ?.let(Uri::parse)
-            ?: return Result.failure()
+        val dispatcher = Dispatchers.IO.limitedParallelism(PARALLELISM)
+        return withContext(dispatcher) {
+            val outputUri = params.inputData.getString(ExportUtils.KEY_OUTPUT_CONTENT_URI)
+                ?.let(Uri::parse)
+                ?: return@withContext Result.failure()
 
-        // Immediately open the output URI to get permissions for it
-        // noinspection Recycle Lint check doesn't handle closeQuietly
-        appContext.contentResolver.openOutputStream(outputUri)
-            ?.closeQuietly()
-            ?: return Result.failure()
+            // Immediately open the output URI to get permissions for it
+            // noinspection Recycle Lint check doesn't handle closeQuietly
+            appContext.contentResolver.openOutputStream(outputUri)
+                ?.closeQuietly()
+                ?: return@withContext Result.failure()
 
-        val dateTime = ExportUtils.currentDateTimeFileName()
-        val appFilesDir = appContext.filesDir
-        val privateExportDir = appFilesDir.resolve("export")
-            .apply {
-                mkdirs()
-                deleteOnExit()
-            }
+            val appFilesDir = appContext.filesDir
+            val privateExportDir = appFilesDir.resolve("export")
+                .apply {
+                    mkdirs()
+                    deleteOnExit()
+                }
 
-        val tempZipFile = privateExportDir.resolve("$dateTime.zip")
+            val entriesSizes = exporters.map { it.entriesSize() }
+            val entriesSizeMax = entriesSizes.sum()
 
-        val entriesSizes = exporters.map { it.entriesSize() }
-        val entriesSizeMax = entriesSizes.sum()
+            try {
+                val executor = dispatcher.asExecutor()
+                val zipCreator = ParallelScatterZipCreator(object : AbstractExecutorService() {
+                    override fun execute(command: Runnable) = executor.execute(command)
+                    override fun shutdown() = Unit
+                    override fun shutdownNow() = mutableListOf<Runnable>()
+                    override fun isShutdown() = false
+                    override fun isTerminated() = false
+                    override fun awaitTermination(length: Long, unit: TimeUnit) = false
+                })
+                exporters.forEachIndexed { index, exporter ->
+                    val tempEntryDir = privateExportDir.resolve(exporter.zipEntryName)
+                        .apply { mkdirs() }
 
-        try {
-            tempZipFile.outputStream().use {
-                ZipOutputStream(it).use { zip ->
-                    exporters.forEachIndexed { index, exporter ->
-                        val tempEntryDir = privateExportDir.resolve(exporter.zipEntryName)
-                            .apply { mkdirs() }
+                    val tempJsonFile = privateExportDir.resolve(exporter.zipEntryName + ".json")
 
-                        val tempJsonFile = privateExportDir.resolve(exporter.zipEntryName + ".json")
-
-                        val startingProgressIndex = entriesSizes.take(index).sum()
-                        val success = tempJsonFile.sink().use {
-                            it.buffer().use {
-                                JsonWriter.of(it).use { jsonWriter ->
-                                    jsonWriter.indent = "    "
-                                    exporter.writeEntries(
-                                        this,
-                                        jsonWriter,
-                                        jsonElementConverter =
-                                        appMoshi.jsonElementAdapter::toJsonValue,
-                                        writeEntry =
-                                        @Suppress("BlockingMethodInNonBlockingContext")
-                                        { name, input ->
-                                            zip.putNextEntry(
-                                                ZipEntry(
-                                                    tempEntryDir.resolve(name)
-                                                        .relativeTo(privateExportDir)
-                                                        .path
-                                                )
-                                            )
-                                            input.use { it.copyTo(zip) }
-                                            zip.closeEntry()
-                                        }
-                                    ) { progress, _ ->
-                                        setProgress(
-                                            startingProgressIndex + progress,
-                                            entriesSizeMax
+                    val startingProgressIndex = entriesSizes.take(index).sum()
+                    val success = tempJsonFile.sink().use {
+                        it.buffer().use {
+                            JsonWriter.of(it).use { jsonWriter ->
+                                jsonWriter.indent = "    "
+                                exporter.writeEntries(
+                                    this@ExportWorker,
+                                    jsonWriter,
+                                    jsonElementConverter =
+                                    appMoshi.jsonElementAdapter::toJsonValue,
+                                    writeEntry =
+                                    { name, input ->
+                                        zipCreator.addArchiveEntry(
+                                            ZipArchiveEntry(
+                                                tempEntryDir.resolve(
+                                                    name
+                                                ).relativeTo(privateExportDir).path
+                                            ).apply { method = ZipMethod.DEFLATED.code },
+                                            input
                                         )
                                     }
+                                ) { progress, _ ->
+                                    setProgress(
+                                        startingProgressIndex + progress,
+                                        entriesSizeMax
+                                    )
                                 }
                             }
                         }
+                    }
 
-                        zip.putNextEntry(ZipEntry(tempJsonFile.relativeTo(privateExportDir).path))
-                        tempJsonFile.inputStream().use {
-                            it.copyTo(zip)
-                        }
-                        zip.closeEntry()
+                    zipCreator.addArchiveEntry(
+                        ZipArchiveEntry(
+                            tempJsonFile.relativeTo(
+                                privateExportDir
+                            ).path
+                        ).apply { method = ZipMethod.DEFLATED.code }
+                    ) { tempJsonFile.inputStream() }
 
-                        if (!success) {
-                            tempJsonFile.delete()
-                            return Result.failure()
-                        }
+                    if (!success) {
+                        tempJsonFile.delete()
+                        return@withContext Result.failure()
                     }
                 }
+
+                appContext.contentResolver.openOutputStream(outputUri)?.use { output ->
+                    ZipArchiveOutputStream(output).use(zipCreator::writeTo)
+                } ?: return@withContext Result.failure()
+
+                return@withContext Result.success()
+            } finally {
+                privateExportDir.deleteRecursively()
             }
-
-            appContext.contentResolver.openOutputStream(outputUri)?.use { output ->
-                tempZipFile.inputStream().use { input ->
-                    input.copyTo(output)
-                }
-            } ?: return Result.failure()
-
-            return Result.success()
-        } finally {
-            privateExportDir.deleteRecursively()
         }
     }
 }
