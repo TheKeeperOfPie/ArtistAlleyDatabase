@@ -16,7 +16,7 @@ abstract class ArtEntryGridViewModel(
     override val entryGridSelectionController =
         EntryGridSelectionController<ArtEntryGridModel>({ viewModelScope }) {
             it.forEach {
-                EntryUtils.getImageFile(application, it.id).delete()
+                EntryUtils.getEntryImageFolder(application, it.id).deleteRecursively()
                 artEntryDao.delete(it.id.valueId)
             }
         }

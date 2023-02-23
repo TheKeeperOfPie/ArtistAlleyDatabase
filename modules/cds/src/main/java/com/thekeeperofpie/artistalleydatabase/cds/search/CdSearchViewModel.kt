@@ -32,7 +32,7 @@ class CdSearchViewModel @Inject constructor(
     override val entryGridSelectionController =
         EntryGridSelectionController<CdEntryGridModel>({ viewModelScope }) {
             it.forEach {
-                EntryUtils.getImageFile(application, it.id).delete()
+                EntryUtils.getEntryImageFolder(application, it.id).deleteRecursively()
                 cdEntryDao.delete(it.id.valueId)
             }
         }

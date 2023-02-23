@@ -99,8 +99,10 @@ abstract class EntryDetailsViewModel<Entry, Model>(
 
         deleting = true
 
+        val entryId = entryIds.single()
         viewModelScope.launch(Dispatchers.IO) {
-            deleteEntry(entryIds.single())
+            EntryUtils.getEntryImageFolder(application, entryId).deleteRecursively()
+            deleteEntry(entryId)
             withContext(Dispatchers.Main) {
                 navHostController.popBackStack()
             }
