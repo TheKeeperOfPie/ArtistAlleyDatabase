@@ -252,7 +252,7 @@ object EntryDetailsScreen {
                     ) {
                         val configuration = LocalConfiguration.current
                         val screenWidth = configuration.screenWidthDp.dp
-                        val minimumHeight = screenWidth * (it.height / it.width)
+                        val minimumHeight = screenWidth * it.widthToHeightRatio
                         AsyncImage(
                             ImageRequest.Builder(LocalContext.current)
                                 .data(uri)

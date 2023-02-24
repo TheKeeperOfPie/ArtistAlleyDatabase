@@ -365,8 +365,8 @@ class CdEntryDetailsViewModel @Inject constructor(
             val entryImage = entryImages[it]?.firstOrNull()
             baseEntry.copy(
                 id = it.valueId,
-                imageWidth = entryImage?.croppedWidth ?: entryImage?.width,
-                imageHeight = entryImage?.croppedHeight ?: entryImage?.height
+                imageWidth = entryImage?.finalWidth,
+                imageHeight = entryImage?.finalHeight,
             )
         }
         cdEntryDao.insertEntries(entries)

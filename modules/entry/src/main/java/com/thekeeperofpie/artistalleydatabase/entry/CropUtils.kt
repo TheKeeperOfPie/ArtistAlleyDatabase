@@ -40,7 +40,8 @@ import com.thekeeperofpie.artistalleydatabase.entry.CropUtils.CROP_IMAGE_FILE_NA
  */
 object CropUtils {
 
-    const val CROP_IMAGE_FILE_NAME = "ArtistAlleyDatabaseImageCrop.png"
+    val CROP_IMAGE_FILE_NAME =
+        "ArtistAlleyDatabaseImageCrop${"Debug".takeIf { BuildConfig.DEBUG }.orEmpty()}.png"
     const val PHOTOS_PACKAGE_NAME = "com.google.android.apps.photos"
 
     fun cropIntent(): Intent {
@@ -63,7 +64,7 @@ object CropUtils {
         AlertDialog(
             onDismissRequest = onDismiss,
             title = { Text(stringResource(R.string.entry_image_crop_title)) },
-            text = { Text(stringResource(R.string.entry_image_crop_text)) },
+            text = { Text(stringResource(R.string.entry_image_crop_text, CROP_IMAGE_FILE_NAME)) },
             confirmButton = {
                 TextButton(onClick = {
                     onConfirm()

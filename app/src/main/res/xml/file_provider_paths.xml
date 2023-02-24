@@ -2,4 +2,5 @@
 <paths>
     <files-path name="art_entry_images" path="art_entry_images/"/>
     <files-path name="cd_entry_images" path="cd_entry_images/"/>
+    <files-path name="external" path="external/"/>
 </paths>

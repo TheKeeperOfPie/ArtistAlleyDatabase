@@ -37,7 +37,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -102,6 +101,7 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.PopupProperties
 import androidx.core.net.toUri
@@ -344,7 +344,7 @@ private fun MultiTextSection(section: EntrySection.MultiText) {
                                         subtitleText = { entry.subtitleText }
                                         image = { entry.image }
                                         imageLink = { entry.imageLink }
-                                        secondaryImage = { entry.secondaryImage }
+                                        secondaryImage = entry.secondaryImage?.let { { it } }
                                         secondaryImageLink = { entry.secondaryImageLink }
                                     }
                                     EntrySection.MultiText.Entry.Different -> {
@@ -893,9 +893,36 @@ fun MultiImageSelectBox(
         }
     }
 
+    // If the image ratio changes, reset maxHeight so it shrinks/grows properly
+    val imageRatio = imageState().images().firstOrNull()?.widthToHeightRatio ?: 1f
+    val screenWidthPx = LocalDensity.current.run {
+        LocalConfiguration.current.screenWidthDp.dp.roundToPx()
+    }
+    val startingHeight = (screenWidthPx * imageRatio).roundToInt()
+    val targetHeight = LocalDensity.current.run { 400.dp.roundToPx() }.coerceAtMost(startingHeight)
+    val heightAnimation = remember { Animatable(1f) }
+
+    var expanded by remember { mutableStateOf(false) }
+    LaunchedEffect(expanded, loading()) {
+        // This call will also implicitly kick the initial slide up
+        // due to maxHeight causing a recompose and running this effect
+        heightAnimation.animateTo(
+            if (expanded || loading()) 1f else 0f,
+            animationSpec = tween(SLIDE_DURATION_MS),
+        )
+    }
+
+    val animatedHeight = LocalDensity.current.run {
+        ((startingHeight - targetHeight) * heightAnimation.value + targetHeight).toDp()
+    }
+
     ImageSelectBoxInner(
-        imageState = imageState,
         loading = loading,
+        expanded = { expanded },
+        setExpanded = { expanded = it },
+        showExpandImage = startingHeight > (targetHeight + 10f),
+        height = animatedHeight,
+        onBackPress = { heightAnimation.animateTo(1f, tween(1000)) }
     ) {
         val images = imageState().images()
         val addAllowed = imageState().addAllowed()
@@ -906,9 +933,11 @@ fun MultiImageSelectBox(
             modifier = Modifier.heightIn(max = 10000.dp)
         ) { index ->
             if (index == images.size) {
-                AddImagePagerPage {
-                    imageSelectMultipleLauncher.launch("image/*")
-                }
+                AddImagePagerPage(
+                    onAddClick = { imageSelectMultipleLauncher.launch("image/*") },
+                    modifier = Modifier
+                        .height(animatedHeight)
+                )
             } else {
                 val image = images[index]
                 val uri = image.croppedUri ?: image.uri
@@ -946,14 +975,12 @@ fun MultiImageSelectBox(
 }
 
 @Composable
-private fun AddImagePagerPage(onAddClick: () -> Unit) {
+private fun AddImagePagerPage(onAddClick: () -> Unit, modifier: Modifier = Modifier) {
     Box(
-        Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
+        modifier
             .clickable(onClick = onAddClick)
             .background(MaterialTheme.colorScheme.surfaceVariant)
-            .padding(top = 180.dp)
+            .fillMaxWidth()
     ) {
         Icon(
             imageVector = Icons.Default.ImageSearch,
@@ -962,7 +989,7 @@ private fun AddImagePagerPage(onAddClick: () -> Unit) {
             ),
             Modifier
                 .size(48.dp)
-                .align(Alignment.TopCenter)
+                .align(Alignment.Center)
         )
     }
 }
@@ -971,55 +998,36 @@ private const val SLIDE_DURATION_MS = 350
 
 @Composable
 fun ImageSelectBoxInner(
-    imageState: () -> ImageState,
     loading: () -> Boolean = { false },
+    expanded: () -> Boolean,
+    setExpanded: (Boolean) -> Unit,
+    showExpandImage: Boolean,
+    height: Dp,
+    onBackPress: suspend () -> Unit,
     content: @Composable BoxScope.() -> Unit,
 ) {
-    // If the image ratio changes, reset maxHeight so it shrinks/grows properly
-    val imageRatio = imageState().images().firstOrNull()?.widthToHeightRatio ?: 1f
-    val screenWidthPx = LocalDensity.current.run {
-        LocalConfiguration.current.screenWidthDp.dp.roundToPx()
-    }
-    val startingHeight = (screenWidthPx * imageRatio).roundToInt()
-    val targetHeight = LocalDensity.current.run { 400.dp.roundToPx() }.coerceAtMost(startingHeight)
-    val heightAnimation = remember { Animatable(1f) }
-
-    AddBackPressTransitionStage { heightAnimation.animateTo(1f, tween(2500)) }
+    AddBackPressTransitionStage { onBackPress() }
 
     Box {
         Box(
             Modifier
-                .let {
-                    val animatedHeight =
-                        (startingHeight - targetHeight) * heightAnimation.value + targetHeight
-                    it.height(LocalDensity.current.run { animatedHeight.toDp() })
-                }
+                .height(height)
                 .verticalScroll(rememberScrollState())
                 .animateContentSize()
         ) {
             content()
         }
 
-        var expanded by remember { mutableStateOf(false) }
-        LaunchedEffect(expanded, loading()) {
-            // This call will also implicitly kick the initial slide up
-            // due to maxHeight causing a recompose and running this effect
-            heightAnimation.animateTo(
-                if (expanded || loading()) 1f else 0f,
-                animationSpec = tween(SLIDE_DURATION_MS),
-            )
-        }
-
         AnimatedVisibility(
-            visible = startingHeight > (targetHeight + 10f) && !loading(),
+            visible = showExpandImage && !loading(),
             enter = fadeIn(animationSpec = tween(durationMillis = 200, delayMillis = 150)),
             exit = fadeOut(),
             modifier = Modifier.align(Alignment.BottomCenter)
         ) {
             TrailingDropdownIcon(
-                expanded = expanded,
+                expanded = expanded(),
                 contentDescription = R.string.entry_image_expand_content_description,
-                onClick = { expanded = !expanded },
+                onClick = { setExpanded(!expanded()) },
                 modifier = Modifier.size(60.dp)
             )
         }

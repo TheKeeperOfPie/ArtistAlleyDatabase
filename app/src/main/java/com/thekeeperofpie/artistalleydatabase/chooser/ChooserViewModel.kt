@@ -50,7 +50,7 @@ class ChooserViewModel @Inject constructor(
         val appPackageName = application.packageName
         val (imageUri, mimeType) = getImageUriAndType(appPackageName, entry) ?: return null
 
-        return Intent("$appPackageName.ACTION_RETURN_FILE").apply {
+        return Intent().apply {
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             setDataAndType(imageUri, mimeType)
         }
@@ -65,7 +65,24 @@ class ChooserViewModel @Inject constructor(
             return null
         }
 
-        return FileProvider.getUriForFile(application, "$appPackageName.fileprovider", file) to
-                (ImageUtils.getImageType(file) ?: "image/*")
+        // Some consumers require a file extension to parse the image correctly.
+        val mimeType = ImageUtils.getImageType(file)
+        val extension = when (mimeType) {
+            "image/jpeg", "image/jpg" -> "jpg"
+            "image/png" -> "png"
+            "image/webp" -> "webp"
+            else -> ""
+        }
+
+        // TODO: Find a better solution for the file extension problem
+        // TODO: Offer an option to compress before export in case the caller has a size limitation
+        val externalFile = application.filesDir.resolve("external/external.$extension")
+        file.copyTo(externalFile)
+
+        return FileProvider.getUriForFile(
+            application,
+            "$appPackageName.fileprovider",
+            externalFile
+        ) to (mimeType ?: "image/*")
     }
 }
