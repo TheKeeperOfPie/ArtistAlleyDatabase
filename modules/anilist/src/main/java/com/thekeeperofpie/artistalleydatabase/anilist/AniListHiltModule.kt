@@ -11,17 +11,21 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
 class AniListHiltModule {
 
+    @Singleton
     @Provides
     fun provideAniListApi(application: Application) = AniListApi(application)
 
+    @Singleton
     @Provides
     fun provideAniListDataConverter(aniListJson: AniListJson) = AniListDataConverter(aniListJson)
 
+    @Singleton
     @Provides
     fun provideAniListAutocompleter(
         aniListJson: AniListJson,
@@ -37,9 +41,11 @@ class AniListHiltModule {
         aniListDataConverter
     )
 
+    @Singleton
     @Provides
     fun provideMediaEntryDao(database: AniListDatabase) = database.mediaEntryDao()
 
+    @Singleton
     @Provides
     fun provideMediaRepository(
         application: ScopedApplication,
@@ -47,9 +53,11 @@ class AniListHiltModule {
         aniListApi: AniListApi
     ) = MediaRepository(application, mediaEntryDao, aniListApi)
 
+    @Singleton
     @Provides
     fun provideCharacterEntryDao(database: AniListDatabase) = database.characterEntryDao()
 
+    @Singleton
     @Provides
     fun provideCharacterRepository(
         application: ScopedApplication,

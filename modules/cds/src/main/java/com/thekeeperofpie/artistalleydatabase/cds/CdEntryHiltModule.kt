@@ -22,21 +22,26 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import dagger.multibindings.IntoSet
+import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
 object CdEntryHiltModule {
 
+    @Singleton
     @Provides
     fun provideCdEntryDao(database: CdEntryDatabase) = database.cdEntryDao()
 
+    @Singleton
     @Provides
     fun provideCdEntryBrowseDao(database: CdEntryDatabase) = database.cdEntryBrowseDao()
 
+    @Singleton
     @Provides
     fun provideCdEntryDetailsDao(database: CdEntryDatabase) = database.cdEntryDetailsDao()
 
     @IntoSet
+    @Singleton
     @Provides
     fun provideCdExporter(
         application: Application,
@@ -53,6 +58,7 @@ object CdEntryHiltModule {
     )
 
     @IntoSet
+    @Singleton
     @Provides
     fun provideCdImporter(
         application: Application,
@@ -64,22 +70,26 @@ object CdEntryHiltModule {
         moshi = moshi,
     )
 
+    @Singleton
     @Provides
     fun provideCdEntryNavigator() = CdEntryNavigator()
 
     @IntoSet
+    @Singleton
     @Provides
     fun bindCdEntryNavigatorAsBrowseSelectionNavigator(
         cdEntryNavigator: CdEntryNavigator
     ): BrowseSelectionNavigator = cdEntryNavigator
 
     @IntoSet
+    @Singleton
     @Provides
     fun bindCdEntryNavigatorAsEntryNavigator(
         cdEntryNavigator: CdEntryNavigator
     ): EntryNavigator = cdEntryNavigator
 
     @IntoSet
+    @Singleton
     @Provides
     fun provideCdBrowseTabPerformers(
         musicalArtistDao: MusicalArtistDao,

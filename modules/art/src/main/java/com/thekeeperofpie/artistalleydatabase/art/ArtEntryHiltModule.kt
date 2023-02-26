@@ -30,28 +30,35 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import dagger.multibindings.IntoSet
+import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
 object ArtEntryHiltModule {
 
+    @Singleton
     @Provides
     fun provideArtEntryDao(database: ArtEntryDatabase) = database.artEntryDao()
 
+    @Singleton
     @Provides
     fun provideArtEntryDetailsDao(database: ArtEntryDatabase) = database.artEntryDetailsDao()
 
+    @Singleton
     @Provides
     fun provideArtEntryBrowseDao(database: ArtEntryDatabase) = database.artEntryBrowseDao()
 
+    @Singleton
     @Provides
     fun provideArtEntrySyncDao(database: ArtEntryDatabase) = database.artEntrySyncDao()
 
+    @Singleton
     @Provides
     fun provideArtEntryAdvancedSearchDao(database: ArtEntryDatabase) =
         database.artEntryAdvancedSearchDao()
 
     @IntoSet
+    @Singleton
     @Provides
     fun provideArtExporter(
         application: Application,
@@ -66,6 +73,7 @@ object ArtEntryHiltModule {
     )
 
     @IntoSet
+    @Singleton
     @Provides
     fun provideArtImporter(
         application: Application,
@@ -78,6 +86,7 @@ object ArtEntryHiltModule {
     )
 
     @IntoSet
+    @Singleton
     @Provides
     fun provideArtBrowseArtists(
         application: Application,
@@ -86,6 +95,7 @@ object ArtEntryHiltModule {
     ): BrowseTabViewModel = ArtBrowseTabArtists(application, artEntryBrowseDao, artEntryNavigator)
 
     @IntoSet
+    @Singleton
     @Provides
     fun provideArtBrowseCharacters(
         application: Application,
@@ -102,6 +112,7 @@ object ArtEntryHiltModule {
     )
 
     @IntoSet
+    @Singleton
     @Provides
     fun provideArtBrowseSeries(
         application: Application,
@@ -118,6 +129,7 @@ object ArtEntryHiltModule {
     )
 
     @IntoSet
+    @Singleton
     @Provides
     fun provideArtBrowseTags(
         application: Application,
@@ -125,10 +137,12 @@ object ArtEntryHiltModule {
         artEntryNavigator: ArtEntryNavigator,
     ): BrowseTabViewModel = ArtBrowseTabTags(application, artEntryBrowseDao, artEntryNavigator)
 
+    @Singleton
     @Provides
     fun provideArtEntryNavigator() = ArtEntryNavigator()
 
     @IntoSet
+    @Singleton
     @Provides
     fun provideArtSyncer(
         appJson: AppJson,
@@ -147,6 +161,7 @@ object ArtEntryHiltModule {
     )
 
     @IntoSet
+    @Singleton
     @Provides
     fun bindArtEntryNavigatorAsBrowseSelectionNavigator(
         artEntryNavigator: ArtEntryNavigator
@@ -154,6 +169,7 @@ object ArtEntryHiltModule {
         artEntryNavigator
 
     @IntoSet
+    @Singleton
     @Provides
     fun bindArtEntryNavigatorAsEntryNavigator(
         artEntryNavigator: ArtEntryNavigator

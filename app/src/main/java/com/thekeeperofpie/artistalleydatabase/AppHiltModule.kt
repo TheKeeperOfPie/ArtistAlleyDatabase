@@ -19,64 +19,82 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
 class AppHiltModule {
 
+    @Singleton
     @Provides
     fun provideCustomApplication(application: Application) =
         application as CustomApplication
 
+    @Singleton
     @Provides
     fun provideScopedApplication(application: Application) =
         application as ScopedApplication
 
+    @Singleton
     @Provides
     fun provideAppDatabase(application: Application) =
         Room.databaseBuilder(application, AppDatabase::class.java, "appDatabase")
             .build()
 
+    @Singleton
     @Provides
     fun provideAniListDatabase(appDatabase: AppDatabase): AniListDatabase = appDatabase
 
+    @Singleton
     @Provides
     fun provideArtEntryDatabase(appDatabase: AppDatabase): ArtEntryDatabase = appDatabase
 
+    @Singleton
     @Provides
     fun provideCdEntryDatabase(appDatabase: AppDatabase): CdEntryDatabase = appDatabase
 
+    @Singleton
     @Provides
     fun provideMusicalArtistDatabase(appDatabase: AppDatabase): MusicalArtistDatabase = appDatabase
 
+    @Singleton
     @Provides
     fun provideVgmdbDatabase(appDatabase: AppDatabase): VgmdbDatabase = appDatabase
 
+    @Singleton
     @Provides
     fun provideWorkManager(application: Application) = WorkManager.getInstance(application)
 
+    @Singleton
     @Provides
     fun provideAppMoshi() = AppMoshi()
 
+    @Singleton
     @Provides
     fun provideMoshi(appMoshi: AppMoshi) = appMoshi.moshi
 
+    @Singleton
     @Provides
     fun provideAppJson() = AppJson()
 
+    @Singleton
     @Provides
     fun provideSettingsProvider(application: Application, appJson: AppJson) =
         SettingsProvider(application, appJson)
 
+    @Singleton
     @Provides
     fun provideAniListJson(appJson: AppJson) = AniListJson(appJson.json)
 
+    @Singleton
     @Provides
     fun provideVgmdbJson(appJson: AppJson) = VgmdbJson(appJson.json)
 
+    @Singleton
     @Provides
     fun provideArtSettings(settingsProvider: SettingsProvider) = settingsProvider as ArtSettings
 
+    @Singleton
     @Provides
     fun provideEntrySettings(settingsProvider: SettingsProvider) = settingsProvider as EntrySettings
 }

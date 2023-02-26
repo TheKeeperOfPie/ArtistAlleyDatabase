@@ -10,17 +10,21 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
 class VgmdbHiltModule {
 
+    @Singleton
     @Provides
     fun provideAlbumEntryDao(database: VgmdbDatabase) = database.albumEntryDao()
 
+    @Singleton
     @Provides
     fun provideArtistEntryDao(database: VgmdbDatabase) = database.artistEntryDao()
 
+    @Singleton
     @Provides
     fun provideVgmdbApi(
         application: Application,
@@ -29,9 +33,11 @@ class VgmdbHiltModule {
         vgmdbJson: VgmdbJson
     ) = VgmdbApi(application, albumEntryDao, vgmdbArtistDao, vgmdbJson)
 
+    @Singleton
     @Provides
     fun provideVgmdbDataConverter(vgmdbJson: VgmdbJson) = VgmdbDataConverter(vgmdbJson)
 
+    @Singleton
     @Provides
     fun provideVgmdbAutocompleter(
         vgmdbApi: VgmdbApi,
@@ -40,6 +46,7 @@ class VgmdbHiltModule {
         artistRepository: ArtistRepository,
     ) = VgmdbAutocompleter(vgmdbApi, vgmdbJson, vgmdbDataConverter, artistRepository)
 
+    @Singleton
     @Provides
     fun provideAlbumRepository(
         application: ScopedApplication,
@@ -47,6 +54,7 @@ class VgmdbHiltModule {
         vgmdbApi: VgmdbApi
     ) = AlbumRepository(application, albumEntryDao, vgmdbApi)
 
+    @Singleton
     @Provides
     fun provideArtistRepository(
         application: ScopedApplication,
