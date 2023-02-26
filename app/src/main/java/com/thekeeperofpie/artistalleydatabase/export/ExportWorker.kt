@@ -2,10 +2,13 @@ package com.thekeeperofpie.artistalleydatabase.export
 
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import androidx.hilt.work.HiltWorker
 import androidx.work.WorkerParameters
 import com.squareup.moshi.JsonWriter
 import com.thekeeperofpie.artistalleydatabase.R
+import com.thekeeperofpie.artistalleydatabase.SettingsProvider
+import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.persistence.Exporter
 import com.thekeeperofpie.artistalleydatabase.json.AppMoshi
 import com.thekeeperofpie.artistalleydatabase.navigation.NavDrawerItems
@@ -19,6 +22,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.asExecutor
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.json.encodeToStream
 import okhttp3.internal.closeQuietly
 import okio.buffer
 import okio.sink
@@ -26,6 +31,8 @@ import org.apache.commons.compress.archivers.zip.ParallelScatterZipCreator
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream
 import org.apache.commons.compress.archivers.zip.ZipMethod
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
 import java.util.concurrent.AbstractExecutorService
 import java.util.concurrent.TimeUnit
 
@@ -33,7 +40,9 @@ import java.util.concurrent.TimeUnit
 class ExportWorker @AssistedInject constructor(
     @Assisted private val appContext: Context,
     @Assisted private val params: WorkerParameters,
+    private val appJson: AppJson,
     private val appMoshi: AppMoshi,
+    private val settingsProvider: SettingsProvider,
     private val exporters: Set<@JvmSuppressWildcards Exporter>,
 ) : NotificationProgressWorker(
     appContext = appContext,
@@ -51,10 +60,11 @@ class ExportWorker @AssistedInject constructor(
 ) {
 
     companion object {
+        private const val TAG = "ExportWorker"
         private const val PARALLELISM = 8
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
+    @OptIn(ExperimentalCoroutinesApi::class, ExperimentalSerializationApi::class)
     override suspend fun doWorkInternal(): Result {
         val dispatcher = Dispatchers.IO.limitedParallelism(PARALLELISM)
         return withContext(dispatcher) {
@@ -88,6 +98,22 @@ class ExportWorker @AssistedInject constructor(
                     override fun isTerminated() = false
                     override fun awaitTermination(length: Long, unit: TimeUnit) = false
                 })
+
+                zipCreator.addArchiveEntry(ZipArchiveEntry(SettingsProvider.EXPORT_FILE_NAME).apply {
+                    method = ZipMethod.DEFLATED.code
+                }) {
+                    ByteArrayOutputStream().let {
+                        it.use {
+                            appJson.json.encodeToStream(
+                                settingsProvider.serializer,
+                                settingsProvider.settingsData,
+                                it
+                            )
+                        }
+                        it.toByteArray()
+                    }.let(::ByteArrayInputStream)
+                }
+
                 exporters.forEachIndexed { index, exporter ->
                     val tempEntryDir = privateExportDir.resolve(exporter.zipEntryName)
                         .apply { mkdirs() }
@@ -144,6 +170,9 @@ class ExportWorker @AssistedInject constructor(
                 } ?: return@withContext Result.failure()
 
                 return@withContext Result.success()
+            } catch (e: Exception) {
+                Log.d(TAG, "Error exporting", e)
+                throw e
             } finally {
                 privateExportDir.deleteRecursively()
             }

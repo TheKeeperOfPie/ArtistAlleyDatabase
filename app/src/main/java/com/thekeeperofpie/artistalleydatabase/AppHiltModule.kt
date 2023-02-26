@@ -92,9 +92,11 @@ class AppHiltModule {
 
     @Singleton
     @Provides
-    fun provideArtSettings(settingsProvider: SettingsProvider) = settingsProvider as ArtSettings
+    fun provideArtSettings(settingsProvider: SettingsProvider) =
+        settingsProvider.settingsData as ArtSettings
 
     @Singleton
     @Provides
-    fun provideEntrySettings(settingsProvider: SettingsProvider) = settingsProvider as EntrySettings
+    fun provideEntrySettings(settingsProvider: SettingsProvider) =
+        settingsProvider.settingsData as EntrySettings
 }

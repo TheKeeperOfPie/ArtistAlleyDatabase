@@ -82,6 +82,7 @@ object EntryDetailsScreen {
         errorRes: () -> Pair<Int, Exception?>? = { null },
         onErrorDismiss: () -> Unit = {},
         onConfirmDelete: () -> Unit = {},
+        onClickSaveTemplate: (() -> Unit)? = null,
         cropState: CropUtils.CropState,
     ) {
         Scaffold(
@@ -167,6 +168,20 @@ object EntryDetailsScreen {
                             .topBorder(1.dp, MaterialTheme.colorScheme.inversePrimary)
                             .background(MaterialTheme.colorScheme.background)
                     ) {
+                        if (onClickSaveTemplate != null) {
+                            TextButton(onClick = onClickSaveTemplate) {
+                                Text(
+                                    text = stringResource(R.string.save_template),
+                                    modifier = Modifier.padding(
+                                        start = 16.dp,
+                                        end = 16.dp,
+                                        top = 10.dp,
+                                        bottom = 10.dp
+                                    )
+                                )
+                            }
+                        }
+
                         TextButton(onClick = { showDeleteDialog = true }) {
                             Text(
                                 text = stringResource(R.string.delete),

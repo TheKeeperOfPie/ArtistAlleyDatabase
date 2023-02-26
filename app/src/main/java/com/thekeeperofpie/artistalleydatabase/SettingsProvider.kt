@@ -2,100 +2,148 @@ package com.thekeeperofpie.artistalleydatabase
 
 import android.app.Application
 import android.content.Context
+import android.content.SharedPreferences
 import android.net.Uri
 import android.util.Log
-import androidx.core.net.toUri
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
+import com.thekeeperofpie.artistalleydatabase.android_utils.Converters
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntry
 import com.thekeeperofpie.artistalleydatabase.art.persistence.ArtSettings
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySettings
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.encodeToString
-import okio.buffer
-import okio.sink
-import java.io.ByteArrayOutputStream
+import kotlinx.serialization.Transient
+import kotlinx.serialization.serializer
+import kotlin.reflect.KProperty
+import kotlin.reflect.KProperty1
+import kotlin.reflect.KType
+import kotlin.reflect.full.findAnnotations
+import kotlin.reflect.full.memberProperties
+import kotlin.reflect.jvm.isAccessible
 
-class SettingsProvider(
+class SettingsProvider constructor(
     application: Application,
     private val appJson: AppJson,
-) : ArtSettings, EntrySettings {
+) {
 
     companion object {
-        private const val KEY_ART_ENTRY_TEMPLATE = "art_entry_template"
-        private const val KEY_ART_ENTRY_CROP_DOCUMENT_URI = "art_entry_crop_document_uri"
-        private const val KEY_ADVANCED_SEARCH_QUERY = "advanced_search_query"
+        private const val TAG = "SettingsProvider"
+        const val EXPORT_FILE_NAME = "settings.json"
     }
 
-    override fun saveArtEntryTemplate(entry: ArtEntry) {
-        ByteArrayOutputStream().use {
-            it.sink().use {
-                it.buffer().use {
-                    appJson.json.encodeToString(entry)
-                }
-            }
-
-            val template = String(it.toByteArray())
-            sharedPreferences.edit()
-                .putString(KEY_ART_ENTRY_TEMPLATE, template)
-                .apply()
-        }
-    }
-
-    override fun loadArtEntryTemplate(): ArtEntry? {
-        var stringValue: String? = null
-        return try {
-            stringValue = sharedPreferences.getString(KEY_ART_ENTRY_TEMPLATE, "")
-                .takeUnless(String?::isNullOrEmpty) ?: return null
-            appJson.json.decodeFromString(stringValue)
-        } catch (e: Exception) {
-            Log.e("SettingsProvider", "Error loading art entry template: $stringValue", e)
-            null
-        }
-    }
-
-    override fun saveCropDocumentUri(uri: Uri?) {
-        sharedPreferences.edit()
-            .run {
-                if (uri == null) {
-                    remove(KEY_ART_ENTRY_CROP_DOCUMENT_URI)
-                } else {
-                    putString(KEY_ART_ENTRY_CROP_DOCUMENT_URI, uri.toString())
-                }
-            }
-            .apply()
-    }
-
-    override fun loadCropDocumentUri(): Uri? {
-        var stringValue: String? = null
-        return try {
-            stringValue = sharedPreferences.getString(KEY_ART_ENTRY_CROP_DOCUMENT_URI, "")
-            if (stringValue.isNullOrEmpty()) return null
-            stringValue.toUri()
-        } catch (e: Exception) {
-            Log.e("SettingsProvider", "Error loading crop document URI: $stringValue", e)
-            null
-        }
-    }
-
-    fun saveSearchQuery(entry: ArtEntry) {
-        val stringValue = appJson.json.encodeToString(entry)
-        sharedPreferences.edit()
-            .putString(KEY_ADVANCED_SEARCH_QUERY, stringValue)
-            .apply()
-    }
-
-    fun loadSearchQuery(): ArtEntry? {
-        var stringValue: String? = null
-        return try {
-            stringValue = sharedPreferences.getString(KEY_ADVANCED_SEARCH_QUERY, "")
-                .takeUnless(String?::isNullOrEmpty) ?: return null
-            appJson.json.decodeFromString(stringValue)
-        } catch (e: Exception) {
-            Log.e("SettingsProvider", "Error loading search query: $stringValue", e)
-            null
-        }
-    }
+    val serializer = Converters.PropertiesSerializer(SettingsData::class, appJson)
 
     private val sharedPreferences =
         application.getSharedPreferences("settings", Context.MODE_PRIVATE)
+
+    var settingsData = SettingsData(appJson = appJson, sharedPreferences = sharedPreferences)
+        private set
+
+    fun overwrite(data: SettingsData) {
+        data.initialize(appJson = appJson, sharedPreferences = sharedPreferences)
+        settingsData = data
+        serializer.nonTransientProperties()
+            .forEach {
+                (it.getDelegate(data) as SettingsData.SharedPreferenceDelegate<*>)
+                    .onRestore(it, settingsData)
+            }
+    }
+
+    class SettingsData(
+        @Transient
+        private var appJson: AppJson? = null,
+        @Transient
+        private var sharedPreferences: SharedPreferences? = null,
+    ) : ArtSettings, EntrySettings {
+        override var artEntryTemplate by delegate<ArtEntry?>()
+        override var cropDocumentUri by delegate<Uri?>()
+        var searchQuery by delegate<ArtEntry?>()
+
+        fun initialize(appJson: AppJson, sharedPreferences: SharedPreferences) {
+            this.appJson = appJson
+            this.sharedPreferences = sharedPreferences
+        }
+
+        override fun toString(): String {
+            return "SettingsData(" +
+                    SettingsData::class.memberProperties
+                        .sortedBy { it.name }
+                        .filter { it.findAnnotations(Transient::class).isEmpty() }
+                        .onEach { it.isAccessible = true }
+                        .joinToString {
+                            "${it.name}=${it.get(this@SettingsData)}"
+                        } +
+                    ")"
+        }
+
+        private fun <T> delegate() = SharedPreferenceDelegate<T>({ appJson }, { sharedPreferences })
+
+        class SharedPreferenceDelegate<T>(
+            private val appJson: () -> AppJson? = { null },
+            private val sharedPreferences: () -> SharedPreferences? = { null },
+            private val defaultValue: (() -> T)? = null
+        ) : Converters.PropertiesSerializer.WritableDelegate {
+            internal var value: T? = null
+            private var loaded = false
+
+            operator fun getValue(
+                settingsData: SettingsData,
+                property: KProperty<*>
+            ): T? {
+                if (!loaded) {
+                    value = try {
+                        val stringValue = sharedPreferences()?.getString(property.name, null)
+                            .takeUnless(String?::isNullOrEmpty) ?: return null
+                        @Suppress("UNCHECKED_CAST")
+                        appJson()!!.json.run {
+                            decodeFromString(
+                                serializersModule.serializer(property.returnType),
+                                stringValue
+                            )
+                        } as T
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Error loading ${property.name}", e)
+                        defaultValue?.invoke()
+                    }
+
+                    loaded = true
+                }
+                return value
+            }
+
+            override fun setValue(value: Any?) {
+                loaded = true
+                @Suppress("UNCHECKED_CAST")
+                this.value = value as T
+            }
+
+            operator fun setValue(
+                settingsData: SettingsData,
+                property: KProperty<*>,
+                value: T?
+            ) {
+                this.value = value
+                serialize(property.returnType, property.name, value)
+            }
+
+            fun onRestore(property: KProperty1<SettingsData, *>, settingsData: SettingsData) {
+                val value = property.get(settingsData)
+                // Ignore null values to prefer anything that's set in the existing state
+                // TODO: Codify how to merge old and new settings values
+                if (value != null) {
+                    loaded = true
+                    serialize(property.returnType, property.name, value)
+                }
+            }
+
+            private fun <T> serialize(type: KType, name: String, value: T) {
+                val stringValue = appJson()!!.json.run {
+                    encodeToString(serializersModule.serializer(type), value)
+                }
+                sharedPreferences()!!.run {
+                    edit()
+                        .putString(name, stringValue)
+                        .apply()
+                }
+            }
+        }
+    }
 }

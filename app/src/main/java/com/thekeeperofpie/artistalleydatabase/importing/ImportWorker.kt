@@ -6,6 +6,8 @@ import android.util.Log
 import androidx.hilt.work.HiltWorker
 import androidx.work.WorkerParameters
 import com.thekeeperofpie.artistalleydatabase.R
+import com.thekeeperofpie.artistalleydatabase.SettingsProvider
+import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.persistence.Importer
 import com.thekeeperofpie.artistalleydatabase.export.ExportUtils
 import com.thekeeperofpie.artistalleydatabase.navigation.NavDrawerItems
@@ -20,6 +22,9 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.json.decodeFromStream
+import okio.use
 import org.apache.commons.compress.archivers.zip.ZipFile
 import java.nio.channels.FileChannel
 
@@ -27,6 +32,8 @@ import java.nio.channels.FileChannel
 class ImportWorker @AssistedInject constructor(
     @Assisted private val appContext: Context,
     @Assisted private val params: WorkerParameters,
+    private val appJson: AppJson,
+    private val settingsProvider: SettingsProvider,
     private val importers: Set<@JvmSuppressWildcards Importer>,
 ) : NotificationProgressWorker(
     appContext = appContext,
@@ -77,6 +84,21 @@ class ImportWorker @AssistedInject constructor(
                 @Suppress("BlockingMethodInNonBlockingContext")
                 FileChannel.open(tempZipFile.toPath()).use {
                     ZipFile(it).use { zipFile ->
+                        val settingsEntry = zipFile.getEntry(SettingsProvider.EXPORT_FILE_NAME)
+                        if (settingsEntry != null)  {
+                            try {
+                                @OptIn(ExperimentalSerializationApi::class)
+                                val settingsData = zipFile.getInputStream(settingsEntry).use {
+                                    appJson.json.decodeFromStream(settingsProvider.serializer, it)
+                                }
+                                if (!dryRun) {
+                                    settingsProvider.overwrite(settingsData)
+                                }
+                            } catch (e: Exception) {
+                                Log.d(TAG, "Failure restoring settings", e)
+                            }
+                        }
+
                         val entriesSize = try {
                             importers.sumOf {
                                 val entry =

@@ -41,8 +41,8 @@ class AdvancedSearchViewModel @Inject constructor(
     mediaRepository,
     characterRepository,
     aniListAutocompleter,
-    settingsProvider,
-    settingsProvider,
+    settingsProvider.settingsData,
+    settingsProvider.settingsData,
 ) {
 
     init {
@@ -53,7 +53,7 @@ class AdvancedSearchViewModel @Inject constructor(
         }
 
         viewModelScope.launch(Dispatchers.IO) {
-            val model = settingsProvider.loadSearchQuery()?.let(::buildModel) ?: return@launch
+            val model = settingsProvider.settingsData.searchQuery?.let(::buildModel) ?: return@launch
             viewModelScope.launch(Dispatchers.Main) {
                 initializeForm(model)
             }
@@ -102,7 +102,7 @@ class AdvancedSearchViewModel @Inject constructor(
         )
         searchRepository.registerQuery(query)
         viewModelScope.launch(Dispatchers.IO) {
-            makeBaseEntry().let(settingsProvider::saveSearchQuery)
+            settingsProvider.settingsData.searchQuery = makeBaseEntry()
         }
         return query.id
     }

@@ -136,6 +136,6 @@ class SettingsViewModel @Inject constructor(
     }
 
     fun onClickCropClear() {
-        settingsProvider.saveCropDocumentUri(null)
+        settingsProvider.settingsData.cropDocumentUri = null
     }
 }

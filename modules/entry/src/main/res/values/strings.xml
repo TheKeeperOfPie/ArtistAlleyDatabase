@@ -10,6 +10,7 @@
     <string name="confirm">Confirm</string>
     <string name="delete">Delete</string>
     <string name="save">Save</string>
+    <string name="save_template">Save template</string>
     <string name="save_skip_errors">Save skipping errors</string>
     <string name="cancel">Cancel</string>
     <string name="different">Different</string>

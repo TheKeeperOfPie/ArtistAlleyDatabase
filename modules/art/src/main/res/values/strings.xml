@@ -58,4 +58,5 @@
     <string name="art_browse_tab_series">Series</string>
     <string name="art_browse_tab_characters">Characters</string>
     <string name="art_browse_tab_tags">Tags</string>
+    <string name="art_template_saved">Template saved</string>
 </resources>
