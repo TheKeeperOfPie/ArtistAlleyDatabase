@@ -11,6 +11,7 @@ plugins {
     id("com.github.ben-manes.versions") version "0.45.0"
     id("com.github.jk1.dependency-license-report") version "2.1"
     kotlin("plugin.serialization") version "1.8.10" apply false
+    id("org.barfuin.gradle.taskinfo") version "2.1.0"
 }
 
 licenseReport {
@@ -36,9 +37,11 @@ tasks.register("recopyVerificationMetadata") {
         .copyTo(File(rootProject.rootDir, "gradle/verification-metadata.xml"), overwrite = true)
 }
 
-tasks.register("resetVerificationMetadata") {
+tasks.register("generateVerificationMetadata") {
     dependsOn("recopyVerificationMetadata")
     dependsOn(subprojects.mapNotNull { it.tasks.findByName("build") })
+    dependsOn(subprojects.mapNotNull { it.tasks.findByName("packageDebugAndroidTest") })
+    dependsOn(subprojects.mapNotNull { it.tasks.findByName("packageReleaseAndroidTest") })
     dependsOn("buildHealth")
 }
 
@@ -64,6 +67,7 @@ dependencyAnalysis {
                 exclude(
                     "androidx.compose.ui:ui-tooling-preview",
                     "androidx.test.ext:junit",
+                    "androidx.test:runner",
                     "com.google.dagger:hilt-android",
                     "com.squareup.moshi:moshi-kotlin",
                     "de.mannodermaus.junit5:android-test-core",

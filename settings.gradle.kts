@@ -28,6 +28,7 @@ include(
     ":modules:compose-utils",
     ":modules:cds",
     ":modules:data",
+    ":modules:dependencies",
     ":modules:entry",
     ":modules:musical-artists",
     ":modules:settings",

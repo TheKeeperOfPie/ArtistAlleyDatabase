@@ -21,6 +21,7 @@
             <option value="$PROJECT_DIR$/modules/cds" />
             <option value="$PROJECT_DIR$/modules/compose-utils" />
             <option value="$PROJECT_DIR$/modules/data" />
+            <option value="$PROJECT_DIR$/modules/dependencies" />
             <option value="$PROJECT_DIR$/modules/entry" />
             <option value="$PROJECT_DIR$/modules/musical-artists" />
             <option value="$PROJECT_DIR$/modules/settings" />

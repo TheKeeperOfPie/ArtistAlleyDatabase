@@ -28,8 +28,7 @@ stabilized, nor that the data is safe from corruption or bugs. Use and update at
 
 ### Regenerate verification-metadata.xml
 
-1. `./gradlew --write-verification-metadata pgp,sha256 clean`
-2. `./gradlew --no-build-cache --write-verification-metadata pgp,sha256 resetVerificationMetadata`
+1. `./gradlew --no-build-cache --write-verification-metadata pgp,sha256 generateVerificationMetadata`
 
 If an error like the following is shown, it can be safely ignored:
 > The root project is not yet available for build.
