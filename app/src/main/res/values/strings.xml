@@ -13,12 +13,10 @@
     <string name="nav_drawer_browse">Browse</string>
     <string name="nav_drawer_import">Import</string>
     <string name="nav_drawer_export">Export</string>
-    <string name="nav_drawer_settings">Settings</string>
     <string name="import_button">Import</string>
     <string name="import_source">Import source</string>
     <string name="invalid_import_source">Invalid import source</string>
     <string name="clear">Clear</string>
-    <string name="fetch">Fetch</string>
     <string name="search_filter_content_description">Filter options</string>
     <string name="progress">Progress</string>
     <string name="import_dry_run">Dry run</string>
@@ -50,10 +48,4 @@
     <string name="notification_sync_ongoing_title">Syncing</string>
     <string name="notification_sync_finished_title">Sync finished</string>
     <string name="notification_sync_failed_title">Sync failed</string>
-    <string name="settings_clear_aniList_cache">Clear AniList cache</string>
-    <string name="settings_clear_vgmdb_cache">Clear VGMdb cache</string>
-    <string name="settings_database_fetch">Sync remote models to local database</string>
-    <string name="label_id">ID</string>
-    <string name="label_database_type">Database</string>
-    <string name="settings_crop_clear">Clear crop document URI</string>
 </resources>

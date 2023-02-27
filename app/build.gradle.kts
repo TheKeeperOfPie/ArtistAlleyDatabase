@@ -153,6 +153,8 @@ dependencies {
     implementation(project(":modules:compose-utils"))
     implementation(project(":modules:data"))
     implementation(project(":modules:entry"))
+    implementation(project(":modules:settings"))
+
     runtimeOnly(kotlin("reflect"))
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0-RC")
     runtimeOnly("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4")

@@ -1,8 +1,7 @@
-package com.thekeeperofpie.artistalleydatabase.utils
+package com.thekeeperofpie.artistalleydatabase.android_utils.notification
 
 import android.app.PendingIntent
 import android.content.Context
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.util.Log
 import androidx.annotation.DrawableRes
@@ -14,8 +13,6 @@ import androidx.work.CoroutineWorker
 import androidx.work.Data
 import androidx.work.ForegroundInfo
 import androidx.work.WorkerParameters
-import com.thekeeperofpie.artistalleydatabase.MainActivity
-import com.thekeeperofpie.artistalleydatabase.navigation.NavDrawerItems
 
 abstract class NotificationProgressWorker(
     private val appContext: Context,
@@ -28,8 +25,7 @@ abstract class NotificationProgressWorker(
     @StringRes ongoingTitle: Int,
     @StringRes private val successTitle: Int,
     @StringRes private val failureTitle: Int,
-    private val notificationClickDestination: NavDrawerItems,
-    private val pendingIntentRequestCode: PendingIntentRequestCode,
+    private val notificationContentIntent: () -> PendingIntent,
 ) : CoroutineWorker(appContext, params) {
 
     companion object {
@@ -87,21 +83,7 @@ abstract class NotificationProgressWorker(
                     .setAutoCancel(true)
                     .setContentTitle(appContext.getString(titleRes))
                     .setSmallIcon(smallIcon)
-                    .setContentIntent(
-                        PendingIntent.getActivity(
-                            appContext,
-                            pendingIntentRequestCode.code,
-                            Intent().apply {
-                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                                setClass(appContext, MainActivity::class.java)
-                                putExtra(
-                                    MainActivity.STARTING_NAV_DESTINATION,
-                                    notificationClickDestination.id
-                                )
-                            },
-                            PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
-                        )
-                    )
+                    .setContentIntent(notificationContentIntent())
                     .build()
             )
         }

@@ -40,6 +40,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.OutOfQuotaPolicy
 import com.mxalbert.sharedelements.SharedElementsRoot
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryNavigator
 import com.thekeeperofpie.artistalleydatabase.art.search.ArtSearchViewModel
@@ -62,8 +65,10 @@ import com.thekeeperofpie.artistalleydatabase.search.advanced.AdvancedSearchScre
 import com.thekeeperofpie.artistalleydatabase.search.advanced.AdvancedSearchViewModel
 import com.thekeeperofpie.artistalleydatabase.search.results.SearchResultsScreen
 import com.thekeeperofpie.artistalleydatabase.search.results.SearchResultsViewModel
+import com.thekeeperofpie.artistalleydatabase.settings.SettingsScreen
 import com.thekeeperofpie.artistalleydatabase.settings.SettingsViewModel
 import com.thekeeperofpie.artistalleydatabase.ui.theme.ArtistAlleyDatabaseTheme
+import com.thekeeperofpie.artistalleydatabase.utils.DatabaseSyncWorker
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -396,8 +401,22 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     private fun SettingsScreen(onClickNav: () -> Unit) {
-        val viewModel = hiltViewModel<SettingsViewModel>()
-        com.thekeeperofpie.artistalleydatabase.settings.SettingsScreen(
+        val viewModel = hiltViewModel<SettingsViewModel>().apply {
+            initialize(
+                onClickDatabaseFetch = {
+                    val request = OneTimeWorkRequestBuilder<DatabaseSyncWorker>()
+                        .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
+                        .build()
+
+                    it.enqueueUniqueWork(
+                        DatabaseSyncWorker.UNIQUE_WORK_NAME,
+                        ExistingWorkPolicy.REPLACE,
+                        request
+                    )
+                }
+            )
+        }
+        SettingsScreen(
             onClickNav = onClickNav,
             onClickAniListClear = viewModel::clearAniListCache,
             onClickVgmdbClear = viewModel::clearVgmdbCache,

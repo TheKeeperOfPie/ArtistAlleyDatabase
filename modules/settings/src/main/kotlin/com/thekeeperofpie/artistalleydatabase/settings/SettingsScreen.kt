@@ -1,5 +1,4 @@
 package com.thekeeperofpie.artistalleydatabase.settings
-
 import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -30,7 +29,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.thekeeperofpie.artistalleydatabase.R
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListStringR
 import com.thekeeperofpie.artistalleydatabase.compose.AppBar
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
@@ -57,7 +55,7 @@ object SettingsScreen {
         Scaffold(
             topBar = {
                 AppBar(
-                    text = stringResource(R.string.nav_drawer_settings),
+                    text = stringResource(R.string.settings_nav_drawer),
                     onClickNav = onClickNav
                 )
             },
@@ -72,7 +70,7 @@ object SettingsScreen {
             Column(Modifier.padding(it)) {
                 ButtonRow(
                     title = R.string.settings_clear_aniList_cache,
-                    buttonText = R.string.clear,
+                    buttonText = R.string.settings_clear,
                     onClick = onClickAniListClear
                 )
 
@@ -80,7 +78,7 @@ object SettingsScreen {
 
                 ButtonRow(
                     title = R.string.settings_clear_vgmdb_cache,
-                    buttonText = R.string.clear,
+                    buttonText = R.string.settings_clear,
                     onClick = onClickVgmdbClear
                 )
 
@@ -88,7 +86,7 @@ object SettingsScreen {
 
                 ButtonRow(
                     title = R.string.settings_database_fetch,
-                    buttonText = R.string.fetch,
+                    buttonText = R.string.settings_fetch,
                     onClick = onClickDatabaseFetch
                 )
 
@@ -104,7 +102,7 @@ object SettingsScreen {
 
                 ButtonRow(
                     title = R.string.settings_crop_clear,
-                    buttonText = R.string.clear,
+                    buttonText = R.string.settings_clear,
                     onClick = onClickCropClear
                 )
             }
@@ -144,7 +142,7 @@ object SettingsScreen {
                     DatabaseType.values()[selectedDatabaseTypeIndex].labelRes
                 ),
                 onValueChange = {},
-                label = { Text(stringResource(R.string.label_database_type)) },
+                label = { Text(stringResource(R.string.settings_database_type)) },
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
                 colors = ExposedDropdownMenuDefaults.textFieldColors(),
                 readOnly = true,
@@ -201,7 +199,7 @@ object SettingsScreen {
             TextField(
                 value = clearDatabaseId,
                 onValueChange = { clearDatabaseId = it },
-                label = { Text(stringResource(id = R.string.label_id)) },
+                label = { Text(stringResource(id = R.string.settings_label_id)) },
                 modifier = Modifier.weight(1f),
             )
 

@@ -63,8 +63,10 @@ dependencyAnalysis {
             onUnusedDependencies {
                 exclude(
                     "androidx.compose.ui:ui-tooling-preview",
+                    "androidx.test.ext:junit",
                     "com.google.dagger:hilt-android",
                     "com.squareup.moshi:moshi-kotlin",
+                    "de.mannodermaus.junit5:android-test-core",
                 )
             }
             onUnusedAnnotationProcessors {

@@ -2,7 +2,6 @@ package com.thekeeperofpie.artistalleydatabase.search.advanced
 
 import android.app.Application
 import androidx.lifecycle.viewModelScope
-import com.thekeeperofpie.artistalleydatabase.SettingsProvider
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListAutocompleter
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
@@ -17,6 +16,7 @@ import com.thekeeperofpie.artistalleydatabase.art.sections.SourceType
 import com.thekeeperofpie.artistalleydatabase.data.DataConverter
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection.MultiText.Entry
+import com.thekeeperofpie.artistalleydatabase.settings.SettingsProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

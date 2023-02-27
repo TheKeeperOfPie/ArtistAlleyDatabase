@@ -7,7 +7,7 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
-import com.thekeeperofpie.artistalleydatabase.utils.NotificationChannels
+import com.thekeeperofpie.artistalleydatabase.android_utils.notification.NotificationChannels
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.MainScope
 import javax.inject.Inject

@@ -1,19 +1,22 @@
 package com.thekeeperofpie.artistalleydatabase.importing
 
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import android.util.Log
 import androidx.hilt.work.HiltWorker
 import androidx.work.WorkerParameters
+import com.thekeeperofpie.artistalleydatabase.MainActivity
 import com.thekeeperofpie.artistalleydatabase.R
-import com.thekeeperofpie.artistalleydatabase.SettingsProvider
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
+import com.thekeeperofpie.artistalleydatabase.android_utils.notification.NotificationChannels
+import com.thekeeperofpie.artistalleydatabase.android_utils.notification.NotificationIds
+import com.thekeeperofpie.artistalleydatabase.android_utils.notification.NotificationProgressWorker
 import com.thekeeperofpie.artistalleydatabase.android_utils.persistence.Importer
 import com.thekeeperofpie.artistalleydatabase.export.ExportUtils
 import com.thekeeperofpie.artistalleydatabase.navigation.NavDrawerItems
-import com.thekeeperofpie.artistalleydatabase.utils.NotificationChannels
-import com.thekeeperofpie.artistalleydatabase.utils.NotificationIds
-import com.thekeeperofpie.artistalleydatabase.utils.NotificationProgressWorker
+import com.thekeeperofpie.artistalleydatabase.settings.SettingsProvider
 import com.thekeeperofpie.artistalleydatabase.utils.PendingIntentRequestCodes
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
@@ -46,8 +49,21 @@ class ImportWorker @AssistedInject constructor(
     ongoingTitle = R.string.notification_import_ongoing_title,
     successTitle = R.string.notification_import_finished_title,
     failureTitle = R.string.notification_import_failed_title,
-    notificationClickDestination = NavDrawerItems.Import,
-    pendingIntentRequestCode = PendingIntentRequestCodes.IMPORT_MAIN_ACTIVITY_OPEN,
+    notificationContentIntent = {
+        PendingIntent.getActivity(
+            appContext,
+            PendingIntentRequestCodes.IMPORT_MAIN_ACTIVITY_OPEN.code,
+            Intent().apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                setClass(appContext, MainActivity::class.java)
+                putExtra(
+                    MainActivity.STARTING_NAV_DESTINATION,
+                    NavDrawerItems.Import.id,
+                )
+            },
+            PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+    },
 ) {
 
     companion object {

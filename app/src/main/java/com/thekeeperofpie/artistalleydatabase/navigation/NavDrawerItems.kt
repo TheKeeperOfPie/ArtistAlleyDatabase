@@ -11,6 +11,7 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.thekeeperofpie.artistalleydatabase.R
+import com.thekeeperofpie.artistalleydatabase.settings.SettingsStringR
 
 sealed class NavDrawerItems(
     val id: String,
@@ -29,5 +30,5 @@ sealed class NavDrawerItems(
     object Import : NavDrawerItems("import", R.string.nav_drawer_import, Icons.Default.Create)
     object Export : NavDrawerItems("export", R.string.nav_drawer_export, Icons.Default.Build)
     object Settings :
-        NavDrawerItems("settings", R.string.nav_drawer_settings, Icons.Default.Settings)
+        NavDrawerItems("settings", SettingsStringR.settings_nav_drawer, Icons.Default.Settings)
 }

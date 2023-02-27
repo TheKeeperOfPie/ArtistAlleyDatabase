@@ -1,20 +1,23 @@
 package com.thekeeperofpie.artistalleydatabase.export
 
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import android.util.Log
 import androidx.hilt.work.HiltWorker
 import androidx.work.WorkerParameters
 import com.squareup.moshi.JsonWriter
+import com.thekeeperofpie.artistalleydatabase.MainActivity
 import com.thekeeperofpie.artistalleydatabase.R
-import com.thekeeperofpie.artistalleydatabase.SettingsProvider
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
+import com.thekeeperofpie.artistalleydatabase.android_utils.notification.NotificationChannels
+import com.thekeeperofpie.artistalleydatabase.android_utils.notification.NotificationIds
+import com.thekeeperofpie.artistalleydatabase.android_utils.notification.NotificationProgressWorker
 import com.thekeeperofpie.artistalleydatabase.android_utils.persistence.Exporter
 import com.thekeeperofpie.artistalleydatabase.json.AppMoshi
 import com.thekeeperofpie.artistalleydatabase.navigation.NavDrawerItems
-import com.thekeeperofpie.artistalleydatabase.utils.NotificationChannels
-import com.thekeeperofpie.artistalleydatabase.utils.NotificationIds
-import com.thekeeperofpie.artistalleydatabase.utils.NotificationProgressWorker
+import com.thekeeperofpie.artistalleydatabase.settings.SettingsProvider
 import com.thekeeperofpie.artistalleydatabase.utils.PendingIntentRequestCodes
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
@@ -55,8 +58,21 @@ class ExportWorker @AssistedInject constructor(
     ongoingTitle = R.string.notification_export_ongoing_title,
     successTitle = R.string.notification_export_finished_title,
     failureTitle = R.string.notification_export_failed_title,
-    notificationClickDestination = NavDrawerItems.Export,
-    pendingIntentRequestCode = PendingIntentRequestCodes.EXPORT_MAIN_ACTIVITY_OPEN,
+    notificationContentIntent = {
+        PendingIntent.getActivity(
+            appContext,
+            PendingIntentRequestCodes.EXPORT_MAIN_ACTIVITY_OPEN.code,
+            Intent().apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                setClass(appContext, MainActivity::class.java)
+                putExtra(
+                    MainActivity.STARTING_NAV_DESTINATION,
+                    NavDrawerItems.Export.id,
+                )
+            },
+            PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+    },
 ) {
 
     companion object {

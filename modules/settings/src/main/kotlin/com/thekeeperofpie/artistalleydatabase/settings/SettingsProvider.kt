@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase
+package com.thekeeperofpie.artistalleydatabase.settings
 
 import android.app.Application
 import android.content.Context

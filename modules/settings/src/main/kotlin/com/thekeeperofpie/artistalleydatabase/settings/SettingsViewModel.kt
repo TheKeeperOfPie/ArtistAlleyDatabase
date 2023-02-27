@@ -2,11 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.settings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.work.ExistingWorkPolicy
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.OutOfQuotaPolicy
 import androidx.work.WorkManager
-import com.thekeeperofpie.artistalleydatabase.SettingsProvider
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterEntryDao
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaEntryDao
@@ -35,6 +31,12 @@ class SettingsViewModel @Inject constructor(
     private val settingsProvider: SettingsProvider,
 ) : ViewModel() {
 
+    private var onClickDatabaseFetch: (WorkManager) -> Unit = {}
+
+    fun initialize(onClickDatabaseFetch: (WorkManager) -> Unit) {
+        this.onClickDatabaseFetch = onClickDatabaseFetch
+    }
+
     fun clearAniListCache() {
         viewModelScope.launch(Dispatchers.IO) {
             mediaEntryDao.deleteAll()
@@ -50,15 +52,7 @@ class SettingsViewModel @Inject constructor(
     }
 
     fun onClickDatabaseFetch() {
-        val request = OneTimeWorkRequestBuilder<DatabaseSyncWorker>()
-            .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
-            .build()
-
-        workManager.enqueueUniqueWork(
-            DatabaseSyncWorker.UNIQUE_WORK_NAME,
-            ExistingWorkPolicy.REPLACE,
-            request
-        )
+        onClickDatabaseFetch(workManager)
     }
 
     fun onClickClearDatabaseById(databaseType: SettingsScreen.DatabaseType, id: String) {
