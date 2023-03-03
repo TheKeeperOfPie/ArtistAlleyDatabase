@@ -1,5 +1,8 @@
 plugins {
     kotlin("jvm")
+
+    // Gradle --scan
+    id("com.gradle.build-scan") version "3.12.3" apply false
 }
 
 /**
@@ -11,6 +14,7 @@ plugins {
  * problem becomes too annoying, doing it this way is technically more correct.
  */
 dependencies {
+    // Android Studio instrumentation testing
     runtimeOnly("com.android.tools.utp:android-device-provider-ddmlib:31.1.0-alpha05")
     runtimeOnly("com.android.tools.utp:android-device-provider-gradle:31.1.0-alpha05")
     runtimeOnly("com.android.tools.utp:android-test-plugin-host-additional-test-output:31.1.0-alpha05")

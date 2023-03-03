@@ -32,12 +32,15 @@ dependencies {
     api("androidx.work:work-runtime:2.8.0")
     api("androidx.work:work-runtime-ktx:2.8.0")
 
+    testImplementation(project(":modules:test-utils"))
+    testCompileOnly(testFixtures(project(":modules:art")))
+    testImplementation(project(":modules:art", "_testFixtures"))
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.2")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.2")
+
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test:runner:1.4.0")
     androidTestImplementation("org.junit.jupiter:junit-jupiter-api:5.9.2")
     androidTestImplementation("de.mannodermaus.junit5:android-test-core:1.3.0")
     androidTestRuntimeOnly("de.mannodermaus.junit5:android-test-runner:1.3.0")
-
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.2")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.2")
 }

@@ -39,7 +39,7 @@ tasks.register("recopyVerificationMetadata") {
 
 tasks.register("generateVerificationMetadata") {
     dependsOn("recopyVerificationMetadata")
-    dependsOn(subprojects.mapNotNull { it.tasks.findByName("build") })
+    dependsOn(subprojects.mapNotNull { it.tasks.findByName("assemble") })
     dependsOn(subprojects.mapNotNull { it.tasks.findByName("packageDebugAndroidTest") })
     dependsOn(subprojects.mapNotNull { it.tasks.findByName("packageReleaseAndroidTest") })
     dependsOn("buildHealth")
@@ -71,6 +71,23 @@ dependencyAnalysis {
                     "com.google.dagger:hilt-android",
                     "com.squareup.moshi:moshi-kotlin",
                     "de.mannodermaus.junit5:android-test-core",
+
+                    // Exclude the list of modules as the plugin doesn't
+                    // play well with the Kotlin testFixtures hack
+                    ":modules:android-utils",
+                    ":modules:anilist",
+                    ":modules:art",
+                    ":modules:browse",
+                    ":modules:compose-utils",
+                    ":modules:cds",
+                    ":modules:data",
+                    ":modules:dependencies",
+                    ":modules:entry",
+                    ":modules:musical-artists",
+                    ":modules:settings",
+                    ":modules:test-utils",
+                    ":modules:vgmdb",
+                    ":modules:web-infra",
                 )
             }
             onUnusedAnnotationProcessors {

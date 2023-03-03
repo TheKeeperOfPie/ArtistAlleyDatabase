@@ -32,6 +32,7 @@ include(
     ":modules:entry",
     ":modules:musical-artists",
     ":modules:settings",
+    ":modules:test-utils",
     ":modules:vgmdb",
     ":modules:web-infra",
 )
