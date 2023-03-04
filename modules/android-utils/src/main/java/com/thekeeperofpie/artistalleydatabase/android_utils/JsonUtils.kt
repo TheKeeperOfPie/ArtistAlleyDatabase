@@ -2,6 +2,9 @@ package com.thekeeperofpie.artistalleydatabase.android_utils
 
 import android.util.JsonReader
 import android.util.JsonToken
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.serializer
+import kotlin.reflect.KType
 import com.squareup.moshi.JsonReader as MoshiReader
 
 object JsonUtils {
@@ -44,3 +47,6 @@ fun MoshiReader.readNullableLong() = when (peek()) {
         null
     }
 }
+
+fun Json.encodeToString(kType: KType, value: Any) =
+    encodeToString(serializersModule.serializer(kType), value)

@@ -38,6 +38,9 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.2")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.2")
 
+    androidTestImplementation(project(":modules:test-utils"))
+    androidTestCompileOnly(testFixtures(project(":modules:art")))
+    androidTestImplementation(project(":modules:art", "_testFixtures"))
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test:runner:1.4.0")
     androidTestImplementation("org.junit.jupiter:junit-jupiter-api:5.9.2")

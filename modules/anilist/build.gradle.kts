@@ -25,13 +25,10 @@ apollo {
     }
 }
 
-tasks.register("downloadAniListSchema") {
-    if (!aniListSchemaFile.exists()) {
-        dependsOn("downloadAniListApolloSchemaFromIntrospection")
-    }
+if (!aniListSchemaFile.exists()) {
+    tasks.findByName("generateAniListApolloSources")!!
+        .dependsOn("downloadAniListApolloSchemaFromIntrospection")
 }
-
-tasks["generateAniListApolloSources"].dependsOn("downloadAniListSchema")
 
 dependencies {
     api("com.apollographql.apollo3:apollo-runtime:3.7.4")

@@ -12,12 +12,13 @@ class SettingsProvider constructor(
 
     companion object {
         const val EXPORT_FILE_NAME = "settings.json"
+        const val PREFERENCES_NAME = "settings"
     }
 
     val serializer = Converters.PropertiesSerializer(SettingsData::class, appJson)
 
     private val sharedPreferences =
-        application.getSharedPreferences("settings", Context.MODE_PRIVATE)
+        application.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
 
     var settingsData = SettingsData(appJson = appJson, sharedPreferences = sharedPreferences)
         private set

@@ -94,6 +94,7 @@ class SettingsData(
             property: KProperty<*>,
             value: T?
         ) {
+            loaded = true
             this.value = value
             serialize(property.returnType, property.name, value)
         }

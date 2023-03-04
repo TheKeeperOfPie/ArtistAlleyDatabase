@@ -51,3 +51,5 @@ suspend fun <T> FlowCollector<T>.emitNotNull(value: T?) {
 inline fun <Input, Output> suspend1(
     noinline block: suspend (Input) -> Output
 ): suspend (Input) -> Output = block
+
+infix fun <A, B, C> Pair<A, B>.to(third: C): Triple<A, B, C> = Triple(first, second, third)
