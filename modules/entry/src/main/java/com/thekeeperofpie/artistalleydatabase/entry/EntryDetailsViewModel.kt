@@ -135,11 +135,16 @@ abstract class EntryDetailsViewModel<Entry, Model>(
 
     private suspend fun saveEntry(skipIgnoreableErrors: Boolean): Boolean {
         val saveImagesResult = entryImageController.saveImages() ?: return false
-        if (type == Type.MULTI_EDIT) {
+        val success = if (type == Type.MULTI_EDIT) {
             saveMultiEditEntry(saveImagesResult, skipIgnoreableErrors)
         } else {
             saveSingleEntry(saveImagesResult, skipIgnoreableErrors)
         }
+
+        if (!success) {
+            return false
+        }
+
         entryImageController.cleanUpImages(entryIds, saveImagesResult)
         return true
     }

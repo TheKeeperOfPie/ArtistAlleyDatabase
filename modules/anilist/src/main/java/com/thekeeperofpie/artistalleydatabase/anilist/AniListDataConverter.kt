@@ -135,10 +135,9 @@ class AniListDataConverter @Inject constructor(
 
     fun characterEntry(
         entry: CharacterEntry,
-        media: List<MediaEntry>
     ): Entry.Prefilled<CharacterEntry> {
-        val firstMedia = media.firstOrNull()
-        val voiceActor = CharacterUtils.findVoiceActor(aniListJson, entry, firstMedia)
+        val voiceActor =
+            CharacterUtils.findVoiceActor(aniListJson, entry, entry.mediaIds?.firstOrNull())
         return characterEntry(
             value = entry,
             id = entry.id,
@@ -149,7 +148,7 @@ class AniListDataConverter @Inject constructor(
             full = entry.name?.full,
             native = entry.name?.native,
             alternative = entry.name?.alternative,
-            mediaTitle = firstMedia?.title?.romaji,
+            mediaTitle = entry.mediaTitle,
             staffId = voiceActor?.id,
             staffName = voiceActor?.name?.full,
             staffImage = voiceActor?.image?.medium

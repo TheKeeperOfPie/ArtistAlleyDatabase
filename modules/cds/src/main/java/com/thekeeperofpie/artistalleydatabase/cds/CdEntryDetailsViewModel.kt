@@ -264,6 +264,7 @@ class CdEntryDetailsViewModel @Inject constructor(
 
         viewModelScope.launch(Dispatchers.IO) {
             aniListAutocompleter.characterPredictions(
+                characterSection.lockStateFlow,
                 seriesSection.contentUpdates(),
                 characterSection.valueUpdates(),
             ) { cdEntryDao.queryCharacters(it) }

@@ -10,6 +10,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.nullable
 import com.thekeeperofpie.artistalleydatabase.android_utils.split
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
+import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection.MultiText.Entry
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -119,15 +120,7 @@ class AniListAutocompleter @Inject constructor(
         if (either is Either.Right) {
             characterRepository.getEntry(either.value.id)
                 .filterNotNull()
-                .flatMapLatest { character ->
-                    // TODO: Batch query?
-                    character.mediaIds
-                        ?.map { mediaRepository.getEntry(it) }
-                        ?.let { combine(it) { it.toList() } }
-                        .let { it ?: flowOf(listOf(null)) }
-                        .map { character to it.filterNotNull() }
-                }
-                .map { aniListDataConverter.characterEntry(it.first, it.second) }
+                .map(aniListDataConverter::characterEntry)
                 .startWith(aniListDataConverter.characterEntry(either.value))
                 .filterNotNull()
         } else {
@@ -157,83 +150,86 @@ class AniListAutocompleter @Inject constructor(
     }
 
     fun characterPredictions(
+        characterLockState: StateFlow<EntrySection.LockState?>,
         seriesContents: StateFlow<List<Entry>>,
         characterValue: StateFlow<String>,
         queryCharactersLocal: suspend (query: String) -> List<String>,
     ): Flow<List<Entry>> {
         @Suppress("OPT_IN_USAGE")
-        return combine(
-            characterValue,
-            seriesContents.map { it.filterIsInstance<Entry.Prefilled<*>>() }
-                .map { it.mapNotNull(AniListUtils::mediaId) }
-                .distinctUntilChanged()
-                .flatMapLatest {
-                    // For entries with multiple series, ignore predictions by series
-                    // since it can flood the predictions with unuseful results
-                    if (it.size > 1) return@flatMapLatest emptyFlow()
-                    it.map {
-                        aniListApi.charactersByMedia(it)
-                            .map { it.map { aniListDataConverter.characterEntry((it)) } }
-                            .catch {}
-                            .startWith(item = emptyList())
-                    }
-                        .let {
-                            combine(it) {
-                                it.fold(mutableListOf<Entry>()) { list, value ->
-                                    list.apply { addAll(value) }
+        return characterLockState
+            .debounce(2.seconds)
+            .flatMapLatest {
+                if (it == EntrySection.LockState.LOCKED) {
+                    flowOf(emptyList())
+                } else {
+                    combine(
+                        characterValue,
+                        seriesContents.map { it.filterIsInstance<Entry.Prefilled<*>>() }
+                            .map { it.mapNotNull(AniListUtils::mediaId) }
+                            .distinctUntilChanged()
+                            .flatMapLatest {
+                                // For entries with multiple series, ignore predictions by series
+                                // since it can flood the predictions with unuseful results
+                                if (it.size > 1) return@flatMapLatest emptyFlow()
+                                it.map {
+                                    aniListApi.charactersByMedia(it)
+                                        .map { it.map { aniListDataConverter.characterEntry((it)) } }
+                                        .catch {}
+                                        .startWith(item = emptyList())
                                 }
+                                    .let {
+                                        combine(it) {
+                                            it.fold(mutableListOf<Entry>()) { list, value ->
+                                                list.apply { addAll(value) }
+                                            }
+                                        }
+                                    }
+                            }
+                            .startWith(item = emptyList()),
+                        characterValue
+                            .debounce(2.seconds)
+                            .flatMapLatest { query ->
+                                queryCharacters(query, queryCharactersLocal)
+                            }
+                            .startWith(flowOf(emptyList<Entry>() to emptyList()))
+                    ) { query, series, (charactersFirst, charactersSecond) ->
+                        val (seriesFirst, seriesSecond) = series.toMutableList().apply {
+                            removeAll { seriesCharacter ->
+                                charactersFirst
+                                    .any { character ->
+                                        val seriesCharacterEntry =
+                                            seriesCharacter as? Entry.Prefilled<*>
+                                        if (seriesCharacterEntry != null) {
+                                            AniListUtils.characterId(seriesCharacterEntry) ==
+                                                    AniListUtils.characterId(character)
+                                        } else {
+                                            false
+                                        }
+                                    } || charactersSecond
+                                    .any { character ->
+                                        val seriesCharacterEntry =
+                                            seriesCharacter as? Entry.Prefilled<*>
+                                        if (seriesCharacterEntry != null) {
+                                            AniListUtils.characterId(seriesCharacterEntry) ==
+                                                    AniListUtils.characterId(character)
+                                        } else {
+                                            false
+                                        }
+                                    }
                             }
                         }
-                }
-                .startWith(item = emptyList()),
-            characterValue
-                .debounce(2.seconds)
-                .flatMapLatest { query ->
-                    queryCharacters(query, queryCharactersLocal)
-                }
-                .startWith(flowOf(emptyList<Entry>() to emptyList()))
-        ) { query, series, (charactersFirst, charactersSecond) ->
-            val (seriesFirst, seriesSecond) = series.toMutableList().apply {
-                removeAll { seriesCharacter ->
-                    charactersFirst
-                        .any { character ->
-                            val seriesCharacterEntry = seriesCharacter as? Entry.Prefilled<*>
-                            if (seriesCharacterEntry != null) {
-                                AniListUtils.characterId(seriesCharacterEntry) ==
-                                        AniListUtils.characterId(character)
-                            } else {
-                                false
-                            }
-                        } || charactersSecond
-                        .any { character ->
-                            val seriesCharacterEntry = seriesCharacter as? Entry.Prefilled<*>
-                            if (seriesCharacterEntry != null) {
-                                AniListUtils.characterId(seriesCharacterEntry) ==
-                                        AniListUtils.characterId(character)
-                            } else {
-                                false
-                            }
-                        }
+                            .split { it.text.contains(query, ignoreCase = true) }
+                        (seriesFirst + charactersFirst + seriesSecond + charactersSecond).distinctBy { it.id }
+                    }
                 }
             }
-                .split { it.text.contains(query, ignoreCase = true) }
-            (seriesFirst + charactersFirst + seriesSecond + charactersSecond).distinctBy { it.id }
-        }
     }
 
     @WorkerThread
     suspend fun fillCharacterField(characterId: String) =
         characterRepository.getEntry(characterId)
             .filterNotNull()
-            .flatMapLatest { character ->
-                // TODO: Batch query?
-                character.mediaIds
-                    ?.map { mediaRepository.getEntry(it) }
-                    ?.let { combine(it) { it.toList() } }
-                    .let { it ?: flowOf(listOf(null)) }
-                    .map { character to it.filterNotNull() }
-            }
-            .mapNotNull { aniListDataConverter.characterEntry(it.first, it.second) }
+            .map(aniListDataConverter::characterEntry)
             .filterNotNull()
 
     @WorkerThread

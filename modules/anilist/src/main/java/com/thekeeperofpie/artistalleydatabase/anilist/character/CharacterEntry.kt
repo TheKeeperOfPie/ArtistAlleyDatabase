@@ -23,6 +23,7 @@ data class CharacterEntry(
     @Embedded(prefix = "image_")
     val image: Image? = null,
     val mediaIds: List<String>? = null,
+    val mediaTitle: String? = null,
     @Discouraged("Prefer #voiceActors(AppJson)")
     val voiceActors: Map<String, String>? = null
 ) {
@@ -51,6 +52,7 @@ data class CharacterEntry(
             medium = character.image?.medium,
         ),
         mediaIds = character.media?.nodes?.mapNotNull { it?.aniListMedia?.id?.toString() },
+        mediaTitle = character.media?.nodes?.firstNotNullOf { it?.aniListMedia?.title?.romaji },
         voiceActors = CharacterUtils.parseVoiceActors(character)
             .mapValues { (_, value) -> appJson.json.encodeToString<List<VoiceActor>>(value) },
     )

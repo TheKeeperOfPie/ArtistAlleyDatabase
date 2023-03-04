@@ -6,6 +6,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -27,6 +29,7 @@ fun AddBackPressTransitionStage(
     terminal: Boolean = false,
     onBackPressed: suspend OnBackPressedCallback.(CoroutineScope) -> Unit
 ) {
+    val currentOnBackPressed = rememberUpdatedState(onBackPressed)
     val backPressedDispatcher = LocalOnBackPressedDispatcherOwner.current
         ?.onBackPressedDispatcher
     val backCoroutineScope = rememberCoroutineScope()
@@ -34,7 +37,13 @@ fun AddBackPressTransitionStage(
     val backCallback = remember {
         object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                backCoroutineScope.launch { onBackPressed(backCoroutineScope) }
+                val onBackPressedCallback = this
+                backCoroutineScope.launch {
+                    currentOnBackPressed.value.invoke(
+                        onBackPressedCallback,
+                        backCoroutineScope
+                    )
+                }
                 if (!terminal) {
                     remove()
                     backPressedDispatcher?.onBackPressed()
@@ -43,8 +52,9 @@ fun AddBackPressTransitionStage(
         }
     }
 
-    DisposableEffect(backPressedDispatcher) {
-        backPressedDispatcher?.addCallback(backCallback)
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner, backPressedDispatcher) {
+        backPressedDispatcher?.addCallback(lifecycleOwner, backCallback)
         onDispose { backCallback.remove() }
     }
 }

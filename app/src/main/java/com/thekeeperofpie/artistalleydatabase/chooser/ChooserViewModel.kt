@@ -77,7 +77,7 @@ class ChooserViewModel @Inject constructor(
         // TODO: Find a better solution for the file extension problem
         // TODO: Offer an option to compress before export in case the caller has a size limitation
         val externalFile = application.filesDir.resolve("external/external.$extension")
-        file.copyTo(externalFile)
+        file.copyTo(externalFile, overwrite = true)
 
         return FileProvider.getUriForFile(
             application,

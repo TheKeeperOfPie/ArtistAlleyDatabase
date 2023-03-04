@@ -193,29 +193,38 @@ sealed class EntrySection(lockState: LockState? = null) {
                 flowOf(emptyList())
             },
         ) {
-            combine(
-                valueUpdates()
-                    .flatMapLatest {
-                        val localFlows = localCall(it)
-                        if (localFlows.isEmpty()) {
-                            flowOf(emptyList())
-                        } else {
-                            combine(localFlows, Array<Entry?>::toList)
+            lockStateFlow
+                .debounce(2.seconds)
+                .flatMapLatest {
+                    if (it == LockState.LOCKED) {
+                        flowOf(emptyList())
+                    } else {
+                        combine(
+                            valueUpdates()
+                                .flatMapLatest {
+                                    val localFlows = localCall(it)
+                                    if (localFlows.isEmpty()) {
+                                        flowOf(emptyList())
+                                    } else {
+                                        combine(localFlows, Array<Entry?>::toList)
+                                    }
+                                }
+                                .startWith(flowOf(emptyList())),
+                            valueUpdates()
+                                .debounce(2.seconds)
+                                .filter(String::isNotBlank)
+                                .flatMapLatest(networkCall)
+                                .startWith(flowOf(emptyList()))
+                        ) { (local, network) ->
+                            (local + network).filterNotNull().distinctBy { it.id }
                         }
                     }
-                    .startWith(flowOf(emptyList())),
-                valueUpdates()
-                    .debounce(2.seconds)
-                    .filter(String::isNotBlank)
-                    .flatMapLatest(networkCall)
-                    .startWith(flowOf(emptyList()))
-            ) { (local, network) ->
-                (local + network).filterNotNull().distinctBy { it.id }
-            }.collectLatest {
-                withContext(Dispatchers.Main) {
-                    predictions = it.toMutableList()
                 }
-            }
+                .collectLatest {
+                    withContext(Dispatchers.Main) {
+                        predictions = it.toMutableList()
+                    }
+                }
         }
 
         private fun indexOf(entry: Entry.Prefilled<*>) =

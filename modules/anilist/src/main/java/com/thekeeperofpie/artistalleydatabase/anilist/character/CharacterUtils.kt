@@ -3,7 +3,6 @@ package com.thekeeperofpie.artistalleydatabase.anilist.character
 import com.anilist.fragment.AniListCharacter
 import com.anilist.fragment.AniListMedia
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
-import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaEntry
 
 object CharacterUtils {
 
@@ -84,13 +83,13 @@ object CharacterUtils {
     fun findVoiceActor(
         appJson: AppJson,
         character: CharacterEntry,
-        media: MediaEntry?
+        mediaId: String?
     ): CharacterEntry.VoiceActor? {
         val voiceActors = character.voiceActors(appJson)
 
         // Find by exact media ID and exact language
-        var voiceActor = media?.let {
-            voiceActors[it.id]?.find { it.language == "Japanese" }
+        var voiceActor = mediaId?.let {
+            voiceActors[it]?.find { it.language == "Japanese" }
         }
 
         // Find by any media ID and exact language
