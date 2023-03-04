@@ -1,5 +1,9 @@
 plugins {
-    kotlin("jvm")
+    id("module-library")
+}
+
+android {
+    namespace = "com.thekeeperofpie.artistalleydatabase.test_utils"
 }
 
 dependencies {

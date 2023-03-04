@@ -20,7 +20,7 @@ dependencies {
     api(project(":modules:entry"))
     api(project(":modules:musical-artists"))
     api(project(":modules:vgmdb"))
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0-RC")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
 
     implementation("com.google.dagger:hilt-android:2.45")
     kapt("com.google.dagger:hilt-compiler:2.45")
@@ -28,9 +28,9 @@ dependencies {
     implementation("androidx.hilt:hilt-navigation-compose:1.1.0-alpha01")
 
     implementation("androidx.core:core-ktx:1.9.0")
-    implementation("androidx.compose.ui:ui:1.4.0-beta01")
-    implementation("androidx.compose.ui:ui-tooling-preview:1.4.0-beta01")
-    implementation("androidx.compose.material3:material3:1.1.0-alpha06")
+    implementation("androidx.compose.ui:ui:1.4.0-beta02")
+    implementation("androidx.compose.ui:ui-tooling-preview:1.4.0-beta02")
+    implementation("androidx.compose.material3:material3:1.1.0-alpha07")
 
     runtimeOnly("androidx.room:room-runtime:2.5.0")
     ksp("androidx.room:room-compiler:2.5.0")

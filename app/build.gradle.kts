@@ -85,7 +85,7 @@ android {
         buildConfig = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.4.2"
+        kotlinCompilerExtensionVersion = "1.4.3-dev-k1.8.20-Beta-c5841510cbf"
     }
     packaging {
         resources {
@@ -156,10 +156,10 @@ dependencies {
     implementation(project(":modules:settings"))
 
     runtimeOnly(kotlin("reflect"))
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0-RC")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
     runtimeOnly("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4")
 
-    implementation("androidx.navigation:navigation-compose:2.6.0-alpha05")
+    implementation("androidx.navigation:navigation-compose:2.6.0-alpha06")
 
     implementation("com.google.dagger:hilt-android:2.45")
     kapt("com.google.dagger:hilt-compiler:2.45")
@@ -168,14 +168,14 @@ dependencies {
     implementation("androidx.hilt:hilt-work:1.0.0")
 
     implementation("androidx.core:core-ktx:1.9.0")
-    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.6.0-beta01")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.0-beta01")
+    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.6.0-rc01")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.0-rc01")
     implementation("androidx.activity:activity-compose:1.8.0-alpha01")
-    implementation("androidx.compose.ui:ui:1.4.0-beta01")
-    implementation("androidx.compose.ui:ui-tooling-preview:1.4.0-beta01")
-    implementation("androidx.compose.material:material-icons-core:1.4.0-beta01")
-    implementation("androidx.compose.material:material-icons-extended:1.4.0-beta01")
-    implementation("androidx.compose.material3:material3:1.1.0-alpha06")
+    implementation("androidx.compose.ui:ui:1.4.0-beta02")
+    implementation("androidx.compose.ui:ui-tooling-preview:1.4.0-beta02")
+    implementation("androidx.compose.material:material-icons-core:1.4.0-beta02")
+    implementation("androidx.compose.material:material-icons-extended:1.4.0-beta02")
+    implementation("androidx.compose.material3:material3:1.1.0-alpha07")
 
     runtimeOnly("androidx.paging:paging-runtime:3.2.0-alpha04")
     implementation("androidx.paging:paging-compose:1.0.0-alpha18")
@@ -188,8 +188,8 @@ dependencies {
 
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
-    debugRuntimeOnly("androidx.compose.ui:ui-tooling:1.4.0-beta01")
-    debugRuntimeOnly("androidx.compose.ui:ui-test-manifest:1.4.0-beta01")
+    debugRuntimeOnly("androidx.compose.ui:ui-tooling:1.4.0-beta02")
+    debugRuntimeOnly("androidx.compose.ui:ui-test-manifest:1.4.0-beta02")
 
 //    implementation("com.mxalbert.sharedelements:shared-elements:0.1.0-SNAPSHOT")
     implementation(group = "", name = "shared-elements-0.1.0-20221204.093513-11", ext = "aar")

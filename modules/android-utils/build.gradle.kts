@@ -16,7 +16,7 @@ dependencies {
     api("androidx.work:work-runtime-ktx:2.8.0")
     api("io.github.hoc081098:FlowExt:0.5.0")
 
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0-RC")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
     runtimeOnly("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4")
 
     runtimeOnly("androidx.room:room-runtime:2.5.0")

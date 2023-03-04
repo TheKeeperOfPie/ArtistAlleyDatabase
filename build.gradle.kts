@@ -8,9 +8,9 @@ plugins {
     id("com.google.dagger.hilt.android") version "2.45" apply false
     id("de.mannodermaus.android-junit5") version "1.8.2.1" apply false
     id("com.autonomousapps.dependency-analysis") version "1.19.0"
-    id("com.github.ben-manes.versions") version "0.45.0"
+    id("com.github.ben-manes.versions") version "0.46.0"
     id("com.github.jk1.dependency-license-report") version "2.1"
-    kotlin("plugin.serialization") version "1.8.10" apply false
+    kotlin("plugin.serialization") version "1.8.20-Beta" apply false
     id("org.barfuin.gradle.taskinfo") version "2.1.0"
 }
 
@@ -32,9 +32,10 @@ tasks.register("copyGitHooks", Copy::class) {
     fileMode = 777
 }
 
+val verificationMetadataFile = File(rootProject.rootDir, "gradle/verification-metadata.xml")
 tasks.register("recopyVerificationMetadata") {
-    File(rootProject.rootDir, "gradle/verification-metadata-base.xml")
-        .copyTo(File(rootProject.rootDir, "gradle/verification-metadata.xml"), overwrite = true)
+    verificationMetadataFile.resolveSibling("verification-metadata-base.xml")
+        .copyTo(verificationMetadataFile, overwrite = true)
 }
 
 tasks.register("generateVerificationMetadata") {

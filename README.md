@@ -26,12 +26,27 @@ stabilized, nor that the data is safe from corruption or bugs. Use and update at
    ```https://s01.oss.sonatype.org/content/repositories/snapshots/com/mxalbert/sharedelements/shared-elements/0.1.0-SNAPSHOT/shared-elements-0.1.0-20221204.093513-11.aar```
 4. Install like any other Android application via `./gradlew :app:installDebug`
 
+## Dependencies
+
+### Useful commands
+
+- Check for updates:  
+     `./gradlew dependencyUpdates`
+- Verify declarations (included in git commit hook):  
+     `./gradlew buildHealth`
+
 ### Regenerate verification-metadata.xml
 
-1. `./gradlew --write-verification-metadata pgp,sha256 generateVerificationMetadata`
+This must be done each time a dependency is added/changed. Disabling dependency verification can be
+done by deleting `./gradle/verification-metadata.xml`.
 
-If an error like the following is shown, it can be safely ignored:
-> The root project is not yet available for build.
+`./gradlew --write-verification-metadata pgp,sha256 generateVerificationMetadata`
+
+### :modules:dependencies
+
+This module serves as a way to generate verification metadata for artifacts which are used by
+Android Studio but aren't used in the app build. For things like instrumentation testing that
+require additional dependencies.
 
 ## Features
 

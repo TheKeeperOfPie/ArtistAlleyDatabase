@@ -35,12 +35,12 @@ dependencies {
     api(project(":modules:android-utils"))
     api(project(":modules:entry"))
 
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0-RC")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
     implementation("com.google.dagger:hilt-android:2.45")
     kapt("com.google.dagger:hilt-compiler:2.45")
     kapt("androidx.hilt:hilt-compiler:1.0.0")
-    implementation("androidx.compose.material:material-icons-core:1.4.0-beta01")
-    implementation("androidx.compose.material:material-icons-extended:1.4.0-beta01")
+    implementation("androidx.compose.material:material-icons-core:1.4.0-beta02")
+    implementation("androidx.compose.material:material-icons-extended:1.4.0-beta02")
 
     runtimeOnly("androidx.room:room-runtime:2.5.0")
     ksp("androidx.room:room-compiler:2.5.0")

@@ -1,15 +1,13 @@
 plugins {
-    id("java-library")
-    id("org.jetbrains.kotlin.jvm")
+    id("module-library")
     kotlin("plugin.serialization")
 }
 
-java {
-    sourceCompatibility = JavaVersion.VERSION_18
-    targetCompatibility = JavaVersion.VERSION_18
+android {
+    namespace = "com.thekeeperofpie.artistalleydatabase.web_infra"
 }
 
 dependencies {
-    api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0-RC")
+    api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
 }
