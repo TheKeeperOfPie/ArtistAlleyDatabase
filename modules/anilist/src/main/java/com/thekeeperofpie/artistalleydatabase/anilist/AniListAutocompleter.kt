@@ -170,28 +170,28 @@ class AniListAutocompleter @Inject constructor(
                             .flatMapLatest {
                                 // For entries with multiple series, ignore predictions by series
                                 // since it can flood the predictions with unuseful results
-                                if (it.size > 1) return@flatMapLatest emptyFlow()
-                                it.map {
-                                    aniListApi.charactersByMedia(it)
-                                        .map { it.map { aniListDataConverter.characterEntry((it)) } }
-                                        .catch {}
-                                        .startWith(item = emptyList())
-                                }
-                                    .let {
-                                        combine(it) {
-                                            it.fold(mutableListOf<Entry>()) { list, value ->
-                                                list.apply { addAll(value) }
+                                if (it.size > 1) emptyFlow() else {
+                                    it.map {
+                                        aniListApi.charactersByMedia(it)
+                                            .map { it.map { aniListDataConverter.characterEntry((it)) } }
+                                            .catch {}
+                                            .startWith(item = emptyList())
+                                    }
+                                        .let {
+                                            combine(it) {
+                                                it.fold(mutableListOf<Entry>()) { list, value ->
+                                                    list.apply { addAll(value) }
+                                                }
                                             }
                                         }
-                                    }
+                                }
                             }
                             .startWith(item = emptyList()),
                         characterValue
-                            .debounce(2.seconds)
                             .flatMapLatest { query ->
                                 queryCharacters(query, queryCharactersLocal)
                             }
-                            .startWith(flowOf(emptyList<Entry>() to emptyList()))
+                            .startWith(item = emptyList<Entry>() to emptyList())
                     ) { query, series, (charactersFirst, charactersSecond) ->
                         val (seriesFirst, seriesSecond) = series.toMutableList().apply {
                             removeAll { seriesCharacter ->

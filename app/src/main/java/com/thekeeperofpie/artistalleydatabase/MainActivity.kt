@@ -31,9 +31,6 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.withResumed
-import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -53,7 +50,6 @@ import com.thekeeperofpie.artistalleydatabase.cds.search.CdSearchViewModel
 import com.thekeeperofpie.artistalleydatabase.compose.LazyStaggeredGrid
 import com.thekeeperofpie.artistalleydatabase.entry.EntryNavigator
 import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils.navToEntryDetails
-import com.thekeeperofpie.artistalleydatabase.entry.search.EntrySearchViewModel
 import com.thekeeperofpie.artistalleydatabase.export.ExportScreen
 import com.thekeeperofpie.artistalleydatabase.export.ExportViewModel
 import com.thekeeperofpie.artistalleydatabase.home.HomeScreen
@@ -70,8 +66,6 @@ import com.thekeeperofpie.artistalleydatabase.settings.SettingsViewModel
 import com.thekeeperofpie.artistalleydatabase.ui.theme.ArtistAlleyDatabaseTheme
 import com.thekeeperofpie.artistalleydatabase.utils.DatabaseSyncWorker
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -249,8 +243,6 @@ class MainActivity : ComponentActivity() {
                         onConfirmDelete = viewModel::deleteSelected,
                         lazyStaggeredGridState = lazyStaggeredGridState,
                     )
-
-                    attachInvalidateScroll(it, viewModel, lazyStaggeredGridState)
                 }
 
                 artEntryNavigator.initialize(navController, this)
@@ -299,8 +291,6 @@ class MainActivity : ComponentActivity() {
                         onConfirmDelete = viewModel::deleteSelected,
                         lazyStaggeredGridState = lazyStaggeredGridState,
                     )
-
-                    attachInvalidateScroll(it, viewModel, lazyStaggeredGridState)
                 }
 
                 cdEntryNavigator.initialize(navController, this)
@@ -326,9 +316,6 @@ class MainActivity : ComponentActivity() {
                 }
 
                 entryNavigators.forEach { it.initialize(navController, this) }
-
-                // TODO: Modular multi-edit
-//                addEditScreen(navController)
             }
         }
     }
@@ -392,9 +379,6 @@ class MainActivity : ComponentActivity() {
                 }
 
                 entryNavigators.forEach { it.initialize(navController, this) }
-
-                // TODO: Modular multi-edit
-//                addEditScreen(navController)
             }
         }
     }
@@ -425,27 +409,5 @@ class MainActivity : ComponentActivity() {
             onClickRebuildDatabase = viewModel::onClickRebuildDatabase,
             onClickCropClear = viewModel::onClickCropClear,
         )
-    }
-
-    private fun attachInvalidateScroll(
-        it: NavBackStackEntry,
-        viewModel: EntrySearchViewModel<*, *>,
-        lazyStaggeredGridState: LazyStaggeredGrid.LazyStaggeredGridState
-    ) {
-        viewModel.viewModelScope.launch(Dispatchers.Main) {
-            it.withResumed {
-                viewModel.viewModelScope.launch(Dispatchers.Main) {
-                    val firstListState = lazyStaggeredGridState.lazyListStates.firstOrNull()
-                    val scrollToTop = firstListState != null
-                            && firstListState.firstVisibleItemIndex == 0
-                            && firstListState.firstVisibleItemScrollOffset == 0
-                    if (scrollToTop) {
-                        viewModel.invalidate()
-                        delay(500)
-                        lazyStaggeredGridState.scrollToTop()
-                    }
-                }
-            }
-        }
     }
 }
