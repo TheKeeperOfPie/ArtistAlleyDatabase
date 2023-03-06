@@ -47,7 +47,7 @@ android {
     }
     packaging {
         resources {
-            merges += "/META-INF/{AL2.0,LGPL2.1,DEPENDENCIES}"
+            merges += "/META-INF/*"
             merges += "mozilla/public-suffix-list.txt"
         }
     }

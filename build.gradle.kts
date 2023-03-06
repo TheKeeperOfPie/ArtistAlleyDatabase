@@ -72,6 +72,7 @@ dependencyAnalysis {
                     "com.google.dagger:hilt-android",
                     "com.squareup.moshi:moshi-kotlin",
                     "de.mannodermaus.junit5:android-test-core",
+                    "org.mockito:mockito-android",
 
                     // Exclude the list of modules as the plugin doesn't
                     // play well with the Kotlin testFixtures hack
@@ -120,6 +121,14 @@ dependencyAnalysis {
             onUnusedDependencies {
                 exclude(
                     "org.jetbrains.kotlinx:kotlinx-serialization-json",
+                )
+            }
+        }
+
+        project(":modules:test-utils") {
+            onRuntimeOnly {
+                exclude(
+                    "org.jetbrains.kotlinx:kotlinx-coroutines-android",
                 )
             }
         }

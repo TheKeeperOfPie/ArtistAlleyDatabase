@@ -363,7 +363,7 @@ class EntryImageController(
         }
 
         val error = results.find { it.error != null }?.error
-        if (error != null ) {
+        if (error != null) {
             withContext(Dispatchers.Main) {
                 onError(error)
             }

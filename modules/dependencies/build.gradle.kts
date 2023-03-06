@@ -19,12 +19,14 @@ android {
  */
 dependencies {
     // Android Studio instrumentation testing
+    debugCompileOnly("com.android.tools.emulator:proto:31.1.0-alpha07")
     debugCompileOnly("com.android.tools.utp:android-device-provider-ddmlib:31.1.0-alpha07")
     debugCompileOnly("com.android.tools.utp:android-device-provider-gradle:31.1.0-alpha07")
     debugCompileOnly("com.android.tools.utp:android-test-plugin-host-additional-test-output:31.1.0-alpha07")
     debugCompileOnly("com.android.tools.utp:android-test-plugin-host-apk-installer:31.1.0-alpha07")
     debugCompileOnly("com.android.tools.utp:android-test-plugin-host-coverage:31.1.0-alpha07")
     debugCompileOnly("com.android.tools.utp:android-test-plugin-host-device-info:31.1.0-alpha07")
+    debugCompileOnly("com.android.tools.utp:android-test-plugin-host-device-info-proto:31.1.0-alpha07")
     debugCompileOnly("com.android.tools.utp:android-test-plugin-host-logcat:31.1.0-alpha07")
     debugCompileOnly("com.android.tools.utp:android-test-plugin-host-retention:31.1.0-alpha07")
     debugCompileOnly("com.android.tools.utp:android-test-plugin-result-listener-gradle:31.1.0-alpha07")

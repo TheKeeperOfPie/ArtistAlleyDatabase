@@ -58,11 +58,11 @@ inline fun <reified T> spyStrict(value: T?, block: T.() -> Unit = {}): T {
         }
 }
 
-inline fun <reified Type> mock(block: Type.() -> Unit = {}) = spyStrict(null, block)
+inline fun <reified Type> mockStrict(block: Type.() -> Unit = {}) = spyStrict(null, block)
 
 inline fun <reified Type : Any?> mockWhen(mock: Type, crossinline block: Type.() -> Unit = {}) {
     whenever(mock) {
-        mock {
+        mockStrict {
             block()
         }
     }

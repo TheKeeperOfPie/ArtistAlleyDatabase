@@ -2,6 +2,7 @@
 
 plugins {
     id("compose-library")
+    id("de.mannodermaus.android-junit5")
 }
 
 android {
@@ -30,5 +31,14 @@ dependencies {
     implementation(group = "", name = "shared-elements-0.1.0-20221204.093513-11", ext = "aar")
 
     testImplementation("junit:junit:4.13.2")
+
+    androidTestImplementation(project(":modules:test-utils"))
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
+    androidTestImplementation("androidx.test:runner:1.5.3-alpha01")
+    androidTestImplementation("org.junit.jupiter:junit-jupiter-api:5.9.2")
+    androidTestImplementation("de.mannodermaus.junit5:android-test-core:1.3.0")
+    androidTestRuntimeOnly("de.mannodermaus.junit5:android-test-runner:1.3.0")
+    androidTestImplementation("com.google.truth:truth:1.1.3")
+    androidTestImplementation(kotlin("test-junit"))
+    androidTestImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4")
 }
