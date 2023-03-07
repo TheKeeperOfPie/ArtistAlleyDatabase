@@ -2,22 +2,19 @@ package com.thekeeperofpie.artistalleydatabase.entry
 
 import androidx.navigation.NavHostController
 import com.google.common.truth.Truth.assertThat
+import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.test_utils.atLeast
 import com.thekeeperofpie.artistalleydatabase.test_utils.during
 import com.thekeeperofpie.artistalleydatabase.test_utils.mockStrict
 import com.thekeeperofpie.artistalleydatabase.test_utils.untilCalled
 import com.thekeeperofpie.artistalleydatabase.test_utils.whenever
-import kotlinx.coroutines.Dispatchers
+import com.thekeeperofpie.artistalleydatabase.test_utils.withDispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
-import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
-import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.test.setMain
 import org.awaitility.Awaitility.await
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
@@ -27,8 +24,13 @@ import kotlin.time.Duration.Companion.seconds
 class EntryDetailsAddTest {
 
     companion object {
-        // Sync concurrent modifications of Dispatchers.Main
-        val dispatchersMainMutex = Mutex()
+
+        @JvmStatic
+        @BeforeAll
+        fun enableTestDispatchers() {
+            // TODO: Move this to a place that's called once in the test process
+            CustomDispatchers.enable()
+        }
     }
 
     @Test
@@ -115,13 +117,12 @@ class EntryDetailsAddTest {
     ) {
         // Swap the main Dispatcher, run the block, pausing main execution,
         // wait for saving indicator, unblock the main execution, and assert success/failure
-        dispatchersMainMutex.withLock {
-            Dispatchers.setMain(StandardTestDispatcher(testScope.testScheduler))
+        testScope.withDispatchers {
             block()
             await().until { saving }
             testScope.advanceUntilIdle()
-            Dispatchers.resetMain()
-            waitForSaveResult(navHostController, success)
         }
+
+        waitForSaveResult(navHostController, success)
     }
 }

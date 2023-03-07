@@ -16,7 +16,7 @@ import com.anilist.MediaWithCharactersQuery
 import com.apollographql.apollo3.ApolloClient
 import com.apollographql.apollo3.api.Optional
 import com.apollographql.apollo3.network.http.DefaultHttpEngine
-import com.thekeeperofpie.artistalleydatabase.android_utils.splitAtIndex
+import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.splitAtIndex
 import kotlinx.coroutines.flow.mapNotNull
 import okhttp3.Cache
 import okhttp3.OkHttpClient

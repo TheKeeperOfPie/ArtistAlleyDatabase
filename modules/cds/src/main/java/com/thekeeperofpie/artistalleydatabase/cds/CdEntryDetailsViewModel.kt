@@ -6,9 +6,9 @@ import androidx.core.net.toUri
 import androidx.lifecycle.viewModelScope
 import com.hoc081098.flowext.startWith
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
-import com.thekeeperofpie.artistalleydatabase.android_utils.emitNotNull
-import com.thekeeperofpie.artistalleydatabase.android_utils.mapLatestNotNull
-import com.thekeeperofpie.artistalleydatabase.android_utils.suspend1
+import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.emitNotNull
+import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.mapLatestNotNull
+import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.suspend1
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListAutocompleter
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository

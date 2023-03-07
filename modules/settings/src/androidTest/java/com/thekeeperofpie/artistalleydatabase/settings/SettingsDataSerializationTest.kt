@@ -6,7 +6,7 @@ import android.net.Uri
 import androidx.test.platform.app.InstrumentationRegistry
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.encodeToString
-import com.thekeeperofpie.artistalleydatabase.android_utils.to
+import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.to
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntry
 import com.thekeeperofpie.artistalleydatabase.art.test.ArtEntrySamples
 import org.junit.jupiter.api.Assertions.assertEquals

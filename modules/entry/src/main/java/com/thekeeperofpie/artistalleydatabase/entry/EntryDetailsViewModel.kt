@@ -9,7 +9,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
 import com.thekeeperofpie.artistalleydatabase.android_utils.AnimationUtils
-import kotlinx.coroutines.Dispatchers
+import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -58,7 +58,7 @@ abstract class EntryDetailsViewModel<Entry, Model>(
             else -> Type.MULTI_EDIT
         }
 
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch(CustomDispatchers.IO) {
             val model = when (type) {
                 Type.ADD -> buildAddModel()
                 Type.SINGLE_EDIT -> {
@@ -70,7 +70,7 @@ abstract class EntryDetailsViewModel<Entry, Model>(
                 }
                 Type.MULTI_EDIT -> buildMultiEditModel()
             }
-            withContext(Dispatchers.Main) {
+            withContext(CustomDispatchers.Main) {
                 model?.run(::initializeForm)
                 sectionsLoading = false
             }
@@ -100,10 +100,10 @@ abstract class EntryDetailsViewModel<Entry, Model>(
         deleting = true
 
         val entryId = entryIds.single()
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch(CustomDispatchers.IO) {
             EntryUtils.getEntryImageFolder(application, entryId).deleteRecursively()
             deleteEntry(entryId)
-            withContext(Dispatchers.Main) {
+            withContext(CustomDispatchers.Main) {
                 navHostController.popBackStack()
             }
         }
@@ -121,9 +121,9 @@ abstract class EntryDetailsViewModel<Entry, Model>(
         if (saving || deleting) return
         saving = true
 
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch(CustomDispatchers.IO) {
             val success = saveEntry(skipIgnoreableErrors)
-            withContext(Dispatchers.Main) {
+            withContext(CustomDispatchers.Main) {
                 if (success) {
                     navHostController.popBackStack()
                 } else {
