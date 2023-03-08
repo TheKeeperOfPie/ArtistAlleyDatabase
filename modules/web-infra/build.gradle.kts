@@ -1,6 +1,6 @@
 plugins {
     id("module-library")
-    kotlin("plugin.serialization")
+    alias(libs.plugins.org.jetbrains.kotlin.plugin.serialization)
 }
 
 android {
@@ -8,6 +8,6 @@ android {
 }
 
 dependencies {
-    api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
-    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
+    api(libs.kotlinx.serialization.json)
+    api(libs.kotlinx.coroutines.core)
 }

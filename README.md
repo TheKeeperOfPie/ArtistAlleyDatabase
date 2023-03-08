@@ -40,7 +40,7 @@ stabilized, nor that the data is safe from corruption or bugs. Use and update at
 This must be done each time a dependency is added/changed. Disabling dependency verification can be
 done by deleting `./gradle/verification-metadata.xml`.
 
-`./gradlew --write-verification-metadata pgp,sha256 generateVerificationMetadata`
+`./gradlew --no-configuration-cache --write-verification-metadata pgp,sha256 generateVerificationMetadata`
 
 ### :modules:dependencies
 

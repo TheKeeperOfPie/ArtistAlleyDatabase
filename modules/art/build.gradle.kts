@@ -4,7 +4,7 @@ plugins {
     id("compose-library")
     id("dagger.hilt.android.plugin")
     id("kotlin-kapt")
-    kotlin("plugin.serialization")
+    alias(libs.plugins.org.jetbrains.kotlin.plugin.serialization)
 }
 
 android {
@@ -18,31 +18,32 @@ dependencies {
     implementation(project(":modules:compose-utils"))
     api(project(":modules:data"))
     api(project(":modules:entry"))
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
 
-    implementation("com.google.dagger:hilt-android:2.45")
-    kapt("com.google.dagger:hilt-compiler:2.45")
-    kapt("androidx.hilt:hilt-compiler:1.0.0")
-    implementation("androidx.hilt:hilt-navigation-compose:1.1.0-alpha01")
+    implementation(libs.kotlinx.serialization.json)
 
-    implementation("androidx.navigation:navigation-compose:2.6.0-alpha06")
+    implementation(libs.hilt.android)
+    kapt(kaptProcessors.dagger.hilt.compiler)
+    kapt(kaptProcessors.androidx.hilt.compiler)
+    implementation(libs.hilt.navigation.compose)
 
-    implementation("androidx.core:core-ktx:1.9.0")
-    implementation("androidx.compose.ui:ui:1.4.0-beta02")
-    api("androidx.compose.ui:ui-tooling-preview:1.4.0-beta02")
-    implementation("androidx.compose.material3:material3:1.1.0-alpha07")
+    implementation(libs.navigation.compose)
 
-    runtimeOnly("androidx.room:room-runtime:2.5.0")
-    ksp("androidx.room:room-compiler:2.5.0")
-    implementation("androidx.room:room-ktx:2.5.0")
-    testImplementation("androidx.room:room-testing:2.5.0")
-    implementation("androidx.room:room-paging:2.5.0")
+    implementation(libs.core.ktx)
+    implementation(libs.compose.ui)
+    api(libs.compose.ui.tooling.preview)
+    implementation(libs.material3)
 
-    implementation("androidx.paging:paging-compose:1.0.0-alpha18")
+    runtimeOnly(libs.room.runtime)
+    ksp(kspProcessors.room.compiler)
+    implementation(libs.room.ktx)
+    testImplementation(libs.room.testing)
+    implementation(libs.room.paging)
 
-    api("com.squareup.moshi:moshi-kotlin:1.14.0")
-    ksp("com.squareup.moshi:moshi-kotlin-codegen:1.14.0")
+    implementation(libs.paging.compose)
 
-    testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.1.5")
+    api(libs.moshi.kotlin)
+    ksp(kspProcessors.moshi.kotlin.codegen)
+
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.junit.test)
 }

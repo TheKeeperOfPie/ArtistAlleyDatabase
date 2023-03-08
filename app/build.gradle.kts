@@ -6,7 +6,14 @@ plugins {
     id("dagger.hilt.android.plugin")
     id("kotlin-kapt")
     id("com.google.devtools.ksp")
-    kotlin("plugin.serialization")
+    alias(libs.plugins.org.jetbrains.kotlin.plugin.serialization)
+    alias(libs.plugins.com.jaredsburrows.license)
+}
+
+licenseReport {
+    // TODO: Not yet supported in latest stable plugin version
+    copyHtmlReportToAssets = false
+//    useVariantSpecificAssetDirs = false
 }
 
 android {
@@ -156,49 +163,50 @@ dependencies {
     implementation(project(":modules:settings"))
 
     runtimeOnly(kotlin("reflect"))
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
-    runtimeOnly("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4")
 
-    implementation("androidx.navigation:navigation-compose:2.6.0-alpha06")
+    implementation(libs.kotlinx.serialization.json)
+    runtimeOnly(libs.kotlinx.coroutines.android)
 
-    implementation("com.google.dagger:hilt-android:2.45")
-    kapt("com.google.dagger:hilt-compiler:2.45")
-    kapt("androidx.hilt:hilt-compiler:1.0.0")
-    implementation("androidx.hilt:hilt-navigation-compose:1.1.0-alpha01")
-    implementation("androidx.hilt:hilt-work:1.0.0")
+    implementation(libs.navigation.compose)
 
-    implementation("androidx.core:core-ktx:1.9.0")
-    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.6.0-rc01")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.0-rc01")
-    implementation("androidx.activity:activity-compose:1.8.0-alpha01")
-    implementation("androidx.compose.ui:ui:1.4.0-beta02")
-    implementation("androidx.compose.ui:ui-tooling-preview:1.4.0-beta02")
-    implementation("androidx.compose.material:material-icons-core:1.4.0-beta02")
-    implementation("androidx.compose.material:material-icons-extended:1.4.0-beta02")
-    implementation("androidx.compose.material3:material3:1.1.0-alpha07")
+    implementation(libs.hilt.android)
+    kapt(kaptProcessors.dagger.hilt.compiler)
+    kapt(kaptProcessors.androidx.hilt.compiler)
+    implementation(libs.hilt.navigation.compose)
+    implementation(libs.hilt.work)
 
-    runtimeOnly("androidx.paging:paging-runtime:3.2.0-alpha04")
-    implementation("androidx.paging:paging-compose:1.0.0-alpha18")
+    implementation(libs.core.ktx)
+    implementation(libs.lifecycle.livedata.ktx)
+    implementation(libs.lifecycle.viewmodel.compose)
+    implementation(libs.activity.compose)
+    implementation(libs.compose.ui)
+    implementation(libs.compose.ui.tooling.preview)
+    implementation(libs.material.icons.core)
+    implementation(libs.material.icons.extended)
+    implementation(libs.material3)
 
-    runtimeOnly("androidx.room:room-runtime:2.5.0")
-    ksp("androidx.room:room-compiler:2.5.0")
-    implementation("androidx.room:room-ktx:2.5.0")
-    testImplementation("androidx.room:room-testing:2.5.0")
-    implementation("androidx.room:room-paging:2.5.0")
+    runtimeOnly(libs.paging.runtime)
+    runtimeOnly(libs.paging.compose)
 
-    testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.1.5")
-    debugRuntimeOnly("androidx.compose.ui:ui-tooling:1.4.0-beta02")
-    debugRuntimeOnly("androidx.compose.ui:ui-test-manifest:1.4.0-beta02")
+    runtimeOnly(libs.room.runtime)
+    ksp(kspProcessors.room.compiler)
+    implementation(libs.room.ktx)
+    testImplementation(libs.room.testing)
+    implementation(libs.room.paging)
+
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.junit.test)
+    debugRuntimeOnly(libs.compose.ui.tooling)
+    debugRuntimeOnly(libs.compose.ui.test.manifest)
 
 //    implementation("com.mxalbert.sharedelements:shared-elements:0.1.0-SNAPSHOT")
     implementation(group = "", name = "shared-elements-0.1.0-20221204.093513-11", ext = "aar")
 
-    implementation("androidx.work:work-runtime:2.8.0")
-    implementation("androidx.work:work-runtime-ktx:2.8.0")
+    implementation(libs.work.runtime)
+    implementation(libs.work.runtime.ktx)
 
-    implementation("com.squareup.moshi:moshi-kotlin:1.14.0")
-    ksp("com.squareup.moshi:moshi-kotlin-codegen:1.14.0")
+    implementation(libs.moshi.kotlin)
+    ksp(kspProcessors.moshi.kotlin.codegen)
 
-    implementation("org.apache.commons:commons-compress:1.22")
+    implementation(libs.commons.compress)
 }

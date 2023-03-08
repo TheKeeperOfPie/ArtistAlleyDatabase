@@ -10,24 +10,24 @@ android {
 }
 
 dependencies {
-    implementation("androidx.core:core-ktx:1.9.0")
+    implementation(libs.core.ktx)
 
-    runtimeOnly("androidx.work:work-runtime:2.8.0")
-    api("androidx.work:work-runtime-ktx:2.8.0")
-    api("io.github.hoc081098:FlowExt:0.5.0")
+    runtimeOnly(libs.work.runtime)
+    api(libs.work.runtime.ktx)
+    api(libs.flowExt)
 
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
-    runtimeOnly("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4")
+    implementation(libs.kotlinx.serialization.json)
+    runtimeOnly(libs.kotlinx.coroutines.android)
 
-    runtimeOnly("androidx.room:room-runtime:2.5.0")
-    ksp("androidx.room:room-compiler:2.5.0")
-    implementation("androidx.room:room-ktx:2.5.0")
-    testImplementation("androidx.room:room-testing:2.5.0")
-    implementation("androidx.room:room-paging:2.5.0")
+    runtimeOnly(libs.room.runtime)
+    ksp(kspProcessors.room.compiler)
+    implementation(libs.room.ktx)
+    testImplementation(libs.room.testing)
+    implementation(libs.room.paging)
 
-    api("com.squareup.moshi:moshi-kotlin:1.14.0")
-    ksp("com.squareup.moshi:moshi-kotlin-codegen:1.14.0")
+    api(libs.moshi.kotlin)
+    ksp(kspProcessors.moshi.kotlin.codegen)
 
-    testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.1.5")
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.junit.test)
 }

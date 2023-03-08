@@ -1,24 +1,10 @@
 import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
-import com.github.jk1.license.filter.DependencyFilter
-import com.github.jk1.license.filter.LicenseBundleNormalizer
-import com.github.jk1.license.render.InventoryHtmlReportRenderer
-import com.github.jk1.license.render.ReportRenderer
 
 plugins {
-    id("com.google.dagger.hilt.android") version "2.45" apply false
-    id("de.mannodermaus.android-junit5") version "1.8.2.1" apply false
-    id("com.autonomousapps.dependency-analysis") version "1.19.0"
-    id("com.github.ben-manes.versions") version "0.46.0"
-    id("com.github.jk1.dependency-license-report") version "2.1"
-    kotlin("plugin.serialization") version "1.8.20-Beta" apply false
-    id("org.barfuin.gradle.taskinfo") version "2.1.0"
-}
-
-licenseReport {
-    renderers = arrayOf<ReportRenderer>(
-        InventoryHtmlReportRenderer("report.html", "Backend")
-    )
-    filters = arrayOf<DependencyFilter>(LicenseBundleNormalizer())
+    alias(libs.plugins.com.google.dagger.hilt.android) apply false
+    alias(libs.plugins.com.autonomousapps.dependency.analysis)
+    alias(libs.plugins.com.github.ben.manes.versions)
+    alias(libs.plugins.org.barfuin.gradle.taskinfo)
 }
 
 tasks.named<DependencyUpdatesTask>("dependencyUpdates").configure {
@@ -44,6 +30,7 @@ tasks.register("generateVerificationMetadata") {
     dependsOn(subprojects.mapNotNull { it.tasks.findByName("packageDebugAndroidTest") })
     dependsOn(subprojects.mapNotNull { it.tasks.findByName("packageReleaseAndroidTest") })
     dependsOn("buildHealth")
+    finalizedBy(":app:licenseReleaseReport")
 }
 
 dependencyAnalysis {

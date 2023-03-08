@@ -15,17 +15,17 @@ dependencies {
     implementation(project(":modules:compose-utils"))
     implementation(project(":modules:entry"))
 
-    api("androidx.navigation:navigation-compose:2.6.0-alpha06")
+    api(libs.navigation.compose)
 
-    implementation("com.google.dagger:hilt-android:2.45")
-    kapt("com.google.dagger:hilt-compiler:2.45")
-    kapt("androidx.hilt:hilt-compiler:1.0.0")
+    implementation(libs.hilt.android)
+    kapt(kaptProcessors.dagger.hilt.compiler)
+    kapt(kaptProcessors.androidx.hilt.compiler)
 
-    implementation("androidx.compose.ui:ui:1.4.0-beta02")
-    implementation("androidx.compose.ui:ui-tooling-preview:1.4.0-beta02")
-    implementation("androidx.compose.material3:material3:1.1.0-alpha07")
+    implementation(libs.compose.ui)
+    implementation(libs.compose.ui.tooling.preview)
+    implementation(libs.material3)
 
-    implementation("com.google.accompanist:accompanist-pager:0.29.1-alpha")
+    implementation(libs.accompanist.pager)
     // TODO: Re-add official pager-indicator library once it migrates to material3
     // implementation("com.google.accompanist:accompanist-pager-indicators:0.24.13-rc")
 }

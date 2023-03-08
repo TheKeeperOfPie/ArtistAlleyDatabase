@@ -2,7 +2,7 @@
 
 plugins {
     id("compose-library")
-    id("de.mannodermaus.android-junit5")
+    alias(libs.plugins.de.mannodermaus.android.junit5)
 }
 
 android {
@@ -12,33 +12,34 @@ android {
 dependencies {
     api(project(":modules:android-utils"))
     api(project(":modules:compose-utils"))
-    api("io.github.hoc081098:FlowExt:0.5.0")
-    implementation("androidx.activity:activity-compose:1.8.0-alpha01")
-    implementation("androidx.core:core-ktx:1.9.0")
-    api("androidx.compose.ui:ui:1.4.0-beta02")
-    implementation("androidx.compose.ui:ui-tooling-preview:1.4.0-beta02")
-    implementation("androidx.compose.material:material-icons-core:1.4.0-beta02")
-    implementation("androidx.compose.material:material-icons-extended:1.4.0-beta02")
-    implementation("androidx.compose.material3:material3:1.1.0-alpha07")
 
-    implementation("androidx.navigation:navigation-compose:2.6.0-alpha06")
+    api(libs.flowExt)
+    implementation(libs.activity.compose)
+    implementation(libs.core.ktx)
+    api(libs.compose.ui)
+    implementation(libs.compose.ui.tooling.preview)
+    implementation(libs.material.icons.core)
+    implementation(libs.material.icons.extended)
+    implementation(libs.material3)
 
-    implementation("androidx.paging:paging-compose:1.0.0-alpha18")
+    implementation(libs.navigation.compose)
 
-    implementation("io.coil-kt:coil-compose:2.2.1")
+    implementation(libs.paging.compose)
 
-//    implementation("com.mxalbert.sharedelements:shared-elements:0.1.0-SNAPSHOT")
+    implementation(libs.coil.compose)
+
+//    implementation(libs.shared-elements)
     implementation(group = "", name = "shared-elements-0.1.0-20221204.093513-11", ext = "aar")
 
-    testImplementation("junit:junit:4.13.2")
+    testImplementation(libs.junit)
 
     androidTestImplementation(project(":modules:test-utils"))
-    androidTestImplementation("androidx.test.ext:junit:1.1.5")
-    androidTestImplementation("androidx.test:runner:1.5.3-alpha01")
-    androidTestImplementation("org.junit.jupiter:junit-jupiter-api:5.9.2")
-    androidTestImplementation("de.mannodermaus.junit5:android-test-core:1.3.0")
-    androidTestRuntimeOnly("de.mannodermaus.junit5:android-test-runner:1.3.0")
-    androidTestImplementation("com.google.truth:truth:1.1.3")
     androidTestImplementation(kotlin("test-junit"))
-    androidTestImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4")
+    androidTestImplementation(libs.androidx.junit.test)
+    androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(libs.junit.jupiter.api)
+    androidTestImplementation(libs.junit5.android.test.core)
+    androidTestRuntimeOnly(libs.junit5.android.test.runner)
+    androidTestImplementation(libs.truth)
+    androidTestImplementation(libs.kotlinx.coroutines.test)
 }
