@@ -36,4 +36,6 @@ class CharacterRepository(
         character = character,
         appJson = appJson,
     )
+
+    fun search(query: String) = characterEntryDao.getEntries(query)
 }

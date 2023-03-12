@@ -2,8 +2,10 @@ package com.thekeeperofpie.artistalleydatabase.anilist.character
 
 import android.util.Log
 import androidx.annotation.Discouraged
+import androidx.room.ColumnInfo
 import androidx.room.Embedded
 import androidx.room.Entity
+import androidx.room.Fts4
 import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import com.anilist.fragment.AniListCharacter
@@ -105,3 +107,19 @@ data class CharacterEntry(
         val image: Image?,
     )
 }
+
+@Entity(tableName = "character_entries_fts")
+@Fts4(contentEntity = CharacterEntry::class)
+data class CharacterEntryFts(
+    @PrimaryKey(autoGenerate = true)
+    @ColumnInfo(name = "rowid")
+    val rowId: Int? = null,
+    val id: String,
+    @Embedded(prefix = "name_")
+    val name: CharacterEntry.Name?,
+    @Embedded(prefix = "image_")
+    val image: CharacterEntry.Image?,
+    val mediaIds: List<String>?,
+    val mediaTitle: String?,
+    val voiceActors: Map<String, String>?,
+)

@@ -7,6 +7,7 @@ import androidx.room.TypeConverters
 import com.thekeeperofpie.artistalleydatabase.android_utils.Converters
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListDatabase
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterEntry
+import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterEntryFts
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaEntry
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntry
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryDatabase
@@ -28,15 +29,17 @@ import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.VgmdbArtist
         CdEntryFts::class,
         MediaEntry::class,
         CharacterEntry::class,
+        CharacterEntryFts::class,
         AlbumEntry::class,
         VgmdbArtist::class,
         MusicalArtist::class,
     ],
     exportSchema = true,
-    version = 3,
+    version = 4,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3),
+        AutoMigration(from = 3, to = 4),
     ]
 )
 @TypeConverters(

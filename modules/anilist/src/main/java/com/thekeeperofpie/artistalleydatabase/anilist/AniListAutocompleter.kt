@@ -92,30 +92,29 @@ class AniListAutocompleter @Inject constructor(
         query: String,
         queryLocal: suspend (query: String) -> List<String>
     ): Flow<Pair<List<Entry>, List<Entry>>> {
-        val local = combine(queryCharactersLocal(query, queryLocal)) { it.toList() }
+        val entryCharactersLocal =
+            combine(queryEntryCharactersLocal(query, queryLocal)) { it.toList() }
+        val local = queryCharactersLocal(query)
         val network = if (query.isBlank()) flowOf(emptyList()) else queryCharactersNetwork(query)
-        return combine(local, network) { localValue, networkValue ->
-            val localValueNotNull = localValue.filterNotNull()
-            val (first, second) = localValueNotNull.map { localEntry ->
-                networkValue.firstOrNull { networkEntry -> localEntry.id == networkEntry.id }
-                    ?: localEntry
-            }
-                .split { it.text.contains(query, ignoreCase = true) }
-
-            val filteredNetwork = networkValue.toMutableList().apply {
-                removeAll { networkEntry ->
-                    localValueNotNull.any { localEntry -> localEntry.id == networkEntry.id }
-                }
-            }
-
-            first to filteredNetwork + second
+        return combine(
+            entryCharactersLocal,
+            local,
+            network
+        ) { entryResult, localResult, networkResult ->
+            // Sorts values by entryResult, localResult, networkResult,
+            // while overwriting with more specific objects in the latter lists
+            val tempMap = LinkedHashMap<String, Entry>()
+            entryResult.filterNotNull().forEach { tempMap[it.id] = it }
+            localResult.forEach { tempMap[it.id] = it }
+            networkResult.forEach { tempMap[it.id] = it }
+            tempMap.values.split { it.text.contains(query, ignoreCase = true) }
         }
     }
 
-    private suspend fun queryCharactersLocal(
+    private suspend fun queryEntryCharactersLocal(
         query: String,
-        queryLocal: suspend (query: String) -> List<String>
-    ) = queryLocal(query).map {
+        queryEntryLocal: suspend (query: String) -> List<String>
+    ) = queryEntryLocal(query).map {
         val either = aniListJson.parseCharacterColumn(it)
         if (either is Either.Right) {
             characterRepository.getEntry(either.value.id)
@@ -127,6 +126,15 @@ class AniListAutocompleter @Inject constructor(
             flowOf(Entry.Custom(it))
         }
     }.ifEmpty { listOf(flowOf(null)) }
+
+    private fun queryCharactersLocal(query: String) = if (query.isBlank()) {
+        flowOf(emptyList())
+    } else {
+        characterRepository.search(query)
+            .map {
+                it.map(aniListDataConverter::characterEntry)
+            }
+    }
 
     private fun queryCharactersNetwork(
         query: String
@@ -152,8 +160,8 @@ class AniListAutocompleter @Inject constructor(
     fun characterPredictions(
         characterLockState: StateFlow<EntrySection.LockState?>,
         seriesContents: StateFlow<List<Entry>>,
-        characterValue: StateFlow<String>,
-        queryCharactersLocal: suspend (query: String) -> List<String>,
+        query: StateFlow<String>,
+        queryEntryCharactersLocal: suspend (query: String) -> List<String>,
     ): Flow<List<Entry>> {
         @Suppress("OPT_IN_USAGE")
         return characterLockState
@@ -163,7 +171,7 @@ class AniListAutocompleter @Inject constructor(
                     flowOf(emptyList())
                 } else {
                     combine(
-                        characterValue,
+                        query,
                         seriesContents.map { it.filterIsInstance<Entry.Prefilled<*>>() }
                             .map { it.mapNotNull(AniListUtils::mediaId) }
                             .distinctUntilChanged()
@@ -187,10 +195,7 @@ class AniListAutocompleter @Inject constructor(
                                 }
                             }
                             .startWith(item = emptyList()),
-                        characterValue
-                            .flatMapLatest { query ->
-                                queryCharacters(query, queryCharactersLocal)
-                            }
+                        query.flatMapLatest { queryCharacters(it, queryEntryCharactersLocal) }
                             .startWith(item = emptyList<Entry>() to emptyList())
                     ) { query, series, (charactersFirst, charactersSecond) ->
                         val (seriesFirst, seriesSecond) = series.toMutableList().apply {
