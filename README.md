@@ -17,37 +17,6 @@ No downloads are supplied, and the app must be built from source.
 There is no guarantee that imports and exports will work across versions until the format is
 stabilized, nor that the data is safe from corruption or bugs. Use and update at your own risk.
 
-## Build
-
-1. Clone project with `git clone https://github.com/TheKeeperOfPie/ArtistAlleyDatabase.git`
-2. Fetch the AniList GraphQL schema via  
-  `./gradlew downloadAniListApolloSchemaFromIntrospection`
-3. Get a copy of any SNAPSHOT dependencies and place it into `libs`, currently:
-   ```https://s01.oss.sonatype.org/content/repositories/snapshots/com/mxalbert/sharedelements/shared-elements/0.1.0-SNAPSHOT/shared-elements-0.1.0-20221204.093513-11.aar```
-4. Install like any other Android application via `./gradlew :app:installDebug`
-
-## Dependencies
-
-### Useful commands
-
-- Check for updates:  
-     `./gradlew dependencyUpdates`
-- Verify declarations (included in git commit hook):  
-     `./gradlew buildHealth`
-
-### Regenerate verification-metadata.xml
-
-This must be done each time a dependency is added/changed. Disabling dependency verification can be
-done by deleting `./gradle/verification-metadata.xml`.
-
-`./gradlew --no-configuration-cache --write-verification-metadata pgp,sha256 generateVerificationMetadata`
-
-### :modules:dependencies
-
-This module serves as a way to generate verification metadata for artifacts which are used by
-Android Studio but aren't used in the app build. For things like instrumentation testing that
-require additional dependencies.
-
 ## Features
 
 - Image associated with entry, which is copied into the application's private data dir
@@ -68,6 +37,46 @@ require additional dependencies.
 
 TODO: Need to find an artist willing to license their work to be displayed in this repository.
 (If you draw anime art and are willing, please contact my GitHub email.)
+
+## Build
+
+1. Clone project with `git clone https://github.com/TheKeeperOfPie/ArtistAlleyDatabase.git`
+2. Fetch the AniList GraphQL schema via  
+   `./gradlew downloadAniListApolloSchemaFromIntrospection`
+3. Get a copy of any SNAPSHOT dependencies and place it into `libs`, currently:
+   ```https://s01.oss.sonatype.org/content/repositories/snapshots/com/mxalbert/sharedelements/shared-elements/0.1.0-SNAPSHOT/shared-elements-0.1.0-20221204.093513-11.aar```
+4. Install like any other Android application via `./gradlew :app:installDebug`
+
+### Gradle
+
+This project attempts to store the Gradle home and build caches directly inside the project root
+under `/gradle-home` and `/build-cache`. This allows easy configurable of anti-virus scanning
+exclusions and caching efforts, as all data is ideally read from just the project folder.
+
+A minor benefit of this is that by deleting the two folders (along with `.gradle`), a true clean
+build can be tested, where Gradle cannot reference anything it used previously.
+
+## Dependencies
+
+### Useful commands
+
+- Check for updates:  
+  `./gradlew dependencyUpdates`
+- Verify declarations (included in git commit hook):  
+  `./gradlew buildHealth`
+
+### Regenerate verification-metadata.xml
+
+This must be done each time a dependency is added/changed. Disabling dependency verification can be
+done by deleting `./gradle/verification-metadata.xml`.
+
+`./gradlew --no-configuration-cache --write-verification-metadata pgp,sha256 generateVerificationMetadata`
+
+### :modules:dependencies
+
+This module serves as a way to generate verification metadata for artifacts which are used by
+Android Studio but aren't used in the app build. For things like instrumentation testing that
+require additional dependencies.
 
 ## License
 

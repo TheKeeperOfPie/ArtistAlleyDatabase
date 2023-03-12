@@ -1,5 +1,12 @@
 @file:Suppress("UnstableApiUsage")
 
+buildCache {
+    local {
+        directory = File(rootDir, "build-cache")
+        removeUnusedEntriesAfterDays = 30
+    }
+}
+
 pluginManagement {
     repositories {
         gradlePluginPortal()
