@@ -6,6 +6,7 @@ import androidx.core.net.toUri
 import androidx.lifecycle.viewModelScope
 import com.hoc081098.flowext.startWith
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
+import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.emitNotNull
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.mapLatestNotNull
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.suspend1
@@ -226,13 +227,19 @@ class CdEntryDetailsViewModel @Inject constructor(
                     .flatMapLatest {
                         combine(
                             entryFunction(it)
-                                .mapNotNull { vgmdbJson.parseArtistColumn(it).rightOrNull() }
                                 .map {
-                                    val placeholder = vgmdbDataConverter.artistPlaceholder(it)
-                                    artistRepository.getEntry(it.id)
-                                        .map { it?.let(vgmdbDataConverter::artistEntry) }
-                                        .catch {}
-                                        .startWith(placeholder)
+                                    when (val result = vgmdbJson.parseArtistColumn(it)) {
+                                        is Either.Right -> {
+                                            val value = result.value
+                                            val placeholder =
+                                                vgmdbDataConverter.artistPlaceholder(value)
+                                            artistRepository.getEntry(value.id)
+                                                .map { it?.let(vgmdbDataConverter::artistEntry) }
+                                                .catch {}
+                                                .startWith(placeholder)
+                                        }
+                                        else -> flowOf(Entry.Custom(it))
+                                    }
                                 }
                         ) { it.toList().filterNotNull() }
                     }

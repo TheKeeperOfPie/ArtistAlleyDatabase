@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.settings
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
@@ -10,6 +11,7 @@ import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntry
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDao
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtist
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistDao
+import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbApi
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbJson
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumEntryDao
 import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.VgmdbArtistDao
@@ -29,7 +31,12 @@ class SettingsViewModel @Inject constructor(
     private val vgmdbJson: VgmdbJson,
     private val workManager: WorkManager,
     private val settingsProvider: SettingsProvider,
+    private val vgmdbApi: VgmdbApi,
 ) : ViewModel() {
+
+    companion object {
+        private const val TAG = "SettingsViewModel"
+    }
 
     private var onClickDatabaseFetch: (WorkManager) -> Unit = {}
 
@@ -116,9 +123,9 @@ class SettingsViewModel @Inject constructor(
                                                 image = artistEntry.pictureThumb,
                                             )
                                         }
+                                    }
                                 }
                             }
-                        }
 
                         cdEntry.performers.forEach {
                             musicalArtistDao.insert(musicalArtists)
@@ -131,5 +138,54 @@ class SettingsViewModel @Inject constructor(
 
     fun onClickCropClear() {
         settingsProvider.settingsData.cropDocumentUri = null
+    }
+
+    fun checkMismatchedCdEntryData() {
+        viewModelScope.launch(Dispatchers.IO) {
+            var offset = 0
+            var entries = cdEntryDao.getEntries(limit = 50, offset = offset)
+            while (entries.isNotEmpty()) {
+                entries.filter {
+                    it.catalogId?.isNotBlank() == true
+                }.forEach {
+                    val (catalogId, albumId) = when (val result =
+                        vgmdbJson.parseCatalogIdColumn(it.catalogId)) {
+                        // Ignore non-VGMdb entries
+                        is Either.Left -> return@forEach
+                        is Either.Right -> result.value.catalogId to result.value.id
+                    }
+                    if (catalogId == null) {
+                        Log.d(TAG, "Empty catalogId, entryId = ${it.id}")
+                        return@forEach
+                    }
+
+                    val album = vgmdbApi.getAlbum(albumId) ?: run {
+                        Log.d(TAG, "Failed to load album for $catalogId")
+                        return@forEach
+                    }
+
+                    if (it.performers.size != album.performers.size) {
+                        Log.d(
+                            TAG,
+                            "Mismatched performer for $catalogId," +
+                                    " expected = ${album.performers.size}," +
+                                    " actual = ${it.performers.size}"
+                        )
+                    }
+
+                    if (it.composers.size != album.composers.size) {
+                        Log.d(
+                            TAG,
+                            "Mismatched composers for $catalogId," +
+                                    " expected = ${album.composers.size}," +
+                                    " actual = ${it.composers.size}"
+                        )
+                    }
+                }
+
+                offset += entries.size
+                entries = cdEntryDao.getEntries(limit = 50, offset = offset)
+            }
+        }
     }
 }

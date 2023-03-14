@@ -1282,6 +1282,19 @@ class ParserTest {
         )
     }
 
+    // TODO: Specific hardcoded test for name containing a "/", which is used
+    //  internally for split logic, but can also be part of an artist's name
+
+    @Test
+    fun parseAlbum6() {
+        assertThat(
+            runBlocking { parser.parseAlbum("99954") }
+                ?.composers
+                ?.filter { it.startsWith("{") }
+                ?.size
+        ).isEqualTo(31)
+    }
+
     @Test
     fun parseArtist() {
         val actual = runBlocking { parser.parseArtist("29051") }
@@ -1297,7 +1310,6 @@ class ParserTest {
         )
     }
 
-    @Suppress("OPT_IN_USAGE")
     private fun List<Any>.encodeListToString() = map {
         when (it) {
             is String -> it

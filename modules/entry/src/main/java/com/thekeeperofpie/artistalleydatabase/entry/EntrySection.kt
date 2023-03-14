@@ -142,7 +142,7 @@ sealed class EntrySection(lockState: LockState? = null) {
             addOrReplaceContents(listOf(entry))
         }
 
-        fun addOrReplaceContents(entries: Collection<Entry.Prefilled<*>>) {
+        fun addOrReplaceContents(entries: Collection<Entry>) {
             if (lockState == LockState.LOCKED) return
             val wasEmpty = contents.isEmpty()
             entries.forEach {
@@ -227,8 +227,8 @@ sealed class EntrySection(lockState: LockState? = null) {
                 }
         }
 
-        private fun indexOf(entry: Entry.Prefilled<*>) =
-            contents.indexOfFirst { it is Entry.Prefilled<*> && it.id == entry.id }
+        private fun indexOf(entry: Entry) =
+            contents.indexOfFirst { it.javaClass == entry.javaClass && it.id == entry.id }
 
         sealed class Entry(
             val id: String,

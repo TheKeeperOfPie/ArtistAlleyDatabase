@@ -346,7 +346,9 @@ class VgmdbParser(application: Application, private val json: Json) {
         val artists = mutableListOf<Either<String, ArtistColumnEntry>>()
         allNamesWithHoles.map { name ->
             val split = name.split("/").map(String::trim)
-            val artist = artistsWithIds.find { split.any(it.names::containsValue) }
+            val artist = artistsWithIds.find {
+                split.any(it.names::containsValue) || it.names.containsValue(name)
+            }
             artists += if (artist == null) {
                 Either.Left(name)
             } else {

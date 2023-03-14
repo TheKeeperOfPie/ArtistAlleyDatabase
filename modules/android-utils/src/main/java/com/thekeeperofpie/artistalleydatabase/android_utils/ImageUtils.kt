@@ -5,6 +5,7 @@ import android.content.ContentResolver
 import android.content.Context
 import android.graphics.BitmapFactory
 import android.net.Uri
+import android.util.Log
 import androidx.annotation.WorkerThread
 import androidx.core.net.toUri
 import java.io.File
@@ -12,15 +13,21 @@ import java.net.URL
 
 object ImageUtils {
 
+    private const val TAG = "ImageUtils"
+
     fun getImageWidthHeight(context: Context, uri: Uri): Pair<Int?, Int?> {
         val options = BitmapFactory.Options().apply {
             this.inJustDecodeBounds = true
         }
         try {
-            context.contentResolver.openInputStream(uri).use {
+            when (uri.scheme) {
+                "http", "https" -> URL(uri.toString()).openStream()
+                else -> context.contentResolver.openInputStream(uri)
+            }.use {
                 BitmapFactory.decodeStream(it, null, options)
             }
-        } catch (ignored: Exception) {
+        } catch (e: Exception) {
+            Log.d(TAG, "Error loading image size for $uri", e)
             return null to null
         }
 

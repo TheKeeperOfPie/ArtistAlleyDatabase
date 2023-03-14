@@ -30,7 +30,6 @@ class AniListApi(application: Application) {
 
     private val apolloClient = ApolloClient.Builder()
         .serverUrl(SERVER_URL)
-        .canBeBatched(true)
         .httpEngine(
             DefaultHttpEngine(
                 OkHttpClient.Builder().cache(
