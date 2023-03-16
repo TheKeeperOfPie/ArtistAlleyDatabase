@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase
 
-import android.app.Application
 import android.os.StrictMode
 import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationManagerCompat
@@ -13,7 +12,7 @@ import kotlinx.coroutines.MainScope
 import javax.inject.Inject
 
 @HiltAndroidApp
-class CustomApplication : Application(), Configuration.Provider, ScopedApplication {
+class CustomApplication : ScopedApplication(), Configuration.Provider {
 
     companion object {
         const val TAG = "ArtistAlleyDatabase"

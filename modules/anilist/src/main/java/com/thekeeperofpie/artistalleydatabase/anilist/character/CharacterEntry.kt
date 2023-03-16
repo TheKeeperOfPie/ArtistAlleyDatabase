@@ -39,7 +39,7 @@ data class CharacterEntry(
         appJson: AppJson
     ) : this(
         id = character.id.toString(),
-        name = character.name?.aniListCharacterName?.run {
+        name = character.name?.run {
             Name(
                 first = first?.trim(),
                 middle = middle?.trim(),
@@ -53,8 +53,8 @@ data class CharacterEntry(
             large = character.image?.large,
             medium = character.image?.medium,
         ),
-        mediaIds = character.media?.nodes?.mapNotNull { it?.aniListMedia?.id?.toString() },
-        mediaTitle = character.media?.nodes?.firstNotNullOf { it?.aniListMedia?.title?.romaji },
+        mediaIds = character.media?.nodes?.mapNotNull { it?.id?.toString() },
+        mediaTitle = character.media?.nodes?.firstNotNullOf { it?.title?.romaji },
         voiceActors = CharacterUtils.parseVoiceActors(character)
             .mapValues { (_, value) -> appJson.json.encodeToString<List<VoiceActor>>(value) },
     )

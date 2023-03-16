@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
@@ -70,8 +71,8 @@ class AniListAutocompleter @Inject constructor(
 
     fun querySeriesNetwork(query: String): Flow<List<Entry>> {
         val search = aniListCall({ aniListApi.searchSeries(query) }) {
-            it.Page.media
-                .mapNotNull { it?.aniListMedia }
+            it.page.media
+                .filterNotNull()
                 .map(aniListDataConverter::seriesEntry)
         }
 
@@ -140,8 +141,9 @@ class AniListAutocompleter @Inject constructor(
         query: String
     ): Flow<List<Entry>> {
         val search = aniListCall({ aniListApi.searchCharacters(query) }) {
-            it.Page.characters.filterNotNull()
-                .map { aniListDataConverter.characterEntry(it.aniListCharacter) }
+            it.page.characters
+                .filterNotNull()
+                .map(aniListDataConverter::characterEntry)
         }
 
         // AniList IDs are integers
@@ -172,27 +174,38 @@ class AniListAutocompleter @Inject constructor(
                 } else {
                     combine(
                         query,
-                        seriesContents.map { it.filterIsInstance<Entry.Prefilled<*>>() }
-                            .map { it.mapNotNull(AniListUtils::mediaId) }
+                        // Map to isNotBlank and filter to only send the request when something
+                        // has been typed. Essentially this is a one-way barrier.
+                        query.map { it.isNotBlank() }
+                            .filter { it }
                             .distinctUntilChanged()
                             .flatMapLatest {
-                                // For entries with multiple series, ignore predictions by series
-                                // since it can flood the predictions with unuseful results
-                                if (it.size > 1) emptyFlow() else {
-                                    it.map {
-                                        aniListApi.charactersByMedia(it)
-                                            .map { it.map { aniListDataConverter.characterEntry((it)) } }
-                                            .catch {}
-                                            .startWith(item = emptyList())
-                                    }
-                                        .let {
-                                            combine(it) {
-                                                it.fold(mutableListOf<Entry>()) { list, value ->
-                                                    list.apply { addAll(value) }
+                                seriesContents.map { it.filterIsInstance<Entry.Prefilled<*>>() }
+                                    .map { it.mapNotNull(AniListUtils::mediaId) }
+                                    .distinctUntilChanged()
+                                    .flatMapLatest {
+                                        // For entries with multiple series, ignore predictions by series
+                                        // since it can flood the predictions with unuseful results
+                                        if (it.size > 1) emptyFlow() else {
+                                            val mediaId = it.single()
+                                            aniListApi.charactersByMedia(mediaId)
+                                                .map {
+                                                    it.map {
+                                                        aniListDataConverter.characterEntry(
+                                                            it
+                                                        )
+                                                    }
                                                 }
-                                            }
+                                                .catch {
+                                                    Log.d(
+                                                        TAG,
+                                                        "Error loading characters by media ID $mediaId",
+                                                        it
+                                                    )
+                                                }
+                                                .startWith(item = emptyList())
                                         }
-                                }
+                                    }
                             }
                             .startWith(item = emptyList()),
                         query.flatMapLatest { queryCharacters(it, queryEntryCharactersLocal) }

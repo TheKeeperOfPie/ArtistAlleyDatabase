@@ -1,11 +1,16 @@
 package com.thekeeperofpie.artistalleydatabase.android_utils.kotlin
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
+import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.flow.transformLatest
+import kotlinx.coroutines.launch
+import kotlin.time.Duration
 
 fun <T> Iterable<T>.split(predicate: (T) -> Boolean): Pair<List<T>, List<T>> {
     val filtered = mutableListOf<T>()
@@ -53,3 +58,28 @@ inline fun <Input, Output> suspend1(
 ): suspend (Input) -> Output = block
 
 infix fun <A, B, C> Pair<A, B>.to(third: C): Triple<A, B, C> = Triple(first, second, third)
+
+fun <T> Flow<T>.chunked(maxSize: Int, maxDuration: Duration) = channelFlow {
+    val chunk = mutableListOf<T>()
+    var timeout: Job? = null
+
+    suspend fun send() = chunk.takeIf(MutableList<T>::isNotEmpty)
+        ?.toList()
+        ?.also { chunk.clear() }
+        ?.let { send(it) }
+
+    collect {
+        chunk.add(it)
+        if (chunk.size >= maxSize) {
+            send()
+        } else if (timeout == null) {
+            timeout = launch {
+                delay(maxDuration)
+                send()
+                timeout = null
+            }
+        }
+    }
+
+    send()
+}

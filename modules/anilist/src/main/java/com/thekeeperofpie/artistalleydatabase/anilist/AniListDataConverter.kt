@@ -97,18 +97,18 @@ class AniListDataConverter @Inject constructor(
     }
 
     fun characterEntry(character: AniListCharacter): Entry.Prefilled<AniListCharacter> {
-        val firstMedia = character.media?.nodes?.firstOrNull()?.aniListMedia
+        val firstMedia = character.media?.nodes?.firstOrNull()
         val voiceActor = CharacterUtils.findVoiceActor(character, firstMedia)
         return characterEntry(
             value = character,
             id = character.id.toString(),
             image = character.image?.medium,
-            first = character.name?.aniListCharacterName?.first,
-            middle = character.name?.aniListCharacterName?.middle,
-            last = character.name?.aniListCharacterName?.last,
-            full = character.name?.aniListCharacterName?.full,
-            native = character.name?.aniListCharacterName?.native,
-            alternative = character.name?.aniListCharacterName?.alternative?.filterNotNull(),
+            first = character.name?.first,
+            middle = character.name?.middle,
+            last = character.name?.last,
+            full = character.name?.full,
+            native = character.name?.native,
+            alternative = character.name?.alternative?.filterNotNull(),
             mediaTitle = firstMedia?.title?.romaji,
             staffId = voiceActor?.id,
             staffName = voiceActor?.name?.full,

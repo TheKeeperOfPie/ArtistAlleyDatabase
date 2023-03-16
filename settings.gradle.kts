@@ -76,6 +76,7 @@ dependencyResolutionManagement {
             library("com.google.truth:truth:1.1.3")
             library("com.squareup.moshi:moshi-kotlin:1.14.0")
             library("com.squareup.okhttp3:okhttp:5.0.0-alpha.11")
+            library("com.squareup.okhttp3:logging-interceptor:4.10.0", prefix = "okhttp3")
             library("io.coil-kt:coil-compose:2.2.1")
             library("io.github.hoc081098:FlowExt:0.5.0")
             library("it.skrape:skrapeit:1.3.0-alpha.1")

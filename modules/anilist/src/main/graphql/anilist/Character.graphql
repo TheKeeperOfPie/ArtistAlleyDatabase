@@ -56,6 +56,70 @@ query CharacterById($id: Int, $mediaPage: Int, $mediaPerPage: Int) {
     }
 }
 
+# There are different variants because a Character object query can't be optional
+query CharacterByIds2(
+    $mediaPage: Int,
+    $mediaPerPage: Int,
+    $id0: Int,
+    $id1: Int,
+) {
+
+    character0:Character(id: $id0) {
+        ...AniListCharacter
+    }
+
+    character1:Character(id: $id1) {
+        ...AniListCharacter
+    }
+}
+
+query CharacterByIds3(
+    $mediaPage: Int,
+    $mediaPerPage: Int,
+    $id0: Int,
+    $id1: Int,
+    $id2: Int,
+) {
+
+    character0:Character(id: $id0) {
+        ...AniListCharacter
+    }
+
+    character1:Character(id: $id1) {
+        ...AniListCharacter
+    }
+
+    character2:Character(id: $id2) {
+        ...AniListCharacter
+    }
+}
+
+query CharacterByIds4(
+    $mediaPage: Int,
+    $mediaPerPage: Int,
+    $id0: Int,
+    $id1: Int,
+    $id2: Int,
+    $id3: Int,
+) {
+
+    character0:Character(id: $id0) {
+        ...AniListCharacter
+    }
+
+    character1:Character(id: $id1) {
+        ...AniListCharacter
+    }
+
+    character2:Character(id: $id2) {
+        ...AniListCharacter
+    }
+
+    character3:Character(id: $id3) {
+        ...AniListCharacter
+    }
+}
+
 query CharacterByIds5(
     $mediaPage: Int,
     $mediaPerPage: Int,

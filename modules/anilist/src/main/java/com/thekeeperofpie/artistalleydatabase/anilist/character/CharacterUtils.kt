@@ -62,13 +62,12 @@ object CharacterUtils {
                     id = it.id.toString(),
                     language = language,
                     name = CharacterEntry.Name(
-                        first = it.name?.aniListStaffName?.first,
-                        middle = it.name?.aniListStaffName?.middle,
-                        last = it.name?.aniListStaffName?.last,
-                        full = it.name?.aniListStaffName?.full,
-                        native = it.name?.aniListStaffName?.native,
-                        alternative = it.name?.aniListStaffName?.alternative
-                            ?.filterNotNull(),
+                        first = it.name?.first,
+                        middle = it.name?.middle,
+                        last = it.name?.last,
+                        full = it.name?.full,
+                        native = it.name?.native,
+                        alternative = it.name?.alternative?.filterNotNull(),
                     ),
                     image = CharacterEntry.Image(
                         large = it.image?.large,

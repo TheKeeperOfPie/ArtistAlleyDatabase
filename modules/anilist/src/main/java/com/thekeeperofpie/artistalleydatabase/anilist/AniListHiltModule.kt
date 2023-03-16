@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anilist
 
-import android.app.Application
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterEntryDao
@@ -19,7 +18,7 @@ class AniListHiltModule {
 
     @Singleton
     @Provides
-    fun provideAniListApi(application: Application) = AniListApi(application)
+    fun provideAniListApi(application: ScopedApplication) = AniListApi(application)
 
     @Singleton
     @Provides

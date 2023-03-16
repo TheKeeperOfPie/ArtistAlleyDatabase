@@ -31,6 +31,63 @@ query MediaById($id: Int) {
 }
 
 # There are different variants because a Media object query can't be optional
+query MediaByIds2(
+    $id0: Int,
+    $id1: Int,
+) {
+
+    media0:Media(id: $id0) {
+        ...AniListMedia
+    }
+
+    media1:Media(id: $id1) {
+        ...AniListMedia
+    }
+}
+
+query MediaByIds3(
+    $id0: Int,
+    $id1: Int,
+    $id2: Int,
+) {
+
+    media0:Media(id: $id0) {
+        ...AniListMedia
+    }
+
+    media1:Media(id: $id1) {
+        ...AniListMedia
+    }
+
+    media2:Media(id: $id2) {
+        ...AniListMedia
+    }
+}
+
+query MediaByIds4(
+    $id0: Int,
+    $id1: Int,
+    $id2: Int,
+    $id3: Int,
+) {
+
+    media0:Media(id: $id0) {
+        ...AniListMedia
+    }
+
+    media1:Media(id: $id1) {
+        ...AniListMedia
+    }
+
+    media2:Media(id: $id2) {
+        ...AniListMedia
+    }
+
+    media3:Media(id: $id3) {
+        ...AniListMedia
+    }
+}
+
 query MediaByIds5(
     $id0: Int,
     $id1: Int,
@@ -193,12 +250,11 @@ query MediaByIds15(
     }
 }
 
-query MediaWithCharacters($mediaId: Int, $page: Int, $perPage: Int, $mediaPage: Int,
-    $mediaPerPage: Int) {
+query MediaWithCharacters($mediaId: Int, $page: Int, $perPage: Int) {
     Media(id: $mediaId) @nonnull {
         characters(page: $page, perPage: $perPage) @nonnull {
             nodes @nonnull {
-                ...AniListCharacter
+                id
             }
         }
     }
