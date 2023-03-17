@@ -186,8 +186,8 @@ class AniListAutocompleter @Inject constructor(
                                     .flatMapLatest {
                                         // For entries with multiple series, ignore predictions by series
                                         // since it can flood the predictions with unuseful results
-                                        if (it.size > 1) emptyFlow() else {
-                                            val mediaId = it.single()
+                                        val mediaId = it.singleOrNull()
+                                        if (mediaId == null) emptyFlow() else {
                                             aniListApi.charactersByMedia(mediaId)
                                                 .map {
                                                     it.map {

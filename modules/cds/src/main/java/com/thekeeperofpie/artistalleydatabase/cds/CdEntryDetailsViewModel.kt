@@ -42,6 +42,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterIsInstance
@@ -56,7 +57,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.Instant
 import java.util.Date
+import java.util.UUID
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.seconds
 
 @HiltViewModel
 class CdEntryDetailsViewModel @Inject constructor(
@@ -158,7 +161,8 @@ class CdEntryDetailsViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.Main) {
             @Suppress("OPT_IN_USAGE")
             catalogIdSection.valueUpdates()
-                .filter { it.length > 4 }
+                .debounce(2.seconds)
+                .filter { it.length > 5 }
                 .flatMapLatest {
                     flow { emit(vgmdbApi.searchAlbums(it)) }
                         .catch {}
@@ -367,7 +371,12 @@ class CdEntryDetailsViewModel @Inject constructor(
                 }
         }
 
-        val allEntryIds = (entryIds + saveImagesResult.keys).toSet()
+        val allEntryIds = (entryIds + saveImagesResult.keys).toMutableSet()
+        if (allEntryIds.isEmpty()) {
+            // If there are no images and no existing edits, this will be empty, add a new ID
+            allEntryIds += EntryId(scopedIdType, UUID.randomUUID().toString())
+        }
+
         val entryImages = entryImageController.images.groupBy { it.entryId }
         val entries = allEntryIds.map {
             val entryImage = entryImages[it]?.firstOrNull()

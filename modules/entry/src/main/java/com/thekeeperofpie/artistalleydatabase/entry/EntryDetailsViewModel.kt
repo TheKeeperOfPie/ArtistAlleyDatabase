@@ -17,7 +17,7 @@ import kotlinx.coroutines.withContext
 
 abstract class EntryDetailsViewModel<Entry, Model>(
     protected val application: Application,
-    scopedIdType: String,
+    protected val scopedIdType: String,
     @StringRes private val imageContentDescriptionRes: Int,
     entrySettings: EntrySettings,
 ) : ViewModel() {
