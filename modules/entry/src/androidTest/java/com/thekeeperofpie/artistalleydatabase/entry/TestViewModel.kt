@@ -2,24 +2,43 @@ package com.thekeeperofpie.artistalleydatabase.entry
 
 import android.net.Uri
 import com.thekeeperofpie.artistalleydatabase.test_utils.mockStrict
+import com.thekeeperofpie.artistalleydatabase.test_utils.whenever
+import java.io.File
+import java.util.UUID
 
 internal class TestViewModel(
     private val hasError: Boolean = false,
     private val cropUri: Uri? = null,
-) : EntryDetailsViewModel<TestEntry, TestModel>(mockStrict(), "test", -1, TestSettings(cropUri)) {
-
-    val output = mutableListOf<TestEntry>()
+    val entries: MutableMap<String, TestEntry> = mutableMapOf(),
+    private val testDirectory: File,
+) : EntryDetailsViewModel<TestEntry, TestModel>(
+    mockStrict {
+        whenever(filesDir) {
+            testDirectory.resolve(UUID.randomUUID().toString()).apply { mkdirs() }
+        }
+    },
+    "test",
+    -1,
+    TestSettings(cropUri)
+) {
 
     private var model: TestModel? = null
 
     override suspend fun buildAddModel() =
-        TestModel(cropUri?.toString())
+        TestModel(null, cropUri?.toString())
 
     override suspend fun saveSingleEntry(
         saveImagesResult: Map<EntryId, EntryImageController.SaveResult>,
         skipIgnoreableErrors: Boolean
     ) = if (hasError && !skipIgnoreableErrors) false else {
-        output += TestEntry(model!!.data, skipIgnoreableErrors)
+        if (entryIds.isEmpty()) {
+            val id = UUID.randomUUID().toString()
+            entries[id] = TestEntry(id, model!!.data, skipIgnoreableErrors)
+        } else {
+            entryIds.forEach {
+                entries[it.valueId] = TestEntry(it.valueId, model!!.data, skipIgnoreableErrors)
+            }
+        }
         true
     }
 
@@ -28,7 +47,7 @@ internal class TestViewModel(
     }
 
     override suspend fun buildSingleEditModel(entryId: EntryId) =
-        throw AssertionError("Should not be called")
+        TestModel(entryId.valueId, entries[entryId.valueId]?.data)
 
     override suspend fun buildMultiEditModel() = throw AssertionError("Should not be called")
 
@@ -37,6 +56,11 @@ internal class TestViewModel(
         skipIgnoreableErrors: Boolean
     ) = throw AssertionError("Should not be called")
 
-    override suspend fun deleteEntry(entryId: EntryId) =
-        throw AssertionError("Should not be called")
+    override suspend fun deleteEntry(entryId: EntryId) {
+        entries.remove(entryId.valueId)
+    }
+
+    fun editModel(data: String) {
+        model!!.data = data
+    }
 }

@@ -2,9 +2,12 @@ package com.thekeeperofpie.artistalleydatabase.android_utils
 
 import android.content.Context
 import android.provider.Settings
+import androidx.annotation.VisibleForTesting
 
 object AnimationUtils {
-    private var animatorScale = -1f
+
+    @VisibleForTesting
+    var animatorScale = -1f
 
     private fun getAnimatorScale(context: Context): Float {
         if (animatorScale < 0) {

@@ -43,7 +43,6 @@ dependencyResolutionManagement {
             plugin("com.github.ben-manes.versions").version("0.46.0")
             plugin("com.google.dagger.hilt.android").version("2.45")
             plugin("com.jaredsburrows.license").version("0.9.0")
-            plugin("de.mannodermaus.android-junit5").version("1.8.2.1")
             plugin("org.barfuin.gradle.taskinfo").version("2.1.0")
             plugin("org.jetbrains.kotlin.plugin.serialization").version("1.8.20-Beta")
 
@@ -74,6 +73,7 @@ dependencyResolutionManagement {
             library("com.google.accompanist:accompanist-pager:0.29.1-alpha")
             library("com.google.dagger:hilt-android:2.45")
             library("com.google.truth:truth:1.1.3")
+            library("com.linkedin.dexmaker:dexmaker-mockito-inline:2.28.3")
             library("com.squareup.moshi:moshi-kotlin:1.14.0")
             library("com.squareup.okhttp3:okhttp:5.0.0-alpha.11")
             library("com.squareup.okhttp3:logging-interceptor:4.10.0", prefix = "okhttp3")

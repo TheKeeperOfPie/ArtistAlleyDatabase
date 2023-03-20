@@ -2,7 +2,6 @@
 
 plugins {
     id("compose-library")
-    alias(libs.plugins.de.mannodermaus.android.junit5)
 }
 
 android {

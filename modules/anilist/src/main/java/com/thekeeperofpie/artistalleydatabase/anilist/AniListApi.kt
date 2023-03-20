@@ -68,7 +68,7 @@ class AniListApi(application: ScopedApplication) {
                 OkHttpClient.Builder()
                     .cache(
                         Cache(
-                            directory = File(application.cacheDir, "aniList"),
+                            directory = File(application.app.cacheDir, "aniList"),
                             maxSize = 500L * 1024L * 1024L // 500 MiB
                         )
                     )

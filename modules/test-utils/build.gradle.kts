@@ -17,4 +17,7 @@ dependencies {
     api(kotlin("reflect"))
     api(libs.kotlinx.coroutines.android)
     api(libs.kotlinx.coroutines.test)
+    api(libs.junit.jupiter.api)
+    api(libs.junit)
+    implementation(libs.junit5.android.test.runner)
 }

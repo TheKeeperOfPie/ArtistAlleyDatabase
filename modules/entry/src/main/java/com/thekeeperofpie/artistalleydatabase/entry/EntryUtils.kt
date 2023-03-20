@@ -34,6 +34,7 @@ object EntryUtils {
         get() = when (type) {
             "art_entry" -> "art_entry_images"
             "cd_entry" -> "cd_entry_images"
+            "test" -> "test_entry_images"
             else -> throw IllegalArgumentException("Unrecognized type $type")
         }
 

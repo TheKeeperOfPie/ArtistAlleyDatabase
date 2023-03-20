@@ -18,7 +18,7 @@ android {
         consumerProguardFiles("consumer-rules.pro")
 
         testInstrumentationRunnerArguments["runnerBuilder"] =
-            "de.mannodermaus.junit5.AndroidJUnit5Builder"
+            "com.thekeeperofpie.artistalleydatabase.test_utils.AndroidJUnitBuilder"
     }
 
     buildFeatures {

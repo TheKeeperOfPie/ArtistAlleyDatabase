@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase
 
+import android.app.Application
 import android.os.StrictMode
 import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationManagerCompat
@@ -12,13 +13,14 @@ import kotlinx.coroutines.MainScope
 import javax.inject.Inject
 
 @HiltAndroidApp
-class CustomApplication : ScopedApplication(), Configuration.Provider {
+class CustomApplication : Application(), Configuration.Provider, ScopedApplication {
 
     companion object {
         const val TAG = "ArtistAlleyDatabase"
     }
 
     override val scope = MainScope()
+    override val app = this
 
     @Inject
     lateinit var workerFactory: HiltWorkerFactory

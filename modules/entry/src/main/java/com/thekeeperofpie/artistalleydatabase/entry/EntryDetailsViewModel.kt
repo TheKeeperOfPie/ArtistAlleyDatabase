@@ -37,7 +37,7 @@ abstract class EntryDetailsViewModel<Entry, Model>(
     var saving by mutableStateOf(false)
         private set
 
-    private var deleting by mutableStateOf(false)
+    var deleting by mutableStateOf(false)
 
     val entryImageController = EntryImageController(
         scopeProvider = { viewModelScope },
@@ -79,16 +79,16 @@ abstract class EntryDetailsViewModel<Entry, Model>(
         entryImageController.initialize(entryIds)
     }
 
-    open fun onImageSizeResult(widthToHeightRatio: Float) {
+    protected open fun onImageSizeResult(widthToHeightRatio: Float) {
     }
 
-    abstract suspend fun buildAddModel(): Model?
+    protected abstract suspend fun buildAddModel(): Model?
 
-    abstract suspend fun buildSingleEditModel(entryId: EntryId): Model
+    protected abstract suspend fun buildSingleEditModel(entryId: EntryId): Model
 
-    abstract suspend fun buildMultiEditModel(): Model
+    protected abstract suspend fun buildMultiEditModel(): Model
 
-    abstract fun initializeForm(model: Model)
+    protected abstract fun initializeForm(model: Model)
 
     fun onConfirmDelete(navHostController: NavHostController) {
         if (deleting || saving) return
