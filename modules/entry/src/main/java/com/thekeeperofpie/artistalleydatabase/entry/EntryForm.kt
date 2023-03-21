@@ -908,7 +908,7 @@ fun MultiImageSelectBox(
         // due to maxHeight causing a recompose and running this effect
         heightAnimation.animateTo(
             if (expanded || loading()) 1f else 0f,
-            animationSpec = tween(SLIDE_DURATION_MS),
+            animationSpec = tween(EntryUtils.SLIDE_DURATION_MS),
         )
     }
 
@@ -993,8 +993,6 @@ private fun AddImagePagerPage(onAddClick: () -> Unit, modifier: Modifier = Modif
         )
     }
 }
-
-private const val SLIDE_DURATION_MS = 350
 
 @Composable
 fun ImageSelectBoxInner(

@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Menu
@@ -62,23 +63,39 @@ fun AppBar(
     text: String,
     scrollBehavior: TopAppBarScrollBehavior? = null,
     colors: TopAppBarColors = TopAppBarDefaults.topAppBarColors(),
-    onClickNav: (() -> Unit)? = null
+    onClickNav: (() -> Unit)? = null,
+    onClickBack: (() -> Unit)? = null,
 ) {
     TopAppBar(
         title = { Text(text = text, maxLines = 1) },
-        navigationIcon = { onClickNav?.let { NavMenuIconButton(it) } },
+        navigationIcon = {
+            onClickNav?.let { NavMenuIconButton(it) }
+                ?: onClickBack?.let { ArrowBackIconButton(it) }
+        },
         scrollBehavior = scrollBehavior,
         colors = colors,
     )
 }
 
 @Composable
-fun NavMenuIconButton(onClickNav: () -> Unit) {
-    IconButton(onClick = onClickNav) {
+fun NavMenuIconButton(onClick: () -> Unit) {
+    IconButton(onClick = onClick) {
         Icon(
             imageVector = Icons.Default.Menu,
             contentDescription = stringResource(
                 R.string.nav_drawer_icon_content_description
+            ),
+        )
+    }
+}
+
+@Composable
+fun ArrowBackIconButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
+    IconButton(onClick = onClick, modifier = modifier) {
+        Icon(
+            imageVector = Icons.Default.ArrowBack,
+            contentDescription = stringResource(
+                R.string.app_bar_back_icon_content_description
             ),
         )
     }

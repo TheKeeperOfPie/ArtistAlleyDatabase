@@ -93,7 +93,8 @@ class ArtEntryNavigator : EntryNavigator, BrowseSelectionNavigator {
             val viewModel = hiltViewModel<ArtEntryDetailsViewModel>()
                 .apply { initialize(entryIds.map { EntryId(ArtEntryUtils.SCOPED_ID_TYPE, it) }) }
             EntryDetailsScreen(
-                { viewModel.entryImageController.imageState },
+                onClickBack = { navHostController.popBackStack() },
+                imageState = { viewModel.entryImageController.imageState },
                 onImageClickOpen = {
                     viewModel.entryImageController.onImageClickOpen(navHostController, it)
                 },

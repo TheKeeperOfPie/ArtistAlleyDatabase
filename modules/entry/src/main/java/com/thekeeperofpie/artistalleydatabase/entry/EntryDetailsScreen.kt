@@ -23,12 +23,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ImageNotSupported
 import androidx.compose.material.icons.filled.OpenInNew
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -36,6 +36,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -59,6 +60,7 @@ import com.mxalbert.sharedelements.SharedElement
 import com.mxalbert.sharedelements.SharedElementsTransitionSpec
 import com.thekeeperofpie.artistalleydatabase.android_utils.AnimationUtils
 import com.thekeeperofpie.artistalleydatabase.compose.AddBackPressTransitionStage
+import com.thekeeperofpie.artistalleydatabase.compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
 import com.thekeeperofpie.artistalleydatabase.compose.pullRefresh
 import com.thekeeperofpie.artistalleydatabase.compose.rememberPullRefreshState
@@ -69,9 +71,10 @@ import kotlinx.coroutines.launch
 
 object EntryDetailsScreen {
 
-    @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+    @OptIn(ExperimentalFoundationApi::class)
     @Composable
     operator fun invoke(
+        onClickBack: () -> Unit,
         imageState: () -> ImageState,
         onImageClickOpen: (index: Int) -> Unit = {},
         areSectionsLoading: () -> Boolean = { false },
@@ -117,97 +120,62 @@ object EntryDetailsScreen {
 
             val offsetY = LocalDensity.current.run { pullRefreshState.position.toDp() }
 
-            Column(
-                Modifier
-                    .padding(it)
-                    .fillMaxWidth()
-            ) {
+            Box {
                 Column(
-                    modifier = Modifier
-                        .offset(y = offsetY)
-                        .weight(1f, true)
+                    Modifier
+                        .padding(it)
                         .fillMaxWidth()
-                        .pullRefresh(pullRefreshState)
-                        .verticalScroll(rememberScrollState())
                 ) {
-                    HeaderImage(
-                        imageState = imageState,
-                        loading = areSectionsLoading,
-                        onImageClickOpen = onImageClickOpen,
-                        cropState = {
-                            cropState.copy(onImageRequestCrop = { index ->
-                                if (cropState.imageCropNeedsDocument()) {
-                                    showCropDialogIndex = index
-                                } else {
-                                    cropState.onImageRequestCrop(index)
-                                }
-                            })
-                        },
-                    )
+                    Column(
+                        modifier = Modifier
+                            .offset(y = offsetY)
+                            .weight(1f, true)
+                            .fillMaxWidth()
+                            .pullRefresh(pullRefreshState)
+                            .verticalScroll(rememberScrollState())
+                    ) {
+                        HeaderImage(
+                            imageState = imageState,
+                            loading = areSectionsLoading,
+                            onImageClickOpen = onImageClickOpen,
+                            cropState = {
+                                cropState.copy(onImageRequestCrop = { index ->
+                                    if (cropState.imageCropNeedsDocument()) {
+                                        showCropDialogIndex = index
+                                    } else {
+                                        cropState.onImageRequestCrop(index)
+                                    }
+                                })
+                            },
+                        )
+
+                        AnimatedVisibility(
+                            visible = true,
+                            enter = fadeIn(),
+                            exit = fadeOut(),
+                            modifier = Modifier.graphicsLayer { alpha = alphaAnimation.value }
+                        ) {
+                            EntryForm(areSectionsLoading, sections)
+                        }
+                    }
 
                     AnimatedVisibility(
-                        visible = true,
+                        visible = !areSectionsLoading(),
                         enter = fadeIn(),
                         exit = fadeOut(),
-                        modifier = Modifier.graphicsLayer { alpha = alphaAnimation.value }
                     ) {
-                        EntryForm(areSectionsLoading, sections)
-                    }
-                }
-
-                AnimatedVisibility(
-                    visible = !areSectionsLoading(),
-                    enter = fadeIn(),
-                    exit = fadeOut(),
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.End,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .topBorder(1.dp, MaterialTheme.colorScheme.inversePrimary)
-                            .background(MaterialTheme.colorScheme.background)
-                    ) {
-                        if (onClickSaveTemplate != null) {
-                            TextButton(onClick = onClickSaveTemplate) {
-                                Text(
-                                    text = stringResource(R.string.save_template),
-                                    modifier = Modifier.padding(
-                                        start = 16.dp,
-                                        end = 16.dp,
-                                        top = 10.dp,
-                                        bottom = 10.dp
-                                    )
-                                )
-                            }
-                        }
-
-                        TextButton(onClick = { showDeleteDialog = true }) {
-                            Text(
-                                text = stringResource(R.string.delete),
-                                modifier = Modifier.padding(
-                                    start = 16.dp,
-                                    end = 16.dp,
-                                    top = 10.dp,
-                                    bottom = 10.dp
-                                )
-                            )
-                        }
-
-                        TextButton(
-                            onClick = onClickSave,
-                            modifier = Modifier.combinedClickable(
-                                onClick = onClickSave,
-                                onLongClick = onLongClickSave,
-                                onLongClickLabel = stringResource(R.string.save_skip_errors)
-                            )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.End,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .topBorder(1.dp, MaterialTheme.colorScheme.inversePrimary)
+                                .background(MaterialTheme.colorScheme.background)
                         ) {
-                            Crossfade(targetState = saving()) {
-                                if (it) {
-                                    CircularProgressIndicator()
-                                } else {
+                            if (onClickSaveTemplate != null) {
+                                TextButton(onClick = onClickSaveTemplate) {
                                     Text(
-                                        text = stringResource(R.string.save),
+                                        text = stringResource(R.string.save_template),
                                         modifier = Modifier.padding(
                                             start = 16.dp,
                                             end = 16.dp,
@@ -217,8 +185,68 @@ object EntryDetailsScreen {
                                     )
                                 }
                             }
+
+                            TextButton(onClick = { showDeleteDialog = true }) {
+                                Text(
+                                    text = stringResource(R.string.delete),
+                                    modifier = Modifier.padding(
+                                        start = 16.dp,
+                                        end = 16.dp,
+                                        top = 10.dp,
+                                        bottom = 10.dp
+                                    )
+                                )
+                            }
+
+                            TextButton(
+                                onClick = onClickSave,
+                                modifier = Modifier.combinedClickable(
+                                    onClick = onClickSave,
+                                    onLongClick = onLongClickSave,
+                                    onLongClickLabel = stringResource(R.string.save_skip_errors)
+                                )
+                            ) {
+                                Crossfade(targetState = saving()) {
+                                    if (it) {
+                                        CircularProgressIndicator()
+                                    } else {
+                                        Text(
+                                            text = stringResource(R.string.save),
+                                            modifier = Modifier.padding(
+                                                start = 16.dp,
+                                                end = 16.dp,
+                                                top = 10.dp,
+                                                bottom = 10.dp
+                                            )
+                                        )
+                                    }
+                                }
+                            }
                         }
                     }
+                }
+
+                val backAlphaAnimation = remember { Animatable(0f) }
+                LaunchedEffect(true) {
+                    delay(
+                        AnimationUtils.multipliedByAnimatorScale(
+                            context,
+                            EntryUtils.SLIDE_DURATION_MS.toLong()
+                        )
+                    )
+                    backAlphaAnimation.animateTo(1f)
+                }
+
+                Box(
+                    Modifier
+                        .align(Alignment.TopStart)
+                        .graphicsLayer { alpha = backAlphaAnimation.value }
+                        .background(
+                            Color.DarkGray.copy(alpha = 0.33f),
+                            RoundedCornerShape(bottomEnd = 8.dp),
+                        )
+                ) {
+                    ArrowBackIconButton(onClickBack)
                 }
             }
 

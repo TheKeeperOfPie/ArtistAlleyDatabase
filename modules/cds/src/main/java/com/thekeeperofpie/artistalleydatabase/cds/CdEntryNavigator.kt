@@ -93,7 +93,8 @@ class CdEntryNavigator : EntryNavigator, BrowseSelectionNavigator {
             val viewModel = hiltViewModel<CdEntryDetailsViewModel>()
                 .apply { initialize(entryIds.map { EntryId(CdEntryUtils.SCOPED_ID_TYPE, it) }) }
             EntryDetailsScreen(
-                { viewModel.entryImageController.imageState },
+                onClickBack = { navHostController.popBackStack() },
+                imageState = { viewModel.entryImageController.imageState },
                 onImageClickOpen = {
                     viewModel.entryImageController.onImageClickOpen(navHostController, it)
                 },

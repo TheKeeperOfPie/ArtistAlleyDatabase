@@ -20,6 +20,8 @@ import java.io.File
 
 object EntryUtils {
 
+    const val SLIDE_DURATION_MS = 350
+
     data class ImageMetadata(
         val file: File,
         val index: Int,

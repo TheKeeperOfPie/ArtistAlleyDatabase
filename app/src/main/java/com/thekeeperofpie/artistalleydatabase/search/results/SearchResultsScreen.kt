@@ -24,6 +24,7 @@ object SearchResultsScreen {
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     operator fun invoke(
+        onClickBack: (() -> Unit)? = null,
         loading: () -> Boolean,
         errorRes: () -> Pair<Int, Exception?>? = { null },
         onErrorDismiss: () -> Unit = {},
@@ -36,7 +37,12 @@ object SearchResultsScreen {
         onConfirmDelete: () -> Unit = {},
     ) {
         Scaffold(
-            topBar = { AppBar(text = stringResource(R.string.search_results)) },
+            topBar = {
+                AppBar(
+                    text = stringResource(R.string.search_results),
+                    onClickBack = onClickBack
+                )
+            },
             snackbarHost = {
                 SnackbarErrorText(
                     errorRes()?.first,

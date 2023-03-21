@@ -353,6 +353,9 @@ class MainActivity : ComponentActivity() {
                     val viewModel = hiltViewModel<SearchResultsViewModel>()
                     viewModel.initialize(queryId)
                     SearchResultsScreen(
+                        onClickBack = it.destination.parent?.let {
+                            { navController.popBackStack() }
+                        },
                         loading = { viewModel.loading },
                         entries = { viewModel.entries.collectAsLazyPagingItems() },
                         selectedItems = { viewModel.selectedEntries.keys },
