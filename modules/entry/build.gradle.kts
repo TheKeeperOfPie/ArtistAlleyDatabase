@@ -15,6 +15,7 @@ dependencies {
     api(libs.flowExt)
     implementation(libs.activity.compose)
     implementation(libs.core.ktx)
+    api(libs.compose.animation)
     api(libs.compose.ui)
     implementation(libs.compose.ui.tooling.preview)
     implementation(libs.material.icons.core)

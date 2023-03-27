@@ -86,18 +86,25 @@ android {
     }
     kotlinOptions {
         jvmTarget = "18"
+        freeCompilerArgs += listOf(
+            "-P",
+            "plugin:androidx.compose.compiler.plugins.kotlin:suppressKotlinVersionCompatibilityCheck=1.8.20-RC2"
+        )
     }
     buildFeatures {
         compose = true
         buildConfig = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.4.3-dev-k1.8.20-Beta-c5841510cbf"
+        kotlinCompilerExtensionVersion = "1.4.4-dev-k1.8.20-RC-88d9f3a8232"
     }
     packaging {
         resources {
-            merges += "/META-INF/{AL2.0,LGPL2.1,DEPENDENCIES}"
+            merges += "/META-INF/*"
             merges += "mozilla/public-suffix-list.txt"
+
+            // Can happen if an archive was built incrementally and accidentally published as-is
+            excludes += "**/previous-compilation-data.bin"
         }
     }
 }

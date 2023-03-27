@@ -44,11 +44,18 @@ android {
     }
     kotlinOptions {
         jvmTarget = "18"
+        freeCompilerArgs += listOf(
+            "-P",
+            "plugin:androidx.compose.compiler.plugins.kotlin:suppressKotlinVersionCompatibilityCheck=1.8.20-RC2"
+        )
     }
     packaging {
         resources {
             merges += "/META-INF/*"
             merges += "mozilla/public-suffix-list.txt"
+
+            // Can happen if an archive was built incrementally and accidentally published as-is
+            excludes += "**/previous-compilation-data.bin"
         }
     }
     testFixtures {

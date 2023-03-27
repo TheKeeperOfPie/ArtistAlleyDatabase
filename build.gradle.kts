@@ -91,6 +91,7 @@ dependencyAnalysis {
             onUnusedDependencies {
                 exclude(
                     "androidx.compose.ui:ui-tooling",
+                    "androidx.core:core-ktx",
                     "androidx.lifecycle:lifecycle-runtime-ktx",
                 )
             }
