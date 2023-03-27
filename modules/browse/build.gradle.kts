@@ -1,5 +1,3 @@
-@file:Suppress("UnstableApiUsage")
-
 plugins {
     id("compose-library")
     id("dagger.hilt.android.plugin")
@@ -24,8 +22,4 @@ dependencies {
     implementation(libs.compose.ui)
     implementation(libs.compose.ui.tooling.preview)
     implementation(libs.material3)
-
-    implementation(libs.accompanist.pager)
-    // TODO: Re-add official pager-indicator library once it migrates to material3
-    // implementation("com.google.accompanist:accompanist-pager-indicators:0.24.13-rc")
 }

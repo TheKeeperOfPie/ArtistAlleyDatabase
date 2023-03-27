@@ -206,7 +206,10 @@ object EntryDetailsScreen {
                                     onLongClickLabel = stringResource(R.string.save_skip_errors)
                                 )
                             ) {
-                                Crossfade(targetState = saving()) {
+                                Crossfade(
+                                    targetState = saving(),
+                                    label = "Entry details save indicator crossfade"
+                                ) {
                                     if (it) {
                                         CircularProgressIndicator()
                                     } else {

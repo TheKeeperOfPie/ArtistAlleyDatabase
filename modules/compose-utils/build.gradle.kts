@@ -1,5 +1,3 @@
-@file:Suppress("UnstableApiUsage")
-
 plugins {
     id("compose-library")
 }
@@ -14,7 +12,6 @@ dependencies {
     api(libs.compose.ui)
     api(libs.compose.ui.tooling.preview)
     implementation(libs.activity.compose)
-    implementation(libs.accompanist.pager.indicators)
 
     api(libs.paging.compose)
 }

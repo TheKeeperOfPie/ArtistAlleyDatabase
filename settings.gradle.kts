@@ -69,8 +69,6 @@ dependencyResolutionManagement {
             library("androidx.work:work-runtime-ktx:2.8.1")
             library("androidx.work:work-runtime:2.8.1")
             library("com.apollographql.apollo3:apollo-runtime:3.7.5")
-            library("com.google.accompanist:accompanist-pager-indicators:0.30.0")
-            library("com.google.accompanist:accompanist-pager:0.30.0")
             library("com.google.dagger:hilt-android:2.45")
             library("com.google.truth:truth:1.1.3")
             library("com.linkedin.dexmaker:dexmaker-mockito-inline:2.28.3")

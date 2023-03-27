@@ -35,7 +35,6 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.chunked
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.splitAtIndex
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -112,7 +111,7 @@ class AniListApi(application: ScopedApplication) {
     private val characterRequestChannel = Channel<Request<AniListCharacter>>()
 
     init {
-        @OptIn(FlowPreview::class)
+        @OptIn(ExperimentalCoroutinesApi::class)
         application.scope.launch(CustomDispatchers.IO) {
             mediaRequestChannel.consumeAsFlow()
                 .chunked(10, 1.seconds)
@@ -128,7 +127,7 @@ class AniListApi(application: ScopedApplication) {
                 .collectLatest { it.first.result.complete(it.second) }
         }
 
-        @OptIn(FlowPreview::class)
+        @OptIn(ExperimentalCoroutinesApi::class)
         application.scope.launch(CustomDispatchers.IO) {
             characterRequestChannel.consumeAsFlow()
                 .chunked(10, 1.seconds)

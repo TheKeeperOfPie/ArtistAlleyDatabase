@@ -54,6 +54,7 @@ object SearchResultsScreen {
             Box {
                 Crossfade(
                     targetState = loading(),
+                    label = "SearchResultsScreen content fade",
                     modifier = Modifier.align(Alignment.TopCenter),
                 ) {
                     if (it) {

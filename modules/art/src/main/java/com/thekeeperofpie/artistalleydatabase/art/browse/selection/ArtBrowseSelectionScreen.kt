@@ -47,6 +47,7 @@ object ArtBrowseSelectionScreen {
             Box {
                 Crossfade(
                     targetState = loading(),
+                    label = "ArtBrowseSelectionScreen content fade",
                     modifier = Modifier.align(Alignment.TopCenter),
                 ) {
                     if (it) {

@@ -47,6 +47,7 @@ object CdBrowseSelectionScreen {
             Box {
                 Crossfade(
                     targetState = loading(),
+                    label = "CdBrowseSelectionScreen content fade",
                     modifier = Modifier.align(Alignment.TopCenter),
                 ) {
                     if (it) {

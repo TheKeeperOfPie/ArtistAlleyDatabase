@@ -1,5 +1,3 @@
-@file:Suppress("UnstableApiUsage")
-
 plugins {
     id("module-library")
     id("dagger.hilt.android.plugin")
@@ -13,7 +11,8 @@ android {
     namespace = "com.thekeeperofpie.artistalleydatabase.anilist"
 }
 
-val aniListSchemaFile = project.layout.buildDirectory.file("graphql/aniList.graphqls").get().asFile
+val aniListSchemaFile: File =
+    project.layout.buildDirectory.file("graphql/aniList.graphqls").get().asFile
 apollo {
     service("aniList") {
         packageName.set("com.anilist")

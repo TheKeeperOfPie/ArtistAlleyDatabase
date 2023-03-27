@@ -127,9 +127,7 @@ class SettingsViewModel @Inject constructor(
                                 }
                             }
 
-                        cdEntry.performers.forEach {
-                            musicalArtistDao.insert(musicalArtists)
-                        }
+                        musicalArtistDao.insert(musicalArtists)
                     }
                 }
             }

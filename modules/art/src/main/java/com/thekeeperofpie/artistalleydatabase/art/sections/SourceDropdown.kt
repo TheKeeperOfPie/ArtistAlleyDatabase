@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -134,7 +133,6 @@ class SourceDropdown(locked: LockState? = null) : EntrySection.Dropdown(
         @Composable
         override fun DropdownItemText() = Text(fieldText())
 
-        @OptIn(ExperimentalMaterial3Api::class)
         @Composable
         override fun Content(lockState: LockState?) {
             val showSecondRow = lockState != LockState.LOCKED ||
@@ -233,7 +231,6 @@ class SourceDropdown(locked: LockState? = null) : EntrySection.Dropdown(
         @Composable
         override fun DropdownItemText() = Text(fieldText())
 
-        @OptIn(ExperimentalMaterial3Api::class)
         @Composable
         override fun Content(lockState: LockState?) {
             TextField(

@@ -174,7 +174,6 @@ fun SnackbarErrorText(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChooseUriRow(
     @StringRes label: Int,
@@ -244,7 +243,7 @@ fun LinearProgressWithIndicator(text: String, progress: Float?) {
                 )
             }
 
-            Crossfade(targetState = progress == 1f) {
+            Crossfade(targetState = progress == 1f, label = "Progress check fill fade") {
                 Icon(
                     imageVector = if (it) {
                         Icons.Filled.CheckCircle

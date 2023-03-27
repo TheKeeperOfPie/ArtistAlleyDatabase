@@ -1,5 +1,3 @@
-@file:Suppress("UnstableApiUsage")
-
 plugins {
     id("compose-library")
     id("dagger.hilt.android.plugin")

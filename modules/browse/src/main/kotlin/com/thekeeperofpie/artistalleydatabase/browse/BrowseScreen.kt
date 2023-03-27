@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.browse
 
 import androidx.annotation.StringRes
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -10,6 +11,8 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -30,9 +33,6 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.items
-import com.google.accompanist.pager.ExperimentalPagerApi
-import com.google.accompanist.pager.HorizontalPager
-import com.google.accompanist.pager.rememberPagerState
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.compose.AppBar
 import com.thekeeperofpie.artistalleydatabase.entry.EntryImage
@@ -41,7 +41,7 @@ import kotlinx.coroutines.launch
 
 object BrowseScreen {
 
-    @OptIn(ExperimentalPagerApi::class, ExperimentalMaterial3Api::class)
+    @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
     @Composable
     operator fun invoke(
         onClickNav: () -> Unit = {},
@@ -84,7 +84,7 @@ object BrowseScreen {
             },
         ) {
             HorizontalPager(
-                count = tabs.size,
+                pageCount = tabs.size,
                 state = pagerState,
                 key = { tabs[it].id },
                 modifier = Modifier

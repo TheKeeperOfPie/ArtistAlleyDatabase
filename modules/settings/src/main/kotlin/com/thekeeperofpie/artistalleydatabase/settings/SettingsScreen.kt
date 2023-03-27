@@ -169,7 +169,6 @@ object SettingsScreen {
         }
     }
 
-    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     private fun ClearDatabaseByIdRow(
         onClickClearDatabaseById: (DatabaseType, String) -> Unit = { _, _ -> },

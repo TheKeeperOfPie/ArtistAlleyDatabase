@@ -34,14 +34,14 @@ import kotlin.time.Duration.Companion.seconds
 
 sealed class EntrySection(lockState: LockState? = null) {
 
-    private var lockState_ by mutableStateOf(lockState)
+    private var _lockState by mutableStateOf(lockState)
     var lockStateFlow = MutableStateFlow(lockState)
     var lockState: LockState? = lockState
-        get() = lockState_
+        get() = _lockState
         set(value) {
             field = value
             wasEverDifferent = wasEverDifferent || value == LockState.DIFFERENT
-            lockState_ = value
+            _lockState = value
             lockStateFlow.tryEmit(value)
         }
 

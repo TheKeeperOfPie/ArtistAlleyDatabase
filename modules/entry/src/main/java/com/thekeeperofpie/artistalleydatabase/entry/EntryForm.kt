@@ -122,11 +122,13 @@ fun EntryForm(
     areSectionsLoading: () -> Boolean = { false },
     sections: () -> List<EntrySection> = { emptyList() },
 ) {
-    AnimatedContent(targetState = areSectionsLoading(),
+    AnimatedContent(
+        targetState = areSectionsLoading(),
         transitionSpec = {
             fadeIn(animationSpec = tween(durationMillis = 200, delayMillis = 150)) with
                     fadeOut(animationSpec = tween(100))
-        }
+        },
+        label = "Entry form section fade in",
     ) {
         if (it) {
             AnimatedVisibility(visible = true, enter = fadeIn(), exit = fadeOut()) {
@@ -425,7 +427,6 @@ private fun MultiTextSection(section: EntrySection.MultiText) {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun LongTextSection(section: EntrySection.LongText) {
     SectionHeader(
@@ -445,7 +446,7 @@ private fun LongTextSection(section: EntrySection.LongText) {
     )
 }
 
-@OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun PrefilledSectionField(
     index: Int,
@@ -566,6 +567,7 @@ private fun PrefilledSectionField(
                 if (entry.trailingIcon == null && secondaryImage == null) {
                     val alpha by animateFloatAsState(
                         targetValue = if (editable) 1f else 0f,
+                        label = "Entry trailing icon alpha",
                     )
                     IconButton(
                         onClick = onClickMore,
@@ -701,7 +703,7 @@ fun EntryImage(
     }
 }
 
-@OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun OpenSectionField(
     value: () -> String,

@@ -111,8 +111,7 @@ object EntryUtils {
                     }
                     ?.toList()
                     ?.sortedBy { it.first }
-                    ?.map { it.second }
-                    ?.filterNotNull()
+                    ?.mapNotNull { it.second }
                     .orEmpty()
             }
         }

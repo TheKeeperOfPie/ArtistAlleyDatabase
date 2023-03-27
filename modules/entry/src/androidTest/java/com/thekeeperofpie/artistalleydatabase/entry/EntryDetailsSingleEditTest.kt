@@ -1,13 +1,11 @@
 package com.thekeeperofpie.artistalleydatabase.entry
 
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.awaitility.Awaitility.await
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.mockito.Mockito.verify
 import java.util.UUID
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class EntryDetailsSingleEditTest : EntryDetailsTestBase() {
 
     @Test

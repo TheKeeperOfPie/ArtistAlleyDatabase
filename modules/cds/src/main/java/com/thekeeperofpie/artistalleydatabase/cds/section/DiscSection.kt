@@ -20,7 +20,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -310,17 +309,16 @@ class DiscSection(private val json: Json, lockState: LockState? = null) :
         }
     }
 
-    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     private fun EntryTextField(
         text: String,
         onValueChange: (String) -> Unit,
         @StringRes labelRes: Int?,
         @StringRes placeholderRes: Int?,
+        lockState: LockState?,
+        modifier: Modifier = Modifier,
         singleLine: Boolean = false,
         onDone: (() -> Unit)? = {},
-        lockState: LockState?,
-        modifier: Modifier = Modifier
     ) {
         CustomOutlinedTextField(
             value = text,

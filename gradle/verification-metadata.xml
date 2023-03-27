@@ -71,7 +71,7 @@
          <trusted-key id="5a446c80c27e095353cf3969f165a96372e61948" group="com.apollographql.apollo3"/>
          <trusted-key id="5e7d42f58249a287bd7384da25a73bfc746e1035" group="net.sourceforge.htmlunit" name="htmlunit-android" version="2.63.0"/>
          <trusted-key id="635ee627345f3c1dd422b2e207d3516820bcf6b1" group="com.github.ben-manes.caffeine" name="caffeine" version="3.1.0"/>
-         <trusted-key id="64b9b09f164aa0bf88742eb61188b69f6d6259ca" group="com.google.accompanist"/>
+         <trusted-key id="64b9b09f164aa0bf88742eb61188b69f6d6259ca" group="com.google.accompanist" name="accompanist-drawablepainter" version="0.30.0"/>
          <trusted-key id="666a4692ce11b7b3f4eb7b3410066a9707090cf9" group="org.javassist" name="javassist" version="3.26.0-GA"/>
          <trusted-key id="694621a7227d8d5289699830abe9f3126bb741c1" group="^com[.]google($|([.].*))" regex="true"/>
          <trusted-key id="6a814b1f869c2bbeab7cb7271a2a1c94bde89688" group="org.apache.maven"/>
@@ -115,7 +115,6 @@
          <trusted-key id="ce8075a251547bee249bc151a2115ae15f6b8b72" group="org.apache.commons"/>
          <trusted-key id="cf4b3a3f53bef9a2ce2cbfb895962c5e716c39aa" group="com.autonomousapps"/>
          <trusted-key id="d6f1bc78607808ec8e9f69437a8860944fad5f62" group="org.apache.commons" name="commons-parent"/>
-         <trusted-key id="da60f5c2597d381ac8fde387dec39f479e7a86f4" group="dev.chrisbanes.snapper" name="snapper" version="0.2.2"/>
          <trusted-key id="db0597e3144342256bc81e3ec727d053c4481cf5" group="org.tensorflow" name="tensorflow-lite-metadata" version="0.1.0-rc2"/>
          <trusted-key id="dbd744ace7ade6aa50dd591f66b50994442d2d40" group="^com[.]squareup($|([.].*))" regex="true"/>
          <trusted-key id="dc98224c6421a7a5bb87f346ed2378cd09a08cde" group="org.fusesource.jansi" name="jansi" version="2.4.0"/>
@@ -125,7 +124,6 @@
             <trusting group="com.google.errorprone"/>
             <trusting group="com.google.googlejavaformat"/>
          </trusted-key>
-         <trusted-key id="e7bd012a1e173975f48aea6f07e1ff7760ef6f64" group="io.github.aakira"/>
          <trusted-key id="e7dc75fc24fb3c8dfe8086ad3d5839a2262cbbfb">
             <trusting group="org.jetbrains.kotlinx"/>
             <trusting group="org.jetbrains.kotlinx" name="kotlinx-coroutines-core-jvm" version="1.5.0"/>

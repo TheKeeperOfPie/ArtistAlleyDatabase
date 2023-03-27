@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.test_utils
 
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.asContextElement
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.withContext
@@ -12,7 +11,6 @@ import kotlin.reflect.KProperty
  * through [runTest] for coroutine contexts. This allows parallel test execution with class
  * property access, which simplifies code by avoiding method-local mock creation.
  */
-@OptIn(ExperimentalCoroutinesApi::class)
 abstract class TestBase {
 
     private val collector = CollectorRule()

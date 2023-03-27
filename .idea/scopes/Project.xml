@@ -1,0 +1,3 @@
+<component name="DependencyValidationManager">
+  <scope name="Project" pattern="!ext:*/&amp;&amp;!file[Artist_Alley_Database]:.idea//*&amp;&amp;!file[Artist_Alley_Database]:gradle-home//*&amp;&amp;!file[Artist_Alley_Database]:build-cache//*&amp;&amp;!file[Artist_Alley_Database]:libs//*&amp;&amp;!file[Artist_Alley_Database.buildSrc.main]:gradle/*&amp;&amp;!file[Artist_Alley_Database.buildSrc.main]:gradle//*" />
+</component>

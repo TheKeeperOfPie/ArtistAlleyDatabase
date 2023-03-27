@@ -12,8 +12,6 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
-import com.google.accompanist.pager.ExperimentalPagerApi
-import com.google.accompanist.pager.PagerState
 
 @OptIn(ExperimentalMaterialApi::class)
 class DismissState(internal val dismissState: androidx.compose.material.DismissState)
@@ -44,14 +42,5 @@ fun SwipeToDismiss(
         modifier = modifier,
         background = background,
         dismissContent = dismissContent,
-    )
-}
-
-@OptIn(ExperimentalPagerApi::class)
-@Composable
-fun HorizontalPagerIndicator(pagerState: PagerState, modifier: Modifier) {
-    com.google.accompanist.pager.HorizontalPagerIndicator(
-        pagerState = pagerState,
-        modifier = modifier
     )
 }
