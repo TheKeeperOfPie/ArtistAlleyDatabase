@@ -195,12 +195,18 @@ open class ArtEntryDetailsViewModel @Inject constructor(
                 }
                 .collectLatest {
                     withContext(Dispatchers.Main) {
-                        sourceSection.conventionSectionItem.updateHallBoothIfEmpty(
-                            expectedName = it.name,
-                            expectedYear = it.year!!,
-                            newHall = it.hall,
-                            newBooth = it.booth
-                        )
+                        val sectionChanged = sourceSection.conventionSectionItem
+                            .updateHallBoothIfEmpty(
+                                expectedName = it.name,
+                                expectedYear = it.year!!,
+                                newHall = it.hall,
+                                newBooth = it.booth
+                            )
+                        if (sectionChanged) {
+                            sourceSection.lockIfUnlocked()
+                        }
+
+                        artistSection.lockIfUnlocked()
                     }
                 }
         }
@@ -309,6 +315,18 @@ open class ArtEntryDetailsViewModel @Inject constructor(
             notesLocked = notesLocked,
             printSizeLocked = printSizeLocked,
         )
+    }
+
+    override fun entryHashCode() = when (type) {
+        Type.ADD -> 1
+        Type.SINGLE_EDIT -> makeBaseEntry().copy(
+            // Searchable values are ignored because they rely on network and aren't restored
+            // TODO: Fix this and actually track searchable values alongside serialized values
+            seriesSearchable = emptyList(),
+            charactersSearchable = emptyList(),
+            lastEditTime = null
+        ).hashCode()
+        Type.MULTI_EDIT -> 0 // TODO: Doesn't handle multi-edit unsaved change detection
     }
 
     override suspend fun saveSingleEntry(

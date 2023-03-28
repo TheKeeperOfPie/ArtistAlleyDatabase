@@ -101,12 +101,15 @@ class SourceDropdown(locked: LockState? = null) : EntrySection.Dropdown(
 
         fun updates() = flow.asStateFlow()
 
+        /**
+         * @return true if anything changed
+         */
         fun updateHallBoothIfEmpty(
             expectedName: String,
             expectedYear: Int,
             newHall: String,
             newBooth: String
-        ) {
+        ): Boolean {
             if (name == expectedName && year == expectedYear.toString()) {
                 when {
                     hall.isEmpty() && booth.isEmpty() -> {
@@ -119,8 +122,11 @@ class SourceDropdown(locked: LockState? = null) : EntrySection.Dropdown(
                     booth.isEmpty() -> if (hall == newHall) {
                         booth = newBooth
                     }
+                    else -> return false
                 }
+                return true
             }
+            return false
         }
 
         override val hasCustomView = true

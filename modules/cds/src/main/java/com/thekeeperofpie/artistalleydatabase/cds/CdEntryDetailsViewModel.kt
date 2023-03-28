@@ -197,7 +197,7 @@ class CdEntryDetailsViewModel @Inject constructor(
                 .flowOn(Dispatchers.IO)
                 .collectLatest {
                     catalogIdSection.addOrReplaceContent(it)
-                    catalogIdSection.lockState = EntrySection.LockState.LOCKED
+                    catalogIdSection.lockIfUnlocked()
                 }
         }
 
@@ -325,6 +325,20 @@ class CdEntryDetailsViewModel @Inject constructor(
 
     override suspend fun buildMultiEditModel(): CdEntryModel {
         TODO("Not yet implemented")
+    }
+
+    override fun entryHashCode() = when (type) {
+        Type.ADD -> 1
+        Type.SINGLE_EDIT -> makeBaseEntry().copy(
+            // Searchable values are ignored because they rely on network and aren't restored
+            // TODO: Fix this and actually track searchable values alongside serialized values
+            performersSearchable = emptyList(),
+            composersSearchable = emptyList(),
+            seriesSearchable = emptyList(),
+            charactersSearchable = emptyList(),
+            lastEditTime = null
+        ).hashCode()
+        Type.MULTI_EDIT -> 0 // TODO: Doesn't handle multi-edit unsaved change detection
     }
 
     override suspend fun saveSingleEntry(

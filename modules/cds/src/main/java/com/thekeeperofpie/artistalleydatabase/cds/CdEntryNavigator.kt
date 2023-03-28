@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.cds
 
+import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
@@ -14,6 +15,8 @@ import com.thekeeperofpie.artistalleydatabase.cds.browse.selection.CdBrowseSelec
 import com.thekeeperofpie.artistalleydatabase.cds.browse.selection.CdBrowseSelectionViewModel
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryColumn
 import com.thekeeperofpie.artistalleydatabase.cds.utils.CdEntryUtils
+import com.thekeeperofpie.artistalleydatabase.compose.AddBackPressInvokeFirst
+import com.thekeeperofpie.artistalleydatabase.compose.BackPressStageHandler
 import com.thekeeperofpie.artistalleydatabase.entry.EntryDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 import com.thekeeperofpie.artistalleydatabase.entry.EntryNavigator
@@ -92,22 +95,35 @@ class CdEntryNavigator : EntryNavigator, BrowseSelectionNavigator {
         navGraphBuilder.entryDetailsComposable("cdEntryDetails") { entryIds ->
             val viewModel = hiltViewModel<CdEntryDetailsViewModel>()
                 .apply { initialize(entryIds.map { EntryId(CdEntryUtils.SCOPED_ID_TYPE, it) }) }
-            EntryDetailsScreen(
-                onClickBack = { navHostController.popBackStack() },
-                imageState = { viewModel.entryImageController.imageState },
-                onImageClickOpen = {
-                    viewModel.entryImageController.onImageClickOpen(navHostController, it)
-                },
-                areSectionsLoading = { viewModel.sectionsLoading },
-                sections = { viewModel.sections },
-                saving = { viewModel.saving },
-                onClickSave = { viewModel.onClickSave(navHostController) },
-                onLongClickSave = { viewModel.onLongClickSave(navHostController) },
-                errorRes = { viewModel.errorResource },
-                onErrorDismiss = { viewModel.errorResource = null },
-                onConfirmDelete = { viewModel.onConfirmDelete(navHostController) },
-                cropState = viewModel.entryImageController.cropState,
-            )
+
+            BackPressStageHandler {
+                AddBackPressInvokeFirst(label = "CdEntryNavigator exit") {
+                    viewModel.onNavigateBack()
+                }
+
+                val backPressedDispatcher = LocalOnBackPressedDispatcherOwner.current
+                    ?.onBackPressedDispatcher
+
+                EntryDetailsScreen(
+                    onClickBack = { navHostController.popBackStack() },
+                    imageState = { viewModel.entryImageController.imageState },
+                    onImageClickOpen = {
+                        viewModel.entryImageController.onImageClickOpen(navHostController, it)
+                    },
+                    areSectionsLoading = { viewModel.sectionsLoading },
+                    sections = { viewModel.sections },
+                    saving = { viewModel.saving },
+                    onClickSave = { viewModel.onClickSave(navHostController) },
+                    onLongClickSave = { viewModel.onLongClickSave(navHostController) },
+                    errorRes = { viewModel.errorResource },
+                    onErrorDismiss = { viewModel.errorResource = null },
+                    onConfirmDelete = { viewModel.onConfirmDelete(navHostController) },
+                    cropState = viewModel.entryImageController.cropState,
+                    showExitPrompt = viewModel.showExitPrompt,
+                    onExitConfirm = { backPressedDispatcher?.let(viewModel::onExitConfirm) },
+                    onExitDismiss = viewModel::onExitDismiss,
+                )
+            }
         }
     }
 

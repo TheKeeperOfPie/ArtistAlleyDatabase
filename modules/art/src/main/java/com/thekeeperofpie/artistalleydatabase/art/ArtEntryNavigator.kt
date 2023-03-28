@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.art
 
+import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
@@ -14,6 +15,8 @@ import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryColumn
 import com.thekeeperofpie.artistalleydatabase.art.utils.ArtEntryUtils
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseEntryModel
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseSelectionNavigator
+import com.thekeeperofpie.artistalleydatabase.compose.AddBackPressInvokeFirst
+import com.thekeeperofpie.artistalleydatabase.compose.BackPressStageHandler
 import com.thekeeperofpie.artistalleydatabase.entry.EntryDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 import com.thekeeperofpie.artistalleydatabase.entry.EntryNavigator
@@ -92,23 +95,36 @@ class ArtEntryNavigator : EntryNavigator, BrowseSelectionNavigator {
         navGraphBuilder.entryDetailsComposable(route = "artEntryDetails") { entryIds ->
             val viewModel = hiltViewModel<ArtEntryDetailsViewModel>()
                 .apply { initialize(entryIds.map { EntryId(ArtEntryUtils.SCOPED_ID_TYPE, it) }) }
-            EntryDetailsScreen(
-                onClickBack = { navHostController.popBackStack() },
-                imageState = { viewModel.entryImageController.imageState },
-                onImageClickOpen = {
-                    viewModel.entryImageController.onImageClickOpen(navHostController, it)
-                },
-                areSectionsLoading = { viewModel.sectionsLoading },
-                sections = { viewModel.sections },
-                saving = { viewModel.saving },
-                onClickSave = { viewModel.onClickSave(navHostController) },
-                onLongClickSave = { viewModel.onLongClickSave(navHostController) },
-                errorRes = { viewModel.errorResource },
-                onErrorDismiss = { viewModel.errorResource = null },
-                onConfirmDelete = { viewModel.onConfirmDelete(navHostController) },
-                onClickSaveTemplate = { viewModel.onClickSaveTemplate() },
-                cropState = viewModel.entryImageController.cropState,
-            )
+
+            BackPressStageHandler {
+                AddBackPressInvokeFirst(label = "ArtEntryNavigator exit") {
+                    viewModel.onNavigateBack()
+                }
+
+                val backPressedDispatcher = LocalOnBackPressedDispatcherOwner.current
+                    ?.onBackPressedDispatcher
+
+                EntryDetailsScreen(
+                    onClickBack = { navHostController.popBackStack() },
+                    imageState = { viewModel.entryImageController.imageState },
+                    onImageClickOpen = {
+                        viewModel.entryImageController.onImageClickOpen(navHostController, it)
+                    },
+                    areSectionsLoading = { viewModel.sectionsLoading },
+                    sections = { viewModel.sections },
+                    saving = { viewModel.saving },
+                    onClickSave = { viewModel.onClickSave(navHostController) },
+                    onLongClickSave = { viewModel.onLongClickSave(navHostController) },
+                    errorRes = { viewModel.errorResource },
+                    onErrorDismiss = { viewModel.errorResource = null },
+                    onConfirmDelete = { viewModel.onConfirmDelete(navHostController) },
+                    onClickSaveTemplate = { viewModel.onClickSaveTemplate() },
+                    cropState = viewModel.entryImageController.cropState,
+                    showExitPrompt = viewModel.showExitPrompt,
+                    onExitConfirm = { backPressedDispatcher?.let(viewModel::onExitConfirm) },
+                    onExitDismiss = viewModel::onExitDismiss,
+                )
+            }
         }
     }
 

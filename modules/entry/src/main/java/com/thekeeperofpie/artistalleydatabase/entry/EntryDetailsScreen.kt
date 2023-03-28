@@ -28,6 +28,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ImageNotSupported
 import androidx.compose.material.icons.filled.OpenInNew
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -59,7 +60,7 @@ import com.mxalbert.sharedelements.ProgressThresholds
 import com.mxalbert.sharedelements.SharedElement
 import com.mxalbert.sharedelements.SharedElementsTransitionSpec
 import com.thekeeperofpie.artistalleydatabase.android_utils.AnimationUtils
-import com.thekeeperofpie.artistalleydatabase.compose.AddBackPressTransitionStage
+import com.thekeeperofpie.artistalleydatabase.compose.AddBackPressInvokeTogether
 import com.thekeeperofpie.artistalleydatabase.compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
 import com.thekeeperofpie.artistalleydatabase.compose.pullRefresh
@@ -87,6 +88,9 @@ object EntryDetailsScreen {
         onConfirmDelete: () -> Unit = {},
         onClickSaveTemplate: (() -> Unit)? = null,
         cropState: CropUtils.CropState,
+        showExitPrompt: Boolean = false,
+        onExitConfirm: () -> Unit = {},
+        onExitDismiss: () -> Unit = {},
     ) {
         Scaffold(
             snackbarHost = {
@@ -109,11 +113,10 @@ object EntryDetailsScreen {
 
             val context = LocalContext.current
             val alphaAnimation = remember { Animatable(1f) }
-            AddBackPressTransitionStage(terminal = true) {
+            AddBackPressInvokeTogether(terminal = true, label = "Form sections alpha") {
                 it.launch {
                     delay(AnimationUtils.multipliedByAnimatorScale(context, 150L))
-                    remove()
-                    backPressedDispatcher?.onBackPressed()
+                    enabled = false
                 }
                 alphaAnimation.animateTo(0f, tween(200))
             }
@@ -263,8 +266,35 @@ object EntryDetailsScreen {
                     onDismiss = { showCropDialogIndex = -1 },
                     onConfirm = { cropState.onCropConfirmed(showCropDialogIndex) },
                 )
+            } else if (showExitPrompt) {
+                ConfirmExitDialog(onDismiss = onExitDismiss, onConfirmExit = onExitConfirm)
             }
         }
+    }
+
+    @Composable
+    fun ConfirmExitDialog(
+        onDismiss: () -> Unit,
+        onConfirmExit: () -> Unit
+    ) {
+        AlertDialog(
+            onDismissRequest = onDismiss,
+            title = { Text(stringResource(R.string.entry_confirm_exit_title)) },
+            text = { Text(stringResource(R.string.entry_confirm_exit_description)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    onDismiss()
+                    onConfirmExit()
+                }) {
+                    Text(stringResource(R.string.confirm))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = onDismiss) {
+                    Text(stringResource(R.string.cancel))
+                }
+            },
+        )
     }
 
     @OptIn(ExperimentalFoundationApi::class)
@@ -277,7 +307,9 @@ object EntryDetailsScreen {
     ) {
         Box {
             val alphaAnimation = remember { Animatable(1f) }
-            AddBackPressTransitionStage { alphaAnimation.animateTo(0f, tween(250)) }
+            AddBackPressInvokeTogether(label = "FAB alpha") {
+                alphaAnimation.animateTo(0f, tween(250))
+            }
             val pagerState = rememberPagerState()
             MultiImageSelectBox(
                 pagerState = pagerState,

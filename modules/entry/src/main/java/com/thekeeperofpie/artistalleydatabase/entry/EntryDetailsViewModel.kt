@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.entry
 
 import android.app.Application
+import androidx.activity.OnBackPressedDispatcher
 import androidx.annotation.StringRes
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -26,8 +27,7 @@ abstract class EntryDetailsViewModel<Entry, Model>(
         ADD, SINGLE_EDIT, MULTI_EDIT
     }
 
-    protected lateinit var entryIds: List<EntryId>
-    protected lateinit var type: Type
+    var showExitPrompt by mutableStateOf(false)
 
     var errorResource by mutableStateOf<Pair<Int, Exception?>?>(null)
 
@@ -48,6 +48,15 @@ abstract class EntryDetailsViewModel<Entry, Model>(
         imageContentDescriptionRes = imageContentDescriptionRes,
         onImageSizeResult = { width, height -> onImageSizeResult(height / width.toFloat()) }
     )
+
+    protected lateinit var entryIds: List<EntryId>
+    protected lateinit var type: Type
+
+    /**
+     * Tracks the initial entry state to compare against and prompt to confirm exit if unsaved
+     * changes are detected. Set to null to skip exit prompt.
+     */
+    private var initialEntryHashCode: Int? = null
 
     fun initialize(entryIds: List<EntryId>) {
         if (this::entryIds.isInitialized) return
@@ -72,6 +81,7 @@ abstract class EntryDetailsViewModel<Entry, Model>(
             }
             withContext(CustomDispatchers.Main) {
                 model?.run(::initializeForm)
+                initialEntryHashCode = entryHashCode()
                 sectionsLoading = false
             }
         }
@@ -90,6 +100,31 @@ abstract class EntryDetailsViewModel<Entry, Model>(
 
     protected abstract fun initializeForm(model: Model)
 
+    protected abstract fun entryHashCode(): Int
+
+    /**
+     * @return if navigation allowed
+     */
+    fun onNavigateBack(): Boolean {
+        val currentEntryHashCode = entryHashCode()
+        return if (initialEntryHashCode == null || initialEntryHashCode == currentEntryHashCode) {
+            true
+        } else {
+            showExitPrompt = true
+            false
+        }
+    }
+
+    fun onExitConfirm(onBackPressedDispatcher: OnBackPressedDispatcher) {
+        showExitPrompt = false
+        initialEntryHashCode = null
+        onBackPressedDispatcher.onBackPressed()
+    }
+
+    fun onExitDismiss() {
+        showExitPrompt = false
+    }
+
     fun onConfirmDelete(navHostController: NavHostController) {
         if (deleting || saving) return
         if (type != Type.SINGLE_EDIT) {
@@ -104,6 +139,7 @@ abstract class EntryDetailsViewModel<Entry, Model>(
             EntryUtils.getEntryImageFolder(application, entryId).deleteRecursively()
             deleteEntry(entryId)
             withContext(CustomDispatchers.Main) {
+                initialEntryHashCode = null
                 navHostController.popBackStack()
             }
         }
@@ -125,6 +161,7 @@ abstract class EntryDetailsViewModel<Entry, Model>(
             val success = saveEntry(skipIgnoreableErrors)
             withContext(CustomDispatchers.Main) {
                 if (success) {
+                    initialEntryHashCode = null
                     navHostController.popBackStack()
                 } else {
                     saving = false

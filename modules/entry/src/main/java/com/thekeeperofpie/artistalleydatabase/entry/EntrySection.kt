@@ -66,6 +66,12 @@ sealed class EntrySection(lockState: LockState? = null) {
         }
     }
 
+    open fun lockIfUnlocked() {
+        if (lockState == LockState.UNLOCKED) {
+            lockState = LockState.LOCKED
+        }
+    }
+
     open fun rotateLockState() {
         lockState = when (lockState) {
             LockState.LOCKED -> LockState.UNLOCKED

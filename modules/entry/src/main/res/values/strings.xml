@@ -35,4 +35,6 @@
     </string>
     <string name="entry_select_image_content_description">Click to select image</string>
     <string name="entry_add_image_content_description">Click to add image</string>
+    <string name="entry_confirm_exit_title">Exit?</string>
+    <string name="entry_confirm_exit_description">There are unsaved changes</string>
 </resources>

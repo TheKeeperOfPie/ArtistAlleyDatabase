@@ -63,4 +63,7 @@ internal class TestViewModel(
     fun editModel(data: String) {
         model!!.data = data
     }
+
+    // TODO: Add tests for unsaved changes prompt
+    override fun entryHashCode() = 0
 }

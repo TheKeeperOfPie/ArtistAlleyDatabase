@@ -12,7 +12,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.CallSuper
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.animateFloatAsState
@@ -107,7 +106,7 @@ import androidx.compose.ui.window.PopupProperties
 import androidx.core.net.toUri
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.thekeeperofpie.artistalleydatabase.compose.AddBackPressTransitionStage
+import com.thekeeperofpie.artistalleydatabase.compose.AddBackPressInvokeTogether
 import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIcon
 import com.thekeeperofpie.artistalleydatabase.compose.bottomBorder
 import com.thekeeperofpie.artistalleydatabase.compose.dropdown.DropdownMenu
@@ -116,7 +115,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
-@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun EntryForm(
     areSectionsLoading: () -> Boolean = { false },
@@ -570,7 +568,12 @@ private fun PrefilledSectionField(
                         label = "Entry trailing icon alpha",
                     )
                     IconButton(
-                        onClick = onClickMore,
+                        onClick = {
+                            // Alpha doesn't disable click target, so check it manually
+                            if (editable) {
+                                onClickMore()
+                            }
+                        },
                         Modifier.alpha(alpha),
                     ) {
                         Icon(
@@ -1006,7 +1009,7 @@ fun ImageSelectBoxInner(
     onBackPress: suspend () -> Unit,
     content: @Composable BoxScope.() -> Unit,
 ) {
-    AddBackPressTransitionStage { onBackPress() }
+    AddBackPressInvokeTogether(label = "ImageSelectBoxInner onBackPress") { onBackPress() }
 
     Box {
         Box(
