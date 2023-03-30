@@ -41,6 +41,8 @@ import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.OutOfQuotaPolicy
 import com.mxalbert.sharedelements.SharedElementsRoot
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeHomeScreen
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeHomeViewModel
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryNavigator
 import com.thekeeperofpie.artistalleydatabase.art.search.ArtSearchViewModel
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseScreen
@@ -95,7 +97,7 @@ class MainActivity : ComponentActivity() {
                     val navDrawerItems = NavDrawerItems.items()
                     val defaultSelectedItemIndex = intent.getStringExtra(STARTING_NAV_DESTINATION)
                         ?.let { navId -> navDrawerItems.indexOfFirst { it.id == navId } }
-                        ?: 0
+                        ?: NavDrawerItems.INITIAL_INDEX
                     var selectedItemIndex by rememberSaveable {
                         mutableStateOf(defaultSelectedItemIndex)
                     }
@@ -125,6 +127,7 @@ class MainActivity : ComponentActivity() {
                         content = {
                             val block = @Composable {
                                 when (selectedItem) {
+                                    NavDrawerItems.Anime -> AnimeScreen(::onClickNav)
                                     NavDrawerItems.Art -> ArtScreen(::onClickNav)
                                     NavDrawerItems.Cds -> CdsScreen(::onClickNav)
                                     NavDrawerItems.Browse -> BrowseScreen(::onClickNav)
@@ -196,6 +199,24 @@ class MainActivity : ComponentActivity() {
                                 block()
                             }
                         }
+                    )
+                }
+            }
+        }
+    }
+
+    @Composable
+    private fun AnimeScreen(onClickNav: () -> Unit) {
+        val navController = rememberNavController()
+        SharedElementsRoot {
+            NavHost(navController = navController, startDestination = NavDestinations.HOME) {
+                composable(NavDestinations.HOME) {
+                    val viewModel = hiltViewModel<AnimeHomeViewModel>()
+                    AnimeHomeScreen(
+                        onClickNav = onClickNav,
+                        needAuth = { viewModel.needAuth },
+                        onClickAuth = { viewModel.onClickAuth(this@MainActivity) },
+                        authTokenDebugPreview = { viewModel.authTokenDebugPreview() }
                     )
                 }
             }
@@ -411,6 +432,7 @@ class MainActivity : ComponentActivity() {
             onClickClearDatabaseById = viewModel::onClickClearDatabaseById,
             onClickRebuildDatabase = viewModel::onClickRebuildDatabase,
             onClickCropClear = viewModel::onClickCropClear,
+            onClickClearAniListOAuth = viewModel::onClickClearAniListOAuth,
         )
     }
 }

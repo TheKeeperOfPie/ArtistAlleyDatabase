@@ -9,6 +9,7 @@ import androidx.compose.material.icons.filled.ListAlt
 import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.thekeeperofpie.artistalleydatabase.R
 import com.thekeeperofpie.artistalleydatabase.settings.SettingsStringR
@@ -20,9 +21,11 @@ sealed class NavDrawerItems(
 ) {
 
     companion object {
-        fun items() = listOf(Art, Cds, Browse, Search, Import, Export, Settings)
+        const val INITIAL_INDEX = 1
+        fun items() = listOf(Anime, Art, Cds, Browse, Search, Import, Export, Settings)
     }
 
+    object Anime : NavDrawerItems("anime", R.string.nav_drawer_anime, Icons.Default.VideoLibrary)
     object Art : NavDrawerItems("art", R.string.nav_drawer_art, Icons.Default.PhotoLibrary)
     object Cds : NavDrawerItems("cds", R.string.nav_drawer_cds, Icons.Default.Album)
     object Browse : NavDrawerItems("browse", R.string.nav_drawer_browse, Icons.Default.ListAlt)

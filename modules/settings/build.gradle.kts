@@ -12,6 +12,7 @@ android {
 
 dependencies {
     api(project(":modules:android-utils"))
+    api(project(":modules:anime"))
     api(project(":modules:art"))
     api(project(":modules:cds"))
 

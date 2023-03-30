@@ -7,6 +7,7 @@ import androidx.work.WorkManager
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterEntryDao
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaEntryDao
+import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListOAuthStore
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntry
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDao
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtist
@@ -32,6 +33,7 @@ class SettingsViewModel @Inject constructor(
     private val workManager: WorkManager,
     private val settingsProvider: SettingsProvider,
     private val vgmdbApi: VgmdbApi,
+    private val aniListOAuthStore: AniListOAuthStore,
 ) : ViewModel() {
 
     companion object {
@@ -136,6 +138,10 @@ class SettingsViewModel @Inject constructor(
 
     fun onClickCropClear() {
         settingsProvider.settingsData.cropDocumentUri = null
+    }
+
+    fun onClickClearAniListOAuth() {
+        aniListOAuthStore.clearAuthToken()
     }
 
     fun checkMismatchedCdEntryData() {

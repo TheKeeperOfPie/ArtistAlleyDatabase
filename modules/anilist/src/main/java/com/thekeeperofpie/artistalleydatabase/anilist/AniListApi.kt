@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anilist
 
-import android.util.Log
 import androidx.annotation.Size
 import com.anilist.CharacterByIdQuery
 import com.anilist.CharacterByIds10Query
@@ -22,12 +21,7 @@ import com.anilist.MediaWithCharactersQuery
 import com.anilist.fragment.AniListCharacter
 import com.anilist.fragment.AniListMedia
 import com.apollographql.apollo3.ApolloClient
-import com.apollographql.apollo3.api.ApolloRequest
-import com.apollographql.apollo3.api.ApolloResponse
-import com.apollographql.apollo3.api.Operation
 import com.apollographql.apollo3.api.Optional
-import com.apollographql.apollo3.interceptor.ApolloInterceptor
-import com.apollographql.apollo3.interceptor.ApolloInterceptorChain
 import com.apollographql.apollo3.network.http.DefaultHttpEngine
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
@@ -36,7 +30,6 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.splitAtIndex
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.consumeAsFlow
@@ -46,60 +39,27 @@ import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.onTimeout
 import kotlinx.coroutines.selects.select
-import okhttp3.Cache
 import okhttp3.OkHttpClient
-import okhttp3.logging.HttpLoggingInterceptor
-import java.io.File
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
-class AniListApi(application: ScopedApplication) {
+class AniListApi(application: ScopedApplication, cache: AniListCache) {
 
     companion object {
         private const val TAG = "AniListApi"
-        private const val SERVER_URL = "https://graphql.anilist.co/"
     }
 
     private val apolloClient = ApolloClient.Builder()
-        .serverUrl(SERVER_URL)
+        .serverUrl(AniListUtils.GRAPHQL_API_URL)
         .httpEngine(
             DefaultHttpEngine(
                 OkHttpClient.Builder()
-                    .cache(
-                        Cache(
-                            directory = File(application.app.cacheDir, "aniList"),
-                            maxSize = 500L * 1024L * 1024L // 500 MiB
-                        )
-                    )
-                    .apply {
-                        if (BuildConfig.DEBUG) {
-                            addNetworkInterceptor(HttpLoggingInterceptor {
-                                Log.d(TAG, "OkHttp request: $it")
-                            }.apply {
-                                level = HttpLoggingInterceptor.Level.BASIC
-                            })
-                        }
-                    }
+                    .cache(cache.cache)
+                    .addLoggingInterceptors(TAG)
                     .build()
             )
         )
-        .apply {
-            if (BuildConfig.DEBUG) {
-                addInterceptor(object : ApolloInterceptor {
-                    override fun <D : Operation.Data> intercept(
-                        request: ApolloRequest<D>,
-                        chain: ApolloInterceptorChain
-                    ): Flow<ApolloResponse<D>> {
-                        Log.d(
-                            TAG,
-                            "GraphQL request ${request.operation.name()}: " +
-                                    request.operation.document()
-                        )
-                        return chain.proceed(request)
-                    }
-                })
-            }
-        }
+        .addLoggingInterceptors(TAG)
         .build()
 
     private data class Request<T>(

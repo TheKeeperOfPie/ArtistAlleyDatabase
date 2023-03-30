@@ -5,6 +5,7 @@
     <string name="settings_clear_vgmdb_cache">Clear VGMdb cache</string>
     <string name="settings_database_fetch">Sync remote models to local database</string>
     <string name="settings_crop_clear">Clear crop document URI</string>
+    <string name="settings_clear_aniList_oAuth">Clear AniList account</string>
     <string name="settings_clear">Clear</string>
     <string name="settings_fetch">Fetch</string>
     <string name="settings_label_id">ID</string>

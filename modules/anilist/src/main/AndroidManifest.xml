@@ -1,4 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest>
-
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application>
+        <activity
+            android:name=".oauth.AniListOAuthShareTargetActivity"
+            android:enabled="false"
+            android:exported="true"
+            android:title="@string/aniList_oAuth_share_title"
+            android:theme="@android:style/Theme.Material.Dialog.NoActionBar.MinWidth">
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+        </activity>
+    </application>
 </manifest>

@@ -72,4 +72,11 @@ object CustomDispatchers {
         } else {
             Dispatchers.IO
         }
+
+    val Default: CoroutineContext
+        get() = if (enabled) {
+            Dispatchers.Default + mainThreadLocal.asContextElement(mainThreadLocal.get() ?: Dispatchers.Main)
+        } else {
+            Dispatchers.Default
+        }
 }

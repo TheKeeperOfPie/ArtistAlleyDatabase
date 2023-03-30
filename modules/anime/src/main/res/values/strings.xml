@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="anime_auth_prompt">AniList account required</string>
+    <string name="anime_auth_button">Log in</string>
+    <string name="anime_home_title">Anime</string>
+</resources>

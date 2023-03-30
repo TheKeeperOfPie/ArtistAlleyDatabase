@@ -56,6 +56,7 @@ dependencyResolutionManagement {
             library("androidx.hilt:hilt-work:1.0.0")
             library("androidx.lifecycle:lifecycle-livedata-ktx:2.6.1")
             library("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.1")
+            library("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.1")
             library("androidx.navigation:navigation-compose:2.6.0-alpha08")
             library("androidx.paging:paging-compose:1.0.0-alpha18")
             library("androidx.paging:paging-runtime:3.2.0-alpha04")
@@ -91,6 +92,11 @@ dependencyResolutionManagement {
             library("org.mockito:mockito-android:5.2.0")
             library("org.mockito:mockito-core:5.2.0")
 
+            prefix("androidx") {
+                library("androidx.browser:browser:1.5.0")
+                library("androidx.security:security-crypto:1.1.0-alpha05")
+            }
+
             prefix("compose") {
                 library("androidx.compose.animation:animation:1.5.0-alpha01")
                 library("androidx.compose.ui:ui-test-manifest:1.5.0-alpha01")
@@ -111,6 +117,7 @@ include(
     ":app",
     ":modules:android-utils",
     ":modules:anilist",
+    ":modules:anime",
     ":modules:art",
     ":modules:browse",
     ":modules:compose-utils",

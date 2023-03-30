@@ -5,4 +5,6 @@
     <string name="error_fail_to_open_file_output">Failed to open file output</string>
     <string name="unknown">Unknown</string>
     <string name="custom">Custom</string>
+    <string name="close">Close</string>
+    <string name="app_name">Artist Alley Database</string>
 </resources>

@@ -1,11 +1,14 @@
 package com.thekeeperofpie.artistalleydatabase.anilist
 
+import android.app.Application
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterEntryDao
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaEntryDao
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
+import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListOAuthStore
+import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -18,7 +21,23 @@ class AniListHiltModule {
 
     @Singleton
     @Provides
-    fun provideAniListApi(application: ScopedApplication) = AniListApi(application)
+    fun provideAniListOAuthStore(application: Application) = AniListOAuthStore(application)
+
+    @Singleton
+    @Provides
+    fun provideAniListApi(application: ScopedApplication, aniListCache: AniListCache) =
+        AniListApi(application, aniListCache)
+
+    @Singleton
+    @Provides
+    fun provideAuthedAniListApi(
+        aniListCache: AniListCache,
+        aniListOAuthStore: AniListOAuthStore
+    ) = AuthedAniListApi(aniListCache, aniListOAuthStore)
+
+    @Singleton
+    @Provides
+    fun provideAniListCache(application: Application) = AniListCache(application)
 
     @Singleton
     @Provides

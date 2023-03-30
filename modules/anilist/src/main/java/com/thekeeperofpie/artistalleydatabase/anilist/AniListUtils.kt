@@ -1,16 +1,27 @@
 package com.thekeeperofpie.artistalleydatabase.anilist
 
+import android.util.Log
 import com.anilist.fragment.AniListCharacter
 import com.anilist.fragment.AniListMedia
 import com.anilist.type.MediaType
+import com.apollographql.apollo3.ApolloClient
+import com.apollographql.apollo3.api.ApolloRequest
+import com.apollographql.apollo3.api.ApolloResponse
+import com.apollographql.apollo3.api.Operation
+import com.apollographql.apollo3.interceptor.ApolloInterceptor
+import com.apollographql.apollo3.interceptor.ApolloInterceptorChain
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterColumnEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaColumnEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaEntry
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection.MultiText.Entry
+import kotlinx.coroutines.flow.Flow
+import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 
 object AniListUtils {
 
+    const val GRAPHQL_API_URL = "https://graphql.anilist.co/"
     private const val ANILIST_BASE_URL = "https://anilist.co"
 
     fun characterUrl(id: String) = "$ANILIST_BASE_URL/character/$id"
@@ -44,5 +55,33 @@ object AniListUtils {
         is CharacterEntry -> value.id
         is CharacterColumnEntry -> value.id
         else -> null
+    }
+}
+
+internal fun OkHttpClient.Builder.addLoggingInterceptors(tag: String) = apply {
+    if (BuildConfig.DEBUG) {
+        addNetworkInterceptor(HttpLoggingInterceptor {
+            Log.d(tag, "OkHttp request: $it")
+        }.apply {
+            level = HttpLoggingInterceptor.Level.BASIC
+        })
+    }
+}
+
+
+internal fun ApolloClient.Builder.addLoggingInterceptors(tag: String) = apply {
+    if (BuildConfig.DEBUG) {
+        addInterceptor(object : ApolloInterceptor {
+            override fun <D : Operation.Data> intercept(
+                request: ApolloRequest<D>,
+                chain: ApolloInterceptorChain
+            ): Flow<ApolloResponse<D>> {
+                Log.d(
+                    tag,
+                    "GraphQL request ${request.operation.name()}: " + request.operation.document()
+                )
+                return chain.proceed(request)
+            }
+        })
     }
 }

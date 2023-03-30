@@ -65,6 +65,7 @@ dependencyAnalysis {
                     // play well with the Kotlin testFixtures hack
                     ":modules:android-utils",
                     ":modules:anilist",
+                    ":modules:anime",
                     ":modules:art",
                     ":modules:browse",
                     ":modules:compose-utils",

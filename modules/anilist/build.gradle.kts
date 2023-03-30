@@ -1,5 +1,7 @@
+import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
+
 plugins {
-    id("module-library")
+    id("compose-library")
     id("dagger.hilt.android.plugin")
     id("kotlin-kapt")
     alias(libs.plugins.com.apollographql.apollo3)
@@ -9,6 +11,15 @@ plugins {
 
 android {
     namespace = "com.thekeeperofpie.artistalleydatabase.anilist"
+
+    defaultConfig {
+        val localProperties = gradleLocalProperties(projectDir)
+        val aniListClientId = localProperties.getProperty("aniList.clientId")
+        val aniListClientSecret = localProperties.getProperty("aniList.clientSecret")
+
+        buildConfigField("String", "ANILIST_CLIENT_ID", "\"$aniListClientId\"")
+        buildConfigField("String", "ANILIST_CLIENT_SECRET", "\"$aniListClientSecret\"")
+    }
 }
 
 val aniListSchemaFile: File =
@@ -37,11 +48,16 @@ dependencies {
     api(libs.apollo.runtime)
 
     implementation(libs.kotlinx.serialization.json)
-    implementation(libs.hilt.android)
+    api(libs.hilt.android)
+    implementation(libs.hilt.navigation.compose)
     kapt(kaptProcessors.dagger.hilt.compiler)
     kapt(kaptProcessors.androidx.hilt.compiler)
     implementation(libs.material.icons.core)
     implementation(libs.material.icons.extended)
+
+    implementation(libs.activity.compose)
+    implementation(libs.androidx.browser)
+    implementation(libs.androidx.security.crypto)
 
     runtimeOnly(libs.room.runtime)
     ksp(kspProcessors.room.compiler)

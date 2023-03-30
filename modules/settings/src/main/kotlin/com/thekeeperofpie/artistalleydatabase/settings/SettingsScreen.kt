@@ -51,6 +51,7 @@ object SettingsScreen {
         onClickClearDatabaseById: (DatabaseType, String) -> Unit = { _, _ -> },
         onClickRebuildDatabase: (DatabaseType) -> Unit = {},
         onClickCropClear: () -> Unit = {},
+        onClickClearAniListOAuth: () -> Unit = {},
     ) {
         Scaffold(
             topBar = {
@@ -104,6 +105,14 @@ object SettingsScreen {
                     title = R.string.settings_crop_clear,
                     buttonText = R.string.settings_clear,
                     onClick = onClickCropClear
+                )
+
+                Divider()
+
+                ButtonRow(
+                    title = R.string.settings_clear_aniList_oAuth,
+                    buttonText = R.string.settings_clear,
+                    onClick = onClickClearAniListOAuth
                 )
             }
         }

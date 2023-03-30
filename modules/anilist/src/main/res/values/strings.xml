@@ -7,4 +7,8 @@
     <string name="aniList_entry_manga_indicator_content_description">Manga type indicator</string>
     <string name="aniList_error_fetching_character">Error fetching character</string>
     <string name="aniList_error_fetching_series">Error fetching series</string>
+    <string name="aniList_oAuth_loading">Storing OAuth token</string>
+    <string name="aniList_oAuth_error">Error reading OAuth token</string>
+    <string name="aniList_oAuth_done">Done storing token</string>
+    <string name="aniList_oAuth_share_title">ArtistAlleyDatabase AniList OAuth token</string>
 </resources>

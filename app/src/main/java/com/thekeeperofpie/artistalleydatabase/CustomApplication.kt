@@ -8,6 +8,7 @@ import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.android_utils.notification.NotificationChannels
+import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListOAuthStore
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.MainScope
 import javax.inject.Inject
@@ -38,6 +39,8 @@ class CustomApplication : Application(), Configuration.Provider, ScopedApplicati
         // TODO: Figure out a real StrictMode policy
         // Ignore external file:// URIs policy
         StrictMode.setVmPolicy(StrictMode.VmPolicy.Builder().build())
+
+        AniListOAuthStore.setShareTargetEnabled(this, false)
 
         NotificationManagerCompat.from(this)
             .createNotificationChannelsCompat(
