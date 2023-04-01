@@ -9,7 +9,7 @@ android {
 }
 
 dependencies {
-    api(project(":modules:android-utils"))
+    implementation(project(":modules:android-utils"))
     api(project(":modules:anilist"))
     implementation(project(":modules:compose-utils"))
 
@@ -20,6 +20,13 @@ dependencies {
     implementation(libs.lifecycle.viewmodel.ktx)
 
     implementation(libs.compose.ui)
-    api(libs.compose.ui.tooling.preview)
+    implementation(libs.compose.ui.tooling.preview)
+    runtimeOnly(libs.compose.ui.tooling)
     implementation(libs.material3)
+
+    implementation(libs.coil.compose)
+    implementation(libs.material.icons.extended)
+
+    implementation(libs.navigation.compose)
+    implementation(libs.hilt.navigation.compose)
 }

@@ -10,6 +10,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -130,46 +131,60 @@ fun ButtonFooter(vararg pairs: Pair<Int, () -> Unit>) {
 fun SnackbarErrorText(
     @StringRes errorRes: Int?,
     exception: Exception?,
-    onErrorDismiss: () -> Unit
+    onErrorDismiss: (() -> Unit)? = null,
 ) {
     if (errorRes != null) {
-        val dismissState = rememberDismissState(errorRes, onErrorDismiss)
-        SwipeToDismiss(state = dismissState, background = {
-            Surface(
-                color = MaterialTheme.colorScheme.secondary,
-                contentColor = contentColorFor(MaterialTheme.colorScheme.secondary),
-                modifier = Modifier
-                    .fillMaxSize()
-            ) {
+        if (onErrorDismiss == null) {
+            Row(modifier = Modifier.fillMaxSize()) {
+                SnackbarErrorTextInner(errorRes = errorRes, exception = exception)
             }
-        }) {
-            Text(
-                text = stringResource(id = errorRes),
-                color = MaterialTheme.colorScheme.onSecondary,
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(
-                        start = 16.dp,
-                        end = 16.dp,
-                        top = 12.dp,
-                        bottom = 12.dp
-                    )
-            )
-
-            if (exception != null) {
-                val errorString = stringResource(id = errorRes)
-                TextButton(
-                    onClick = { Log.d("ArtistAlleyDatabase", errorString, exception) },
+        } else {
+            val dismissState = rememberDismissState(errorRes, onErrorDismiss)
+            SwipeToDismiss(state = dismissState, background = {
+                Surface(
+                    color = MaterialTheme.colorScheme.secondary,
+                    contentColor = contentColorFor(MaterialTheme.colorScheme.secondary),
                     modifier = Modifier
-                        .wrapContentWidth()
-                        .align(Alignment.CenterVertically),
+                        .fillMaxSize()
                 ) {
-                    Text(
-                        text = stringResource(R.string.log_exception).uppercase(),
-                        color = MaterialTheme.colorScheme.onSecondary
-                    )
                 }
+            }) {
+                SnackbarErrorTextInner(errorRes = errorRes, exception = exception)
             }
+        }
+    }
+}
+
+@Composable
+private fun RowScope.SnackbarErrorTextInner(
+    @StringRes errorRes: Int,
+    exception: Exception?,
+) {
+    Text(
+        text = stringResource(id = errorRes),
+        color = MaterialTheme.colorScheme.onSecondary,
+        modifier = Modifier
+            .weight(1f)
+            .padding(
+                start = 16.dp,
+                end = 16.dp,
+                top = 12.dp,
+                bottom = 12.dp
+            )
+    )
+
+    if (exception != null) {
+        val errorString = stringResource(id = errorRes)
+        TextButton(
+            onClick = { Log.d("ArtistAlleyDatabase", errorString, exception) },
+            modifier = Modifier
+                .wrapContentWidth()
+                .align(Alignment.CenterVertically),
+        ) {
+            Text(
+                text = stringResource(R.string.log_exception).uppercase(),
+                color = MaterialTheme.colorScheme.onSecondary
+            )
         }
     }
 }

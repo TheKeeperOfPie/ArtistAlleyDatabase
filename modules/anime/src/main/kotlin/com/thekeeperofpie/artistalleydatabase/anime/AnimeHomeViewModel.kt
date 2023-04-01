@@ -32,7 +32,4 @@ class AnimeHomeViewModel @Inject constructor(
     fun onClickAuth(activity: Activity) {
         oAuthStore.launchAuthRequest(activity)
     }
-
-    // TODO: Remove this
-    fun authTokenDebugPreview() = oAuthStore.authToken?.take(20)
 }

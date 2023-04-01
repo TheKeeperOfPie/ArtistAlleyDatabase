@@ -216,7 +216,6 @@ class MainActivity : ComponentActivity() {
                         onClickNav = onClickNav,
                         needAuth = { viewModel.needAuth },
                         onClickAuth = { viewModel.onClickAuth(this@MainActivity) },
-                        authTokenDebugPreview = { viewModel.authTokenDebugPreview() }
                     )
                 }
             }

@@ -141,7 +141,9 @@ class SettingsViewModel @Inject constructor(
     }
 
     fun onClickClearAniListOAuth() {
-        aniListOAuthStore.clearAuthToken()
+        viewModelScope.launch {
+            aniListOAuthStore.clearAuthToken()
+        }
     }
 
     fun checkMismatchedCdEntryData() {

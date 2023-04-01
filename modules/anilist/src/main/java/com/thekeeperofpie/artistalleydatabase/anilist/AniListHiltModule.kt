@@ -31,9 +31,10 @@ class AniListHiltModule {
     @Singleton
     @Provides
     fun provideAuthedAniListApi(
+        scopedApplication: ScopedApplication,
         aniListCache: AniListCache,
         aniListOAuthStore: AniListOAuthStore
-    ) = AuthedAniListApi(aniListCache, aniListOAuthStore)
+    ) = AuthedAniListApi(scopedApplication, aniListCache, aniListOAuthStore)
 
     @Singleton
     @Provides

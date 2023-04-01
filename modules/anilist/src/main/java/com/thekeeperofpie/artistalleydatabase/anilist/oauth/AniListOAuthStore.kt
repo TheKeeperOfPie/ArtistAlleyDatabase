@@ -15,8 +15,10 @@ import com.thekeeperofpie.artistalleydatabase.anilist.BuildConfig
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import okhttp3.Interceptor
+import okhttp3.Response
 
 class AniListOAuthStore(private val application: Application) : Interceptor {
 
@@ -46,8 +48,6 @@ class AniListOAuthStore(private val application: Application) : Interceptor {
                 "&response_type=token"
     }
 
-    val hasAuth = MutableStateFlow(false)
-
     private val masterKey = MasterKey.Builder(application, MASTER_KEY_ALIAS)
         .setKeyGenParameterSpec(
             KeyGenParameterSpec.Builder(
@@ -70,14 +70,14 @@ class AniListOAuthStore(private val application: Application) : Interceptor {
         EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
     )
 
-    var authToken: String? = null
-        private set
+    val authToken = MutableStateFlow<String?>(null)
+
+    val hasAuth = authToken.map { !it.isNullOrBlank() }
 
     init {
         @OptIn(DelicateCoroutinesApi::class)
         GlobalScope.launch(CustomDispatchers.IO) {
-            authToken = sharedPreferences.getString(KEY_AUTH_TOKEN, null)
-            hasAuth.tryEmit(!authToken.isNullOrBlank())
+            authToken.tryEmit(sharedPreferences.getString(KEY_AUTH_TOKEN, null))
         }
     }
 
@@ -88,32 +88,33 @@ class AniListOAuthStore(private val application: Application) : Interceptor {
             .launchUrl(activity, Uri.parse(ANILIST_OAUTH_URL))
     }
 
-    fun storeAuthTokenResult(token: String) {
+    suspend fun storeAuthTokenResult(token: String) {
         @Suppress("ApplySharedPref")
         sharedPreferences.edit()
             .putString(KEY_AUTH_TOKEN, token)
             .commit()
 
-        authToken = token
-        hasAuth.tryEmit(token.isNotBlank())
+        authToken.emit(token)
     }
 
-    fun clearAuthToken() {
+    suspend fun clearAuthToken() {
         @Suppress("ApplySharedPref")
         sharedPreferences.edit()
             .remove(KEY_AUTH_TOKEN)
             .commit()
 
-        authToken = null
-        hasAuth.tryEmit(false)
+        authToken.emit(null)
     }
 
-    override fun intercept(chain: Interceptor.Chain) = if (authToken == null) {
-        chain.proceed(chain.request())
-    } else {
-        chain.request().newBuilder()
-            .addHeader("Authorization", "Bearer $authToken")
-            .build()
-            .let(chain::proceed)
+    override fun intercept(chain: Interceptor.Chain): Response {
+        val token = authToken.value
+        return if (token == null) {
+            chain.proceed(chain.request())
+        } else {
+            chain.request().newBuilder()
+                .addHeader("Authorization", "Bearer $token")
+                .build()
+                .let(chain::proceed)
+        }
     }
 }

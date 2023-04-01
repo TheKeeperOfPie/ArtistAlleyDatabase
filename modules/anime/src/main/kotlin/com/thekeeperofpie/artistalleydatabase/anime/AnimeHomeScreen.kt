@@ -12,6 +12,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.thekeeperofpie.artistalleydatabase.anime.list.AnimeUserListScreen
+import com.thekeeperofpie.artistalleydatabase.anime.list.AnimeUserListViewModel
 import com.thekeeperofpie.artistalleydatabase.compose.AppBar
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
 
@@ -25,7 +31,6 @@ object AnimeHomeScreen {
         onClickAuth: () -> Unit,
         errorRes: () -> Pair<Int, Exception?>? = { null },
         onErrorDismiss: () -> Unit = { },
-        authTokenDebugPreview: () -> String? = { null },
     ) {
         Scaffold(
             topBar = {
@@ -51,10 +56,24 @@ object AnimeHomeScreen {
                 if (needAuth()) {
                     AuthPrompt(onClickAuth)
                 } else {
-                    Text("Authed ${authTokenDebugPreview()}...")
+
+                    val navController = rememberNavController()
+                    NavHost(navController = navController, startDestination = NavDestinations.LIST) {
+                        composable(NavDestinations.LIST) {
+                            val viewModel = hiltViewModel<AnimeUserListViewModel>()
+                            AnimeUserListScreen(
+                                content = viewModel.content,
+                                onRefresh = viewModel::onRefresh,
+                            )
+                        }
+                    }
                 }
             }
         }
+    }
+
+    private object NavDestinations {
+        const val LIST = "list"
     }
 
     @Composable

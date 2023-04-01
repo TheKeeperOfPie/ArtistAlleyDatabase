@@ -1,0 +1,9 @@
+query AuthedUser {
+    Viewer {
+        id
+        name
+        options {
+            profileColor
+        }
+    }
+}
