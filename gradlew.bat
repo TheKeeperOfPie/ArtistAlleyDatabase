@@ -69,6 +69,8 @@ goto fail
 
 set CLASSPATH=%APP_HOME%\gradle\wrapper\gradle-wrapper.jar
 
+set GRADLE_USER_HOME=%APP_HOME%\gradle-home
+
 @rem Execute Gradle
 "%JAVA_EXE%" %DEFAULT_JVM_OPTS% %JAVA_OPTS% %GRADLE_OPTS% "-Dgradle.user.home=.\gradle-home" "-Dorg.gradle.appname=%APP_BASE_NAME%" -classpath "%CLASSPATH%" org.gradle.wrapper.GradleWrapperMain %*
 

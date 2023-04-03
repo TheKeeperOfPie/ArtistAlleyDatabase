@@ -38,20 +38,20 @@ dependencyResolutionManagement {
 
         create("libs") {
             fun plugin(id: String) = plugin(id, id)
-            plugin("com.apollographql.apollo3.external").version("3.7.5")
+            plugin("com.apollographql.apollo3.external").version("3.8.0")
             plugin("com.autonomousapps.dependency-analysis").version("1.19.0")
             plugin("com.github.ben-manes.versions").version("0.46.0")
             plugin("com.google.dagger.hilt.android").version("2.45")
             plugin("com.jaredsburrows.license").version("0.9.0")
             plugin("org.barfuin.gradle.taskinfo").version("2.1.0")
-            plugin("org.jetbrains.kotlin.plugin.serialization").version("1.8.20-RC2")
+            plugin("org.jetbrains.kotlin.plugin.serialization").version("1.8.20")
 
             library("androidx.activity:activity-compose:1.8.0-alpha02")
             library("androidx.compose.material3:material3:1.1.0-beta01")
             library("androidx.compose.material:material-icons-core:1.5.0-alpha01")
             library("androidx.compose.material:material-icons-extended:1.5.0-alpha01")
             library("androidx.compose.material:material:1.5.0-alpha01")
-            library("androidx.core:core-ktx:1.9.0")
+            library("androidx.core:core-ktx:1.12.0-alpha01")
             library("androidx.hilt:hilt-navigation-compose:1.1.0-alpha01")
             library("androidx.hilt:hilt-work:1.0.0")
             library("androidx.lifecycle:lifecycle-livedata-ktx:2.6.1")
@@ -69,7 +69,7 @@ dependencyResolutionManagement {
             library("androidx.test:runner:1.6.0-alpha01", alias = "androidx.test.runner")
             library("androidx.work:work-runtime-ktx:2.8.1")
             library("androidx.work:work-runtime:2.8.1")
-            library("com.apollographql.apollo3:apollo-runtime:3.7.5")
+            library("com.apollographql.apollo3:apollo-runtime:3.8.0")
             library("com.google.dagger:hilt-android:2.45")
             library("com.google.truth:truth:1.1.3")
             library("com.linkedin.dexmaker:dexmaker-mockito-inline:2.28.3")
@@ -77,7 +77,7 @@ dependencyResolutionManagement {
             library("com.squareup.okhttp3:okhttp:5.0.0-alpha.11")
             library("com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.11", prefix = "okhttp3")
             library("io.coil-kt:coil-compose:2.3.0")
-            library("io.github.hoc081098:FlowExt:0.5.0")
+            library("io.github.hoc081098:FlowExt:0.6.0")
             library("it.skrape:skrapeit:1.3.0-alpha.1")
             library("junit:junit:4.13.2")
             library("org.apache.commons:commons-compress:1.23.0")
@@ -137,6 +137,7 @@ include(
 data class Prefix(val prefix: String, val builder: VersionCatalogBuilder)
 
 // gav is group:artifact:version but shortened for readability
+@Suppress("EXTENSION_SHADOWED_BY_MEMBER")
 fun VersionCatalogBuilder.library(
     gav: String,
     alias: String? = null,

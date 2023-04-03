@@ -15,7 +15,9 @@ android {
         minSdk = 29
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        consumerProguardFiles("consumer-rules.pro")
+        project.file("consumer-rules.pro")
+            .takeIf(File::exists)
+            ?.let { consumerProguardFiles(it) }
 
         testInstrumentationRunnerArguments["runnerBuilder"] =
             "com.thekeeperofpie.artistalleydatabase.test_utils.AndroidJUnitBuilder"
@@ -28,9 +30,13 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = true
+
             proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                *listOfNotNull(
+                    getDefaultProguardFile("proguard-android-optimize.txt"),
+                    project.file("proguard-rules.pro")
+                        .takeIf(File::exists)
+                ).toTypedArray()
             )
         }
 
@@ -44,10 +50,6 @@ android {
     }
     kotlinOptions {
         jvmTarget = "18"
-        freeCompilerArgs += listOf(
-            "-P",
-            "plugin:androidx.compose.compiler.plugins.kotlin:suppressKotlinVersionCompatibilityCheck=1.8.20-RC2"
-        )
     }
     packaging {
         resources {
@@ -68,6 +70,11 @@ android {
 
 kotlin {
     jvmToolchain(18)
+    sourceSets.all {
+        languageSettings {
+            languageSettings.optIn("kotlin.RequiresOptIn")
+        }
+    }
 }
 
 /**

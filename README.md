@@ -70,7 +70,7 @@ build can be tested, where Gradle cannot reference anything it used previously.
 This must be done each time a dependency is added/changed. Disabling dependency verification can be
 done by deleting `./gradle/verification-metadata.xml`.
 
-`./gradlew --no-configuration-cache --write-verification-metadata pgp,sha256 generateVerificationMetadata`
+`./gradlew --write-verification-metadata pgp,sha256 generateVerificationMetadata`
 
 ### :modules:dependencies
 

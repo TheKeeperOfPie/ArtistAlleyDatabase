@@ -84,17 +84,13 @@ android {
     }
     kotlinOptions {
         jvmTarget = "18"
-        freeCompilerArgs += listOf(
-            "-P",
-            "plugin:androidx.compose.compiler.plugins.kotlin:suppressKotlinVersionCompatibilityCheck=1.8.20-RC2"
-        )
     }
     buildFeatures {
         compose = true
         buildConfig = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.4.4-dev-k1.8.20-RC-88d9f3a8232"
+        kotlinCompilerExtensionVersion = "1.4.4-dev-k1.8.20-f6ae19e64ff"
     }
     packaging {
         resources {
@@ -108,8 +104,11 @@ android {
 }
 
 kotlin {
+    jvmToolchain(18)
     sourceSets.all {
-        languageSettings.optIn("kotlin.RequiresOptIn")
+        languageSettings {
+            languageSettings.optIn("kotlin.RequiresOptIn")
+        }
     }
 }
 
