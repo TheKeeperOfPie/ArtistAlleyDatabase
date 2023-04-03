@@ -23,6 +23,7 @@ import com.anilist.fragment.AniListMedia
 import com.apollographql.apollo3.ApolloClient
 import com.apollographql.apollo3.api.Optional
 import com.apollographql.apollo3.network.http.DefaultHttpEngine
+import com.thekeeperofpie.artistalleydatabase.android_utils.NetworkSettings
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.chunked
@@ -43,7 +44,11 @@ import okhttp3.OkHttpClient
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
-class AniListApi(application: ScopedApplication, cache: AniListCache) {
+class AniListApi(
+    application: ScopedApplication,
+    cache: AniListCache,
+    networkSettings: NetworkSettings,
+) {
 
     companion object {
         private const val TAG = "AniListApi"
@@ -55,11 +60,11 @@ class AniListApi(application: ScopedApplication, cache: AniListCache) {
             DefaultHttpEngine(
                 OkHttpClient.Builder()
                     .cache(cache.cache)
-                    .addLoggingInterceptors(TAG)
+                    .addLoggingInterceptors(TAG, networkSettings)
                     .build()
             )
         )
-        .addLoggingInterceptors(TAG)
+        .addLoggingInterceptors(TAG, networkSettings)
         .build()
 
     private data class Request<T>(

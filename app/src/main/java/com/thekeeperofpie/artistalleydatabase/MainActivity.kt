@@ -41,6 +41,7 @@ import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.OutOfQuotaPolicy
 import com.mxalbert.sharedelements.SharedElementsRoot
+import com.thekeeperofpie.artistalleydatabase.android_utils.NetworkSettings
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeHomeScreen
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeHomeViewModel
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryNavigator
@@ -432,6 +433,10 @@ class MainActivity : ComponentActivity() {
             onClickRebuildDatabase = viewModel::onClickRebuildDatabase,
             onClickCropClear = viewModel::onClickCropClear,
             onClickClearAniListOAuth = viewModel::onClickClearAniListOAuth,
+            networkLoggingLevel = {
+                viewModel.data.networkLoggingLevel ?: NetworkSettings.NetworkLoggingLevel.NONE
+            },
+            onChangeNetworkLoggingLevel = viewModel::onChangeNetworkLoggingLevel
         )
     }
 }

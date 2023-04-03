@@ -3,8 +3,12 @@ package com.thekeeperofpie.artistalleydatabase.settings
 import android.content.SharedPreferences
 import android.net.Uri
 import android.util.Log
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.Converters
+import com.thekeeperofpie.artistalleydatabase.android_utils.NetworkSettings
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntry
 import com.thekeeperofpie.artistalleydatabase.art.persistence.ArtSettings
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySettings
@@ -22,13 +26,14 @@ class SettingsData(
     private var appJson: AppJson? = null,
     @Transient
     private var sharedPreferences: SharedPreferences? = null,
-) : ArtSettings, EntrySettings {
+) : ArtSettings, EntrySettings, NetworkSettings {
     companion object {
         private const val TAG = "SettingsData"
     }
 
     override var artEntryTemplate by delegate<ArtEntry?>()
     override var cropDocumentUri by delegate<Uri?>()
+    override var networkLoggingLevel by delegate<NetworkSettings.NetworkLoggingLevel>()
     var searchQuery by delegate<ArtEntry?>()
 
     fun initialize(appJson: AppJson, sharedPreferences: SharedPreferences) {
@@ -55,7 +60,7 @@ class SettingsData(
         private val sharedPreferences: () -> SharedPreferences? = { null },
         private val defaultValue: (() -> T)? = null
     ) : Converters.PropertiesSerializer.WritableDelegate {
-        internal var value: T? = null
+        private var _value by mutableStateOf<T?>(null)
         private var loaded = false
 
         operator fun getValue(
@@ -63,7 +68,7 @@ class SettingsData(
             property: KProperty<*>
         ): T? {
             if (!loaded) {
-                value = try {
+                _value = try {
                     val stringValue = sharedPreferences()?.getString(property.name, null)
                         .takeUnless(String?::isNullOrEmpty) ?: return null
                     @Suppress("UNCHECKED_CAST")
@@ -80,13 +85,13 @@ class SettingsData(
 
                 loaded = true
             }
-            return value
+            return _value
         }
 
         override fun setValue(value: Any?) {
             loaded = true
             @Suppress("UNCHECKED_CAST")
-            this.value = value as T
+            this._value = value as T
         }
 
         operator fun setValue(
@@ -95,7 +100,7 @@ class SettingsData(
             value: T?
         ) {
             loaded = true
-            this.value = value
+            this._value = value
             serialize(property.returnType, property.name, value)
         }
 

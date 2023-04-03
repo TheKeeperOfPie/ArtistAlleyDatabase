@@ -38,7 +38,7 @@ dependencyResolutionManagement {
 
         create("libs") {
             fun plugin(id: String) = plugin(id, id)
-            plugin("com.apollographql.apollo3").version("3.7.5")
+            plugin("com.apollographql.apollo3.external").version("3.7.5")
             plugin("com.autonomousapps.dependency-analysis").version("1.19.0")
             plugin("com.github.ben-manes.versions").version("0.46.0")
             plugin("com.google.dagger.hilt.android").version("2.45")

@@ -8,7 +8,7 @@ sealed interface MediaListEntry {
     data class Header(val name: String, val status: MediaListStatus?) : MediaListEntry
 
     data class Item(
-        val entry: UserMediaListQuery.Data.MediaListCollection.List.Entry,
+        val media: UserMediaListQuery.Data.MediaListCollection.List.Entry.Media,
     ) : MediaListEntry
 
     data class LoadMore(val id: String) : MediaListEntry

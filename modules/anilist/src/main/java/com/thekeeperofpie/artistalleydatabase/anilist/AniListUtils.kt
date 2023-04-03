@@ -5,17 +5,13 @@ import com.anilist.fragment.AniListCharacter
 import com.anilist.fragment.AniListMedia
 import com.anilist.type.MediaType
 import com.apollographql.apollo3.ApolloClient
-import com.apollographql.apollo3.api.ApolloRequest
-import com.apollographql.apollo3.api.ApolloResponse
-import com.apollographql.apollo3.api.Operation
-import com.apollographql.apollo3.interceptor.ApolloInterceptor
-import com.apollographql.apollo3.interceptor.ApolloInterceptorChain
+import com.apollographql.apollo3.network.http.LoggingInterceptor
+import com.thekeeperofpie.artistalleydatabase.android_utils.NetworkSettings
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterColumnEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaColumnEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaEntry
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection.MultiText.Entry
-import kotlinx.coroutines.flow.Flow
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 
@@ -58,30 +54,38 @@ object AniListUtils {
     }
 }
 
-internal fun OkHttpClient.Builder.addLoggingInterceptors(tag: String) = apply {
+internal fun OkHttpClient.Builder.addLoggingInterceptors(
+    tag: String,
+    networkSettings: NetworkSettings,
+) = apply {
     if (BuildConfig.DEBUG) {
         addNetworkInterceptor(HttpLoggingInterceptor {
             Log.d(tag, "OkHttp request: $it")
         }.apply {
-            level = HttpLoggingInterceptor.Level.BASIC
+            level = when (networkSettings.networkLoggingLevel) {
+                NetworkSettings.NetworkLoggingLevel.NONE -> HttpLoggingInterceptor.Level.NONE
+                NetworkSettings.NetworkLoggingLevel.BASIC -> HttpLoggingInterceptor.Level.BASIC
+                NetworkSettings.NetworkLoggingLevel.HEADERS -> HttpLoggingInterceptor.Level.HEADERS
+                NetworkSettings.NetworkLoggingLevel.BODY -> HttpLoggingInterceptor.Level.BODY
+                null -> HttpLoggingInterceptor.Level.NONE
+            }
         })
     }
 }
 
 
-internal fun ApolloClient.Builder.addLoggingInterceptors(tag: String) = apply {
+internal fun ApolloClient.Builder.addLoggingInterceptors(
+    tag: String,
+    networkSettings: NetworkSettings,
+) = apply {
     if (BuildConfig.DEBUG) {
-        addInterceptor(object : ApolloInterceptor {
-            override fun <D : Operation.Data> intercept(
-                request: ApolloRequest<D>,
-                chain: ApolloInterceptorChain
-            ): Flow<ApolloResponse<D>> {
-                Log.d(
-                    tag,
-                    "GraphQL request ${request.operation.name()}: " + request.operation.document()
-                )
-                return chain.proceed(request)
-            }
-        })
+        val level = when (networkSettings.networkLoggingLevel) {
+            NetworkSettings.NetworkLoggingLevel.NONE -> LoggingInterceptor.Level.NONE
+            NetworkSettings.NetworkLoggingLevel.BASIC -> LoggingInterceptor.Level.BASIC
+            NetworkSettings.NetworkLoggingLevel.HEADERS -> LoggingInterceptor.Level.HEADERS
+            NetworkSettings.NetworkLoggingLevel.BODY -> LoggingInterceptor.Level.BODY
+            null -> LoggingInterceptor.Level.NONE
+        }
+        addHttpInterceptor(LoggingInterceptor(level) { Log.d(tag, it) })
     }
 }

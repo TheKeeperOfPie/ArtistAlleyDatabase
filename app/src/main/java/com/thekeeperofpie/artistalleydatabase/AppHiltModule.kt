@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.room.Room
 import androidx.work.WorkManager
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
+import com.thekeeperofpie.artistalleydatabase.android_utils.NetworkSettings
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListDatabase
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListJson
@@ -100,4 +101,9 @@ class AppHiltModule {
     @Provides
     fun provideEntrySettings(settingsProvider: SettingsProvider) =
         settingsProvider.settingsData as EntrySettings
+
+    @Singleton
+    @Provides
+    fun provideNetworkSettings(settingsProvider: SettingsProvider) =
+        settingsProvider.settingsData as NetworkSettings
 }

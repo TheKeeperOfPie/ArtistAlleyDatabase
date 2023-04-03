@@ -1,4 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.settings
+
 import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -29,17 +30,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.thekeeperofpie.artistalleydatabase.android_utils.NetworkSettings
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListStringR
 import com.thekeeperofpie.artistalleydatabase.compose.AppBar
+import com.thekeeperofpie.artistalleydatabase.compose.ItemDropdown
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
 import com.thekeeperofpie.artistalleydatabase.compose.dropdown.DropdownMenuItem
 import com.thekeeperofpie.artistalleydatabase.entry.EntryStringR
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistsStringR
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbStringR
 
+@OptIn(ExperimentalMaterial3Api::class)
 object SettingsScreen {
 
-    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     operator fun invoke(
         onClickNav: () -> Unit = {},
@@ -52,6 +55,10 @@ object SettingsScreen {
         onClickRebuildDatabase: (DatabaseType) -> Unit = {},
         onClickCropClear: () -> Unit = {},
         onClickClearAniListOAuth: () -> Unit = {},
+        networkLoggingLevel: () -> NetworkSettings.NetworkLoggingLevel = {
+            NetworkSettings.NetworkLoggingLevel.BASIC
+        },
+        onChangeNetworkLoggingLevel: (NetworkSettings.NetworkLoggingLevel) -> Unit = {},
     ) {
         Scaffold(
             topBar = {
@@ -113,6 +120,23 @@ object SettingsScreen {
                     title = R.string.settings_clear_aniList_oAuth,
                     buttonText = R.string.settings_clear,
                     onClick = onClickClearAniListOAuth
+                )
+
+                Divider()
+
+                ItemDropdown(
+                    label = R.string.settings_network_logging_level_label,
+                    value = networkLoggingLevel().name,
+                    iconContentDescription = R.string.settings_network_logging_level_label_dropdown_content_description,
+                    values = { NetworkSettings.NetworkLoggingLevel.values().toList() },
+                    textForValue = { it.name },
+                    onSelectItem = onChangeNetworkLoggingLevel,
+                    modifier = Modifier.padding(
+                        start = 16.dp,
+                        end = 16.dp,
+                        top = 10.dp,
+                        bottom = 10.dp
+                    ),
                 )
             }
         }

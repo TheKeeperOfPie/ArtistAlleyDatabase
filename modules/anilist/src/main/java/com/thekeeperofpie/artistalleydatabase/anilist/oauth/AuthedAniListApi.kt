@@ -3,10 +3,13 @@ package com.thekeeperofpie.artistalleydatabase.anilist.oauth
 import android.util.Log
 import com.anilist.AuthedUserQuery
 import com.anilist.UserMediaListQuery
+import com.anilist.type.MediaListSort
 import com.anilist.type.MediaType
 import com.apollographql.apollo3.ApolloClient
+import com.apollographql.apollo3.api.Optional
 import com.apollographql.apollo3.api.Query
 import com.apollographql.apollo3.network.http.DefaultHttpEngine
+import com.thekeeperofpie.artistalleydatabase.android_utils.NetworkSettings
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListCache
@@ -21,7 +24,8 @@ import okhttp3.OkHttpClient
 class AuthedAniListApi(
     scopedApplication: ScopedApplication,
     cache: AniListCache,
-    oAuthStore: AniListOAuthStore
+    oAuthStore: AniListOAuthStore,
+    networkSettings: NetworkSettings,
 ) {
     companion object {
         private const val TAG = "AuthedAniListApi"
@@ -34,11 +38,11 @@ class AuthedAniListApi(
                 OkHttpClient.Builder()
                     .cache(cache.cache)
                     .addInterceptor(oAuthStore)
-                    .addLoggingInterceptors(TAG)
+                    .addLoggingInterceptors(TAG, networkSettings)
                     .build()
             )
         )
-        .addLoggingInterceptors(TAG)
+        .addLoggingInterceptors(TAG, networkSettings)
         .build()
 
     val authedUser = MutableStateFlow<AuthedUserQuery.Data.Viewer?>(null)
@@ -60,12 +64,18 @@ class AuthedAniListApi(
 
     private suspend fun viewer() = query(AuthedUserQuery())?.viewer
 
-    suspend fun userMediaList(userId: Int? = null, type: MediaType = MediaType.ANIME) =
-        (userId ?: authedUser.value?.id)
-            ?.let {
-                query(UserMediaListQuery(userId = it, type = type))
-                    ?.mediaListCollection
-            }
+    suspend fun userMediaList(
+        userId: Int,
+        type: MediaType = MediaType.ANIME,
+        vararg sort: MediaListSort = emptyArray()
+    ) =
+        query(
+            UserMediaListQuery(
+                userId = userId,
+                type = type,
+                sort = Optional.presentIfNotNull(sort.toList().ifEmpty { null })
+            )
+        )?.mediaListCollection
 
     private suspend fun <D : Query.Data> query(query: Query<D>) =
         apolloClient.query(query).execute().data

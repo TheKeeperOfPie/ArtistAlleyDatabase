@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
+import com.thekeeperofpie.artistalleydatabase.android_utils.NetworkSettings
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterEntryDao
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaEntryDao
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListOAuthStore
@@ -39,6 +40,8 @@ class SettingsViewModel @Inject constructor(
     companion object {
         private const val TAG = "SettingsViewModel"
     }
+
+    val data = settingsProvider.settingsData
 
     private var onClickDatabaseFetch: (WorkManager) -> Unit = {}
 
@@ -144,6 +147,10 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             aniListOAuthStore.clearAuthToken()
         }
+    }
+
+    fun onChangeNetworkLoggingLevel(level: NetworkSettings.NetworkLoggingLevel) {
+        settingsProvider.settingsData.networkLoggingLevel = level
     }
 
     fun checkMismatchedCdEntryData() {

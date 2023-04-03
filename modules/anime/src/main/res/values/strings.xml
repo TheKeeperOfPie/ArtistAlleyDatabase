@@ -5,4 +5,24 @@
     <string name="anime_home_title">Anime</string>
     <string name="anime_media_cover_image">Media cover image</string>
     <string name="anime_media_list_error_loading">Error loading media list</string>
+    <string name="anime_media_list_sort_default">Default</string>
+    <string name="anime_media_list_sort_score">Score</string>
+    <string name="anime_media_list_sort_status">Status</string>
+    <string name="anime_media_list_sort_progress">Progress</string>
+    <string name="anime_media_list_sort_priority">Priority</string>
+    <string name="anime_media_list_sort_started_on">Start date</string>
+    <string name="anime_media_list_sort_finished_on">Finish date</string>
+    <string name="anime_media_list_sort_added_time">Added time</string>
+    <string name="anime_media_list_sort_updated_time">Last updated</string>
+    <string name="anime_media_list_sort_title_romaji">Title (Romaji)</string>
+    <string name="anime_media_list_sort_title_english">Title (English)</string>
+    <string name="anime_media_list_sort_title_native">Title (native)</string>
+    <string name="anime_media_list_sort_title_popularity">Popularity</string>
+    <string name="anime_media_filter_fab_content_description">Media list filter options</string>
+    <string name="anime_media_filter_sort_label">Sort order</string>
+    <string name="anime_media_filter_sort_dropdown_content_description">Sort order dropdown</string>
+    <string name="anime_media_filter_sort_ascending_label">Sort ascending</string>
+    <string name="anime_media_filter_sort_ascending_dropdown_content_description">Sort ascending dropdown</string>
+    <string name="anime_media_filter_sort_ascending">Ascending</string>
+    <string name="anime_media_filter_sort_descending">Descending</string>
 </resources>

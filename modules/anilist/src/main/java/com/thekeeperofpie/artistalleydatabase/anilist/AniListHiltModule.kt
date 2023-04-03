@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.anilist
 
 import android.app.Application
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
+import com.thekeeperofpie.artistalleydatabase.android_utils.NetworkSettings
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterEntryDao
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
@@ -25,16 +26,20 @@ class AniListHiltModule {
 
     @Singleton
     @Provides
-    fun provideAniListApi(application: ScopedApplication, aniListCache: AniListCache) =
-        AniListApi(application, aniListCache)
+    fun provideAniListApi(
+        application: ScopedApplication,
+        aniListCache: AniListCache,
+        networkSettings: NetworkSettings
+    ) = AniListApi(application, aniListCache, networkSettings)
 
     @Singleton
     @Provides
     fun provideAuthedAniListApi(
         scopedApplication: ScopedApplication,
         aniListCache: AniListCache,
-        aniListOAuthStore: AniListOAuthStore
-    ) = AuthedAniListApi(scopedApplication, aniListCache, aniListOAuthStore)
+        aniListOAuthStore: AniListOAuthStore,
+        networkSettings: NetworkSettings,
+    ) = AuthedAniListApi(scopedApplication, aniListCache, aniListOAuthStore, networkSettings)
 
     @Singleton
     @Provides
