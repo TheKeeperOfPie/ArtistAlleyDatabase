@@ -1,10 +1,10 @@
 package com.thekeeperofpie.artistalleydatabase.anime
 
+import android.util.Pair
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -19,27 +19,22 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.thekeeperofpie.artistalleydatabase.anime.list.AnimeUserListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.list.AnimeUserListViewModel
-import com.thekeeperofpie.artistalleydatabase.compose.AppBar
+import com.thekeeperofpie.artistalleydatabase.anime.search.AnimeSearchScreen
+import com.thekeeperofpie.artistalleydatabase.anime.search.AnimeSearchViewModel
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
 
 object AnimeHomeScreen {
 
-    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     operator fun invoke(
         onClickNav: () -> Unit,
         needAuth: () -> Boolean,
         onClickAuth: () -> Unit,
+        selectedSubIndex: () -> Int = { 0 },
         errorRes: () -> Pair<Int, Exception?>? = { null },
         onErrorDismiss: () -> Unit = { },
     ) {
         Scaffold(
-            topBar = {
-                AppBar(
-                    text = stringResource(R.string.anime_home_title),
-                    onClickNav = onClickNav
-                )
-            },
             snackbarHost = {
                 SnackbarErrorText(
                     errorRes()?.first,
@@ -59,26 +54,34 @@ object AnimeHomeScreen {
                 } else {
 
                     val navController = rememberNavController()
-                    NavHost(navController = navController, startDestination = NavDestinations.LIST) {
-                        composable(NavDestinations.LIST) {
+                    NavHost(
+                        navController = navController,
+                        startDestination = AnimeNavDestinations.values()[selectedSubIndex()].id
+                    ) {
+                        composable(AnimeNavDestinations.LIST.id) {
                             val viewModel = hiltViewModel<AnimeUserListViewModel>()
                             AnimeUserListScreen(
-                                content = viewModel.content,
+                                onClickNav = onClickNav,
+                                filterData = { viewModel.filterData() },
                                 onRefresh = viewModel::onRefresh,
-                                sort = { viewModel.sort.collectAsState().value },
-                                onSortChanged = viewModel::onSortChanged,
-                                sortAscending = { viewModel.sortAscending.collectAsState().value },
-                                onSortAscendingChanged = viewModel::onSortAscendingChanged
+                                content = { viewModel.content },
+                            )
+                        }
+                        composable(AnimeNavDestinations.SEARCH.id) {
+                            val viewModel = hiltViewModel<AnimeSearchViewModel>()
+                            AnimeSearchScreen(
+                                onClickNav = onClickNav,
+                                query = { viewModel.query.collectAsState().value },
+                                onQueryChange = viewModel::onQuery,
+                                filterData = { viewModel.filterData() },
+                                onRefresh = viewModel::onRefresh,
+                                content = { viewModel.content },
                             )
                         }
                     }
                 }
             }
         }
-    }
-
-    private object NavDestinations {
-        const val LIST = "list"
     }
 
     @Composable

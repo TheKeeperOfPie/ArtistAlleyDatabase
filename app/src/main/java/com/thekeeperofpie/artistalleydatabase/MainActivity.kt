@@ -22,6 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -44,6 +45,7 @@ import com.mxalbert.sharedelements.SharedElementsRoot
 import com.thekeeperofpie.artistalleydatabase.android_utils.NetworkSettings
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeHomeScreen
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeHomeViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryNavigator
 import com.thekeeperofpie.artistalleydatabase.art.search.ArtSearchViewModel
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseScreen
@@ -99,36 +101,35 @@ class MainActivity : ComponentActivity() {
                     val defaultSelectedItemIndex = intent.getStringExtra(STARTING_NAV_DESTINATION)
                         ?.let { navId -> navDrawerItems.indexOfFirst { it.id == navId } }
                         ?: NavDrawerItems.INITIAL_INDEX
+
+                    fun onClickNav() = scope.launch { drawerState.open() }
                     var selectedItemIndex by rememberSaveable {
                         mutableStateOf(defaultSelectedItemIndex)
                     }
                     val selectedItem = navDrawerItems[selectedItemIndex]
-
-                    fun onClickNav() = scope.launch { drawerState.open() }
+                    var selectedSubIndex by rememberSaveable {
+                        mutableStateOf(AnimeNavDestinations.DEFAULT_INDEX)
+                    }
 
                     ModalNavigationDrawer(
                         drawerState = drawerState,
                         drawerContent = {
-                            ModalDrawerSheet {
-                                navDrawerItems.forEachIndexed { index, item ->
-                                    NavigationDrawerItem(
-                                        icon = { Icon(item.icon, contentDescription = null) },
-                                        label = { Text(stringResource(item.titleRes)) },
-                                        selected = item == selectedItem,
-                                        onClick = {
-                                            scope.launch { drawerState.close() }
-                                            selectedItemIndex = index
-                                        },
-                                        modifier = Modifier
-                                            .padding(NavigationDrawerItemDefaults.ItemPadding)
-                                    )
-                                }
-                            }
+                            StartDrawer(
+                                navDrawerItems = { navDrawerItems },
+                                selectedIndex = { selectedItemIndex },
+                                onSelectIndex = { selectedItemIndex = it },
+                                selectedSubIndex = { selectedSubIndex },
+                                onSelectSubIndex = { selectedSubIndex = it },
+                                onCloseDrawer = { scope.launch { drawerState.close() } },
+                            )
                         },
                         content = {
                             val block = @Composable {
                                 when (selectedItem) {
-                                    NavDrawerItems.Anime -> AnimeScreen(::onClickNav)
+                                    NavDrawerItems.Anime -> AnimeScreen(
+                                        onClickNav = ::onClickNav,
+                                        selectedSubIndex = { selectedSubIndex },
+                                    )
                                     NavDrawerItems.Art -> ArtScreen(::onClickNav)
                                     NavDrawerItems.Cds -> CdsScreen(::onClickNav)
                                     NavDrawerItems.Browse -> BrowseScreen(::onClickNav)
@@ -207,7 +208,73 @@ class MainActivity : ComponentActivity() {
     }
 
     @Composable
-    private fun AnimeScreen(onClickNav: () -> Unit) {
+    private fun StartDrawer(
+        navDrawerItems: () -> List<NavDrawerItems>,
+        selectedIndex: () -> Int,
+        onSelectIndex: (Int) -> Unit,
+        selectedSubIndex: () -> Int,
+        onSelectSubIndex: (Int) -> Unit,
+        onCloseDrawer: () -> Unit,
+    ) {
+        val animeScreenNavIndex = remember { NavDrawerItems.items().indexOf(NavDrawerItems.Anime) }
+        ModalDrawerSheet {
+            navDrawerItems().forEachIndexed { index, item ->
+                if (index == animeScreenNavIndex) {
+                    // Anime item is custom to account for sub-destinations
+                    NavigationDrawerItem(
+                        icon = { Icon(item.icon, contentDescription = null) },
+                        label = { Text(stringResource(item.titleRes)) },
+                        selected = false,
+                        onClick = {
+                            onCloseDrawer()
+                            onSelectIndex(index)
+                        },
+                        modifier = Modifier
+                            .padding(NavigationDrawerItemDefaults.ItemPadding)
+                    )
+                    if (selectedIndex() == animeScreenNavIndex) {
+                        AnimeNavDestinations.values()
+                            .forEachIndexed { subIndex, destination ->
+                                NavigationDrawerItem(
+                                    label = {
+                                        Text(
+                                            stringResource(destination.textRes)
+                                        )
+                                    },
+                                    selected = selectedSubIndex() == subIndex,
+                                    onClick = {
+                                        onCloseDrawer()
+                                        onSelectSubIndex(subIndex)
+                                    },
+                                    modifier = Modifier
+                                        .padding(NavigationDrawerItemDefaults.ItemPadding)
+                                        .padding(start = 24.dp)
+                                )
+                            }
+                    }
+                    return@forEachIndexed
+                }
+
+                NavigationDrawerItem(
+                    icon = { Icon(item.icon, contentDescription = null) },
+                    label = { Text(stringResource(item.titleRes)) },
+                    selected = index == selectedIndex(),
+                    onClick = {
+                        onCloseDrawer()
+                        onSelectIndex(index)
+                    },
+                    modifier = Modifier
+                        .padding(NavigationDrawerItemDefaults.ItemPadding)
+                )
+            }
+        }
+    }
+
+    @Composable
+    private fun AnimeScreen(
+        onClickNav: () -> Unit,
+        selectedSubIndex: () -> Int,
+    ) {
         val navController = rememberNavController()
         SharedElementsRoot {
             NavHost(navController = navController, startDestination = NavDestinations.HOME) {
@@ -217,6 +284,7 @@ class MainActivity : ComponentActivity() {
                         onClickNav = onClickNav,
                         needAuth = { viewModel.needAuth },
                         onClickAuth = { viewModel.onClickAuth(this@MainActivity) },
+                        selectedSubIndex = selectedSubIndex,
                     )
                 }
             }

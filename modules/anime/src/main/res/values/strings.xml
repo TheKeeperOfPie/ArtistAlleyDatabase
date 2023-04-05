@@ -5,6 +5,27 @@
     <string name="anime_home_title">Anime</string>
     <string name="anime_media_cover_image">Media cover image</string>
     <string name="anime_media_list_error_loading">Error loading media list</string>
+    <string name="anime_screen_user_list">User list</string>
+    <string name="anime_screen_search">Search</string>
+
+    <string name="anime_media_sort_default">Default</string>
+    <string name="anime_media_sort_id">ID</string>
+    <string name="anime_media_sort_title_romaji">Title (Romaji)</string>
+    <string name="anime_media_sort_title_english">Title (English)</string>
+    <string name="anime_media_sort_title_native">Title (native)</string>
+    <string name="anime_media_sort_type">Type</string>
+    <string name="anime_media_sort_format">Format</string>
+    <string name="anime_media_sort_start_date">Start date</string>
+    <string name="anime_media_sort_end_date">Finish date</string>
+    <string name="anime_media_sort_score">Score</string>
+    <string name="anime_media_sort_popularity">Popularity</string>
+    <string name="anime_media_sort_trending">Trending</string>
+    <string name="anime_media_sort_episodes">Episodes</string>
+    <string name="anime_media_sort_duration">Duration</string>
+    <string name="anime_media_sort_status">Status</string>
+    <string name="anime_media_sort_updated_at">Last updated</string>
+    <string name="anime_media_sort_favourites">Favorites</string>
+
     <string name="anime_media_list_sort_default">Default</string>
     <string name="anime_media_list_sort_score">Score</string>
     <string name="anime_media_list_sort_status">Status</string>
@@ -18,6 +39,7 @@
     <string name="anime_media_list_sort_title_english">Title (English)</string>
     <string name="anime_media_list_sort_title_native">Title (native)</string>
     <string name="anime_media_list_sort_title_popularity">Popularity</string>
+
     <string name="anime_media_filter_fab_content_description">Media list filter options</string>
     <string name="anime_media_filter_sort_label">Sort order</string>
     <string name="anime_media_filter_sort_dropdown_content_description">Sort order dropdown</string>
@@ -25,4 +47,5 @@
     <string name="anime_media_filter_sort_ascending_dropdown_content_description">Sort ascending dropdown</string>
     <string name="anime_media_filter_sort_ascending">Ascending</string>
     <string name="anime_media_filter_sort_descending">Descending</string>
+    <string name="anime_search">Search anime…</string>
 </resources>

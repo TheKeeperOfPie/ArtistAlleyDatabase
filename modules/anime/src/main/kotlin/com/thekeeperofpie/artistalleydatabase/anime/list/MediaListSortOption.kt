@@ -3,8 +3,10 @@ package com.thekeeperofpie.artistalleydatabase.anime.list
 import androidx.annotation.StringRes
 import com.anilist.type.MediaListSort
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaFilterController
 
-enum class MediaListSortOption(@StringRes val textRes: Int) {
+enum class MediaListSortOption(@StringRes override val textRes: Int) :
+    AnimeMediaFilterController.Data.SortOption {
 
     DEFAULT(R.string.anime_media_list_sort_default),
     SCORE(R.string.anime_media_list_sort_score),

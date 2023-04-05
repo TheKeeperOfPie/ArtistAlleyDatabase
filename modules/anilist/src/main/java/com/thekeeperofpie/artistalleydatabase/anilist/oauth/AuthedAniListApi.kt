@@ -2,8 +2,10 @@ package com.thekeeperofpie.artistalleydatabase.anilist.oauth
 
 import android.util.Log
 import com.anilist.AuthedUserQuery
+import com.anilist.MediaAdvancedSearchQuery
 import com.anilist.UserMediaListQuery
 import com.anilist.type.MediaListSort
+import com.anilist.type.MediaSort
 import com.anilist.type.MediaType
 import com.apollographql.apollo3.ApolloClient
 import com.apollographql.apollo3.api.Optional
@@ -76,6 +78,29 @@ class AuthedAniListApi(
                 sort = Optional.presentIfNotNull(sort.toList().ifEmpty { null })
             )
         )?.mediaListCollection
+
+    suspend fun searchMedia(
+        query: String,
+        vararg sort: MediaSort = emptyArray()
+    ): List<MediaAdvancedSearchQuery.Data.Page.Medium>? {
+        val sortParam =
+            if (query.isEmpty() && sort.size == 1 && sort.contains(MediaSort.SEARCH_MATCH)) {
+                // On a default, empty search, sort by TRENDING_DESC
+                Optional.Present(listOf(MediaSort.TRENDING_DESC))
+            } else {
+                Optional.presentIfNotNull(sort.toList().ifEmpty { null })
+            }
+
+        return query(
+            MediaAdvancedSearchQuery(
+                search = Optional.presentIfNotNull(query.ifEmpty { null }),
+                page = Optional.Present(0),
+                perPage = Optional.Present(10),
+                type = MediaType.ANIME,
+                sort = sortParam,
+            )
+        )?.page?.media?.filterNotNull()
+    }
 
     private suspend fun <D : Query.Data> query(query: Query<D>) =
         apolloClient.query(query).execute().data

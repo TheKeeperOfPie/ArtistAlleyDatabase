@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.anime.list
+package com.thekeeperofpie.artistalleydatabase.anime.search
 
 import android.os.SystemClock
 import androidx.annotation.StringRes
@@ -7,10 +7,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.anilist.AuthedUserQuery
+import com.anilist.type.MediaSort
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaFilterController
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaSortOption
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -18,7 +19,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.update
@@ -28,11 +28,12 @@ import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
 
 @HiltViewModel
-class AnimeUserListViewModel @Inject constructor(aniListApi: AuthedAniListApi) : ViewModel() {
+class AnimeSearchViewModel @Inject constructor(aniListApi: AuthedAniListApi) : ViewModel() {
 
+    val query = MutableStateFlow("")
     var content by mutableStateOf<ContentState>(ContentState.LoadingEmpty)
 
-    private val filterController = AnimeMediaFilterController(MediaListSortOption::class)
+    private val filterController = AnimeMediaFilterController(MediaSortOption::class)
 
     private val refreshUptimeMillis = MutableStateFlow(-1L)
 
@@ -40,7 +41,7 @@ class AnimeUserListViewModel @Inject constructor(aniListApi: AuthedAniListApi) :
         viewModelScope.launch(CustomDispatchers.Main) {
             @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
             combine(
-                aniListApi.authedUser.filterNotNull(),
+                query.debounce(200.milliseconds),
                 refreshUptimeMillis,
                 filterController.sort,
                 filterController.sortAscending,
@@ -53,24 +54,11 @@ class AnimeUserListViewModel @Inject constructor(aniListApi: AuthedAniListApi) :
                             emit(ContentState.LoadingEmpty)
                             try {
                                 emit(
-                                    aniListApi.userMediaList(
-                                        userId = it.authedUser.id,
+                                    aniListApi.searchMedia(
+                                        query = it.query,
                                         sort = it.sortApiValue()
-                                    )?.lists
-                                        ?.filterNotNull()
-                                        ?.map {
-                                            mutableListOf<AnimeUserListScreen.Entry>().apply {
-                                                this += AnimeUserListScreen.Entry.Header(
-                                                    it.name.orEmpty(),
-                                                    it.status
-                                                )
-                                                this += it.entries
-                                                    ?.mapNotNull { it?.media }
-                                                    ?.map(AnimeUserListScreen.Entry::Item)
-                                                    .orEmpty()
-                                            }
-                                        }
-                                        ?.flatten()
+                                    )
+                                        ?.map(AnimeSearchScreen.Entry::Item)
                                         ?.let(ContentState::Success)
                                         ?: ContentState.Error()
                                 )
@@ -87,17 +75,18 @@ class AnimeUserListViewModel @Inject constructor(aniListApi: AuthedAniListApi) :
     fun filterData() = filterController.data()
 
     fun onRefresh() = refreshUptimeMillis.update { SystemClock.uptimeMillis() }
+    fun onQuery(query: String) = this.query.update { query }
 
     private data class RefreshParams(
-        val authedUser: AuthedUserQuery.Data.Viewer,
-        val requestMillis: Long = SystemClock.uptimeMillis(),
-        val sort: MediaListSortOption,
+        val query: String,
+        val requestMillis: Long,
+        val sort: MediaSortOption,
         val sortAscending: Boolean,
     ) {
-        fun sortApiValue() = if (sort == MediaListSortOption.DEFAULT) {
-            emptyArray()
+        fun sortApiValue() = if (sort == MediaSortOption.DEFAULT) {
+            arrayOf(MediaSort.SEARCH_MATCH)
         } else {
-            arrayOf(sort.toApiValue(sortAscending)!!)
+            arrayOf(sort.toApiValue(sortAscending))
         }
     }
 
@@ -105,7 +94,7 @@ class AnimeUserListViewModel @Inject constructor(aniListApi: AuthedAniListApi) :
         object LoadingEmpty : ContentState
 
         data class Success(
-            val entries: List<AnimeUserListScreen.Entry>,
+            val entries: List<AnimeSearchScreen.Entry> = emptyList(),
             val loading: Boolean = false,
         ) : ContentState
 

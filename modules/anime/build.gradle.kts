@@ -19,7 +19,7 @@ dependencies {
 
     implementation(libs.lifecycle.viewmodel.ktx)
 
-    implementation(libs.compose.ui)
+    api(libs.compose.ui)
     implementation(libs.compose.ui.tooling.preview)
     runtimeOnly(libs.compose.ui.tooling)
     implementation(libs.material3)
