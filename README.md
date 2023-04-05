@@ -40,6 +40,8 @@ TODO: Need to find an artist willing to license their work to be displayed in th
 
 ## Build
 
+Instructions assume Windows 11 environment.
+
 1. Clone project with `git clone https://github.com/TheKeeperOfPie/ArtistAlleyDatabase.git`
 2. Fetch the AniList GraphQL schema via  
    `./gradlew downloadAniListApolloSchemaFromIntrospection`
