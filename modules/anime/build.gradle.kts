@@ -26,6 +26,7 @@ dependencies {
 
     implementation(libs.coil.compose)
     implementation(libs.material.icons.extended)
+    implementation(libs.accompanist.placeholder.material)
 
     implementation(libs.navigation.compose)
     implementation(libs.hilt.navigation.compose)

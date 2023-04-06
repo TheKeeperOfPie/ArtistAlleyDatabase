@@ -1,13 +1,13 @@
 package com.thekeeperofpie.artistalleydatabase.anime.search
 
 import android.os.SystemClock
-import androidx.annotation.StringRes
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.anilist.type.MediaSort
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import androidx.paging.map
+import com.anilist.MediaAdvancedSearchQuery.Data.Page.Medium
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaFilterController
@@ -20,10 +20,10 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -31,7 +31,7 @@ import kotlin.time.Duration.Companion.milliseconds
 class AnimeSearchViewModel @Inject constructor(aniListApi: AuthedAniListApi) : ViewModel() {
 
     val query = MutableStateFlow("")
-    var content by mutableStateOf<ContentState>(ContentState.LoadingEmpty)
+    var content = MutableStateFlow(PagingData.empty<AnimeSearchScreen.Entry>())
 
     private val filterController = AnimeMediaFilterController(MediaSortOption::class)
 
@@ -45,30 +45,19 @@ class AnimeSearchViewModel @Inject constructor(aniListApi: AuthedAniListApi) : V
                 refreshUptimeMillis,
                 filterController.sort,
                 filterController.sortAscending,
-                ::RefreshParams
+                AnimeMediaSearchPagingSource::RefreshParams
             )
+                .flowOn(CustomDispatchers.IO)
                 .debounce(100.milliseconds)
                 .flatMapLatest {
-                    withContext(CustomDispatchers.IO) {
-                        flow {
-                            emit(ContentState.LoadingEmpty)
-                            try {
-                                emit(
-                                    aniListApi.searchMedia(
-                                        query = it.query,
-                                        sort = it.sortApiValue()
-                                    )
-                                        ?.map(AnimeSearchScreen.Entry::Item)
-                                        ?.let(ContentState::Success)
-                                        ?: ContentState.Error()
-                                )
-                            } catch (e: Exception) {
-                                emit(ContentState.Error(exception = e))
-                            }
-                        }
-                    }
+                    Pager(PagingConfig(pageSize = 10, enablePlaceholders = true)) {
+                        AnimeMediaSearchPagingSource(aniListApi, it)
+                    }.flow
                 }
-                .collectLatest { content = it }
+                .map {
+                    it.map<Medium, AnimeSearchScreen.Entry> { AnimeSearchScreen.Entry.Item(it) }
+                }
+                .collectLatest(content::emit)
         }
     }
 
@@ -76,31 +65,4 @@ class AnimeSearchViewModel @Inject constructor(aniListApi: AuthedAniListApi) : V
 
     fun onRefresh() = refreshUptimeMillis.update { SystemClock.uptimeMillis() }
     fun onQuery(query: String) = this.query.update { query }
-
-    private data class RefreshParams(
-        val query: String,
-        val requestMillis: Long,
-        val sort: MediaSortOption,
-        val sortAscending: Boolean,
-    ) {
-        fun sortApiValue() = if (sort == MediaSortOption.DEFAULT) {
-            arrayOf(MediaSort.SEARCH_MATCH)
-        } else {
-            arrayOf(sort.toApiValue(sortAscending))
-        }
-    }
-
-    sealed interface ContentState {
-        object LoadingEmpty : ContentState
-
-        data class Success(
-            val entries: List<AnimeSearchScreen.Entry> = emptyList(),
-            val loading: Boolean = false,
-        ) : ContentState
-
-        data class Error(
-            @StringRes val errorRes: Int? = null,
-            val exception: Exception? = null
-        ) : ContentState
-    }
 }

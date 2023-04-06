@@ -18,6 +18,10 @@ fragment AniListMedia on Media {
 
 query MediaAdvancedSearch($page: Int, $perPage: Int, $search: String, $type: MediaType!, $sort: [MediaSort]) {
     Page(page: $page, perPage: $perPage) @nonnull {
+        pageInfo @nonnull {
+            hasNextPage
+            total
+        }
         media(search: $search, type: $type, sort: $sort) @nonnull {
             id
             title {

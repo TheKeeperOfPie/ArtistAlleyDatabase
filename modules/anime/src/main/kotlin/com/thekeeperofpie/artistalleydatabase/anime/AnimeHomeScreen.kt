@@ -17,6 +17,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.paging.compose.collectAsLazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.anime.list.AnimeUserListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.list.AnimeUserListViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.search.AnimeSearchScreen
@@ -75,7 +76,7 @@ object AnimeHomeScreen {
                                 onQueryChange = viewModel::onQuery,
                                 filterData = { viewModel.filterData() },
                                 onRefresh = viewModel::onRefresh,
-                                content = { viewModel.content },
+                                content = { viewModel.content.collectAsLazyPagingItems() },
                             )
                         }
                     }

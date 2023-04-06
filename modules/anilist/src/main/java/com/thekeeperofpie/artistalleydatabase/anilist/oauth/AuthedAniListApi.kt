@@ -8,6 +8,7 @@ import com.anilist.type.MediaListSort
 import com.anilist.type.MediaSort
 import com.anilist.type.MediaType
 import com.apollographql.apollo3.ApolloClient
+import com.apollographql.apollo3.api.ApolloResponse
 import com.apollographql.apollo3.api.Optional
 import com.apollographql.apollo3.api.Query
 import com.apollographql.apollo3.network.http.DefaultHttpEngine
@@ -64,7 +65,7 @@ class AuthedAniListApi(
         }
     }
 
-    private suspend fun viewer() = query(AuthedUserQuery())?.viewer
+    private suspend fun viewer() = query(AuthedUserQuery()).data?.viewer
 
     suspend fun userMediaList(
         userId: Int,
@@ -77,12 +78,14 @@ class AuthedAniListApi(
                 type = type,
                 sort = Optional.presentIfNotNull(sort.toList().ifEmpty { null })
             )
-        )?.mediaListCollection
+        ).data?.mediaListCollection
 
     suspend fun searchMedia(
         query: String,
+        page: Int? = null,
+        perPage: Int? = null,
         vararg sort: MediaSort = emptyArray()
-    ): List<MediaAdvancedSearchQuery.Data.Page.Medium>? {
+    ): ApolloResponse<MediaAdvancedSearchQuery.Data> {
         val sortParam =
             if (query.isEmpty() && sort.size == 1 && sort.contains(MediaSort.SEARCH_MATCH)) {
                 // On a default, empty search, sort by TRENDING_DESC
@@ -94,14 +97,14 @@ class AuthedAniListApi(
         return query(
             MediaAdvancedSearchQuery(
                 search = Optional.presentIfNotNull(query.ifEmpty { null }),
-                page = Optional.Present(0),
-                perPage = Optional.Present(10),
+                page = Optional.Present(page),
+                perPage = Optional.Present(perPage),
                 type = MediaType.ANIME,
                 sort = sortParam,
             )
-        )?.page?.media?.filterNotNull()
+        )
     }
 
     private suspend fun <D : Query.Data> query(query: Query<D>) =
-        apolloClient.query(query).execute().data
+        apolloClient.query(query).execute()
 }

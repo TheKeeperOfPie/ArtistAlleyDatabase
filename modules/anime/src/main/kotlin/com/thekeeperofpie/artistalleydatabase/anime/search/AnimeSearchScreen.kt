@@ -8,12 +8,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -28,7 +28,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.anilist.MediaAdvancedSearchQuery
+import androidx.paging.LoadState
+import androidx.paging.PagingData
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.items
+import com.anilist.MediaAdvancedSearchQuery.Data.Page.Medium
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeListMediaRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaFilterController
@@ -36,6 +41,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaFilterOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.compose.NavMenuIconButton
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
+import kotlinx.coroutines.flow.flowOf
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 object AnimeSearchScreen {
@@ -47,7 +53,9 @@ object AnimeSearchScreen {
         onQueryChange: (String) -> Unit = {},
         filterData: () -> AnimeMediaFilterController.Data<MediaSortOption>,
         onRefresh: () -> Unit = {},
-        content: () -> AnimeSearchViewModel.ContentState,
+        content: @Composable () -> LazyPagingItems<Entry> = {
+            flowOf(PagingData.empty<Entry>()).collectAsLazyPagingItems()
+        },
     ) {
         Scaffold(
             topBar = {
@@ -88,18 +96,13 @@ object AnimeSearchScreen {
 
     @Composable
     private fun MainContent(
-        content: () -> AnimeSearchViewModel.ContentState,
+        content: @Composable () -> LazyPagingItems<Entry>,
         modifier: Modifier = Modifier,
         onRefresh: () -> Unit = {},
     ) {
         @Suppress("NAME_SHADOWING")
         val content = content()
-        val refreshing = when (content) {
-            AnimeSearchViewModel.ContentState.LoadingEmpty -> true
-            is AnimeSearchViewModel.ContentState.Success -> content.loading
-            is AnimeSearchViewModel.ContentState.Error -> false
-        }
-
+        val refreshing = content.loadState.refresh is LoadState.Loading
         val pullRefreshState = rememberPullRefreshState(refreshing, onRefresh)
 
         Box(
@@ -107,16 +110,19 @@ object AnimeSearchScreen {
                 .fillMaxSize()
                 .pullRefresh(pullRefreshState)
         ) {
-            when (content) {
-                is AnimeSearchViewModel.ContentState.Error -> Error(content)
-                AnimeSearchViewModel.ContentState.LoadingEmpty -> Unit // pullRefresh handles this
-                is AnimeSearchViewModel.ContentState.Success -> LazyColumn {
-                    items(content.entries, { it.id.scopedId }) {
-                        when (it) {
-                            is Entry.Item -> AnimeListMediaRow(it)
-                            is Entry.LoadMore -> TODO()
-                        }
+            LazyColumn {
+                items(content, { it.id.scopedId }) {
+                    when (it) {
+                        is Entry.Item -> AnimeListMediaRow(it)
+                        is Entry.LoadMore -> TODO()
+                        null -> AnimeListMediaRow(AnimeListMediaRow.Entry.Loading)
                     }
+                }
+
+                when (content.loadState.append) {
+                    is LoadState.Loading -> item(key = "load_more_append") { LoadingMore() }
+                    is LoadState.Error -> item(key = "load_more_error") { Error() }
+                    is LoadState.NotLoading -> Unit
                 }
             }
 
@@ -129,13 +135,23 @@ object AnimeSearchScreen {
     }
 
     @Composable
-    private fun Error(error: AnimeSearchViewModel.ContentState.Error) {
+    private fun Error() {
         Text(
-            error.errorRes?.let { stringResource(it) }
-                ?: stringResource(id = R.string.anime_media_list_error_loading),
+            stringResource(id = R.string.anime_media_list_error_loading),
             style = MaterialTheme.typography.bodyLarge,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
         )
+    }
+
+    @Composable
+    private fun LoadingMore() {
+        Box(
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 10.dp)
+        ) {
+            CircularProgressIndicator()
+        }
     }
 
     sealed interface Entry {
@@ -143,7 +159,7 @@ object AnimeSearchScreen {
         val id: EntryId
 
         data class Item(
-            val media: MediaAdvancedSearchQuery.Data.Page.Medium,
+            val media: Medium,
         ) : Entry, AnimeListMediaRow.Entry {
             override val id = EntryId("item", media.id.toString())
             override val image = media.coverImage?.large
@@ -162,17 +178,19 @@ object AnimeSearchScreen {
 private fun Preview() {
     AnimeSearchScreen(
         content = {
-            AnimeSearchViewModel.ContentState.Success(
-                listOf(
-                    AnimeSearchScreen.Entry.Item(
-                        MediaAdvancedSearchQuery.Data.Page.Medium(
-                            title = MediaAdvancedSearchQuery.Data.Page.Medium.Title(
-                                userPreferred = "Ano Hi Mita Hana no Namae wo Bokutachi wa Mada Shiranai.",
-                            ),
+            flowOf(
+                PagingData.from<AnimeSearchScreen.Entry>(
+                    listOf(
+                        AnimeSearchScreen.Entry.Item(
+                            Medium(
+                                title = Medium.Title(
+                                    userPreferred = "Ano Hi Mita Hana no Namae wo Bokutachi wa Mada Shiranai.",
+                                ),
+                            )
                         )
                     )
                 )
-            )
+            ).collectAsLazyPagingItems()
         },
         filterData = { AnimeMediaFilterController.Data.forPreview() }
     )
