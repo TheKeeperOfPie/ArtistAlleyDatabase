@@ -28,8 +28,7 @@ android {
     }
 }
 
-val aniListSchemaFile: File =
-    project.layout.buildDirectory.file("graphql/aniList.graphqls").get().asFile
+val aniListSchemaFile: File = project.file("src/main/graphql/anilist/schema.graphqls")
 apollo {
     service("aniList") {
         packageName.set("com.anilist")
