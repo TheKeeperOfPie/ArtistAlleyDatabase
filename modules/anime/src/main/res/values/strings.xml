@@ -48,4 +48,6 @@
     <string name="anime_media_filter_sort_ascending">Ascending</string>
     <string name="anime_media_filter_sort_descending">Descending</string>
     <string name="anime_search">Search anime…</string>
+    <string name="anime_media_genre_chip_state_content_description">Genre chip state</string>
+    <string name="anime_media_filter_genre_label">Genres</string>
 </resources>

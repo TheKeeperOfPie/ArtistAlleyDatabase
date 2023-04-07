@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.anilist.oauth
 
 import android.util.Log
 import com.anilist.AuthedUserQuery
+import com.anilist.GenresQuery
 import com.anilist.MediaAdvancedSearchQuery
 import com.anilist.UserMediaListQuery
 import com.anilist.type.MediaListSort
@@ -84,7 +85,9 @@ class AuthedAniListApi(
         query: String,
         page: Int? = null,
         perPage: Int? = null,
-        vararg sort: MediaSort = emptyArray()
+        vararg sort: MediaSort = emptyArray(),
+        genreIn: List<String>,
+        genreNotIn: List<String>,
     ): ApolloResponse<MediaAdvancedSearchQuery.Data> {
         val sortParam =
             if (query.isEmpty() && sort.size == 1 && sort.contains(MediaSort.SEARCH_MATCH)) {
@@ -101,9 +104,13 @@ class AuthedAniListApi(
                 perPage = Optional.Present(perPage),
                 type = MediaType.ANIME,
                 sort = sortParam,
+                genreIn = Optional.presentIfNotNull(genreIn.ifEmpty { null }),
+                genreNotIn = Optional.presentIfNotNull(genreNotIn.ifEmpty { null }),
             )
         )
     }
+
+    suspend fun genres() = query(GenresQuery())
 
     private suspend fun <D : Query.Data> query(query: Query<D>) =
         apolloClient.query(query).execute()

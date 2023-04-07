@@ -16,13 +16,15 @@ fragment AniListMedia on Media {
     synonyms
 }
 
-query MediaAdvancedSearch($page: Int, $perPage: Int, $search: String, $type: MediaType!, $sort: [MediaSort]) {
+query MediaAdvancedSearch($page: Int, $perPage: Int, $search: String, $type: MediaType!,
+    $sort: [MediaSort], $genreIn: [String], $genreNotIn: [String]) {
     Page(page: $page, perPage: $perPage) @nonnull {
         pageInfo @nonnull {
             hasNextPage
             total
         }
-        media(search: $search, type: $type, sort: $sort) @nonnull {
+        media(search: $search, type: $type, sort: $sort, genre_in: $genreIn,
+            genre_not_in: $genreNotIn) @nonnull {
             id
             title {
                 userPreferred

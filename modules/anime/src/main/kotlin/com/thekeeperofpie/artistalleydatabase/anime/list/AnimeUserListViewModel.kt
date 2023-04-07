@@ -32,11 +32,13 @@ class AnimeUserListViewModel @Inject constructor(aniListApi: AuthedAniListApi) :
 
     var content by mutableStateOf<ContentState>(ContentState.LoadingEmpty)
 
-    private val filterController = AnimeMediaFilterController(MediaListSortOption::class)
+    private val filterController =
+        AnimeMediaFilterController(MediaListSortOption::class, aniListApi)
 
     private val refreshUptimeMillis = MutableStateFlow(-1L)
 
     init {
+        filterController.initialize(this, refreshUptimeMillis)
         viewModelScope.launch(CustomDispatchers.Main) {
             @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
             combine(

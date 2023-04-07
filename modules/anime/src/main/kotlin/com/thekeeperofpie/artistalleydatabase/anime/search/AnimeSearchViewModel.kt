@@ -33,11 +33,12 @@ class AnimeSearchViewModel @Inject constructor(aniListApi: AuthedAniListApi) : V
     val query = MutableStateFlow("")
     var content = MutableStateFlow(PagingData.empty<AnimeSearchScreen.Entry>())
 
-    private val filterController = AnimeMediaFilterController(MediaSortOption::class)
+    private val filterController = AnimeMediaFilterController(MediaSortOption::class, aniListApi)
 
     private val refreshUptimeMillis = MutableStateFlow(-1L)
 
     init {
+        filterController.initialize(this, refreshUptimeMillis)
         viewModelScope.launch(CustomDispatchers.Main) {
             @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
             combine(
@@ -45,6 +46,7 @@ class AnimeSearchViewModel @Inject constructor(aniListApi: AuthedAniListApi) : V
                 refreshUptimeMillis,
                 filterController.sort,
                 filterController.sortAscending,
+                filterController.genres,
                 AnimeMediaSearchPagingSource::RefreshParams
             )
                 .flowOn(CustomDispatchers.IO)
