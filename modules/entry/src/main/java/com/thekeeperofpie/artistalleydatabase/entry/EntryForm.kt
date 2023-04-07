@@ -780,7 +780,7 @@ private fun DropdownSection(section: EntrySection.Dropdown) {
                     ) {
                         TrailingDropdownIcon(
                             expanded = section.expanded,
-                            contentDescription = section.arrowContentDescription,
+                            contentDescription = stringResource(section.arrowContentDescription),
                         )
                     }
                 },
@@ -1027,12 +1027,14 @@ fun ImageSelectBoxInner(
             exit = fadeOut(),
             modifier = Modifier.align(Alignment.BottomCenter)
         ) {
-            TrailingDropdownIcon(
-                expanded = expanded(),
-                contentDescription = R.string.entry_image_expand_content_description,
-                onClick = { setExpanded(!expanded()) },
-                modifier = Modifier.size(60.dp)
-            )
+            IconButton(onClick = { setExpanded(!expanded()) }, modifier = Modifier.size(60.dp)) {
+                TrailingDropdownIcon(
+                    expanded = expanded(),
+                    contentDescription = stringResource(
+                        R.string.entry_image_expand_content_description
+                    ),
+                )
+            }
         }
     }
 }

@@ -63,6 +63,9 @@ dependencyAnalysis {
                     "de.mannodermaus.junit5:android-test-core",
                     "org.mockito:mockito-android",
 
+                    // This isn't detected properly, not sure why
+                    "com.google.accompanist:accompanist-flowlayout",
+
                     // Exclude the list of modules as the plugin doesn't
                     // play well with the Kotlin testFixtures hack
                     ":modules:android-utils",

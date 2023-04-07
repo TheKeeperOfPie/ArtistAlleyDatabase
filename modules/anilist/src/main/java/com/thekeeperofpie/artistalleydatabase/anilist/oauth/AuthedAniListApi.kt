@@ -4,6 +4,7 @@ import android.util.Log
 import com.anilist.AuthedUserQuery
 import com.anilist.GenresQuery
 import com.anilist.MediaAdvancedSearchQuery
+import com.anilist.MediaTagsQuery
 import com.anilist.UserMediaListQuery
 import com.anilist.type.MediaListSort
 import com.anilist.type.MediaSort
@@ -88,6 +89,8 @@ class AuthedAniListApi(
         vararg sort: MediaSort = emptyArray(),
         genreIn: List<String>,
         genreNotIn: List<String>,
+        tagIn: List<String>,
+        tagNotIn: List<String>,
     ): ApolloResponse<MediaAdvancedSearchQuery.Data> {
         val sortParam =
             if (query.isEmpty() && sort.size == 1 && sort.contains(MediaSort.SEARCH_MATCH)) {
@@ -106,11 +109,15 @@ class AuthedAniListApi(
                 sort = sortParam,
                 genreIn = Optional.presentIfNotNull(genreIn.ifEmpty { null }),
                 genreNotIn = Optional.presentIfNotNull(genreNotIn.ifEmpty { null }),
+                tagIn = Optional.presentIfNotNull(tagIn.ifEmpty { null }),
+                tagNotIn = Optional.presentIfNotNull(tagNotIn.ifEmpty { null }),
             )
         )
     }
 
     suspend fun genres() = query(GenresQuery())
+
+    suspend fun tags() = query(MediaTagsQuery())
 
     private suspend fun <D : Query.Data> query(query: Query<D>) =
         apolloClient.query(query).execute()

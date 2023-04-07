@@ -71,6 +71,7 @@ dependencyResolutionManagement {
             library("androidx.work:work-runtime:2.8.1")
             library("com.apollographql.apollo3:apollo-runtime:3.8.0")
             library("com.google.accompanist:accompanist-placeholder-material:0.31.0-alpha")
+            library("com.google.accompanist:accompanist-flowlayout:0.31.0-alpha")
             library("com.google.dagger:hilt-android:2.45")
             library("com.google.truth:truth:1.1.3")
             library("com.linkedin.dexmaker:dexmaker-mockito-inline:2.28.3")

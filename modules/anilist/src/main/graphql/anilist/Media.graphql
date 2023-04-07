@@ -17,14 +17,15 @@ fragment AniListMedia on Media {
 }
 
 query MediaAdvancedSearch($page: Int, $perPage: Int, $search: String, $type: MediaType!,
-    $sort: [MediaSort], $genreIn: [String], $genreNotIn: [String]) {
+    $sort: [MediaSort], $genreIn: [String], $genreNotIn: [String], $tagIn: [String],
+    $tagNotIn: [String]) {
     Page(page: $page, perPage: $perPage) @nonnull {
         pageInfo @nonnull {
             hasNextPage
             total
         }
         media(search: $search, type: $type, sort: $sort, genre_in: $genreIn,
-            genre_not_in: $genreNotIn) @nonnull {
+            genre_not_in: $genreNotIn, tag_in: $tagIn, tag_not_in: $tagNotIn) @nonnull {
             id
             title {
                 userPreferred

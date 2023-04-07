@@ -339,9 +339,9 @@ fun Modifier.border(
  * Copy of [ExposedDropdownMenuDefaults.TrailingIcon] to allow custom content descriptions.
  */
 @Composable
-fun TrailingDropdownIcon(
+fun TrailingDropdownIconButton(
     expanded: Boolean,
-    @StringRes contentDescription: Int,
+    contentDescription: String?,
     modifier: Modifier = Modifier,
     icon: ImageVector = Icons.Filled.ArrowDropDown,
     iconTint: Color = LocalContentColor.current,
@@ -351,10 +351,29 @@ fun TrailingDropdownIcon(
         Icon(
             imageVector = icon,
             tint = iconTint,
-            contentDescription = stringResource(contentDescription),
+            contentDescription = contentDescription,
             modifier = Modifier.rotate(if (expanded) 180f else 0f)
         )
     }
+}
+
+/**
+ * Copy of [ExposedDropdownMenuDefaults.TrailingIcon] to allow custom content descriptions.
+ */
+@Composable
+fun TrailingDropdownIcon(
+    expanded: Boolean,
+    contentDescription: String?,
+    modifier: Modifier = Modifier,
+    icon: ImageVector = Icons.Filled.ArrowDropDown,
+    iconTint: Color = LocalContentColor.current,
+) {
+    Icon(
+        imageVector = icon,
+        tint = iconTint,
+        contentDescription = contentDescription,
+        modifier = modifier.rotate(if (expanded) 180f else 0f)
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -382,7 +401,7 @@ fun <T> ItemDropdown(
             trailingIcon = {
                 TrailingDropdownIcon(
                     expanded = expanded,
-                    contentDescription = iconContentDescription
+                    contentDescription = stringResource(iconContentDescription),
                 )
             },
             colors = ExposedDropdownMenuDefaults.textFieldColors(),

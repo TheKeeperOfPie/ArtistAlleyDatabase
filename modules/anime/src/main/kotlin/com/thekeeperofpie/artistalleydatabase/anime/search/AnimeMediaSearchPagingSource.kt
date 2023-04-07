@@ -7,12 +7,12 @@ import com.anilist.type.MediaSort
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaGenreEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaSortOption
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaTagEntry
 
 class AnimeMediaSearchPagingSource(
     private val aniListApi: AuthedAniListApi,
     private val refreshParams: RefreshParams,
-) :
-    PagingSource<Int, MediaAdvancedSearchQuery.Data.Page.Medium>() {
+) : PagingSource<Int, MediaAdvancedSearchQuery.Data.Page.Medium>() {
 
     override fun getRefreshKey(state: PagingState<Int, MediaAdvancedSearchQuery.Data.Page.Medium>) =
         state.anchorPosition?.let {
@@ -23,6 +23,10 @@ class AnimeMediaSearchPagingSource(
     override suspend fun load(
         params: LoadParams<Int>,
     ): LoadResult<Int, MediaAdvancedSearchQuery.Data.Page.Medium> = try {
+        val flattenedTags = refreshParams.tagsByCategory
+            .map { it.value }
+            .flatten()
+
         // AniList pages start at 1
         val page = params.key ?: 1
         val result = aniListApi.searchMedia(
@@ -35,6 +39,12 @@ class AnimeMediaSearchPagingSource(
             genreNotIn = refreshParams.genres
                 .filter { it.state == MediaGenreEntry.State.EXCLUDE }
                 .map { it.name },
+            tagIn = flattenedTags
+                .filter { it.state == MediaTagEntry.State.INCLUDE }
+                .mapNotNull { it.name },
+            tagNotIn = flattenedTags
+                .filter { it.state == MediaTagEntry.State.EXCLUDE }
+                .mapNotNull { it.name },
         )
 
         val data = result.dataAssertNoErrors
@@ -57,6 +67,7 @@ class AnimeMediaSearchPagingSource(
         val sort: MediaSortOption,
         val sortAscending: Boolean,
         val genres: List<MediaGenreEntry>,
+        val tagsByCategory: Map<String?, List<MediaTagEntry>>,
     ) {
         fun sortApiValue() = if (sort == MediaSortOption.DEFAULT) {
             arrayOf(MediaSort.SEARCH_MATCH)

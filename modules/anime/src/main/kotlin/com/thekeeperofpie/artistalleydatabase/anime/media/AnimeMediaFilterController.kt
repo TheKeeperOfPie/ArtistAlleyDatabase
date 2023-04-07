@@ -32,6 +32,7 @@ class AnimeMediaFilterController<T>(
     val sortAscending = MutableStateFlow(false)
 
     val genres = MutableStateFlow(emptyList<MediaGenreEntry>())
+    val tagsByCategory = MutableStateFlow(emptyMap<String?, List<MediaTagEntry>>())
 
     @OptIn(ExperimentalCoroutinesApi::class)
     fun initialize(viewModel: ViewModel, refreshUpdates: StateFlow<*>) {
@@ -53,6 +54,44 @@ class AnimeMediaFilterController<T>(
                 .take(1)
                 .collectLatest(genres::emit)
         }
+
+        viewModel.viewModelScope.launch(CustomDispatchers.Main) {
+            refreshUpdates
+                .mapLatestNotNull {
+                    withContext(CustomDispatchers.IO) {
+                        try {
+                            aniListApi.tags().dataAssertNoErrors
+                                .mediaTagCollection
+                                ?.filterNotNull()
+                                ?.map {
+                                    MediaTagEntry(
+                                        id = it.id.toString(),
+                                        category = it.category,
+                                        name = it.name,
+                                        description = it.description,
+                                        adult = it.isAdult ?: false,
+                                        generalSpoiler = it.isGeneralSpoiler ?: false,
+                                    )
+                                }
+                                ?.groupBy { it.category }
+                                ?.toSortedMap { first, second ->
+                                    when {
+                                        first == second -> 0
+                                        first == null -> -1
+                                        second == null -> 1
+                                        else -> String.CASE_INSENSITIVE_ORDER
+                                            .compare(first, second)
+                                    }
+                                }
+                        } catch (e: Exception) {
+                            Log.d(TAG, "Error loading genres", e)
+                            null
+                        }
+                    }
+                }
+                .take(1)
+                .collectLatest(tagsByCategory::emit)
+        }
     }
 
     private fun onSortChanged(option: T) = sort.update { option }
@@ -72,6 +111,27 @@ class AnimeMediaFilterController<T>(
             }
     }
 
+    private fun onTagClicked(tagId: String) {
+        tagsByCategory.value = tagsByCategory.value.toMutableMap()
+            .apply {
+                keys.forEach {
+                    val existingTag = this[it]!!.find { it.id == tagId }
+                    if (existingTag != null) {
+                        this[it] = this[it]!!.toMutableList().apply {
+                            replaceAll {
+                                if (it.id == tagId) {
+                                    val values = MediaTagEntry.State.values()
+                                    val newState =
+                                        values[(values.indexOf(it.state) + 1) % values.size]
+                                    it.copy(state = newState)
+                                } else it
+                            }
+                        }
+                    }
+                }
+            }
+    }
+
     fun data() = Data(
         defaultOptions = sortEnumClass.java.enumConstants!!.toList(),
         sort = { sort.collectAsState().value },
@@ -80,6 +140,8 @@ class AnimeMediaFilterController<T>(
         onSortAscendingChanged = ::onSortAscendingChanged,
         genres = { genres.collectAsState().value },
         onGenreClicked = ::onGenreClicked,
+        tagsByCategory = { tagsByCategory.collectAsState().value },
+        onTagClicked = ::onTagClicked,
     )
 
     class Data<SortOption>(
@@ -90,6 +152,8 @@ class AnimeMediaFilterController<T>(
         val onSortAscendingChanged: (Boolean) -> Unit = {},
         val genres: @Composable () -> List<MediaGenreEntry> = { emptyList() },
         val onGenreClicked: (String) -> Unit = {},
+        val tagsByCategory: @Composable () -> Map<String?, List<MediaTagEntry>> = { emptyMap() },
+        val onTagClicked: (String) -> Unit = {},
     ) {
         companion object {
             inline fun <reified T> forPreview(): Data<T>

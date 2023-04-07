@@ -23,6 +23,7 @@ dependencies {
     implementation(libs.compose.ui.tooling.preview)
     runtimeOnly(libs.compose.ui.tooling)
     implementation(libs.material3)
+    implementation(libs.accompanist.flowlayout)
 
     implementation(libs.coil.compose)
     implementation(libs.material.icons.extended)

@@ -1,3 +1,14 @@
 query Genres {
     GenreCollection
 }
+
+query MediaTags {
+    MediaTagCollection {
+        id
+        category
+        name
+        description
+        isAdult
+        isGeneralSpoiler
+    }
+}

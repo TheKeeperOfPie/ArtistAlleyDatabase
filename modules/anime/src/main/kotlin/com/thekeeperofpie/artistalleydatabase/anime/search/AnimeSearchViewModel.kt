@@ -6,8 +6,10 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
+import androidx.paging.filter
 import androidx.paging.map
 import com.anilist.MediaAdvancedSearchQuery.Data.Page.Medium
+import com.hoc081098.flowext.combine
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaFilterController
@@ -17,7 +19,6 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
@@ -47,6 +48,7 @@ class AnimeSearchViewModel @Inject constructor(aniListApi: AuthedAniListApi) : V
                 filterController.sort,
                 filterController.sortAscending,
                 filterController.genres,
+                filterController.tagsByCategory,
                 AnimeMediaSearchPagingSource::RefreshParams
             )
                 .flowOn(CustomDispatchers.IO)
@@ -57,7 +59,10 @@ class AnimeSearchViewModel @Inject constructor(aniListApi: AuthedAniListApi) : V
                     }.flow
                 }
                 .map {
-                    it.map<Medium, AnimeSearchScreen.Entry> { AnimeSearchScreen.Entry.Item(it) }
+                    // AniList can return duplicates across pages, manually enforce uniqueness
+                    val seenIds = mutableSetOf<Int>()
+                    it.filter { seenIds.add(it.id) }
+                        .map<Medium, AnimeSearchScreen.Entry> { AnimeSearchScreen.Entry.Item(it) }
                 }
                 .collectLatest(content::emit)
         }

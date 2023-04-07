@@ -50,4 +50,9 @@
     <string name="anime_search">Search anime…</string>
     <string name="anime_media_genre_chip_state_content_description">Genre chip state</string>
     <string name="anime_media_filter_genre_label">Genres</string>
+    <string name="anime_media_tag_chip_state_content_description">Tag chip state</string>
+    <string name="anime_media_filter_tag_label">Tags</string>
+    <string name="anime_media_filter_tag_content_description">Tag filter dropdown</string>
+    <string name="anime_media_filter_tag_misc">Miscellaneous</string>
+    <string name="anime_media_filter_tag_category_expand_content_description">Tag %1$s dropdown</string>
 </resources>
