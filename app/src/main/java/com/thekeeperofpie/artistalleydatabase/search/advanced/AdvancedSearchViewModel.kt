@@ -41,8 +41,8 @@ class AdvancedSearchViewModel @Inject constructor(
     mediaRepository,
     characterRepository,
     aniListAutocompleter,
-    settingsProvider.settingsData,
-    settingsProvider.settingsData,
+    settingsProvider,
+    settingsProvider,
 ) {
 
     init {
@@ -102,7 +102,7 @@ class AdvancedSearchViewModel @Inject constructor(
         )
         searchRepository.registerQuery(query)
         viewModelScope.launch(Dispatchers.IO) {
-            settingsProvider.settingsData.searchQuery = makeBaseEntry()
+            settingsProvider.searchQuery.value = makeBaseEntry()
         }
         return query.id
     }

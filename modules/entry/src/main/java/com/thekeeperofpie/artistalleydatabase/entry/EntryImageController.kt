@@ -123,7 +123,7 @@ class EntryImageController(
         }
 
         scopeProvider().launch(Dispatchers.IO) {
-            val uri = settings.cropDocumentUri ?: return@launch
+            val uri = settings.cropDocumentUri.value ?: return@launch
             try {
                 application.contentResolver.openOutputStream(uri)?.close()?.run {
                     launch(Dispatchers.Main) {
@@ -200,7 +200,7 @@ class EntryImageController(
                 return@launch
             }
 
-            settings.cropDocumentUri = uri
+            settings.cropDocumentUri.value = uri
             application.contentResolver.openInputStream(imageUri)
                 ?.use { input ->
                     application.contentResolver.openOutputStream(uri)?.use { output ->

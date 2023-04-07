@@ -1,8 +1,9 @@
 package com.thekeeperofpie.artistalleydatabase.art.persistence
 
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntry
+import kotlinx.coroutines.flow.MutableStateFlow
 
 interface ArtSettings {
 
-    var artEntryTemplate: ArtEntry?
+    val artEntryTemplate: MutableStateFlow<ArtEntry?>
 }

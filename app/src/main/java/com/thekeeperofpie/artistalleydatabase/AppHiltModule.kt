@@ -2,8 +2,10 @@ package com.thekeeperofpie.artistalleydatabase
 
 import android.app.Application
 import androidx.room.Room
+import androidx.security.crypto.MasterKey
 import androidx.work.WorkManager
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
+import com.thekeeperofpie.artistalleydatabase.android_utils.CryptoUtils
 import com.thekeeperofpie.artistalleydatabase.android_utils.NetworkSettings
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListDatabase
@@ -26,6 +28,10 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 class AppHiltModule {
+
+    @Singleton
+    @Provides
+    fun provideMasterKey(application: Application) = CryptoUtils.masterKey(application)
 
     @Singleton
     @Provides
@@ -81,8 +87,13 @@ class AppHiltModule {
 
     @Singleton
     @Provides
-    fun provideSettingsProvider(application: Application, appJson: AppJson) =
-        SettingsProvider(application, appJson)
+    fun provideSettingsProvider(
+        scopedApplication: ScopedApplication,
+        masterKey: MasterKey,
+        appJson: AppJson
+    ) = SettingsProvider(scopedApplication.app, masterKey, appJson).apply {
+        initialize(scopedApplication.scope)
+    }
 
     @Singleton
     @Provides
@@ -94,16 +105,14 @@ class AppHiltModule {
 
     @Singleton
     @Provides
-    fun provideArtSettings(settingsProvider: SettingsProvider) =
-        settingsProvider.settingsData as ArtSettings
+    fun provideArtSettings(settingsProvider: SettingsProvider) = settingsProvider as ArtSettings
 
     @Singleton
     @Provides
-    fun provideEntrySettings(settingsProvider: SettingsProvider) =
-        settingsProvider.settingsData as EntrySettings
+    fun provideEntrySettings(settingsProvider: SettingsProvider) = settingsProvider as EntrySettings
 
     @Singleton
     @Provides
     fun provideNetworkSettings(settingsProvider: SettingsProvider) =
-        settingsProvider.settingsData as NetworkSettings
+        settingsProvider as NetworkSettings
 }

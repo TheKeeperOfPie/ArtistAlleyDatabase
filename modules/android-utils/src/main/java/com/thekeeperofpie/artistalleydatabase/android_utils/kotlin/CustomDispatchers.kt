@@ -49,8 +49,11 @@ import kotlin.coroutines.CoroutineContext
 object CustomDispatchers {
 
     val mainThreadLocal = ThreadLocal<CoroutineDispatcher>()
+    val ioThreadLocal = ThreadLocal<CoroutineDispatcher>()
+    val defaultThreadLocal = ThreadLocal<CoroutineDispatcher>()
 
-    private var enabled = false
+    var enabled = false
+        private set
 
     @VisibleForTesting
     fun enable() {
@@ -59,24 +62,27 @@ object CustomDispatchers {
 
     val Main: CoroutineContext
         get() = if (enabled) {
-            (mainThreadLocal.get() ?: Dispatchers.Main).let {
-                it + mainThreadLocal.asContextElement(it)
-            }
+            (mainThreadLocal.get() ?: Dispatchers.Main).withContextElements()
         } else {
             Dispatchers.Main
         }
 
     val IO: CoroutineContext
         get() = if (enabled) {
-            Dispatchers.IO + mainThreadLocal.asContextElement(mainThreadLocal.get() ?: Dispatchers.Main)
+            (ioThreadLocal.get() ?: Dispatchers.IO).withContextElements()
         } else {
             Dispatchers.IO
         }
 
     val Default: CoroutineContext
         get() = if (enabled) {
-            Dispatchers.Default + mainThreadLocal.asContextElement(mainThreadLocal.get() ?: Dispatchers.Main)
+            (defaultThreadLocal.get() ?: Dispatchers.Default).withContextElements()
         } else {
             Dispatchers.Default
         }
+
+    private fun CoroutineDispatcher.withContextElements() =
+        this + mainThreadLocal.asContextElement(mainThreadLocal.get() ?: Dispatchers.Main) +
+                ioThreadLocal.asContextElement(ioThreadLocal.get() ?: Dispatchers.IO) +
+                defaultThreadLocal.asContextElement(defaultThreadLocal.get() ?: Dispatchers.Default)
 }

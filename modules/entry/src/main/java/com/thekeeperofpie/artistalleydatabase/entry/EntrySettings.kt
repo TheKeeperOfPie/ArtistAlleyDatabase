@@ -1,8 +1,9 @@
 package com.thekeeperofpie.artistalleydatabase.entry
 
 import android.net.Uri
+import kotlinx.coroutines.flow.MutableStateFlow
 
 interface EntrySettings {
 
-    var cropDocumentUri: Uri?
+    val cropDocumentUri: MutableStateFlow<Uri?>
 }

@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.anilist
 
 import android.app.Application
+import androidx.security.crypto.MasterKey
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.NetworkSettings
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
@@ -22,7 +23,8 @@ class AniListHiltModule {
 
     @Singleton
     @Provides
-    fun provideAniListOAuthStore(application: Application) = AniListOAuthStore(application)
+    fun provideAniListOAuthStore(application: Application, masterKey: MasterKey) =
+        AniListOAuthStore(application, masterKey)
 
     @Singleton
     @Provides

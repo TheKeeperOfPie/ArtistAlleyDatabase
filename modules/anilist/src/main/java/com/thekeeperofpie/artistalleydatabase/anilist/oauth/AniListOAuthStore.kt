@@ -5,8 +5,6 @@ import android.app.Application
 import android.content.ComponentName
 import android.content.pm.PackageManager
 import android.net.Uri
-import android.security.keystore.KeyGenParameterSpec
-import android.security.keystore.KeyProperties
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
@@ -20,10 +18,9 @@ import kotlinx.coroutines.launch
 import okhttp3.Interceptor
 import okhttp3.Response
 
-class AniListOAuthStore(private val application: Application) : Interceptor {
+class AniListOAuthStore(private val application: Application, masterKey: MasterKey) : Interceptor {
 
     companion object {
-        const val MASTER_KEY_ALIAS = "ArtistAlleyDatabaseKey"
         const val SHARED_PREFS_FILE_NAME = "aniList_encrypted"
         const val KEY_AUTH_TOKEN = "auth_token"
 
@@ -47,20 +44,6 @@ class AniListOAuthStore(private val application: Application) : Interceptor {
                 "?client_id=${BuildConfig.ANILIST_CLIENT_ID}" +
                 "&response_type=token"
     }
-
-    private val masterKey = MasterKey.Builder(application, MASTER_KEY_ALIAS)
-        .setKeyGenParameterSpec(
-            KeyGenParameterSpec.Builder(
-                MASTER_KEY_ALIAS,
-                KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT
-            )
-                .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
-                .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
-                .setKeySize(256)
-                .build()
-        )
-        .setRequestStrongBoxBacked(true)
-        .build()
 
     private val sharedPreferences = EncryptedSharedPreferences.create(
         application,

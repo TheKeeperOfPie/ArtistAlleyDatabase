@@ -27,6 +27,7 @@ dependencies {
     debugCompileOnly("com.android.tools.utp:android-test-plugin-host-coverage:31.1.0-alpha11")
     debugCompileOnly("com.android.tools.utp:android-test-plugin-host-device-info:31.1.0-alpha11")
     debugCompileOnly("com.android.tools.utp:android-test-plugin-host-device-info-proto:31.1.0-alpha11")
+    debugCompileOnly("com.android.tools.utp:android-test-plugin-host-emulator-control:31.1.0-alpha11")
     debugCompileOnly("com.android.tools.utp:android-test-plugin-host-logcat:31.1.0-alpha11")
     debugCompileOnly("com.android.tools.utp:android-test-plugin-host-retention:31.1.0-alpha11")
     debugCompileOnly("com.android.tools.utp:android-test-plugin-result-listener-gradle:31.1.0-alpha11")

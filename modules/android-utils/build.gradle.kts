@@ -13,6 +13,7 @@ dependencies {
     runtimeOnly(libs.work.runtime)
     api(libs.work.runtime.ktx)
     api(libs.flowExt)
+    api(libs.androidx.security.crypto)
 
     implementation(libs.kotlinx.serialization.json)
     runtimeOnly(libs.kotlinx.coroutines.android)

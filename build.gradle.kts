@@ -1,4 +1,5 @@
 import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
+import org.gradle.internal.impldep.org.junit.experimental.categories.Categories.CategoryFilter.exclude
 
 plugins {
     alias(libs.plugins.com.google.dagger.hilt.android) apply false
@@ -57,6 +58,7 @@ dependencyAnalysis {
                     "androidx.test.ext:junit",
                     "androidx.test:runner",
                     "com.google.dagger:hilt-android",
+                    "com.google.truth:truth",
                     "com.squareup.moshi:moshi-kotlin",
                     "de.mannodermaus.junit5:android-test-core",
                     "org.mockito:mockito-android",

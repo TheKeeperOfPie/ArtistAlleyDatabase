@@ -23,6 +23,8 @@ dependencies {
     kapt(kaptProcessors.dagger.hilt.compiler)
     kapt(kaptProcessors.androidx.hilt.compiler)
 
+    api(libs.androidx.security.crypto)
+
     implementation(libs.compose.ui)
     implementation(libs.compose.ui.tooling.preview)
     implementation(libs.material3)

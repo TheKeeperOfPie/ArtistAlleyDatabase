@@ -62,12 +62,11 @@ internal fun OkHttpClient.Builder.addLoggingInterceptors(
         addNetworkInterceptor(HttpLoggingInterceptor {
             Log.d(tag, "OkHttp request: $it")
         }.apply {
-            level = when (networkSettings.networkLoggingLevel) {
+            level = when (networkSettings.networkLoggingLevel.value) {
                 NetworkSettings.NetworkLoggingLevel.NONE -> HttpLoggingInterceptor.Level.NONE
                 NetworkSettings.NetworkLoggingLevel.BASIC -> HttpLoggingInterceptor.Level.BASIC
                 NetworkSettings.NetworkLoggingLevel.HEADERS -> HttpLoggingInterceptor.Level.HEADERS
                 NetworkSettings.NetworkLoggingLevel.BODY -> HttpLoggingInterceptor.Level.BODY
-                null -> HttpLoggingInterceptor.Level.NONE
             }
         })
     }
@@ -79,12 +78,11 @@ internal fun ApolloClient.Builder.addLoggingInterceptors(
     networkSettings: NetworkSettings,
 ) = apply {
     if (BuildConfig.DEBUG) {
-        val level = when (networkSettings.networkLoggingLevel) {
+        val level = when (networkSettings.networkLoggingLevel.value) {
             NetworkSettings.NetworkLoggingLevel.NONE -> LoggingInterceptor.Level.NONE
             NetworkSettings.NetworkLoggingLevel.BASIC -> LoggingInterceptor.Level.BASIC
             NetworkSettings.NetworkLoggingLevel.HEADERS -> LoggingInterceptor.Level.HEADERS
             NetworkSettings.NetworkLoggingLevel.BODY -> LoggingInterceptor.Level.BODY
-            null -> LoggingInterceptor.Level.NONE
         }
         addHttpInterceptor(LoggingInterceptor(level) { Log.d(tag, it) })
     }

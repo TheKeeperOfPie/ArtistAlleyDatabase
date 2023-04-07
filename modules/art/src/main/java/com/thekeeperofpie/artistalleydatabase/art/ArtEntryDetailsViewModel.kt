@@ -212,7 +212,7 @@ open class ArtEntryDetailsViewModel @Inject constructor(
         }
     }
 
-    override suspend fun buildAddModel() = artSettings.artEntryTemplate?.let(::buildModel)
+    override suspend fun buildAddModel() = artSettings.artEntryTemplate.value?.let(::buildModel)
 
     override suspend fun buildSingleEditModel(entryId: EntryId) =
         buildModel(artEntryDao.getEntry(entryId.valueId))
@@ -576,7 +576,7 @@ open class ArtEntryDetailsViewModel @Inject constructor(
     }
 
     fun onClickSaveTemplate() {
-        artSettings.artEntryTemplate = makeBaseEntry()
+        artSettings.artEntryTemplate.value = makeBaseEntry()
         errorResource = R.string.art_template_saved to null
     }
 }

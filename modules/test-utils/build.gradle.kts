@@ -20,4 +20,6 @@ dependencies {
     api(libs.junit.jupiter.api)
     api(libs.junit)
     implementation(libs.junit5.android.test.runner)
+
+    api(libs.truth)
 }

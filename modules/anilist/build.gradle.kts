@@ -154,7 +154,7 @@ dependencies {
 
     implementation(libs.activity.compose)
     implementation(libs.androidx.browser)
-    implementation(libs.androidx.security.crypto)
+    api(libs.androidx.security.crypto)
 
     runtimeOnly(libs.room.runtime)
     ksp(kspProcessors.room.compiler)

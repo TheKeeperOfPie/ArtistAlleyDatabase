@@ -1,8 +1,10 @@
 package com.thekeeperofpie.artistalleydatabase.android_utils
 
+import kotlinx.coroutines.flow.MutableStateFlow
+
 interface NetworkSettings {
 
-    var networkLoggingLevel: NetworkLoggingLevel?
+    val networkLoggingLevel: MutableStateFlow<NetworkLoggingLevel>
 
     enum class NetworkLoggingLevel {
         NONE, BASIC, HEADERS, BODY

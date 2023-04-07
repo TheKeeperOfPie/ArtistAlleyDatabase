@@ -11,7 +11,17 @@ import kotlinx.coroutines.withContext
 suspend fun <T> withTestDispatcher(
     dispatcher: CoroutineDispatcher,
     block: suspend CoroutineScope.() -> T
-) = withContext(CustomDispatchers.mainThreadLocal.asContextElement(dispatcher), block)
+) = withContext(
+    CustomDispatchers.mainThreadLocal.asContextElement(dispatcher) +
+            CustomDispatchers.ioThreadLocal.asContextElement(dispatcher) +
+            CustomDispatchers.defaultThreadLocal.asContextElement(dispatcher),
+    block
+)
 
-suspend fun <T> TestScope.withDispatchers(block: suspend CoroutineScope.() -> T) =
-    withTestDispatcher(StandardTestDispatcher(testScheduler), block)
+suspend fun <T> TestScope.withDispatchers(block: suspend CoroutineScope.() -> T): T {
+    if (!CustomDispatchers.enabled) {
+        throw IllegalStateException("CustomDispatchers not enabled")
+    }
+
+    return withTestDispatcher(StandardTestDispatcher(testScheduler), block)
+}

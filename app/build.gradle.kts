@@ -189,6 +189,7 @@ dependencies {
     implementation(libs.material.icons.core)
     implementation(libs.material.icons.extended)
     implementation(libs.material3)
+    implementation(libs.androidx.security.crypto)
 
     runtimeOnly(libs.paging.runtime)
     runtimeOnly(libs.paging.compose)

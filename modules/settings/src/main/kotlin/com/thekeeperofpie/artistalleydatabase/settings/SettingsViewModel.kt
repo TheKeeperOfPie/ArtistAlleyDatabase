@@ -140,7 +140,7 @@ class SettingsViewModel @Inject constructor(
     }
 
     fun onClickCropClear() {
-        settingsProvider.settingsData.cropDocumentUri = null
+        settingsProvider.cropDocumentUri.value = null
     }
 
     fun onClickClearAniListOAuth() {
@@ -150,7 +150,7 @@ class SettingsViewModel @Inject constructor(
     }
 
     fun onChangeNetworkLoggingLevel(level: NetworkSettings.NetworkLoggingLevel) {
-        settingsProvider.settingsData.networkLoggingLevel = level
+        settingsProvider.networkLoggingLevel.value = level
     }
 
     fun checkMismatchedCdEntryData() {
