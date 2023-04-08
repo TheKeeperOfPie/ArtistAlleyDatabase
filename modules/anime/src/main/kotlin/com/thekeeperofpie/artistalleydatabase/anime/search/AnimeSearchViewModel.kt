@@ -49,6 +49,8 @@ class AnimeSearchViewModel @Inject constructor(aniListApi: AuthedAniListApi) : V
                 filterController.sortAscending,
                 filterController.genres,
                 filterController.tagsByCategory,
+                filterController.statuses,
+                filterController.formats,
                 AnimeMediaSearchPagingSource::RefreshParams
             )
                 .flowOn(CustomDispatchers.IO)

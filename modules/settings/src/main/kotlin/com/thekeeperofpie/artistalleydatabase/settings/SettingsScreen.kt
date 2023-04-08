@@ -55,7 +55,7 @@ object SettingsScreen {
         onClickRebuildDatabase: (DatabaseType) -> Unit = {},
         onClickCropClear: () -> Unit = {},
         onClickClearAniListOAuth: () -> Unit = {},
-        networkLoggingLevel: () -> NetworkSettings.NetworkLoggingLevel = {
+        networkLoggingLevel: @Composable () -> NetworkSettings.NetworkLoggingLevel = {
             NetworkSettings.NetworkLoggingLevel.BASIC
         },
         onChangeNetworkLoggingLevel: (NetworkSettings.NetworkLoggingLevel) -> Unit = {},

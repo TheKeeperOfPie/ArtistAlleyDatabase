@@ -19,6 +19,7 @@ import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumEntryDao
 import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.VgmdbArtistDao
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -41,7 +42,8 @@ class SettingsViewModel @Inject constructor(
         private const val TAG = "SettingsViewModel"
     }
 
-    val data = settingsProvider.settingsData
+    val networkLoggingLevel: StateFlow<NetworkSettings.NetworkLoggingLevel>
+        get() = settingsProvider.networkLoggingLevel
 
     private var onClickDatabaseFetch: (WorkManager) -> Unit = {}
 

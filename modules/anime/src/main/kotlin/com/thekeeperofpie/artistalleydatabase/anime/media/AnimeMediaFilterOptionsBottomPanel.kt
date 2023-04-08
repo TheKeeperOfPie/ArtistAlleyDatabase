@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media
 
+import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
@@ -15,8 +16,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -37,18 +36,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.composed
-import androidx.compose.ui.draw.drawWithCache
-import androidx.compose.ui.graphics.BlendMode
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.CompositingStrategy
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.anilist.MediaTagsQuery
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.utils.IncludeExcludeState
 import com.thekeeperofpie.artistalleydatabase.compose.ItemDropdown
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
 import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
@@ -131,9 +124,33 @@ object AnimeMediaFilterOptionsBottomPanel {
                 )
             }
 
-            GenreSection(
-                genres = { filterData().genres() },
-                onGenreClicked = filterData().onGenreClicked,
+            FilterSection(
+                entries = { filterData().statuses() },
+                onEntryClicked = { filterData().onStatusClicked(it.value.first) },
+                titleRes = R.string.anime_media_filter_status_label,
+                titleDropdownContentDescription = R.string.anime_media_filter_status_content_description,
+                valueToText = { stringResource(it.second) },
+                includeExcludeIconContentDescription = R.string.anime_media_filter_status_chip_state_content_description,
+                defaultExpanded = true,
+            )
+
+            FilterSection(
+                entries = { filterData().formats() },
+                onEntryClicked = { filterData().onFormatClicked(it.value.first) },
+                titleRes = R.string.anime_media_filter_format_label,
+                titleDropdownContentDescription = R.string.anime_media_filter_format_content_description,
+                valueToText = { stringResource(it.second) },
+                includeExcludeIconContentDescription = R.string.anime_media_filter_format_chip_state_content_description,
+                defaultExpanded = true,
+            )
+
+            FilterSection(
+                entries = { filterData().genres() },
+                onEntryClicked = { filterData().onGenreClicked(it.value) },
+                titleRes = R.string.anime_media_filter_genre_label,
+                titleDropdownContentDescription = R.string.anime_media_filter_genre_content_description,
+                valueToText = { it },
+                includeExcludeIconContentDescription = R.string.anime_media_filter_genre_chip_state_content_description,
             )
 
             TagSection(
@@ -153,56 +170,67 @@ object AnimeMediaFilterOptionsBottomPanel {
     )
 
     @Composable
-    private fun GenreSection(
-        genres: @Composable () -> List<MediaGenreEntry>,
-        onGenreClicked: (String) -> Unit
+    private fun <T> FilterSection(
+        entries: @Composable () -> List<MediaFilterEntry<T>>,
+        onEntryClicked: (MediaFilterEntry<T>) -> Unit,
+        @StringRes titleRes: Int,
+        @StringRes titleDropdownContentDescription: Int,
+        valueToText: @Composable (T) -> String,
+        @StringRes includeExcludeIconContentDescription: Int,
+        defaultExpanded: Boolean = false,
     ) {
-        Text(
-            text = stringResource(R.string.anime_media_filter_genre_label),
-            style = MaterialTheme.typography.titleMedium,
+        var rootExpanded by remember { mutableStateOf(defaultExpanded) }
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(start = 16.dp, top = 16.dp, end = 16.dp)
-        )
-
-        @Suppress("NAME_SHADOWING")
-        val genres = genres()
-        LazyRow(
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .fadingEdge()
-
+                .clickable { rootExpanded = !rootExpanded }
         ) {
-            items(genres, { it.name }) {
-                FilterChip(
-                    selected = it.state != MediaGenreEntry.State.DEFAULT,
-                    onClick = { onGenreClicked(it.name) },
-                    label = { Text(it.name) },
-                    leadingIcon = {
-                        when (it.state) {
-                            MediaGenreEntry.State.DEFAULT,
-                            MediaGenreEntry.State.INCLUDE -> Icons.Filled.Check
-                            MediaGenreEntry.State.EXCLUDE -> Icons.Filled.Close
-                        }.let {
-                            Icon(
-                                imageVector = it,
-                                contentDescription = stringResource(
-                                    R.string.anime_media_genre_chip_state_content_description
-                                )
-                            )
+            Text(
+                text = stringResource(titleRes),
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier
+                    .padding(horizontal = 16.dp, vertical = 10.dp)
+                    .weight(1f)
+            )
+            TrailingDropdownIconButton(
+                expanded = rootExpanded,
+                contentDescription = stringResource(titleDropdownContentDescription),
+                onClick = { rootExpanded = !rootExpanded },
+            )
+        }
+
+        AnimatedVisibility(
+            visible = rootExpanded,
+            enter = expandVertically(expandFrom = Alignment.Top),
+            exit = shrinkVertically(shrinkTowards = Alignment.Top)
+        ) {
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 10.dp)
+
+            ) {
+                entries().forEach {
+                    FilterChip(
+                        selected = it.state != IncludeExcludeState.DEFAULT,
+                        onClick = { onEntryClicked(it) },
+                        label = { Text(valueToText(it.value)) },
+                        leadingIcon = {
+                            IncludeExcludeIcon(it.state, includeExcludeIconContentDescription)
                         }
-                    }
-                )
+                    )
+                }
             }
         }
     }
 
     @Composable
     private fun TagSection(
-        tagsByCategory: @Composable () -> Map<String?, List<MediaTagEntry>>,
-        onTagClicked: (String) -> Unit
+        tagsByCategory: @Composable () -> Map<String?,
+                List<MediaFilterEntry<MediaTagsQuery.Data.MediaTagCollection>>>,
+        onTagClicked: (Int) -> Unit
     ) {
         var rootExpanded by remember { mutableStateOf(false) }
         Row(
@@ -276,22 +304,14 @@ object AnimeMediaFilterOptionsBottomPanel {
                         ) {
                             entries.forEach {
                                 FilterChip(
-                                    selected = it.state != MediaTagEntry.State.DEFAULT,
-                                    onClick = { onTagClicked(it.id) },
-                                    label = { Text(it.name ?: it.id) },
+                                    selected = it.state != IncludeExcludeState.DEFAULT,
+                                    onClick = { onTagClicked(it.value.id) },
+                                    label = { Text(it.value.name) },
                                     leadingIcon = {
-                                        when (it.state) {
-                                            MediaTagEntry.State.DEFAULT,
-                                            MediaTagEntry.State.INCLUDE -> Icons.Filled.Check
-                                            MediaTagEntry.State.EXCLUDE -> Icons.Filled.Close
-                                        }.let {
-                                            Icon(
-                                                imageVector = it,
-                                                contentDescription = stringResource(
-                                                    R.string.anime_media_tag_chip_state_content_description
-                                                )
-                                            )
-                                        }
+                                        IncludeExcludeIcon(
+                                            it.state,
+                                            R.string.anime_media_filter_tag_chip_state_content_description
+                                        )
                                     }
                                 )
                             }
@@ -302,29 +322,21 @@ object AnimeMediaFilterOptionsBottomPanel {
         }
     }
 
-    private fun Modifier.fadingEdge() = composed {
-        val localConfiguration = LocalConfiguration.current
-        val colorStopTransparent = remember { (4.dp / localConfiguration.screenWidthDp.dp) }
-        val colorStopOpaque = remember { (16.dp / localConfiguration.screenWidthDp.dp) }
-        val fadingEdgeBrush = remember {
-            Brush.horizontalGradient(
-                colorStopTransparent to Color.Transparent,
-                colorStopOpaque to Color.Black,
-                (1f - colorStopOpaque) to Color.Black,
-                (1f - colorStopTransparent) to Color.Transparent,
+    @Composable
+    private fun IncludeExcludeIcon(
+        state: IncludeExcludeState,
+        @StringRes contentDescriptionRes: Int
+    ) {
+        when (state) {
+            IncludeExcludeState.DEFAULT,
+            IncludeExcludeState.INCLUDE -> Icons.Filled.Check
+            IncludeExcludeState.EXCLUDE -> Icons.Filled.Close
+        }.let {
+            Icon(
+                imageVector = it,
+                contentDescription = stringResource(contentDescriptionRes)
             )
         }
-
-        graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }
-            .drawWithCache {
-                onDrawWithContent {
-                    drawContent()
-                    drawRect(
-                        brush = fadingEdgeBrush,
-                        blendMode = BlendMode.DstIn
-                    )
-                }
-            }
     }
 }
 

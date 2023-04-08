@@ -6,8 +6,10 @@ import com.anilist.GenresQuery
 import com.anilist.MediaAdvancedSearchQuery
 import com.anilist.MediaTagsQuery
 import com.anilist.UserMediaListQuery
+import com.anilist.type.MediaFormat
 import com.anilist.type.MediaListSort
 import com.anilist.type.MediaSort
+import com.anilist.type.MediaStatus
 import com.anilist.type.MediaType
 import com.apollographql.apollo3.ApolloClient
 import com.apollographql.apollo3.api.ApolloResponse
@@ -72,13 +74,13 @@ class AuthedAniListApi(
     suspend fun userMediaList(
         userId: Int,
         type: MediaType = MediaType.ANIME,
-        vararg sort: MediaListSort = emptyArray()
+        vararg sort: MediaListSort = emptyArray(),
     ) =
         query(
             UserMediaListQuery(
                 userId = userId,
                 type = type,
-                sort = Optional.presentIfNotNull(sort.toList().ifEmpty { null })
+                sort = Optional.presentIfNotNull(sort.toList().ifEmpty { null }),
             )
         ).data?.mediaListCollection
 
@@ -91,6 +93,10 @@ class AuthedAniListApi(
         genreNotIn: List<String>,
         tagIn: List<String>,
         tagNotIn: List<String>,
+        statusIn: List<MediaStatus>,
+        statusNotIn: List<MediaStatus>,
+        formatIn: List<MediaFormat>,
+        formatNotIn: List<MediaFormat>,
     ): ApolloResponse<MediaAdvancedSearchQuery.Data> {
         val sortParam =
             if (query.isEmpty() && sort.size == 1 && sort.contains(MediaSort.SEARCH_MATCH)) {
@@ -111,6 +117,10 @@ class AuthedAniListApi(
                 genreNotIn = Optional.presentIfNotNull(genreNotIn.ifEmpty { null }),
                 tagIn = Optional.presentIfNotNull(tagIn.ifEmpty { null }),
                 tagNotIn = Optional.presentIfNotNull(tagNotIn.ifEmpty { null }),
+                statusIn = Optional.presentIfNotNull(statusIn.ifEmpty { null }),
+                statusNotIn = Optional.presentIfNotNull(statusNotIn.ifEmpty { null }),
+                formatIn = Optional.presentIfNotNull(formatIn.ifEmpty { null }),
+                formatNotIn = Optional.presentIfNotNull(formatNotIn.ifEmpty { null }),
             )
         )
     }

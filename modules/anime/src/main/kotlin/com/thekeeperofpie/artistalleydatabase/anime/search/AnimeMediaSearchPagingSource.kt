@@ -3,11 +3,14 @@ package com.thekeeperofpie.artistalleydatabase.anime.search
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.anilist.MediaAdvancedSearchQuery
+import com.anilist.MediaTagsQuery
+import com.anilist.type.MediaFormat
 import com.anilist.type.MediaSort
+import com.anilist.type.MediaStatus
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaGenreEntry
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaFilterEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaSortOption
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaTagEntry
+import com.thekeeperofpie.artistalleydatabase.anime.utils.IncludeExcludeState
 
 class AnimeMediaSearchPagingSource(
     private val aniListApi: AuthedAniListApi,
@@ -34,17 +37,29 @@ class AnimeMediaSearchPagingSource(
             page = page,
             sort = refreshParams.sortApiValue(),
             genreIn = refreshParams.genres
-                .filter { it.state == MediaGenreEntry.State.INCLUDE }
-                .map { it.name },
+                .filter { it.state == IncludeExcludeState.INCLUDE }
+                .map { it.value },
             genreNotIn = refreshParams.genres
-                .filter { it.state == MediaGenreEntry.State.EXCLUDE }
-                .map { it.name },
+                .filter { it.state == IncludeExcludeState.EXCLUDE }
+                .map { it.value },
             tagIn = flattenedTags
-                .filter { it.state == MediaTagEntry.State.INCLUDE }
-                .mapNotNull { it.name },
+                .filter { it.state == IncludeExcludeState.INCLUDE }
+                .map { it.value.name },
             tagNotIn = flattenedTags
-                .filter { it.state == MediaTagEntry.State.EXCLUDE }
-                .mapNotNull { it.name },
+                .filter { it.state == IncludeExcludeState.EXCLUDE }
+                .map { it.value.name },
+            statusIn = refreshParams.statuses
+                .filter { it.state == IncludeExcludeState.INCLUDE }
+                .map { it.value.first },
+            statusNotIn = refreshParams.statuses
+                .filter { it.state == IncludeExcludeState.EXCLUDE }
+                .map { it.value.first },
+            formatIn = refreshParams.formats
+                .filter { it.state == IncludeExcludeState.INCLUDE }
+                .map { it.value.first },
+            formatNotIn = refreshParams.formats
+                .filter { it.state == IncludeExcludeState.EXCLUDE }
+                .map { it.value.first },
         )
 
         val data = result.dataAssertNoErrors
@@ -66,8 +81,11 @@ class AnimeMediaSearchPagingSource(
         val requestMillis: Long,
         val sort: MediaSortOption,
         val sortAscending: Boolean,
-        val genres: List<MediaGenreEntry>,
-        val tagsByCategory: Map<String?, List<MediaTagEntry>>,
+        val genres: List<MediaFilterEntry<String>>,
+        val tagsByCategory: Map<String?,
+                List<MediaFilterEntry<MediaTagsQuery.Data.MediaTagCollection>>>,
+        val statuses: List<MediaFilterEntry<Pair<MediaStatus, Int>>>,
+        val formats: List<MediaFilterEntry<Pair<MediaFormat, Int>>>,
     ) {
         fun sortApiValue() = if (sort == MediaSortOption.DEFAULT) {
             arrayOf(MediaSort.SEARCH_MATCH)

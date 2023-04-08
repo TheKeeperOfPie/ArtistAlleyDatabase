@@ -8,19 +8,28 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.anilist.AuthedUserQuery
+import com.anilist.MediaTagsQuery
+import com.anilist.UserMediaListQuery
+import com.anilist.type.MediaFormat
+import com.anilist.type.MediaStatus
+import com.hoc081098.flowext.startWith
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaFilterController
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaFilterEntry
+import com.thekeeperofpie.artistalleydatabase.anime.utils.IncludeExcludeState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -49,37 +58,34 @@ class AnimeUserListViewModel @Inject constructor(aniListApi: AuthedAniListApi) :
                 ::RefreshParams
             )
                 .debounce(100.milliseconds)
-                .flatMapLatest {
+                .flatMapLatest { refreshParams ->
                     withContext(CustomDispatchers.IO) {
-                        flow {
-                            emit(ContentState.LoadingEmpty)
-                            try {
-                                emit(
-                                    aniListApi.userMediaList(
-                                        userId = it.authedUser.id,
-                                        sort = it.sortApiValue()
-                                    )?.lists
-                                        ?.filterNotNull()
-                                        ?.map {
-                                            mutableListOf<AnimeUserListScreen.Entry>().apply {
-                                                this += AnimeUserListScreen.Entry.Header(
-                                                    it.name.orEmpty(),
-                                                    it.status
-                                                )
-                                                this += it.entries
-                                                    ?.mapNotNull { it?.media }
-                                                    ?.map(AnimeUserListScreen.Entry::Item)
-                                                    .orEmpty()
-                                            }
-                                        }
-                                        ?.flatten()
-                                        ?.let(ContentState::Success)
-                                        ?: ContentState.Error()
+                        val baseResponse = flowOf(refreshParams)
+                            .map {
+                                aniListApi.userMediaList(
+                                    userId = refreshParams.authedUser.id,
+                                    sort = refreshParams.sortApiValue()
                                 )
-                            } catch (e: Exception) {
-                                emit(ContentState.Error(exception = e))
                             }
-                        }
+                        combine(
+                            baseResponse,
+                            filterController.genres,
+                            filterController.tagsByCategory,
+                            filterController.statuses,
+                            filterController.formats,
+                            ::FilterParams,
+                        )
+                            .map { filterParams ->
+                                filterParams.mediaListCollection
+                                    ?.lists
+                                    ?.filterNotNull()
+                                    ?.map { toFilteredEntries(filterParams, it) }
+                                    ?.flatten()
+                                    ?.let(ContentState::Success)
+                                    ?: ContentState.Error()
+                            }
+                            .startWith(ContentState.LoadingEmpty)
+                            .catch { emit(ContentState.Error(exception = it)) }
                     }
                 }
                 .collectLatest { content = it }
@@ -89,6 +95,56 @@ class AnimeUserListViewModel @Inject constructor(aniListApi: AuthedAniListApi) :
     fun filterData() = filterController.data()
 
     fun onRefresh() = refreshUptimeMillis.update { SystemClock.uptimeMillis() }
+
+    private fun toFilteredEntries(
+        filterParams: FilterParams,
+        list: UserMediaListQuery.Data.MediaListCollection.List
+    ) = mutableListOf<AnimeUserListScreen.Entry>().apply {
+        var filteredEntries = list.entries
+            ?.mapNotNull { it?.media }
+            ?.map(AnimeUserListScreen.Entry::Item)
+            .orEmpty()
+
+        filteredEntries = IncludeExcludeState.applyFiltering(
+            filterParams.statuses,
+            filteredEntries,
+            state = { it.state },
+            key = { it.value.first },
+            transform = { listOfNotNull(it.media.status) }
+        )
+
+        filteredEntries = IncludeExcludeState.applyFiltering(
+            filterParams.formats,
+            filteredEntries,
+            state = { it.state },
+            key = { it.value.first },
+            transform = { listOfNotNull(it.media.format) }
+        )
+
+        filteredEntries = IncludeExcludeState.applyFiltering(
+            filterParams.genres,
+            filteredEntries,
+            state = { it.state },
+            key = { it.value },
+            transform = { it.media.genres?.filterNotNull().orEmpty() }
+        )
+
+        filteredEntries = IncludeExcludeState.applyFiltering(
+            filterParams.tagsByCategory.flatMap { it.value },
+            filteredEntries,
+            state = { it.state },
+            key = { it.value.id },
+            transform = { it.media.tags?.filterNotNull()?.map { it.id }.orEmpty() }
+        )
+
+        if (filteredEntries.isNotEmpty()) {
+            this += AnimeUserListScreen.Entry.Header(
+                list.name.orEmpty(),
+                list.status
+            )
+            this += filteredEntries
+        }
+    }
 
     private data class RefreshParams(
         val authedUser: AuthedUserQuery.Data.Viewer,
@@ -103,6 +159,15 @@ class AnimeUserListViewModel @Inject constructor(aniListApi: AuthedAniListApi) :
         }
     }
 
+    private data class FilterParams(
+        val mediaListCollection: UserMediaListQuery.Data.MediaListCollection?,
+        val genres: List<MediaFilterEntry<String>>,
+        val tagsByCategory: Map<String?,
+                List<MediaFilterEntry<MediaTagsQuery.Data.MediaTagCollection>>>,
+        val statuses: List<MediaFilterEntry<Pair<MediaStatus, Int>>>,
+        val formats: List<MediaFilterEntry<Pair<MediaFormat, Int>>>,
+    )
+
     sealed interface ContentState {
         object LoadingEmpty : ContentState
 
@@ -113,7 +178,7 @@ class AnimeUserListViewModel @Inject constructor(aniListApi: AuthedAniListApi) :
 
         data class Error(
             @StringRes val errorRes: Int? = null,
-            val exception: Exception? = null
+            val exception: Throwable? = null
         ) : ContentState
     }
 }

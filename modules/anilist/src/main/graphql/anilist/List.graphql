@@ -1,5 +1,7 @@
-query UserMediaList($userId: Int!, $type: MediaType!, $chunk: Int, $perChunk: Int, $sort: [MediaListSort]) {
-    MediaListCollection(userId: $userId, type: $type, chunk: $chunk, perChunk: $perChunk, sort: $sort) {
+query UserMediaList($userId: Int!, $type: MediaType!, $chunk: Int, $perChunk: Int,
+    $sort: [MediaListSort]) {
+    MediaListCollection(userId: $userId, type: $type, chunk: $chunk, perChunk: $perChunk,
+        sort: $sort) {
         hasNextChunk
         lists {
             entries {
@@ -20,6 +22,17 @@ query UserMediaList($userId: Int!, $type: MediaType!, $chunk: Int, $perChunk: In
                     }
                     averageScore
                     meanScore
+                    format
+                    genres
+                    status
+                    tags {
+                        id
+                        name
+                        rank
+                        isAdult
+                        isGeneralSpoiler
+                        isMediaSpoiler
+                    }
                 }
             }
             name
