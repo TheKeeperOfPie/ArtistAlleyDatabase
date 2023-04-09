@@ -133,8 +133,8 @@ class AnimeUserListViewModel @Inject constructor(aniListApi: AuthedAniListApi) :
             filterParams.tagsByCategory.flatMap { it.value },
             filteredEntries,
             state = { it.state },
-            key = { it.value.id },
-            transform = { it.media.tags?.filterNotNull()?.map { it.id }.orEmpty() }
+            key = { it.value.id.toString() },
+            transform = { it.media.tags?.filterNotNull()?.map { it.id.toString() }.orEmpty() }
         )
 
         if (filteredEntries.isNotEmpty()) {

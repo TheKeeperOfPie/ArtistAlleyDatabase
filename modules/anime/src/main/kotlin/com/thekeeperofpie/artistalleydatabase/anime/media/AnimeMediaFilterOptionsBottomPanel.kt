@@ -26,10 +26,11 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberBottomSheetScaffoldState
+import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -55,12 +56,13 @@ object AnimeMediaFilterOptionsBottomPanel {
         filterData: () -> AnimeMediaFilterController.Data<SortOption>,
         errorRes: () -> Int? = { null },
         exception: () -> Exception? = { null },
+        expandedForPreview: Boolean = false,
         content: @Composable (PaddingValues) -> Unit,
     ) {
-        val scaffoldState = rememberBottomSheetScaffoldState()
-        LaunchedEffect(true) {
-            // An initial value of HIDE crashes, so just hide it manually
-            scaffoldState.bottomSheetState.hide()
+        val scaffoldState = if (expandedForPreview) {
+            rememberBottomSheetScaffoldState(rememberStandardBottomSheetState(SheetValue.Expanded))
+        } else {
+            rememberBottomSheetScaffoldState()
         }
 
         BottomSheetScaffold(
@@ -328,10 +330,10 @@ object AnimeMediaFilterOptionsBottomPanel {
         @StringRes contentDescriptionRes: Int
     ) {
         when (state) {
-            IncludeExcludeState.DEFAULT,
+            IncludeExcludeState.DEFAULT -> null
             IncludeExcludeState.INCLUDE -> Icons.Filled.Check
             IncludeExcludeState.EXCLUDE -> Icons.Filled.Close
-        }.let {
+        }?.let {
             Icon(
                 imageVector = it,
                 contentDescription = stringResource(contentDescriptionRes)
@@ -344,6 +346,9 @@ object AnimeMediaFilterOptionsBottomPanel {
 @Composable
 private fun Preview() {
     AnimeMediaFilterOptionsBottomPanel(
-        filterData = { AnimeMediaFilterController.Data.forPreview<MediaSortOption>() }
-    ) {}
+        filterData = { AnimeMediaFilterController.Data.forPreview<MediaSortOption>() },
+        expandedForPreview = true,
+    ) {
+        Text("Sample content")
+    }
 }

@@ -332,7 +332,7 @@ class DiscSection(private val json: Json, lockState: LockState? = null) :
                 ?: KeyboardOptions.Default,
             keyboardActions = onDone?.let { KeyboardActions(onDone = { onDone() }) }
                 ?: KeyboardActions.Default,
-            contentPadding = TextFieldDefaults.textFieldWithoutLabelPadding(
+            contentPadding = TextFieldDefaults.contentPaddingWithoutLabel(
                 top = 8.dp,
                 bottom = 8.dp
             ),

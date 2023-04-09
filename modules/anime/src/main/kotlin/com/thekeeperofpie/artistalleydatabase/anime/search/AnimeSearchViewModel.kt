@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
+import androidx.paging.cachedIn
 import androidx.paging.filter
 import androidx.paging.map
 import com.anilist.MediaAdvancedSearchQuery.Data.Page.Medium
@@ -58,7 +59,7 @@ class AnimeSearchViewModel @Inject constructor(aniListApi: AuthedAniListApi) : V
                 .flatMapLatest {
                     Pager(PagingConfig(pageSize = 10, enablePlaceholders = true)) {
                         AnimeMediaSearchPagingSource(aniListApi, it)
-                    }.flow
+                    }.flow.cachedIn(viewModelScope)
                 }
                 .map {
                     // AniList can return duplicates across pages, manually enforce uniqueness

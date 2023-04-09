@@ -12,7 +12,7 @@ import com.anilist.type.MediaStatus
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.mapLatestNotNull
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
-import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.utils.toTextRes
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -30,6 +30,19 @@ class AnimeMediaFilterController<T>(
 
     companion object {
         private const val TAG = "AnimeMediaFilterController"
+
+        fun statuses() = MediaStatus.values().map { MediaFilterEntry(it to it.toTextRes()) }
+
+        fun formats() = listOf(
+            MediaFormat.TV,
+            MediaFormat.TV_SHORT,
+            MediaFormat.MOVIE,
+            MediaFormat.SPECIAL,
+            MediaFormat.OVA,
+            MediaFormat.ONA,
+            MediaFormat.MUSIC,
+            // MANGA, NOVEL, and ONE_SHOT excluded since not anime
+        ).map { MediaFilterEntry(it to it.toTextRes()) }
     }
 
     val sort = MutableStateFlow(sortEnumClass.java.enumConstants!!.first())
@@ -38,27 +51,8 @@ class AnimeMediaFilterController<T>(
     val genres = MutableStateFlow(emptyList<MediaFilterEntry<String>>())
     val tagsByCategory =
         MutableStateFlow(emptyMap<String?, List<MediaFilterEntry<MediaTagsQuery.Data.MediaTagCollection>>>())
-    val statuses = MutableStateFlow(
-        listOf(
-            MediaFilterEntry(MediaStatus.FINISHED to R.string.anime_media_status_finished),
-            MediaFilterEntry(MediaStatus.RELEASING to R.string.anime_media_status_releasing),
-            MediaFilterEntry(MediaStatus.NOT_YET_RELEASED to R.string.anime_media_status_not_yet_released),
-            MediaFilterEntry(MediaStatus.CANCELLED to R.string.anime_media_status_cancelled),
-            MediaFilterEntry(MediaStatus.HIATUS to R.string.anime_media_status_hiatus),
-        )
-    )
-    val formats = MutableStateFlow(
-        listOf(
-            MediaFilterEntry(MediaFormat.TV to R.string.anime_media_format_tv),
-            MediaFilterEntry(MediaFormat.TV_SHORT to R.string.anime_media_format_tv_short),
-            MediaFilterEntry(MediaFormat.MOVIE to R.string.anime_media_format_movie),
-            MediaFilterEntry(MediaFormat.SPECIAL to R.string.anime_media_format_special),
-            MediaFilterEntry(MediaFormat.OVA to R.string.anime_media_format_ova),
-            MediaFilterEntry(MediaFormat.ONA to R.string.anime_media_format_ona),
-            MediaFilterEntry(MediaFormat.MUSIC to R.string.anime_media_format_music),
-            // MANGA, NOVEL, and ONE_SHOT excluded for now since not anime
-        )
-    )
+    val statuses = MutableStateFlow(statuses())
+    val formats = MutableStateFlow(formats())
 
     @OptIn(ExperimentalCoroutinesApi::class)
     fun initialize(viewModel: ViewModel, refreshUpdates: StateFlow<*>) {
@@ -208,7 +202,31 @@ class AnimeMediaFilterController<T>(
                 val enumConstants = T::class.java.enumConstants!!.toList()
                 return Data(
                     defaultOptions = enumConstants,
-                    sort = { enumConstants.first() }
+                    sort = { enumConstants.first() },
+                    genres = {
+                        listOf("Action", "Adventure", "Drama", "Fantasy")
+                            .map(::MediaFilterEntry)
+                    },
+                    tagsByCategory = {
+                        mapOf(
+                            "Category-One" to listOf(
+                                "TagOne",
+                                "TagTwo",
+                                "TagThree"
+                            ).mapIndexed { index, tag ->
+                                MediaTagsQuery.Data.MediaTagCollection(id = index, name = tag)
+                            }.map(::MediaFilterEntry),
+                            "Category-Two" to listOf(
+                                "TagFour",
+                                "TagFive",
+                                "TagSix"
+                            ).mapIndexed { index, tag ->
+                                MediaTagsQuery.Data.MediaTagCollection(id = index, name = tag)
+                            }.map(::MediaFilterEntry)
+                        )
+                    },
+                    statuses = { statuses() },
+                    formats = { formats() },
                 )
             }
         }

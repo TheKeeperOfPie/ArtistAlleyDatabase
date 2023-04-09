@@ -1,6 +1,8 @@
 package com.thekeeperofpie.artistalleydatabase.anime.list
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -20,7 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.anilist.UserMediaListQuery
+import com.anilist.UserMediaListQuery.Data.MediaListCollection.List.Entry.Media
 import com.anilist.type.MediaListStatus
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeListMediaRow
@@ -84,15 +86,19 @@ object AnimeUserListScreen {
             when (content) {
                 is AnimeUserListViewModel.ContentState.Error -> Error(content)
                 AnimeUserListViewModel.ContentState.LoadingEmpty -> Unit // pullRefresh handles this
-                is AnimeUserListViewModel.ContentState.Success -> LazyColumn {
-                    items(content.entries, { it.id.scopedId }) {
-                        when (it) {
-                            is Entry.Header -> Header(it)
-                            is Entry.Item -> AnimeListMediaRow(it)
-                            is Entry.LoadMore -> TODO()
+                is AnimeUserListViewModel.ContentState.Success ->
+                    LazyColumn(
+                        contentPadding = PaddingValues(horizontal = 16.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                    ) {
+                        items(content.entries, { it.id.scopedId }) {
+                            when (it) {
+                                is Entry.Header -> Header(it)
+                                is Entry.Item -> AnimeListMediaRow(it)
+                                is Entry.LoadMore -> TODO()
+                            }
                         }
                     }
-                }
             }
 
             PullRefreshIndicator(
@@ -132,13 +138,7 @@ object AnimeUserListScreen {
             override val id = EntryId("header", name)
         }
 
-        data class Item(
-            val media: UserMediaListQuery.Data.MediaListCollection.List.Entry.Media,
-        ) : Entry, AnimeListMediaRow.Entry {
-            override val id = EntryId("item", media.id.toString())
-            override val image = media.coverImage?.large
-            override val title = media.title?.userPreferred
-        }
+        class Item(media: Media) : Entry, AnimeListMediaRow.MediaEntry(media)
 
         data class LoadMore(val valueId: String) : Entry {
             override val id = EntryId("load_more", valueId)
@@ -155,8 +155,8 @@ private fun Preview() {
                 listOf(
                     AnimeUserListScreen.Entry.Header("Completed", MediaListStatus.COMPLETED),
                     AnimeUserListScreen.Entry.Item(
-                        UserMediaListQuery.Data.MediaListCollection.List.Entry.Media(
-                            title = UserMediaListQuery.Data.MediaListCollection.List.Entry.Media.Title(
+                        Media(
+                            title = Media.Title(
                                 userPreferred = "Ano Hi Mita Hana no Namae wo Bokutachi wa Mada Shiranai.",
                             ),
                         )

@@ -68,6 +68,7 @@
     <string name="anime_media_status_not_yet_released">Not yet released</string>
     <string name="anime_media_status_cancelled">Cancelled</string>
     <string name="anime_media_status_hiatus">Hiatus</string>
+    <string name="anime_media_status_unknown">Unknown</string>
 
     <string name="anime_media_format_tv">TV</string>
     <string name="anime_media_format_tv_short">TV short</string>
@@ -76,9 +77,18 @@
     <string name="anime_media_format_ova">OVA</string>
     <string name="anime_media_format_ona">ONA</string>
     <string name="anime_media_format_music">Music</string>
+    <string name="anime_media_format_unknown">Unknown</string>
     <string name="anime_media_filter_format_label">Format</string>
 
     <!-- TODO: Insert the actual values into the content descriptions -->
     <string name="anime_media_filter_format_content_description">Format filter expand</string>
     <string name="anime_media_filter_format_chip_state_content_description">Format chip state</string>
+    <string name="anime_media_tag_is_adult">Adult 18+ warning</string>
+    <string name="anime_media_tag_adult">Adult</string>
+    <string name="anime_media_tag_is_spoiler">Spoiler warning</string>
+    <string name="anime_media_tag_spoiler">Spoiler</string>
+
+    <string name="anime_media_next_airing_episode">Ep. %1$s airing on %2$s (%3$s)</string>
+    <string name="anime_media_rating_icon_content_description">Rating</string>
+    <string name="anime_media_rating_population_icon_content_description">Users</string>
 </resources>

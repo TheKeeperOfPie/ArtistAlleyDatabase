@@ -7,32 +7,7 @@ query UserMediaList($userId: Int!, $type: MediaType!, $chunk: Int, $perChunk: In
             entries {
                 id
                 media {
-                    id
-                    coverImage {
-                        extraLarge
-                        large
-                        medium
-                        color
-                    }
-                    title {
-                        romaji
-                        english
-                        native
-                        userPreferred
-                    }
-                    averageScore
-                    meanScore
-                    format
-                    genres
-                    status
-                    tags {
-                        id
-                        name
-                        rank
-                        isAdult
-                        isGeneralSpoiler
-                        isMediaSpoiler
-                    }
+                    ...AniListListRowMedia
                 }
             }
             name

@@ -1,8 +1,10 @@
 package com.thekeeperofpie.artistalleydatabase.anime.search
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -110,7 +112,10 @@ object AnimeSearchScreen {
                 .fillMaxSize()
                 .pullRefresh(pullRefreshState)
         ) {
-            LazyColumn {
+            LazyColumn(
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
                 items(content, { it.id.scopedId }) {
                     when (it) {
                         is Entry.Item -> AnimeListMediaRow(it)
@@ -158,13 +163,7 @@ object AnimeSearchScreen {
 
         val id: EntryId
 
-        data class Item(
-            val media: Medium,
-        ) : Entry, AnimeListMediaRow.Entry {
-            override val id = EntryId("item", media.id.toString())
-            override val image = media.coverImage?.large
-            override val title = media.title?.userPreferred
-        }
+        class Item(media: Medium) : Entry, AnimeListMediaRow.MediaEntry(media)
 
         data class LoadMore(val valueId: String) : Entry {
             override val id = EntryId("load_more", valueId)

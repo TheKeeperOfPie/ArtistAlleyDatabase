@@ -16,6 +16,35 @@ fragment AniListMedia on Media {
     synonyms
 }
 
+fragment AniListListRowMedia on Media {
+    id
+    coverImage {
+        large
+    }
+    title {
+        userPreferred
+    }
+    nextAiringEpisode {
+        id
+        episode
+        airingAt
+        timeUntilAiring
+    }
+    averageScore
+    format
+    genres
+    seasonYear
+    status
+    tags {
+        id
+        name
+        isAdult
+        isGeneralSpoiler
+        isMediaSpoiler
+    }
+    popularity
+}
+
 query MediaAdvancedSearch($page: Int, $perPage: Int, $search: String, $type: MediaType!,
     $sort: [MediaSort], $genreIn: [String], $genreNotIn: [String], $tagIn: [String],
     $tagNotIn: [String], $statusIn: [MediaStatus], $statusNotIn: [MediaStatus],
@@ -29,13 +58,7 @@ query MediaAdvancedSearch($page: Int, $perPage: Int, $search: String, $type: Med
             genre_not_in: $genreNotIn, tag_in: $tagIn, tag_not_in: $tagNotIn,
             status_in: $statusIn, status_not_in: $statusNotIn, format_in: $formatIn,
             format_not_in: $formatNotIn) @nonnull {
-            id
-            title {
-                userPreferred
-            }
-            coverImage {
-                large
-            }
+            ...AniListListRowMedia
         }
     }
 }

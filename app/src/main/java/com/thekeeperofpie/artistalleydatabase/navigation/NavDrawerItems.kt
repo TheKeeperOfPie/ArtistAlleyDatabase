@@ -21,7 +21,7 @@ sealed class NavDrawerItems(
 ) {
 
     companion object {
-        const val INITIAL_INDEX = 1
+        const val INITIAL_INDEX = 0
         fun items() = listOf(Anime, Art, Cds, Browse, Search, Import, Export, Settings)
     }
 
