@@ -8,10 +8,8 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.anilist.AuthedUserQuery
-import com.anilist.MediaTagsQuery
 import com.anilist.UserMediaListQuery
-import com.anilist.type.MediaFormat
-import com.anilist.type.MediaStatus
+import com.hoc081098.flowext.combine
 import com.hoc081098.flowext.startWith
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
@@ -73,6 +71,7 @@ class AnimeUserListViewModel @Inject constructor(aniListApi: AuthedAniListApi) :
                             filterController.tagsByCategory,
                             filterController.statuses,
                             filterController.formats,
+                            filterController.showAdult,
                             ::FilterParams,
                         )
                             .map { filterParams ->
@@ -109,7 +108,7 @@ class AnimeUserListViewModel @Inject constructor(aniListApi: AuthedAniListApi) :
             filterParams.statuses,
             filteredEntries,
             state = { it.state },
-            key = { it.value.first },
+            key = { it.value },
             transform = { listOfNotNull(it.media.status) }
         )
 
@@ -117,7 +116,7 @@ class AnimeUserListViewModel @Inject constructor(aniListApi: AuthedAniListApi) :
             filterParams.formats,
             filteredEntries,
             state = { it.state },
-            key = { it.value.first },
+            key = { it.value },
             transform = { listOfNotNull(it.media.format) }
         )
 
@@ -130,12 +129,21 @@ class AnimeUserListViewModel @Inject constructor(aniListApi: AuthedAniListApi) :
         )
 
         filteredEntries = IncludeExcludeState.applyFiltering(
-            filterParams.tagsByCategory.flatMap { it.value },
+            filterParams.tagsByCategory.values.flatMap {
+                when (it) {
+                    is AnimeMediaFilterController.TagSection.Category -> it.flatten()
+                    is AnimeMediaFilterController.TagSection.Tag -> listOf(it)
+                }
+            },
             filteredEntries,
             state = { it.state },
             key = { it.value.id.toString() },
             transform = { it.media.tags?.filterNotNull()?.map { it.id.toString() }.orEmpty() }
         )
+
+        if (!filterParams.showAdult) {
+            filteredEntries = filteredEntries.filterNot { it.media.isAdult ?: false }
+        }
 
         if (filteredEntries.isNotEmpty()) {
             this += AnimeUserListScreen.Entry.Header(
@@ -162,10 +170,10 @@ class AnimeUserListViewModel @Inject constructor(aniListApi: AuthedAniListApi) :
     private data class FilterParams(
         val mediaListCollection: UserMediaListQuery.Data.MediaListCollection?,
         val genres: List<MediaFilterEntry<String>>,
-        val tagsByCategory: Map<String?,
-                List<MediaFilterEntry<MediaTagsQuery.Data.MediaTagCollection>>>,
-        val statuses: List<MediaFilterEntry<Pair<MediaStatus, Int>>>,
-        val formats: List<MediaFilterEntry<Pair<MediaFormat, Int>>>,
+        val tagsByCategory: Map<String, AnimeMediaFilterController.TagSection>,
+        val statuses: List<AnimeMediaFilterController.StatusEntry>,
+        val formats: List<AnimeMediaFilterController.FormatEntry>,
+        val showAdult: Boolean,
     )
 
     sealed interface ContentState {

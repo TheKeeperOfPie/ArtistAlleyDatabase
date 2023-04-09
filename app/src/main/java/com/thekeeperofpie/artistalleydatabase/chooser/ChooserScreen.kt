@@ -111,7 +111,7 @@ object ChooserScreen {
                         .wrapContentWidth()
                         .run {
                             if (showOptions) {
-                                bottomBorder(1.dp, MaterialTheme.colorScheme.onBackground)
+                                bottomBorder(MaterialTheme.colorScheme.onBackground)
                             } else this
                         }
                 ) {
@@ -134,8 +134,10 @@ object ChooserScreen {
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                         keyboardActions = KeyboardActions(onSearch = { showOptions = false }),
-                        colors = TextFieldDefaults.textFieldColors(
-                            containerColor = MaterialTheme.colorScheme.surface,
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = MaterialTheme.colorScheme.surface,
+                            unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                            disabledContainerColor = MaterialTheme.colorScheme.surface,
                         ),
                         modifier = Modifier
                             .fillMaxWidth()

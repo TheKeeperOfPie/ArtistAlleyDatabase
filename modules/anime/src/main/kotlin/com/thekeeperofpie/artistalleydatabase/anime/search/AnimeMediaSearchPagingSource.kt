@@ -3,11 +3,9 @@ package com.thekeeperofpie.artistalleydatabase.anime.search
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.anilist.MediaAdvancedSearchQuery
-import com.anilist.MediaTagsQuery
-import com.anilist.type.MediaFormat
 import com.anilist.type.MediaSort
-import com.anilist.type.MediaStatus
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
+import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaFilterEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.utils.IncludeExcludeState
@@ -26,9 +24,12 @@ class AnimeMediaSearchPagingSource(
     override suspend fun load(
         params: LoadParams<Int>,
     ): LoadResult<Int, MediaAdvancedSearchQuery.Data.Page.Medium> = try {
-        val flattenedTags = refreshParams.tagsByCategory
-            .map { it.value }
-            .flatten()
+        val flattenedTags = refreshParams.tagsByCategory.values.flatMap {
+            when (it) {
+                is AnimeMediaFilterController.TagSection.Category -> it.flatten()
+                is AnimeMediaFilterController.TagSection.Tag -> listOf(it)
+            }
+        }
 
         // AniList pages start at 1
         val page = params.key ?: 1
@@ -50,25 +51,30 @@ class AnimeMediaSearchPagingSource(
                 .map { it.value.name },
             statusIn = refreshParams.statuses
                 .filter { it.state == IncludeExcludeState.INCLUDE }
-                .map { it.value.first },
+                .map { it.value },
             statusNotIn = refreshParams.statuses
                 .filter { it.state == IncludeExcludeState.EXCLUDE }
-                .map { it.value.first },
+                .map { it.value },
             formatIn = refreshParams.formats
                 .filter { it.state == IncludeExcludeState.INCLUDE }
-                .map { it.value.first },
+                .map { it.value },
             formatNotIn = refreshParams.formats
                 .filter { it.state == IncludeExcludeState.EXCLUDE }
-                .map { it.value.first },
+                .map { it.value },
+            showAdult = refreshParams.showAdult,
         )
 
         val data = result.dataAssertNoErrors
-        val total = data.page.pageInfo.total
-        val itemsAfter = total?.let { (it - (page * 10)) }?.takeIf { it > 0 }
+        val pageInfo = data.page.pageInfo
+        val itemsAfter = if (pageInfo.hasNextPage != true) {
+            0
+        } else {
+            pageInfo.total?.let { (it - (page * 10)) }?.takeIf { it > 0 }
+        }
         LoadResult.Page(
             data = data.page.media.filterNotNull(),
             prevKey = (page - 1).takeIf { page > 1 },
-            nextKey = page + 1,
+            nextKey = (page + 1).takeIf { pageInfo.hasNextPage == true },
             itemsBefore = (page - 1) * 10,
             itemsAfter = itemsAfter ?: LoadResult.Page.COUNT_UNDEFINED,
         )
@@ -82,10 +88,10 @@ class AnimeMediaSearchPagingSource(
         val sort: MediaSortOption,
         val sortAscending: Boolean,
         val genres: List<MediaFilterEntry<String>>,
-        val tagsByCategory: Map<String?,
-                List<MediaFilterEntry<MediaTagsQuery.Data.MediaTagCollection>>>,
-        val statuses: List<MediaFilterEntry<Pair<MediaStatus, Int>>>,
-        val formats: List<MediaFilterEntry<Pair<MediaFormat, Int>>>,
+        val tagsByCategory: Map<String, AnimeMediaFilterController.TagSection>,
+        val statuses: List<AnimeMediaFilterController.StatusEntry>,
+        val formats: List<AnimeMediaFilterController.FormatEntry>,
+        val showAdult: Boolean,
     ) {
         fun sortApiValue() = if (sort == MediaSortOption.DEFAULT) {
             arrayOf(MediaSort.SEARCH_MATCH)

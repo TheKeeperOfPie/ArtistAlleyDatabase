@@ -1,7 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media
 
 import android.text.format.DateUtils
-import android.view.animation.PathInterpolator
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -26,7 +25,6 @@ import androidx.compose.material.icons.filled.PeopleAlt
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PersonOutline
 import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material.icons.filled._18UpRating
 import androidx.compose.material.icons.outlined.PeopleAlt
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
@@ -360,12 +358,6 @@ object AnimeListMediaRow {
         val media: AniListListRowMedia
     ) : Entry {
 
-        companion object {
-            // Uses a cubic bezier to interpolate tag IDs to more distinct colors,
-            // as the tag IDs are not uniformly distributed
-            private val interpolator = PathInterpolator(0.35f, 0.9f, 0.39f, 0.39f)
-        }
-
         val id = EntryId("item", media.id.toString())
         override val image = media.coverImage?.large
         override val title = media.title?.userPreferred
@@ -387,26 +379,20 @@ object AnimeListMediaRow {
                         || (it.isGeneralSpoiler ?: false)
                         || (it.isMediaSpoiler ?: false)
 
-                // TODO: More distinct colors
-                override val containerColor = Color.hsl(
-                    hue = interpolator.getInterpolation((it.id % 2000) / 2000f) * 360,
-                    lightness = 0.25f,
-                    saturation = 0.25f,
+                override val containerColor = MediaUtils.calculateTagColor(it.id)
+
+                override val leadingIconVector = MediaUtils.tagLeadingIcon(
+                    isAdult = it.isAdult,
+                    isGeneralSpoiler = it.isGeneralSpoiler,
+                    isMediaSpoiler = it.isMediaSpoiler,
                 )
 
-                override val leadingIconVector = when {
-                    it.isAdult ?: false -> Icons.Filled._18UpRating
-                    (it.isGeneralSpoiler ?: false) || (it.isMediaSpoiler ?: false) ->
-                        Icons.Filled.Warning
-                    else -> null
-                }
-
-                override val leadingIconContentDescription = when {
-                    it.isAdult ?: false -> R.string.anime_media_tag_is_adult
-                    (it.isGeneralSpoiler ?: false) || (it.isMediaSpoiler ?: false) ->
-                        R.string.anime_media_tag_is_spoiler
-                    else -> null
-                }
+                override val leadingIconContentDescription =
+                    MediaUtils.tagLeadingIconContentDescription(
+                        isAdult = it.isAdult,
+                        isGeneralSpoiler = it.isGeneralSpoiler,
+                        isMediaSpoiler = it.isMediaSpoiler,
+                    )
 
                 override val textColor = ColorUtils.bestTextColor(containerColor)
 

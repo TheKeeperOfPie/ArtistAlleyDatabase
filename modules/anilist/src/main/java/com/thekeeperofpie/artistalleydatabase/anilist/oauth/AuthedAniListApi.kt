@@ -97,6 +97,7 @@ class AuthedAniListApi(
         statusNotIn: List<MediaStatus>,
         formatIn: List<MediaFormat>,
         formatNotIn: List<MediaFormat>,
+        showAdult: Boolean,
     ): ApolloResponse<MediaAdvancedSearchQuery.Data> {
         val sortParam =
             if (query.isEmpty() && sort.size == 1 && sort.contains(MediaSort.SEARCH_MATCH)) {
@@ -121,6 +122,7 @@ class AuthedAniListApi(
                 statusNotIn = Optional.presentIfNotNull(statusNotIn.ifEmpty { null }),
                 formatIn = Optional.presentIfNotNull(formatIn.ifEmpty { null }),
                 formatNotIn = Optional.presentIfNotNull(formatNotIn.ifEmpty { null }),
+                isAdult = Optional.presentIfNotNull(if (showAdult) null else false),
             )
         )
     }

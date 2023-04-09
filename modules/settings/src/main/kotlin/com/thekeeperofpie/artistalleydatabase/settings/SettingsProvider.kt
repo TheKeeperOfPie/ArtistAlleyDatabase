@@ -15,7 +15,9 @@ import com.thekeeperofpie.artistalleydatabase.entry.EntrySettings
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
+import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.serializer
 import kotlin.reflect.KProperty0
 import kotlin.reflect.full.createType
@@ -32,11 +34,6 @@ class SettingsProvider constructor(
         const val PREFERENCES_NAME = "settings"
     }
 
-    override val artEntryTemplate = MutableStateFlow<ArtEntry?>(null)
-    override val cropDocumentUri = MutableStateFlow<Uri?>(null)
-    override val networkLoggingLevel = MutableStateFlow(NetworkSettings.NetworkLoggingLevel.NONE)
-    var searchQuery = MutableStateFlow<ArtEntry?>(null)
-
     val serializer = Converters.PropertiesSerializer(SettingsData::class, appJson)
 
     @VisibleForTesting
@@ -47,6 +44,13 @@ class SettingsProvider constructor(
         EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
         EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
     )
+
+    override val artEntryTemplate = MutableStateFlow<ArtEntry?>(deserialize("artEntryTemplate"))
+    override val cropDocumentUri = MutableStateFlow<Uri?>(deserialize("cropDocumentUri"))
+    override val networkLoggingLevel = MutableStateFlow(
+        deserialize("networkLoggingLevel") ?: NetworkSettings.NetworkLoggingLevel.NONE
+    )
+    var searchQuery = MutableStateFlow<ArtEntry?>(deserialize("searchQuery"))
 
     val settingsData: SettingsData
         get() = SettingsData(
@@ -68,7 +72,7 @@ class SettingsProvider constructor(
         scope: CoroutineScope,
         property: KProperty0<MutableStateFlow<T>>
     ) = scope.launch(CustomDispatchers.IO) {
-        property.get().collectLatest {
+        property.get().drop(1).collectLatest {
             serialize(property.name, it)
         }
     }
@@ -78,6 +82,15 @@ class SettingsProvider constructor(
         cropDocumentUri.emit(data.cropDocumentUri)
         networkLoggingLevel.emit(data.networkLoggingLevel)
         searchQuery.emit(data.searchQuery)
+    }
+
+    private inline fun <reified T> deserialize(name: String): T? {
+        val stringValue = sharedPreferences.getString(name, "")
+        return if (stringValue.isNullOrBlank()) {
+            null
+        } else {
+            appJson.json.decodeFromString<T>(stringValue)
+        }
     }
 
     private inline fun <reified T> serialize(name: String, value: T) {

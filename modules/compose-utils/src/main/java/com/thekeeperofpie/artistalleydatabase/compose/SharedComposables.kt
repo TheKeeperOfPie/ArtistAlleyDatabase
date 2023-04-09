@@ -133,7 +133,7 @@ fun ButtonFooter(vararg pairs: Pair<Int, () -> Unit>) {
         horizontalArrangement = Arrangement.End,
         modifier = Modifier
             .fillMaxWidth()
-            .topBorder(1.dp, MaterialTheme.colorScheme.inversePrimary)
+            .topBorder(color = MaterialTheme.colorScheme.inversePrimary, width = 1.dp)
     ) {
         pairs.forEach { (stringRes, onClick) ->
             TextButton(onClick = onClick) {
@@ -295,7 +295,7 @@ fun LinearProgressWithIndicator(text: String, progress: Float?) {
 }
 
 @Suppress("UnnecessaryComposedModifier")
-fun Modifier.topBorder(width: Dp = Dp.Hairline, color: Color): Modifier = border(
+fun Modifier.topBorder(color: Color, width: Dp = Dp.Hairline): Modifier = border(
     width,
     color,
     startOffsetX = { width.value * density },
@@ -305,7 +305,7 @@ fun Modifier.topBorder(width: Dp = Dp.Hairline, color: Color): Modifier = border
 )
 
 @Suppress("UnnecessaryComposedModifier")
-fun Modifier.bottomBorder(width: Dp = Dp.Hairline, color: Color): Modifier = border(
+fun Modifier.bottomBorder(color: Color, width: Dp = Dp.Hairline): Modifier = border(
     width,
     color,
     startOffsetX = { width.value * density },
@@ -391,10 +391,10 @@ fun TrailingDropdownIcon(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun <T> ItemDropdown(
-    @StringRes label: Int,
     value: String,
     @StringRes iconContentDescription: Int,
     modifier: Modifier = Modifier,
+    @StringRes label: Int? = null,
     values: () -> Iterable<T> = { emptyList() },
     textForValue: @Composable (T) -> String = { "" },
     onSelectItem: (T) -> Unit = {},
@@ -409,7 +409,7 @@ fun <T> ItemDropdown(
             value = value,
             onValueChange = {},
             readOnly = true,
-            label = { Text(stringResource(label)) },
+            label = label?.let { { Text(stringResource(it)) } },
             trailingIcon = {
                 TrailingDropdownIcon(
                     expanded = expanded,

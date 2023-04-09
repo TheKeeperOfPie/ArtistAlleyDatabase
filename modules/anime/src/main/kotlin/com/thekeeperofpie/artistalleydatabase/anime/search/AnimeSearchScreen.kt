@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anime.search
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,14 +17,12 @@ import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
@@ -59,7 +56,7 @@ object AnimeSearchScreen {
             flowOf(PagingData.empty<Entry>()).collectAsLazyPagingItems()
         },
     ) {
-        Scaffold(
+        AnimeMediaFilterOptionsBottomPanel(
             topBar = {
                 Column(
                     modifier = Modifier
@@ -73,26 +70,23 @@ object AnimeSearchScreen {
                         leadingIcon = { NavMenuIconButton(onClickNav) },
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                        colors = TextFieldDefaults.textFieldColors(
-                            containerColor = MaterialTheme.colorScheme.surface,
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = MaterialTheme.colorScheme.surface,
+                            unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                            disabledContainerColor = MaterialTheme.colorScheme.surface,
                         ),
                         modifier = Modifier
                             .fillMaxWidth()
                     )
                 }
             },
-            modifier = Modifier.background(Color.Red)
+            filterData = filterData,
         ) {
-            AnimeMediaFilterOptionsBottomPanel(
-                filterData = filterData,
+            MainContent(
+                content = content,
+                onRefresh = onRefresh,
                 modifier = Modifier.padding(it),
-            ) {
-                MainContent(
-                    content = content,
-                    onRefresh = onRefresh,
-                    modifier = Modifier.padding(it),
-                )
-            }
+            )
         }
     }
 
@@ -112,6 +106,15 @@ object AnimeSearchScreen {
                 .fillMaxSize()
                 .pullRefresh(pullRefreshState)
         ) {
+            when (content.loadState.refresh) {
+                LoadState.Loading -> Unit
+                is LoadState.Error -> {
+                    Error()
+                    return@Box
+                }
+                is LoadState.NotLoading -> Unit
+            }
+
             LazyColumn(
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp),

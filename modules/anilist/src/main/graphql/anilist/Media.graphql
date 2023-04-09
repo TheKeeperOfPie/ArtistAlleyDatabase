@@ -33,6 +33,7 @@ fragment AniListListRowMedia on Media {
     averageScore
     format
     genres
+    isAdult
     seasonYear
     status
     tags {
@@ -48,7 +49,7 @@ fragment AniListListRowMedia on Media {
 query MediaAdvancedSearch($page: Int, $perPage: Int, $search: String, $type: MediaType!,
     $sort: [MediaSort], $genreIn: [String], $genreNotIn: [String], $tagIn: [String],
     $tagNotIn: [String], $statusIn: [MediaStatus], $statusNotIn: [MediaStatus],
-    $formatIn: [MediaFormat], $formatNotIn: [MediaFormat]) {
+    $formatIn: [MediaFormat], $formatNotIn: [MediaFormat], $isAdult: Boolean) {
     Page(page: $page, perPage: $perPage) @nonnull {
         pageInfo @nonnull {
             hasNextPage
@@ -57,7 +58,7 @@ query MediaAdvancedSearch($page: Int, $perPage: Int, $search: String, $type: Med
         media(search: $search, type: $type, sort: $sort, genre_in: $genreIn,
             genre_not_in: $genreNotIn, tag_in: $tagIn, tag_not_in: $tagNotIn,
             status_in: $statusIn, status_not_in: $statusNotIn, format_in: $formatIn,
-            format_not_in: $formatNotIn) @nonnull {
+            format_not_in: $formatNotIn, isAdult: $isAdult) @nonnull {
             ...AniListListRowMedia
         }
     }

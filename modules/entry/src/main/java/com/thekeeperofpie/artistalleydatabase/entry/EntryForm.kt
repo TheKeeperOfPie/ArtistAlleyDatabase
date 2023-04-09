@@ -509,7 +509,7 @@ private fun PrefilledSectionField(
                         color = MaterialTheme.colorScheme.surfaceVariant,
                         shape = backgroundShape,
                     )
-                    .bottomBorder(1.dp, MaterialTheme.colorScheme.onSurfaceVariant)
+                    .bottomBorder(MaterialTheme.colorScheme.onSurfaceVariant)
                     .animateContentSize(),
             ) {
                 EntryImage(

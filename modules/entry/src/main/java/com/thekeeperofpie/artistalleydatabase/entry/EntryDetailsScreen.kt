@@ -172,7 +172,7 @@ object EntryDetailsScreen {
                             horizontalArrangement = Arrangement.End,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .topBorder(1.dp, MaterialTheme.colorScheme.inversePrimary)
+                                .topBorder(MaterialTheme.colorScheme.inversePrimary)
                                 .background(MaterialTheme.colorScheme.background)
                         ) {
                             if (onClickSaveTemplate != null) {

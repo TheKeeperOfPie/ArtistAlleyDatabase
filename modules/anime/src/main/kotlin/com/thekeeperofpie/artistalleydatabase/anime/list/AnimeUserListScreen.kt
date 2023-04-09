@@ -14,7 +14,6 @@ import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -41,24 +40,20 @@ object AnimeUserListScreen {
         onRefresh: () -> Unit = {},
         content: () -> AnimeUserListViewModel.ContentState,
     ) {
-        Scaffold(
+        AnimeMediaFilterOptionsBottomPanel(
             topBar = {
                 AppBar(
                     text = stringResource(R.string.anime_home_title),
                     onClickNav = onClickNav
                 )
             },
+            filterData = filterData,
         ) {
-            AnimeMediaFilterOptionsBottomPanel(
-                filterData = filterData,
+            MainContent(
+                content = content,
+                onRefresh = onRefresh,
                 modifier = Modifier.padding(it),
-            ) {
-                MainContent(
-                    content = content,
-                    onRefresh = onRefresh,
-                    modifier = Modifier.padding(it),
-                )
-            }
+            )
         }
     }
 
