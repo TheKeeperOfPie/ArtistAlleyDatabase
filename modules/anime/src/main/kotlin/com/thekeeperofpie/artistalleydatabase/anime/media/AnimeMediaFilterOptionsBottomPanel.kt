@@ -1,9 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media
 
 import androidx.annotation.StringRes
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -192,7 +190,7 @@ object AnimeMediaFilterOptionsBottomPanel {
         @StringRes titleRes: Int,
         @StringRes titleDropdownContentDescriptionRes: Int,
         defaultExpanded: Boolean = false,
-        content: @Composable () -> Unit
+        content: @Composable (expanded: Boolean) -> Unit
     ) {
         var expanded by remember { mutableStateOf(defaultExpanded) }
         Row(
@@ -215,13 +213,7 @@ object AnimeMediaFilterOptionsBottomPanel {
             )
         }
 
-        AnimatedVisibility(
-            visible = expanded,
-            enter = expandVertically(expandFrom = Alignment.Top),
-            exit = shrinkVertically(shrinkTowards = Alignment.Top)
-        ) {
-            content()
-        }
+        content(expanded)
 
         Divider()
     }
@@ -240,15 +232,16 @@ object AnimeMediaFilterOptionsBottomPanel {
             titleRes = titleRes,
             titleDropdownContentDescriptionRes = titleDropdownContentDescriptionRes,
             defaultExpanded = defaultExpanded,
-        ) {
+        ) { expanded ->
             FlowRow(
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 10.dp)
-
+                    .padding(horizontal = 16.dp)
+                    .animateContentSize()
             ) {
                 entries().forEach {
+                    if (!expanded && it.state == IncludeExcludeState.DEFAULT) return@forEach
                     FilterChip(
                         selected = it.state != IncludeExcludeState.DEFAULT,
                         onClick = { onEntryClicked(it) },
@@ -270,25 +263,38 @@ object AnimeMediaFilterOptionsBottomPanel {
         Section(
             titleRes = R.string.anime_media_filter_tag_label,
             titleDropdownContentDescriptionRes = R.string.anime_media_filter_tag_content_description,
-        ) {
-            Column {
+        ) { expanded ->
+            Column(modifier = Modifier.animateContentSize()) {
                 @Suppress("NAME_SHADOWING")
                 val tags = tags()
                 val children =
                     tags.values.filterIsInstance<AnimeMediaFilterController.TagSection.Tag>()
                 if (children.isNotEmpty()) {
-                    TagChips(tags = children, level = 0, onTagClicked = onTagClicked)
+                    TagChips(
+                        tags = children,
+                        level = 0,
+                        parentExpanded = expanded,
+                        onTagClicked = onTagClicked,
+                    )
                 }
 
-                tags.forEach { (_, section) ->
-                    if (section is AnimeMediaFilterController.TagSection.Category) {
-                        TagSubsection(
-                            name = section.name,
-                            children = section.children.values,
-                            level = 0,
-                            onTagClicked = onTagClicked,
-                        )
+                val subcategoriesToShow = if (expanded) {
+                    tags.values
+                } else {
+                    tags.values.mapNotNull {
+                        it.filter { it.state != IncludeExcludeState.DEFAULT }
                     }
+                }.filterIsInstance<AnimeMediaFilterController.TagSection.Category>()
+
+                subcategoriesToShow.forEachIndexed { index, section ->
+                    TagSubsection(
+                        name = section.name,
+                        children = section.children.values,
+                        parentExpanded = expanded,
+                        level = 0,
+                        onTagClicked = onTagClicked,
+                        isLast = index == subcategoriesToShow.size - 1,
+                    )
                 }
             }
         }
@@ -298,8 +304,10 @@ object AnimeMediaFilterOptionsBottomPanel {
     private fun TagSubsection(
         name: String,
         children: Collection<AnimeMediaFilterController.TagSection>,
+        parentExpanded: Boolean,
         level: Int,
-        onTagClicked: (Int) -> Unit
+        onTagClicked: (Int) -> Unit,
+        isLast: Boolean,
     ) {
         var expanded by remember(name) { mutableStateOf(false) }
         val startPadding = 16.dp * level + 32.dp
@@ -307,7 +315,11 @@ object AnimeMediaFilterOptionsBottomPanel {
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { expanded = !expanded }
+                .run {
+                    if (parentExpanded) {
+                        clickable { expanded = !expanded }
+                    } else this
+                }
         ) {
             Text(
                 text = name,
@@ -317,50 +329,69 @@ object AnimeMediaFilterOptionsBottomPanel {
                     .padding(start = startPadding, top = 8.dp, end = 16.dp, bottom = 8.dp)
                     .weight(1f)
             )
-            TrailingDropdownIconButton(
-                expanded = expanded,
-                contentDescription = stringResource(
-                    R.string.anime_media_filter_tag_category_expand_content_description,
-                    name
-                ),
-                onClick = { expanded = !expanded },
-            )
+
+            if (parentExpanded) {
+                TrailingDropdownIconButton(
+                    expanded = expanded,
+                    contentDescription = stringResource(
+                        R.string.anime_media_filter_tag_category_expand_content_description,
+                        name
+                    ),
+                    onClick = { expanded = !expanded },
+                )
+            }
         }
 
         val tags = children.filterIsInstance<AnimeMediaFilterController.TagSection.Tag>()
-        if (expanded && tags.isEmpty()) {
-            Divider(modifier = Modifier.padding(start = startPadding))
+        val tagsToShow = if (expanded) {
+            tags
+        } else {
+            tags.filter { it.state != IncludeExcludeState.DEFAULT }
         }
 
         val subcategories =
             children.filterIsInstance<AnimeMediaFilterController.TagSection.Category>()
-        if (subcategories.isNotEmpty() || tags.isNotEmpty()) {
-            AnimatedVisibility(
-                visible = expanded,
-                enter = expandVertically(expandFrom = Alignment.Top),
-                exit = shrinkVertically(shrinkTowards = Alignment.Top)
-            ) {
-                Column(Modifier.fillMaxWidth()) {
-                    if (tags.isNotEmpty()) {
-                        TagChips(tags, level, onTagClicked)
-                        Divider(modifier = Modifier.padding(start = startPadding))
-                    }
-
-                    subcategories.forEach {
-                        TagSubsection(it.name, it.children.values, level + 1, onTagClicked)
-                    }
-                }
+        val subcategoriesToShow = if (expanded) {
+            subcategories
+        } else {
+            subcategories.mapNotNull {
+                it.filter { it.state != IncludeExcludeState.DEFAULT }
+                        as? AnimeMediaFilterController.TagSection.Category
             }
         }
 
-        if (!expanded) {
-            Divider(modifier = Modifier.padding(start = startPadding))
+        val dividerStartPadding = startPadding - 8.dp
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .animateContentSize()
+        ) {
+            if (tagsToShow.isNotEmpty()) {
+                TagChips(tagsToShow, parentExpanded = expanded, level, onTagClicked)
+            }
+
+            subcategoriesToShow.forEachIndexed { index, section ->
+                TagSubsection(
+                    section.name,
+                    section.children.values,
+                    parentExpanded = parentExpanded && expanded,
+                    level + 1,
+                    onTagClicked,
+                    isLast = index == subcategoriesToShow.size - 1,
+                )
+            }
+        }
+
+        if (!isLast) {
+            Divider(modifier = Modifier.padding(start = dividerStartPadding))
         }
     }
 
     @Composable
     private fun TagChips(
         tags: List<AnimeMediaFilterController.TagSection.Tag>,
+        parentExpanded: Boolean,
         level: Int,
         onTagClicked: (Int) -> Unit
     ) {
@@ -371,6 +402,7 @@ object AnimeMediaFilterOptionsBottomPanel {
                 .padding(start = 16.dp * level + 48.dp, end = 16.dp),
         ) {
             tags.forEach {
+                if (!parentExpanded && it.state == IncludeExcludeState.DEFAULT) return@forEach
                 FilterChip(
                     selected = it.state != IncludeExcludeState.DEFAULT,
                     onClick = { onTagClicked(it.value.id) },

@@ -94,26 +94,8 @@ class AnimeMediaFilterController<T>(
                 .flatMapLatest { tags ->
                     showAdult.map { showAdult ->
                         if (showAdult) return@map tags
-                        fun TagSection.filter(): TagSection? = when (this) {
-                            is TagSection.Category -> {
-                                copy(
-                                    children = children.values
-                                        .mapNotNull(TagSection::filter)
-                                        .associateBy { it.name }
-                                        .toSortedMap(String.CASE_INSENSITIVE_ORDER)
-                                )
-                            }
-                            is TagSection.Tag -> takeUnless { isAdult ?: false }
-                        }
-
-                        tags.values.mapNotNull(TagSection::filter)
+                        tags.values.mapNotNull { it.filter { it.isAdult != true } }
                             .associateBy { it.name }
-                            .filterValues {
-                                when (it) {
-                                    is TagSection.Category -> it.children.isNotEmpty()
-                                    is TagSection.Tag -> true
-                                }
-                            }
                             .toSortedMap(String.CASE_INSENSITIVE_ORDER)
                     }
                 }
@@ -361,6 +343,18 @@ class AnimeMediaFilterController<T>(
 
     sealed interface TagSection {
         val name: String
+
+        fun filter(predicate: (Tag) -> Boolean): TagSection? = when (this) {
+            is Category -> {
+                children.values
+                    .mapNotNull { it.filter(predicate) }
+                    .associateBy { it.name }
+                    .toSortedMap(String.CASE_INSENSITIVE_ORDER)
+                    .takeIf { it.isNotEmpty() }
+                    ?.let { copy(children = it) }
+            }
+            is Tag -> takeIf { predicate(it) }
+        }
 
         data class Category(
             override val name: String,
