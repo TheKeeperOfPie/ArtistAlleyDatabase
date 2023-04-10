@@ -36,6 +36,7 @@ class AnimeMediaSearchPagingSource(
         val result = aniListApi.searchMedia(
             query = refreshParams.query,
             page = page,
+            perPage = 10,
             sort = refreshParams.sortApiValue(),
             genreIn = refreshParams.genres
                 .filter { it.state == IncludeExcludeState.INCLUDE }

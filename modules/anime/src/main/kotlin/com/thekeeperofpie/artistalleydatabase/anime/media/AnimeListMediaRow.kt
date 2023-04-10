@@ -65,7 +65,10 @@ import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 object AnimeListMediaRow {
 
     @Composable
-    operator fun invoke(entry: Entry) {
+    operator fun invoke(
+        entry: Entry,
+        onTagClick: (tagId: String, tagName: String) -> Unit = { _, _ -> },
+    ) {
         ElevatedCard(
             modifier = Modifier
                 .fillMaxWidth()
@@ -89,7 +92,7 @@ object AnimeListMediaRow {
                     entry.nextAiringEpisode?.let {
                         NextAiringSection(it, entry == Entry.Loading)
                     }
-                    TagRow(entry.tags)
+                    TagRow(tags = entry.tags, onTagClick = onTagClick)
                 }
             }
         }
@@ -278,7 +281,10 @@ object AnimeListMediaRow {
     }
 
     @Composable
-    private fun TagRow(tags: List<Tag>) {
+    private fun TagRow(
+        tags: List<Tag>,
+        onTagClick: (tagId: String, tagName: String) -> Unit = { _, _ -> },
+    ) {
         LazyRow(
             contentPadding = PaddingValues(start = 12.dp, end = 32.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -293,7 +299,13 @@ object AnimeListMediaRow {
                 val shouldHide = it.shouldHide
                 var hidden by remember(it.id) { mutableStateOf(shouldHide) }
                 AssistChip(
-                    onClick = { if (shouldHide) hidden = !hidden },
+                    onClick = {
+                        if (!hidden) {
+                            onTagClick(it.id, it.text)
+                        } else {
+                            hidden = false
+                        }
+                    },
                     colors = AssistChipDefaults.assistChipColors(
                         containerColor = if (hidden) {
                             MaterialTheme.colorScheme.onSurface.copy(alpha = 0.25f)

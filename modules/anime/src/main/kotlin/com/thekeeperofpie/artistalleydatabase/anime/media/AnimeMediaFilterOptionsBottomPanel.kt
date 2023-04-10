@@ -258,7 +258,7 @@ object AnimeMediaFilterOptionsBottomPanel {
     @Composable
     private fun TagSection(
         tags: @Composable () -> Map<String, AnimeMediaFilterController.TagSection>,
-        onTagClicked: (Int) -> Unit
+        onTagClicked: (String) -> Unit
     ) {
         Section(
             titleRes = R.string.anime_media_filter_tag_label,
@@ -306,7 +306,7 @@ object AnimeMediaFilterOptionsBottomPanel {
         children: Collection<AnimeMediaFilterController.TagSection>,
         parentExpanded: Boolean,
         level: Int,
-        onTagClicked: (Int) -> Unit,
+        onTagClicked: (String) -> Unit,
         isLast: Boolean,
     ) {
         var expanded by remember(name) { mutableStateOf(false) }
@@ -393,7 +393,7 @@ object AnimeMediaFilterOptionsBottomPanel {
         tags: List<AnimeMediaFilterController.TagSection.Tag>,
         parentExpanded: Boolean,
         level: Int,
-        onTagClicked: (Int) -> Unit
+        onTagClicked: (String) -> Unit
     ) {
         FlowRow(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -405,7 +405,8 @@ object AnimeMediaFilterOptionsBottomPanel {
                 if (!parentExpanded && it.state == IncludeExcludeState.DEFAULT) return@forEach
                 FilterChip(
                     selected = it.state != IncludeExcludeState.DEFAULT,
-                    onClick = { onTagClicked(it.value.id) },
+                    onClick = { onTagClicked(it.id) },
+                    enabled = it.clickable,
                     label = { AutoHeightText(it.value.name) },
                     colors = FilterChipDefaults.filterChipColors(
                         containerColor = it.containerColor

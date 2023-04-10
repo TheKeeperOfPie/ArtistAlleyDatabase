@@ -45,8 +45,17 @@ class AnimeMediaFilterController<T>(
     val formats = MutableStateFlow(FormatEntry.formats())
     val showAdult = MutableStateFlow(false)
 
+    private lateinit var initialParams: InitialParams
+
     @OptIn(ExperimentalCoroutinesApi::class)
-    fun initialize(viewModel: ViewModel, refreshUpdates: StateFlow<*>) {
+    fun initialize(
+        viewModel: ViewModel,
+        refreshUpdates: StateFlow<*>,
+        params: InitialParams = InitialParams(),
+    ) {
+        if (::initialParams.isInitialized) return
+        initialParams = params
+
         viewModel.viewModelScope.launch(CustomDispatchers.Main) {
             refreshUpdates
                 .mapLatestNotNull {
@@ -84,8 +93,22 @@ class AnimeMediaFilterController<T>(
                                 .mediaTagCollection
                                 ?.filterNotNull()
                                 ?.let(::buildTagSections)
+                                ?.run {
+                                    if (initialParams.tagId == null) return@run this
+                                    toMutableMap().apply {
+                                        replaceAll { _, section ->
+                                            section.replace {
+                                                it.takeUnless { it.id == initialParams.tagId }
+                                                    ?: it.copy(
+                                                        state = IncludeExcludeState.INCLUDE,
+                                                        clickable = false
+                                                    )
+                                            }
+                                        }
+                                    }
+                                }
                         } catch (e: Exception) {
-                            Log.d(TAG, "Error loading genres", e)
+                            Log.d(TAG, "Error loading tags", e)
                             null
                         }
                     }
@@ -107,7 +130,7 @@ class AnimeMediaFilterController<T>(
      * Categories are provided from the API in the form of "Parent-Child". This un-flattens the
      * tag list into a tree of sections, separated by the "-" dash.
      */
-    private fun buildTagSections(tags: List<MediaTagCollection>): SortedMap<String, TagSection> {
+    private fun buildTagSections(tags: List<MediaTagCollection>): Map<String, TagSection> {
         val sections = mutableMapOf<String, Any>()
         tags.forEach {
             var categories = it.category?.split('-')
@@ -149,7 +172,7 @@ class AnimeMediaFilterController<T>(
                 is TagSection.Tag -> value
                 else -> throw IllegalStateException("Unexpected value $value")
             }
-        }.toSortedMap(String.CASE_INSENSITIVE_ORDER)
+        }
     }
 
     private fun onSortChanged(option: T) = sort.update { option }
@@ -167,21 +190,15 @@ class AnimeMediaFilterController<T>(
             }
     }
 
-    private fun onTagClicked(tagId: Int) {
-        fun TagSection.replace(): TagSection = when (this) {
-            is TagSection.Category -> {
-                copy(children = children.mapValues { (_, value) -> value.replace() }
-                    .toSortedMap(String.CASE_INSENSITIVE_ORDER))
-            }
-            is TagSection.Tag -> {
-                if (id == tagId.toString()) {
-                    copy(state = state.next())
-                } else this
-            }
-        }
-
+    private fun onTagClicked(tagId: String) {
+        if (tagId == initialParams.tagId) return
         tagsByCategory.value = tagsByCategory.value
-            .mapValues { (_, value) -> value.replace() }
+            .mapValues { (_, value) ->
+                value.replace {
+                    it.takeUnless { it.id == tagId }
+                        ?: it.copy(state = it.state.next())
+                }
+            }
     }
 
     private fun onStatusClicked(status: MediaStatus) {
@@ -224,6 +241,10 @@ class AnimeMediaFilterController<T>(
         onShowAdultToggled = { showAdult.value = it },
     )
 
+    data class InitialParams(
+        val tagId: String? = null,
+    )
+
     class Data<SortOption>(
         val defaultOptions: List<SortOption>,
         val sort: @Composable () -> SortOption,
@@ -237,7 +258,7 @@ class AnimeMediaFilterController<T>(
         val genres: @Composable () -> List<GenreEntry> = { emptyList() },
         val onGenreClicked: (String) -> Unit = {},
         val tags: @Composable () -> Map<String, TagSection> = { emptyMap() },
-        val onTagClicked: (Int) -> Unit = {},
+        val onTagClicked: (String) -> Unit = {},
         val showAdult: @Composable () -> Boolean = { false },
         val onShowAdultToggled: (Boolean) -> Unit = {},
     ) {
@@ -356,6 +377,14 @@ class AnimeMediaFilterController<T>(
             is Tag -> takeIf { predicate(it) }
         }
 
+        fun replace(block: (Tag) -> Tag): TagSection = when (this) {
+            is Category -> {
+                copy(children = children.mapValues { (_, value) -> value.replace(block) }
+                    .toSortedMap(String.CASE_INSENSITIVE_ORDER))
+            }
+            is Tag -> block(this)
+        }
+
         data class Category(
             override val name: String,
             val children: SortedMap<String, TagSection>,
@@ -416,6 +445,7 @@ class AnimeMediaFilterController<T>(
             val isAdult: Boolean?,
             override val value: MediaTagCollection,
             override val state: IncludeExcludeState = IncludeExcludeState.DEFAULT,
+            val clickable: Boolean = true,
         ) : MediaFilterEntry<MediaTagCollection>, TagSection {
             val containerColor = MediaUtils.calculateTagColor(value.id)
 

@@ -39,6 +39,7 @@ object AnimeUserListScreen {
         filterData: () -> AnimeMediaFilterController.Data<MediaListSortOption>,
         onRefresh: () -> Unit = {},
         content: () -> AnimeUserListViewModel.ContentState,
+        onTagClick: (tagId: String, tagName: String) -> Unit = { _, _ -> },
     ) {
         AnimeMediaFilterOptionsBottomPanel(
             topBar = {
@@ -53,6 +54,7 @@ object AnimeUserListScreen {
                 content = content,
                 onRefresh = onRefresh,
                 modifier = Modifier.padding(it),
+                onTagClick = onTagClick,
             )
         }
     }
@@ -62,6 +64,7 @@ object AnimeUserListScreen {
         content: () -> AnimeUserListViewModel.ContentState,
         modifier: Modifier = Modifier,
         onRefresh: () -> Unit = {},
+        onTagClick: (tagId: String, tagName: String) -> Unit = { _, _ -> },
     ) {
         @Suppress("NAME_SHADOWING")
         val content = content()
@@ -89,7 +92,7 @@ object AnimeUserListScreen {
                         items(content.entries, { it.id.scopedId }) {
                             when (it) {
                                 is Entry.Header -> Header(it)
-                                is Entry.Item -> AnimeListMediaRow(it)
+                                is Entry.Item -> AnimeListMediaRow(it, onTagClick = onTagClick)
                                 is Entry.LoadMore -> TODO()
                             }
                         }

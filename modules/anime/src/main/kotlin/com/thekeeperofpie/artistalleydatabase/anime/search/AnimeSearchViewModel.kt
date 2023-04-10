@@ -35,12 +35,13 @@ class AnimeSearchViewModel @Inject constructor(aniListApi: AuthedAniListApi) : V
     val query = MutableStateFlow("")
     var content = MutableStateFlow(PagingData.empty<AnimeSearchScreen.Entry>())
 
+    private var initialized = false
+
     private val filterController = AnimeMediaFilterController(MediaSortOption::class, aniListApi)
 
     private val refreshUptimeMillis = MutableStateFlow(-1L)
 
     init {
-        filterController.initialize(this, refreshUptimeMillis)
         viewModelScope.launch(CustomDispatchers.Main) {
             @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
             combine(
@@ -60,7 +61,7 @@ class AnimeSearchViewModel @Inject constructor(aniListApi: AuthedAniListApi) : V
                 .flatMapLatest {
                     Pager(PagingConfig(pageSize = 10, enablePlaceholders = true)) {
                         AnimeMediaSearchPagingSource(aniListApi, it)
-                    }.flow.cachedIn(viewModelScope)
+                    }.flow
                 }
                 .map {
                     // AniList can return duplicates across pages, manually enforce uniqueness
@@ -68,8 +69,15 @@ class AnimeSearchViewModel @Inject constructor(aniListApi: AuthedAniListApi) : V
                     it.filter { seenIds.add(it.id) }
                         .map<Medium, AnimeSearchScreen.Entry> { AnimeSearchScreen.Entry.Item(it) }
                 }
+                .cachedIn(viewModelScope)
                 .collectLatest(content::emit)
         }
+    }
+
+    fun initialize(filterParams: AnimeMediaFilterController.InitialParams) {
+        if (initialized) return
+        initialized = true
+        filterController.initialize(this, refreshUptimeMillis, filterParams)
     }
 
     fun filterData() = filterController.data()

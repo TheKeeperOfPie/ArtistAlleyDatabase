@@ -38,16 +38,19 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeListMediaRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaFilterOptionsBottomPanel
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaSortOption
+import com.thekeeperofpie.artistalleydatabase.compose.AppBar
 import com.thekeeperofpie.artistalleydatabase.compose.NavMenuIconButton
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 import kotlinx.coroutines.flow.flowOf
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class)
 object AnimeSearchScreen {
 
     @Composable
     operator fun invoke(
         onClickNav: () -> Unit = {},
+        isRoot: () -> Boolean = { true },
+        title: () -> String? = { null },
         query: @Composable () -> String = { "" },
         onQueryChange: (String) -> Unit = {},
         filterData: () -> AnimeMediaFilterController.Data<MediaSortOption>,
@@ -55,28 +58,36 @@ object AnimeSearchScreen {
         content: @Composable () -> LazyPagingItems<Entry> = {
             flowOf(PagingData.empty<Entry>()).collectAsLazyPagingItems()
         },
+        onTagClick: (tagId: String, tagName: String) -> Unit = { _, _ -> },
     ) {
         AnimeMediaFilterOptionsBottomPanel(
             topBar = {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .wrapContentWidth()
-                ) {
-                    TextField(
-                        query(),
-                        placeholder = { Text(stringResource(id = R.string.anime_search)) },
-                        onValueChange = onQueryChange,
-                        leadingIcon = { NavMenuIconButton(onClickNav) },
-                        singleLine = true,
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                        colors = TextFieldDefaults.colors(
-                            focusedContainerColor = MaterialTheme.colorScheme.surface,
-                            unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-                            disabledContainerColor = MaterialTheme.colorScheme.surface,
-                        ),
+                if (isRoot()) {
+                    Column(
                         modifier = Modifier
                             .fillMaxWidth()
+                            .wrapContentWidth()
+                    ) {
+                        TextField(
+                            query(),
+                            placeholder = { Text(stringResource(id = R.string.anime_search)) },
+                            onValueChange = onQueryChange,
+                            leadingIcon = { NavMenuIconButton(onClickNav) },
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                            colors = TextFieldDefaults.colors(
+                                focusedContainerColor = MaterialTheme.colorScheme.surface,
+                                unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                                disabledContainerColor = MaterialTheme.colorScheme.surface,
+                            ),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                        )
+                    }
+                } else {
+                    AppBar(
+                        text = title().orEmpty(),
+                        onClickBack = onClickNav,
                     )
                 }
             },
@@ -85,6 +96,7 @@ object AnimeSearchScreen {
             MainContent(
                 content = content,
                 onRefresh = onRefresh,
+                onTagClick = onTagClick,
                 modifier = Modifier.padding(it),
             )
         }
@@ -93,8 +105,9 @@ object AnimeSearchScreen {
     @Composable
     private fun MainContent(
         content: @Composable () -> LazyPagingItems<Entry>,
+        onRefresh: () -> Unit,
+        onTagClick: (tagId: String, tagName: String) -> Unit,
         modifier: Modifier = Modifier,
-        onRefresh: () -> Unit = {},
     ) {
         @Suppress("NAME_SHADOWING")
         val content = content()
@@ -121,7 +134,7 @@ object AnimeSearchScreen {
             ) {
                 items(content, { it.id.scopedId }) {
                     when (it) {
-                        is Entry.Item -> AnimeListMediaRow(it)
+                        is Entry.Item -> AnimeListMediaRow(it, onTagClick = onTagClick)
                         is Entry.LoadMore -> TODO()
                         null -> AnimeListMediaRow(AnimeListMediaRow.Entry.Loading)
                     }

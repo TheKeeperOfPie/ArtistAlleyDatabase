@@ -14,12 +14,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.anime.list.AnimeUserListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.list.AnimeUserListViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.search.AnimeSearchScreen
 import com.thekeeperofpie.artistalleydatabase.anime.search.AnimeSearchViewModel
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
@@ -55,28 +58,64 @@ object AnimeHomeScreen {
                 } else {
 
                     val navController = rememberNavController()
+                    fun onTagClick(tagId: String, tagName: String) {
+                        navController.navigate(
+                            AnimeNavDestinations.SEARCH.id +
+                                    "?title=$tagName&tagId=$tagId"
+                        )
+                    }
+
                     NavHost(
                         navController = navController,
                         startDestination = AnimeNavDestinations.values()[selectedSubIndex()].id
                     ) {
                         composable(AnimeNavDestinations.LIST.id) {
                             val viewModel = hiltViewModel<AnimeUserListViewModel>()
+                                .apply { initialize() }
                             AnimeUserListScreen(
                                 onClickNav = onClickNav,
                                 filterData = { viewModel.filterData() },
                                 onRefresh = viewModel::onRefresh,
                                 content = { viewModel.content },
+                                onTagClick = ::onTagClick
                             )
                         }
-                        composable(AnimeNavDestinations.SEARCH.id) {
-                            val viewModel = hiltViewModel<AnimeSearchViewModel>()
+                        composable(
+                            route = AnimeNavDestinations.SEARCH.id
+                                    + "?title={title}"
+                                    + "&tagId={tagId}",
+                            arguments = listOf(
+                                navArgument("title") {
+                                    type = NavType.StringType
+                                    nullable = true
+                                },
+                                navArgument("tagId") {
+                                    type = NavType.StringType
+                                    nullable = true
+                                },
+                            )
+                        ) {
+                            val title = it.arguments?.getString("title")
+                            val tagId = it.arguments?.getString("tagId")
+                            val viewModel = hiltViewModel<AnimeSearchViewModel>().apply {
+                                initialize(AnimeMediaFilterController.InitialParams(tagId))
+                            }
                             AnimeSearchScreen(
-                                onClickNav = onClickNav,
+                                onClickNav = {
+                                    if (title == null) {
+                                        onClickNav()
+                                    } else {
+                                        navController.popBackStack()
+                                    }
+                                },
+                                isRoot = { title == null },
+                                title = { title },
                                 query = { viewModel.query.collectAsState().value },
                                 onQueryChange = viewModel::onQuery,
                                 filterData = { viewModel.filterData() },
                                 onRefresh = viewModel::onRefresh,
                                 content = { viewModel.content.collectAsLazyPagingItems() },
+                                onTagClick = ::onTagClick
                             )
                         }
                     }
