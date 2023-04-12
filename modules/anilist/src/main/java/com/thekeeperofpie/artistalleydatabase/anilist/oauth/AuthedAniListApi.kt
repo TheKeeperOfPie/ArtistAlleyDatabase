@@ -8,6 +8,7 @@ import com.anilist.MediaTagsQuery
 import com.anilist.UserMediaListQuery
 import com.anilist.type.MediaFormat
 import com.anilist.type.MediaListSort
+import com.anilist.type.MediaSeason
 import com.anilist.type.MediaSort
 import com.anilist.type.MediaStatus
 import com.anilist.type.MediaType
@@ -98,6 +99,11 @@ class AuthedAniListApi(
         formatIn: List<MediaFormat>,
         formatNotIn: List<MediaFormat>,
         showAdult: Boolean,
+        onList: Boolean?,
+        season: MediaSeason?,
+        seasonYear: Int?,
+        startDateGreater: Int?,
+        startDateLesser: Int?,
     ): ApolloResponse<MediaAdvancedSearchQuery.Data> {
         val sortParam =
             if (query.isEmpty() && sort.size == 1 && sort.contains(MediaSort.SEARCH_MATCH)) {
@@ -123,6 +129,11 @@ class AuthedAniListApi(
                 formatIn = Optional.presentIfNotNull(formatIn.ifEmpty { null }),
                 formatNotIn = Optional.presentIfNotNull(formatNotIn.ifEmpty { null }),
                 isAdult = Optional.presentIfNotNull(if (showAdult) null else false),
+                onList = Optional.presentIfNotNull(onList),
+                season = Optional.presentIfNotNull(season),
+                seasonYear = Optional.presentIfNotNull(seasonYear),
+                startDateGreater = Optional.presentIfNotNull(startDateGreater),
+                startDateLesser = Optional.presentIfNotNull(startDateLesser),
             )
         )
     }

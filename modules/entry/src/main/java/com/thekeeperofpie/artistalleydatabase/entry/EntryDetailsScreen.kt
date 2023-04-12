@@ -60,6 +60,7 @@ import com.mxalbert.sharedelements.ProgressThresholds
 import com.mxalbert.sharedelements.SharedElement
 import com.mxalbert.sharedelements.SharedElementsTransitionSpec
 import com.thekeeperofpie.artistalleydatabase.android_utils.AnimationUtils
+import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.compose.AddBackPressInvokeTogether
 import com.thekeeperofpie.artistalleydatabase.compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
@@ -286,12 +287,12 @@ object EntryDetailsScreen {
                     onDismiss()
                     onConfirmExit()
                 }) {
-                    Text(stringResource(R.string.confirm))
+                    Text(stringResource(UtilsStringR.confirm))
                 }
             },
             dismissButton = {
                 TextButton(onClick = onDismiss) {
-                    Text(stringResource(R.string.cancel))
+                    Text(stringResource(UtilsStringR.cancel))
                 }
             },
         )

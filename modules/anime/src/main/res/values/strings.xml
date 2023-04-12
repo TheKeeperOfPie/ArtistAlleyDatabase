@@ -95,4 +95,32 @@
     <string name="anime_media_rating_population_icon_content_description">Users</string>
 
     <string name="anime_media_filter_show_adult_content">Show adult content</string>
+
+    <string name="anime_media_filter_on_list_label">On user list</string>
+    <string name="anime_media_filter_on_list_default">Default</string>
+    <string name="anime_media_filter_on_list_on_list">On list</string>
+    <string name="anime_media_filter_on_list_not_on_list">Not on list</string>
+    <string name="anime_media_filter_on_list_dropdown_content_description">On list dropdown</string>
+
+    <string name="anime_media_filter_airing_date">Airing date</string>
+    <string name="anime_media_filter_airing_date_content_description">Airing date expand</string>
+    <string name="anime_media_filter_airing_date_season">Season</string>
+    <string name="anime_media_filter_airing_date_season_dropdown_content_description">Season dropdown</string>
+    <string name="anime_media_filter_airing_date_season_default">Any</string>
+    <string name="anime_media_filter_airing_date_season_winter">Winter</string>
+    <string name="anime_media_filter_airing_date_season_spring">Spring</string>
+    <string name="anime_media_filter_airing_date_season_summer">Summer</string>
+    <string name="anime_media_filter_airing_date_season_fall">Fall</string>
+
+    <string name="anime_media_filter_airing_date_season_year">Year</string>
+    <string name="anime_media_filter_airing_date_season_year_decrement_content_description">Decrement year</string>
+    <string name="anime_media_filter_airing_date_season_year_increment_content_description">Increment year</string>
+    <string name="anime_media_filter_airing_date_season_year_clear_content_description">Clear year</string>
+    <string name="anime_media_filter_airing_date_season_year_today_content_description">Set to current year</string>
+    <string name="anime_media_filter_airing_date_season_basic">Basic</string>
+    <string name="anime_media_filter_airing_date_season_advanced">Advanced</string>
+    <string name="anime_media_filter_airing_date_today_content_description">Set to today</string>
+    <string name="anime_media_filter_airing_date_start_date_label">Start</string>
+    <string name="anime_media_filter_airing_date_end_date_label">End</string>
+    <string name="anime_media_filter_airing_date_clear_content_description">Clear date</string>
 </resources>

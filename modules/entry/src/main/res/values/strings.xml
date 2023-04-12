@@ -7,12 +7,10 @@
     <string name="different_indicator_content_description">Different values indicator</string>
     <string name="move_down">Move down</string>
     <string name="move_up">Move up</string>
-    <string name="confirm">Confirm</string>
     <string name="delete">Delete</string>
     <string name="save">Save</string>
     <string name="save_template">Save template</string>
     <string name="save_skip_errors">Save skipping errors</string>
-    <string name="cancel">Cancel</string>
     <string name="different">Different</string>
     <string name="label_open_entry_link">Open entry link</string>
     <string name="entry_image_content_description">Entry cover image</string>

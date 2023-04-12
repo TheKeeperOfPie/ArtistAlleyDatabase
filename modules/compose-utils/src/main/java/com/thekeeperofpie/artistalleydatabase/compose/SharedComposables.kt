@@ -53,7 +53,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.drawWithCache
-import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -395,15 +394,18 @@ fun <T> ItemDropdown(
     @StringRes iconContentDescription: Int,
     modifier: Modifier = Modifier,
     @StringRes label: Int? = null,
-    values: () -> Iterable<T> = { emptyList() },
+    values: @Composable () -> Iterable<T> = { emptyList() },
     textForValue: @Composable (T) -> String = { "" },
     onSelectItem: (T) -> Unit = {},
+    wrapWidth: Boolean = false,
 ) {
     var expanded by remember { mutableStateOf(false) }
+    fun Modifier.wrapWidthIfRequested() = if (wrapWidth) wrapContentWidth() else fillMaxWidth()
+
     ExposedDropdownMenuBox(
         expanded = expanded,
         onExpandedChange = { expanded = !expanded },
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier.wrapWidthIfRequested(),
     ) {
         TextField(
             value = value,
@@ -418,14 +420,14 @@ fun <T> ItemDropdown(
             },
             colors = ExposedDropdownMenuDefaults.textFieldColors(),
             modifier = Modifier
-                .fillMaxWidth()
+                .wrapWidthIfRequested()
                 .menuAnchor()
                 .clickable(false) {},
         )
         ExposedDropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.wrapWidthIfRequested()
         ) {
             values().forEach {
                 DropdownMenuItem(
@@ -435,7 +437,7 @@ fun <T> ItemDropdown(
                     },
                     text = { Text(textForValue(it)) },
                     contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.wrapWidthIfRequested(),
                 )
             }
         }
@@ -480,18 +482,20 @@ fun AutoHeightText(
         maxLines = maxLines,
         minLines = minLines,
         onTextLayout = onTextLayout@{
-            if (!readyToDraw && it.didOverflowHeight) {
-                val nextSize = realFontSize - 1f
-                if (nextSize > 2f) {
-                    realFontSize = nextSize
+            if (!readyToDraw) {
+                if (it.didOverflowHeight) {
+                    val nextSize = realFontSize - 1f
+                    if (nextSize > 2f) {
+                        realFontSize = nextSize
+                    } else {
+                        readyToDraw = true
+                    }
                 } else {
                     readyToDraw = true
                 }
-            } else {
-                readyToDraw = true
             }
         },
         style = style,
-        modifier = modifier.drawWithContent { if (readyToDraw) drawContent() }
+        modifier = modifier.drawWithCache { onDrawWithContent { if (readyToDraw) drawContent() } }
     )
 }

@@ -31,6 +31,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.time.LocalDate
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -73,6 +74,7 @@ class AnimeUserListViewModel @Inject constructor(aniListApi: AuthedAniListApi) :
                             filterController.statuses,
                             filterController.formats,
                             filterController.showAdult,
+                            filterController.airingDate(),
                             ::FilterParams,
                         )
                             .map { filterParams ->
@@ -95,7 +97,12 @@ class AnimeUserListViewModel @Inject constructor(aniListApi: AuthedAniListApi) :
     fun initialize() {
         if (initialized) return
         initialized = true
-        filterController.initialize(this, refreshUptimeMillis)
+        filterController.initialize(
+            this, refreshUptimeMillis, AnimeMediaFilterController.InitialParams(
+                // Disable "On list" filter, everything in this screen is on the user's list
+                onListEnabled = false
+            )
+        )
     }
 
     fun filterData() = filterController.data()
@@ -152,6 +159,102 @@ class AnimeUserListViewModel @Inject constructor(aniListApi: AuthedAniListApi) :
             filteredEntries = filteredEntries.filterNot { it.media.isAdult ?: false }
         }
 
+        filteredEntries = when (val airingDate = filterParams.airingDate) {
+            is AnimeMediaFilterController.AiringDate.Basic -> {
+                filteredEntries.filter {
+                    val season = airingDate.season
+                    val seasonYear = airingDate.seasonYear.toIntOrNull()
+                    (seasonYear == null || it.media.seasonYear == seasonYear)
+                            && (season == null || it.media.season == season)
+                }
+            }
+            is AnimeMediaFilterController.AiringDate.Advanced -> {
+                val startDate = airingDate.startDate
+                val endDate = airingDate.endDate
+
+                if (startDate == null && endDate == null) {
+                    filteredEntries
+                } else {
+                    fun List<AnimeUserListScreen.Entry.Item>.filterStartDate(
+                        startDate: LocalDate
+                    ) = filter {
+                        val mediaStartDate = it.media.startDate
+                        val mediaYear = mediaStartDate?.year
+                        if (mediaYear == null) {
+                            return@filter false
+                        } else if (mediaYear > startDate.year) {
+                            return@filter true
+                        } else if (mediaYear < startDate.year) {
+                            return@filter false
+                        }
+
+                        val mediaMonth = mediaStartDate.month
+                        val mediaDayOfMonth = mediaStartDate.day
+
+                        // TODO: Is this the correct behavior?
+                        // If there's no month, match the media to avoid stripping expected result
+                        if (mediaMonth == null) {
+                            return@filter true
+                        }
+
+                        if (mediaMonth < startDate.monthValue) {
+                            return@filter false
+                        }
+
+                        if (mediaMonth > startDate.monthValue) {
+                            return@filter true
+                        }
+
+                        mediaDayOfMonth == null || mediaDayOfMonth >= startDate.dayOfMonth
+                    }
+
+                    fun List<AnimeUserListScreen.Entry.Item>.filterEndDate(
+                        endDate: LocalDate
+                    ) = filter {
+                        val mediaStartDate = it.media.startDate
+                        val mediaYear = mediaStartDate?.year
+                        if (mediaYear == null) {
+                            return@filter false
+                        } else if (mediaYear > endDate.year) {
+                            return@filter false
+                        } else if (mediaYear < endDate.year) {
+                            return@filter true
+                        }
+
+                        val mediaMonth = mediaStartDate.month
+                        val mediaDayOfMonth = mediaStartDate.day
+
+                        // TODO: Is this the correct behavior?
+                        // If there's no month, match the media to avoid stripping expected result
+                        if (mediaMonth == null) {
+                            return@filter true
+                        }
+
+                        if (mediaMonth < endDate.monthValue) {
+                            return@filter true
+                        }
+
+                        if (mediaMonth > endDate.monthValue) {
+                            return@filter false
+                        }
+
+                        mediaDayOfMonth == null || mediaDayOfMonth <= endDate.dayOfMonth
+                    }
+
+                    if (startDate != null && endDate != null) {
+                        filteredEntries.filterStartDate(startDate)
+                            .filterEndDate(endDate)
+                    } else if (startDate != null) {
+                        filteredEntries.filterStartDate(startDate)
+                    } else if (endDate != null) {
+                        filteredEntries.filterEndDate(endDate)
+                    } else {
+                        filteredEntries
+                    }
+                }
+            }
+        }
+
         if (filteredEntries.isNotEmpty()) {
             this += AnimeUserListScreen.Entry.Header(
                 list.name.orEmpty(),
@@ -181,6 +284,7 @@ class AnimeUserListViewModel @Inject constructor(aniListApi: AuthedAniListApi) :
         val statuses: List<AnimeMediaFilterController.StatusEntry>,
         val formats: List<AnimeMediaFilterController.FormatEntry>,
         val showAdult: Boolean,
+        val airingDate: AnimeMediaFilterController.AiringDate,
     )
 
     sealed interface ContentState {

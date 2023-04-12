@@ -9,6 +9,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaFilterContro
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaFilterEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.utils.IncludeExcludeState
+import java.time.LocalDate
 
 class AnimeMediaSearchPagingSource(
     private val aniListApi: AuthedAniListApi,
@@ -63,6 +64,18 @@ class AnimeMediaSearchPagingSource(
                 .filter { it.state == IncludeExcludeState.EXCLUDE }
                 .map { it.value },
             showAdult = refreshParams.showAdult,
+            onList = refreshParams.onList.value,
+            season = (refreshParams.airingDate as? AnimeMediaFilterController.AiringDate.Basic)
+                ?.season,
+            seasonYear = (refreshParams.airingDate as? AnimeMediaFilterController.AiringDate.Basic)
+                ?.seasonYear
+                ?.toIntOrNull(),
+            startDateGreater = (refreshParams.airingDate as? AnimeMediaFilterController.AiringDate.Advanced)
+                ?.startDate
+                ?.toApiFuzzyDateInt(),
+            startDateLesser = (refreshParams.airingDate as? AnimeMediaFilterController.AiringDate.Advanced)
+                ?.endDate
+                ?.toApiFuzzyDateInt(),
         )
 
         val data = result.dataAssertNoErrors
@@ -83,6 +96,12 @@ class AnimeMediaSearchPagingSource(
         LoadResult.Error(e)
     }
 
+    private fun LocalDate.toApiFuzzyDateInt(): Int? {
+        val monthString = monthValue.toString().padStart(2, '0')
+        val dayOfMonthString = dayOfMonth.toString().padStart(2, '0')
+        return "$year$monthString$dayOfMonthString".toIntOrNull()
+    }
+
     data class RefreshParams(
         val query: String,
         val requestMillis: Long,
@@ -93,6 +112,8 @@ class AnimeMediaSearchPagingSource(
         val statuses: List<AnimeMediaFilterController.StatusEntry>,
         val formats: List<AnimeMediaFilterController.FormatEntry>,
         val showAdult: Boolean,
+        val onList: AnimeMediaFilterController.OnListOption,
+        val airingDate: AnimeMediaFilterController.AiringDate,
     ) {
         fun sortApiValue() = if (sort == MediaSortOption.DEFAULT) {
             arrayOf(MediaSort.SEARCH_MATCH)

@@ -7,4 +7,6 @@
     <string name="custom">Custom</string>
     <string name="close">Close</string>
     <string name="app_name">Artist Alley Database</string>
+    <string name="confirm">Confirm</string>
+    <string name="cancel">Cancel</string>
 </resources>

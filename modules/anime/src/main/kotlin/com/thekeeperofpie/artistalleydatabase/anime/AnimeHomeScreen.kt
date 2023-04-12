@@ -98,7 +98,7 @@ object AnimeHomeScreen {
                             val title = it.arguments?.getString("title")
                             val tagId = it.arguments?.getString("tagId")
                             val viewModel = hiltViewModel<AnimeSearchViewModel>().apply {
-                                initialize(AnimeMediaFilterController.InitialParams(tagId))
+                                initialize(AnimeMediaFilterController.InitialParams(tagId = tagId))
                             }
                             AnimeSearchScreen(
                                 onClickNav = {

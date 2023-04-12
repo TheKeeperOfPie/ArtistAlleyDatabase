@@ -10,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
+import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.entry.CropUtils.CROP_IMAGE_FILE_NAME
 
 /**
@@ -70,7 +71,7 @@ object CropUtils {
                     onConfirm()
                     onDismiss()
                 }) {
-                    Text(stringResource(R.string.confirm))
+                    Text(stringResource(UtilsStringR.confirm))
                 }
             },
         )

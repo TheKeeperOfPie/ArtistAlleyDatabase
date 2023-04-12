@@ -50,6 +50,7 @@ import com.mxalbert.sharedelements.FadeMode
 import com.mxalbert.sharedelements.ProgressThresholds
 import com.mxalbert.sharedelements.SharedElement
 import com.mxalbert.sharedelements.SharedElementsTransitionSpec
+import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.compose.ButtonFooter
 import com.thekeeperofpie.artistalleydatabase.compose.LazyStaggeredGrid
 import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils
@@ -290,12 +291,12 @@ object EntryGrid {
                     onDismiss()
                     onConfirmDelete()
                 }) {
-                    Text(stringResource(R.string.confirm))
+                    Text(stringResource(UtilsStringR.confirm))
                 }
             },
             dismissButton = {
                 TextButton(onClick = onDismiss) {
-                    Text(stringResource(R.string.cancel))
+                    Text(stringResource(UtilsStringR.cancel))
                 }
             },
         )

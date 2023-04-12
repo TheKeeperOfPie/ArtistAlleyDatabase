@@ -8,22 +8,29 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.anilist.MediaTagsQuery.Data.MediaTagCollection
 import com.anilist.type.MediaFormat
+import com.anilist.type.MediaSeason
 import com.anilist.type.MediaStatus
+import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.mapLatestNotNull
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
+import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.utils.IncludeExcludeState
-import com.thekeeperofpie.artistalleydatabase.anime.utils.toTextRes
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneOffset
 import java.util.SortedMap
 import kotlin.reflect.KClass
 
@@ -44,6 +51,11 @@ class AnimeMediaFilterController<T>(
     val statuses = MutableStateFlow(StatusEntry.statuses())
     val formats = MutableStateFlow(FormatEntry.formats())
     val showAdult = MutableStateFlow(false)
+
+    val onList = MutableStateFlow(OnListOption(null))
+
+    private val airingDate = MutableStateFlow(AiringDate.Basic() to AiringDate.Advanced())
+    private val airingDateIsAdvanced = MutableStateFlow(false)
 
     private lateinit var initialParams: InitialParams
 
@@ -125,6 +137,11 @@ class AnimeMediaFilterController<T>(
                 .collectLatest(tagsByCategory::emit)
         }
     }
+
+    fun airingDate() = combine(airingDate, airingDateIsAdvanced, ::Pair)
+        .map { (airingDatePair, advanced) ->
+            if (advanced) airingDatePair.second else airingDatePair.first
+        }
 
     /**
      * Categories are provided from the API in the form of "Parent-Child". This un-flattens the
@@ -223,6 +240,32 @@ class AnimeMediaFilterController<T>(
             }
     }
 
+    private fun onSeasonChanged(season: MediaSeason?) {
+        val value = airingDate.value
+        airingDate.value = value.copy(first = value.first.copy(season = season))
+    }
+
+    private fun onSeasonYearChanged(seasonYear: String) {
+        val value = airingDate.value
+        airingDate.value = value.copy(first = value.first.copy(seasonYear = seasonYear))
+    }
+
+    private fun onAiringDateChange(start: Boolean, selectedMillis: Long?) {
+        // Selected value is in UTC
+        val selectedDate = selectedMillis?.let {
+            Instant.ofEpochMilli(it)
+                .atZone(ZoneOffset.UTC)
+                .toLocalDate()
+        }
+
+        val value = airingDate.value
+        airingDate.value = value.copy(second = if (start) {
+            value.second.copy(startDate = selectedDate)
+        } else {
+            value.second.copy(endDate = selectedDate)
+        })
+    }
+
     fun data() = Data(
         defaultOptions = sortEnumClass.java.enumConstants!!.toList(),
         sort = { sort.collectAsState().value },
@@ -237,11 +280,24 @@ class AnimeMediaFilterController<T>(
         onGenreClicked = ::onGenreClicked,
         tags = { tagsByCategory.collectAsState().value },
         onTagClicked = ::onTagClicked,
+        airingDate = {
+            airingDate.collectAsState().value.let {
+                if (airingDateIsAdvanced.collectAsState().value) it.second else it.first
+            }
+        },
+        onAiringDateIsAdvancedToggled = { airingDateIsAdvanced.value = it },
+        onAiringDateChange = ::onAiringDateChange,
+        onSeasonChanged = ::onSeasonChanged,
+        onSeasonYearChanged = ::onSeasonYearChanged,
+        onListEnabled = { initialParams.onListEnabled },
+        onListSelectedOption = { onList.collectAsState().value },
+        onOnListSelected = { onList.value = it },
         showAdult = { showAdult.collectAsState().value },
         onShowAdultToggled = { showAdult.value = it },
     )
 
     data class InitialParams(
+        val onListEnabled: Boolean = true,
         val tagId: String? = null,
     )
 
@@ -259,6 +315,21 @@ class AnimeMediaFilterController<T>(
         val onGenreClicked: (String) -> Unit = {},
         val tags: @Composable () -> Map<String, TagSection> = { emptyMap() },
         val onTagClicked: (String) -> Unit = {},
+        val airingDate: @Composable () -> AiringDate = { AiringDate.Basic() },
+        val onSeasonChanged: (MediaSeason?) -> Unit = {},
+        val onSeasonYearChanged: (String) -> Unit = {},
+        val onAiringDateIsAdvancedToggled: (Boolean) -> Unit = {},
+        val onAiringDateChange: (start: Boolean, selectedMillis: Long?) -> Unit = { _, _ -> },
+        val onListEnabled: () -> Boolean = { true },
+        val onListSelectedOption: @Composable () -> OnListOption = { OnListOption(null) },
+        val onListOptions: () -> List<OnListOption> = {
+            listOf(
+                null,
+                true,
+                false
+            ).map(::OnListOption)
+        },
+        val onOnListSelected: (OnListOption) -> Unit = {},
         val showAdult: @Composable () -> Boolean = { false },
         val onShowAdultToggled: (Boolean) -> Unit = {},
     ) {
@@ -468,5 +539,30 @@ class AnimeMediaFilterController<T>(
                 value = tag,
             )
         }
+    }
+
+    data class OnListOption(
+        override val value: Boolean?
+    ) : MediaFilterDropdownEntry<Boolean?> {
+        override val text = when (value) {
+            true -> Either.Right<String, Int>(R.string.anime_media_filter_on_list_on_list)
+            false -> Either.Right(R.string.anime_media_filter_on_list_not_on_list)
+            null -> Either.Right(R.string.anime_media_filter_on_list_default)
+        }
+        override val dropdownContentDescriptionRes
+            get() = R.string.anime_media_filter_on_list_dropdown_content_description
+    }
+
+    sealed interface AiringDate {
+
+        data class Basic(
+            val season: MediaSeason? = null,
+            val seasonYear: String = "",
+        ) : AiringDate
+
+        data class Advanced(
+            val startDate: LocalDate? = null,
+            val endDate: LocalDate? = null,
+        ) : AiringDate
     }
 }
