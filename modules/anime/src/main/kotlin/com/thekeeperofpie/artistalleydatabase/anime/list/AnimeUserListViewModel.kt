@@ -73,6 +73,8 @@ class AnimeUserListViewModel @Inject constructor(aniListApi: AuthedAniListApi) :
                             filterController.tagsByCategory,
                             filterController.statuses,
                             filterController.formats,
+                            filterController.averageScoreRange,
+                            filterController.episodesRange,
                             filterController.showAdult,
                             filterController.airingDate(),
                             ::FilterParams,
@@ -255,6 +257,34 @@ class AnimeUserListViewModel @Inject constructor(aniListApi: AuthedAniListApi) :
             }
         }
 
+        val averageScore = filterParams.averageScoreRange
+        val averageScoreStart = averageScore.startInt ?: 0
+        val averageScoreEnd = averageScore.endInt
+        if (averageScoreStart > 0) {
+            filteredEntries = filteredEntries.filter {
+                it.media.averageScore.let { it != null && it >= averageScoreStart }
+            }
+        }
+        if (averageScoreEnd != null) {
+            filteredEntries = filteredEntries.filter {
+                it.media.averageScore.let { it != null && it <= averageScoreEnd }
+            }
+        }
+
+        val episodes = filterParams.episodesRange
+        val episodesStart = episodes.startInt ?: 0
+        val episodesEnd = episodes.endInt
+        if (episodesStart > 0) {
+            filteredEntries = filteredEntries.filter {
+                it.media.episodes.let { it != null && it >= episodesStart }
+            }
+        }
+        if (episodesEnd != null) {
+            filteredEntries = filteredEntries.filter {
+                it.media.episodes.let { it != null && it <= episodesEnd }
+            }
+        }
+
         if (filteredEntries.isNotEmpty()) {
             this += AnimeUserListScreen.Entry.Header(
                 list.name.orEmpty(),
@@ -280,6 +310,8 @@ class AnimeUserListViewModel @Inject constructor(aniListApi: AuthedAniListApi) :
         val tagsByCategory: Map<String, AnimeMediaFilterController.TagSection>,
         val statuses: List<AnimeMediaFilterController.StatusEntry>,
         val formats: List<AnimeMediaFilterController.FormatEntry>,
+        val averageScoreRange: AnimeMediaFilterController.RangeData,
+        val episodesRange: AnimeMediaFilterController.RangeData,
         val showAdult: Boolean,
         val airingDate: AnimeMediaFilterController.AiringDate,
     )

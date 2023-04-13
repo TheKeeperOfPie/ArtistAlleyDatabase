@@ -10,6 +10,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaFilterEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.utils.IncludeExcludeState
 import java.time.LocalDate
+import java.time.temporal.ChronoUnit
 
 class AnimeMediaSearchPagingSource(
     private val aniListApi: AuthedAniListApi,
@@ -37,7 +38,8 @@ class AnimeMediaSearchPagingSource(
 
         val onListOptions = refreshParams.onListOptions
         val containsOnList = onListOptions.find { it.value }?.state == IncludeExcludeState.INCLUDE
-        val containsNotOnList = onListOptions.find { !it.value }?.state == IncludeExcludeState.INCLUDE
+        val containsNotOnList =
+            onListOptions.find { !it.value }?.state == IncludeExcludeState.INCLUDE
         val onList = when {
             !containsOnList && !containsNotOnList -> null
             containsOnList && containsNotOnList -> null
@@ -82,10 +84,17 @@ class AnimeMediaSearchPagingSource(
                 ?.toIntOrNull(),
             startDateGreater = (refreshParams.airingDate as? AnimeMediaFilterController.AiringDate.Advanced)
                 ?.startDate
+                ?.minus(1, ChronoUnit.DAYS)
                 ?.toApiFuzzyDateInt(),
             startDateLesser = (refreshParams.airingDate as? AnimeMediaFilterController.AiringDate.Advanced)
                 ?.endDate
+                ?.plus(1, ChronoUnit.DAYS)
                 ?.toApiFuzzyDateInt(),
+            averageScoreGreater = refreshParams.averageScoreRange.apiStart,
+            averageScoreLesser = refreshParams.averageScoreRange.apiEnd,
+            // Episode greater is not inclusive, offset by -1 to ensure correct results
+            episodesGreater = refreshParams.episodesRange.apiStart?.let { it.coerceAtLeast(1) - 1 },
+            episodesLesser = refreshParams.episodesRange.apiEnd,
         )
 
         val data = result.dataAssertNoErrors
@@ -123,6 +132,8 @@ class AnimeMediaSearchPagingSource(
         val formats: List<AnimeMediaFilterController.FormatEntry>,
         val showAdult: Boolean,
         val onListOptions: List<AnimeMediaFilterController.OnListOption>,
+        val averageScoreRange: AnimeMediaFilterController.RangeData,
+        val episodesRange: AnimeMediaFilterController.RangeData,
         val airingDate: AnimeMediaFilterController.AiringDate,
     ) {
         fun sortApiValue() = sortOptions.filter { it.state == IncludeExcludeState.INCLUDE }

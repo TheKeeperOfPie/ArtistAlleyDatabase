@@ -10,8 +10,8 @@ import androidx.paging.cachedIn
 import androidx.paging.filter
 import androidx.paging.map
 import com.anilist.MediaAdvancedSearchQuery.Data.Page.Medium
-import com.hoc081098.flowext.combine
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.combine
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaSortOption
@@ -55,6 +55,8 @@ class AnimeSearchViewModel @Inject constructor(aniListApi: AuthedAniListApi) : V
                 filterController.formats,
                 filterController.showAdult,
                 filterController.onListOptions,
+                filterController.averageScoreRange,
+                filterController.episodesRange,
                 filterController.airingDate(),
                 AnimeMediaSearchPagingSource::RefreshParams
             )

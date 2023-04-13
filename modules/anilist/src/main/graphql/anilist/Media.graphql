@@ -30,6 +30,7 @@ fragment AniListListRowMedia on Media {
         airingAt
     }
     averageScore
+    episodes
     format
     genres
     isAdult
@@ -59,7 +60,8 @@ query MediaAdvancedSearch($page: Int, $perPage: Int, $search: String, $type: Med
     $tagNotIn: [String], $statusIn: [MediaStatus], $statusNotIn: [MediaStatus],
     $formatIn: [MediaFormat], $formatNotIn: [MediaFormat], $isAdult: Boolean, $onList: Boolean,
     $season: MediaSeason, $seasonYear: Int, $startDateGreater: FuzzyDateInt,
-    $startDateLesser: FuzzyDateInt) {
+    $startDateLesser: FuzzyDateInt, $averageScoreGreater: Int, $averageScoreLesser: Int,
+    $episodesGreater: Int, $episodesLesser: Int) {
     Page(page: $page, perPage: $perPage) @nonnull {
         pageInfo @nonnull {
             hasNextPage
@@ -70,7 +72,9 @@ query MediaAdvancedSearch($page: Int, $perPage: Int, $search: String, $type: Med
             status_in: $statusIn, status_not_in: $statusNotIn, format_in: $formatIn,
             format_not_in: $formatNotIn, isAdult: $isAdult, onList: $onList,
             season: $season, seasonYear: $seasonYear, startDate_greater: $startDateGreater,
-            startDate_lesser: $startDateLesser) @nonnull {
+            startDate_lesser: $startDateLesser, averageScore_greater: $averageScoreGreater,
+            averageScore_lesser: $averageScoreLesser, episodes_greater: $episodesGreater,
+            episodes_lesser: $episodesLesser) @nonnull {
             ...AniListListRowMedia
         }
     }

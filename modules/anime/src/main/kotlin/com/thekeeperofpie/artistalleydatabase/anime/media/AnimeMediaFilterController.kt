@@ -52,6 +52,8 @@ class AnimeMediaFilterController<T>(
     val showAdult = MutableStateFlow(false)
 
     val onListOptions = MutableStateFlow(OnListOption.options())
+    val averageScoreRange = MutableStateFlow(RangeData(100, hardMax = true))
+    val episodesRange = MutableStateFlow(RangeData(151))
 
     private val airingDate = MutableStateFlow(AiringDate.Basic() to AiringDate.Advanced())
     private val airingDateIsAdvanced = MutableStateFlow(false)
@@ -297,6 +299,17 @@ class AnimeMediaFilterController<T>(
             }
     }
 
+    private fun onAverageScoreChanged(start: String, end: String) {
+        averageScoreRange.value = averageScoreRange.value.copy(startString = start, endString = end)
+    }
+
+    private fun onEpisodesChanged(start: String, end: String) {
+        episodesRange.value = episodesRange.value.copy(
+            startString = start,
+            endString = end.takeIf { it != "150" }.orEmpty(),
+        )
+    }
+
     fun data() = Data(
         sortOptions = { sortOptions.collectAsState().value },
         onSortClicked = ::onSortClicked,
@@ -322,6 +335,10 @@ class AnimeMediaFilterController<T>(
         onListEnabled = { initialParams.onListEnabled },
         onListOptions = { onListOptions.collectAsState().value },
         onOnListClicked = ::onOnListClicked,
+        averageScoreRange = { averageScoreRange.collectAsState().value },
+        onAverageScoreChanged = ::onAverageScoreChanged,
+        episodesRange = { episodesRange.collectAsState().value },
+        onEpisodesChanged = ::onEpisodesChanged,
         showAdult = { showAdult.collectAsState().value },
         onShowAdultToggled = { showAdult.value = it },
     )
@@ -352,6 +369,10 @@ class AnimeMediaFilterController<T>(
         val onListEnabled: () -> Boolean = { true },
         val onListOptions: @Composable () -> List<OnListOption> = { OnListOption.options() },
         val onOnListClicked: (OnListOption) -> Unit = {},
+        val averageScoreRange: @Composable () -> RangeData = { RangeData(100) },
+        val onAverageScoreChanged: (start: String, end: String) -> Unit = { _, _ -> },
+        val episodesRange: @Composable () -> RangeData = { RangeData(151) },
+        val onEpisodesChanged: (start: String, end: String) -> Unit = { _, _ -> },
         val showAdult: @Composable () -> Boolean = { false },
         val onShowAdultToggled: (Boolean) -> Unit = {},
     ) {
@@ -597,5 +618,48 @@ class AnimeMediaFilterController<T>(
             val startDate: LocalDate? = null,
             val endDate: LocalDate? = null,
         ) : AiringDate
+    }
+
+    data class RangeData(
+        val maxValue: Int = 100,
+        val hardMax: Boolean = false,
+        val startString: String = "0",
+        val endString: String = if (hardMax) maxValue.toString() else "",
+    ) {
+        val startInt = startString.toIntOrNull()?.takeIf { it > 0 }?.let {
+            if (hardMax) it.coerceAtMost(maxValue) else it
+        }
+        val endInt = endString.toIntOrNull()?.takeIf { it > 0 }?.let {
+            if (hardMax) it.coerceAtMost(maxValue) else it
+        }
+
+        val apiStart = startInt?.takeIf { it > 0 }
+        val apiEnd = endInt?.takeIf { it != maxValue || !hardMax }?.let { it + 1 }
+
+        val summaryText = if (startInt != null && endInt != null) {
+            if (startInt == endInt) {
+                startInt.toString()
+            } else if (endInt == maxValue && hardMax) {
+                "> $startInt"
+            } else {
+                "$startString - $endString"
+            }
+        } else if (startInt != null) {
+            "> $startInt"
+        } else if (endInt != null) {
+            if (hardMax && endInt == maxValue) null else "< $endInt"
+        } else null
+
+        val value = if (startInt != null && endInt != null) {
+            startInt.coerceAtMost(maxValue).toFloat()..endInt.coerceAtMost(maxValue).toFloat()
+        } else if (startInt != null) {
+            startInt.coerceAtMost(maxValue).toFloat()..maxValue.toFloat()
+        } else if (endInt != null) {
+            0f..endInt.toFloat()
+        } else {
+            0f..maxValue.toFloat()
+        }
+
+        val valueRange = 0f..maxValue.toFloat()
     }
 }

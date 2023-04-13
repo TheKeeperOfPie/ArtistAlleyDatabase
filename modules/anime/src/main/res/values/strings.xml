@@ -130,4 +130,12 @@
     <string name="anime_media_filter_airing_date_start_date_label">Start</string>
     <string name="anime_media_filter_airing_date_end_date_label">End</string>
     <string name="anime_media_filter_airing_date_clear_content_description">Clear date</string>
+
+    <string name="anime_media_filter_average_score_label">Average score</string>
+    <string name="anime_media_filter_average_score_expand_content_description">Average score filter expand</string>
+    <string name="anime_media_filter_average_score_label_start">Start</string>
+    <string name="anime_media_filter_average_score_label_end">End</string>
+
+    <string name="anime_media_filter_episodes_label">Episodes</string>
+    <string name="anime_media_filter_episodes_expand_content_description">Episodes filter expand</string>
 </resources>

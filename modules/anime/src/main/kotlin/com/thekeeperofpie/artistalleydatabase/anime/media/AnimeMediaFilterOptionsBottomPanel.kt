@@ -19,8 +19,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircleOutline
@@ -40,7 +42,10 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.RangeSlider
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Tab
@@ -61,6 +66,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.anilist.type.MediaSeason
@@ -69,6 +76,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.utils.IncludeExcludeState
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
+import com.thekeeperofpie.artistalleydatabase.compose.CustomOutlinedTextField
 import com.thekeeperofpie.artistalleydatabase.compose.ItemDropdown
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
 import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
@@ -77,6 +85,7 @@ import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import java.util.Calendar
+import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 object AnimeMediaFilterOptionsBottomPanel {
@@ -189,6 +198,20 @@ object AnimeMediaFilterOptionsBottomPanel {
                 )
             }
 
+            RangeDataSection(
+                range = { data.averageScoreRange() },
+                onRangeChange = data.onAverageScoreChanged,
+                titleRes = R.string.anime_media_filter_average_score_label,
+                titleDropdownContentDescriptionRes = R.string.anime_media_filter_average_score_expand_content_description,
+            )
+
+            RangeDataSection(
+                range = { data.episodesRange() },
+                onRangeChange = data.onEpisodesChanged,
+                titleRes = R.string.anime_media_filter_episodes_label,
+                titleDropdownContentDescriptionRes = R.string.anime_media_filter_episodes_expand_content_description,
+            )
+
             AdultSection(
                 showAdult = { data.showAdult() },
                 onShowAdultToggled = data.onShowAdultToggled,
@@ -250,7 +273,7 @@ object AnimeMediaFilterOptionsBottomPanel {
     private fun Section(
         @StringRes titleRes: Int,
         @StringRes titleDropdownContentDescriptionRes: Int,
-        summaryText: (@Composable () -> String)? = null,
+        summaryText: (@Composable () -> String?)? = null,
         defaultExpanded: Boolean = false,
         content: @Composable (expanded: Boolean) -> Unit
     ) {
@@ -269,15 +292,17 @@ object AnimeMediaFilterOptionsBottomPanel {
                     .wrapContentWidth()
             )
 
-            if (!expanded && summaryText != null) {
-                Text(
-                    text = summaryText(),
-                    style = MaterialTheme.typography.titleSmall,
-                    modifier = Modifier
-                        .padding(vertical = 10.dp)
-                        .align(Alignment.CenterVertically)
-                        .wrapContentWidth()
-                )
+            if (!expanded) {
+                summaryText?.invoke()?.let {
+                    Text(
+                        text = it,
+                        style = MaterialTheme.typography.titleSmall,
+                        modifier = Modifier
+                            .padding(vertical = 10.dp)
+                            .align(Alignment.CenterVertically)
+                            .wrapContentWidth()
+                    )
+                }
             }
 
             Spacer(Modifier.weight(1f))
@@ -414,7 +439,9 @@ object AnimeMediaFilterOptionsBottomPanel {
                     )
                 }
 
-                if (!expanded && data.sortOptions().any { it.state != IncludeExcludeState.DEFAULT }) {
+                if (!expanded && data.sortOptions()
+                        .any { it.state != IncludeExcludeState.DEFAULT }
+                ) {
                     val sortAscending = data.sortAscending()
                     FilterChip(
                         selected = true,
@@ -462,7 +489,7 @@ object AnimeMediaFilterOptionsBottomPanel {
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = 16.dp, end = 16.dp, )
+                    .padding(start = 16.dp, end = 16.dp)
                     .animateContentSize()
             ) {
                 FilterChip(
@@ -692,7 +719,7 @@ object AnimeMediaFilterOptionsBottomPanel {
                                 "${stringResource(season.toTextRes())} - $seasonYear"
                             season != null -> stringResource(season.toTextRes())
                             seasonYear != null -> seasonYear.toString()
-                            else -> ""
+                            else -> null
                         }
                     }
                     is AnimeMediaFilterController.AiringDate.Advanced -> {
@@ -705,7 +732,7 @@ object AnimeMediaFilterOptionsBottomPanel {
                             startDate != null && endDate != null -> "$startDate - $endDate"
                             startDate != null -> startDate
                             endDate != null -> endDate
-                            else -> ""
+                            else -> null
                         }
                     }
                 }
@@ -788,6 +815,7 @@ object AnimeMediaFilterOptionsBottomPanel {
                 value = data.seasonYear,
                 onValueChange = onSeasonYearChanged,
                 label = { Text(stringResource(R.string.anime_media_filter_airing_date_season_year)) },
+                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
                 leadingIcon = if (data.seasonYear.isNotBlank()) {
                     @Composable {
                         IconButton(onClick = {
@@ -993,6 +1021,81 @@ object AnimeMediaFilterOptionsBottomPanel {
                 modifier = Modifier
                     .weight(1f),
             )
+        }
+    }
+
+    @Composable
+    private fun RangeDataSection(
+        range: @Composable () -> AnimeMediaFilterController.RangeData,
+        onRangeChange: (String, String) -> Unit,
+        @StringRes titleRes: Int,
+        @StringRes titleDropdownContentDescriptionRes: Int,
+    ) {
+        Section(
+            titleRes = titleRes,
+            titleDropdownContentDescriptionRes = titleDropdownContentDescriptionRes,
+            summaryText = { range().summaryText },
+        ) { expanded ->
+            AnimatedVisibility(
+                visible = expanded,
+                enter = expandVertically(),
+                exit = shrinkVertically(),
+            ) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                ) {
+                    @Suppress("NAME_SHADOWING")
+                    val range = range()
+                    CustomOutlinedTextField(
+                        value = range.startString,
+                        onValueChange = { onRangeChange("0", range.endString) },
+                        textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
+                        keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+                        contentPadding = OutlinedTextFieldDefaults.contentPadding(
+                            start = 12.dp,
+                            top = 8.dp,
+                            end = 12.dp,
+                            bottom = 8.dp
+                        ),
+                        // TODO: Figure out a text size dependent width or get wrap width working
+                        modifier = Modifier.width(64.dp),
+                    )
+
+                    RangeSlider(
+                        value = range.value,
+                        valueRange = range.valueRange,
+                        steps = range.maxValue,
+                        onValueChange = {
+                            onRangeChange(
+                                it.start.roundToInt().toString(),
+                                it.endInclusive.roundToInt()
+                                    .takeIf { range.hardMax || it != range.maxValue }
+                                    ?.toString()
+                                    .orEmpty()
+                            )
+                        },
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(horizontal = 4.dp),
+                    )
+
+                    CustomOutlinedTextField(
+                        value = range.endString,
+                        onValueChange = { onRangeChange(range.startString, it) },
+                        textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
+                        keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+                        contentPadding = OutlinedTextFieldDefaults.contentPadding(
+                            start = 12.dp,
+                            top = 8.dp,
+                            end = 12.dp,
+                            bottom = 8.dp
+                        ),
+                        modifier = Modifier.width(64.dp),
+                    )
+                }
+            }
         }
     }
 

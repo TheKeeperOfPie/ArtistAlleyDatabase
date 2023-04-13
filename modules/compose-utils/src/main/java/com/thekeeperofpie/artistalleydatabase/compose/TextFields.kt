@@ -10,8 +10,8 @@ import androidx.compose.foundation.text.selection.LocalTextSelectionColors
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.TextFieldColors
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
@@ -44,9 +44,9 @@ fun CustomOutlinedTextField(
     singleLine: Boolean = false,
     maxLines: Int = Int.MAX_VALUE,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
-    shape: Shape = TextFieldDefaults.outlinedShape,
-    colors: TextFieldColors = TextFieldDefaults.outlinedTextFieldColors(),
-    contentPadding: PaddingValues = TextFieldDefaults.outlinedTextFieldPadding(),
+    shape: Shape = OutlinedTextFieldDefaults.shape,
+    colors: TextFieldColors = OutlinedTextFieldDefaults.colors(),
+    contentPadding: PaddingValues = OutlinedTextFieldDefaults.contentPadding(),
 ) {
     // If color is not provided via the text style, use content color as a default
     val textColor = textStyle.color.takeOrElse {
@@ -79,7 +79,7 @@ fun CustomOutlinedTextField(
             singleLine = singleLine,
             maxLines = maxLines,
             decorationBox = @Composable { innerTextField ->
-                TextFieldDefaults.OutlinedTextFieldDecorationBox(
+                OutlinedTextFieldDefaults.DecorationBox(
                     value = value,
                     visualTransformation = visualTransformation,
                     innerTextField = innerTextField,
@@ -94,7 +94,7 @@ fun CustomOutlinedTextField(
                     colors = colors,
                     contentPadding = contentPadding,
                     container = {
-                        TextFieldDefaults.OutlinedBorderContainerBox(
+                        OutlinedTextFieldDefaults.ContainerBox(
                             enabled,
                             isError,
                             interactionSource,

@@ -104,6 +104,10 @@ class AuthedAniListApi(
         seasonYear: Int?,
         startDateGreater: Int?,
         startDateLesser: Int?,
+        averageScoreGreater: Int?,
+        averageScoreLesser: Int?,
+        episodesGreater: Int?,
+        episodesLesser: Int?,
     ): ApolloResponse<MediaAdvancedSearchQuery.Data> {
         val sortParam =
             if (query.isEmpty() && sort?.size == 1 && sort.contains(MediaSort.SEARCH_MATCH)) {
@@ -134,6 +138,10 @@ class AuthedAniListApi(
                 seasonYear = Optional.presentIfNotNull(seasonYear),
                 startDateGreater = Optional.presentIfNotNull(startDateGreater),
                 startDateLesser = Optional.presentIfNotNull(startDateLesser),
+                averageScoreGreater = Optional.presentIfNotNull(averageScoreGreater),
+                averageScoreLesser = Optional.presentIfNotNull(averageScoreLesser),
+                episodesGreater = Optional.presentIfNotNull(episodesGreater),
+                episodesLesser = Optional.presentIfNotNull(episodesLesser),
             )
         )
     }
