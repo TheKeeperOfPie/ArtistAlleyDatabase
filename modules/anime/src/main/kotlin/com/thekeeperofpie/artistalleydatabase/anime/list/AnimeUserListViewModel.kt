@@ -53,7 +53,7 @@ class AnimeUserListViewModel @Inject constructor(aniListApi: AuthedAniListApi) :
             combine(
                 aniListApi.authedUser.filterNotNull(),
                 refreshUptimeMillis,
-                filterController.sort,
+                filterController.sortOptions,
                 filterController.sortAscending,
                 ::RefreshParams
             )
@@ -267,14 +267,11 @@ class AnimeUserListViewModel @Inject constructor(aniListApi: AuthedAniListApi) :
     private data class RefreshParams(
         val authedUser: AuthedUserQuery.Data.Viewer,
         val requestMillis: Long = SystemClock.uptimeMillis(),
-        val sort: MediaListSortOption,
+        val sortOptions: List<AnimeMediaFilterController.SortEntry<MediaListSortOption>>,
         val sortAscending: Boolean,
     ) {
-        fun sortApiValue() = if (sort == MediaListSortOption.DEFAULT) {
-            emptyArray()
-        } else {
-            arrayOf(sort.toApiValue(sortAscending)!!)
-        }
+        fun sortApiValue() = sortOptions.filter { it.state == IncludeExcludeState.INCLUDE }
+            .map { it.value.toApiValue(sortAscending) }
     }
 
     private data class FilterParams(

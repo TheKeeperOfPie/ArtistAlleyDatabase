@@ -17,16 +17,15 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircleOutline
+import androidx.compose.material.icons.filled.ArrowDownward
+import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
@@ -37,8 +36,6 @@ import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
@@ -74,9 +71,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.utils.IncludeExcludeState
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.ItemDropdown
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
-import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIcon
 import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
-import com.thekeeperofpie.artistalleydatabase.compose.dropdown.DropdownMenuItem
 import java.time.LocalDate
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
@@ -134,18 +129,13 @@ object AnimeMediaFilterOptionsBottomPanel {
             Modifier
                 .fillMaxWidth()
                 .verticalScroll(rememberScrollState())
+                .animateContentSize()
         ) {
             val data = filterData()
 
             Divider()
 
-            SortSection(
-                defaultOptions = data.defaultOptions,
-                sort = { data.sort() },
-                onSortChanged = data.onSortChanged,
-                sortAscending = { data.sortAscending() },
-                onSortAscendingChanged = data.onSortAscendingChanged,
-            )
+            SortSection(data = filterData)
 
             FilterSection(
                 entries = { data.statuses() },
@@ -154,7 +144,6 @@ object AnimeMediaFilterOptionsBottomPanel {
                 titleDropdownContentDescriptionRes = R.string.anime_media_filter_status_content_description,
                 valueToText = { stringResource(it.textRes) },
                 includeExcludeIconContentDescriptionRes = R.string.anime_media_filter_status_chip_state_content_description,
-                defaultExpanded = true,
             )
 
             FilterSection(
@@ -164,7 +153,6 @@ object AnimeMediaFilterOptionsBottomPanel {
                 titleDropdownContentDescriptionRes = R.string.anime_media_filter_format_content_description,
                 valueToText = { stringResource(it.textRes) },
                 includeExcludeIconContentDescriptionRes = R.string.anime_media_filter_format_chip_state_content_description,
-                defaultExpanded = true,
             )
 
             FilterSection(
@@ -191,11 +179,13 @@ object AnimeMediaFilterOptionsBottomPanel {
             )
 
             if (data.onListEnabled()) {
-                DropdownSection(
+                FilterSection(
+                    entries = { data.onListOptions() },
+                    onEntryClicked = { data.onOnListClicked(it) },
                     titleRes = R.string.anime_media_filter_on_list_label,
-                    selectedOption = { data.onListSelectedOption() },
-                    options = { data.onListOptions() },
-                    onOptionSelected = data.onOnListSelected,
+                    titleDropdownContentDescriptionRes = R.string.anime_media_filter_on_list_dropdown_content_description,
+                    valueToText = { stringResource(it.textRes) },
+                    includeExcludeIconContentDescriptionRes = R.string.anime_media_filter_on_list_chip_state_content_description,
                 )
             }
 
@@ -322,7 +312,7 @@ object AnimeMediaFilterOptionsBottomPanel {
                 .clickable { expanded = !expanded }
         ) {
             FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier
                     .weight(1f)
                     .padding(start = 16.dp)
@@ -353,7 +343,8 @@ object AnimeMediaFilterOptionsBottomPanel {
                         label = { Text(valueToText(it)) },
                         leadingIcon = {
                             IncludeExcludeIcon(it, includeExcludeIconContentDescriptionRes)
-                        }
+                        },
+                        modifier = Modifier.animateContentSize()
                     )
                 }
             }
@@ -370,127 +361,143 @@ object AnimeMediaFilterOptionsBottomPanel {
     }
 
     @Composable
-    private fun <T, Entry : MediaFilterDropdownEntry<T>> DropdownSection(
-        @StringRes titleRes: Int,
-        selectedOption: @Composable () -> Entry,
-        options: () -> List<Entry>,
-        onOptionSelected: (Entry) -> Unit,
+    private fun <SortOption : AnimeMediaFilterController.Data.SortOption> SortSection(
+        data: () -> AnimeMediaFilterController.Data<SortOption>,
     ) {
+        @Suppress("NAME_SHADOWING")
+        val data = data()
+        var expanded by remember { mutableStateOf(false) }
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
+                .clickable { expanded = !expanded }
         ) {
-            Text(
-                text = stringResource(titleRes),
-                style = MaterialTheme.typography.titleMedium,
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier
-                    .padding(horizontal = 16.dp, vertical = 10.dp)
-                    .wrapContentWidth(Alignment.Start)
+                    .weight(1f)
+                    .padding(start = 16.dp)
+                    .animateContentSize()
+            ) {
+                Text(
+                    // Use a zero width space to invalidate the Composable, or otherwise the width
+                    // will not change in response to expanded. This might be a bug in Compose.
+                    text = stringResource(R.string.anime_media_filter_sort_label) + "\u200B".takeIf { expanded }
+                        .orEmpty(),
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier
+                        .run {
+                            if (expanded) {
+                                fillMaxWidth()
+                            } else {
+                                wrapContentWidth()
+                            }
+                        }
+                        .padding(vertical = 10.dp)
+                        .align(Alignment.CenterVertically)
+                )
+
+                data.sortOptions().forEach {
+                    if (!expanded && it.state == IncludeExcludeState.DEFAULT) return@forEach
+                    FilterChip(
+                        selected = it.state != IncludeExcludeState.DEFAULT,
+                        onClick = { data.onSortClicked(it.value) },
+                        label = { Text(stringResource(it.value.textRes)) },
+                        leadingIcon = {
+                            IncludeExcludeIcon(
+                                it,
+                                R.string.anime_media_filter_sort_order_chip_state_content_description
+                            )
+                        },
+                        modifier = Modifier.animateContentSize()
+                    )
+                }
+
+                if (!expanded && data.sortOptions().any { it.state != IncludeExcludeState.DEFAULT }) {
+                    val sortAscending = data.sortAscending()
+                    FilterChip(
+                        selected = true,
+                        onClick = { data.onSortAscendingChanged(!sortAscending) },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = if (sortAscending) {
+                                    Icons.Filled.ArrowUpward
+                                } else {
+                                    Icons.Filled.ArrowDownward
+                                },
+                                contentDescription = stringResource(
+                                    if (sortAscending) {
+                                        R.string.anime_media_filter_sort_direction_ascending_content_description
+                                    } else {
+                                        R.string.anime_media_filter_sort_direction_descending_content_description
+                                    }
+                                ),
+                            )
+                        },
+                        label = { Text(ascendingText(sortAscending)) }
+                    )
+                }
+            }
+
+            TrailingDropdownIconButton(
+                expanded = expanded,
+                contentDescription = stringResource(R.string.anime_media_filter_sort_content_description),
+                onClick = { expanded = !expanded },
+                modifier = Modifier.align(Alignment.Top),
+            )
+        }
+
+        if (expanded && data.sortOptions().any { it.state != IncludeExcludeState.DEFAULT }) {
+            val sortAscending = data.sortAscending()
+            Text(
+                text = stringResource(R.string.anime_media_filter_sort_direction_label),
+                style = MaterialTheme.typography.titleSmall,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, top = 10.dp, end = 16.dp, bottom = 8.dp)
             )
 
-            Spacer(Modifier.weight(1f))
-
-            var expanded by remember { mutableStateOf(false) }
-            ExposedDropdownMenuBox(
-                expanded = expanded,
-                onExpandedChange = { expanded = !expanded },
-                modifier = Modifier.padding(start = 16.dp),
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, end = 16.dp, )
+                    .animateContentSize()
             ) {
-                Row(
-                    horizontalArrangement = Arrangement.End,
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .heightIn(min = 48.dp)
-                        .menuAnchor()
-                ) {
-                    Text(
-                        text = selectedOption().toText(),
-                        style = MaterialTheme.typography.titleSmall,
-                        modifier = Modifier
-                            .padding(horizontal = 16.dp, vertical = 10.dp)
-                            .wrapContentWidth(Alignment.Start)
-                            .widthIn(min = 96.dp)
-                    )
-
-                    TrailingDropdownIcon(
-                        expanded = expanded,
-                        contentDescription = stringResource(
-                            selectedOption().dropdownContentDescriptionRes
-                        ),
-                        modifier = Modifier.padding(top = 8.dp, bottom = 8.dp, end = 12.dp)
-                    )
-                }
-
-                ExposedDropdownMenu(
-                    expanded = expanded,
-                    onDismissRequest = { expanded = false },
-                ) {
-                    options().forEach {
-                        DropdownMenuItem(
-                            onClick = {
-                                expanded = false
-                                onOptionSelected(it)
-                            },
-                            text = { Text(it.toText()) },
-                            contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                FilterChip(
+                    selected = sortAscending,
+                    onClick = { data.onSortAscendingChanged(true) },
+                    label = { Text(ascendingText(true)) },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Filled.ArrowUpward,
+                            contentDescription = stringResource(
+                                R.string.anime_media_filter_sort_direction_ascending_content_description,
+                            ),
                         )
-                    }
-                }
+                    },
+                    modifier = Modifier.animateContentSize()
+                )
+
+                FilterChip(
+                    selected = !sortAscending,
+                    onClick = { data.onSortAscendingChanged(false) },
+                    label = { Text(ascendingText(false)) },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Filled.ArrowDownward,
+                            contentDescription = stringResource(
+                                R.string.anime_media_filter_sort_direction_descending_content_description,
+                            ),
+                        )
+                    },
+                    modifier = Modifier.animateContentSize()
+                )
             }
         }
 
         Divider()
-    }
-
-    @Composable
-    private fun <SortOption : AnimeMediaFilterController.Data.SortOption> SortSection(
-        defaultOptions: List<SortOption>,
-        sort: @Composable () -> SortOption,
-        onSortChanged: (SortOption) -> Unit = {},
-        sortAscending: @Composable () -> Boolean = { false },
-        onSortAscendingChanged: (Boolean) -> Unit = {},
-    ) {
-        Section(
-            titleRes = R.string.anime_media_filter_sort_label,
-            titleDropdownContentDescriptionRes = R.string.anime_media_filter_sort_content_description,
-            summaryText = {
-                stringResource(sort().textRes) + " - " + ascendingText(sortAscending())
-            },
-            defaultExpanded = true
-        ) { expanded ->
-            AnimatedVisibility(
-                visible = expanded,
-                enter = expandVertically(),
-                exit = shrinkVertically(),
-            ) {
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 12.dp)
-                ) {
-                    ItemDropdown(
-                        label = R.string.anime_media_filter_sort_order_label,
-                        value = stringResource(sort().textRes),
-                        iconContentDescription = R.string.anime_media_filter_sort_order_dropdown_content_description,
-                        values = { defaultOptions },
-                        textForValue = { stringResource(it.textRes) },
-                        onSelectItem = { onSortChanged(it) },
-                    )
-
-                    // Default sort doesn't allow changing ascending
-                    if (sort() != defaultOptions.first()) {
-                        ItemDropdown(
-                            label = R.string.anime_media_filter_sort_direction_label,
-                            value = ascendingText(sortAscending()),
-                            iconContentDescription = R.string.anime_media_filter_sort_direction_dropdown_content_description,
-                            values = { listOf(true, false) },
-                            textForValue = { ascendingText(it) },
-                            onSelectItem = onSortAscendingChanged,
-                        )
-                    }
-                }
-            }
-        }
     }
 
     @Composable
@@ -634,10 +641,11 @@ object AnimeMediaFilterOptionsBottomPanel {
         onTagClicked: (String) -> Unit
     ) {
         FlowRow(
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(start = 16.dp * level + 48.dp, end = 16.dp),
+                .padding(start = 16.dp * level + 48.dp, end = 16.dp)
+                .animateContentSize(),
         ) {
             tags.forEach {
                 if (!parentExpanded && it.state == IncludeExcludeState.DEFAULT) return@forEach
@@ -655,9 +663,7 @@ object AnimeMediaFilterOptionsBottomPanel {
                             R.string.anime_media_filter_tag_chip_state_content_description,
                         )
                     },
-                    modifier = Modifier
-                        .padding(vertical = 8.dp)
-                        .height(32.dp)
+                    modifier = Modifier.animateContentSize()
                 )
             }
         }

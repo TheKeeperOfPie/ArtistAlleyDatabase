@@ -43,10 +43,12 @@
     <string name="anime_media_filter_fab_content_description">Media list filter options</string>
     <string name="anime_media_filter_sort_label">Sort</string>
     <string name="anime_media_filter_sort_content_description">Sort filter expand</string>
+    <string name="anime_media_filter_sort_order_chip_state_content_description">Sort order chip state</string>
     <string name="anime_media_filter_sort_order_label">Order</string>
     <string name="anime_media_filter_sort_order_dropdown_content_description">Sort order dropdown</string>
     <string name="anime_media_filter_sort_direction_label">Direction</string>
-    <string name="anime_media_filter_sort_direction_dropdown_content_description">Sort direction dropdown</string>
+    <string name="anime_media_filter_sort_direction_ascending_content_description">Sort direction ascending</string>
+    <string name="anime_media_filter_sort_direction_descending_content_description">Sort direction descending</string>
     <string name="anime_media_filter_sort_ascending">Ascending</string>
     <string name="anime_media_filter_sort_descending">Descending</string>
     <string name="anime_search">Search anime…</string>
@@ -94,13 +96,18 @@
     <string name="anime_media_rating_icon_content_description">Rating</string>
     <string name="anime_media_rating_population_icon_content_description">Users</string>
 
+    <string name="anime_media_season_winter_content_description">Winter season indicator</string>
+    <string name="anime_media_season_spring_content_description">Spring season indicator</string>
+    <string name="anime_media_season_summer_content_description">Summer season indicator</string>
+    <string name="anime_media_season_fall_content_description">Fall season indicator</string>
+
     <string name="anime_media_filter_show_adult_content">Show adult content</string>
 
     <string name="anime_media_filter_on_list_label">On user list</string>
-    <string name="anime_media_filter_on_list_default">Default</string>
     <string name="anime_media_filter_on_list_on_list">On list</string>
     <string name="anime_media_filter_on_list_not_on_list">Not on list</string>
     <string name="anime_media_filter_on_list_dropdown_content_description">On list dropdown</string>
+    <string name="anime_media_filter_on_list_chip_state_content_description">On list chip state</string>
 
     <string name="anime_media_filter_airing_date">Airing date</string>
     <string name="anime_media_filter_airing_date_content_description">Airing date expand</string>

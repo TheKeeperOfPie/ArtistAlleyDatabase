@@ -10,7 +10,6 @@ import com.anilist.MediaTagsQuery.Data.MediaTagCollection
 import com.anilist.type.MediaFormat
 import com.anilist.type.MediaSeason
 import com.anilist.type.MediaStatus
-import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.mapLatestNotNull
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
@@ -35,7 +34,7 @@ import java.util.SortedMap
 import kotlin.reflect.KClass
 
 class AnimeMediaFilterController<T>(
-    private val sortEnumClass: KClass<T>,
+    sortEnumClass: KClass<T>,
     private val aniListApi: AuthedAniListApi,
 ) where T : AnimeMediaFilterController.Data.SortOption, T : Enum<*> {
 
@@ -43,7 +42,7 @@ class AnimeMediaFilterController<T>(
         private const val TAG = "AnimeMediaFilterController"
     }
 
-    val sort = MutableStateFlow(sortEnumClass.java.enumConstants!!.first())
+    val sortOptions = MutableStateFlow(SortEntry.options(sortEnumClass))
     val sortAscending = MutableStateFlow(false)
 
     val genres = MutableStateFlow(emptyList<GenreEntry>())
@@ -52,7 +51,7 @@ class AnimeMediaFilterController<T>(
     val formats = MutableStateFlow(FormatEntry.formats())
     val showAdult = MutableStateFlow(false)
 
-    val onList = MutableStateFlow(OnListOption(null))
+    val onListOptions = MutableStateFlow(OnListOption.options())
 
     private val airingDate = MutableStateFlow(AiringDate.Basic() to AiringDate.Advanced())
     private val airingDateIsAdvanced = MutableStateFlow(false)
@@ -192,7 +191,21 @@ class AnimeMediaFilterController<T>(
         }
     }
 
-    private fun onSortChanged(option: T) = sort.update { option }
+    private fun onSortClicked(option: T) {
+        sortOptions.value = sortOptions.value.toMutableList()
+            .apply {
+                replaceAll {
+                    if (it.value == option) {
+                        val newState = if (it.state != IncludeExcludeState.INCLUDE) {
+                            IncludeExcludeState.INCLUDE
+                        } else {
+                            IncludeExcludeState.DEFAULT
+                        }
+                        it.copy(state = newState)
+                    } else it.copy(state = IncludeExcludeState.DEFAULT)
+                }
+            }
+    }
 
     private fun onSortAscendingChanged(ascending: Boolean) = sortAscending.update { ascending }
 
@@ -259,17 +272,34 @@ class AnimeMediaFilterController<T>(
         }
 
         val value = airingDate.value
-        airingDate.value = value.copy(second = if (start) {
-            value.second.copy(startDate = selectedDate)
-        } else {
-            value.second.copy(endDate = selectedDate)
-        })
+        airingDate.value = value.copy(
+            second = if (start) {
+                value.second.copy(startDate = selectedDate)
+            } else {
+                value.second.copy(endDate = selectedDate)
+            }
+        )
+    }
+
+    private fun onOnListClicked(option: OnListOption) {
+        onListOptions.value = onListOptions.value.toMutableList()
+            .apply {
+                replaceAll {
+                    if (it.value == option.value) {
+                        val newState = if (it.state != IncludeExcludeState.INCLUDE) {
+                            IncludeExcludeState.INCLUDE
+                        } else {
+                            IncludeExcludeState.DEFAULT
+                        }
+                        it.copy(state = newState)
+                    } else it.copy(state = IncludeExcludeState.DEFAULT)
+                }
+            }
     }
 
     fun data() = Data(
-        defaultOptions = sortEnumClass.java.enumConstants!!.toList(),
-        sort = { sort.collectAsState().value },
-        onSortChanged = ::onSortChanged,
+        sortOptions = { sortOptions.collectAsState().value },
+        onSortClicked = ::onSortClicked,
         sortAscending = { sortAscending.collectAsState().value },
         onSortAscendingChanged = ::onSortAscendingChanged,
         statuses = { statuses.collectAsState().value },
@@ -290,8 +320,8 @@ class AnimeMediaFilterController<T>(
         onSeasonChanged = ::onSeasonChanged,
         onSeasonYearChanged = ::onSeasonYearChanged,
         onListEnabled = { initialParams.onListEnabled },
-        onListSelectedOption = { onList.collectAsState().value },
-        onOnListSelected = { onList.value = it },
+        onListOptions = { onListOptions.collectAsState().value },
+        onOnListClicked = ::onOnListClicked,
         showAdult = { showAdult.collectAsState().value },
         onShowAdultToggled = { showAdult.value = it },
     )
@@ -301,10 +331,9 @@ class AnimeMediaFilterController<T>(
         val tagId: String? = null,
     )
 
-    class Data<SortOption>(
-        val defaultOptions: List<SortOption>,
-        val sort: @Composable () -> SortOption,
-        val onSortChanged: (SortOption) -> Unit = {},
+    class Data<SortOption : Data.SortOption>(
+        val sortOptions: @Composable () -> List<SortEntry<SortOption>>,
+        val onSortClicked: (SortOption) -> Unit = {},
         val sortAscending: @Composable () -> Boolean = { false },
         val onSortAscendingChanged: (Boolean) -> Unit = {},
         val statuses: @Composable () -> List<StatusEntry> = { emptyList() },
@@ -321,15 +350,8 @@ class AnimeMediaFilterController<T>(
         val onAiringDateIsAdvancedToggled: (Boolean) -> Unit = {},
         val onAiringDateChange: (start: Boolean, selectedMillis: Long?) -> Unit = { _, _ -> },
         val onListEnabled: () -> Boolean = { true },
-        val onListSelectedOption: @Composable () -> OnListOption = { OnListOption(null) },
-        val onListOptions: () -> List<OnListOption> = {
-            listOf(
-                null,
-                true,
-                false
-            ).map(::OnListOption)
-        },
-        val onOnListSelected: (OnListOption) -> Unit = {},
+        val onListOptions: @Composable () -> List<OnListOption> = { OnListOption.options() },
+        val onOnListClicked: (OnListOption) -> Unit = {},
         val showAdult: @Composable () -> Boolean = { false },
         val onShowAdultToggled: (Boolean) -> Unit = {},
     ) {
@@ -338,8 +360,7 @@ class AnimeMediaFilterController<T>(
                     where T : SortOption, T : Enum<*> {
                 val enumConstants = T::class.java.enumConstants!!.toList()
                 return Data(
-                    defaultOptions = enumConstants,
-                    sort = { enumConstants.first() },
+                    sortOptions = { enumConstants.map(::SortEntry) },
                     genres = {
                         listOf("Action", "Adventure", "Drama", "Fantasy")
                             .map(::GenreEntry)
@@ -381,6 +402,16 @@ class AnimeMediaFilterController<T>(
         interface SortOption {
             @get:StringRes
             val textRes: Int
+        }
+    }
+
+    data class SortEntry<T : Data.SortOption>(
+        override val value: T,
+        override val state: IncludeExcludeState = IncludeExcludeState.DEFAULT,
+    ) : MediaFilterEntry<T> {
+        companion object {
+            fun <T : Data.SortOption> options(enumClass: KClass<T>) =
+                enumClass.java.enumConstants!!.map(::SortEntry)
         }
     }
 
@@ -542,15 +573,17 @@ class AnimeMediaFilterController<T>(
     }
 
     data class OnListOption(
-        override val value: Boolean?
-    ) : MediaFilterDropdownEntry<Boolean?> {
-        override val text = when (value) {
-            true -> Either.Right<String, Int>(R.string.anime_media_filter_on_list_on_list)
-            false -> Either.Right(R.string.anime_media_filter_on_list_not_on_list)
-            null -> Either.Right(R.string.anime_media_filter_on_list_default)
+        override val value: Boolean,
+        override val state: IncludeExcludeState = IncludeExcludeState.DEFAULT,
+    ) : MediaFilterEntry<Boolean?> {
+        companion object {
+            fun options() = listOf(true, false).map(::OnListOption)
         }
-        override val dropdownContentDescriptionRes
-            get() = R.string.anime_media_filter_on_list_dropdown_content_description
+
+        val textRes = when (value) {
+            true -> R.string.anime_media_filter_on_list_on_list
+            false -> R.string.anime_media_filter_on_list_not_on_list
+        }
     }
 
     sealed interface AiringDate {

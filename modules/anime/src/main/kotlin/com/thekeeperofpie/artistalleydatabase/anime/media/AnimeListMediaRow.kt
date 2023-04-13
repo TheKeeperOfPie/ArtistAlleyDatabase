@@ -52,6 +52,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.anilist.fragment.AniListListRowMedia
+import com.anilist.type.MediaSeason
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.material.placeholder
 import com.google.accompanist.placeholder.material.shimmer
@@ -140,14 +141,15 @@ object AnimeListMediaRow {
             text = listOfNotNull(
                 stringResource(entry.subtitleMediaFormatRes),
                 stringResource(entry.subtitleStatusRes),
-                entry.subtitleYear
+                entry.subtitleSeason?.toTextRes()
+                    ?.let { stringResource(it) + " " }
+                    .orEmpty() + entry.subtitleYear,
             ).joinToString(separator = " - "),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.typography.bodySmall.color
                 .takeOrElse { LocalContentColor.current }
                 .copy(alpha = 0.8f),
-            modifier = Modifier
-                .wrapContentHeight(Alignment.Top)
+            modifier = Modifier.wrapContentHeight()
                 .padding(start = 12.dp, top = 4.dp, end = 16.dp, bottom = 10.dp)
                 .placeholder(
                     visible = entry == Entry.Loading,
@@ -356,6 +358,7 @@ object AnimeListMediaRow {
 
         val subtitleMediaFormatRes: Int get() = R.string.anime_media_format_tv
         val subtitleStatusRes: Int get() = R.string.anime_media_status_finished
+        val subtitleSeason: MediaSeason? get() = null
         val subtitleYear: String? get() = "2023"
 
         val rating: Int? get() = 99
@@ -376,6 +379,7 @@ object AnimeListMediaRow {
 
         override val subtitleMediaFormatRes = media.format.toTextRes()
         override val subtitleStatusRes = media.status.toTextRes()
+        override val subtitleSeason = media.season
         override val subtitleYear = media.seasonYear?.toString()
 
         override val rating = media.averageScore

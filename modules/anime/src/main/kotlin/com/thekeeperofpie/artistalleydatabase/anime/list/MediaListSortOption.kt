@@ -8,7 +8,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaFilterContro
 enum class MediaListSortOption(@StringRes override val textRes: Int) :
     AnimeMediaFilterController.Data.SortOption {
 
-    DEFAULT(R.string.anime_media_list_sort_default),
     SCORE(R.string.anime_media_list_sort_score),
     STATUS(R.string.anime_media_list_sort_status),
     PROGRESS(R.string.anime_media_list_sort_progress),
@@ -25,7 +24,6 @@ enum class MediaListSortOption(@StringRes override val textRes: Int) :
     ;
 
     fun toApiValue(ascending: Boolean) = when (this) {
-        DEFAULT -> null
         SCORE -> if (ascending) MediaListSort.SCORE else MediaListSort.SCORE_DESC
         STATUS -> if (ascending) MediaListSort.STATUS else MediaListSort.STATUS_DESC
         PROGRESS -> if (ascending) MediaListSort.PROGRESS else MediaListSort.PROGRESS_DESC

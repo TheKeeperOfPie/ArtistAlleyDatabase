@@ -47,7 +47,13 @@ Instructions assume Windows 11 environment.
    `./gradlew downloadAniListApolloSchemaFromIntrospection`
 3. Get a copy of any SNAPSHOT dependencies and place it into `libs`, currently:
    ```https://s01.oss.sonatype.org/content/repositories/snapshots/com/mxalbert/sharedelements/shared-elements/0.1.0-SNAPSHOT/shared-elements-0.1.0-20221204.093513-11.aar```
-4. Install like any other Android application via `./gradlew :app:installDebug`
+4. Generate an AniList API client by following the API instructions [here](https://anilist.gitbook.io/anilist-apiv2-docs/overview/oauth/getting-started#using-oauth)
+5. Create `/modules/anilist/local.properties` and insert the client ID/secret as properties:
+    ```
+    aniList.clientId=$CLIENT_ID
+    aniList.clientSecret=$CLIENT_SECRET
+    ```
+6. Install like any other Android application via `./gradlew :app:installDebug`
 
 ### Gradle
 

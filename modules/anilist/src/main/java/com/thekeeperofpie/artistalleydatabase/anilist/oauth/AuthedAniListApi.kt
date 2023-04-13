@@ -75,13 +75,13 @@ class AuthedAniListApi(
     suspend fun userMediaList(
         userId: Int,
         type: MediaType = MediaType.ANIME,
-        vararg sort: MediaListSort = emptyArray(),
+        sort: List<MediaListSort>? = null,
     ) =
         query(
             UserMediaListQuery(
                 userId = userId,
                 type = type,
-                sort = Optional.presentIfNotNull(sort.toList().ifEmpty { null }),
+                sort = Optional.presentIfNotNull(sort?.ifEmpty { null }),
             )
         ).data?.mediaListCollection
 
@@ -89,7 +89,7 @@ class AuthedAniListApi(
         query: String,
         page: Int? = null,
         perPage: Int? = null,
-        vararg sort: MediaSort = emptyArray(),
+        sort: List<MediaSort>? = null,
         genreIn: List<String>,
         genreNotIn: List<String>,
         tagIn: List<String>,
@@ -106,11 +106,11 @@ class AuthedAniListApi(
         startDateLesser: Int?,
     ): ApolloResponse<MediaAdvancedSearchQuery.Data> {
         val sortParam =
-            if (query.isEmpty() && sort.size == 1 && sort.contains(MediaSort.SEARCH_MATCH)) {
+            if (query.isEmpty() && sort?.size == 1 && sort.contains(MediaSort.SEARCH_MATCH)) {
                 // On a default, empty search, sort by TRENDING_DESC
                 Optional.Present(listOf(MediaSort.TRENDING_DESC))
             } else {
-                Optional.presentIfNotNull(sort.toList().ifEmpty { null })
+                Optional.presentIfNotNull(sort?.ifEmpty { null })
             }
 
         return query(

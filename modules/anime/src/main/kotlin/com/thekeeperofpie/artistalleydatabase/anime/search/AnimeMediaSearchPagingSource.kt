@@ -34,6 +34,16 @@ class AnimeMediaSearchPagingSource(
 
         // AniList pages start at 1
         val page = params.key ?: 1
+
+        val onListOptions = refreshParams.onListOptions
+        val containsOnList = onListOptions.find { it.value }?.state == IncludeExcludeState.INCLUDE
+        val containsNotOnList = onListOptions.find { !it.value }?.state == IncludeExcludeState.INCLUDE
+        val onList = when {
+            !containsOnList && !containsNotOnList -> null
+            containsOnList && containsNotOnList -> null
+            else -> containsOnList
+        }
+
         val result = aniListApi.searchMedia(
             query = refreshParams.query,
             page = page,
@@ -64,7 +74,7 @@ class AnimeMediaSearchPagingSource(
                 .filter { it.state == IncludeExcludeState.EXCLUDE }
                 .map { it.value },
             showAdult = refreshParams.showAdult,
-            onList = refreshParams.onList.value,
+            onList = onList,
             season = (refreshParams.airingDate as? AnimeMediaFilterController.AiringDate.Basic)
                 ?.season,
             seasonYear = (refreshParams.airingDate as? AnimeMediaFilterController.AiringDate.Basic)
@@ -105,20 +115,18 @@ class AnimeMediaSearchPagingSource(
     data class RefreshParams(
         val query: String,
         val requestMillis: Long,
-        val sort: MediaSortOption,
+        val sortOptions: List<AnimeMediaFilterController.SortEntry<MediaSortOption>>,
         val sortAscending: Boolean,
         val genres: List<MediaFilterEntry<String>>,
         val tagsByCategory: Map<String, AnimeMediaFilterController.TagSection>,
         val statuses: List<AnimeMediaFilterController.StatusEntry>,
         val formats: List<AnimeMediaFilterController.FormatEntry>,
         val showAdult: Boolean,
-        val onList: AnimeMediaFilterController.OnListOption,
+        val onListOptions: List<AnimeMediaFilterController.OnListOption>,
         val airingDate: AnimeMediaFilterController.AiringDate,
     ) {
-        fun sortApiValue() = if (sort == MediaSortOption.DEFAULT) {
-            arrayOf(MediaSort.SEARCH_MATCH)
-        } else {
-            arrayOf(sort.toApiValue(sortAscending))
-        }
+        fun sortApiValue() = sortOptions.filter { it.state == IncludeExcludeState.INCLUDE }
+            .map { it.value.toApiValue(sortAscending) }
+            .ifEmpty { listOf(MediaSort.SEARCH_MATCH) }
     }
 }

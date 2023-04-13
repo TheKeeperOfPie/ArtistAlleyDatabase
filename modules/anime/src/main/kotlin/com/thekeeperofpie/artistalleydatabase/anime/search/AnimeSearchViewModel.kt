@@ -47,14 +47,14 @@ class AnimeSearchViewModel @Inject constructor(aniListApi: AuthedAniListApi) : V
             combine(
                 query.debounce(200.milliseconds),
                 refreshUptimeMillis,
-                filterController.sort,
+                filterController.sortOptions,
                 filterController.sortAscending,
                 filterController.genres,
                 filterController.tagsByCategory,
                 filterController.statuses,
                 filterController.formats,
                 filterController.showAdult,
-                filterController.onList,
+                filterController.onListOptions,
                 filterController.airingDate(),
                 AnimeMediaSearchPagingSource::RefreshParams
             )
