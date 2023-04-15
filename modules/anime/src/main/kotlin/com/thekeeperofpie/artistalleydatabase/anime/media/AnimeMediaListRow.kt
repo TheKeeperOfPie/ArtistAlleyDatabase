@@ -63,7 +63,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.ColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.fadingEdge
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 
-object AnimeListMediaRow {
+object AnimeMediaListRow {
 
     @Composable
     operator fun invoke(
@@ -137,19 +137,21 @@ object AnimeListMediaRow {
 
     @Composable
     private fun SubtitleText(entry: Entry) {
+        val seasonYear = entry.subtitleSeason?.toTextRes()
+            ?.let { stringResource(it) + " " }
+            .orEmpty() + entry.subtitleYear.orEmpty()
         Text(
             text = listOfNotNull(
                 stringResource(entry.subtitleMediaFormatRes),
                 stringResource(entry.subtitleStatusRes),
-                entry.subtitleSeason?.toTextRes()
-                    ?.let { stringResource(it) + " " }
-                    .orEmpty() + entry.subtitleYear,
+                seasonYear.ifEmpty { null },
             ).joinToString(separator = " - "),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.typography.bodySmall.color
                 .takeOrElse { LocalContentColor.current }
                 .copy(alpha = 0.8f),
-            modifier = Modifier.wrapContentHeight()
+            modifier = Modifier
+                .wrapContentHeight()
                 .padding(start = 12.dp, top = 4.dp, end = 16.dp, bottom = 10.dp)
                 .placeholder(
                     visible = entry == Entry.Loading,
@@ -439,20 +441,20 @@ object AnimeListMediaRow {
 @Preview
 @Composable
 private fun Preview() {
-    AnimeListMediaRow(object : AnimeListMediaRow.Entry {
+    AnimeMediaListRow(object : AnimeMediaListRow.Entry {
         override val image = null
         override val title =
             "Tsundere Akuyaku Reijou Liselotte to Jikkyou no Endou-kun to Kaisetsu no Kobayashi-san"
-        override val tags: List<AnimeListMediaRow.Tag> = listOf(
-            object : AnimeListMediaRow.Tag {
+        override val tags: List<AnimeMediaListRow.Tag> = listOf(
+            object : AnimeMediaListRow.Tag {
                 override val id = "857"
                 override val text = "Villainess"
             },
-            object : AnimeListMediaRow.Tag {
+            object : AnimeMediaListRow.Tag {
                 override val id = "164"
                 override val text = "Tsundere"
             },
-            object : AnimeListMediaRow.Tag {
+            object : AnimeMediaListRow.Tag {
                 override val id = "85"
                 override val shouldHide = true
                 override val leadingIconVector = Icons.Filled.Warning

@@ -5,6 +5,7 @@
     <string name="anime_home_title">Anime</string>
     <string name="anime_media_cover_image">Media cover image</string>
     <string name="anime_media_list_error_loading">Error loading media list</string>
+    <string name="anime_media_list_no_results">No results</string>
     <string name="anime_screen_user_list">User list</string>
     <string name="anime_screen_search">Search</string>
 

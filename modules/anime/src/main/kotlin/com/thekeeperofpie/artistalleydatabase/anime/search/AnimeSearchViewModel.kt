@@ -14,6 +14,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatc
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.combine
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
+import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeMediaFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortOption
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -37,7 +38,7 @@ class AnimeSearchViewModel @Inject constructor(
 ) : ViewModel() {
 
     val query = MutableStateFlow("")
-    var content = MutableStateFlow(PagingData.empty<AnimeSearchScreen.Entry>())
+    var content = MutableStateFlow(PagingData.empty<AnimeMediaListScreen.Entry>())
 
     private var initialized = false
 
@@ -78,7 +79,7 @@ class AnimeSearchViewModel @Inject constructor(
                     // AniList can return duplicates across pages, manually enforce uniqueness
                     val seenIds = mutableSetOf<Int>()
                     it.filter { seenIds.add(it.id) }
-                        .map<Medium, AnimeSearchScreen.Entry> { AnimeSearchScreen.Entry.Item(it) }
+                        .map<Medium, AnimeMediaListScreen.Entry>(AnimeMediaListScreen.Entry::Item)
                 }
                 .cachedIn(viewModelScope)
                 .collectLatest(content::emit)

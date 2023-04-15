@@ -17,6 +17,8 @@ class AnimeMediaSearchPagingSource(
     private val refreshParams: RefreshParams,
 ) : PagingSource<Int, MediaAdvancedSearchQuery.Data.Page.Medium>() {
 
+    override val jumpingSupported = true
+
     override fun getRefreshKey(state: PagingState<Int, MediaAdvancedSearchQuery.Data.Page.Medium>) =
         state.anchorPosition?.let {
             state.closestPageToPosition(it)?.prevKey?.plus(1)
