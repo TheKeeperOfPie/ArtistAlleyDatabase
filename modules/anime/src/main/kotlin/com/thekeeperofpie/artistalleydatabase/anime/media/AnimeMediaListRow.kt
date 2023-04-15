@@ -1,7 +1,9 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media
 
 import android.text.format.DateUtils
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -56,6 +58,7 @@ import com.anilist.type.MediaSeason
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.material.placeholder
 import com.google.accompanist.placeholder.material.shimmer
+import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
@@ -63,12 +66,14 @@ import com.thekeeperofpie.artistalleydatabase.compose.ColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.fadingEdge
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 
+@OptIn(ExperimentalFoundationApi::class)
 object AnimeMediaListRow {
 
     @Composable
     operator fun invoke(
         entry: Entry,
         onTagClick: (tagId: String, tagName: String) -> Unit = { _, _ -> },
+        onLongPressImage: (entry: Entry) -> Unit = {},
     ) {
         ElevatedCard(
             modifier = Modifier
@@ -76,7 +81,7 @@ object AnimeMediaListRow {
                 .heightIn(min = 180.dp)
         ) {
             Row {
-                CoverImage(entry)
+                CoverImage(entry, onLongPressImage)
 
                 Column(modifier = Modifier.heightIn(min = 180.dp)) {
                     Row(Modifier.fillMaxWidth()) {
@@ -100,22 +105,34 @@ object AnimeMediaListRow {
     }
 
     @Composable
-    private fun CoverImage(entry: Entry) {
-        AsyncImage(
-            model = entry.image,
-            contentScale = ContentScale.Crop,
-            fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
-            contentDescription = stringResource(R.string.anime_media_cover_image),
-            modifier = Modifier
-                .background(MaterialTheme.colorScheme.surfaceVariant)
-                .heightIn(min = 180.dp)
-                .width(120.dp)
-                .fillMaxHeight()
-                .placeholder(
-                    visible = entry == Entry.Loading,
-                    highlight = PlaceholderHighlight.shimmer(),
-                )
-        )
+    private fun CoverImage(entry: Entry, onLongPressImage: (entry: Entry) -> Unit) {
+        SharedElement(
+            key = "cover_image_${entry.id?.valueId}",
+            screenKey = "media_row"
+        ) {
+            AsyncImage(
+                model = entry.image,
+                contentScale = ContentScale.Crop,
+                fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
+                contentDescription = stringResource(R.string.anime_media_cover_image),
+                modifier = Modifier
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                    .heightIn(min = 180.dp)
+                    .width(120.dp)
+                    .fillMaxHeight()
+                    .placeholder(
+                        visible = entry == Entry.Loading,
+                        highlight = PlaceholderHighlight.shimmer(),
+                    )
+                    .combinedClickable(
+                        onClick = {},
+                        onLongClick = { onLongPressImage(entry) },
+                        onLongClickLabel = stringResource(
+                            R.string.anime_media_cover_image_long_press_preview
+                        ),
+                    )
+            )
+        }
     }
 
     @Composable
@@ -350,12 +367,16 @@ object AnimeMediaListRow {
 
     interface Entry {
         object Loading : Entry {
+            override val id = null
             override val image = null
             override val title = ""
             override val tags = emptyList<Tag>()
         }
 
+        val id: EntryId? get() = null
         val image: String?
+        val imageExtraLarge: String? get() = image
+        val imageBanner: String? get() = null
         val title: String?
 
         val subtitleMediaFormatRes: Int get() = R.string.anime_media_format_tv
@@ -375,8 +396,10 @@ object AnimeMediaListRow {
         val media: AniListListRowMedia
     ) : Entry {
 
-        val id = EntryId("item", media.id.toString())
+        override val id = EntryId("item", media.id.toString())
         override val image = media.coverImage?.large
+        override val imageExtraLarge = media.coverImage?.extraLarge
+        override val imageBanner = media.bannerImage
         override val title = media.title?.userPreferred
 
         override val subtitleMediaFormatRes = media.format.toTextRes()

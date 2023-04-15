@@ -18,7 +18,9 @@ fragment AniListMedia on Media {
 
 fragment AniListListRowMedia on Media {
     id
+    bannerImage
     coverImage {
+        extraLarge
         large
     }
     title {

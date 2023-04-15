@@ -25,7 +25,6 @@ dependencies {
     api(libs.compose.ui)
     implementation(libs.compose.ui.tooling.preview)
     runtimeOnly(libs.compose.ui.tooling)
-    implementation(libs.material3)
     implementation(libs.accompanist.flowlayout)
 
     implementation(libs.coil.compose)
@@ -34,4 +33,6 @@ dependencies {
 
     implementation(libs.navigation.compose)
     implementation(libs.hilt.navigation.compose)
+
+    implementation(group = "", name = "shared-elements-0.1.0-20221204.093513-11", ext = "aar")
 }

@@ -61,13 +61,14 @@ object AnimeUserListScreen {
                 refreshing = refreshing,
                 onRefresh = onRefresh,
                 modifier = Modifier.padding(it),
-            ) {
+            ) { onLongPressImage ->
                 when (content) {
                     is AnimeUserListViewModel.ContentState.Error -> AnimeMediaListScreen.Error()
                     AnimeUserListViewModel.ContentState.LoadingEmpty ->
                         // Empty column to allow pull refresh to work
                         Column(
-                            modifier = Modifier.fillMaxSize()
+                            modifier = Modifier
+                                .fillMaxSize()
                                 .verticalScroll(rememberScrollState()),
                         ) {}
                     is AnimeUserListViewModel.ContentState.Success ->
@@ -78,7 +79,11 @@ object AnimeUserListScreen {
                             items(content.entries, { it.id.scopedId }) {
                                 when (it) {
                                     is Entry.Header -> Header(it)
-                                    is Entry.Item -> AnimeMediaListRow(it, onTagClick = onTagClick)
+                                    is Entry.Item -> AnimeMediaListRow(
+                                        entry = it,
+                                        onTagClick = onTagClick,
+                                        onLongPressImage = onLongPressImage
+                                    )
                                 }
                             }
                         }

@@ -93,7 +93,7 @@ object AnimeSearchScreen {
                 refreshing = refreshing,
                 onRefresh = onRefresh,
                 modifier = Modifier.padding(it),
-            ) {
+            ) { onLongPressImage ->
                 when (content.loadState.refresh) {
                     LoadState.Loading -> Unit
                     is LoadState.Error -> AnimeMediaListScreen.Error()
@@ -110,8 +110,11 @@ object AnimeSearchScreen {
                             ) {
                                 items(content, { it.id.scopedId }) {
                                     when (it) {
-                                        is AnimeMediaListScreen.Entry.Item ->
-                                            AnimeMediaListRow(it, onTagClick = onTagClick)
+                                        is AnimeMediaListScreen.Entry.Item -> AnimeMediaListRow(
+                                            entry = it,
+                                            onTagClick = onTagClick,
+                                            onLongPressImage = onLongPressImage
+                                        )
                                         null -> AnimeMediaListRow(AnimeMediaListRow.Entry.Loading)
                                     }
                                 }
