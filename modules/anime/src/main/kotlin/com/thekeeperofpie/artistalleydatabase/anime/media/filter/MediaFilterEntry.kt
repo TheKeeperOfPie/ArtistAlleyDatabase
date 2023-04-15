@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.anime.media
+package com.thekeeperofpie.artistalleydatabase.anime.media.filter
 
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.thekeeperofpie.artistalleydatabase.anime.utils.IncludeExcludeState

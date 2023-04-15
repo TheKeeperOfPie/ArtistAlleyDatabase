@@ -5,9 +5,9 @@ import androidx.paging.PagingState
 import com.anilist.MediaAdvancedSearchQuery
 import com.anilist.type.MediaSort
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
-import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaFilterController
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaFilterEntry
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaSortOption
+import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeMediaFilterController
+import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaFilterEntry
+import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.utils.IncludeExcludeState
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit

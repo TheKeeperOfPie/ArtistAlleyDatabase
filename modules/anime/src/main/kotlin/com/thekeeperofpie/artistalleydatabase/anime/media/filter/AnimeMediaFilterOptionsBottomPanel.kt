@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.anime.media
+package com.thekeeperofpie.artistalleydatabase.anime.media.filter
 
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility

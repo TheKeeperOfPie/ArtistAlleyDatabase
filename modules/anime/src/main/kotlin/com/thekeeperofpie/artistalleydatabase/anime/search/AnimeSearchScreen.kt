@@ -35,9 +35,9 @@ import androidx.paging.compose.items
 import com.anilist.MediaAdvancedSearchQuery.Data.Page.Medium
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeListMediaRow
-import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaFilterController
-import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaFilterOptionsBottomPanel
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaSortOption
+import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeMediaFilterController
+import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeMediaFilterOptionsBottomPanel
+import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.compose.AppBar
 import com.thekeeperofpie.artistalleydatabase.compose.NavMenuIconButton
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId

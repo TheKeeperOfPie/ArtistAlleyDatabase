@@ -9,7 +9,7 @@ android {
 }
 
 dependencies {
-    api(project(":modules:android-utils"))
+    implementation(project(":modules:android-utils"))
     api(project(":modules:anilist"))
     implementation(project(":modules:compose-utils"))
 

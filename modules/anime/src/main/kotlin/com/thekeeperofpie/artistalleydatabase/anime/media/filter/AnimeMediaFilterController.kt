@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.anime.media
+package com.thekeeperofpie.artistalleydatabase.anime.media.filter
 
 import android.util.Log
 import androidx.annotation.StringRes
@@ -9,7 +9,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.anilist.MediaTagsQuery.Data.MediaTagCollection
+import com.anilist.MediaTagsQuery
 import com.anilist.type.MediaFormat
 import com.anilist.type.MediaSeason
 import com.anilist.type.MediaSource
@@ -18,6 +18,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatc
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.mapLatestNotNull
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.utils.IncludeExcludeState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -198,7 +199,7 @@ class AnimeMediaFilterController<T>(
      * Categories are provided from the API in the form of "Parent-Child". This un-flattens the
      * tag list into a tree of sections, separated by the "-" dash.
      */
-    private fun buildTagSections(tags: List<MediaTagCollection>): Map<String, TagSection> {
+    private fun buildTagSections(tags: List<MediaTagsQuery.Data.MediaTagCollection>): Map<String, TagSection> {
         val sections = mutableMapOf<String, Any>()
         tags.forEach {
             var categories = it.category?.split('-')
@@ -480,7 +481,10 @@ class AnimeMediaFilterController<T>(
                                 name = "CategoryOne",
                                 children = listOf("TagOne", "TagTwo", "TagThree")
                                     .mapIndexed { index, tag ->
-                                        MediaTagCollection(id = index, name = tag)
+                                        MediaTagsQuery.Data.MediaTagCollection(
+                                            id = index,
+                                            name = tag
+                                        )
                                     }
                                     .map(TagSection::Tag)
                                     .associateBy { it.name }
@@ -493,7 +497,10 @@ class AnimeMediaFilterController<T>(
                                         name = "Two",
                                         children = listOf("TagFour", "TagFive", "TagSix")
                                             .mapIndexed { index, tag ->
-                                                MediaTagCollection(id = index, name = tag)
+                                                MediaTagsQuery.Data.MediaTagCollection(
+                                                    id = index,
+                                                    name = tag
+                                                )
                                             }
                                             .map(TagSection::Tag)
                                             .associateBy { it.name }
@@ -639,7 +646,7 @@ class AnimeMediaFilterController<T>(
                     }
                 }
 
-                fun addChild(it: MediaTagCollection) {
+                fun addChild(it: MediaTagsQuery.Data.MediaTagCollection) {
                     children[it.name] = Tag(
                         id = it.id.toString(),
                         name = it.name,
@@ -667,10 +674,10 @@ class AnimeMediaFilterController<T>(
             override val name: String,
             val description: String?,
             val isAdult: Boolean?,
-            override val value: MediaTagCollection,
+            override val value: MediaTagsQuery.Data.MediaTagCollection,
             override val state: IncludeExcludeState = IncludeExcludeState.DEFAULT,
             val clickable: Boolean = true,
-        ) : MediaFilterEntry<MediaTagCollection>, TagSection {
+        ) : MediaFilterEntry<MediaTagsQuery.Data.MediaTagCollection>, TagSection {
             val containerColor = MediaUtils.calculateTagColor(value.id)
 
             override val leadingIconVector = MediaUtils.tagLeadingIcon(
@@ -684,7 +691,7 @@ class AnimeMediaFilterController<T>(
                     isGeneralSpoiler = value.isGeneralSpoiler,
                 )
 
-            constructor(tag: MediaTagCollection) : this(
+            constructor(tag: MediaTagsQuery.Data.MediaTagCollection) : this(
                 id = tag.id.toString(),
                 name = tag.name,
                 isAdult = tag.isAdult,
