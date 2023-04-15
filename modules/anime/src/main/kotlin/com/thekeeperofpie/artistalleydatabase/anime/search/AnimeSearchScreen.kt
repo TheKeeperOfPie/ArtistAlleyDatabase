@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -36,7 +35,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.AppBar
 import com.thekeeperofpie.artistalleydatabase.compose.NavMenuIconButton
 import kotlinx.coroutines.flow.flowOf
 
-@OptIn(ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class)
 object AnimeSearchScreen {
 
     @Composable
@@ -51,7 +50,10 @@ object AnimeSearchScreen {
         content: @Composable () -> LazyPagingItems<AnimeMediaListScreen.Entry> = {
             flowOf(PagingData.empty<AnimeMediaListScreen.Entry>()).collectAsLazyPagingItems()
         },
+        tagShown: () -> AnimeMediaFilterController.TagSection.Tag? = { null },
+        onTagDismiss: () -> Unit = {},
         onTagClick: (tagId: String, tagName: String) -> Unit = { _, _ -> },
+        onTagLongClick: (tagId: String) -> Unit = {},
     ) {
         AnimeMediaFilterOptionsBottomPanel(
             topBar = {
@@ -92,6 +94,8 @@ object AnimeSearchScreen {
             AnimeMediaListScreen(
                 refreshing = refreshing,
                 onRefresh = onRefresh,
+                tagShown = tagShown,
+                onTagDismiss = onTagDismiss,
                 modifier = Modifier.padding(it),
             ) { onLongPressImage ->
                 when (content.loadState.refresh) {
@@ -113,6 +117,7 @@ object AnimeSearchScreen {
                                         is AnimeMediaListScreen.Entry.Item -> AnimeMediaListRow(
                                             entry = it,
                                             onTagClick = onTagClick,
+                                            onTagLongClick = onTagLongClick,
                                             onLongPressImage = onLongPressImage
                                         )
                                         null -> AnimeMediaListRow(AnimeMediaListRow.Entry.Loading)

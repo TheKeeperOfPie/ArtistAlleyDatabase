@@ -831,6 +831,15 @@ class AnimeMediaFilterController<T>(
     sealed interface TagSection {
         val name: String
 
+        fun findTag(id: String): Tag? = when (this) {
+            is Category -> {
+                children.values.asSequence()
+                    .mapNotNull { it.findTag(id) }
+                    .firstOrNull()
+            }
+            is Tag -> takeIf { it.id == id }
+        }
+
         fun filter(predicate: (Tag) -> Boolean): TagSection? = when (this) {
             is Category -> {
                 children.values

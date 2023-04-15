@@ -77,7 +77,10 @@ object AnimeHomeScreen {
                                 filterData = { viewModel.filterData() },
                                 onRefresh = viewModel::onRefresh,
                                 content = { viewModel.content },
-                                onTagClick = ::onTagClick
+                                tagShown = { viewModel.tagShown },
+                                onTagDismiss = viewModel::onTagDismiss,
+                                onTagClick = ::onTagClick,
+                                onTagLongClick = viewModel::onTagLongClick,
                             )
                         }
                         composable(
@@ -115,7 +118,10 @@ object AnimeHomeScreen {
                                 filterData = { viewModel.filterData() },
                                 onRefresh = viewModel::onRefresh,
                                 content = { viewModel.content.collectAsLazyPagingItems() },
-                                onTagClick = ::onTagClick
+                                tagShown = { viewModel.tagShown },
+                                onTagDismiss = viewModel::onTagDismiss,
+                                onTagClick = ::onTagClick,
+                                onTagLongClick = viewModel::onTagLongClick,
                             )
                         }
                     }

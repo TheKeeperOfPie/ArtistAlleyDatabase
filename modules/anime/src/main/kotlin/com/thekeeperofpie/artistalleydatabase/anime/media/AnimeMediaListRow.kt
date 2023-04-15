@@ -28,8 +28,6 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PersonOutline
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.outlined.PeopleAlt
-import androidx.compose.material3.AssistChip
-import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
@@ -61,8 +59,10 @@ import com.google.accompanist.placeholder.material.shimmer
 import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
+import com.thekeeperofpie.artistalleydatabase.compose.AssistChip
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.ColorUtils
+import com.thekeeperofpie.artistalleydatabase.compose.assistChipColors
 import com.thekeeperofpie.artistalleydatabase.compose.fadingEdge
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 
@@ -73,6 +73,7 @@ object AnimeMediaListRow {
     operator fun invoke(
         entry: Entry,
         onTagClick: (tagId: String, tagName: String) -> Unit = { _, _ -> },
+        onTagLongClick: (tagId: String) -> Unit = {},
         onLongPressImage: (entry: Entry) -> Unit = {},
     ) {
         ElevatedCard(
@@ -98,7 +99,11 @@ object AnimeMediaListRow {
                     entry.nextAiringEpisode?.let {
                         NextAiringSection(it, entry == Entry.Loading)
                     }
-                    TagRow(tags = entry.tags, onTagClick = onTagClick)
+                    TagRow(
+                        tags = entry.tags,
+                        onTagClick = onTagClick,
+                        onTagLongClick = onTagLongClick,
+                    )
                 }
             }
         }
@@ -305,6 +310,7 @@ object AnimeMediaListRow {
     private fun TagRow(
         tags: List<Tag>,
         onTagClick: (tagId: String, tagName: String) -> Unit = { _, _ -> },
+        onTagLongClick: (tagId: String) -> Unit = {},
     ) {
         LazyRow(
             contentPadding = PaddingValues(start = 12.dp, end = 32.dp),
@@ -327,7 +333,11 @@ object AnimeMediaListRow {
                             hidden = false
                         }
                     },
-                    colors = AssistChipDefaults.assistChipColors(
+                    onLongClickLabel = stringResource(
+                        R.string.anime_media_tag_long_click_content_description
+                    ),
+                    onLongClick = { onTagLongClick(it.id) },
+                    colors = assistChipColors(
                         containerColor = if (hidden) {
                             MaterialTheme.colorScheme.onSurface.copy(alpha = 0.25f)
                         } else {

@@ -164,4 +164,6 @@
 
     <string name="anime_media_filter_expand_all_content_description">Expand/collapse all sections</string>
     <string name="anime_media_cover_image_long_press_preview">Preview cover image</string>
+    <string name="anime_media_tag_long_click_content_description">Preview tag</string>
+    <string name="anime_media_tag_no_description_error">No tag description</string>
 </resources>

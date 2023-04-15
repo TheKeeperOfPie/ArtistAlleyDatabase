@@ -38,7 +38,10 @@ object AnimeUserListScreen {
         filterData: () -> AnimeMediaFilterController.Data<MediaListSortOption>,
         onRefresh: () -> Unit = {},
         content: () -> AnimeUserListViewModel.ContentState,
+        tagShown: () -> AnimeMediaFilterController.TagSection.Tag? = { null },
+        onTagDismiss: () -> Unit = {},
         onTagClick: (tagId: String, tagName: String) -> Unit = { _, _ -> },
+        onTagLongClick: (tagId: String) -> Unit = {},
     ) {
         AnimeMediaFilterOptionsBottomPanel(
             topBar = {
@@ -60,6 +63,8 @@ object AnimeUserListScreen {
             AnimeMediaListScreen(
                 refreshing = refreshing,
                 onRefresh = onRefresh,
+                tagShown = tagShown,
+                onTagDismiss = onTagDismiss,
                 modifier = Modifier.padding(it),
             ) { onLongPressImage ->
                 when (content) {
@@ -82,6 +87,7 @@ object AnimeUserListScreen {
                                     is Entry.Item -> AnimeMediaListRow(
                                         entry = it,
                                         onTagClick = onTagClick,
+                                        onTagLongClick = onTagLongClick,
                                         onLongPressImage = onLongPressImage
                                     )
                                 }

@@ -43,6 +43,7 @@ class AnimeUserListViewModel @Inject constructor(
 ) : ViewModel() {
 
     var content by mutableStateOf<ContentState>(ContentState.LoadingEmpty)
+    var tagShown by mutableStateOf<AnimeMediaFilterController.TagSection.Tag?>(null)
 
     private var initialized = false
 
@@ -116,6 +117,17 @@ class AnimeUserListViewModel @Inject constructor(
     fun filterData() = filterController.data()
 
     fun onRefresh() = refreshUptimeMillis.update { SystemClock.uptimeMillis() }
+
+    fun onTagDismiss() {
+        tagShown = null
+    }
+
+    fun onTagLongClick(tagId: String) {
+        tagShown = filterController.tagsByCategory.value.values
+            .asSequence()
+            .mapNotNull { it.findTag(tagId) }
+            .firstOrNull()
+    }
 
     private fun toFilteredEntries(
         filterParams: FilterParams,

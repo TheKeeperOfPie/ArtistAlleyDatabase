@@ -19,9 +19,11 @@ import androidx.compose.material.icons.filled.ImageNotSupported
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -41,7 +43,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import coil.compose.AsyncImage
 import com.anilist.fragment.AniListListRowMedia
+import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeMediaFilterController
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -52,6 +56,8 @@ object AnimeMediaListScreen {
         refreshing: Boolean,
         onRefresh: () -> Unit,
         modifier: Modifier = Modifier,
+        tagShown: () -> AnimeMediaFilterController.TagSection.Tag? = { null },
+        onTagDismiss: () -> Unit = {},
         listContent: @Composable (onLongPressImage: (AnimeMediaListRow.Entry) -> Unit) -> Unit,
     ) {
         val pullRefreshState = rememberPullRefreshState(refreshing, onRefresh)
@@ -72,90 +78,11 @@ object AnimeMediaListScreen {
             )
 
             entryToPreview?.let {
-                Dialog(onDismissRequest = { entryToPreview = null }) {
-                    var imageTranslation by remember { mutableStateOf(Offset.Zero) }
-                    var imageScale by remember { mutableStateOf(1f) }
-                    var imageRotation by remember { mutableStateOf(1f) }
+                EntryImagePreview(it) { entryToPreview = null }
+            }
 
-                    var imageIntrinsicWidth by remember { mutableStateOf(0) }
-                    var imageIntrinsicHeight by remember { mutableStateOf(0) }
-
-                    val configuration = LocalConfiguration.current
-                    val density = LocalDensity.current
-                    val maxTranslationX = remember(imageIntrinsicWidth, density) {
-                        density.run { configuration.screenWidthDp.dp.toPx() }
-                            .coerceAtLeast(imageIntrinsicWidth.toFloat())
-                            .times(0.9f)
-                    }
-                    val maxTranslationY = remember(imageIntrinsicHeight, density) {
-                        density.run { configuration.screenHeightDp.dp.toPx() }
-                            .coerceAtLeast(imageIntrinsicHeight.toFloat())
-                            .times(0.9f)
-                    }
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .pointerInput(Unit) {
-                                detectTransformGestures(panZoomLock = true) { _, pan, zoom, rotation ->
-                                    val translation = imageTranslation + pan
-                                    imageTranslation = translation.copy(
-                                        x = translation.x.coerceIn(
-                                            -maxTranslationX,
-                                            maxTranslationX
-                                        ),
-                                        y = translation.y.coerceIn(
-                                            -maxTranslationY,
-                                            maxTranslationY
-                                        ),
-                                    )
-                                    imageScale = (imageScale * zoom).coerceIn(0.25f, 5f)
-                                    imageRotation += rotation
-                                }
-                            }
-                            .graphicsLayer(
-                                translationX = imageTranslation.x,
-                                translationY = imageTranslation.y,
-                                scaleX = imageScale,
-                                scaleY = imageScale,
-                                rotationZ = imageRotation,
-                            )
-                            .clickable { entryToPreview = null },
-                    ) {
-                        Column(
-                            verticalArrangement = Arrangement.spacedBy(16.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier
-                                .align(Alignment.Center)
-                                .clickable(
-                                    // Consume click events so that tapping image doesn't dismiss
-                                    interactionSource = remember { MutableInteractionSource() },
-                                    indication = null,
-                                ) {}
-                        ) {
-                            it.imageBanner?.let {
-                                AsyncImage(
-                                    model = it,
-                                    fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
-                                    contentDescription = stringResource(R.string.anime_media_banner_image),
-                                    modifier = Modifier.wrapContentSize(),
-                                )
-                            }
-                            AsyncImage(
-                                model = it.imageExtraLarge,
-                                contentScale = ContentScale.FillWidth,
-                                fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
-                                contentDescription = stringResource(R.string.anime_media_cover_image),
-                                onSuccess = {
-                                    imageIntrinsicWidth = it.result.drawable.intrinsicWidth
-                                    imageIntrinsicHeight = it.result.drawable.intrinsicHeight
-                                },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .widthIn(min = 240.dp),
-                            )
-                        }
-                    }
-                }
+            tagShown()?.let {
+                TagPreview(it, onTagDismiss)
             }
         }
     }
@@ -217,6 +144,115 @@ object AnimeMediaListScreen {
                 .padding(horizontal = 16.dp, vertical = 10.dp),
         ) {
             CircularProgressIndicator()
+        }
+    }
+
+    @Composable
+    private fun TagPreview(
+        tag: AnimeMediaFilterController.TagSection.Tag,
+        onDismiss: () -> Unit,
+    ) {
+        AlertDialog(
+            onDismissRequest = onDismiss,
+            title = { Text(tag.name) },
+            text = {
+                Text(
+                    tag.description ?: stringResource(R.string.anime_media_tag_no_description_error)
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = onDismiss) {
+                    Text(text = stringResource(UtilsStringR.close))
+                }
+            }
+        )
+    }
+
+    @Composable
+    private fun EntryImagePreview(entry: AnimeMediaListRow.Entry, onDismiss: () -> Unit) {
+        Dialog(onDismissRequest = onDismiss) {
+            var imageTranslation by remember { mutableStateOf(Offset.Zero) }
+            var imageScale by remember { mutableStateOf(1f) }
+            var imageRotation by remember { mutableStateOf(1f) }
+
+            var imageIntrinsicWidth by remember { mutableStateOf(0) }
+            var imageIntrinsicHeight by remember { mutableStateOf(0) }
+
+            val configuration = LocalConfiguration.current
+            val density = LocalDensity.current
+            val maxTranslationX = remember(imageIntrinsicWidth, density) {
+                density.run { configuration.screenWidthDp.dp.toPx() }
+                    .coerceAtLeast(imageIntrinsicWidth.toFloat())
+                    .times(0.9f)
+            }
+            val maxTranslationY = remember(imageIntrinsicHeight, density) {
+                density.run { configuration.screenHeightDp.dp.toPx() }
+                    .coerceAtLeast(imageIntrinsicHeight.toFloat())
+                    .times(0.9f)
+            }
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .pointerInput(Unit) {
+                        detectTransformGestures(panZoomLock = true) { _, pan, zoom, rotation ->
+                            val translation = imageTranslation + pan
+                            imageTranslation = translation.copy(
+                                x = translation.x.coerceIn(
+                                    -maxTranslationX,
+                                    maxTranslationX
+                                ),
+                                y = translation.y.coerceIn(
+                                    -maxTranslationY,
+                                    maxTranslationY
+                                ),
+                            )
+                            imageScale = (imageScale * zoom).coerceIn(0.25f, 5f)
+                            imageRotation += rotation
+                        }
+                    }
+                    .graphicsLayer(
+                        translationX = imageTranslation.x,
+                        translationY = imageTranslation.y,
+                        scaleX = imageScale,
+                        scaleY = imageScale,
+                        rotationZ = imageRotation,
+                    )
+                    .clickable(onClick = onDismiss),
+            ) {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .clickable(
+                            // Consume click events so that tapping image doesn't dismiss
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null,
+                        ) {}
+                ) {
+                    entry.imageBanner?.let {
+                        AsyncImage(
+                            model = it,
+                            fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
+                            contentDescription = stringResource(R.string.anime_media_banner_image),
+                            modifier = Modifier.wrapContentSize(),
+                        )
+                    }
+                    AsyncImage(
+                        model = entry.imageExtraLarge,
+                        contentScale = ContentScale.FillWidth,
+                        fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
+                        contentDescription = stringResource(R.string.anime_media_cover_image),
+                        onSuccess = {
+                            imageIntrinsicWidth = it.result.drawable.intrinsicWidth
+                            imageIntrinsicHeight = it.result.drawable.intrinsicHeight
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .widthIn(min = 240.dp),
+                    )
+                }
+            }
         }
     }
 

@@ -1,6 +1,9 @@
 package com.thekeeperofpie.artistalleydatabase.anime.search
 
 import android.os.SystemClock
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
@@ -39,6 +42,7 @@ class AnimeSearchViewModel @Inject constructor(
 
     val query = MutableStateFlow("")
     var content = MutableStateFlow(PagingData.empty<AnimeMediaListScreen.Entry>())
+    var tagShown by mutableStateOf<AnimeMediaFilterController.TagSection.Tag?>(null)
 
     private var initialized = false
 
@@ -96,4 +100,15 @@ class AnimeSearchViewModel @Inject constructor(
 
     fun onRefresh() = refreshUptimeMillis.update { SystemClock.uptimeMillis() }
     fun onQuery(query: String) = this.query.update { query }
+
+    fun onTagDismiss() {
+        tagShown = null
+    }
+
+    fun onTagLongClick(tagId: String) {
+        tagShown = filterController.tagsByCategory.value.values
+            .asSequence()
+            .mapNotNull { it.findTag(tagId) }
+            .firstOrNull()
+    }
 }
