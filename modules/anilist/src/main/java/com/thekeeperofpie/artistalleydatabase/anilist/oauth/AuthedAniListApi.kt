@@ -110,6 +110,7 @@ class AuthedAniListApi(
         episodesGreater: Int?,
         episodesLesser: Int?,
         sourcesIn: List<MediaSource>?,
+        minimumTagRank: Int?,
     ): ApolloResponse<MediaAdvancedSearchQuery.Data> {
         val sortParam =
             if (query.isEmpty() && sort?.size == 1 && sort.contains(MediaSort.SEARCH_MATCH)) {
@@ -144,7 +145,8 @@ class AuthedAniListApi(
                 averageScoreLesser = Optional.presentIfNotNull(averageScoreLesser),
                 episodesGreater = Optional.presentIfNotNull(episodesGreater),
                 episodesLesser = Optional.presentIfNotNull(episodesLesser),
-                sourceIn = Optional.presentIfNotNull(sourcesIn?.ifEmpty { null })
+                sourceIn = Optional.presentIfNotNull(sourcesIn?.ifEmpty { null }),
+                minimumTagRank = Optional.presentIfNotNull(minimumTagRank),
             )
         )
     }

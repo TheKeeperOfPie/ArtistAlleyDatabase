@@ -51,6 +51,7 @@ class AnimeSearchViewModel @Inject constructor(aniListApi: AuthedAniListApi) : V
                 filterController.sortAscending,
                 filterController.genres,
                 filterController.tagsByCategory,
+                filterController.tagRank(),
                 filterController.statuses,
                 filterController.formats,
                 filterController.showAdult,

@@ -98,6 +98,7 @@ class AnimeMediaSearchPagingSource(
             sourcesIn = refreshParams.sources
                 .filter { it.state == IncludeExcludeState.INCLUDE }
                 .map { it.value },
+            minimumTagRank = refreshParams.tagRank,
         )
 
         val data = result.dataAssertNoErrors
@@ -131,6 +132,7 @@ class AnimeMediaSearchPagingSource(
         val sortAscending: Boolean,
         val genres: List<MediaFilterEntry<String>>,
         val tagsByCategory: Map<String, AnimeMediaFilterController.TagSection>,
+        val tagRank: Int?,
         val statuses: List<AnimeMediaFilterController.StatusEntry>,
         val formats: List<AnimeMediaFilterController.FormatEntry>,
         val showAdult: Boolean,

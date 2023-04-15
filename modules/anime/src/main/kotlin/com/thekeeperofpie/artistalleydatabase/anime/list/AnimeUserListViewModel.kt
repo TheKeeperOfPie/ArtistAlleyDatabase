@@ -71,6 +71,7 @@ class AnimeUserListViewModel @Inject constructor(aniListApi: AuthedAniListApi) :
                             baseResponse,
                             filterController.genres,
                             filterController.tagsByCategory,
+                            filterController.tagRank(),
                             filterController.statuses,
                             filterController.formats,
                             filterController.averageScoreRange,
@@ -145,6 +146,18 @@ class AnimeUserListViewModel @Inject constructor(aniListApi: AuthedAniListApi) :
             transform = { it.media.genres?.filterNotNull().orEmpty() }
         )
 
+        val tagRank = filterParams.tagRank
+        val transformIncludes: ((AnimeUserListScreen.Entry.Item) -> List<String>)? =
+            if (tagRank == null) null else {
+                {
+                    it.media.tags
+                        ?.filterNotNull()
+                        ?.filter { it.rank?.let { it >= tagRank } == true }
+                        ?.map { it.id.toString() }
+                        .orEmpty()
+                }
+            }
+
         filteredEntries = IncludeExcludeState.applyFiltering(
             filterParams.tagsByCategory.values.flatMap {
                 when (it) {
@@ -155,7 +168,8 @@ class AnimeUserListViewModel @Inject constructor(aniListApi: AuthedAniListApi) :
             filteredEntries,
             state = { it.state },
             key = { it.value.id.toString() },
-            transform = { it.media.tags?.filterNotNull()?.map { it.id.toString() }.orEmpty() }
+            transform = { it.media.tags?.filterNotNull()?.map { it.id.toString() }.orEmpty() },
+            transformIncludes = transformIncludes,
         )
 
         if (!filterParams.showAdult) {
@@ -317,6 +331,7 @@ class AnimeUserListViewModel @Inject constructor(aniListApi: AuthedAniListApi) :
         val mediaListCollection: UserMediaListQuery.Data.MediaListCollection?,
         val genres: List<MediaFilterEntry<String>>,
         val tagsByCategory: Map<String, AnimeMediaFilterController.TagSection>,
+        val tagRank: Int?,
         val statuses: List<AnimeMediaFilterController.StatusEntry>,
         val formats: List<AnimeMediaFilterController.FormatEntry>,
         val averageScoreRange: AnimeMediaFilterController.RangeData,

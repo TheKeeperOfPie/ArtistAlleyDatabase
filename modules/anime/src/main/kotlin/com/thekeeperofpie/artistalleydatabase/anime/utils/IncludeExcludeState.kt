@@ -11,6 +11,7 @@ enum class IncludeExcludeState {
             state: (StateHolder) -> IncludeExcludeState,
             key: (StateHolder) -> Comparison,
             transform: (Base) -> List<Comparison>,
+            transformIncludes: ((Base) -> List<Comparison>)? = null,
         ): List<Base> {
             val includes = filters.filter { state(it) == INCLUDE }.map(key)
             val excludes = filters.filter { state(it) == EXCLUDE }.map(key)
@@ -22,7 +23,8 @@ enum class IncludeExcludeState {
                 val passExcludes = excludes.isEmpty() || target.none(excludes::contains)
                 if (!passExcludes) return@filter false
 
-                includes.isEmpty() || target.containsAll(includes)
+                val targetIncludes = transformIncludes?.invoke(it) ?: target
+                includes.isEmpty() || targetIncludes.containsAll(includes)
             }
         }
     }

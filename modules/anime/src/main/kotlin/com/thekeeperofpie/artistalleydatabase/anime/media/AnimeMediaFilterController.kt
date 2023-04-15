@@ -4,6 +4,9 @@ import android.util.Log
 import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.anilist.MediaTagsQuery.Data.MediaTagCollection
@@ -48,6 +51,7 @@ class AnimeMediaFilterController<T>(
 
     val genres = MutableStateFlow(emptyList<GenreEntry>())
     val tagsByCategory = MutableStateFlow(emptyMap<String, TagSection>())
+    private val tagRank = MutableStateFlow("0")
     val statuses = MutableStateFlow(StatusEntry.statuses())
     val formats = MutableStateFlow(FormatEntry.formats())
     val showAdult = MutableStateFlow(false)
@@ -59,6 +63,20 @@ class AnimeMediaFilterController<T>(
 
     private val airingDate = MutableStateFlow(AiringDate.Basic() to AiringDate.Advanced())
     private val airingDateIsAdvanced = MutableStateFlow(false)
+
+    // These are kept separated so that recomposition can happen per-section
+    private var sortExpanded by mutableStateOf(false)
+    private var statusExpanded by mutableStateOf(false)
+    private var formatExpanded by mutableStateOf(false)
+    private var genresExpanded by mutableStateOf(false)
+    private var tagsExpanded by mutableStateOf(false)
+    private var airingDateExpanded by mutableStateOf(false)
+    private var onListExpanded by mutableStateOf(false)
+    private var averageScoreExpanded by mutableStateOf(false)
+    private var episodesExpanded by mutableStateOf(false)
+    private var sourceExpanded by mutableStateOf(false)
+
+    private var showExpandAll by mutableStateOf(true)
 
     private lateinit var initialParams: InitialParams
 
@@ -145,6 +163,36 @@ class AnimeMediaFilterController<T>(
         .map { (airingDatePair, advanced) ->
             if (advanced) airingDatePair.second else airingDatePair.first
         }
+
+    fun tagRank() = tagRank.map { it.toIntOrNull()?.coerceIn(0, 100) }
+
+    private fun getExpanded(section: Section) = when (section) {
+        Section.SORT -> sortExpanded
+        Section.STATUS -> statusExpanded
+        Section.FORMAT -> formatExpanded
+        Section.GENRES -> genresExpanded
+        Section.TAGS -> tagsExpanded
+        Section.AIRING_DATE -> airingDateExpanded
+        Section.ON_LIST -> onListExpanded
+        Section.AVERAGE_SCORE -> averageScoreExpanded
+        Section.EPISODES -> episodesExpanded
+        Section.SOURCE -> sourceExpanded
+    }
+
+    private fun setExpanded(section: Section, expanded: Boolean) = when (section) {
+        Section.SORT -> sortExpanded = expanded
+        Section.STATUS -> statusExpanded = expanded
+        Section.FORMAT -> formatExpanded = expanded
+        Section.GENRES -> genresExpanded = expanded
+        Section.TAGS -> tagsExpanded = expanded
+        Section.AIRING_DATE -> airingDateExpanded = expanded
+        Section.ON_LIST -> onListExpanded = expanded
+        Section.AVERAGE_SCORE -> averageScoreExpanded = expanded
+        Section.EPISODES -> episodesExpanded = expanded
+        Section.SOURCE -> sourceExpanded = expanded
+    }.also {
+        showExpandAll = Section.values().none(::getExpanded)
+    }
 
     /**
      * Categories are provided from the API in the form of "Parent-Child". This un-flattens the
@@ -328,7 +376,15 @@ class AnimeMediaFilterController<T>(
             }
     }
 
+    private fun onClickExpandAll() {
+        val expandAll = showExpandAll
+        Section.values().forEach { setExpanded(it, expandAll) }
+        showExpandAll = !expandAll
+    }
+
     fun data() = Data(
+        expanded = ::getExpanded,
+        setExpanded = ::setExpanded,
         sortOptions = { sortOptions.collectAsState().value },
         onSortClicked = ::onSortClicked,
         sortAscending = { sortAscending.collectAsState().value },
@@ -341,6 +397,8 @@ class AnimeMediaFilterController<T>(
         onGenreClicked = ::onGenreClicked,
         tags = { tagsByCategory.collectAsState().value },
         onTagClicked = ::onTagClicked,
+        tagRank = { tagRank.collectAsState().value },
+        onTagRankChanged = { tagRank.value = it },
         airingDate = {
             airingDate.collectAsState().value.let {
                 if (airingDateIsAdvanced.collectAsState().value) it.second else it.first
@@ -361,6 +419,8 @@ class AnimeMediaFilterController<T>(
         onSourceClicked = ::onSourceClicked,
         showAdult = { showAdult.collectAsState().value },
         onShowAdultToggled = { showAdult.value = it },
+        showExpandAll = { showExpandAll },
+        onClickExpandAll = ::onClickExpandAll,
     )
 
     data class InitialParams(
@@ -369,6 +429,8 @@ class AnimeMediaFilterController<T>(
     )
 
     class Data<SortOption : Data.SortOption>(
+        val expanded: (Section) -> Boolean = { false },
+        val setExpanded: (Section, Boolean) -> Unit = { _, _ -> },
         val sortOptions: @Composable () -> List<SortEntry<SortOption>>,
         val onSortClicked: (SortOption) -> Unit = {},
         val sortAscending: @Composable () -> Boolean = { false },
@@ -381,6 +443,8 @@ class AnimeMediaFilterController<T>(
         val onGenreClicked: (String) -> Unit = {},
         val tags: @Composable () -> Map<String, TagSection> = { emptyMap() },
         val onTagClicked: (String) -> Unit = {},
+        val tagRank: @Composable () -> String = { "" },
+        val onTagRankChanged: (String) -> Unit = {},
         val airingDate: @Composable () -> AiringDate = { AiringDate.Basic() },
         val onSeasonChanged: (MediaSeason?) -> Unit = {},
         val onSeasonYearChanged: (String) -> Unit = {},
@@ -397,6 +461,8 @@ class AnimeMediaFilterController<T>(
         val onSourceClicked: (MediaSource) -> Unit = {},
         val showAdult: @Composable () -> Boolean = { false },
         val onShowAdultToggled: (Boolean) -> Unit = {},
+        val showExpandAll: () -> Boolean = { true },
+        val onClickExpandAll: () -> Unit = {},
     ) {
         companion object {
             inline fun <reified T> forPreview(): Data<T>
@@ -446,6 +512,19 @@ class AnimeMediaFilterController<T>(
             @get:StringRes
             val textRes: Int
         }
+    }
+
+    enum class Section {
+        SORT,
+        STATUS,
+        FORMAT,
+        GENRES,
+        TAGS,
+        AIRING_DATE,
+        ON_LIST,
+        AVERAGE_SCORE,
+        EPISODES,
+        SOURCE,
     }
 
     data class SortEntry<T : Data.SortOption>(

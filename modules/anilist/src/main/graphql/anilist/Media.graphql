@@ -47,6 +47,7 @@ fragment AniListListRowMedia on Media {
         isAdult
         isGeneralSpoiler
         isMediaSpoiler
+        rank
     }
     startDate {
         year
@@ -62,7 +63,7 @@ query MediaAdvancedSearch($page: Int, $perPage: Int, $search: String, $type: Med
     $formatIn: [MediaFormat], $formatNotIn: [MediaFormat], $isAdult: Boolean, $onList: Boolean,
     $season: MediaSeason, $seasonYear: Int, $startDateGreater: FuzzyDateInt,
     $startDateLesser: FuzzyDateInt, $averageScoreGreater: Int, $averageScoreLesser: Int,
-    $episodesGreater: Int, $episodesLesser: Int, $sourceIn: [MediaSource]) {
+    $episodesGreater: Int, $episodesLesser: Int, $sourceIn: [MediaSource], $minimumTagRank: Int) {
     Page(page: $page, perPage: $perPage) @nonnull {
         pageInfo @nonnull {
             hasNextPage
@@ -75,7 +76,8 @@ query MediaAdvancedSearch($page: Int, $perPage: Int, $search: String, $type: Med
             season: $season, seasonYear: $seasonYear, startDate_greater: $startDateGreater,
             startDate_lesser: $startDateLesser, averageScore_greater: $averageScoreGreater,
             averageScore_lesser: $averageScoreLesser, episodes_greater: $episodesGreater,
-            episodes_lesser: $episodesLesser, source_in: $sourceIn) @nonnull {
+            episodes_lesser: $episodesLesser, source_in: $sourceIn,
+            minimumTagRank: $minimumTagRank) @nonnull {
             ...AniListListRowMedia
         }
     }

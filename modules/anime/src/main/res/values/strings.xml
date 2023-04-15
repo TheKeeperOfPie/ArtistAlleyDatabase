@@ -158,4 +158,7 @@
     <string name="anime_media_filter_source_visual_novel">Visual novel</string>
     <string name="anime_media_filter_source_web_novel">Web novel</string>
     <string name="anime_media_filter_source_unknown">Unknown</string>
+    <string name="anime_media_filter_tag_rank_label">Minimum rank</string>
+
+    <string name="anime_media_filter_expand_all_content_description">Expand/collapse all sections</string>
 </resources>

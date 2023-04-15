@@ -3,12 +3,14 @@ package com.thekeeperofpie.artistalleydatabase.anime.media
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -36,6 +38,9 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.RemoveCircleOutline
+import androidx.compose.material.icons.filled.UnfoldLess
+import androidx.compose.material.icons.filled.UnfoldMore
+import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
@@ -50,6 +55,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.RangeSlider
 import androidx.compose.material3.SheetValue
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
@@ -68,6 +74,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -111,9 +118,36 @@ object AnimeMediaFilterOptionsBottomPanel {
 
         BottomSheetScaffold(
             scaffoldState = scaffoldState,
-            sheetContent = {
-                OptionsPanel(filterData = filterData)
+            sheetPeekHeight = 48.dp,
+            sheetDragHandle = {
+                Box(Modifier.fillMaxWidth()) {
+                    BottomSheetDefaults.DragHandle(modifier = Modifier.align(Alignment.Center))
+
+                    val targetValue = scaffoldState.bottomSheetState.targetValue
+                    val expandAllAlpha by animateFloatAsState(
+                        targetValue = if (targetValue == SheetValue.Expanded) 1f else 0f,
+                        label = "Anime filter expand all alpha",
+                    )
+
+                    IconButton(
+                        onClick = filterData().onClickExpandAll,
+                        modifier = Modifier.align(Alignment.CenterEnd)
+                            .alpha(expandAllAlpha)
+                    ) {
+                        Icon(
+                            imageVector = if (filterData().showExpandAll()) {
+                                Icons.Filled.UnfoldMore
+                            } else {
+                                Icons.Filled.UnfoldLess
+                            },
+                            contentDescription = stringResource(
+                                R.string.anime_media_filter_expand_all_content_description
+                            ),
+                        )
+                    }
+                }
             },
+            sheetContent = { OptionsPanel(filterData = filterData) },
             sheetTonalElevation = 4.dp,
             sheetShadowElevation = 4.dp,
             topBar = topBar,
@@ -147,9 +181,19 @@ object AnimeMediaFilterOptionsBottomPanel {
 
             Divider()
 
-            SortSection(data = filterData)
+            SortSection(
+                expanded = { data.expanded(AnimeMediaFilterController.Section.STATUS) },
+                onExpandedChanged = {
+                    data.setExpanded(AnimeMediaFilterController.Section.STATUS, it)
+                },
+                data = filterData,
+            )
 
             FilterSection(
+                expanded = { data.expanded(AnimeMediaFilterController.Section.STATUS) },
+                onExpandedChanged = {
+                    data.setExpanded(AnimeMediaFilterController.Section.STATUS, it)
+                },
                 entries = { data.statuses() },
                 onEntryClicked = { data.onStatusClicked(it.value) },
                 titleRes = R.string.anime_media_filter_status_label,
@@ -159,6 +203,10 @@ object AnimeMediaFilterOptionsBottomPanel {
             )
 
             FilterSection(
+                expanded = { data.expanded(AnimeMediaFilterController.Section.FORMAT) },
+                onExpandedChanged = {
+                    data.setExpanded(AnimeMediaFilterController.Section.FORMAT, it)
+                },
                 entries = { data.formats() },
                 onEntryClicked = { data.onFormatClicked(it.value) },
                 titleRes = R.string.anime_media_filter_format_label,
@@ -168,6 +216,10 @@ object AnimeMediaFilterOptionsBottomPanel {
             )
 
             FilterSection(
+                expanded = { data.expanded(AnimeMediaFilterController.Section.GENRES) },
+                onExpandedChanged = {
+                    data.setExpanded(AnimeMediaFilterController.Section.GENRES, it)
+                },
                 entries = { data.genres() },
                 onEntryClicked = { data.onGenreClicked(it.value) },
                 titleRes = R.string.anime_media_filter_genre_label,
@@ -177,11 +229,21 @@ object AnimeMediaFilterOptionsBottomPanel {
             )
 
             TagSection(
+                expanded = { data.expanded(AnimeMediaFilterController.Section.TAGS) },
+                onExpandedChanged = {
+                    data.setExpanded(AnimeMediaFilterController.Section.TAGS, it)
+                },
                 tags = { data.tags() },
                 onTagClicked = data.onTagClicked,
+                tagRank = { data.tagRank() },
+                onTagRankChanged = data.onTagRankChanged,
             )
 
             AiringDateSection(
+                expanded = { data.expanded(AnimeMediaFilterController.Section.AIRING_DATE) },
+                onExpandedChanged = {
+                    data.setExpanded(AnimeMediaFilterController.Section.AIRING_DATE, it)
+                },
                 data = { data.airingDate() },
                 onSeasonChanged = data.onSeasonChanged,
                 onSeasonYearChanged = data.onSeasonYearChanged,
@@ -192,16 +254,25 @@ object AnimeMediaFilterOptionsBottomPanel {
 
             if (data.onListEnabled()) {
                 FilterSection(
+                    expanded = { data.expanded(AnimeMediaFilterController.Section.ON_LIST) },
+                    onExpandedChanged = {
+                        data.setExpanded(AnimeMediaFilterController.Section.ON_LIST, it)
+                    },
                     entries = { data.onListOptions() },
                     onEntryClicked = { data.onOnListClicked(it) },
                     titleRes = R.string.anime_media_filter_on_list_label,
                     titleDropdownContentDescriptionRes = R.string.anime_media_filter_on_list_dropdown_content_description,
                     valueToText = { stringResource(it.textRes) },
                     includeExcludeIconContentDescriptionRes = R.string.anime_media_filter_on_list_chip_state_content_description,
+                    showIcons = false,
                 )
             }
 
             RangeDataSection(
+                expanded = { data.expanded(AnimeMediaFilterController.Section.AVERAGE_SCORE) },
+                onExpandedChanged = {
+                    data.setExpanded(AnimeMediaFilterController.Section.AVERAGE_SCORE, it)
+                },
                 range = { data.averageScoreRange() },
                 onRangeChange = data.onAverageScoreChanged,
                 titleRes = R.string.anime_media_filter_average_score_label,
@@ -209,6 +280,10 @@ object AnimeMediaFilterOptionsBottomPanel {
             )
 
             RangeDataSection(
+                expanded = { data.expanded(AnimeMediaFilterController.Section.EPISODES) },
+                onExpandedChanged = {
+                    data.setExpanded(AnimeMediaFilterController.Section.EPISODES, it)
+                },
                 range = { data.episodesRange() },
                 onRangeChange = data.onEpisodesChanged,
                 titleRes = R.string.anime_media_filter_episodes_label,
@@ -216,12 +291,17 @@ object AnimeMediaFilterOptionsBottomPanel {
             )
 
             FilterSection(
+                expanded = { data.expanded(AnimeMediaFilterController.Section.SOURCE) },
+                onExpandedChanged = {
+                    data.setExpanded(AnimeMediaFilterController.Section.SOURCE, it)
+                },
                 entries = { data.sources() },
                 onEntryClicked = { data.onSourceClicked(it.value) },
                 titleRes = R.string.anime_media_filter_source_label,
                 titleDropdownContentDescriptionRes = R.string.anime_media_filter_source_expand_content_description,
                 valueToText = { stringResource(it.textRes) },
                 includeExcludeIconContentDescriptionRes = R.string.anime_media_filter_source_chip_state_content_description,
+                showIcons = false,
             )
 
             AdultSection(
@@ -283,19 +363,19 @@ object AnimeMediaFilterOptionsBottomPanel {
 
     @Composable
     private fun Section(
+        expanded: Boolean,
+        onExpandedChanged: (Boolean) -> Unit,
         @StringRes titleRes: Int,
         @StringRes titleDropdownContentDescriptionRes: Int,
         summaryText: (@Composable () -> String?)? = null,
         onSummaryClicked: () -> Unit = {},
-        defaultExpanded: Boolean = false,
-        content: @Composable (expanded: Boolean) -> Unit
+        content: @Composable () -> Unit
     ) {
-        var expanded by remember { mutableStateOf(defaultExpanded) }
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { expanded = !expanded }
+                .clickable { onExpandedChanged(!expanded) }
         ) {
             FlowRow(
                 verticalArrangement = Arrangement.Center,
@@ -314,7 +394,7 @@ object AnimeMediaFilterOptionsBottomPanel {
                             onClick = onSummaryClicked,
                             label = { Text(it) },
                             modifier = Modifier
-                                .padding(vertical = 4.dp)
+                                .padding(0.dp)
                                 .heightIn(min = 32.dp)
                         )
                     }
@@ -324,11 +404,11 @@ object AnimeMediaFilterOptionsBottomPanel {
             TrailingDropdownIconButton(
                 expanded = expanded,
                 contentDescription = stringResource(titleDropdownContentDescriptionRes),
-                onClick = { expanded = !expanded },
+                onClick = { onExpandedChanged(!expanded) },
             )
         }
 
-        content(expanded)
+        content()
 
         Divider()
     }
@@ -351,7 +431,7 @@ object AnimeMediaFilterOptionsBottomPanel {
                         wrapContentWidth()
                     }
                 }
-                .padding(vertical = 10.dp)
+                .padding(top = 8.dp, bottom = 8.dp, end = 8.dp)
                 .heightIn(min = 32.dp)
                 .wrapContentHeight(Alignment.CenterVertically)
                 .align(Alignment.CenterVertically)
@@ -360,20 +440,23 @@ object AnimeMediaFilterOptionsBottomPanel {
 
     @Composable
     private fun <Entry : MediaFilterEntry<*>> FilterSection(
+        expanded: () -> Boolean,
+        onExpandedChanged: (Boolean) -> Unit,
         entries: @Composable () -> List<Entry>,
         onEntryClicked: (Entry) -> Unit,
         @StringRes titleRes: Int,
         @StringRes titleDropdownContentDescriptionRes: Int,
         valueToText: @Composable (Entry) -> String,
         @StringRes includeExcludeIconContentDescriptionRes: Int,
-        defaultExpanded: Boolean = false,
+        showIcons: Boolean = true,
     ) {
-        var expanded by remember { mutableStateOf(defaultExpanded) }
+        @Suppress("NAME_SHADOWING")
+        val expanded = expanded()
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { expanded = !expanded }
+                .clickable { onExpandedChanged(!expanded) }
         ) {
             FlowRow(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -390,10 +473,14 @@ object AnimeMediaFilterOptionsBottomPanel {
                         selected = it.state != IncludeExcludeState.DEFAULT,
                         onClick = { onEntryClicked(it) },
                         label = { Text(valueToText(it)) },
-                        leadingIcon = {
-                            IncludeExcludeIcon(it, includeExcludeIconContentDescriptionRes)
+                        leadingIcon = if (!showIcons) null else {
+                            {
+                                IncludeExcludeIcon(it, includeExcludeIconContentDescriptionRes)
+                            }
                         },
-                        modifier = Modifier.animateContentSize()
+                        modifier = Modifier
+                            .animateContentSize()
+                            .heightIn(min = 32.dp)
                     )
                 }
             }
@@ -401,7 +488,7 @@ object AnimeMediaFilterOptionsBottomPanel {
             TrailingDropdownIconButton(
                 expanded = expanded,
                 contentDescription = stringResource(titleDropdownContentDescriptionRes),
-                onClick = { expanded = !expanded },
+                onClick = { onExpandedChanged(!expanded) },
                 modifier = Modifier.align(Alignment.Top),
             )
         }
@@ -411,16 +498,20 @@ object AnimeMediaFilterOptionsBottomPanel {
 
     @Composable
     private fun <SortOption : AnimeMediaFilterController.Data.SortOption> SortSection(
+        expanded: () -> Boolean,
+        onExpandedChanged: (Boolean) -> Unit,
         data: () -> AnimeMediaFilterController.Data<SortOption>,
     ) {
         @Suppress("NAME_SHADOWING")
         val data = data()
-        var expanded by remember { mutableStateOf(false) }
+
+        @Suppress("NAME_SHADOWING")
+        val expanded = expanded()
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { expanded = !expanded }
+                .clickable { onExpandedChanged(!expanded) }
         ) {
             FlowRow(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -437,12 +528,6 @@ object AnimeMediaFilterOptionsBottomPanel {
                         selected = it.state != IncludeExcludeState.DEFAULT,
                         onClick = { data.onSortClicked(it.value) },
                         label = { Text(stringResource(it.value.textRes)) },
-                        leadingIcon = {
-                            IncludeExcludeIcon(
-                                it,
-                                R.string.anime_media_filter_sort_order_chip_state_content_description
-                            )
-                        },
                         modifier = Modifier.animateContentSize()
                     )
                 }
@@ -478,7 +563,7 @@ object AnimeMediaFilterOptionsBottomPanel {
             TrailingDropdownIconButton(
                 expanded = expanded,
                 contentDescription = stringResource(R.string.anime_media_filter_sort_content_description),
-                onClick = { expanded = !expanded },
+                onClick = { onExpandedChanged(!expanded) },
                 modifier = Modifier.align(Alignment.Top),
             )
         }
@@ -537,13 +622,30 @@ object AnimeMediaFilterOptionsBottomPanel {
 
     @Composable
     private fun TagSection(
+        expanded: () -> Boolean,
+        onExpandedChanged: (Boolean) -> Unit,
         tags: @Composable () -> Map<String, AnimeMediaFilterController.TagSection>,
-        onTagClicked: (String) -> Unit
+        onTagClicked: (String) -> Unit,
+        tagRank: @Composable () -> String,
+        onTagRankChanged: (String) -> Unit,
     ) {
+        @Suppress("NAME_SHADOWING")
+        val expanded = expanded()
         Section(
+            expanded = expanded,
+            onExpandedChanged = onExpandedChanged,
             titleRes = R.string.anime_media_filter_tag_label,
             titleDropdownContentDescriptionRes = R.string.anime_media_filter_tag_content_description,
-        ) { expanded ->
+            summaryText = {
+                @Suppress("NAME_SHADOWING")
+                when (val tagRank = tagRank().toIntOrNull()?.coerceIn(0, 100)) {
+                    null, 0 -> null
+                    100 -> "== 100"
+                    else -> "≥ $tagRank"
+                }
+            },
+            onSummaryClicked = { onTagRankChanged("") },
+        ) {
             Column(modifier = Modifier.animateContentSize()) {
                 @Suppress("NAME_SHADOWING")
                 val tags = tags()
@@ -573,8 +675,50 @@ object AnimeMediaFilterOptionsBottomPanel {
                         parentExpanded = expanded,
                         level = 0,
                         onTagClicked = onTagClicked,
-                        isLast = index == subcategoriesToShow.size - 1,
+                        showDivider = expanded || index != subcategoriesToShow.size - 1,
                     )
+                }
+
+                if (expanded) {
+                    Text(
+                        text = stringResource(R.string.anime_media_filter_tag_rank_label),
+                        style = MaterialTheme.typography.titleSmall,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 16.dp, top = 10.dp, end = 16.dp, bottom = 8.dp)
+                    )
+
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                    ) {
+                        @Suppress("NAME_SHADOWING")
+                        val tagRank = tagRank()
+                        Slider(
+                            value = tagRank.toIntOrNull()?.coerceIn(0, 100)?.toFloat() ?: 0f,
+                            valueRange = 0f..100f,
+                            steps = 100,
+                            onValueChange = { onTagRankChanged(it.roundToInt().toString()) },
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(horizontal = 4.dp),
+                        )
+
+                        CustomOutlinedTextField(
+                            value = tagRank,
+                            onValueChange = { onTagRankChanged(it) },
+                            textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
+                            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+                            contentPadding = OutlinedTextFieldDefaults.contentPadding(
+                                start = 12.dp,
+                                top = 8.dp,
+                                end = 12.dp,
+                                bottom = 8.dp
+                            ),
+                            modifier = Modifier.width(64.dp),
+                        )
+                    }
                 }
             }
         }
@@ -587,7 +731,7 @@ object AnimeMediaFilterOptionsBottomPanel {
         parentExpanded: Boolean,
         level: Int,
         onTagClicked: (String) -> Unit,
-        isLast: Boolean,
+        showDivider: Boolean,
     ) {
         var expanded by remember(name) { mutableStateOf(false) }
         val startPadding = 16.dp * level + 32.dp
@@ -658,12 +802,12 @@ object AnimeMediaFilterOptionsBottomPanel {
                     parentExpanded = parentExpanded && expanded,
                     level + 1,
                     onTagClicked,
-                    isLast = index == subcategoriesToShow.size - 1,
+                    showDivider = index != subcategoriesToShow.size - 1,
                 )
             }
         }
 
-        if (!isLast) {
+        if (showDivider) {
             Divider(modifier = Modifier.padding(start = dividerStartPadding))
         }
     }
@@ -706,6 +850,8 @@ object AnimeMediaFilterOptionsBottomPanel {
 
     @Composable
     private fun AiringDateSection(
+        expanded: () -> Boolean,
+        onExpandedChanged: (Boolean) -> Unit,
         data: @Composable () -> AnimeMediaFilterController.AiringDate,
         onSeasonChanged: (MediaSeason?) -> Unit,
         onSeasonYearChanged: (String) -> Unit,
@@ -714,8 +860,12 @@ object AnimeMediaFilterOptionsBottomPanel {
         onDateChange: (start: Boolean, Long?) -> Unit,
     ) {
         @Suppress("NAME_SHADOWING")
+        val expanded = expanded()
+        @Suppress("NAME_SHADOWING")
         val data = data()
         Section(
+            expanded = expanded,
+            onExpandedChanged = onExpandedChanged,
             titleRes = R.string.anime_media_filter_airing_date,
             titleDropdownContentDescriptionRes = R.string.anime_media_filter_airing_date_content_description,
             summaryText = {
@@ -764,7 +914,7 @@ object AnimeMediaFilterOptionsBottomPanel {
                     }
                 }
             },
-        ) { expanded ->
+        ) {
             AnimatedVisibility(
                 visible = expanded,
                 enter = expandVertically(),
@@ -1053,17 +1203,23 @@ object AnimeMediaFilterOptionsBottomPanel {
 
     @Composable
     private fun RangeDataSection(
+        expanded: () -> Boolean,
+        onExpandedChanged: (Boolean) -> Unit,
         range: @Composable () -> AnimeMediaFilterController.RangeData,
         onRangeChange: (String, String) -> Unit,
         @StringRes titleRes: Int,
         @StringRes titleDropdownContentDescriptionRes: Int,
     ) {
+        @Suppress("NAME_SHADOWING")
+        val expanded = expanded()
         Section(
+            expanded = expanded,
+            onExpandedChanged = onExpandedChanged,
             titleRes = titleRes,
             titleDropdownContentDescriptionRes = titleDropdownContentDescriptionRes,
             summaryText = { range().summaryText },
             onSummaryClicked = { onRangeChange("", "") },
-        ) { expanded ->
+        ) {
             AnimatedVisibility(
                 visible = expanded,
                 enter = expandVertically(),
