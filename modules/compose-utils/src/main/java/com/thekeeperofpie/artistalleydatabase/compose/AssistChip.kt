@@ -681,7 +681,7 @@ private val HoveredOutgoingSpec = TweenSpec<Dp>(
 )
 
 @Composable
-private fun ChipContent(
+internal fun ChipContent(
     label: @Composable () -> Unit,
     labelTextStyle: TextStyle,
     labelColor: Color,

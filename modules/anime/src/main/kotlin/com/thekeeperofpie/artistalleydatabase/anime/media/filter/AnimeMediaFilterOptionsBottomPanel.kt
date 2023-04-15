@@ -47,7 +47,6 @@ import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalTextStyle
@@ -91,6 +90,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.CustomOutlinedTextField
 import com.thekeeperofpie.artistalleydatabase.compose.ItemDropdown
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
 import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
+import com.thekeeperofpie.artistalleydatabase.compose.filterChipColors
 import java.time.LocalDate
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
@@ -106,6 +106,7 @@ object AnimeMediaFilterOptionsBottomPanel {
         modifier: Modifier = Modifier,
         topBar: @Composable () -> Unit = {},
         filterData: () -> AnimeMediaFilterController.Data<SortOption>,
+        onTagLongClicked: (String) -> Unit = {},
         errorRes: () -> Int? = { null },
         exception: () -> Exception? = { null },
         expandedForPreview: Boolean = false,
@@ -149,7 +150,12 @@ object AnimeMediaFilterOptionsBottomPanel {
                     }
                 }
             },
-            sheetContent = { OptionsPanel(filterData = filterData) },
+            sheetContent = {
+                OptionsPanel(
+                    filterData = filterData,
+                    onTagLongClicked = onTagLongClicked
+                )
+            },
             sheetTonalElevation = 4.dp,
             sheetShadowElevation = 4.dp,
             topBar = topBar,
@@ -171,6 +177,7 @@ object AnimeMediaFilterOptionsBottomPanel {
     @Composable
     private fun <SortOption : AnimeMediaFilterController.Data.SortOption> OptionsPanel(
         filterData: () -> AnimeMediaFilterController.Data<SortOption>,
+        onTagLongClicked: (String) -> Unit,
     ) {
         var airingDateShown by remember { mutableStateOf<Boolean?>(null) }
         Column(
@@ -237,6 +244,7 @@ object AnimeMediaFilterOptionsBottomPanel {
                 },
                 tags = { data.tags() },
                 onTagClicked = data.onTagClicked,
+                onTagLongClicked = onTagLongClicked,
                 tagRank = { data.tagRank() },
                 onTagRankChanged = data.onTagRankChanged,
             )
@@ -635,6 +643,7 @@ object AnimeMediaFilterOptionsBottomPanel {
         onExpandedChanged: (Boolean) -> Unit,
         tags: @Composable () -> Map<String, AnimeMediaFilterController.TagSection>,
         onTagClicked: (String) -> Unit,
+        onTagLongClicked: (String) -> Unit,
         tagRank: @Composable () -> String,
         onTagRankChanged: (String) -> Unit,
     ) {
@@ -666,6 +675,7 @@ object AnimeMediaFilterOptionsBottomPanel {
                         level = 0,
                         parentExpanded = expanded,
                         onTagClicked = onTagClicked,
+                        onTagLongClicked = onTagLongClicked,
                     )
                 }
 
@@ -684,6 +694,7 @@ object AnimeMediaFilterOptionsBottomPanel {
                         parentExpanded = expanded,
                         level = 0,
                         onTagClicked = onTagClicked,
+                        onTagLongClicked = onTagLongClicked,
                         showDivider = expanded || index != subcategoriesToShow.size - 1,
                     )
                 }
@@ -740,6 +751,7 @@ object AnimeMediaFilterOptionsBottomPanel {
         parentExpanded: Boolean,
         level: Int,
         onTagClicked: (String) -> Unit,
+        onTagLongClicked: (String) -> Unit,
         showDivider: Boolean,
     ) {
         var expanded by remember(name) { mutableStateOf(false) }
@@ -801,7 +813,13 @@ object AnimeMediaFilterOptionsBottomPanel {
                 .animateContentSize()
         ) {
             if (tagsToShow.isNotEmpty()) {
-                TagChips(tagsToShow, parentExpanded = expanded, level, onTagClicked)
+                TagChips(
+                    tagsToShow,
+                    parentExpanded = expanded,
+                    level,
+                    onTagClicked,
+                    onTagLongClicked
+                )
             }
 
             subcategoriesToShow.forEachIndexed { index, section ->
@@ -811,6 +829,7 @@ object AnimeMediaFilterOptionsBottomPanel {
                     parentExpanded = parentExpanded && expanded,
                     level + 1,
                     onTagClicked,
+                    onTagLongClicked,
                     showDivider = index != subcategoriesToShow.size - 1,
                 )
             }
@@ -826,7 +845,8 @@ object AnimeMediaFilterOptionsBottomPanel {
         tags: List<AnimeMediaFilterController.TagSection.Tag>,
         parentExpanded: Boolean,
         level: Int,
-        onTagClicked: (String) -> Unit
+        onTagClicked: (String) -> Unit,
+        onTagLongClicked: (String) -> Unit,
     ) {
         FlowRow(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -837,14 +857,16 @@ object AnimeMediaFilterOptionsBottomPanel {
         ) {
             tags.forEach {
                 if (!parentExpanded && it.state == IncludeExcludeState.DEFAULT) return@forEach
-                FilterChip(
+                com.thekeeperofpie.artistalleydatabase.compose.FilterChip(
                     selected = it.state != IncludeExcludeState.DEFAULT,
                     onClick = { onTagClicked(it.id) },
+                    onLongClickLabel = stringResource(
+                        R.string.anime_media_tag_long_click_content_description
+                    ),
+                    onLongClick = { onTagLongClicked(it.id) },
                     enabled = it.clickable,
                     label = { AutoHeightText(it.value.name) },
-                    colors = FilterChipDefaults.filterChipColors(
-                        containerColor = it.containerColor
-                    ),
+                    colors = filterChipColors(containerColor = it.containerColor),
                     leadingIcon = {
                         IncludeExcludeIcon(
                             it,
@@ -870,6 +892,7 @@ object AnimeMediaFilterOptionsBottomPanel {
     ) {
         @Suppress("NAME_SHADOWING")
         val expanded = expanded()
+
         @Suppress("NAME_SHADOWING")
         val data = data()
         Section(

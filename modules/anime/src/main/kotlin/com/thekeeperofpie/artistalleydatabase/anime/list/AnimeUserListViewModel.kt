@@ -123,6 +123,7 @@ class AnimeUserListViewModel @Inject constructor(
     }
 
     fun onTagLongClick(tagId: String) {
+        // TODO: This doesn't work for tags which are filtered out based on filter options
         tagShown = filterController.tagsByCategory.value.values
             .asSequence()
             .mapNotNull { it.findTag(tagId) }

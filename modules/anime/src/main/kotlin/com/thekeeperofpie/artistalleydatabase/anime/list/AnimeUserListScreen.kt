@@ -51,6 +51,7 @@ object AnimeUserListScreen {
                 )
             },
             filterData = filterData,
+            onTagLongClicked = onTagLongClick,
         ) {
             @Suppress("NAME_SHADOWING")
             val content = content()
