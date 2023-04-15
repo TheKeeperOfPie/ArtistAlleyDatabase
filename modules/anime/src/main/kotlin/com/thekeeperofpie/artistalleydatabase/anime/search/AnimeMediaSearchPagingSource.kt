@@ -95,6 +95,9 @@ class AnimeMediaSearchPagingSource(
             // Episode greater is not inclusive, offset by -1 to ensure correct results
             episodesGreater = refreshParams.episodesRange.apiStart?.let { it.coerceAtLeast(1) - 1 },
             episodesLesser = refreshParams.episodesRange.apiEnd,
+            sourcesIn = refreshParams.sources
+                .filter { it.state == IncludeExcludeState.INCLUDE }
+                .map { it.value },
         )
 
         val data = result.dataAssertNoErrors
@@ -135,6 +138,7 @@ class AnimeMediaSearchPagingSource(
         val averageScoreRange: AnimeMediaFilterController.RangeData,
         val episodesRange: AnimeMediaFilterController.RangeData,
         val airingDate: AnimeMediaFilterController.AiringDate,
+        val sources: List<AnimeMediaFilterController.SourceEntry>,
     ) {
         fun sortApiValue() = sortOptions.filter { it.state == IncludeExcludeState.INCLUDE }
             .map { it.value.toApiValue(sortAscending) }

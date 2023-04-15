@@ -14,12 +14,15 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
@@ -212,6 +215,15 @@ object AnimeMediaFilterOptionsBottomPanel {
                 titleDropdownContentDescriptionRes = R.string.anime_media_filter_episodes_expand_content_description,
             )
 
+            FilterSection(
+                entries = { data.sources() },
+                onEntryClicked = { data.onSourceClicked(it.value) },
+                titleRes = R.string.anime_media_filter_source_label,
+                titleDropdownContentDescriptionRes = R.string.anime_media_filter_source_expand_content_description,
+                valueToText = { stringResource(it.textRes) },
+                includeExcludeIconContentDescriptionRes = R.string.anime_media_filter_source_chip_state_content_description,
+            )
+
             AdultSection(
                 showAdult = { data.showAdult() },
                 onShowAdultToggled = data.onShowAdultToggled,
@@ -274,6 +286,7 @@ object AnimeMediaFilterOptionsBottomPanel {
         @StringRes titleRes: Int,
         @StringRes titleDropdownContentDescriptionRes: Int,
         summaryText: (@Composable () -> String?)? = null,
+        onSummaryClicked: () -> Unit = {},
         defaultExpanded: Boolean = false,
         content: @Composable (expanded: Boolean) -> Unit
     ) {
@@ -284,28 +297,29 @@ object AnimeMediaFilterOptionsBottomPanel {
                 .fillMaxWidth()
                 .clickable { expanded = !expanded }
         ) {
-            Text(
-                text = stringResource(titleRes),
-                style = MaterialTheme.typography.titleMedium,
+            FlowRow(
+                verticalArrangement = Arrangement.Center,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier
-                    .padding(horizontal = 16.dp, vertical = 10.dp)
-                    .wrapContentWidth()
-            )
+                    .weight(1f)
+                    .padding(start = 16.dp)
+                    .animateContentSize()
+            ) {
+                SectionHeaderText(expanded, titleRes)
 
-            if (!expanded) {
-                summaryText?.invoke()?.let {
-                    Text(
-                        text = it,
-                        style = MaterialTheme.typography.titleSmall,
-                        modifier = Modifier
-                            .padding(vertical = 10.dp)
-                            .align(Alignment.CenterVertically)
-                            .wrapContentWidth()
-                    )
+                if (!expanded) {
+                    summaryText?.invoke()?.let {
+                        FilterChip(
+                            selected = true,
+                            onClick = onSummaryClicked,
+                            label = { Text(it) },
+                            modifier = Modifier
+                                .padding(vertical = 4.dp)
+                                .heightIn(min = 32.dp)
+                        )
+                    }
                 }
             }
-
-            Spacer(Modifier.weight(1f))
 
             TrailingDropdownIconButton(
                 expanded = expanded,
@@ -317,6 +331,31 @@ object AnimeMediaFilterOptionsBottomPanel {
         content(expanded)
 
         Divider()
+    }
+
+    @Composable
+    private fun RowScope.SectionHeaderText(
+        expanded: Boolean,
+        @StringRes titleRes: Int,
+    ) {
+        Text(
+            // Use a zero width space to invalidate the Composable, or otherwise the width
+            // will not change in response to expanded. This might be a bug in Compose.
+            text = stringResource(titleRes) + "\u200B".takeIf { expanded }.orEmpty(),
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier
+                .run {
+                    if (expanded) {
+                        fillMaxWidth()
+                    } else {
+                        wrapContentWidth()
+                    }
+                }
+                .padding(vertical = 10.dp)
+                .heightIn(min = 32.dp)
+                .wrapContentHeight(Alignment.CenterVertically)
+                .align(Alignment.CenterVertically)
+        )
     }
 
     @Composable
@@ -343,22 +382,7 @@ object AnimeMediaFilterOptionsBottomPanel {
                     .padding(start = 16.dp)
                     .animateContentSize()
             ) {
-                Text(
-                    // Use a zero width space to invalidate the Composable, or otherwise the width
-                    // will not change in response to expanded. This might be a bug in Compose.
-                    text = stringResource(titleRes) + "\u200B".takeIf { expanded }.orEmpty(),
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier
-                        .run {
-                            if (expanded) {
-                                fillMaxWidth()
-                            } else {
-                                wrapContentWidth()
-                            }
-                        }
-                        .padding(vertical = 10.dp)
-                        .align(Alignment.CenterVertically)
-                )
+                SectionHeaderText(expanded, titleRes)
 
                 entries().forEach {
                     if (!expanded && it.state == IncludeExcludeState.DEFAULT) return@forEach
@@ -405,23 +429,7 @@ object AnimeMediaFilterOptionsBottomPanel {
                     .padding(start = 16.dp)
                     .animateContentSize()
             ) {
-                Text(
-                    // Use a zero width space to invalidate the Composable, or otherwise the width
-                    // will not change in response to expanded. This might be a bug in Compose.
-                    text = stringResource(R.string.anime_media_filter_sort_label) + "\u200B".takeIf { expanded }
-                        .orEmpty(),
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier
-                        .run {
-                            if (expanded) {
-                                fillMaxWidth()
-                            } else {
-                                wrapContentWidth()
-                            }
-                        }
-                        .padding(vertical = 10.dp)
-                        .align(Alignment.CenterVertically)
-                )
+                SectionHeaderText(expanded, R.string.anime_media_filter_sort_label)
 
                 data.sortOptions().forEach {
                     if (!expanded && it.state == IncludeExcludeState.DEFAULT) return@forEach
@@ -705,12 +713,13 @@ object AnimeMediaFilterOptionsBottomPanel {
         onRequestDatePicker: (Boolean) -> Unit,
         onDateChange: (start: Boolean, Long?) -> Unit,
     ) {
+        @Suppress("NAME_SHADOWING")
+        val data = data()
         Section(
             titleRes = R.string.anime_media_filter_airing_date,
             titleDropdownContentDescriptionRes = R.string.anime_media_filter_airing_date_content_description,
             summaryText = {
-                @Suppress("NAME_SHADOWING")
-                when (val data = data()) {
+                when (data) {
                     is AnimeMediaFilterController.AiringDate.Basic -> {
                         val season = data.season
                         val seasonYear = data.seasonYear.toIntOrNull()
@@ -729,14 +738,32 @@ object AnimeMediaFilterOptionsBottomPanel {
                             data.endDate?.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT))
 
                         when {
-                            startDate != null && endDate != null -> "$startDate - $endDate"
-                            startDate != null -> startDate
-                            endDate != null -> endDate
+                            startDate != null && endDate != null -> {
+                                if (data.startDate == data.endDate) {
+                                    startDate
+                                } else {
+                                    "$startDate - $endDate"
+                                }
+                            }
+                            startDate != null -> "≥ $startDate"
+                            endDate != null -> "≤ $endDate"
                             else -> null
                         }
                     }
                 }
-            }
+            },
+            onSummaryClicked = {
+                when (data) {
+                    is AnimeMediaFilterController.AiringDate.Basic -> {
+                        onSeasonChanged(null)
+                        onSeasonYearChanged("")
+                    }
+                    is AnimeMediaFilterController.AiringDate.Advanced -> {
+                        onDateChange(true, null)
+                        onDateChange(false, null)
+                    }
+                }
+            },
         ) { expanded ->
             AnimatedVisibility(
                 visible = expanded,
@@ -1035,6 +1062,7 @@ object AnimeMediaFilterOptionsBottomPanel {
             titleRes = titleRes,
             titleDropdownContentDescriptionRes = titleDropdownContentDescriptionRes,
             summaryText = { range().summaryText },
+            onSummaryClicked = { onRangeChange("", "") },
         ) { expanded ->
             AnimatedVisibility(
                 visible = expanded,

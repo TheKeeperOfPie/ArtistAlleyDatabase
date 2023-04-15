@@ -9,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import com.anilist.MediaTagsQuery.Data.MediaTagCollection
 import com.anilist.type.MediaFormat
 import com.anilist.type.MediaSeason
+import com.anilist.type.MediaSource
 import com.anilist.type.MediaStatus
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.mapLatestNotNull
@@ -54,6 +55,7 @@ class AnimeMediaFilterController<T>(
     val onListOptions = MutableStateFlow(OnListOption.options())
     val averageScoreRange = MutableStateFlow(RangeData(100, hardMax = true))
     val episodesRange = MutableStateFlow(RangeData(151))
+    val sources = MutableStateFlow(SourceEntry.sources())
 
     private val airingDate = MutableStateFlow(AiringDate.Basic() to AiringDate.Advanced())
     private val airingDateIsAdvanced = MutableStateFlow(false)
@@ -310,6 +312,22 @@ class AnimeMediaFilterController<T>(
         )
     }
 
+    private fun onSourceClicked(source: MediaSource) {
+        sources.value = sources.value.toMutableList()
+            .apply {
+                replaceAll {
+                    if (it.value == source) {
+                        val newState = if (it.state != IncludeExcludeState.INCLUDE) {
+                            IncludeExcludeState.INCLUDE
+                        } else {
+                            IncludeExcludeState.DEFAULT
+                        }
+                        it.copy(state = newState)
+                    } else it
+                }
+            }
+    }
+
     fun data() = Data(
         sortOptions = { sortOptions.collectAsState().value },
         onSortClicked = ::onSortClicked,
@@ -339,6 +357,8 @@ class AnimeMediaFilterController<T>(
         onAverageScoreChanged = ::onAverageScoreChanged,
         episodesRange = { episodesRange.collectAsState().value },
         onEpisodesChanged = ::onEpisodesChanged,
+        sources = { sources.collectAsState().value },
+        onSourceClicked = ::onSourceClicked,
         showAdult = { showAdult.collectAsState().value },
         onShowAdultToggled = { showAdult.value = it },
     )
@@ -373,6 +393,8 @@ class AnimeMediaFilterController<T>(
         val onAverageScoreChanged: (start: String, end: String) -> Unit = { _, _ -> },
         val episodesRange: @Composable () -> RangeData = { RangeData(151) },
         val onEpisodesChanged: (start: String, end: String) -> Unit = { _, _ -> },
+        val sources: @Composable () -> List<SourceEntry> = { emptyList() },
+        val onSourceClicked: (MediaSource) -> Unit = {},
         val showAdult: @Composable () -> Boolean = { false },
         val onShowAdultToggled: (Boolean) -> Unit = {},
     ) {
@@ -640,14 +662,14 @@ class AnimeMediaFilterController<T>(
             if (startInt == endInt) {
                 startInt.toString()
             } else if (endInt == maxValue && hardMax) {
-                "> $startInt"
+                "≥ $startInt"
             } else {
                 "$startString - $endString"
             }
         } else if (startInt != null) {
-            "> $startInt"
+            "≥ $startInt"
         } else if (endInt != null) {
-            if (hardMax && endInt == maxValue) null else "< $endInt"
+            if (hardMax && endInt == maxValue) null else "≤ $endInt"
         } else null
 
         val value = if (startInt != null && endInt != null) {
@@ -661,5 +683,33 @@ class AnimeMediaFilterController<T>(
         }
 
         val valueRange = 0f..maxValue.toFloat()
+    }
+
+    data class SourceEntry(
+        override val value: MediaSource,
+        override val state: IncludeExcludeState = IncludeExcludeState.DEFAULT,
+    ) : MediaFilterEntry<MediaSource> {
+        companion object {
+            fun sources() = listOf(
+                MediaSource.ORIGINAL,
+                MediaSource.ANIME,
+                MediaSource.COMIC,
+                MediaSource.DOUJINSHI,
+                MediaSource.GAME,
+                MediaSource.LIGHT_NOVEL,
+                MediaSource.LIVE_ACTION,
+                MediaSource.MANGA,
+                MediaSource.MULTIMEDIA_PROJECT,
+                MediaSource.NOVEL,
+                MediaSource.OTHER,
+                MediaSource.PICTURE_BOOK,
+                MediaSource.VIDEO_GAME,
+                MediaSource.VISUAL_NOVEL,
+                MediaSource.WEB_NOVEL,
+            ).map(::SourceEntry)
+        }
+
+        @StringRes
+        val textRes = value.toTextRes()
     }
 }

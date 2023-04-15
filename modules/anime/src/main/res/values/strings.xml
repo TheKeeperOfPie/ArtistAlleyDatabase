@@ -138,4 +138,24 @@
 
     <string name="anime_media_filter_episodes_label">Episodes</string>
     <string name="anime_media_filter_episodes_expand_content_description">Episodes filter expand</string>
+
+    <string name="anime_media_filter_source_label">Source</string>
+    <string name="anime_media_filter_source_expand_content_description">Source filter expand</string>
+    <string name="anime_media_filter_source_chip_state_content_description">Source chip state</string>
+    <string name="anime_media_filter_source_original">Original</string>
+    <string name="anime_media_filter_source_anime">Anime</string>
+    <string name="anime_media_filter_source_comic">Comic</string>
+    <string name="anime_media_filter_source_doujinshi">Doujinshi</string>
+    <string name="anime_media_filter_source_game">Game</string>
+    <string name="anime_media_filter_source_light_novel">Light novel</string>
+    <string name="anime_media_filter_source_live_action">Live action</string>
+    <string name="anime_media_filter_source_manga">Manga</string>
+    <string name="anime_media_filter_source_multimedia_project">Multimedia project</string>
+    <string name="anime_media_filter_source_novel">Novel</string>
+    <string name="anime_media_filter_source_other">Other</string>
+    <string name="anime_media_filter_source_picture_book">Picture book</string>
+    <string name="anime_media_filter_source_video_game">Video game</string>
+    <string name="anime_media_filter_source_visual_novel">Visual novel</string>
+    <string name="anime_media_filter_source_web_novel">Web novel</string>
+    <string name="anime_media_filter_source_unknown">Unknown</string>
 </resources>

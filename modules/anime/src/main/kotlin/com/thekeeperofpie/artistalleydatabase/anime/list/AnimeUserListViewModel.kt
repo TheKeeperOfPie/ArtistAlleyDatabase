@@ -77,6 +77,7 @@ class AnimeUserListViewModel @Inject constructor(aniListApi: AuthedAniListApi) :
                             filterController.episodesRange,
                             filterController.showAdult,
                             filterController.airingDate(),
+                            filterController.sources,
                             ::FilterParams,
                         )
                             .map { filterParams ->
@@ -285,6 +286,14 @@ class AnimeUserListViewModel @Inject constructor(aniListApi: AuthedAniListApi) :
             }
         }
 
+        filteredEntries = IncludeExcludeState.applyFiltering(
+            filterParams.sources,
+            filteredEntries,
+            state = { it.state },
+            key = { it.value },
+            transform = { listOfNotNull(it.media.source) }
+        )
+
         if (filteredEntries.isNotEmpty()) {
             this += AnimeUserListScreen.Entry.Header(
                 list.name.orEmpty(),
@@ -314,6 +323,7 @@ class AnimeUserListViewModel @Inject constructor(aniListApi: AuthedAniListApi) :
         val episodesRange: AnimeMediaFilterController.RangeData,
         val showAdult: Boolean,
         val airingDate: AnimeMediaFilterController.AiringDate,
+        val sources: List<AnimeMediaFilterController.SourceEntry>,
     )
 
     sealed interface ContentState {

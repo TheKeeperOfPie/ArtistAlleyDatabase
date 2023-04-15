@@ -10,6 +10,7 @@ import com.anilist.type.MediaFormat
 import com.anilist.type.MediaListSort
 import com.anilist.type.MediaSeason
 import com.anilist.type.MediaSort
+import com.anilist.type.MediaSource
 import com.anilist.type.MediaStatus
 import com.anilist.type.MediaType
 import com.apollographql.apollo3.ApolloClient
@@ -108,6 +109,7 @@ class AuthedAniListApi(
         averageScoreLesser: Int?,
         episodesGreater: Int?,
         episodesLesser: Int?,
+        sourcesIn: List<MediaSource>?,
     ): ApolloResponse<MediaAdvancedSearchQuery.Data> {
         val sortParam =
             if (query.isEmpty() && sort?.size == 1 && sort.contains(MediaSort.SEARCH_MATCH)) {
@@ -142,6 +144,7 @@ class AuthedAniListApi(
                 averageScoreLesser = Optional.presentIfNotNull(averageScoreLesser),
                 episodesGreater = Optional.presentIfNotNull(episodesGreater),
                 episodesLesser = Optional.presentIfNotNull(episodesLesser),
+                sourceIn = Optional.presentIfNotNull(sourcesIn?.ifEmpty { null })
             )
         )
     }

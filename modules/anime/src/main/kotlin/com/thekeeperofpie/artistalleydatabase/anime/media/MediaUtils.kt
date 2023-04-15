@@ -7,6 +7,7 @@ import androidx.compose.material.icons.twotone._18UpRating
 import androidx.compose.ui.graphics.Color
 import com.anilist.type.MediaFormat
 import com.anilist.type.MediaSeason
+import com.anilist.type.MediaSource
 import com.anilist.type.MediaStatus
 import com.thekeeperofpie.artistalleydatabase.anime.R
 
@@ -73,4 +74,25 @@ object MediaUtils {
         MediaSeason.SUMMER -> R.string.anime_media_filter_airing_date_season_summer
         MediaSeason.FALL -> R.string.anime_media_filter_airing_date_season_fall
     }
+
+    fun MediaSource?.toTextRes() = when (this) {
+        MediaSource.ORIGINAL -> R.string.anime_media_filter_source_original
+        MediaSource.ANIME -> R.string.anime_media_filter_source_anime
+        MediaSource.COMIC -> R.string.anime_media_filter_source_comic
+        MediaSource.DOUJINSHI -> R.string.anime_media_filter_source_doujinshi
+        MediaSource.GAME -> R.string.anime_media_filter_source_game
+        MediaSource.LIGHT_NOVEL -> R.string.anime_media_filter_source_light_novel
+        MediaSource.LIVE_ACTION -> R.string.anime_media_filter_source_live_action
+        MediaSource.MANGA -> R.string.anime_media_filter_source_manga
+        MediaSource.MULTIMEDIA_PROJECT -> R.string.anime_media_filter_source_multimedia_project
+        MediaSource.NOVEL -> R.string.anime_media_filter_source_novel
+        MediaSource.OTHER -> R.string.anime_media_filter_source_other
+        MediaSource.PICTURE_BOOK -> R.string.anime_media_filter_source_picture_book
+        MediaSource.VIDEO_GAME -> R.string.anime_media_filter_source_video_game
+        MediaSource.VISUAL_NOVEL -> R.string.anime_media_filter_source_visual_novel
+        MediaSource.WEB_NOVEL -> R.string.anime_media_filter_source_web_novel
+        MediaSource.UNKNOWN__,
+        null -> R.string.anime_media_filter_source_unknown
+    }
+
 }

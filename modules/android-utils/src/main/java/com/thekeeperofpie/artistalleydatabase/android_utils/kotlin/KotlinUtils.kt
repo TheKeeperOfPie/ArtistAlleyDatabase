@@ -85,7 +85,7 @@ fun <T> Flow<T>.chunked(maxSize: Int, maxDuration: Duration) = channelFlow {
 }
 
 @Suppress("UNCHECKED_CAST")
-fun <T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, R> combine(
+fun <T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, R> combine(
     flow: Flow<T1>,
     flow2: Flow<T2>,
     flow3: Flow<T3>,
@@ -99,7 +99,8 @@ fun <T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, R> combine(
     flow11: Flow<T11>,
     flow12: Flow<T12>,
     flow13: Flow<T13>,
-    transform: suspend (T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13) -> R
+    flow14: Flow<T14>,
+    transform: suspend (T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14) -> R
 ): Flow<R> = kotlinx.coroutines.flow.combine(
     flow,
     flow2,
@@ -114,6 +115,7 @@ fun <T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, R> combine(
     flow11,
     flow12,
     flow13,
+    flow14,
 ) { args: Array<*> ->
     transform(
         args[0] as T1,
@@ -129,5 +131,6 @@ fun <T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, R> combine(
         args[10] as T11,
         args[11] as T12,
         args[12] as T13,
+        args[13] as T14,
     )
 }

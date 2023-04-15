@@ -58,6 +58,7 @@ class AnimeSearchViewModel @Inject constructor(aniListApi: AuthedAniListApi) : V
                 filterController.averageScoreRange,
                 filterController.episodesRange,
                 filterController.airingDate(),
+                filterController.sources,
                 AnimeMediaSearchPagingSource::RefreshParams
             )
                 .flowOn(CustomDispatchers.IO)
