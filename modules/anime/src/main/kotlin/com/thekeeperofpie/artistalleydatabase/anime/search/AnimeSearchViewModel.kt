@@ -13,6 +13,7 @@ import com.anilist.MediaAdvancedSearchQuery.Data.Page.Medium
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.combine
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeMediaFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortOption
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -30,14 +31,18 @@ import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
 
 @HiltViewModel
-class AnimeSearchViewModel @Inject constructor(aniListApi: AuthedAniListApi) : ViewModel() {
+class AnimeSearchViewModel @Inject constructor(
+    aniListApi: AuthedAniListApi,
+    settings: AnimeSettings,
+) : ViewModel() {
 
     val query = MutableStateFlow("")
     var content = MutableStateFlow(PagingData.empty<AnimeSearchScreen.Entry>())
 
     private var initialized = false
 
-    private val filterController = AnimeMediaFilterController(MediaSortOption::class, aniListApi)
+    private val filterController =
+        AnimeMediaFilterController(MediaSortOption::class, aniListApi, settings)
 
     private val refreshUptimeMillis = MutableStateFlow(-1L)
 

@@ -17,6 +17,7 @@ import com.anilist.type.MediaStatus
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.mapLatestNotNull
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
@@ -41,6 +42,7 @@ import kotlin.reflect.KClass
 class AnimeMediaFilterController<T>(
     sortEnumClass: KClass<T>,
     private val aniListApi: AuthedAniListApi,
+    private val settings: AnimeSettings,
 ) where T : AnimeMediaFilterController.Data.SortOption, T : Enum<*> {
 
     companion object {
@@ -90,6 +92,11 @@ class AnimeMediaFilterController<T>(
         if (::initialParams.isInitialized) return
         initialParams = params
 
+        val filterData = params.filterData
+        if (filterData != null) {
+            setFilterData(filterData)
+        }
+
         viewModel.viewModelScope.launch(CustomDispatchers.Main) {
             refreshUpdates
                 .mapLatestNotNull {
@@ -99,6 +106,13 @@ class AnimeMediaFilterController<T>(
                                 .genreCollection
                                 ?.filterNotNull()
                                 ?.map(::GenreEntry)
+                                ?.let {
+                                    setFilterDataForGenres(
+                                        map = it,
+                                        included = filterData?.genresIncluded ?: emptyList(),
+                                        excluded = filterData?.genresExcluded ?: emptyList(),
+                                    )
+                                }
                         } catch (e: Exception) {
                             Log.d(TAG, "Error loading genres", e)
                             null
@@ -128,15 +142,29 @@ class AnimeMediaFilterController<T>(
                                 ?.filterNotNull()
                                 ?.let(::buildTagSections)
                                 ?.run {
-                                    if (initialParams.tagId == null) return@run this
+                                    val tagsIncluded = filterData?.tagsIncluded ?: emptyList()
+                                    val tagsExcluded = filterData?.tagsExcluded ?: emptyList()
+                                    if (tagsIncluded.isEmpty() && tagsExcluded.isEmpty()) {
+                                        return@run this
+                                    }
+
                                     toMutableMap().apply {
                                         replaceAll { _, section ->
                                             section.replace {
-                                                it.takeUnless { it.id == initialParams.tagId }
-                                                    ?: it.copy(
+                                                if (it.id == initialParams.tagId) {
+                                                    it.copy(
                                                         state = IncludeExcludeState.INCLUDE,
                                                         clickable = false
                                                     )
+                                                } else {
+                                                    it.copy(
+                                                        state = IncludeExcludeState.toState(
+                                                            it.id,
+                                                            included = tagsIncluded,
+                                                            excluded = tagsExcluded
+                                                        )
+                                                    )
+                                                }
                                             }
                                         }
                                     }
@@ -166,6 +194,170 @@ class AnimeMediaFilterController<T>(
         }
 
     fun tagRank() = tagRank.map { it.toIntOrNull()?.coerceIn(0, 100) }
+
+    private fun setFilterData(filterData: FilterData) {
+        // TODO: sortOption and sortListOption
+        sortAscending.value = filterData.sortAscending
+        tagRank.value = filterData.tagRank?.toString() ?: "0"
+        statuses.value = StatusEntry.statuses(
+            included = filterData.statusesIncluded,
+            excluded = filterData.statusesExcluded,
+        )
+        formats.value = FormatEntry.formats(
+            included = filterData.formatsIncluded,
+            excluded = filterData.formatsExcluded
+        )
+        showAdult.value = filterData.showAdult
+        onListOptions.value = OnListOption.options(filterData.onList)
+        averageScoreRange.value = RangeData(
+            maxValue = 100,
+            hardMax = true,
+            startString = filterData.averageScoreMin?.toString() ?: "0",
+            endString = filterData.averageScoreMax?.toString() ?: "100",
+        )
+        episodesRange.value = RangeData(
+            maxValue = 151,
+            hardMax = false,
+            startString = filterData.episodesMin?.toString() ?: "0",
+            endString = filterData.episodesMax?.toString() ?: "",
+        )
+        sources.value = SourceEntry.sources(
+            included = filterData.sourcesIncluded,
+            excluded = filterData.sourcesExcluded,
+        )
+        airingDate.value = AiringDate.Basic(
+            season = filterData.airingDateSeason,
+            seasonYear = filterData.airingDateSeasonYear?.toString().orEmpty(),
+        ) to AiringDate.Advanced(
+            startDate = filterData.airingDateStart(),
+            endDate = filterData.airingDateEnd(),
+        )
+        airingDateIsAdvanced.value = filterData.airingDateIsAdvanced
+
+        genres.value = setFilterDataForGenres(
+            map = genres.value,
+            included = filterData.genresIncluded,
+            excluded = filterData.genresExcluded,
+        )
+
+        tagsByCategory.value = setFilterDataForTags(
+            map = tagsByCategory.value,
+            included = filterData.tagsIncluded,
+            excluded = filterData.tagsExcluded,
+        )
+    }
+
+    private fun toFilterData(): FilterData {
+        val onListOptions = onListOptions.value
+        val containsOnList = onListOptions.find { it.value }?.state == IncludeExcludeState.INCLUDE
+        val containsNotOnList =
+            onListOptions.find { !it.value }?.state == IncludeExcludeState.INCLUDE
+        val onList = when {
+            !containsOnList && !containsNotOnList -> null
+            containsOnList && containsNotOnList -> null
+            else -> containsOnList
+        }
+        return FilterData(
+            sortOption = null,
+            sortListOption = null,
+            sortAscending = sortAscending.value,
+            tagRank = tagRank.value.toIntOrNull(),
+            showAdult = showAdult.value,
+            onList = onList,
+            averageScoreMin = averageScoreRange.value.startInt,
+            averageScoreMax = averageScoreRange.value.endInt,
+            episodesMin = episodesRange.value.startInt,
+            episodesMax = episodesRange.value.startInt,
+            sourcesIncluded = sources.value.filter { it.state == IncludeExcludeState.INCLUDE }
+                .map { it.value },
+            sourcesExcluded = sources.value.filter { it.state == IncludeExcludeState.EXCLUDE }
+                .map { it.value },
+            statusesIncluded = statuses.value.filter { it.state == IncludeExcludeState.INCLUDE }
+                .map { it.value },
+            statusesExcluded = statuses.value.filter { it.state == IncludeExcludeState.EXCLUDE }
+                .map { it.value },
+            formatsIncluded = formats.value.filter { it.state == IncludeExcludeState.INCLUDE }
+                .map { it.value },
+            formatsExcluded = formats.value.filter { it.state == IncludeExcludeState.EXCLUDE }
+                .map { it.value },
+            airingDateIsAdvanced = airingDateIsAdvanced.value,
+            airingDateSeason = airingDate.value.first.season,
+            airingDateSeasonYear = airingDate.value.first.seasonYear.toIntOrNull(),
+            airingDateStartYear = airingDate.value.second.startDate?.year,
+            airingDateStartMonth = airingDate.value.second.startDate?.monthValue,
+            airingDateStartDayOfMonth = airingDate.value.second.startDate?.dayOfMonth,
+            airingDateEndYear = airingDate.value.second.endDate?.year,
+            airingDateEndMonth = airingDate.value.second.endDate?.monthValue,
+            airingDateEndDayOfMonth = airingDate.value.second.endDate?.dayOfMonth,
+            genresIncluded = genres.value.filter { it.state == IncludeExcludeState.INCLUDE }
+                .map { it.value },
+            genresExcluded = genres.value.filter { it.state == IncludeExcludeState.EXCLUDE }
+                .map { it.value },
+            tagsIncluded = tagsByCategory.value.let {
+                it.values
+                    .flatMap {
+                        when (it) {
+                            is TagSection.Category -> it.flatten()
+                            is TagSection.Tag -> listOf(it)
+                        }
+                    }
+                    .filter { it.state == IncludeExcludeState.INCLUDE }
+                    .map { it.id }
+            },
+            tagsExcluded = tagsByCategory.value.let {
+                it.values
+                    .flatMap {
+                        when (it) {
+                            is TagSection.Category -> it.flatten()
+                            is TagSection.Tag -> listOf(it)
+                        }
+                    }
+                    .filter { it.state == IncludeExcludeState.EXCLUDE }
+                    .map { it.id }
+            },
+        )
+    }
+
+    private fun setFilterDataForGenres(
+        map: List<GenreEntry>,
+        included: List<String>,
+        excluded: List<String>,
+    ) = map.toMutableList().apply {
+        replaceAll {
+            it.copy(
+                state = IncludeExcludeState.toState(
+                    it.value,
+                    included = included,
+                    excluded = excluded,
+                )
+            )
+        }
+    }
+
+    private fun setFilterDataForTags(
+        map: Map<String, TagSection>,
+        included: List<String>,
+        excluded: List<String>,
+    ) = map.toMutableMap().apply {
+        replaceAll { _, section ->
+            section.replace {
+                if (it.id == initialParams.tagId) {
+                    it.copy(
+                        state = IncludeExcludeState.INCLUDE,
+                        clickable = false
+                    )
+                } else {
+                    it.copy(
+                        state = IncludeExcludeState.toState(
+                            it.id,
+                            included = included,
+                            excluded = excluded,
+                        )
+                    )
+                }
+            }
+        }
+    }
 
     private fun getExpanded(section: Section) = when (section) {
         Section.SORT -> sortExpanded
@@ -383,6 +575,20 @@ class AnimeMediaFilterController<T>(
         showExpandAll = !expandAll
     }
 
+    private fun onClearFilter() {
+        setFilterData(FilterData())
+    }
+
+    private fun onLoadFilter() {
+        settings.savedAnimeFilters.value.values.firstOrNull()?.let(::setFilterData)
+    }
+
+    private fun onSaveFilter() {
+        settings.savedAnimeFilters.value = settings.savedAnimeFilters.value.toMutableMap().apply {
+            put("Default", toFilterData())
+        }
+    }
+
     fun data() = Data(
         expanded = ::getExpanded,
         setExpanded = ::setExpanded,
@@ -422,11 +628,15 @@ class AnimeMediaFilterController<T>(
         onShowAdultToggled = { showAdult.value = it },
         showExpandAll = { showExpandAll },
         onClickExpandAll = ::onClickExpandAll,
+        onClearFilter = ::onClearFilter,
+        onLoadFilter = ::onLoadFilter,
+        onSaveFilter = ::onSaveFilter,
     )
 
     data class InitialParams(
         val onListEnabled: Boolean = true,
         val tagId: String? = null,
+        val filterData: FilterData? = null,
     )
 
     class Data<SortOption : Data.SortOption>(
@@ -464,6 +674,9 @@ class AnimeMediaFilterController<T>(
         val onShowAdultToggled: (Boolean) -> Unit = {},
         val showExpandAll: () -> Boolean = { true },
         val onClickExpandAll: () -> Unit = {},
+        val onClearFilter: () -> Unit = {},
+        val onLoadFilter: () -> Unit = {},
+        val onSaveFilter: () -> Unit = {},
     ) {
         companion object {
             inline fun <reified T> forPreview(): Data<T>
@@ -549,13 +762,24 @@ class AnimeMediaFilterController<T>(
         override val state: IncludeExcludeState = IncludeExcludeState.DEFAULT,
     ) : MediaFilterEntry<MediaStatus> {
         companion object {
-            fun statuses() = listOf(
+            fun statuses(
+                included: List<MediaStatus> = emptyList(),
+                excluded: List<MediaStatus> = emptyList()
+            ) = listOf(
                 MediaStatus.FINISHED,
                 MediaStatus.RELEASING,
                 MediaStatus.NOT_YET_RELEASED,
                 MediaStatus.CANCELLED,
                 MediaStatus.HIATUS,
-            ).map(::StatusEntry)
+            ).map {
+                StatusEntry(
+                    it, IncludeExcludeState.toState(
+                        value = it,
+                        included = included,
+                        excluded = excluded
+                    )
+                )
+            }
         }
 
         val textRes = value.toTextRes()
@@ -566,7 +790,10 @@ class AnimeMediaFilterController<T>(
         override val state: IncludeExcludeState = IncludeExcludeState.DEFAULT,
     ) : MediaFilterEntry<MediaFormat> {
         companion object {
-            fun formats() = listOf(
+            fun formats(
+                included: List<MediaFormat> = emptyList(),
+                excluded: List<MediaFormat> = emptyList()
+            ) = listOf(
                 MediaFormat.TV,
                 MediaFormat.TV_SHORT,
                 MediaFormat.MOVIE,
@@ -575,7 +802,15 @@ class AnimeMediaFilterController<T>(
                 MediaFormat.ONA,
                 MediaFormat.MUSIC,
                 // MANGA, NOVEL, and ONE_SHOT excluded since not anime
-            ).map(::FormatEntry)
+            ).map {
+                FormatEntry(
+                    it, IncludeExcludeState.toState(
+                        value = it,
+                        included = included,
+                        excluded = excluded
+                    )
+                )
+            }
         }
 
         val textRes = value.toTextRes()
@@ -706,7 +941,16 @@ class AnimeMediaFilterController<T>(
         override val state: IncludeExcludeState = IncludeExcludeState.DEFAULT,
     ) : MediaFilterEntry<Boolean?> {
         companion object {
-            fun options() = listOf(true, false).map(::OnListOption)
+            fun options(default: Boolean? = null) = listOf(true, false).map {
+                OnListOption(
+                    it,
+                    state = if (it == default) {
+                        IncludeExcludeState.INCLUDE
+                    } else {
+                        IncludeExcludeState.DEFAULT
+                    }
+                )
+            }
         }
 
         val textRes = when (value) {
@@ -776,7 +1020,10 @@ class AnimeMediaFilterController<T>(
         override val state: IncludeExcludeState = IncludeExcludeState.DEFAULT,
     ) : MediaFilterEntry<MediaSource> {
         companion object {
-            fun sources() = listOf(
+            fun sources(
+                included: List<MediaSource> = emptyList(),
+                excluded: List<MediaSource> = emptyList(),
+            ) = listOf(
                 MediaSource.ORIGINAL,
                 MediaSource.ANIME,
                 MediaSource.COMIC,
@@ -792,7 +1039,15 @@ class AnimeMediaFilterController<T>(
                 MediaSource.VIDEO_GAME,
                 MediaSource.VISUAL_NOVEL,
                 MediaSource.WEB_NOVEL,
-            ).map(::SourceEntry)
+            ).map {
+                SourceEntry(
+                    it, IncludeExcludeState.toState(
+                        value = it,
+                        included = included,
+                        excluded = excluded
+                    )
+                )
+            }
         }
 
         @StringRes

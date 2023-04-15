@@ -10,6 +10,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.NetworkSettings
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListDatabase
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListJson
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryDatabase
 import com.thekeeperofpie.artistalleydatabase.art.persistence.ArtSettings
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDatabase
@@ -115,4 +116,9 @@ class AppHiltModule {
     @Provides
     fun provideNetworkSettings(settingsProvider: SettingsProvider) =
         settingsProvider as NetworkSettings
+
+    @Singleton
+    @Provides
+    fun provideAnimeSettings(settingsProvider: SettingsProvider) =
+        settingsProvider as AnimeSettings
 }

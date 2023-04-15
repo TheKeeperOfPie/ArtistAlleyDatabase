@@ -86,6 +86,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.utils.IncludeExcludeState
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
+import com.thekeeperofpie.artistalleydatabase.compose.ButtonFooter
 import com.thekeeperofpie.artistalleydatabase.compose.CustomOutlinedTextField
 import com.thekeeperofpie.artistalleydatabase.compose.ItemDropdown
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
@@ -131,7 +132,8 @@ object AnimeMediaFilterOptionsBottomPanel {
 
                     IconButton(
                         onClick = filterData().onClickExpandAll,
-                        modifier = Modifier.align(Alignment.CenterEnd)
+                        modifier = Modifier
+                            .align(Alignment.CenterEnd)
                             .alpha(expandAllAlpha)
                     ) {
                         Icon(
@@ -168,7 +170,7 @@ object AnimeMediaFilterOptionsBottomPanel {
 
     @Composable
     private fun <SortOption : AnimeMediaFilterController.Data.SortOption> OptionsPanel(
-        filterData: () -> AnimeMediaFilterController.Data<SortOption>
+        filterData: () -> AnimeMediaFilterController.Data<SortOption>,
     ) {
         var airingDateShown by remember { mutableStateOf<Boolean?>(null) }
         Column(
@@ -182,9 +184,9 @@ object AnimeMediaFilterOptionsBottomPanel {
             Divider()
 
             SortSection(
-                expanded = { data.expanded(AnimeMediaFilterController.Section.STATUS) },
+                expanded = { data.expanded(AnimeMediaFilterController.Section.SORT) },
                 onExpandedChanged = {
-                    data.setExpanded(AnimeMediaFilterController.Section.STATUS, it)
+                    data.setExpanded(AnimeMediaFilterController.Section.SORT, it)
                 },
                 data = filterData,
             )
@@ -309,22 +311,29 @@ object AnimeMediaFilterOptionsBottomPanel {
                 onShowAdultToggled = data.onShowAdultToggled,
             )
 
-            AiringDateDialog(
-                shownForStartDate = { airingDateShown },
-                onShownForStartDateToggled = { airingDateShown = it },
-                onDateChange = data.onAiringDateChange,
+            ActionsSection(
+                onClearFilter = data.onClearFilter,
+                onLoadFilter = data.onLoadFilter,
+                onSaveFilter = data.onSaveFilter,
             )
+
+            if (airingDateShown != null) {
+                AiringDateDialog(
+                    shownForStartDate = airingDateShown,
+                    onShownForStartDateToggled = { airingDateShown = it },
+                    onDateChange = data.onAiringDateChange,
+                )
+            }
         }
     }
 
     @Composable
     private fun AiringDateDialog(
-        shownForStartDate: () -> Boolean?,
+        shownForStartDate: Boolean?,
         onShownForStartDateToggled: (Boolean?) -> Unit,
         onDateChange: (start: Boolean, Long?) -> Unit,
     ) {
-        val shown = shownForStartDate()
-        if (shown != null) {
+        if (shownForStartDate != null) {
             val datePickerState = rememberDatePickerState()
             val confirmEnabled by remember { derivedStateOf { datePickerState.selectedDateMillis != null } }
             DatePickerDialog(
@@ -333,7 +342,7 @@ object AnimeMediaFilterOptionsBottomPanel {
                     TextButton(
                         onClick = {
                             onShownForStartDateToggled(null)
-                            onDateChange(shown, datePickerState.selectedDateMillis)
+                            onDateChange(shownForStartDate, datePickerState.selectedDateMillis)
                         },
                         enabled = confirmEnabled,
                     ) {
@@ -1307,6 +1316,19 @@ object AnimeMediaFilterOptionsBottomPanel {
                 modifier = Modifier.padding(end = 16.dp),
             )
         }
+    }
+
+    @Composable
+    private fun ActionsSection(
+        onClearFilter: () -> Unit,
+        onLoadFilter: () -> Unit,
+        onSaveFilter: () -> Unit,
+    ) {
+        ButtonFooter(
+            UtilsStringR.clear to onClearFilter,
+            UtilsStringR.load to onLoadFilter,
+            UtilsStringR.save to onSaveFilter,
+        )
     }
 
     @Composable

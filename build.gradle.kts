@@ -61,6 +61,7 @@ dependencyAnalysis {
                     "com.google.truth:truth",
                     "com.squareup.moshi:moshi-kotlin",
                     "de.mannodermaus.junit5:android-test-core",
+                    "org.jetbrains.kotlinx:kotlinx-serialization-json",
                     "org.mockito:mockito-android",
 
                     // This isn't detected properly, not sure why
@@ -107,14 +108,6 @@ dependencyAnalysis {
             onUnusedDependencies {
                 exclude(
                     "androidx.navigation:navigation-compose",
-                )
-            }
-        }
-
-        project(":modules:musical-artists") {
-            onUnusedDependencies {
-                exclude(
-                    "org.jetbrains.kotlinx:kotlinx-serialization-json",
                 )
             }
         }

@@ -9,6 +9,8 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.Converters
 import com.thekeeperofpie.artistalleydatabase.android_utils.NetworkSettings
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
+import com.thekeeperofpie.artistalleydatabase.anime.media.filter.FilterData
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntry
 import com.thekeeperofpie.artistalleydatabase.art.persistence.ArtSettings
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySettings
@@ -18,6 +20,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
 import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.serializer
 import kotlin.reflect.KProperty0
 import kotlin.reflect.full.createType
@@ -27,7 +30,7 @@ class SettingsProvider constructor(
     masterKey: MasterKey,
     private val appJson: AppJson,
     sharedPreferencesFileName: String = PREFERENCES_NAME,
-) : ArtSettings, EntrySettings, NetworkSettings {
+) : ArtSettings, EntrySettings, NetworkSettings, AnimeSettings {
 
     companion object {
         const val EXPORT_FILE_NAME = "settings.json"
@@ -50,14 +53,22 @@ class SettingsProvider constructor(
     override val networkLoggingLevel = MutableStateFlow(
         deserialize("networkLoggingLevel") ?: NetworkSettings.NetworkLoggingLevel.NONE
     )
+    override var savedAnimeFilters = MutableStateFlow(deserializeAnimeFilters())
     var searchQuery = MutableStateFlow<ArtEntry?>(deserialize("searchQuery"))
+
+    private fun deserializeAnimeFilters(): Map<String, FilterData> {
+        val stringValue = sharedPreferences.getString("savedAnimeFilters", "")
+        if (stringValue.isNullOrBlank()) return emptyMap()
+        return appJson.json.decodeFromString(stringValue)
+    }
 
     val settingsData: SettingsData
         get() = SettingsData(
             artEntryTemplate = artEntryTemplate.value,
             cropDocumentUri = cropDocumentUri.value,
             networkLoggingLevel = networkLoggingLevel.value,
-            searchQuery = searchQuery.value
+            searchQuery = searchQuery.value,
+            savedAnimeFilters = savedAnimeFilters.value,
         )
 
     // Initialization separated into its own method so that tests can cancel the StateFlow job
@@ -66,6 +77,16 @@ class SettingsProvider constructor(
         subscribeProperty(scope, ::cropDocumentUri)
         subscribeProperty(scope, ::networkLoggingLevel)
         subscribeProperty(scope, ::searchQuery)
+        scope.launch(CustomDispatchers.IO) {
+            savedAnimeFilters.drop(1).collectLatest {
+                val stringValue = appJson.json.run {
+                    encodeToString(it)
+                }
+                sharedPreferences.edit()
+                    .putString("savedAnimeFilters", stringValue)
+                    .apply()
+            }
+        }
     }
 
     private inline fun <reified T> subscribeProperty(
@@ -82,6 +103,7 @@ class SettingsProvider constructor(
         cropDocumentUri.emit(data.cropDocumentUri)
         networkLoggingLevel.emit(data.networkLoggingLevel)
         searchQuery.emit(data.searchQuery)
+        savedAnimeFilters.emit(data.savedAnimeFilters)
     }
 
     private inline fun <reified T> deserialize(name: String): T? {

@@ -13,6 +13,7 @@ import com.hoc081098.flowext.combine
 import com.hoc081098.flowext.startWith
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeMediaFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaFilterEntry
 import com.thekeeperofpie.artistalleydatabase.anime.utils.IncludeExcludeState
@@ -36,14 +37,17 @@ import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
 
 @HiltViewModel
-class AnimeUserListViewModel @Inject constructor(aniListApi: AuthedAniListApi) : ViewModel() {
+class AnimeUserListViewModel @Inject constructor(
+    aniListApi: AuthedAniListApi,
+    settings: AnimeSettings,
+) : ViewModel() {
 
     var content by mutableStateOf<ContentState>(ContentState.LoadingEmpty)
 
     private var initialized = false
 
     private val filterController =
-        AnimeMediaFilterController(MediaListSortOption::class, aniListApi)
+        AnimeMediaFilterController(MediaListSortOption::class, aniListApi, settings)
 
     private val refreshUptimeMillis = MutableStateFlow(-1L)
 

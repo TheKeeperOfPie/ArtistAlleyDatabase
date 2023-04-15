@@ -5,6 +5,12 @@ enum class IncludeExcludeState {
 
     companion object {
 
+        fun <T: Any> toState(value: T, included: Collection<T>, excluded: Collection<T>) = when {
+            included.contains(value) -> INCLUDE
+            excluded.contains(value) -> EXCLUDE
+            else -> DEFAULT
+        }
+
         fun <Base, StateHolder, Comparison> applyFiltering(
             filters: List<StateHolder>,
             list: List<Base>,

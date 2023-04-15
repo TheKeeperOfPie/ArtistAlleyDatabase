@@ -2,6 +2,7 @@ plugins {
     id("compose-library")
     id("dagger.hilt.android.plugin")
     id("kotlin-kapt")
+    alias(libs.plugins.org.jetbrains.kotlin.plugin.serialization)
 }
 
 android {
@@ -12,6 +13,8 @@ dependencies {
     implementation(project(":modules:android-utils"))
     api(project(":modules:anilist"))
     implementation(project(":modules:compose-utils"))
+
+    implementation(libs.kotlinx.serialization.json)
 
     implementation(libs.hilt.android)
     kapt(kaptProcessors.dagger.hilt.compiler)
