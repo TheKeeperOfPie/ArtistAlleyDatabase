@@ -54,6 +54,10 @@ class SettingsProvider constructor(
         deserialize("networkLoggingLevel") ?: NetworkSettings.NetworkLoggingLevel.NONE
     )
     override var savedAnimeFilters = MutableStateFlow(deserializeAnimeFilters())
+    override var collapseAnimeFiltersOnClose = MutableStateFlow(
+        deserialize("collapseAnimeFiltersOnClose") ?: true
+    )
+    override var showAdult = MutableStateFlow(deserialize("showAdult") ?: false)
     var searchQuery = MutableStateFlow<ArtEntry?>(deserialize("searchQuery"))
 
     private fun deserializeAnimeFilters(): Map<String, FilterData> {
@@ -68,7 +72,9 @@ class SettingsProvider constructor(
             cropDocumentUri = cropDocumentUri.value,
             networkLoggingLevel = networkLoggingLevel.value,
             searchQuery = searchQuery.value,
+            collapseAnimeFiltersOnClose = collapseAnimeFiltersOnClose.value,
             savedAnimeFilters = savedAnimeFilters.value,
+            showAdult = showAdult.value,
         )
 
     // Initialization separated into its own method so that tests can cancel the StateFlow job
@@ -77,6 +83,8 @@ class SettingsProvider constructor(
         subscribeProperty(scope, ::cropDocumentUri)
         subscribeProperty(scope, ::networkLoggingLevel)
         subscribeProperty(scope, ::searchQuery)
+        subscribeProperty(scope, ::collapseAnimeFiltersOnClose)
+        subscribeProperty(scope, ::showAdult)
         scope.launch(CustomDispatchers.IO) {
             savedAnimeFilters.drop(1).collectLatest {
                 val stringValue = appJson.json.run {
@@ -104,6 +112,8 @@ class SettingsProvider constructor(
         networkLoggingLevel.emit(data.networkLoggingLevel)
         searchQuery.emit(data.searchQuery)
         savedAnimeFilters.emit(data.savedAnimeFilters)
+        collapseAnimeFiltersOnClose.emit(data.collapseAnimeFiltersOnClose)
+        showAdult.emit(data.showAdult)
     }
 
     private inline fun <reified T> deserialize(name: String): T? {

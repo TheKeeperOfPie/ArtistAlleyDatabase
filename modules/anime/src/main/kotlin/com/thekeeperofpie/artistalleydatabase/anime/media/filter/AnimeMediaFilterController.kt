@@ -39,6 +39,7 @@ import java.time.ZoneOffset
 import java.util.SortedMap
 import kotlin.reflect.KClass
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class AnimeMediaFilterController<T>(
     sortEnumClass: KClass<T>,
     private val aniListApi: AuthedAniListApi,
@@ -53,11 +54,33 @@ class AnimeMediaFilterController<T>(
     val sortAscending = MutableStateFlow(false)
 
     val genres = MutableStateFlow(emptyList<GenreEntry>())
+    private val genresFiltered = genres.flatMapLatest { genres ->
+        settings.showAdult.map {
+            if (it) {
+                genres
+            } else {
+                // Keep if previously selected (not DEFAULT)
+                genres.filterNot { it.state == IncludeExcludeState.DEFAULT && it.isAdult }
+            }
+        }
+    }
+
     val tagsByCategory = MutableStateFlow(emptyMap<String, TagSection>())
+    private val tagsByCategoryFiltered = tagsByCategory.flatMapLatest { tags ->
+        settings.showAdult.map { showAdult ->
+            if (showAdult) return@map tags
+            tags.values.mapNotNull {
+                // Keep if previously selected (not DEFAULT)
+                it.filter { it.state != IncludeExcludeState.DEFAULT || it.isAdult != true }
+            }
+                .associateBy { it.name }
+                .toSortedMap(String.CASE_INSENSITIVE_ORDER)
+        }
+    }
+
     private val tagRank = MutableStateFlow("0")
     val statuses = MutableStateFlow(StatusEntry.statuses())
     val formats = MutableStateFlow(FormatEntry.formats())
-    val showAdult = MutableStateFlow(false)
 
     val onListOptions = MutableStateFlow(OnListOption.options())
     val averageScoreRange = MutableStateFlow(RangeData(100, hardMax = true))
@@ -66,6 +89,8 @@ class AnimeMediaFilterController<T>(
 
     private val airingDate = MutableStateFlow(AiringDate.Basic() to AiringDate.Advanced())
     private val airingDateIsAdvanced = MutableStateFlow(false)
+
+    val showAdult get() = settings.showAdult
 
     // These are kept separated so that recomposition can happen per-section
     private var sortExpanded by mutableStateOf(false)
@@ -120,15 +145,6 @@ class AnimeMediaFilterController<T>(
                     }
                 }
                 .take(1)
-                .flatMapLatest { genres ->
-                    showAdult.map {
-                        if (it) {
-                            genres
-                        } else {
-                            genres.filterNot { it.isAdult }
-                        }
-                    }
-                }
                 .collectLatest(genres::emit)
         }
 
@@ -176,14 +192,6 @@ class AnimeMediaFilterController<T>(
                     }
                 }
                 .take(1)
-                .flatMapLatest { tags ->
-                    showAdult.map { showAdult ->
-                        if (showAdult) return@map tags
-                        tags.values.mapNotNull { it.filter { it.isAdult != true } }
-                            .associateBy { it.name }
-                            .toSortedMap(String.CASE_INSENSITIVE_ORDER)
-                    }
-                }
                 .collectLatest(tagsByCategory::emit)
         }
     }
@@ -207,7 +215,6 @@ class AnimeMediaFilterController<T>(
             included = filterData.formatsIncluded,
             excluded = filterData.formatsExcluded
         )
-        showAdult.value = filterData.showAdult
         onListOptions.value = OnListOption.options(filterData.onList)
         averageScoreRange.value = RangeData(
             maxValue = 100,
@@ -262,7 +269,6 @@ class AnimeMediaFilterController<T>(
             sortListOption = null,
             sortAscending = sortAscending.value,
             tagRank = tagRank.value.toIntOrNull(),
-            showAdult = showAdult.value,
             onList = onList,
             averageScoreMin = averageScoreRange.value.startInt,
             averageScoreMax = averageScoreRange.value.endInt,
@@ -569,10 +575,9 @@ class AnimeMediaFilterController<T>(
             }
     }
 
-    private fun onClickExpandAll() {
-        val expandAll = showExpandAll
-        Section.values().forEach { setExpanded(it, expandAll) }
-        showExpandAll = !expandAll
+    private fun onClickExpandAll(expand: Boolean) {
+        Section.values().forEach { setExpanded(it, expand) }
+        showExpandAll = !expand
     }
 
     private fun onClearFilter() {
@@ -600,9 +605,9 @@ class AnimeMediaFilterController<T>(
         onStatusClicked = ::onStatusClicked,
         formats = { formats.collectAsState().value },
         onFormatClicked = ::onFormatClicked,
-        genres = { genres.collectAsState().value },
+        genres = { genresFiltered.collectAsState(emptyList()).value },
         onGenreClicked = ::onGenreClicked,
-        tags = { tagsByCategory.collectAsState().value },
+        tags = { tagsByCategoryFiltered.collectAsState(emptyMap()).value },
         onTagClicked = ::onTagClicked,
         tagRank = { tagRank.collectAsState().value },
         onTagRankChanged = { tagRank.value = it },
@@ -624,10 +629,12 @@ class AnimeMediaFilterController<T>(
         onEpisodesChanged = ::onEpisodesChanged,
         sources = { sources.collectAsState().value },
         onSourceClicked = ::onSourceClicked,
-        showAdult = { showAdult.collectAsState().value },
-        onShowAdultToggled = { showAdult.value = it },
+        showAdult = { settings.showAdult.collectAsState().value },
+        onShowAdultToggled = { settings.showAdult.value = it },
         showExpandAll = { showExpandAll },
         onClickExpandAll = ::onClickExpandAll,
+        collapseOnClose = { settings.collapseAnimeFiltersOnClose.collectAsState().value },
+        onCollapseOnCloseToggled = { settings.collapseAnimeFiltersOnClose.value = it },
         onClearFilter = ::onClearFilter,
         onLoadFilter = ::onLoadFilter,
         onSaveFilter = ::onSaveFilter,
@@ -673,7 +680,9 @@ class AnimeMediaFilterController<T>(
         val showAdult: @Composable () -> Boolean = { false },
         val onShowAdultToggled: (Boolean) -> Unit = {},
         val showExpandAll: () -> Boolean = { true },
-        val onClickExpandAll: () -> Unit = {},
+        val onClickExpandAll: (expand: Boolean) -> Unit = {},
+        val collapseOnClose: @Composable () -> Boolean = { true },
+        val onCollapseOnCloseToggled: (Boolean) -> Unit = {},
         val onClearFilter: () -> Unit = {},
         val onLoadFilter: () -> Unit = {},
         val onSaveFilter: () -> Unit = {},

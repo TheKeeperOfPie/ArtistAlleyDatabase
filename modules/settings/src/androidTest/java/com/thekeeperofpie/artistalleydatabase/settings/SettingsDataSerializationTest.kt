@@ -41,6 +41,8 @@ class SettingsDataSerializationTest {
             cropDocumentUri = cropUri,
             networkLoggingLevel = networkLoggingLevel,
             searchQuery = artEntryTwo,
+            collapseAnimeFiltersOnClose = true,
+            showAdult = true,
         )
 
         val testParams = listOf(
@@ -49,6 +51,8 @@ class SettingsDataSerializationTest {
             networkLoggingLevel to NetworkSettings.NetworkLoggingLevel::class to
                     SettingsData::networkLoggingLevel,
             artEntryTwo to ArtEntry::class to SettingsData::searchQuery,
+            true to Boolean::class to SettingsData::collapseAnimeFiltersOnClose,
+            true to Boolean::class to SettingsData::showAdult,
         )
 
         val provider = SettingsProvider(
@@ -65,6 +69,7 @@ class SettingsDataSerializationTest {
         }
 
         try {
+            // TODO: This still doesn't work
             // StateFlow collect is captured in a Job so that it can be cancel,
             // since StateFlows are hot and will never complete, causing test failure
             val job = launch { withDispatchers { provider.initialize(this) } }

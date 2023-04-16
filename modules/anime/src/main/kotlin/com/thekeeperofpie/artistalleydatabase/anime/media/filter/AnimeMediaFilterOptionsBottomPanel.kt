@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media.filter
 
+import androidx.activity.compose.BackHandler
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
@@ -70,6 +71,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -91,6 +93,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.ItemDropdown
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
 import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.filterChipColors
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
@@ -118,6 +121,13 @@ object AnimeMediaFilterOptionsBottomPanel {
             rememberBottomSheetScaffoldState()
         }
 
+        val scope = rememberCoroutineScope()
+        BackHandler(enabled = scaffoldState.bottomSheetState.currentValue == SheetValue.Expanded) {
+            scope.launch {
+                scaffoldState.bottomSheetState.partialExpand()
+            }
+        }
+
         BottomSheetScaffold(
             scaffoldState = scaffoldState,
             sheetPeekHeight = 48.dp,
@@ -131,8 +141,17 @@ object AnimeMediaFilterOptionsBottomPanel {
                         label = "Anime filter expand all alpha",
                     )
 
+                    val collapseOnClose = filterData().collapseOnClose()
+                    LaunchedEffect(targetValue) {
+                        if (targetValue != SheetValue.Expanded) {
+                            if (collapseOnClose) {
+                                filterData().onClickExpandAll(false)
+                            }
+                        }
+                    }
+
                     IconButton(
-                        onClick = filterData().onClickExpandAll,
+                        onClick = { filterData().run { onClickExpandAll(showExpandAll()) } },
                         modifier = Modifier
                             .align(Alignment.CenterEnd)
                             .alpha(expandAllAlpha)
@@ -317,6 +336,11 @@ object AnimeMediaFilterOptionsBottomPanel {
             AdultSection(
                 showAdult = { data.showAdult() },
                 onShowAdultToggled = data.onShowAdultToggled,
+            )
+
+            SettingsSection(
+                collapseOnClose = { data.collapseOnClose() },
+                onCollapseOnCloseToggled = data.onCollapseOnCloseToggled,
             )
 
             ActionsSection(
@@ -1336,6 +1360,34 @@ object AnimeMediaFilterOptionsBottomPanel {
             Switch(
                 checked = showAdult(),
                 onCheckedChange = onShowAdultToggled,
+                modifier = Modifier.padding(end = 16.dp),
+            )
+        }
+
+        Divider()
+    }
+
+    @Composable
+    private fun SettingsSection(
+        collapseOnClose: @Composable () -> Boolean,
+        onCollapseOnCloseToggled: (Boolean) -> Unit,
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+        ) {
+            Text(
+                text = stringResource(R.string.anime_media_filter_collapse_on_close),
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier
+                    .padding(horizontal = 16.dp, vertical = 10.dp)
+                    .weight(1f)
+            )
+
+            Switch(
+                checked = collapseOnClose(),
+                onCheckedChange = onCollapseOnCloseToggled,
                 modifier = Modifier.padding(end = 16.dp),
             )
         }

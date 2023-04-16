@@ -10,5 +10,7 @@ data class SettingsData(
     val cropDocumentUri: Uri?,
     val networkLoggingLevel: NetworkSettings.NetworkLoggingLevel,
     val searchQuery: ArtEntry?,
+    val collapseAnimeFiltersOnClose: Boolean,
     val savedAnimeFilters: Map<String, FilterData> = emptyMap(),
+    val showAdult: Boolean,
 )

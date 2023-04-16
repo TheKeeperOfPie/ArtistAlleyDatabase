@@ -16,7 +16,6 @@ data class FilterData(
     val sortListOption: MediaListSortOption? = null,
     val sortAscending: Boolean = false,
     val tagRank: Int? = null,
-    val showAdult: Boolean = false,
     val onList: Boolean? = null,
     val averageScoreMin: Int? = null,
     val averageScoreMax: Int? = null,
