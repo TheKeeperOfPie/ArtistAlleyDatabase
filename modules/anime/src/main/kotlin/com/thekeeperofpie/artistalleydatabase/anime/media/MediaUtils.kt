@@ -10,6 +10,7 @@ import com.anilist.type.MediaSeason
 import com.anilist.type.MediaSource
 import com.anilist.type.MediaStatus
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import kotlin.math.absoluteValue
 
 object MediaUtils {
 
@@ -20,6 +21,12 @@ object MediaUtils {
     // TODO: More distinct colors
     fun calculateTagColor(tagId: Int) = Color.hsl(
         hue = tagColorInterpolator.getInterpolation((tagId % 2000) / 2000f) * 360,
+        lightness = 0.25f,
+        saturation = 0.25f,
+    )
+
+    fun genreColor(name: String) = Color.hsl(
+        hue = (name.hashCode() % 360f).absoluteValue,
         lightness = 0.25f,
         saturation = 0.25f,
     )

@@ -461,10 +461,12 @@ fun AutoHeightText(
     softWrap: Boolean = true,
     maxLines: Int = Int.MAX_VALUE,
     minLines: Int = 1,
-    style: TextStyle = LocalTextStyle.current
+    style: TextStyle = LocalTextStyle.current,
+    minTextSizeSp: Float = 2f,
 ) {
     var realFontSize by remember { mutableStateOf(fontSize.takeOrElse { style.fontSize }.value) }
     var readyToDraw by remember { mutableStateOf(false) }
+    var realOverflow by remember { mutableStateOf(overflow) }
 
     Text(
         text = text,
@@ -477,7 +479,7 @@ fun AutoHeightText(
         textDecoration = textDecoration,
         textAlign = textAlign,
         lineHeight = lineHeight,
-        overflow = overflow,
+        overflow = realOverflow,
         softWrap = softWrap,
         maxLines = maxLines,
         minLines = minLines,
@@ -485,8 +487,9 @@ fun AutoHeightText(
             if (!readyToDraw) {
                 if (it.didOverflowHeight) {
                     val nextSize = realFontSize - 1f
-                    if (nextSize > 2f) {
+                    if (nextSize > minTextSizeSp) {
                         realFontSize = nextSize
+                        realOverflow = TextOverflow.Ellipsis
                     } else {
                         readyToDraw = true
                     }

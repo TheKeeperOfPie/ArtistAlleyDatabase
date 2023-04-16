@@ -1,6 +1,9 @@
 package com.thekeeperofpie.artistalleydatabase
 
+import android.os.Build
 import android.os.Bundle
+import android.view.WindowInsets
+import android.view.WindowInsetsController
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
@@ -31,6 +34,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.core.view.WindowCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -91,6 +95,11 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        if (BuildConfig.DEBUG) {
+            WindowCompat.setDecorFitsSystemWindows(window, false)
+        }
+
         setContent {
             ArtistAlleyDatabaseTheme {
                 Surface {
@@ -204,6 +213,13 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+
+        if (BuildConfig.DEBUG && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            window.insetsController?.run {
+                hide(WindowInsets.Type.statusBars())
+                systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            }
+        }
     }
 
     @Composable
@@ -283,6 +299,7 @@ class MainActivity : ComponentActivity() {
                         onClickNav = onClickNav,
                         needAuth = { viewModel.needAuth },
                         onClickAuth = { viewModel.onClickAuth(this@MainActivity) },
+                        onSubmitAuthToken = viewModel::onSubmitAuthToken,
                         selectedSubIndex = selectedSubIndex,
                     )
                 }

@@ -4,6 +4,7 @@ import android.util.Log
 import com.anilist.AuthedUserQuery
 import com.anilist.GenresQuery
 import com.anilist.MediaAdvancedSearchQuery
+import com.anilist.MediaDetailsQuery
 import com.anilist.MediaTagsQuery
 import com.anilist.UserMediaListQuery
 import com.anilist.type.MediaFormat
@@ -154,6 +155,8 @@ class AuthedAniListApi(
     suspend fun genres() = query(GenresQuery())
 
     suspend fun tags() = query(MediaTagsQuery())
+
+    suspend fun mediaDetails(id: String) = query(MediaDetailsQuery(id.toInt()))
 
     private suspend fun <D : Query.Data> query(query: Query<D>) =
         apolloClient.query(query).execute()

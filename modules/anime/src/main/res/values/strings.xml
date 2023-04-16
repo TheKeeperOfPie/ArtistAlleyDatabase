@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="anime_auth_prompt">AniList account required</string>
+    <string name="anime_auth_prompt_paste">Or paste in an auth token</string>
     <string name="anime_auth_button">Log in</string>
     <string name="anime_home_title">Anime</string>
     <string name="anime_media_banner_image">Media banner image</string>
     <string name="anime_media_cover_image">Media cover image</string>
+    <string name="anime_media_character_image">Character image</string>
+    <string name="anime_media_voice_actor_image">Voice actor image</string>
     <string name="anime_media_list_error_loading">Error loading media list</string>
     <string name="anime_media_list_no_results">No results</string>
     <string name="anime_screen_user_list">User list</string>
@@ -168,4 +171,10 @@
     <string name="anime_media_cover_image_long_press_preview">Preview cover image</string>
     <string name="anime_media_tag_long_click_content_description">Preview tag</string>
     <string name="anime_media_tag_no_description_error">No tag description</string>
+
+    <string name="anime_media_error_loading_details">Error loading anime</string>
+    <string name="anime_media_details_description_label">Description</string>
+    <string name="anime_media_details_characters_label">Characters</string>
+    <string name="anime_media_details_tags_label">Tags</string>
+    <string name="anime_media_details_tag_with_rank_format">%1$s - %2$d</string>
 </resources>

@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListOAuthStore
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -31,5 +32,11 @@ class AnimeHomeViewModel @Inject constructor(
 
     fun onClickAuth(activity: Activity) {
         oAuthStore.launchAuthRequest(activity)
+    }
+
+    fun onSubmitAuthToken(token: String) {
+        viewModelScope.launch(CustomDispatchers.IO) {
+            oAuthStore.storeAuthTokenResult(token)
+        }
     }
 }

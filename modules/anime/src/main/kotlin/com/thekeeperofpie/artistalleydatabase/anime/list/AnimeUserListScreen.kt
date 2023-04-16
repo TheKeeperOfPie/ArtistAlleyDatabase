@@ -41,6 +41,7 @@ object AnimeUserListScreen {
         onTagDismiss: () -> Unit = {},
         onTagClick: (tagId: String, tagName: String) -> Unit = { _, _ -> },
         onTagLongClick: (tagId: String) -> Unit = {},
+        onMediaClick: (AnimeMediaListRow.Entry) -> Unit = {},
     ) {
         AnimeMediaFilterOptionsBottomPanel(
             topBar = {
@@ -86,6 +87,7 @@ object AnimeUserListScreen {
                                     is Entry.Header -> Header(it)
                                     is Entry.Item -> AnimeMediaListRow(
                                         entry = it,
+                                        onClick = onMediaClick,
                                         onTagClick = onTagClick,
                                         onTagLongClick = onTagLongClick,
                                         onLongPressImage = onLongPressImage

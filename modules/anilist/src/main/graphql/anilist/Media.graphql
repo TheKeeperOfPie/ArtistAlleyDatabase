@@ -20,6 +20,7 @@ fragment AniListListRowMedia on Media {
     id
     bannerImage
     coverImage {
+        color
         extraLarge
         large
     }
@@ -81,6 +82,61 @@ query MediaAdvancedSearch($page: Int, $perPage: Int, $search: String, $type: Med
             episodes_lesser: $episodesLesser, source_in: $sourceIn,
             minimumTagRank: $minimumTagRank) @nonnull {
             ...AniListListRowMedia
+        }
+    }
+}
+
+query MediaDetails($mediaId: Int!) {
+    Media(id: $mediaId) {
+        bannerImage
+        coverImage {
+            color
+            extraLarge
+        }
+        title {
+            userPreferred
+        }
+
+        # TODO: Handle pagination
+        characters {
+            nodes {
+                id
+                name {
+                    userPreferred
+                }
+                image {
+                    large
+                }
+            }
+            edges {
+                voiceActors {
+                    id
+                    languageV2
+                    image {
+                        large
+                    }
+                    name {
+                        userPreferred
+                    }
+                }
+                node {
+                    id
+                }
+            }
+        }
+        description
+        season
+        seasonYear
+        format
+        status
+        genres
+        tags {
+            id
+            name
+            isAdult
+            isGeneralSpoiler
+            isMediaSpoiler
+            rank
         }
     }
 }

@@ -1,5 +1,4 @@
 import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
-import org.gradle.internal.impldep.org.junit.experimental.categories.Categories.CategoryFilter.exclude
 
 plugins {
     alias(libs.plugins.com.google.dagger.hilt.android) apply false
@@ -54,6 +53,7 @@ dependencyAnalysis {
             }
             onUnusedDependencies {
                 exclude(
+                    "androidx.compose.material3:material3",
                     "androidx.compose.ui:ui-tooling-preview",
                     "androidx.test.ext:junit",
                     "androidx.test:runner",

@@ -3,6 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.anime.media
 import android.text.format.DateUtils
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -14,7 +15,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
@@ -34,15 +34,11 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.takeOrElse
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -59,10 +55,8 @@ import com.google.accompanist.placeholder.material.shimmer
 import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
-import com.thekeeperofpie.artistalleydatabase.compose.AssistChip
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.ColorUtils
-import com.thekeeperofpie.artistalleydatabase.compose.assistChipColors
 import com.thekeeperofpie.artistalleydatabase.compose.fadingEdge
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 
@@ -72,6 +66,7 @@ object AnimeMediaListRow {
     @Composable
     operator fun invoke(
         entry: Entry,
+        onClick: (Entry) -> Unit = {},
         onTagClick: (tagId: String, tagName: String) -> Unit = { _, _ -> },
         onTagLongClick: (tagId: String) -> Unit = {},
         onLongPressImage: (entry: Entry) -> Unit = {},
@@ -80,6 +75,7 @@ object AnimeMediaListRow {
             modifier = Modifier
                 .fillMaxWidth()
                 .heightIn(min = 180.dp)
+                .clickable(enabled = entry != Entry.Loading, onClick = { onClick(entry) }),
         ) {
             Row {
                 CoverImage(entry, onLongPressImage)
@@ -308,7 +304,7 @@ object AnimeMediaListRow {
 
     @Composable
     private fun TagRow(
-        tags: List<Tag>,
+        tags: List<AnimeMediaTagEntry>,
         onTagClick: (tagId: String, tagName: String) -> Unit = { _, _ -> },
         onTagLongClick: (tagId: String) -> Unit = {},
     ) {
@@ -323,53 +319,11 @@ object AnimeMediaListRow {
                 )
         ) {
             items(tags, { it.id }) {
-                val shouldHide = it.shouldHide
-                var hidden by remember(it.id) { mutableStateOf(shouldHide) }
-                AssistChip(
-                    onClick = {
-                        if (!hidden) {
-                            onTagClick(it.id, it.text)
-                        } else {
-                            hidden = false
-                        }
-                    },
-                    onLongClickLabel = stringResource(
-                        R.string.anime_media_tag_long_click_content_description
-                    ),
-                    onLongClick = { onTagLongClick(it.id) },
-                    colors = assistChipColors(
-                        containerColor = if (hidden) {
-                            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.25f)
-                        } else {
-                            it.containerColor
-                        }
-                    ),
-                    leadingIcon = {
-                        if (it.leadingIconVector != null
-                            && it.leadingIconContentDescription != null
-                        ) {
-                            Icon(
-                                painter = rememberVectorPainter(it.leadingIconVector!!),
-                                contentDescription = stringResource(
-                                    it.leadingIconContentDescription!!
-                                ),
-                                modifier = Modifier
-                                    .padding(vertical = 4.dp)
-                                    .size(16.dp)
-                            )
-                        }
-                    },
-                    label = {
-                        AutoHeightText(
-                            text = if (hidden && it.textHiddenRes != null) {
-                                stringResource(it.textHiddenRes!!)
-                            } else {
-                                it.text
-                            },
-                            color = it.textColor,
-                        )
-                    },
-                    modifier = Modifier.height(24.dp)
+                AnimeMediaTagEntry.Chip(
+                    tag = it,
+                    onTagClicked = onTagClick,
+                    onTagLongClicked = onTagLongClick,
+                    modifier = Modifier.height(24.dp),
                 )
             }
         }
@@ -380,13 +334,14 @@ object AnimeMediaListRow {
             override val id = null
             override val image = null
             override val title = ""
-            override val tags = emptyList<Tag>()
+            override val tags = emptyList<AnimeMediaTagEntry>()
         }
 
         val id: EntryId? get() = null
         val image: String?
         val imageExtraLarge: String? get() = image
         val imageBanner: String? get() = null
+        val color: Color? get() = null
         val title: String?
 
         val subtitleMediaFormatRes: Int get() = R.string.anime_media_format_tv
@@ -399,7 +354,7 @@ object AnimeMediaListRow {
 
         val nextAiringEpisode: AniListListRowMedia.NextAiringEpisode? get() = null
 
-        val tags: List<Tag>
+        val tags: List<AnimeMediaTagEntry>
     }
 
     abstract class MediaEntry(
@@ -410,6 +365,7 @@ object AnimeMediaListRow {
         override val image = media.coverImage?.large
         override val imageExtraLarge = media.coverImage?.extraLarge
         override val imageBanner = media.bannerImage
+        override val color = media.coverImage?.color?.let(ColorUtils::hexToColor)
         override val title = media.title?.userPreferred
 
         override val subtitleMediaFormatRes = media.format.toTextRes()
@@ -422,52 +378,7 @@ object AnimeMediaListRow {
 
         override val nextAiringEpisode = media.nextAiringEpisode
 
-        override val tags: List<Tag> = media.tags?.filterNotNull()?.map {
-            object : Tag {
-                override val id get() = it.id.toString()
-
-                override val shouldHide = (it.isAdult ?: false)
-                        || (it.isGeneralSpoiler ?: false)
-                        || (it.isMediaSpoiler ?: false)
-
-                override val containerColor = MediaUtils.calculateTagColor(it.id)
-
-                override val leadingIconVector = MediaUtils.tagLeadingIcon(
-                    isAdult = it.isAdult,
-                    isGeneralSpoiler = it.isGeneralSpoiler,
-                    isMediaSpoiler = it.isMediaSpoiler,
-                )
-
-                override val leadingIconContentDescription =
-                    MediaUtils.tagLeadingIconContentDescription(
-                        isAdult = it.isAdult,
-                        isGeneralSpoiler = it.isGeneralSpoiler,
-                        isMediaSpoiler = it.isMediaSpoiler,
-                    )
-
-                override val textColor = ColorUtils.bestTextColor(containerColor)
-
-                override val text = it.name
-
-                override val textHiddenRes = when {
-                    it.isAdult ?: false -> R.string.anime_media_tag_adult
-                    (it.isGeneralSpoiler ?: false) || (it.isMediaSpoiler ?: false) ->
-                        R.string.anime_media_tag_spoiler
-                    else -> null
-                }
-            }
-        }.orEmpty()
-    }
-
-    interface Tag {
-        val id: String
-        val shouldHide: Boolean get() = false
-        val containerColor: Color get() = Color.Transparent
-        val leadingIconVector: ImageVector? get() = null
-        val leadingIconContentDescription: Int? get() = null
-        val textColor: Color get() = Color.Unspecified
-        val text: String
-        val textHiddenRes: Int? get() = null
+        override val tags = media.tags?.filterNotNull()?.map(::AnimeMediaTagEntry).orEmpty()
     }
 }
 
@@ -478,23 +389,23 @@ private fun Preview() {
         override val image = null
         override val title =
             "Tsundere Akuyaku Reijou Liselotte to Jikkyou no Endou-kun to Kaisetsu no Kobayashi-san"
-        override val tags: List<AnimeMediaListRow.Tag> = listOf(
-            object : AnimeMediaListRow.Tag {
-                override val id = "857"
-                override val text = "Villainess"
-            },
-            object : AnimeMediaListRow.Tag {
-                override val id = "164"
-                override val text = "Tsundere"
-            },
-            object : AnimeMediaListRow.Tag {
-                override val id = "85"
-                override val shouldHide = true
-                override val leadingIconVector = Icons.Filled.Warning
-                override val leadingIconContentDescription = R.string.anime_media_tag_is_spoiler
-                override val text = "Tragedy"
-                override val textHiddenRes = R.string.anime_media_tag_spoiler
-            },
+        override val tags: List<AnimeMediaTagEntry> = listOf(
+            AnimeMediaTagEntry(
+                id = "857",
+                name = "Villainess",
+            ),
+            AnimeMediaTagEntry(
+                id = "164",
+                name = "Tsundere",
+            ),
+            AnimeMediaTagEntry(
+                id = "85",
+                shouldHide = true,
+                leadingIconVector = Icons.Filled.Warning,
+                leadingIconContentDescription = R.string.anime_media_tag_is_spoiler,
+                name = "Tragedy",
+                textHiddenRes = R.string.anime_media_tag_spoiler,
+            ),
         )
     })
 }
