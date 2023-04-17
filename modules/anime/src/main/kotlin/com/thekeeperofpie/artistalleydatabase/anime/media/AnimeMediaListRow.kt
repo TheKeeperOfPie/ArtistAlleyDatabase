@@ -66,6 +66,7 @@ object AnimeMediaListRow {
     @Composable
     operator fun invoke(
         entry: Entry,
+        label: (@Composable () -> Unit)? = null,
         onClick: (Entry) -> Unit = {},
         onTagClick: (tagId: String, tagName: String) -> Unit = { _, _ -> },
         onTagLongClick: (tagId: String) -> Unit = {},
@@ -83,6 +84,7 @@ object AnimeMediaListRow {
                 Column(modifier = Modifier.heightIn(min = 180.dp)) {
                     Row(Modifier.fillMaxWidth()) {
                         Column(Modifier.weight(1f)) {
+                            label?.invoke()
                             TitleText(entry)
                             SubtitleText(entry)
                         }
@@ -113,14 +115,14 @@ object AnimeMediaListRow {
         ) {
             AsyncImage(
                 model = entry.image,
-                contentScale = ContentScale.Crop,
+                contentScale = ContentScale.FillHeight,
                 fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
                 contentDescription = stringResource(R.string.anime_media_cover_image),
                 modifier = Modifier
                     .background(MaterialTheme.colorScheme.surfaceVariant)
+                    .fillMaxHeight()
                     .heightIn(min = 180.dp)
                     .width(120.dp)
-                    .fillMaxHeight()
                     .placeholder(
                         visible = entry == Entry.Loading,
                         highlight = PlaceholderHighlight.shimmer(),
@@ -338,7 +340,7 @@ object AnimeMediaListRow {
         }
 
         val id: EntryId? get() = null
-        val image: String?
+        val image: String? get() = null
         val imageExtraLarge: String? get() = image
         val imageBanner: String? get() = null
         val color: Color? get() = null
@@ -354,10 +356,10 @@ object AnimeMediaListRow {
 
         val nextAiringEpisode: AniListListRowMedia.NextAiringEpisode? get() = null
 
-        val tags: List<AnimeMediaTagEntry>
+        val tags: List<AnimeMediaTagEntry> get() = emptyList()
     }
 
-    abstract class MediaEntry(
+    open class MediaEntry(
         val media: AniListListRowMedia
     ) : Entry {
 

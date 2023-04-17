@@ -215,6 +215,7 @@ object AnimeHomeScreen {
                                 onCharacterLongClicked = { TODO() },
                                 onTagClicked = ::onTagClick,
                                 onTagLongClicked = { TODO() },
+                                onMediaClicked = ::onMediaClick,
                                 errorRes = { viewModel.errorResource.collectAsState().value },
                             )
                         }

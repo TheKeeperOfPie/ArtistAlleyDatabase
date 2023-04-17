@@ -68,8 +68,11 @@ import androidx.palette.graphics.Palette
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.anilist.MediaDetailsQuery.Data.Media
+import com.anilist.type.MediaRelation
+import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaTagEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
@@ -83,6 +86,8 @@ import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 object AnimeMediaDetailsScreen {
+
+    private const val RELATIONS_ABOVE_FOLD = 3
 
     @Composable
     operator fun invoke(
@@ -99,6 +104,7 @@ object AnimeMediaDetailsScreen {
         onCharacterLongClicked: (String) -> Unit = {},
         onTagClicked: (tagId: String, tagName: String) -> Unit = { _, _ -> },
         onTagLongClicked: (String) -> Unit = {},
+        onMediaClicked: (AnimeMediaListRow.Entry) -> Unit = {},
         errorRes: @Composable () -> Pair<Int, Exception?>? = { null },
         onErrorDismiss: () -> Unit = {},
     ) {
@@ -139,6 +145,7 @@ object AnimeMediaDetailsScreen {
                             onCharacterLongClicked = onCharacterLongClicked,
                             onTagClicked = onTagClicked,
                             onTagLongClicked = onTagLongClicked,
+                            onMediaClicked = onMediaClicked,
                         )
                     }
                 }
@@ -162,8 +169,9 @@ object AnimeMediaDetailsScreen {
         onGenreLongClicked: (String) -> Unit,
         onCharacterClicked: (String) -> Unit,
         onCharacterLongClicked: (String) -> Unit,
-        onTagClicked: (tagId: String, tagName: String) -> Unit = { _, _ -> },
+        onTagClicked: (tagId: String, tagName: String) -> Unit,
         onTagLongClicked: (String) -> Unit,
+        onMediaClicked: (AnimeMediaListRow.Entry) -> Unit,
     ) {
         Header(
             entry = entry,
@@ -185,6 +193,13 @@ object AnimeMediaDetailsScreen {
             entry = entry,
             onCharacterClicked = onCharacterClicked,
             onCharacterLongClicked = onCharacterLongClicked,
+        )
+
+        RelationsSection(
+            entry = entry,
+            onMediaClicked = onMediaClicked,
+            onTagClicked = onTagClicked,
+            onTagLongClicked = onTagLongClicked,
         )
 
         TagSection(
@@ -574,6 +589,81 @@ object AnimeMediaDetailsScreen {
     }
 
     @Composable
+    private fun RelationsSection(
+        entry: Entry, onMediaClicked: (AnimeMediaListRow.Entry) -> Unit,
+        onTagClicked: (tagId: String, tagName: String) -> Unit,
+        onTagLongClicked: (String) -> Unit,
+    ) {
+        if (entry.relations.isNotEmpty()) {
+            SectionHeader(stringResource(R.string.anime_media_details_relations_label))
+            Column(
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                modifier = Modifier.padding(horizontal = 16.dp),
+            ) {
+                entry.relations.take(RELATIONS_ABOVE_FOLD).forEach {
+                    AnimeMediaListRow(
+                        entry = it.entry,
+                        label = { RelationLabel(it.relation) },
+                        onClick = onMediaClicked,
+                        onTagClick = onTagClicked,
+                        onTagLongClick = onTagLongClicked,
+                    )
+                }
+
+                if (entry.relations.size > RELATIONS_ABOVE_FOLD) {
+                    var expanded by remember { mutableStateOf(false) }
+                    if (expanded) {
+                        entry.relations.drop(RELATIONS_ABOVE_FOLD).forEach {
+                            AnimeMediaListRow(
+                                entry = it.entry,
+                                label = { RelationLabel(it.relation) },
+                                onClick = onMediaClicked,
+                                onTagClick = onTagClicked,
+                                onTagLongClick = onTagLongClicked,
+                            )
+                        }
+                    }
+
+                    ElevatedCard(
+                        onClick = { expanded = !expanded },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                    ) {
+                        Text(
+                            text = stringResource(
+                                if (expanded) {
+                                    UtilsStringR.show_less
+                                } else {
+                                    UtilsStringR.show_more
+                                }
+                            ),
+                            modifier = Modifier
+                                .padding(horizontal = 16.dp, vertical = 10.dp)
+                                .align(Alignment.CenterHorizontally)
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    @Composable
+    fun RelationLabel(relation: MediaRelation) {
+        Text(
+            text = stringResource(relation.toTextRes()),
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.surfaceTint,
+            modifier = Modifier
+                .wrapContentHeight()
+                .padding(
+                    start = 12.dp,
+                    top = 10.dp,
+                    end = 16.dp,
+                )
+        )
+    }
+
+    @Composable
     private fun TagSection(
         entry: Entry,
         onTagClicked: (tagId: String, tagName: String) -> Unit = { _, _ -> },
@@ -644,6 +734,14 @@ object AnimeMediaDetailsScreen {
             }
         }.orEmpty()
 
+        val relations = media.relations?.edges?.filterNotNull()
+            ?.mapNotNull {
+                val node = it.node ?: return@mapNotNull null
+                val relation = it.relationType ?: return@mapNotNull null
+                Relation(it.id.toString(), relation, AnimeMediaListRow.MediaEntry(node))
+            }
+            .orEmpty()
+
         val tags = media.tags?.filterNotNull()?.map(::AnimeMediaTagEntry).orEmpty()
 
         data class Genre(
@@ -664,5 +762,11 @@ object AnimeMediaDetailsScreen {
                 val language: String,
             )
         }
+
+        data class Relation(
+            val id: String,
+            val relation: MediaRelation,
+            val entry: AnimeMediaListRow.Entry,
+        )
     }
 }

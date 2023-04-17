@@ -86,6 +86,9 @@
     <string name="anime_media_format_ova">OVA</string>
     <string name="anime_media_format_ona">ONA</string>
     <string name="anime_media_format_music">Music</string>
+    <string name="anime_media_format_manga">Manga</string>
+    <string name="anime_media_format_novel">Novel</string>
+    <string name="anime_media_format_one_shot">One shot</string>
     <string name="anime_media_format_unknown">Unknown</string>
     <string name="anime_media_filter_format_label">Format</string>
 
@@ -177,4 +180,20 @@
     <string name="anime_media_details_characters_label">Characters</string>
     <string name="anime_media_details_tags_label">Tags</string>
     <string name="anime_media_details_tag_with_rank_format">%1$s - %2$d</string>
+    <string name="anime_media_details_relations_label">Relations</string>
+
+    <string name="anime_media_relation_adaptation">Adaptation</string>
+    <string name="anime_media_relation_prequel">Prequel</string>
+    <string name="anime_media_relation_sequel">Sequel</string>
+    <string name="anime_media_relation_parent">Parent</string>
+    <string name="anime_media_relation_side_story">Side story</string>
+    <string name="anime_media_relation_character">Character</string>
+    <string name="anime_media_relation_summary">Summary</string>
+    <string name="anime_media_relation_alternative">Alternative</string>
+    <string name="anime_media_relation_spin_off">Spin off</string>
+    <string name="anime_media_relation_other">Other</string>
+    <string name="anime_media_relation_source">Source</string>
+    <string name="anime_media_relation_compilation">Compilation</string>
+    <string name="anime_media_relation_contains">Contains</string>
+    <string name="anime_media_relation_unknown">Unknown</string>
 </resources>

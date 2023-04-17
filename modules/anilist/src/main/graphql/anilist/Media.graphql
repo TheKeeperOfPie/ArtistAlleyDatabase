@@ -125,11 +125,20 @@ query MediaDetails($mediaId: Int!) {
             }
         }
         description
+        format
+        genres
+        relations {
+            edges {
+                id
+                relationType
+                node {
+                    ...AniListListRowMedia
+                }
+            }
+        }
         season
         seasonYear
-        format
         status
-        genres
         tags {
             id
             name

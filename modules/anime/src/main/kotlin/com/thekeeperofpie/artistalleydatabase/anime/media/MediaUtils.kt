@@ -6,6 +6,7 @@ import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.twotone._18UpRating
 import androidx.compose.ui.graphics.Color
 import com.anilist.type.MediaFormat
+import com.anilist.type.MediaRelation
 import com.anilist.type.MediaSeason
 import com.anilist.type.MediaSource
 import com.anilist.type.MediaStatus
@@ -69,8 +70,11 @@ object MediaUtils {
         MediaFormat.OVA -> R.string.anime_media_format_ova
         MediaFormat.ONA -> R.string.anime_media_format_ona
         MediaFormat.MUSIC -> R.string.anime_media_format_music
-        // MANGA, NOVEL, and ONE_SHOT excluded since not anime
-        else -> R.string.anime_media_format_unknown
+        MediaFormat.MANGA -> R.string.anime_media_format_manga
+        MediaFormat.NOVEL -> R.string.anime_media_format_novel
+        MediaFormat.ONE_SHOT -> R.string.anime_media_format_one_shot
+        MediaFormat.UNKNOWN__,
+        null -> R.string.anime_media_format_unknown
     }
 
     fun MediaSeason?.toTextRes() = when (this) {
@@ -102,4 +106,21 @@ object MediaUtils {
         null -> R.string.anime_media_filter_source_unknown
     }
 
+    fun MediaRelation?.toTextRes() = when (this) {
+        MediaRelation.ADAPTATION -> R.string.anime_media_relation_adaptation
+        MediaRelation.PREQUEL -> R.string.anime_media_relation_prequel
+        MediaRelation.SEQUEL -> R.string.anime_media_relation_sequel
+        MediaRelation.PARENT -> R.string.anime_media_relation_parent
+        MediaRelation.SIDE_STORY -> R.string.anime_media_relation_side_story
+        MediaRelation.CHARACTER -> R.string.anime_media_relation_character
+        MediaRelation.SUMMARY -> R.string.anime_media_relation_summary
+        MediaRelation.ALTERNATIVE -> R.string.anime_media_relation_alternative
+        MediaRelation.SPIN_OFF -> R.string.anime_media_relation_spin_off
+        MediaRelation.OTHER -> R.string.anime_media_relation_other
+        MediaRelation.SOURCE -> R.string.anime_media_relation_source
+        MediaRelation.COMPILATION -> R.string.anime_media_relation_compilation
+        MediaRelation.CONTAINS -> R.string.anime_media_relation_contains
+        MediaRelation.UNKNOWN__,
+        null -> R.string.anime_media_relation_unknown
+    }
 }
