@@ -66,6 +66,7 @@ object AnimeMediaListRow {
     @Composable
     operator fun invoke(
         entry: Entry,
+        modifier: Modifier = Modifier,
         label: (@Composable () -> Unit)? = null,
         onClick: (Entry) -> Unit = {},
         onTagClick: (tagId: String, tagName: String) -> Unit = { _, _ -> },
@@ -73,7 +74,7 @@ object AnimeMediaListRow {
         onLongPressImage: (entry: Entry) -> Unit = {},
     ) {
         ElevatedCard(
-            modifier = Modifier
+            modifier = modifier
                 .fillMaxWidth()
                 .heightIn(min = 180.dp)
                 .clickable(enabled = entry != Entry.Loading, onClick = { onClick(entry) }),

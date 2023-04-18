@@ -16,6 +16,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.notification.Notific
 import com.thekeeperofpie.artistalleydatabase.android_utils.persistence.Importer
 import com.thekeeperofpie.artistalleydatabase.export.ExportUtils
 import com.thekeeperofpie.artistalleydatabase.navigation.NavDrawerItems
+import com.thekeeperofpie.artistalleydatabase.settings.SettingsData
 import com.thekeeperofpie.artistalleydatabase.settings.SettingsProvider
 import com.thekeeperofpie.artistalleydatabase.utils.PendingIntentRequestCodes
 import dagger.assisted.Assisted
@@ -105,7 +106,7 @@ class ImportWorker @AssistedInject constructor(
                             try {
                                 @OptIn(ExperimentalSerializationApi::class)
                                 val settingsData = zipFile.getInputStream(settingsEntry).use {
-                                    appJson.json.decodeFromStream(settingsProvider.serializer, it)
+                                    appJson.json.decodeFromStream<SettingsData>(it)
                                 }
                                 if (!dryRun) {
                                     settingsProvider.overwrite(settingsData)

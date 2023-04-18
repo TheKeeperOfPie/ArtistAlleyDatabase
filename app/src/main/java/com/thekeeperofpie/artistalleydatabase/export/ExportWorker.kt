@@ -121,7 +121,6 @@ class ExportWorker @AssistedInject constructor(
                     ByteArrayOutputStream().let {
                         it.use {
                             appJson.json.encodeToStream(
-                                settingsProvider.serializer,
                                 settingsProvider.settingsData,
                                 it
                             )

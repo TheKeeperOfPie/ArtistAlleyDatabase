@@ -136,6 +136,17 @@ query MediaDetails($mediaId: Int!) {
                 }
             }
         }
+        recommendations {
+            edges {
+                node {
+                    id
+                    rating
+                    mediaRecommendation {
+                        ...AniListListRowMedia
+                    }
+                }
+            }
+        }
         season
         seasonYear
         status

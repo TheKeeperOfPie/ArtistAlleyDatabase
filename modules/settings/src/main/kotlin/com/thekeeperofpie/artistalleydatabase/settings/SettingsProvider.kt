@@ -6,7 +6,6 @@ import androidx.annotation.VisibleForTesting
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
-import com.thekeeperofpie.artistalleydatabase.android_utils.Converters
 import com.thekeeperofpie.artistalleydatabase.android_utils.NetworkSettings
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
@@ -36,8 +35,6 @@ class SettingsProvider constructor(
         const val EXPORT_FILE_NAME = "settings.json"
         const val PREFERENCES_NAME = "settings"
     }
-
-    val serializer = Converters.PropertiesSerializer(SettingsData::class, appJson)
 
     @VisibleForTesting
     val sharedPreferences = EncryptedSharedPreferences.create(
