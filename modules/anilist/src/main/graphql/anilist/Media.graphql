@@ -94,6 +94,9 @@ query MediaDetails($mediaId: Int!) {
             extraLarge
         }
         title {
+            romaji
+            english
+            native
             userPreferred
         }
 
@@ -125,8 +128,16 @@ query MediaDetails($mediaId: Int!) {
             }
         }
         description
+        averageScore
+        meanScore
+        duration
+        favourites
+        source
+        synonyms
+        episodes
         format
         genres
+        popularity
         relations {
             edges {
                 id
@@ -150,6 +161,16 @@ query MediaDetails($mediaId: Int!) {
         season
         seasonYear
         status
+        startDate {
+            year
+            month
+            day
+        }
+        endDate {
+            year
+            month
+            day
+        }
         tags {
             id
             name

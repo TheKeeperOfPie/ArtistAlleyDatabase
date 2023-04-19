@@ -198,4 +198,21 @@
     <string name="anime_media_relation_unknown">Unknown</string>
 
     <string name="anime_media_details_recommendations_label">Recommendations</string>
+
+    <string name="anime_media_details_information_label">Information</string>
+    <string name="anime_media_details_format_label">Format</string>
+    <string name="anime_media_details_status_label">Status</string>
+    <string name="anime_media_details_episodes_label">Episodes</string>
+    <string name="anime_media_details_duration_label">Duration</string>
+    <string name="anime_media_details_duration_minutes">%1$d minutes</string>
+    <string name="anime_media_details_season_label">Season</string>
+    <string name="anime_media_details_start_date_label">Start date</string>
+    <string name="anime_media_details_end_date_label">End date</string>
+    <string name="anime_media_details_average_score_label">Average score</string>
+    <string name="anime_media_details_mean_score_label">Mean score</string>
+    <string name="anime_media_details_popularity_label">Popularity</string>
+    <string name="anime_media_details_favorites_label">Favorites</string>
+    <string name="anime_media_details_source_label">Source</string>
+    <string name="anime_media_details_synonyms_label">Synonyms</string>
+    <string name="anime_media_details_synonyms_expand_content_description">Synonyms expand</string>
 </resources>

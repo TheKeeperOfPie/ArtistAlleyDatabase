@@ -1,19 +1,31 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media
 
+import android.content.Context
+import android.text.format.DateUtils
 import android.view.animation.PathInterpolator
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.twotone._18UpRating
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import com.anilist.type.MediaFormat
 import com.anilist.type.MediaRelation
 import com.anilist.type.MediaSeason
 import com.anilist.type.MediaSource
 import com.anilist.type.MediaStatus
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import java.time.LocalDate
+import java.time.Month
+import java.time.ZoneOffset
 import kotlin.math.absoluteValue
 
 object MediaUtils {
+
+    // No better alternative to FORMAT_UTC
+    // TODO: Find an alternative
+    @Suppress("DEPRECATION")
+    const val BASE_DATE_FORMAT_FLAGS = DateUtils.FORMAT_ABBREV_ALL or DateUtils.FORMAT_UTC
 
     // Uses a cubic bezier to interpolate tag IDs to more distinct colors,
     // as the tag IDs are not uniformly distributed
@@ -53,6 +65,7 @@ object MediaUtils {
             ?: false) -> R.string.anime_media_tag_is_spoiler
         else -> null
     }
+
     fun MediaStatus?.toTextRes() = when (this) {
         MediaStatus.FINISHED -> R.string.anime_media_status_finished
         MediaStatus.RELEASING -> R.string.anime_media_status_releasing
@@ -122,5 +135,54 @@ object MediaUtils {
         MediaRelation.CONTAINS -> R.string.anime_media_relation_contains
         MediaRelation.UNKNOWN__,
         null -> R.string.anime_media_relation_unknown
+    }
+
+    @Composable
+    fun formatSeasonYear(season: MediaSeason?, seasonYear: Int?, withSeparator: Boolean = false) =
+        when {
+            season != null && seasonYear != null -> {
+                val seasonText = stringResource(season.toTextRes())
+                if (withSeparator) {
+                    "$seasonText - $seasonYear"
+                } else {
+                    "$seasonText $seasonYear"
+                }
+            }
+            season != null -> stringResource(season.toTextRes())
+            seasonYear != null -> seasonYear.toString()
+            else -> null
+        }
+
+    fun formatDateTime(
+        context: Context,
+        year: Int?,
+        month: Int?,
+        dayOfMonth: Int?
+    ): String? = when {
+        year != null && month != null && dayOfMonth != null -> DateUtils.formatDateTime(
+            context,
+            LocalDate.of(year, month, dayOfMonth)
+                .atTime(0, 0)
+                .toInstant(ZoneOffset.UTC)
+                .toEpochMilli(),
+            BASE_DATE_FORMAT_FLAGS or DateUtils.FORMAT_SHOW_YEAR or DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_WEEKDAY
+        )
+        year != null && month != null && dayOfMonth == null -> DateUtils.formatDateTime(
+            context,
+            LocalDate.of(year, month, 0)
+                .atTime(0, 0)
+                .toInstant(ZoneOffset.UTC)
+                .toEpochMilli(),
+            BASE_DATE_FORMAT_FLAGS or DateUtils.FORMAT_SHOW_YEAR or DateUtils.FORMAT_SHOW_DATE
+        )
+        year != null -> DateUtils.formatDateTime(
+            context,
+            LocalDate.of(year, Month.JANUARY, 0)
+                .atTime(0, 0)
+                .toInstant(ZoneOffset.UTC)
+                .toEpochMilli(),
+            BASE_DATE_FORMAT_FLAGS or DateUtils.FORMAT_SHOW_YEAR
+        )
+        else -> null
     }
 }

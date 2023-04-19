@@ -10,14 +10,21 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
+ import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
@@ -29,6 +36,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ImageNotSupported
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Divider
+import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LocalContentColor
@@ -81,6 +90,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.compose.AssistChip
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
+import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.assistChipColors
 import de.charlex.compose.HtmlText
 import kotlinx.coroutines.launch
@@ -225,6 +235,8 @@ object AnimeMediaDetailsScreen {
             onTagClicked = onTagClicked,
             onTagLongClicked = onTagLongClicked,
         )
+
+        infoSection(entry)
 
         tagSection(
             entry = entry,
@@ -382,21 +394,7 @@ object AnimeMediaDetailsScreen {
                             .padding(horizontal = 16.dp, vertical = 10.dp)
                             .wrapContentHeight()
                             .heightIn(max = if (expanded) Dp.Unspecified else 80.dp)
-                            .graphicsLayer {
-                                compositingStrategy = CompositingStrategy.Offscreen
-                            }
-                            .drawWithCache {
-                                val brush = Brush.verticalGradient(
-                                    0.8f to Color.Black,
-                                    1f to Color.Transparent,
-                                )
-                                onDrawWithContent {
-                                    drawContent()
-                                    if (!expanded) {
-                                        drawRect(brush, blendMode = BlendMode.DstIn)
-                                    }
-                                }
-                            }
+                            .bottomFadingEdge(expanded)
                     )
                 }
             }
@@ -405,13 +403,11 @@ object AnimeMediaDetailsScreen {
 
     @Composable
     private fun SummaryText(entry: Entry, modifier: Modifier = Modifier) {
-        val seasonYear = entry.seasonTextRes?.let { stringResource(it) + " " }.orEmpty() +
-                entry.seasonYear.orEmpty()
         Text(
             text = listOfNotNull(
-                entry.formatTextRes?.let { stringResource(it) },
-                entry.statusTextRes?.let { stringResource(it) },
-                seasonYear.ifEmpty { null },
+                stringResource(entry.formatTextRes),
+                stringResource(entry.statusTextRes),
+                MediaUtils.formatSeasonYear(season = entry.season, seasonYear = entry.seasonYear),
             ).joinToString(separator = " - "),
             style = MaterialTheme.typography.bodyMedium,
             modifier = modifier.wrapContentHeight()
@@ -650,6 +646,189 @@ object AnimeMediaDetailsScreen {
         )
     }
 
+    private fun LazyListScope.infoSection(entry: Entry) {
+        item {
+            SectionHeader(stringResource(R.string.anime_media_details_information_label))
+        }
+        item {
+            ElevatedCard(
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+                    .animateContentSize(),
+            ) {
+                TwoColumnInfoText(
+                    labelOne = stringResource(R.string.anime_media_details_format_label),
+                    bodyOne = stringResource(entry.formatTextRes),
+                    labelTwo = stringResource(R.string.anime_media_details_status_label),
+                    bodyTwo = stringResource(entry.statusTextRes),
+                    showDividerAbove = false,
+                )
+
+                TwoColumnInfoText(
+                    labelOne = stringResource(R.string.anime_media_details_episodes_label),
+                    bodyOne = entry.episodes?.toString(),
+                    labelTwo = stringResource(R.string.anime_media_details_duration_label),
+                    bodyTwo = entry.duration?.let {
+                        stringResource(R.string.anime_media_details_duration_minutes, it)
+                    },
+                )
+
+                TwoColumnInfoText(
+                    labelOne = stringResource(R.string.anime_media_details_source_label),
+                    bodyOne = stringResource(entry.source.toTextRes()),
+                    labelTwo = stringResource(R.string.anime_media_details_season_label),
+                    bodyTwo = MediaUtils.formatSeasonYear(entry.season, entry.seasonYear),
+                )
+
+                val context = LocalContext.current
+
+                val startDateFormatted = entry.startDate?.let {
+                    remember { MediaUtils.formatDateTime(context, it.year, it.month, it.day) }
+                }
+                val endDateFormatted = entry.endDate?.let {
+                    remember { MediaUtils.formatDateTime(context, it.year, it.month, it.day) }
+                }
+
+                TwoColumnInfoText(
+                    labelOne = stringResource(R.string.anime_media_details_start_date_label),
+                    bodyOne = startDateFormatted,
+                    labelTwo = stringResource(R.string.anime_media_details_end_date_label),
+                    bodyTwo = endDateFormatted,
+                )
+
+                TwoColumnInfoText(
+                    labelOne = stringResource(R.string.anime_media_details_average_score_label),
+                    bodyOne = entry.averageScore?.toString(),
+                    labelTwo = stringResource(R.string.anime_media_details_mean_score_label),
+                    bodyTwo = entry.meanScore?.toString(),
+                )
+
+                TwoColumnInfoText(
+                    labelOne = stringResource(R.string.anime_media_details_popularity_label),
+                    bodyOne = entry.popularity?.toString(),
+                    labelTwo = stringResource(R.string.anime_media_details_favorites_label),
+                    bodyTwo = entry.favorites?.toString(),
+                )
+
+                if (entry.allSynonyms.size > 1) {
+                    var expanded by remember { mutableStateOf(false) }
+                    Column(
+                        modifier = Modifier
+                            .wrapContentHeight()
+                            .heightIn(max = if (expanded) Dp.Unspecified else 120.dp)
+                            .bottomFadingEdge(expanded)
+                            .clickable { expanded = !expanded }
+                    ) {
+                        Divider()
+
+                        Row {
+                            Text(
+                                text = stringResource(R.string.anime_media_details_synonyms_label),
+                                style = MaterialTheme.typography.labelLarge,
+                                color = MaterialTheme.colorScheme.surfaceTint,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(start = 16.dp, end = 16.dp, top = 10.dp, bottom = 4.dp)
+                            )
+
+                            TrailingDropdownIconButton(
+                                expanded = expanded,
+                                contentDescription = stringResource(
+                                    R.string.anime_media_details_synonyms_expand_content_description
+                                ),
+                                onClick = { expanded = !expanded },
+                            )
+                        }
+
+                        entry.allSynonyms.forEachIndexed { index, synonym ->
+                            if (index != 0) {
+                                Divider(modifier = Modifier.padding(start = 16.dp))
+                            }
+
+                            val bottomPadding = if (index == entry.allSynonyms.size - 1) {
+                                12.dp
+                            } else {
+                                8.dp
+                            }
+
+                            Text(
+                                text = synonym,
+                                style = MaterialTheme.typography.bodyLarge,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(
+                                        start = 16.dp,
+                                        end = 16.dp,
+                                        top = 8.dp,
+                                        bottom = bottomPadding,
+                                    )
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @Composable
+    private fun ColumnScope.TwoColumnInfoText(
+        labelOne: String, bodyOne: String?,
+        labelTwo: String, bodyTwo: String?,
+        showDividerAbove: Boolean = true
+    ) {
+        if (bodyOne != null && bodyTwo != null) {
+            if (showDividerAbove) {
+                Divider()
+            }
+            Row(modifier = Modifier.height(IntrinsicSize.Min)) {
+                Column(modifier = Modifier.weight(1f)) {
+                    InfoText(label = labelOne, body = bodyOne, showDividerAbove = false)
+                }
+                Box(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .width(DividerDefaults.Thickness)
+                        .background(color = DividerDefaults.color)
+                )
+                Column(modifier = Modifier.weight(1f)) {
+                    InfoText(label = labelTwo, body = bodyTwo, showDividerAbove = false)
+                }
+            }
+        } else if (bodyOne != null) {
+            InfoText(label = labelOne, body = bodyOne, showDividerAbove = showDividerAbove)
+        } else if (bodyTwo != null) {
+            InfoText(label = labelTwo, body = bodyTwo, showDividerAbove = showDividerAbove)
+        }
+    }
+
+    @Suppress("UnusedReceiverParameter")
+    @Composable
+    private fun ColumnScope.InfoText(
+        label: String,
+        body: String,
+        showDividerAbove: Boolean = true
+    ) {
+        if (showDividerAbove) {
+            Divider()
+        }
+
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.surfaceTint,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 16.dp, end = 16.dp, top = 10.dp, bottom = 4.dp)
+        )
+        Text(
+            text = body,
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 10.dp)
+        )
+    }
+
     private fun LazyListScope.recommendationsSection(
         entry: Entry,
         recommendationsExpanded: () -> Boolean,
@@ -809,15 +988,46 @@ object AnimeMediaDetailsScreen {
         }
     }
 
+    private fun Modifier.bottomFadingEdge(expanded: Boolean, firstStop: Float = 0.8f) =
+        graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }
+            .drawWithCache {
+                val brush = Brush.verticalGradient(
+                    firstStop to Color.Black,
+                    1f to Color.Transparent,
+                )
+                onDrawWithContent {
+                    drawContent()
+                    if (!expanded) {
+                        drawRect(brush, blendMode = BlendMode.DstIn)
+                    }
+                }
+            }
+
     data class Entry(
         val media: Media,
     ) {
         val description get() = media.description
-        val seasonTextRes = media.season?.toTextRes()
-        val seasonYear = media.seasonYear?.toString()
+        val season = media.season
+        val seasonYear = media.seasonYear
 
-        val formatTextRes = media.format?.toTextRes()
-        val statusTextRes = media.status?.toTextRes()
+        val formatTextRes = media.format.toTextRes()
+        val statusTextRes = media.status.toTextRes()
+
+        val episodes = media.episodes
+        val duration = media.duration
+        val source = media.source
+        val startDate = media.startDate
+        val endDate = media.endDate
+        val averageScore = media.averageScore
+        val meanScore = media.meanScore
+        val popularity = media.popularity
+        val favorites = media.favourites
+        val allSynonyms = listOfNotNull(
+            media.title?.userPreferred,
+            media.title?.romaji,
+            media.title?.english,
+            media.title?.native,
+        ).distinct() + media.synonyms?.filterNotNull().orEmpty()
 
         val genres = media.genres?.filterNotNull().orEmpty().map(::Genre)
 

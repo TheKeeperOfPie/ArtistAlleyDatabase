@@ -158,14 +158,15 @@ object AnimeMediaListRow {
 
     @Composable
     private fun SubtitleText(entry: Entry) {
-        val seasonYear = entry.subtitleSeason?.toTextRes()
-            ?.let { stringResource(it) + " " }
-            .orEmpty() + entry.subtitleYear.orEmpty()
         Text(
             text = listOfNotNull(
                 stringResource(entry.subtitleMediaFormatRes),
                 stringResource(entry.subtitleStatusRes),
-                seasonYear.ifEmpty { null },
+                MediaUtils.formatSeasonYear(
+                    entry.subtitleSeason,
+                    entry.subtitleYear,
+                    withSeparator = true
+                ),
             ).joinToString(separator = " - "),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.typography.bodySmall.color
@@ -269,7 +270,8 @@ object AnimeMediaListRow {
             DateUtils.formatDateTime(
                 context,
                 nextAiringEpisode.airingAt * 1000L,
-                DateUtils.FORMAT_ABBREV_ALL or DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_WEEKDAY
+                MediaUtils.BASE_DATE_FORMAT_FLAGS or DateUtils.FORMAT_SHOW_DATE or
+                        DateUtils.FORMAT_SHOW_WEEKDAY or DateUtils.FORMAT_SHOW_TIME
             )
         }
 
@@ -280,7 +282,7 @@ object AnimeMediaListRow {
                 nextAiringEpisode.airingAt * 1000L,
                 System.currentTimeMillis(),
                 0,
-                DateUtils.FORMAT_ABBREV_RELATIVE
+                MediaUtils.BASE_DATE_FORMAT_FLAGS,
             )
         }
 
@@ -350,7 +352,7 @@ object AnimeMediaListRow {
         val subtitleMediaFormatRes: Int get() = R.string.anime_media_format_tv
         val subtitleStatusRes: Int get() = R.string.anime_media_status_finished
         val subtitleSeason: MediaSeason? get() = null
-        val subtitleYear: String? get() = "2023"
+        val subtitleYear: Int? get() = 2023
 
         val rating: Int? get() = 99
         val popularity: Int? get() = 12345
@@ -374,7 +376,7 @@ object AnimeMediaListRow {
         override val subtitleMediaFormatRes = media.format.toTextRes()
         override val subtitleStatusRes = media.status.toTextRes()
         override val subtitleSeason = media.season
-        override val subtitleYear = media.seasonYear?.toString()
+        override val subtitleYear = media.seasonYear
 
         override val rating = media.averageScore
         override val popularity = media.popularity
