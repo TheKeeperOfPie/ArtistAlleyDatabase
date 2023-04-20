@@ -3,7 +3,7 @@
     <string name="anime_auth_prompt">AniList account required</string>
     <string name="anime_auth_prompt_paste">Or paste in an auth token</string>
     <string name="anime_auth_button">Log in</string>
-    <string name="anime_home_title">Anime</string>
+    <string name="anime_user_list_search">Search user list…</string>
     <string name="anime_media_banner_image">Media banner image</string>
     <string name="anime_media_cover_image">Media cover image</string>
     <string name="anime_media_character_image">Character image</string>
@@ -205,6 +205,8 @@
     <string name="anime_media_details_episodes_label">Episodes</string>
     <string name="anime_media_details_duration_label">Duration</string>
     <string name="anime_media_details_duration_minutes">%1$d minutes</string>
+    <string name="anime_media_details_volumes_label">Volumes</string>
+    <string name="anime_media_details_chapters_label">Chapters</string>
     <string name="anime_media_details_season_label">Season</string>
     <string name="anime_media_details_start_date_label">Start date</string>
     <string name="anime_media_details_end_date_label">End date</string>

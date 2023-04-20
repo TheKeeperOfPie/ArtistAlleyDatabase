@@ -42,6 +42,7 @@ class AnimeUserListViewModel @Inject constructor(
     settings: AnimeSettings,
 ) : ViewModel() {
 
+    val query = MutableStateFlow("")
     var content by mutableStateOf<ContentState>(ContentState.LoadingEmpty)
     var tagShown by mutableStateOf<AnimeMediaFilterController.TagSection.Tag?>(null)
 
@@ -74,6 +75,7 @@ class AnimeUserListViewModel @Inject constructor(
                             }
                         combine(
                             baseResponse,
+                            query.debounce(200.milliseconds),
                             filterController.genres,
                             filterController.tagsByCategory,
                             filterController.tagRank(),
@@ -117,6 +119,8 @@ class AnimeUserListViewModel @Inject constructor(
     fun filterData() = filterController.data()
 
     fun onRefresh() = refreshUptimeMillis.update { SystemClock.uptimeMillis() }
+
+    fun onQuery(query: String) = this.query.update { query }
 
     fun onTagDismiss() {
         tagShown = null
@@ -324,6 +328,18 @@ class AnimeUserListViewModel @Inject constructor(
             transform = { listOfNotNull(it.media.source) }
         )
 
+        val query = filterParams.query
+        if (query.isNotBlank()) {
+            filteredEntries = filteredEntries.filter {
+                listOfNotNull(
+                    it.media.title?.romaji,
+                    it.media.title?.english,
+                    it.media.title?.native,
+                ).plus(it.media.synonyms?.filterNotNull().orEmpty())
+                    .any { it.contains(query, ignoreCase = true) }
+            }
+        }
+
         if (filteredEntries.isNotEmpty()) {
             this += AnimeUserListScreen.Entry.Header(
                 list.name.orEmpty(),
@@ -345,6 +361,7 @@ class AnimeUserListViewModel @Inject constructor(
 
     private data class FilterParams(
         val mediaListCollection: UserMediaListQuery.Data.MediaListCollection?,
+        val query: String,
         val genres: List<MediaFilterEntry<String>>,
         val tagsByCategory: Map<String, AnimeMediaFilterController.TagSection>,
         val tagRank: Int?,

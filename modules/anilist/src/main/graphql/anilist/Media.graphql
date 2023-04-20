@@ -137,6 +137,10 @@ query MediaDetails($mediaId: Int!) {
         episodes
         format
         genres
+        nextAiringEpisode {
+            episode
+            airingAt
+        }
         popularity
         relations {
             edges {
@@ -179,6 +183,8 @@ query MediaDetails($mediaId: Int!) {
             isMediaSpoiler
             rank
         }
+        volumes
+        chapters
     }
 }
 

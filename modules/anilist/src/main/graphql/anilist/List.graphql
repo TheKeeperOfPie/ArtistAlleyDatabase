@@ -8,6 +8,14 @@ query UserMediaList($userId: Int!, $type: MediaType!, $chunk: Int, $perChunk: In
                 id
                 media {
                     ...AniListListRowMedia
+
+                    # TODO: Disable this on restricted networks/offer an option?
+                    title {
+                        romaji
+                        native
+                        english
+                    }
+                    synonyms
                 }
             }
             name

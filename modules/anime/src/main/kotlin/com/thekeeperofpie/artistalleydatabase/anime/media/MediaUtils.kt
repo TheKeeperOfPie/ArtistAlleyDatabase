@@ -185,4 +185,17 @@ object MediaUtils {
         )
         else -> null
     }
+
+    fun formatAiringAt(context: Context, timeInMillis: Long): String = DateUtils.formatDateTime(
+        context,
+        timeInMillis,
+        BASE_DATE_FORMAT_FLAGS or DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_WEEKDAY or DateUtils.FORMAT_SHOW_TIME
+    )
+
+    fun formatRemainingTime(timeInMillis: Long): CharSequence = DateUtils.getRelativeTimeSpanString(
+        timeInMillis,
+        System.currentTimeMillis(),
+        0,
+        BASE_DATE_FORMAT_FLAGS,
+    )
 }

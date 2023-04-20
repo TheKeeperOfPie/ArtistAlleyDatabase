@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media
 
-import android.text.format.DateUtils
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -112,7 +111,7 @@ object AnimeMediaListRow {
     private fun CoverImage(entry: Entry, onLongPressImage: (entry: Entry) -> Unit) {
         SharedElement(
             key = "cover_image_${entry.id?.valueId}",
-            screenKey = "media_row"
+            screenKey = "media_row_${entry.id?.valueId}"
         ) {
             AsyncImage(
                 model = entry.image,
@@ -160,11 +159,11 @@ object AnimeMediaListRow {
     private fun SubtitleText(entry: Entry) {
         Text(
             text = listOfNotNull(
-                stringResource(entry.subtitleMediaFormatRes),
+                stringResource(entry.subtitleFormatRes),
                 stringResource(entry.subtitleStatusRes),
                 MediaUtils.formatSeasonYear(
                     entry.subtitleSeason,
-                    entry.subtitleYear,
+                    entry.subtitleSeasonYear,
                     withSeparator = true
                 ),
             ).joinToString(separator = " - "),
@@ -267,23 +266,13 @@ object AnimeMediaListRow {
     ) {
         val context = LocalContext.current
         val airingAt = remember(nextAiringEpisode.id) {
-            DateUtils.formatDateTime(
-                context,
-                nextAiringEpisode.airingAt * 1000L,
-                MediaUtils.BASE_DATE_FORMAT_FLAGS or DateUtils.FORMAT_SHOW_DATE or
-                        DateUtils.FORMAT_SHOW_WEEKDAY or DateUtils.FORMAT_SHOW_TIME
-            )
+            MediaUtils.formatAiringAt(context, nextAiringEpisode.airingAt * 1000L)
         }
 
         // TODO: De-dupe airingAt and remainingTime if both show a specific date
         //  (airing > 7 days away)
         val remainingTime = remember(nextAiringEpisode.id) {
-            DateUtils.getRelativeTimeSpanString(
-                nextAiringEpisode.airingAt * 1000L,
-                System.currentTimeMillis(),
-                0,
-                MediaUtils.BASE_DATE_FORMAT_FLAGS,
-            )
+            MediaUtils.formatRemainingTime(nextAiringEpisode.airingAt * 1000L)
         }
 
         Text(
@@ -349,10 +338,10 @@ object AnimeMediaListRow {
         val color: Color? get() = null
         val title: String?
 
-        val subtitleMediaFormatRes: Int get() = R.string.anime_media_format_tv
+        val subtitleFormatRes: Int get() = R.string.anime_media_format_tv
         val subtitleStatusRes: Int get() = R.string.anime_media_status_finished
         val subtitleSeason: MediaSeason? get() = null
-        val subtitleYear: Int? get() = 2023
+        val subtitleSeasonYear: Int? get() = 2023
 
         val rating: Int? get() = 99
         val popularity: Int? get() = 12345
@@ -362,9 +351,7 @@ object AnimeMediaListRow {
         val tags: List<AnimeMediaTagEntry> get() = emptyList()
     }
 
-    open class MediaEntry(
-        val media: AniListListRowMedia
-    ) : Entry {
+    open class MediaEntry(media: AniListListRowMedia) : Entry {
 
         override val id = EntryId("item", media.id.toString())
         override val image = media.coverImage?.large
@@ -373,10 +360,10 @@ object AnimeMediaListRow {
         override val color = media.coverImage?.color?.let(ColorUtils::hexToColor)
         override val title = media.title?.userPreferred
 
-        override val subtitleMediaFormatRes = media.format.toTextRes()
+        override val subtitleFormatRes = media.format.toTextRes()
         override val subtitleStatusRes = media.status.toTextRes()
         override val subtitleSeason = media.season
-        override val subtitleYear = media.seasonYear
+        override val subtitleSeasonYear = media.seasonYear
 
         override val rating = media.averageScore
         override val popularity = media.popularity

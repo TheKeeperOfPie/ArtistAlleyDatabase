@@ -6,16 +6,20 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.anilist.UserMediaListQuery.Data.MediaListCollection.List.Entry.Media
@@ -25,15 +29,16 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeMediaFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeMediaFilterOptionsBottomPanel
-import com.thekeeperofpie.artistalleydatabase.compose.AppBar
+import com.thekeeperofpie.artistalleydatabase.compose.NavMenuIconButton
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 
-@OptIn(ExperimentalMaterial3Api::class)
 object AnimeUserListScreen {
 
     @Composable
     operator fun invoke(
         onClickNav: () -> Unit = {},
+        query: @Composable () -> String = { "" },
+        onQueryChange: (String) -> Unit = {},
         filterData: () -> AnimeMediaFilterController.Data<MediaListSortOption>,
         onRefresh: () -> Unit = {},
         content: () -> AnimeUserListViewModel.ContentState,
@@ -45,10 +50,27 @@ object AnimeUserListScreen {
     ) {
         AnimeMediaFilterOptionsBottomPanel(
             topBar = {
-                AppBar(
-                    text = stringResource(R.string.anime_home_title),
-                    onClickNav = onClickNav
-                )
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentWidth()
+                ) {
+                    TextField(
+                        query(),
+                        placeholder = { Text(stringResource(id = R.string.anime_user_list_search)) },
+                        onValueChange = onQueryChange,
+                        leadingIcon = { NavMenuIconButton(onClickNav) },
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = MaterialTheme.colorScheme.surface,
+                            unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                            disabledContainerColor = MaterialTheme.colorScheme.surface,
+                        ),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                    )
+                }
             },
             filterData = filterData,
             onTagLongClicked = onTagLongClick,
@@ -119,7 +141,7 @@ object AnimeUserListScreen {
             override val id = EntryId("header", name)
         }
 
-        class Item(media: Media) : Entry, AnimeMediaListRow.MediaEntry(media)
+        class Item(val media: Media) : Entry, AnimeMediaListRow.MediaEntry(media)
     }
 }
 

@@ -99,6 +99,7 @@ class AnimeSearchViewModel @Inject constructor(
     fun filterData() = filterController.data()
 
     fun onRefresh() = refreshUptimeMillis.update { SystemClock.uptimeMillis() }
+
     fun onQuery(query: String) = this.query.update { query }
 
     fun onTagDismiss() {

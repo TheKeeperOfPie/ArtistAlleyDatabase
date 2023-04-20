@@ -16,7 +16,7 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
- import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
@@ -70,10 +71,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.constraintlayout.compose.ConstraintLayout
-import androidx.constraintlayout.compose.Dimension
-import androidx.constraintlayout.compose.atLeast
-import androidx.constraintlayout.compose.atMost
 import androidx.core.graphics.ColorUtils
 import androidx.palette.graphics.Palette
 import coil.compose.AsyncImage
@@ -92,6 +89,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
 import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.assistChipColors
+import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 import de.charlex.compose.HtmlText
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -102,6 +100,24 @@ object AnimeMediaDetailsScreen {
     private const val RELATIONS_ABOVE_FOLD = 3
     private const val RECOMMENDATIONS_ABOVE_FOLD = 5
 
+    // Sorted by most relevant for an anime-first viewer
+    private val RELATION_SORT_ORDER = listOf(
+        MediaRelation.PARENT,
+        MediaRelation.PREQUEL,
+        MediaRelation.SEQUEL,
+        MediaRelation.SIDE_STORY,
+        MediaRelation.SUMMARY,
+        MediaRelation.ALTERNATIVE,
+        MediaRelation.SPIN_OFF,
+        MediaRelation.SOURCE,
+        MediaRelation.ADAPTATION,
+        MediaRelation.CHARACTER,
+        MediaRelation.OTHER,
+        MediaRelation.COMPILATION,
+        MediaRelation.CONTAINS,
+        MediaRelation.UNKNOWN__,
+    )
+
     @Composable
     operator fun invoke(
         onClickBack: () -> Unit = {},
@@ -110,6 +126,9 @@ object AnimeMediaDetailsScreen {
         coverImage: @Composable () -> String? = { null },
         bannerImage: @Composable () -> String? = { null },
         title: @Composable () -> String = { "Title" },
+        subtitle: @Composable () -> String = { "TV - Releasing - 2023" },
+        nextEpisode: @Composable () -> Int? = { null },
+        nextEpisodeAiringAt: @Composable () -> Int? = { null },
         entry: @Composable () -> Entry? = { null },
         onGenreClicked: (String) -> Unit = {},
         onGenreLongClicked: (String) -> Unit = {},
@@ -144,40 +163,28 @@ object AnimeMediaDetailsScreen {
                     .fillMaxSize()
                     .padding(bottom = 12.dp)
             ) {
-                if (loading) {
-                    item {
-                        Box(modifier = Modifier.fillMaxSize()) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.align(Alignment.Center)
-                            )
-                        }
-                    }
-                } else {
-                    if (entry == null) {
-                        item {
-                            Error()
-                        }
-                    } else {
-                        content(
-                            entry = entry,
-                            color = color,
-                            coverImage = coverImage,
-                            bannerImage = bannerImage,
-                            titleText = title,
-                            onGenreClicked = onGenreClicked,
-                            onGenreLongClicked = onGenreLongClicked,
-                            onCharacterClicked = onCharacterClicked,
-                            onCharacterLongClicked = onCharacterLongClicked,
-                            onTagClicked = onTagClicked,
-                            onTagLongClicked = onTagLongClicked,
-                            onMediaClicked = onMediaClicked,
-                            relationsExpanded = { relationsExpanded },
-                            onRelationsExpandedToggled = { relationsExpanded = it },
-                            recommendationsExpanded = { recommendationsExpanded },
-                            onRecommendationsExpandedToggled = { recommendationsExpanded = it },
-                        )
-                    }
-                }
+                content(
+                    entry = entry,
+                    loading = loading,
+                    color = color,
+                    coverImage = coverImage,
+                    bannerImage = bannerImage,
+                    titleText = title,
+                    subtitleText = subtitle,
+                    nextEpisode = nextEpisode,
+                    nextEpisodeAiringAt = nextEpisodeAiringAt,
+                    onGenreClicked = onGenreClicked,
+                    onGenreLongClicked = onGenreLongClicked,
+                    onCharacterClicked = onCharacterClicked,
+                    onCharacterLongClicked = onCharacterLongClicked,
+                    onTagClicked = onTagClicked,
+                    onTagLongClicked = onTagLongClicked,
+                    onMediaClicked = onMediaClicked,
+                    relationsExpanded = { relationsExpanded },
+                    onRelationsExpandedToggled = { relationsExpanded = it },
+                    recommendationsExpanded = { recommendationsExpanded },
+                    onRecommendationsExpandedToggled = { recommendationsExpanded = it },
+                )
             }
         }
     }
@@ -188,11 +195,15 @@ object AnimeMediaDetailsScreen {
     }
 
     private fun LazyListScope.content(
-        entry: Entry,
+        entry: Entry?,
+        loading: Boolean,
         color: () -> Color?,
         coverImage: @Composable () -> String?,
         bannerImage: @Composable () -> String?,
         titleText: @Composable () -> String,
+        subtitleText: @Composable () -> String,
+        nextEpisode: @Composable () -> Int?,
+        nextEpisodeAiringAt: @Composable () -> Int?,
         onGenreClicked: (String) -> Unit,
         onGenreLongClicked: (String) -> Unit,
         onCharacterClicked: (String) -> Unit,
@@ -206,13 +217,33 @@ object AnimeMediaDetailsScreen {
         onRecommendationsExpandedToggled: (Boolean) -> Unit,
     ) {
         header(
-            entry = entry,
             color = color,
             coverImage = coverImage,
             bannerImage = bannerImage,
             titleText = titleText,
+            subtitleText = subtitleText,
+            nextEpisode = nextEpisode,
+            nextEpisodeAiringAt = nextEpisodeAiringAt,
         )
 
+        if (entry == null) {
+            if (loading) {
+                item {
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        CircularProgressIndicator(
+                            modifier = Modifier
+                                .align(Alignment.Center)
+                                .padding(32.dp)
+                        )
+                    }
+                }
+            } else {
+                item {
+                    Error()
+                }
+            }
+            return
+        }
         genreSection(
             entry = entry,
             onGenreClicked = onGenreClicked,
@@ -255,39 +286,30 @@ object AnimeMediaDetailsScreen {
     }
 
     private fun LazyListScope.header(
-        entry: Entry,
         color: () -> Color?,
         coverImage: @Composable () -> String?,
         bannerImage: @Composable () -> String?,
         titleText: @Composable () -> String,
+        subtitleText: @Composable () -> String?,
+        nextEpisode: @Composable () -> Int?,
+        nextEpisodeAiringAt: @Composable () -> Int?,
     ) {
         item {
-            ConstraintLayout(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight()
-            ) {
-                val (banner, cover, title, summary) = createRefs()
+            Box {
                 AsyncImage(
                     model = bannerImage(),
                     contentScale = ContentScale.FillHeight,
                     contentDescription = stringResource(R.string.anime_media_banner_image),
                     modifier = Modifier
-                        .constrainAs(banner) {
-                            width = Dimension.fillToConstraints
-                            height = Dimension.preferredWrapContent
-                                .atLeast(180.dp)
-                                .atMost(180.dp)
-                            start.linkTo(parent.start)
-                            end.linkTo(parent.end)
-                            top.linkTo(parent.top)
-                        }
+                        .fillMaxWidth()
+                        .height(180.dp)
+                        .align(Alignment.TopCenter)
                         .graphicsLayer {
                             compositingStrategy = CompositingStrategy.Offscreen
                         }
                         .drawWithCache {
                             val brush = Brush.verticalGradient(
-                                0.25f to Color.Black,
+                                0.5f to Color.Black,
                                 1f to Color.Transparent,
                             )
                             onDrawWithContent {
@@ -298,65 +320,83 @@ object AnimeMediaDetailsScreen {
                         .background(color() ?: Color.Unspecified)
                 )
 
-                val halfWidthGuideline = createGuidelineFromStart(0.5f)
-
-                ElevatedCard(
+                Row(
                     modifier = Modifier
-                        .constrainAs(cover) {
-                            width = Dimension.wrapContent
-                            height = Dimension.preferredWrapContent.atLeast(180.dp).atMost(240.dp)
-                            top.linkTo(parent.top, 100.dp)
-                            linkTo(
-                                start = parent.start,
-                                end = halfWidthGuideline,
-                                startMargin = 16.dp,
-                                bias = 0f,
-                            )
-                        }
+                        .fillMaxWidth()
+                        .padding(top = 100.dp, start = 16.dp)
+                        .height(180.dp)
                 ) {
-                    AsyncImage(
-                        model = coverImage(),
-                        fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
-                        contentDescription = stringResource(R.string.anime_media_cover_image),
-                    )
-                }
-
-                Box(
-                    contentAlignment = Alignment.CenterStart,
-                    modifier = Modifier.constrainAs(title) {
-                        width = Dimension.fillToConstraints
-                        height = Dimension.fillToConstraints
-                        linkTo(
-                            start = cover.end,
-                            end = parent.end,
-                            top = banner.bottom,
-                            bottom = summary.top,
-                            horizontalBias = 0f,
-                            verticalBias = 0.5f
-                        )
-                    },
-                ) {
-                    AutoHeightText(
-                        text = titleText(),
-                        style = MaterialTheme.typography.headlineMedium,
+                    ElevatedCard(
                         modifier = Modifier
-                            .padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 4.dp)
-                    )
-                }
+                            .wrapContentWidth()
+                            .height(180.dp)
+                    ) {
+                        AsyncImage(
+                            model = coverImage(),
+                            fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
+                            contentDescription = stringResource(R.string.anime_media_cover_image),
+                        )
+                    }
 
-                SummaryText(
-                    entry = entry,
-                    modifier = Modifier
-                        .padding(start = 16.dp, end = 16.dp, bottom = 10.dp, top = 4.dp)
-                        .constrainAs(summary) {
-                            linkTo(
-                                start = cover.end,
-                                end = parent.end,
-                                bias = 0f,
+                    Column(
+                        modifier = Modifier
+                            .padding(top = 32.dp)
+                            .animateContentSize()
+                    ) {
+                        Box(
+                            contentAlignment = Alignment.CenterStart,
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            AutoHeightText(
+                                text = titleText(),
+                                style = MaterialTheme.typography.headlineMedium,
+                                modifier = Modifier
+                                    .wrapContentWidth()
+                                    .align(Alignment.CenterStart)
+                                    .padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 4.dp)
                             )
-                            bottom.linkTo(parent.bottom)
                         }
-                )
+
+                        subtitleText()?.let {
+                            Text(
+                                text = it,
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier
+                                    .wrapContentHeight()
+                                    .padding(horizontal = 16.dp, vertical = 4.dp)
+                                    .fillMaxWidth()
+                                    .wrapContentHeight(Alignment.Bottom)
+                            )
+                        }
+
+                        nextEpisodeAiringAt()?.let { airingAtTime ->
+                            nextEpisode()?.let {
+                                val context = LocalContext.current
+                                val airingAt = remember {
+                                    MediaUtils.formatAiringAt(context, airingAtTime * 1000L)
+                                }
+
+                                val remainingTime = remember {
+                                    MediaUtils.formatRemainingTime(airingAtTime * 1000L)
+                                }
+
+                                Text(
+                                    text = stringResource(
+                                        R.string.anime_media_next_airing_episode,
+                                        it,
+                                        airingAt,
+                                        remainingTime,
+                                    ),
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = MaterialTheme.colorScheme.surfaceTint,
+                                    modifier = Modifier
+                                        .wrapContentHeight(Alignment.Bottom)
+                                        .padding(horizontal = 16.dp, vertical = 4.dp)
+                                )
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -399,19 +439,6 @@ object AnimeMediaDetailsScreen {
                 }
             }
         }
-    }
-
-    @Composable
-    private fun SummaryText(entry: Entry, modifier: Modifier = Modifier) {
-        Text(
-            text = listOfNotNull(
-                stringResource(entry.formatTextRes),
-                stringResource(entry.statusTextRes),
-                MediaUtils.formatSeasonYear(season = entry.season, seasonYear = entry.seasonYear),
-            ).joinToString(separator = " - "),
-            style = MaterialTheme.typography.bodyMedium,
-            modifier = modifier.wrapContentHeight()
-        )
     }
 
     private fun LazyListScope.genreSection(
@@ -674,6 +701,13 @@ object AnimeMediaDetailsScreen {
                 )
 
                 TwoColumnInfoText(
+                    labelOne = stringResource(R.string.anime_media_details_volumes_label),
+                    bodyOne = entry.volumes?.toString(),
+                    labelTwo = stringResource(R.string.anime_media_details_chapters_label),
+                    bodyTwo = entry.chapters?.toString(),
+                )
+
+                TwoColumnInfoText(
                     labelOne = stringResource(R.string.anime_media_details_source_label),
                     bodyOne = stringResource(entry.source.toTextRes()),
                     labelTwo = stringResource(R.string.anime_media_details_season_label),
@@ -745,6 +779,12 @@ object AnimeMediaDetailsScreen {
                                 Divider(modifier = Modifier.padding(start = 16.dp))
                             }
 
+                            val topPadding = if (index == 0) {
+                                0.dp
+                            } else {
+                                8.dp
+                            }
+
                             val bottomPadding = if (index == entry.allSynonyms.size - 1) {
                                 12.dp
                             } else {
@@ -759,7 +799,7 @@ object AnimeMediaDetailsScreen {
                                     .padding(
                                         start = 16.dp,
                                         end = 16.dp,
-                                        top = 8.dp,
+                                        top = topPadding,
                                         bottom = bottomPadding,
                                     )
                             )
@@ -1004,8 +1044,10 @@ object AnimeMediaDetailsScreen {
             }
 
     data class Entry(
+        val mediaId: String,
         val media: Media,
     ) {
+        val id = EntryId("media", mediaId)
         val description get() = media.description
         val season = media.season
         val seasonYear = media.seasonYear
@@ -1015,6 +1057,8 @@ object AnimeMediaDetailsScreen {
 
         val episodes = media.episodes
         val duration = media.duration
+        val volumes = media.volumes
+        val chapters = media.chapters
         val source = media.source
         val startDate = media.startDate
         val endDate = media.endDate
@@ -1062,6 +1106,7 @@ object AnimeMediaDetailsScreen {
                 Relation(it.id.toString(), relation, AnimeMediaListRow.MediaEntry(node))
             }
             .orEmpty()
+            .sortedBy { RELATION_SORT_ORDER.indexOf(it.relation) }
 
         val recommendations = media.recommendations?.edges?.filterNotNull()
             ?.mapNotNull {

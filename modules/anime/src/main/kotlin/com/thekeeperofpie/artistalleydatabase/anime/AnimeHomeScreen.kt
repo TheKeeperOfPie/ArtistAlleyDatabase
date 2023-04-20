@@ -1,6 +1,8 @@
 package com.thekeeperofpie.artistalleydatabase.anime
 
 import android.util.Pair
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -24,15 +26,18 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavType
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.paging.compose.collectAsLazyPagingItems
+import com.anilist.type.MediaSeason
+import com.google.accompanist.navigation.animation.AnimatedNavHost
+import com.google.accompanist.navigation.animation.composable
+import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.anime.list.AnimeUserListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.list.AnimeUserListViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeMediaFilterController
@@ -41,6 +46,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.search.AnimeSearchViewModel
 import com.thekeeperofpie.artistalleydatabase.compose.ColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
 
+@OptIn(ExperimentalAnimationApi::class)
 object AnimeHomeScreen {
 
     @Composable
@@ -71,8 +77,7 @@ object AnimeHomeScreen {
                 if (needAuth()) {
                     AuthPrompt(onClickAuth = onClickAuth, onSubmitAuthToken = onSubmitAuthToken)
                 } else {
-
-                    val navController = rememberNavController()
+                    val navController = rememberAnimatedNavController()
                     fun onTagClick(tagId: String, tagName: String) {
                         navController.navigate(
                             AnimeNavDestinations.SEARCH.id +
@@ -83,6 +88,12 @@ object AnimeHomeScreen {
                     fun onMediaClick(entry: AnimeMediaListRow.Entry) {
                         navController.navigate(
                             "animeDetails?title=${entry.title}" +
+                                    "&subtitleFormatRes=${entry.subtitleFormatRes}" +
+                                    "&subtitleStatusRes=${entry.subtitleStatusRes}" +
+                                    "&subtitleSeason=${entry.subtitleSeason}" +
+                                    "&subtitleSeasonYear=${entry.subtitleSeasonYear}" +
+                                    "&nextEpisode=${entry.nextAiringEpisode?.episode}" +
+                                    "&nextEpisodeAiringAt=${entry.nextAiringEpisode?.airingAt}" +
                                     "&mediaId=${entry.id!!.valueId}" +
                                     "&bannerImage=${entry.imageBanner}" +
                                     "&coverImage=${entry.imageExtraLarge}" +
@@ -90,7 +101,7 @@ object AnimeHomeScreen {
                         )
                     }
 
-                    NavHost(
+                    AnimatedNavHost(
                         navController = navController,
                         startDestination = AnimeNavDestinations.values()[selectedSubIndex()].id
                     ) {
@@ -99,6 +110,8 @@ object AnimeHomeScreen {
                                 .apply { initialize() }
                             AnimeUserListScreen(
                                 onClickNav = onClickNav,
+                                query = { viewModel.query.collectAsState().value },
+                                onQueryChange = viewModel::onQuery,
                                 filterData = { viewModel.filterData() },
                                 onRefresh = viewModel::onRefresh,
                                 content = { viewModel.content },
@@ -154,12 +167,42 @@ object AnimeHomeScreen {
                         composable(
                             route = "animeDetails"
                                     + "?title={title}"
+                                    + "&subtitleFormatRes={subtitleFormatRes}"
+                                    + "&subtitleStatusRes={subtitleStatusRes}"
+                                    + "&subtitleSeason={subtitleSeason}"
+                                    + "&subtitleSeasonYear={subtitleSeasonYear}"
+                                    + "&nextEpisode={nextEpisode}"
+                                    + "&nextEpisodeAiringAt={nextEpisodeAiringAt}"
                                     + "&mediaId={mediaId}"
                                     + "&coverImage={coverImage}"
                                     + "&color={color}"
                                     + "&bannerImage={bannerImage}",
                             arguments = listOf(
                                 navArgument("title") {
+                                    type = NavType.StringType
+                                    nullable = true
+                                },
+                                navArgument("subtitleFormatRes") {
+                                    type = NavType.StringType
+                                    nullable = true
+                                },
+                                navArgument("subtitleStatusRes") {
+                                    type = NavType.StringType
+                                    nullable = true
+                                },
+                                navArgument("subtitleSeason") {
+                                    type = NavType.StringType
+                                    nullable = true
+                                },
+                                navArgument("subtitleSeasonYear") {
+                                    type = NavType.StringType
+                                    nullable = true
+                                },
+                                navArgument("nextEpisode") {
+                                    type = NavType.StringType
+                                    nullable = true
+                                },
+                                navArgument("nextEpisodeAiringAt") {
                                     type = NavType.StringType
                                     nullable = true
                                 },
@@ -179,13 +222,32 @@ object AnimeHomeScreen {
                                     type = NavType.StringType
                                     nullable = true
                                 },
-                            )
+                            ),
+                            enterTransition = {
+                                slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up)
+                            },
+                            exitTransition = {
+                                slideOutOfContainer(
+                                    AnimatedContentTransitionScope.SlideDirection.Down
+                                )
+                            },
                         ) {
                             val arguments = it.arguments!!
                             val title = arguments.getString("title")
                             val mediaId = arguments.getString("mediaId")!!
                             val coverImage = arguments.getString("coverImage")
                             val bannerImage = arguments.getString("bannerImage")
+                            val subtitleFormatRes =
+                                arguments.getString("subtitleFormatRes")?.toIntOrNull()
+                            val subtitleStatusRes =
+                                arguments.getString("subtitleStatusRes")?.toIntOrNull()
+                            val subtitleSeason =
+                                MediaSeason.safeValueOf(arguments.getString("subtitleSeason") ?: "")
+                            val subtitleSeasonYear =
+                                arguments.getString("subtitleSeasonYear")?.toIntOrNull()
+                            val nextEpisode = arguments.getString("nextEpisode")?.toIntOrNull()
+                            val nextEpisodeAiringAt =
+                                arguments.getString("nextEpisodeAiringAt")?.toIntOrNull()
                             val color = arguments.getString("color")
                                 ?.toIntOrNull()
                                 ?.let(::Color)
@@ -208,7 +270,34 @@ object AnimeHomeScreen {
                                 },
                                 bannerImage = { mediaAsState.value?.bannerImage ?: bannerImage },
                                 title = { mediaAsState.value?.title?.userPreferred ?: title ?: "" },
-                                entry = { mediaAsState.value?.let(AnimeMediaDetailsScreen::Entry) },
+                                subtitle = {
+                                    mediaAsState.value?.let {
+                                        listOfNotNull(
+                                            stringResource(it.format.toTextRes()),
+                                            stringResource(it.status.toTextRes()),
+                                            MediaUtils.formatSeasonYear(it.season, it.seasonYear),
+                                        ).joinToString(separator = " - ")
+                                    } ?: listOfNotNull(
+                                        subtitleFormatRes?.let { stringResource(it) },
+                                        subtitleStatusRes?.let { stringResource(it) },
+                                        MediaUtils.formatSeasonYear(
+                                            subtitleSeason,
+                                            subtitleSeasonYear
+                                        ),
+                                    ).joinToString(separator = " - ")
+                                },
+                                nextEpisode = {
+                                    mediaAsState.value?.nextAiringEpisode?.episode ?: nextEpisode
+                                },
+                                nextEpisodeAiringAt = {
+                                    mediaAsState.value?.nextAiringEpisode?.airingAt
+                                        ?: nextEpisodeAiringAt
+                                },
+                                entry = {
+                                    mediaAsState.value?.let {
+                                        AnimeMediaDetailsScreen.Entry(mediaId, it)
+                                    }
+                                },
                                 onGenreClicked = { TODO() },
                                 onGenreLongClicked = { TODO() },
                                 onCharacterClicked = { TODO() },
