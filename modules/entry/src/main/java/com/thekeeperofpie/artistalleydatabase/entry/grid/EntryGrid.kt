@@ -173,7 +173,7 @@ object EntryGrid {
 
     @OptIn(ExperimentalFoundationApi::class)
     @Composable
-    private fun <T : EntryGridModel> Entry(
+    fun <T : EntryGridModel> Entry(
         imageScreenKey: String,
         expectedWidth: Dimension.Pixels,
         index: Int,

@@ -75,7 +75,7 @@ class AnimeUserListViewModel @Inject constructor(
                             }
                         combine(
                             baseResponse,
-                            query.debounce(200.milliseconds),
+                            query.debounce(500.milliseconds),
                             filterController.genres,
                             filterController.tagsByCategory,
                             filterController.tagRank(),

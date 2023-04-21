@@ -55,7 +55,7 @@ class AnimeSearchViewModel @Inject constructor(
         viewModelScope.launch(CustomDispatchers.Main) {
             @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
             combine(
-                query.debounce(200.milliseconds),
+                query.debounce(500.milliseconds),
                 refreshUptimeMillis,
                 filterController.sortOptions,
                 filterController.sortAscending,

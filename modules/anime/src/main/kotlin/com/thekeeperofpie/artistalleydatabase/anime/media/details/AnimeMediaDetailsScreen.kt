@@ -70,6 +70,7 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.unit.Dp
@@ -79,6 +80,7 @@ import androidx.core.graphics.ColorUtils
 import androidx.palette.graphics.Palette
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import coil.size.Dimension
 import com.anilist.MediaDetailsQuery.Data.Media
 import com.anilist.type.MediaRelation
 import com.thekeeperofpie.artistalleydatabase.android_utils.AnimationUtils
@@ -89,6 +91,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaTagEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
+import com.thekeeperofpie.artistalleydatabase.cds.grid.CdEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.compose.AccelerateEasing
 import com.thekeeperofpie.artistalleydatabase.compose.AssistChip
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
@@ -97,9 +100,11 @@ import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
 import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.assistChipColors
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
+import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGrid
 import de.charlex.compose.HtmlText
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 object AnimeMediaDetailsScreen {
@@ -137,6 +142,7 @@ object AnimeMediaDetailsScreen {
         nextEpisode: @Composable () -> Int? = { null },
         nextEpisodeAiringAt: @Composable () -> Int? = { null },
         entry: @Composable () -> Entry? = { null },
+        cdEntries: @Composable () -> List<CdEntryGridModel> = { emptyList() },
         onGenreClicked: (String) -> Unit = {},
         onGenreLongClicked: (String) -> Unit = {},
         onCharacterClicked: (String) -> Unit = {},
@@ -183,6 +189,9 @@ object AnimeMediaDetailsScreen {
             @Suppress("NAME_SHADOWING")
             val entry = entry()
 
+            @Suppress("NAME_SHADOWING")
+            val cdEntries = cdEntries()
+
             var relationsExpanded by remember { mutableStateOf(false) }
             var recommendationsExpanded by remember { mutableStateOf(false) }
 
@@ -195,6 +204,7 @@ object AnimeMediaDetailsScreen {
                 content(
                     entry = entry,
                     loading = loading,
+                    cdEntries = cdEntries,
                     onGenreClicked = onGenreClicked,
                     onGenreLongClicked = onGenreLongClicked,
                     onCharacterClicked = onCharacterClicked,
@@ -219,6 +229,7 @@ object AnimeMediaDetailsScreen {
     private fun LazyListScope.content(
         entry: Entry?,
         loading: Boolean,
+        cdEntries: List<CdEntryGridModel>,
         onGenreClicked: (String) -> Unit,
         onGenreLongClicked: (String) -> Unit,
         onCharacterClicked: (String) -> Unit,
@@ -274,6 +285,8 @@ object AnimeMediaDetailsScreen {
 
         infoSection(entry)
 
+        cdsSection(cdEntries)
+
         tagSection(
             entry = entry,
             onTagClicked = onTagClicked,
@@ -304,6 +317,7 @@ object AnimeMediaDetailsScreen {
     ) {
         val elevation = lerp(0.dp, 16.dp, AccelerateEasing.transform(progress))
         var preferredTitle by remember { mutableStateOf<Int?>(null) }
+
         @Suppress("NAME_SHADOWING")
         val entry = entry()
         Surface(
@@ -895,6 +909,35 @@ object AnimeMediaDetailsScreen {
                 .fillMaxWidth()
                 .padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 10.dp)
         )
+    }
+
+    private fun LazyListScope.cdsSection(
+        cdEntries: List<CdEntryGridModel>,
+    ) {
+        if (cdEntries.isEmpty()) return
+
+        item {
+            SectionHeader(stringResource(R.string.anime_media_details_cds_label))
+        }
+
+        item {
+            val width = LocalDensity.current.run { Dimension.Pixels(200.dp.toPx().roundToInt()) }
+            LazyRow(
+                contentPadding = PaddingValues(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
+                itemsIndexed(cdEntries) { index, cdEntry ->
+                    ElevatedCard {
+                        EntryGrid.Entry(
+                            imageScreenKey = "anime_details",
+                            expectedWidth = width,
+                            index = index,
+                            entry = cdEntry,
+                        )
+                    }
+                }
+            }
+        }
     }
 
     private fun LazyListScope.recommendationsSection(

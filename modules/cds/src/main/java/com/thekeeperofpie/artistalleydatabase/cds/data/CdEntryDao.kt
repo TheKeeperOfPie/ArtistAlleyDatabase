@@ -10,7 +10,9 @@ import androidx.room.RawQuery
 import androidx.room.Transaction
 import androidx.sqlite.db.SimpleSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteQuery
+import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.cds.search.CdSearchQuery
+import com.thekeeperofpie.artistalleydatabase.data.Series
 import kotlinx.coroutines.yield
 
 @Dao
@@ -170,4 +172,32 @@ interface CdEntryDao {
 
     @Transaction
     suspend fun transaction(block: suspend () -> Unit) = block()
+
+    suspend fun searchSeriesByMediaId(appJson: AppJson, mediaId: String) =
+        (searchSeriesViaMatch(mediaId) + searchSeriesViaLike(mediaId))
+            .filter {
+                it.series(appJson)
+                    .filterIsInstance<Series.AniList>()
+                    .any { it.id == mediaId }
+            }
+
+    @Query(
+        """
+        SELECT *
+        FROM cd_entries
+        JOIN cd_entries_fts ON cd_entries.id = cd_entries_fts.id
+        WHERE cd_entries_fts.seriesSerialized MATCH :query
+    """
+    )
+    suspend fun searchSeriesViaMatch(query: String): List<CdEntry>
+
+    @Query(
+        """
+        SELECT *
+        FROM cd_entries
+        WHERE cd_entries.seriesSerialized LIKE :query
+    """
+    )
+    suspend fun searchSeriesViaLike(query: String): List<CdEntry>
+
 }

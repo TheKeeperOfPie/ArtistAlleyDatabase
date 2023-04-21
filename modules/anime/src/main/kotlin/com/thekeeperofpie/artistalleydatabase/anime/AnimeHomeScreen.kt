@@ -298,6 +298,7 @@ object AnimeHomeScreen {
                                         AnimeMediaDetailsScreen.Entry(mediaId, it)
                                     }
                                 },
+                                cdEntries = { viewModel.cdEntries.collectAsState().value },
                                 onGenreClicked = { TODO() },
                                 onGenreLongClicked = { TODO() },
                                 onCharacterClicked = { TODO() },

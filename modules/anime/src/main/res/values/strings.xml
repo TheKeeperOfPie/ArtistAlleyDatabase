@@ -217,4 +217,6 @@
     <string name="anime_media_details_source_label">Source</string>
     <string name="anime_media_details_synonyms_label">Synonyms</string>
     <string name="anime_media_details_synonyms_expand_content_description">Synonyms expand</string>
+
+    <string name="anime_media_details_cds_label">CDs</string>
 </resources>
