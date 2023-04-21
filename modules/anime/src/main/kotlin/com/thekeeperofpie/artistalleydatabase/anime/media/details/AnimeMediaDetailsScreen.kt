@@ -44,7 +44,9 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
@@ -65,18 +67,21 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.lerp
 import androidx.core.graphics.ColorUtils
 import androidx.palette.graphics.Palette
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.anilist.MediaDetailsQuery.Data.Media
 import com.anilist.type.MediaRelation
+import com.thekeeperofpie.artistalleydatabase.android_utils.AnimationUtils
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anime.R
@@ -84,8 +89,10 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaTagEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
+import com.thekeeperofpie.artistalleydatabase.compose.AccelerateEasing
 import com.thekeeperofpie.artistalleydatabase.compose.AssistChip
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
+import com.thekeeperofpie.artistalleydatabase.compose.CollapsingToolbar
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
 import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.assistChipColors
@@ -140,7 +147,27 @@ object AnimeMediaDetailsScreen {
         errorRes: @Composable () -> Pair<Int, Exception?>? = { null },
         onErrorDismiss: () -> Unit = {},
     ) {
+        val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
         Scaffold(
+            topBar = {
+                CollapsingToolbar(
+                    maxHeight = 356.dp,
+                    pinnedHeight = 180.dp,
+                    scrollBehavior = scrollBehavior,
+                ) {
+                    Header(
+                        entry = entry,
+                        progress = it,
+                        color = color,
+                        coverImage = coverImage,
+                        bannerImage = bannerImage,
+                        titleText = title,
+                        subtitleText = subtitle,
+                        nextEpisode = nextEpisode,
+                        nextEpisodeAiringAt = nextEpisodeAiringAt,
+                    )
+                }
+            },
             snackbarHost = {
                 SnackbarErrorText(
                     errorRes()?.first,
@@ -148,6 +175,7 @@ object AnimeMediaDetailsScreen {
                     onErrorDismiss = onErrorDismiss
                 )
             },
+            modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
         ) {
             @Suppress("NAME_SHADOWING")
             val loading = loading()
@@ -161,18 +189,12 @@ object AnimeMediaDetailsScreen {
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
+                    .padding(it)
                     .padding(bottom = 12.dp)
             ) {
                 content(
                     entry = entry,
                     loading = loading,
-                    color = color,
-                    coverImage = coverImage,
-                    bannerImage = bannerImage,
-                    titleText = title,
-                    subtitleText = subtitle,
-                    nextEpisode = nextEpisode,
-                    nextEpisodeAiringAt = nextEpisodeAiringAt,
                     onGenreClicked = onGenreClicked,
                     onGenreLongClicked = onGenreLongClicked,
                     onCharacterClicked = onCharacterClicked,
@@ -197,13 +219,6 @@ object AnimeMediaDetailsScreen {
     private fun LazyListScope.content(
         entry: Entry?,
         loading: Boolean,
-        color: () -> Color?,
-        coverImage: @Composable () -> String?,
-        bannerImage: @Composable () -> String?,
-        titleText: @Composable () -> String,
-        subtitleText: @Composable () -> String,
-        nextEpisode: @Composable () -> Int?,
-        nextEpisodeAiringAt: @Composable () -> Int?,
         onGenreClicked: (String) -> Unit,
         onGenreLongClicked: (String) -> Unit,
         onCharacterClicked: (String) -> Unit,
@@ -216,16 +231,6 @@ object AnimeMediaDetailsScreen {
         recommendationsExpanded: () -> Boolean,
         onRecommendationsExpandedToggled: (Boolean) -> Unit,
     ) {
-        header(
-            color = color,
-            coverImage = coverImage,
-            bannerImage = bannerImage,
-            titleText = titleText,
-            subtitleText = subtitleText,
-            nextEpisode = nextEpisode,
-            nextEpisodeAiringAt = nextEpisodeAiringAt,
-        )
-
         if (entry == null) {
             if (loading) {
                 item {
@@ -285,7 +290,10 @@ object AnimeMediaDetailsScreen {
         )
     }
 
-    private fun LazyListScope.header(
+    @Composable
+    private fun Header(
+        entry: @Composable () -> Entry?,
+        progress: Float,
         color: () -> Color?,
         coverImage: @Composable () -> String?,
         bannerImage: @Composable () -> String?,
@@ -294,7 +302,21 @@ object AnimeMediaDetailsScreen {
         nextEpisode: @Composable () -> Int?,
         nextEpisodeAiringAt: @Composable () -> Int?,
     ) {
-        item {
+        val elevation = lerp(0.dp, 16.dp, AccelerateEasing.transform(progress))
+        var preferredTitle by remember { mutableStateOf<Int?>(null) }
+        @Suppress("NAME_SHADOWING")
+        val entry = entry()
+        Surface(
+            shape = RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp),
+            color = MaterialTheme.colorScheme.surface,
+            contentColor = MaterialTheme.colorScheme.onSurface,
+            tonalElevation = elevation,
+            shadowElevation = elevation,
+            modifier = Modifier.clickable(enabled = (entry?.titlesUnique?.size ?: 0) > 1) {
+                preferredTitle =
+                    ((preferredTitle ?: 0) + 1) % (entry?.titlesUnique?.size ?: 1)
+            }
+        ) {
             Box {
                 AsyncImage(
                     model = bannerImage(),
@@ -309,7 +331,10 @@ object AnimeMediaDetailsScreen {
                         }
                         .drawWithCache {
                             val brush = Brush.verticalGradient(
-                                0.5f to Color.Black,
+                                AnimationUtils.lerp(0.5f, 0f, progress) to
+                                        Color.Black.copy(
+                                            alpha = AnimationUtils.lerp(1f, 0.25f, progress)
+                                        ),
                                 1f to Color.Transparent,
                             )
                             onDrawWithContent {
@@ -323,35 +348,38 @@ object AnimeMediaDetailsScreen {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 100.dp, start = 16.dp)
-                        .height(180.dp)
+                        .padding(start = 16.dp, top = lerp(100.dp, 10.dp, progress), bottom = 10.dp)
+                        .height(lerp(256.dp, 180.dp, progress))
                 ) {
-                    ElevatedCard(
-                        modifier = Modifier
-                            .wrapContentWidth()
-                            .height(180.dp)
-                    ) {
+                    ElevatedCard {
                         AsyncImage(
                             model = coverImage(),
                             fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
                             contentDescription = stringResource(R.string.anime_media_cover_image),
+                            modifier = Modifier
+                                .wrapContentWidth()
+                                .height(256.dp)
                         )
                     }
 
                     Column(
                         modifier = Modifier
-                            .padding(top = 32.dp)
+                            .padding(top = lerp(32.dp, 0.dp, progress))
                             .animateContentSize()
                     ) {
                         Box(
                             contentAlignment = Alignment.CenterStart,
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(1f)
                         ) {
                             AutoHeightText(
-                                text = titleText(),
+                                text = when (val index = preferredTitle) {
+                                    null -> null
+                                    else -> entry?.titlesUnique?.get(index)
+                                } ?: titleText(),
                                 style = MaterialTheme.typography.headlineMedium,
                                 modifier = Modifier
-                                    .wrapContentWidth()
                                     .align(Alignment.CenterStart)
                                     .padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 4.dp)
                             )
@@ -1048,6 +1076,10 @@ object AnimeMediaDetailsScreen {
         val media: Media,
     ) {
         val id = EntryId("media", mediaId)
+        val titlesUnique
+            get() = media.title?.run {
+                listOfNotNull(romaji, english, native).distinct()
+            }
         val description get() = media.description
         val season = media.season
         val seasonYear = media.seasonYear

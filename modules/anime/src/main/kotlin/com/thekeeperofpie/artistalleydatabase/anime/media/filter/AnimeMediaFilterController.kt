@@ -160,7 +160,8 @@ class AnimeMediaFilterController<T>(
                                 ?.run {
                                     val tagsIncluded = filterData?.tagsIncluded ?: emptyList()
                                     val tagsExcluded = filterData?.tagsExcluded ?: emptyList()
-                                    if (tagsIncluded.isEmpty() && tagsExcluded.isEmpty()) {
+                                    if (tagsIncluded.isEmpty() && tagsExcluded.isEmpty()
+                                        && initialParams.tagId == null) {
                                         return@run this
                                     }
 

@@ -1,7 +1,8 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectTransformGestures
+import androidx.compose.foundation.gestures.rememberTransformableState
+import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -34,7 +35,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
@@ -190,26 +190,26 @@ object AnimeMediaListScreen {
                     .coerceAtLeast(imageIntrinsicHeight.toFloat())
                     .times(0.9f)
             }
+            val transformableState =
+                rememberTransformableState { zoomChange, panChange, rotationChange ->
+                    val translation = imageTranslation + panChange
+                    imageTranslation = translation.copy(
+                        x = translation.x.coerceIn(
+                            -maxTranslationX,
+                            maxTranslationX
+                        ),
+                        y = translation.y.coerceIn(
+                            -maxTranslationY,
+                            maxTranslationY
+                        ),
+                    )
+                    imageScale = (imageScale * zoomChange).coerceIn(0.25f, 5f)
+                    imageRotation += rotationChange
+                }
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .pointerInput(Unit) {
-                        detectTransformGestures(panZoomLock = true) { _, pan, zoom, rotation ->
-                            val translation = imageTranslation + pan
-                            imageTranslation = translation.copy(
-                                x = translation.x.coerceIn(
-                                    -maxTranslationX,
-                                    maxTranslationX
-                                ),
-                                y = translation.y.coerceIn(
-                                    -maxTranslationY,
-                                    maxTranslationY
-                                ),
-                            )
-                            imageScale = (imageScale * zoom).coerceIn(0.25f, 5f)
-                            imageRotation += rotation
-                        }
-                    }
+                    .transformable(state = transformableState, lockRotationOnZoomPan = true)
                     .graphicsLayer(
                         translationX = imageTranslation.x,
                         translationY = imageTranslation.y,
@@ -217,7 +217,11 @@ object AnimeMediaListScreen {
                         scaleY = imageScale,
                         rotationZ = imageRotation,
                     )
-                    .clickable(onClick = onDismiss),
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null,
+                        onClick = onDismiss,
+                    ),
             ) {
                 Column(
                     verticalArrangement = Arrangement.spacedBy(16.dp),

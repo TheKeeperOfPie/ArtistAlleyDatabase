@@ -26,4 +26,8 @@ object AnimationUtils {
 
     fun multipliedByAnimatorScale(context: Context, value: Long) =
         (value * getAnimatorScale(context)).toLong()
+
+    fun lerp(start: Float, end: Float, progress: Float): Float {
+        return start + progress * (end - start)
+    }
 }
