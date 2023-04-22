@@ -57,6 +57,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
@@ -99,6 +100,7 @@ import com.anilist.type.MediaRelation
 import com.thekeeperofpie.artistalleydatabase.android_utils.AnimationUtils
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.anime.AppMediaPlayer
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaTagEntry
@@ -156,9 +158,12 @@ object AnimeMediaDetailsScreen {
         nextEpisode: @Composable () -> Int? = { null },
         nextEpisodeAiringAt: @Composable () -> Int? = { null },
         entry: @Composable () -> Entry? = { null },
+        mediaPlayer: @Composable () -> AppMediaPlayer,
         animeSongs: @Composable () -> AnimeMediaDetailsViewModel.AnimeSongs? = { null },
-        animeSongState: (animeThemeId: String) -> AnimeMediaDetailsViewModel.AnimeSongState,
-        onAnimeThemePlayClick: (animeThemeId: String) -> Unit = {},
+        animeSongState: (animeSongId: String) -> AnimeMediaDetailsViewModel.AnimeSongState,
+        onAnimeSongPlayClick: (animeSongId: String) -> Unit = {},
+        onAnimeSongProgressUpdate: (animeSongId: String, Float) -> Unit,
+        onAnimeSongExpandedToggle: (animeSongId: String, expanded: Boolean) -> Unit,
         cdEntries: @Composable () -> List<CdEntryGridModel> = { emptyList() },
         onGenreClicked: (String) -> Unit = {},
         onGenreLongClicked: (String) -> Unit = {},
@@ -218,9 +223,12 @@ object AnimeMediaDetailsScreen {
                 content(
                     entry = entry,
                     loading = loading,
+                    mediaPlayer = mediaPlayer,
                     animeSongs = animeSongs,
                     animeSongState = animeSongState,
-                    onAnimeThemePlayClick = onAnimeThemePlayClick,
+                    onAnimeThemePlayClick = onAnimeSongPlayClick,
+                    onAnimeSongProgressUpdate = onAnimeSongProgressUpdate,
+                    onAnimeSongExpandedToggle = onAnimeSongExpandedToggle,
                     cdEntries = cdEntries,
                     onGenreClicked = onGenreClicked,
                     onGenreLongClicked = onGenreLongClicked,
@@ -246,9 +254,12 @@ object AnimeMediaDetailsScreen {
     private fun LazyListScope.content(
         entry: Entry?,
         loading: Boolean,
+        mediaPlayer: @Composable () -> AppMediaPlayer,
         animeSongs: AnimeMediaDetailsViewModel.AnimeSongs?,
-        animeSongState: (animeThemeId: String) -> AnimeMediaDetailsViewModel.AnimeSongState,
-        onAnimeThemePlayClick: (animeThemeId: String) -> Unit,
+        animeSongState: (animeSongId: String) -> AnimeMediaDetailsViewModel.AnimeSongState,
+        onAnimeThemePlayClick: (animeSongId: String) -> Unit,
+        onAnimeSongProgressUpdate: (animeSongId: String, Float) -> Unit,
+        onAnimeSongExpandedToggle: (animeSongId: String, expanded: Boolean) -> Unit,
         cdEntries: List<CdEntryGridModel>,
         onGenreClicked: (String) -> Unit,
         onGenreLongClicked: (String) -> Unit,
@@ -307,8 +318,11 @@ object AnimeMediaDetailsScreen {
 
         songsSection(
             animeSongs = animeSongs,
+            mediaPlayer = mediaPlayer,
             animeSongState = animeSongState,
             onAnimeThemePlayClick = onAnimeThemePlayClick,
+            onAnimeSongProgressUpdate = onAnimeSongProgressUpdate,
+            onAnimeSongExpandedToggle = onAnimeSongExpandedToggle,
         )
 
         cdsSection(cdEntries)
@@ -939,8 +953,11 @@ object AnimeMediaDetailsScreen {
 
     private fun LazyListScope.songsSection(
         animeSongs: AnimeMediaDetailsViewModel.AnimeSongs?,
-        animeSongState: (animeThemeId: String) -> AnimeMediaDetailsViewModel.AnimeSongState,
-        onAnimeThemePlayClick: (animeThemeId: String) -> Unit,
+        mediaPlayer: @Composable () -> AppMediaPlayer,
+        animeSongState: (animeSongId: String) -> AnimeMediaDetailsViewModel.AnimeSongState,
+        onAnimeThemePlayClick: (animeSongId: String) -> Unit,
+        onAnimeSongProgressUpdate: (animeSongId: String, Float) -> Unit,
+        onAnimeSongExpandedToggle: (animeSongId: String, expanded: Boolean) -> Unit,
     ) {
         if (animeSongs == null) return
         item {
@@ -957,8 +974,11 @@ object AnimeMediaDetailsScreen {
 
                         AnimeThemeRow(
                             entry = entry,
+                            mediaPlayer = mediaPlayer,
                             state = animeSongState,
                             onClickPlay = onAnimeThemePlayClick,
+                            onProgressUpdate = onAnimeSongProgressUpdate,
+                            onExpandedToggle = onAnimeSongExpandedToggle,
                         )
                     }
                 }
@@ -966,15 +986,23 @@ object AnimeMediaDetailsScreen {
         }
     }
 
+    @Suppress("NAME_SHADOWING")
     @Composable
     private fun AnimeThemeRow(
         entry: AnimeMediaDetailsViewModel.AnimeSongEntry,
-        state: (animeThemeId: String) -> AnimeMediaDetailsViewModel.AnimeSongState,
-        onClickPlay: (animeThemeId: String) -> Unit,
+        mediaPlayer: @Composable () -> AppMediaPlayer,
+        state: (animeSongId: String) -> AnimeMediaDetailsViewModel.AnimeSongState,
+        onClickPlay: (animeSongId: String) -> Unit,
+        onProgressUpdate: (animeSongId: String, Float) -> Unit,
+        onExpandedToggle: (animeSongId: String, expanded: Boolean) -> Unit,
     ) {
-        @Suppress("NAME_SHADOWING")
         val state = state(entry.id)
-        val playing by state.playing.collectAsState()
+        val mediaPlayer = mediaPlayer()
+        val playingState by mediaPlayer.playingState.collectAsState()
+        val playing by remember {
+            derivedStateOf { playingState.first == entry.id && playingState.second }
+        }
+
         Column {
             Row {
                 val text = when (entry.type) {
@@ -1035,7 +1063,7 @@ object AnimeMediaDetailsScreen {
                             contentDescription = stringResource(
                                 R.string.anime_media_details_song_expand_content_description
                             ),
-                            onClick = { state.setExpanded(!state.expanded()) },
+                            onClick = { onExpandedToggle(entry.id, !state.expanded()) },
                         )
                     }
                 }
@@ -1047,12 +1075,12 @@ object AnimeMediaDetailsScreen {
                     AndroidView(
                         factory = {
                             PlayerView(it).apply {
-                                player = state.player
                                 @SuppressLint("UnsafeOptInUsageError")
                                 resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIXED_WIDTH
                                 setControllerVisibilityListener(
                                     PlayerView.ControllerVisibilityListener {
-                                        linkButtonVisible = it == View.VISIBLE
+                                        val visible = it == View.VISIBLE
+                                        linkButtonVisible = visible
                                     }
                                 )
                             }
@@ -1060,7 +1088,10 @@ object AnimeMediaDetailsScreen {
                         modifier = Modifier
                             .fillMaxWidth()
                             .wrapContentHeight()
-                            .heightIn(min = 180.dp)
+                            .heightIn(min = 180.dp),
+                        update = { it.player = mediaPlayer.player },
+                        onReset = { it.player = null },
+                        onRelease = { it.player = null },
                     )
 
                     val uriHandler = LocalUriHandler.current
@@ -1070,7 +1101,8 @@ object AnimeMediaDetailsScreen {
                     )
                     IconButton(
                         onClick = { uriHandler.openUri(entry.link!!) },
-                        modifier = Modifier.align(Alignment.TopEnd)
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
                             .alpha(alpha)
                     ) {
                         Icon(
@@ -1082,10 +1114,10 @@ object AnimeMediaDetailsScreen {
                     }
                 }
             } else if (playing) {
-                val progress = state.progress
+                val progress = mediaPlayer.progress
                 Slider(
                     value = progress,
-                    onValueChange = state::updateProgress,
+                    onValueChange = { onProgressUpdate(entry.id, it) },
                     modifier = Modifier.padding(horizontal = 16.dp),
                 )
             }

@@ -13,6 +13,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -22,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -256,6 +258,16 @@ object AnimeHomeScreen {
                                 initialize(mediaId)
                             }
 
+                            val lifecycleOwner = LocalLifecycleOwner.current
+                            DisposableEffect(lifecycleOwner) {
+                                lifecycleOwner.lifecycle.addObserver(viewModel)
+                                onDispose { lifecycleOwner.lifecycle.removeObserver(viewModel) }
+                            }
+
+                            DisposableEffect(LocalLifecycleOwner.current) {
+                                onDispose { viewModel.animeSongsCollapseAll() }
+                            }
+
                             val mediaAsState = viewModel.media.collectAsState()
                             AnimeMediaDetailsScreen(
                                 onClickBack = navController::popBackStack,
@@ -298,9 +310,12 @@ object AnimeHomeScreen {
                                         AnimeMediaDetailsScreen.Entry(mediaId, it)
                                     }
                                 },
+                                mediaPlayer = { viewModel.mediaPlayer },
                                 animeSongs = { viewModel.animeSongs.collectAsState().value },
                                 animeSongState = viewModel::getAnimeSongState,
-                                onAnimeThemePlayClick = viewModel::onAnimeThemePlayClick,
+                                onAnimeSongPlayClick = viewModel::onAnimeSongPlayAudioClick,
+                                onAnimeSongProgressUpdate = viewModel::onAnimeSongProgressUpdate,
+                                onAnimeSongExpandedToggle = viewModel::onAnimeSongExpandedToggle,
                                 cdEntries = { viewModel.cdEntries.collectAsState().value },
                                 onGenreClicked = { TODO() },
                                 onGenreLongClicked = { TODO() },
