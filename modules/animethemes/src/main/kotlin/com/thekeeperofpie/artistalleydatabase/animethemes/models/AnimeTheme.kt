@@ -34,6 +34,21 @@ data class AnimeTheme(
             val name: String = "",
             @SerialName("as")
             val character: String? = null,
-        )
+            val images: List<Images> = emptyList(),
+        ) {
+            @Serializable
+            data class Images(
+                val facet: Facet? = null,
+                val link: String? = null,
+            ) {
+                @Serializable
+                enum class Facet {
+                    @SerialName("Large Cover")
+                    LargeCover,
+                    @SerialName("Small Cover")
+                    SmallCover,
+                }
+            }
+        }
     }
 }

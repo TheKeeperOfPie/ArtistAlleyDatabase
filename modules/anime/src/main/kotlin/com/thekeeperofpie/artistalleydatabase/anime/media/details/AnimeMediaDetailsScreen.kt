@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
@@ -39,6 +40,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ImageNotSupported
 import androidx.compose.material.icons.filled.OpenInBrowser
 import androidx.compose.material.icons.filled.PauseCircleOutline
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PlayCircleOutline
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -83,6 +85,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -127,6 +130,7 @@ object AnimeMediaDetailsScreen {
 
     private const val RELATIONS_ABOVE_FOLD = 3
     private const val RECOMMENDATIONS_ABOVE_FOLD = 5
+    private const val SONGS_ABOVE_FOLD = 3
 
     // Sorted by most relevant for an anime-first viewer
     private val RELATION_SORT_ORDER = listOf(
@@ -213,6 +217,7 @@ object AnimeMediaDetailsScreen {
 
             var relationsExpanded by remember { mutableStateOf(false) }
             var recommendationsExpanded by remember { mutableStateOf(false) }
+            var songsExpanded by remember { mutableStateOf(false) }
 
             LazyColumn(
                 modifier = Modifier
@@ -241,6 +246,8 @@ object AnimeMediaDetailsScreen {
                     onRelationsExpandedToggled = { relationsExpanded = it },
                     recommendationsExpanded = { recommendationsExpanded },
                     onRecommendationsExpandedToggled = { recommendationsExpanded = it },
+                    songsExpanded = { songsExpanded },
+                    onSongsExpandedToggled = { songsExpanded = it },
                 )
             }
         }
@@ -272,6 +279,8 @@ object AnimeMediaDetailsScreen {
         onRelationsExpandedToggled: (Boolean) -> Unit,
         recommendationsExpanded: () -> Boolean,
         onRecommendationsExpandedToggled: (Boolean) -> Unit,
+        songsExpanded: () -> Boolean,
+        onSongsExpandedToggled: (Boolean) -> Unit,
     ) {
         if (entry == null) {
             if (loading) {
@@ -318,6 +327,8 @@ object AnimeMediaDetailsScreen {
 
         songsSection(
             animeSongs = animeSongs,
+            songsExpanded = songsExpanded,
+            onSongsExpandedToggled = onSongsExpandedToggled,
             mediaPlayer = mediaPlayer,
             animeSongState = animeSongState,
             onAnimeThemePlayClick = onAnimeThemePlayClick,
@@ -746,12 +757,12 @@ object AnimeMediaDetailsScreen {
             values = entry.relations,
             valueToEntry = { it.entry },
             aboveFold = RELATIONS_ABOVE_FOLD,
-            label = { RelationLabel(it.relation) },
             expanded = relationsExpanded,
             onExpandedToggled = onRelationsExpandedToggled,
             onMediaClicked = onMediaClicked,
             onTagClicked = onTagClicked,
             onTagLongClicked = onTagLongClicked,
+            label = { RelationLabel(it.relation) },
         )
     }
 
@@ -953,6 +964,8 @@ object AnimeMediaDetailsScreen {
 
     private fun LazyListScope.songsSection(
         animeSongs: AnimeMediaDetailsViewModel.AnimeSongs?,
+        songsExpanded: () -> Boolean,
+        onSongsExpandedToggled: (Boolean) -> Unit,
         mediaPlayer: @Composable () -> AppMediaPlayer,
         animeSongState: (animeSongId: String) -> AnimeMediaDetailsViewModel.AnimeSongState,
         onAnimeThemePlayClick: (animeSongId: String) -> Unit,
@@ -960,29 +973,22 @@ object AnimeMediaDetailsScreen {
         onAnimeSongExpandedToggle: (animeSongId: String, expanded: Boolean) -> Unit,
     ) {
         if (animeSongs == null) return
-        item {
-            SectionHeader(stringResource(R.string.anime_media_details_songs_label))
-        }
-
-        item {
-            ElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
-                Column {
-                    animeSongs.entries.forEachIndexed { index, entry ->
-                        if (index != 0) {
-                            Divider()
-                        }
-
-                        AnimeThemeRow(
-                            entry = entry,
-                            mediaPlayer = mediaPlayer,
-                            state = animeSongState,
-                            onClickPlay = onAnimeThemePlayClick,
-                            onProgressUpdate = onAnimeSongProgressUpdate,
-                            onExpandedToggle = onAnimeSongExpandedToggle,
-                        )
-                    }
-                }
-            }
+        listSection(
+            titleRes = R.string.anime_media_details_songs_label,
+            values = animeSongs.entries,
+            aboveFold = SONGS_ABOVE_FOLD,
+            expanded = songsExpanded,
+            onExpandedToggled = onSongsExpandedToggled,
+        ) { item, paddingBottom ->
+            AnimeThemeRow(
+                entry = item,
+                mediaPlayer = mediaPlayer,
+                state = animeSongState,
+                onClickPlay = onAnimeThemePlayClick,
+                onProgressUpdate = onAnimeSongProgressUpdate,
+                onExpandedToggle = onAnimeSongExpandedToggle,
+                modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = paddingBottom)
+            )
         }
     }
 
@@ -995,6 +1001,7 @@ object AnimeMediaDetailsScreen {
         onClickPlay: (animeSongId: String) -> Unit,
         onProgressUpdate: (animeSongId: String, Float) -> Unit,
         onExpandedToggle: (animeSongId: String, expanded: Boolean) -> Unit,
+        modifier: Modifier = Modifier,
     ) {
         val state = state(entry.id)
         val mediaPlayer = mediaPlayer()
@@ -1003,37 +1010,42 @@ object AnimeMediaDetailsScreen {
             derivedStateOf { playingState.first == entry.id && playingState.second }
         }
 
-        Column {
+        ElevatedCard(
+            onClick = { onExpandedToggle(entry.id, !state.expanded()) },
+            modifier = modifier.animateContentSize(),
+        ) {
+            // TODO: This doesn't line up perfectly (too much space between label and title),
+            //  consider migrating to ConstraintLayout
             Row {
-                val text = when (entry.type) {
-                    AnimeTheme.Type.Opening -> if (entry.episodes != null) {
+                val labelText = when (entry.type) {
+                    AnimeTheme.Type.Opening -> if (entry.episodes.isNullOrBlank()) {
+                        stringResource(R.string.anime_media_details_song_opening)
+                    } else {
                         stringResource(
                             R.string.anime_media_details_song_opening_episodes,
-                            entry.song.title,
-                            entry.episodes
+                            entry.episodes,
                         )
-                    } else {
-                        stringResource(R.string.anime_media_details_song_opening, entry.song.title)
                     }
-                    AnimeTheme.Type.Ending -> if (entry.episodes != null) {
+                    AnimeTheme.Type.Ending -> if (entry.episodes.isNullOrBlank()) {
+                        stringResource(R.string.anime_media_details_song_ending)
+                    } else {
                         stringResource(
                             R.string.anime_media_details_song_ending_episodes,
-                            entry.song.title,
-                            entry.episodes
+                            entry.episodes,
                         )
-                    } else {
-                        stringResource(R.string.anime_media_details_song_ending, entry.song.title)
                     }
-                    null -> entry.song.title
+                    null -> null
                 }
 
                 Text(
-                    text = text,
-                    style = MaterialTheme.typography.labelLarge,
+                    text = labelText.orEmpty(),
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.surfaceTint,
                     modifier = Modifier
+                        .wrapContentHeight()
+                        .align(Alignment.CenterVertically)
                         .weight(1f)
-                        .padding(horizontal = 16.dp, vertical = 10.dp)
-                        .align(Alignment.CenterVertically),
+                        .padding(horizontal = 16.dp, vertical = 4.dp)
                 )
 
                 if (entry.videoUrl != null || entry.audioUrl != null) {
@@ -1121,6 +1133,143 @@ object AnimeMediaDetailsScreen {
                     modifier = Modifier.padding(horizontal = 16.dp),
                 )
             }
+
+            Text(
+                text = entry.title,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Black,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(
+                        start = 16.dp,
+                        end = 16.dp,
+                        top = if (state.expanded()) 10.dp else 0.dp,
+                        bottom = 10.dp
+                    )
+            )
+
+            val artists = entry.artists
+            if (artists.isNotEmpty()) {
+                artists.forEachIndexed { index, artist ->
+                    if (index == 0) {
+                        Divider()
+                    } else {
+                        Divider(modifier = Modifier.padding(start = 64.dp))
+                    }
+                    Row(
+                        modifier = Modifier
+                            .height(IntrinsicSize.Min)
+                            .padding(start = 64.dp)
+                    ) {
+                        val artistImage = artist.image
+                        val characterImage = artist.character?.image
+
+                        @Composable
+                        fun ArtistImage() {
+                            AsyncImage(
+                                model = artistImage,
+                                contentScale = ContentScale.FillHeight,
+                                fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
+                                contentDescription = stringResource(
+                                    if (artist.asCharacter) {
+                                        R.string.anime_media_voice_actor_image
+                                    } else {
+                                        R.string.anime_media_artist_image
+                                    }
+                                ),
+                                modifier = Modifier
+                                    .sizeIn(minWidth = 44.dp, minHeight = 64.dp)
+                                    .fillMaxHeight()
+                            )
+                        }
+
+                        @Composable
+                        fun CharacterImage() {
+                            AsyncImage(
+                                model = characterImage!!,
+                                contentScale = ContentScale.FillHeight,
+                                fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
+                                contentDescription = stringResource(
+                                    R.string.anime_media_character_image
+                                ),
+                                modifier = Modifier
+                                    .sizeIn(minWidth = 44.dp, minHeight = 64.dp)
+                                    .fillMaxHeight()
+                            )
+                        }
+
+                        val firstImage: (@Composable () -> Unit)?
+                        val secondImage: (@Composable () -> Unit)?
+
+                        val asCharacter = artist.asCharacter
+                        if (asCharacter) {
+                            if (characterImage == null) {
+                                if (artistImage == null) {
+                                    firstImage = null
+                                    secondImage = null
+                                } else {
+                                    firstImage = { ArtistImage() }
+                                    secondImage = null
+                                }
+                            } else {
+                                firstImage = { CharacterImage() }
+                                secondImage = { ArtistImage() }
+                            }
+                        } else {
+                            firstImage = { ArtistImage() }
+                            secondImage = characterImage?.let { { CharacterImage() } }
+                        }
+
+                        if (firstImage == null) {
+                            Box(
+                                contentAlignment = Alignment.Center,
+                                modifier = Modifier
+                                    .size(width = 44.dp, height = 64.dp)
+                                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.Person,
+                                    contentDescription = stringResource(
+                                        R.string.anime_media_artist_no_image
+                                    ),
+                                )
+                            }
+                        } else {
+                            firstImage()
+                        }
+
+                        val artistText = if (artist.character == null) {
+                            artist.name
+                        } else if (artist.asCharacter) {
+                            stringResource(
+                                R.string.anime_media_details_song_artist_as_character,
+                                artist.character.name,
+                                artist.name,
+                            )
+                        } else {
+                            stringResource(
+                                R.string.anime_media_details_song_artist_with_character,
+                                artist.name,
+                                artist.character.name,
+                            )
+                        }
+
+                        Text(
+                            text = artistText,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Black,
+                            modifier = Modifier
+                                .weight(1f)
+                                .align(Alignment.CenterVertically)
+                                .padding(horizontal = 16.dp, vertical = 10.dp)
+                        )
+
+                        if (secondImage != null) {
+                            secondImage()
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -1185,6 +1334,33 @@ object AnimeMediaDetailsScreen {
         onTagClicked: (tagId: String, tagName: String) -> Unit,
         onTagLongClicked: (String) -> Unit,
         label: (@Composable (T) -> Unit)? = null,
+    ) = listSection(
+        titleRes = titleRes,
+        values = values,
+        aboveFold = aboveFold,
+        expanded = expanded,
+        onExpandedToggled = onExpandedToggled,
+    ) { item, paddingBottom ->
+        val entry = valueToEntry(item)
+        AnimeMediaListRow(
+            entry = entry,
+            label = if (label == null) null else {
+                { label(item) }
+            },
+            onClick = onMediaClicked,
+            onTagClick = onTagClicked,
+            onTagLongClick = onTagLongClicked,
+            modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = paddingBottom)
+        )
+    }
+
+    private fun <T> LazyListScope.listSection(
+        @StringRes titleRes: Int,
+        values: Collection<T>,
+        aboveFold: Int,
+        expanded: () -> Boolean,
+        onExpandedToggled: (Boolean) -> Unit,
+        itemContent: @Composable (T, paddingBottom: Dp) -> Unit,
     ) {
         if (values.isNotEmpty()) {
             item {
@@ -1204,31 +1380,13 @@ object AnimeMediaDetailsScreen {
                 } else {
                     16.dp
                 }
-                AnimeMediaListRow(
-                    entry = valueToEntry(item),
-                    label = if (label == null) null else {
-                        { label(item) }
-                    },
-                    onClick = onMediaClicked,
-                    onTagClick = onTagClicked,
-                    onTagLongClick = onTagLongClicked,
-                    modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = paddingBottom)
-                )
+                itemContent(item, paddingBottom)
             }
 
             if (hasMore) {
                 if (expanded()) {
                     items(values.drop(aboveFold)) {
-                        AnimeMediaListRow(
-                            entry = valueToEntry(it),
-                            label = if (label == null) null else {
-                                { label(it) }
-                            },
-                            onClick = onMediaClicked,
-                            onTagClick = onTagClicked,
-                            onTagLongClick = onTagLongClicked,
-                            modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
-                        )
+                        itemContent(it, 16.dp)
                     }
                 }
 

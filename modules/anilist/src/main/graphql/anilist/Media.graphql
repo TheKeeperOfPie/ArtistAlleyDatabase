@@ -101,10 +101,12 @@ query MediaDetails($mediaId: Int!) {
         }
 
         # TODO: Handle pagination
-        characters {
+        characters(sort: [RELEVANCE, ROLE], perPage: 50) {
             nodes {
                 id
                 name {
+                    full
+                    alternative
                     userPreferred
                 }
                 image {
@@ -119,6 +121,8 @@ query MediaDetails($mediaId: Int!) {
                         large
                     }
                     name {
+                        full
+                        alternative
                         userPreferred
                     }
                 }
@@ -425,7 +429,7 @@ query MediaByIds15(
 
 query MediaWithCharacters($mediaId: Int, $page: Int, $perPage: Int) {
     Media(id: $mediaId) @nonnull {
-        characters(page: $page, perPage: $perPage) @nonnull {
+        characters(page: $page, perPage: $perPage, sort: [RELEVANCE, ROLE]) @nonnull {
             nodes @nonnull {
                 id
             }

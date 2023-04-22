@@ -69,12 +69,13 @@ class AnimeMediaDetailsViewModel @Inject constructor(
             cdEntries.value = cdEntryDao.searchSeriesByMediaId(appJson, mediaId)
                 .map { CdEntryGridModel.buildFromEntry(application, it) }
 
-            if (media.value?.type == MediaType.ANIME) {
+            val mediaValue = media.value
+            if (mediaValue?.type == MediaType.ANIME) {
                 try {
                     val anime = animeThemesApi.getAnime(mediaId)
-                    val animeThemeEntries = anime
+                    val songEntries = anime
                         ?.animethemes
-                        ?.mapNotNull {
+                        ?.map {
                             val video = it.animeThemeEntries
                                 .firstOrNull()
                                 ?.videos
@@ -82,7 +83,20 @@ class AnimeMediaDetailsViewModel @Inject constructor(
                             AnimeSongEntry(
                                 id = it.id,
                                 type = it.type,
-                                song = it.song ?: return@mapNotNull null,
+                                title = it.song?.title.orEmpty(),
+                                artists = it.song?.artists?.map {
+                                    val voiceActorImageAndCharacter = findCharacter(mediaValue, it)
+                                    AnimeSongEntry.Artist(
+                                        id = it.id,
+                                        name = it.name,
+                                        image = voiceActorImageAndCharacter?.first
+                                            ?: (it.images.firstOrNull {
+                                                it.facet == AnimeTheme.Song.Artist.Images.Facet.SmallCover
+                                            } ?: it.images.firstOrNull())?.link,
+                                        asCharacter = !it.character.isNullOrBlank(),
+                                        character = voiceActorImageAndCharacter?.second,
+                                    )
+                                }.orEmpty(),
                                 animeThemeEntries = it.animeThemeEntries,
                                 videoUrl = video?.link,
                                 audioUrl = video?.audio?.link,
@@ -90,12 +104,15 @@ class AnimeMediaDetailsViewModel @Inject constructor(
                             )
                         }
                         .orEmpty()
-                    if (animeThemeEntries.isNotEmpty()) {
+
+                    if (songEntries.isNotEmpty()) {
+                        val songStates = songEntries
+                            .map { AnimeSongState(id = it.id, entry = it) }
+                            .associateBy { it.id }
+
                         withContext(CustomDispatchers.Main) {
-                            animeSongStates.value = animeThemeEntries
-                                .map { AnimeSongState(id = it.id, entry = it) }
-                                .associateBy { it.id }
-                            animeSongs.value = AnimeSongs(animeThemeEntries)
+                            animeSongStates.value = songStates
+                            animeSongs.value = AnimeSongs(songEntries)
                         }
                     }
                 } catch (e: Exception) {
@@ -103,6 +120,40 @@ class AnimeMediaDetailsViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    // TODO: Something better than exact string matching
+    private fun findCharacter(
+        media: MediaDetailsQuery.Data.Media,
+        artist: AnimeTheme.Song.Artist,
+    ): Pair<String?, AnimeSongEntry.Artist.Character?>? {
+        val nodes = media.characters?.nodes?.filterNotNull()
+        val node = nodes?.find {
+            val characterName = it.name ?: return@find false
+            characterName.full == artist.character ||
+                    (characterName.alternative?.any { it == artist.character } == true)
+        }
+
+        val edgeAndVoiceActor = media.characters?.edges
+            ?.asSequence()
+            ?.filterNotNull()
+            ?.mapNotNull { edge ->
+                edge.voiceActors?.filterNotNull()?.firstOrNull {
+                    it.name?.full == artist.name ||
+                            (it.name?.alternative?.any { it == artist.name } == true)
+                }?.let { edge to it }
+            }
+            ?.firstOrNull()
+
+        val character = node
+            ?: edgeAndVoiceActor?.let { (edge, _) -> nodes?.find { it.id == edge.node?.id } }
+            ?: return null
+
+        return edgeAndVoiceActor?.second?.image?.large to AnimeSongEntry.Artist.Character(
+            aniListId = character.id.toString(),
+            image = character.image?.large,
+            name = character.name?.userPreferred ?: artist.character!!,
+        )
     }
 
     fun getAnimeSongState(animeSongId: String) = animeSongStates.value[animeSongId]!!
@@ -164,13 +215,28 @@ class AnimeMediaDetailsViewModel @Inject constructor(
     data class AnimeSongEntry(
         val id: String,
         val type: AnimeTheme.Type?,
-        val song: AnimeTheme.Song,
+        val title: String,
+        val artists: List<Artist>,
         val animeThemeEntries: List<AnimeThemeEntry>,
         val episodes: String? = animeThemeEntries.firstOrNull()?.episodes,
         val videoUrl: String?,
         val audioUrl: String?,
         val link: String?,
-    )
+    ) {
+        data class Artist(
+            val id: String,
+            val name: String,
+            val image: String?,
+            val asCharacter: Boolean,
+            val character: Character?,
+        ) {
+            data class Character(
+                val aniListId: String,
+                val image: String?,
+                val name: String,
+            )
+        }
+    }
 
     // State separated from immutable data so that recomposition is as granular as possible
     class AnimeSongState(

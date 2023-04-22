@@ -7,6 +7,8 @@
     <string name="anime_media_banner_image">Media banner image</string>
     <string name="anime_media_cover_image">Media cover image</string>
     <string name="anime_media_character_image">Character image</string>
+    <string name="anime_media_artist_image">Artist image</string>
+    <string name="anime_media_artist_no_image">No artist image</string>
     <string name="anime_media_voice_actor_image">Voice actor image</string>
     <string name="anime_media_list_error_loading">Error loading media list</string>
     <string name="anime_media_list_no_results">No results</string>
@@ -224,8 +226,10 @@
     <string name="anime_media_details_song_play_content_description">Play song</string>
     <string name="anime_media_details_song_pause_content_description">Pause song</string>
     <string name="anime_media_details_song_open_link_content_description">Open song link</string>
-    <string name="anime_media_details_song_opening">Opening - %1$s</string>
-    <string name="anime_media_details_song_opening_episodes">Opening - %1$s - %2$s</string>
-    <string name="anime_media_details_song_ending">Ending - %1$s</string>
-    <string name="anime_media_details_song_ending_episodes">Ending - %1$s - %2$s</string>
+    <string name="anime_media_details_song_opening">Opening</string>
+    <string name="anime_media_details_song_opening_episodes">Opening - Ep. %1$s</string>
+    <string name="anime_media_details_song_ending">Ending</string>
+    <string name="anime_media_details_song_ending_episodes">Ending - Ep. %1$s</string>
+    <string name="anime_media_details_song_artist_as_character">%1$s (CV: %2$s)</string>
+    <string name="anime_media_details_song_artist_with_character">%1$s (%2$s)</string>
 </resources>
