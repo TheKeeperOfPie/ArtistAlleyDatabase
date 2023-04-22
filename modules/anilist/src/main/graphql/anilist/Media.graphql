@@ -183,6 +183,7 @@ query MediaDetails($mediaId: Int!) {
             isMediaSpoiler
             rank
         }
+        type
         volumes
         chapters
     }

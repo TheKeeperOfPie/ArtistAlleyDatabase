@@ -1,6 +1,8 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media.details
 
+import android.annotation.SuppressLint
 import android.graphics.drawable.BitmapDrawable
+import android.view.View
 import androidx.annotation.StringRes
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
@@ -35,19 +37,26 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ImageNotSupported
+import androidx.compose.material.icons.filled.OpenInBrowser
+import androidx.compose.material.icons.filled.PauseCircleOutline
+import androidx.compose.material.icons.filled.PlayCircleOutline
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
@@ -71,12 +80,16 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.graphics.ColorUtils
+import androidx.media3.ui.AspectRatioFrameLayout
+import androidx.media3.ui.PlayerView
 import androidx.palette.graphics.Palette
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
@@ -91,6 +104,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaTagEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
+import com.thekeeperofpie.artistalleydatabase.animethemes.models.AnimeTheme
 import com.thekeeperofpie.artistalleydatabase.cds.grid.CdEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.compose.AccelerateEasing
 import com.thekeeperofpie.artistalleydatabase.compose.AssistChip
@@ -142,6 +156,9 @@ object AnimeMediaDetailsScreen {
         nextEpisode: @Composable () -> Int? = { null },
         nextEpisodeAiringAt: @Composable () -> Int? = { null },
         entry: @Composable () -> Entry? = { null },
+        animeSongs: @Composable () -> AnimeMediaDetailsViewModel.AnimeSongs? = { null },
+        animeSongState: (animeThemeId: String) -> AnimeMediaDetailsViewModel.AnimeSongState,
+        onAnimeThemePlayClick: (animeThemeId: String) -> Unit = {},
         cdEntries: @Composable () -> List<CdEntryGridModel> = { emptyList() },
         onGenreClicked: (String) -> Unit = {},
         onGenreLongClicked: (String) -> Unit = {},
@@ -154,6 +171,7 @@ object AnimeMediaDetailsScreen {
         onErrorDismiss: () -> Unit = {},
     ) {
         val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+        @Suppress("NAME_SHADOWING")
         Scaffold(
             topBar = {
                 CollapsingToolbar(
@@ -183,13 +201,9 @@ object AnimeMediaDetailsScreen {
             },
             modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
         ) {
-            @Suppress("NAME_SHADOWING")
             val loading = loading()
-
-            @Suppress("NAME_SHADOWING")
             val entry = entry()
-
-            @Suppress("NAME_SHADOWING")
+            val animeSongs = animeSongs()
             val cdEntries = cdEntries()
 
             var relationsExpanded by remember { mutableStateOf(false) }
@@ -204,6 +218,9 @@ object AnimeMediaDetailsScreen {
                 content(
                     entry = entry,
                     loading = loading,
+                    animeSongs = animeSongs,
+                    animeSongState = animeSongState,
+                    onAnimeThemePlayClick = onAnimeThemePlayClick,
                     cdEntries = cdEntries,
                     onGenreClicked = onGenreClicked,
                     onGenreLongClicked = onGenreLongClicked,
@@ -229,6 +246,9 @@ object AnimeMediaDetailsScreen {
     private fun LazyListScope.content(
         entry: Entry?,
         loading: Boolean,
+        animeSongs: AnimeMediaDetailsViewModel.AnimeSongs?,
+        animeSongState: (animeThemeId: String) -> AnimeMediaDetailsViewModel.AnimeSongState,
+        onAnimeThemePlayClick: (animeThemeId: String) -> Unit,
         cdEntries: List<CdEntryGridModel>,
         onGenreClicked: (String) -> Unit,
         onGenreLongClicked: (String) -> Unit,
@@ -284,6 +304,12 @@ object AnimeMediaDetailsScreen {
         )
 
         infoSection(entry)
+
+        songsSection(
+            animeSongs = animeSongs,
+            animeSongState = animeSongState,
+            onAnimeThemePlayClick = onAnimeThemePlayClick,
+        )
 
         cdsSection(cdEntries)
 
@@ -909,6 +935,161 @@ object AnimeMediaDetailsScreen {
                 .fillMaxWidth()
                 .padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 10.dp)
         )
+    }
+
+    private fun LazyListScope.songsSection(
+        animeSongs: AnimeMediaDetailsViewModel.AnimeSongs?,
+        animeSongState: (animeThemeId: String) -> AnimeMediaDetailsViewModel.AnimeSongState,
+        onAnimeThemePlayClick: (animeThemeId: String) -> Unit,
+    ) {
+        if (animeSongs == null) return
+        item {
+            SectionHeader(stringResource(R.string.anime_media_details_songs_label))
+        }
+
+        item {
+            ElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
+                Column {
+                    animeSongs.entries.forEachIndexed { index, entry ->
+                        if (index != 0) {
+                            Divider()
+                        }
+
+                        AnimeThemeRow(
+                            entry = entry,
+                            state = animeSongState,
+                            onClickPlay = onAnimeThemePlayClick,
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    @Composable
+    private fun AnimeThemeRow(
+        entry: AnimeMediaDetailsViewModel.AnimeSongEntry,
+        state: (animeThemeId: String) -> AnimeMediaDetailsViewModel.AnimeSongState,
+        onClickPlay: (animeThemeId: String) -> Unit,
+    ) {
+        @Suppress("NAME_SHADOWING")
+        val state = state(entry.id)
+        val playing by state.playing.collectAsState()
+        Column {
+            Row {
+                val text = when (entry.type) {
+                    AnimeTheme.Type.Opening -> if (entry.episodes != null) {
+                        stringResource(
+                            R.string.anime_media_details_song_opening_episodes,
+                            entry.song.title,
+                            entry.episodes
+                        )
+                    } else {
+                        stringResource(R.string.anime_media_details_song_opening, entry.song.title)
+                    }
+                    AnimeTheme.Type.Ending -> if (entry.episodes != null) {
+                        stringResource(
+                            R.string.anime_media_details_song_ending_episodes,
+                            entry.song.title,
+                            entry.episodes
+                        )
+                    } else {
+                        stringResource(R.string.anime_media_details_song_ending, entry.song.title)
+                    }
+                    null -> entry.song.title
+                }
+
+                Text(
+                    text = text,
+                    style = MaterialTheme.typography.labelLarge,
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(horizontal = 16.dp, vertical = 10.dp)
+                        .align(Alignment.CenterVertically),
+                )
+
+                if (entry.videoUrl != null || entry.audioUrl != null) {
+                    if (!state.expanded()) {
+                        IconButton(onClick = { onClickPlay(entry.id) }) {
+                            if (playing) {
+                                Icon(
+                                    imageVector = Icons.Filled.PauseCircleOutline,
+                                    contentDescription = stringResource(
+                                        R.string.anime_media_details_song_pause_content_description
+                                    ),
+                                )
+                            } else {
+                                Icon(
+                                    imageVector = Icons.Filled.PlayCircleOutline,
+                                    contentDescription = stringResource(
+                                        R.string.anime_media_details_song_play_content_description
+                                    ),
+                                )
+                            }
+                        }
+                    }
+
+                    if (entry.videoUrl != null) {
+                        TrailingDropdownIconButton(
+                            expanded = state.expanded(),
+                            contentDescription = stringResource(
+                                R.string.anime_media_details_song_expand_content_description
+                            ),
+                            onClick = { state.setExpanded(!state.expanded()) },
+                        )
+                    }
+                }
+            }
+
+            if (state.expanded()) {
+                Box {
+                    var linkButtonVisible by remember { mutableStateOf(true) }
+                    AndroidView(
+                        factory = {
+                            PlayerView(it).apply {
+                                player = state.player
+                                @SuppressLint("UnsafeOptInUsageError")
+                                resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIXED_WIDTH
+                                setControllerVisibilityListener(
+                                    PlayerView.ControllerVisibilityListener {
+                                        linkButtonVisible = it == View.VISIBLE
+                                    }
+                                )
+                            }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .wrapContentHeight()
+                            .heightIn(min = 180.dp)
+                    )
+
+                    val uriHandler = LocalUriHandler.current
+                    val alpha by animateFloatAsState(
+                        targetValue = if (linkButtonVisible) 1f else 0f,
+                        label = "Song open link button alpha",
+                    )
+                    IconButton(
+                        onClick = { uriHandler.openUri(entry.link!!) },
+                        modifier = Modifier.align(Alignment.TopEnd)
+                            .alpha(alpha)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.OpenInBrowser,
+                            contentDescription = stringResource(
+                                R.string.anime_media_details_song_open_link_content_description
+                            ),
+                        )
+                    }
+                }
+            } else if (playing) {
+                val progress = state.progress
+                Slider(
+                    value = progress,
+                    onValueChange = state::updateProgress,
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                )
+            }
+        }
     }
 
     private fun LazyListScope.cdsSection(

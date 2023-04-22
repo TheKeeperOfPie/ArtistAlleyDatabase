@@ -58,6 +58,12 @@ dependencyResolutionManagement {
             library("androidx.lifecycle:lifecycle-livedata-ktx:2.6.1")
             library("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.1")
             library("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.1")
+            library("androidx.media3:media3-datasource-okhttp:1.0.1")
+            library("androidx.media3:media3-exoplayer:1.0.1")
+            library("androidx.media3:media3-exoplayer-dash:1.0.1")
+            library("androidx.media3:media3-exoplayer-hls:1.0.1")
+            library("androidx.media3:media3-exoplayer-rtsp:1.0.1")
+            library("androidx.media3:media3-ui:1.0.1")
             library("androidx.navigation:navigation-compose:2.6.0-alpha09")
             library("androidx.paging:paging-compose:1.0.0-alpha18")
             library("androidx.paging:paging-runtime:3.2.0-alpha04")
@@ -124,6 +130,7 @@ include(
     ":modules:android-utils",
     ":modules:anilist",
     ":modules:anime",
+    ":modules:animethemes",
     ":modules:art",
     ":modules:browse",
     ":modules:compose-utils",

@@ -298,6 +298,9 @@ object AnimeHomeScreen {
                                         AnimeMediaDetailsScreen.Entry(mediaId, it)
                                     }
                                 },
+                                animeSongs = { viewModel.animeSongs.collectAsState().value },
+                                animeSongState = viewModel::getAnimeSongState,
+                                onAnimeThemePlayClick = viewModel::onAnimeThemePlayClick,
                                 cdEntries = { viewModel.cdEntries.collectAsState().value },
                                 onGenreClicked = { TODO() },
                                 onGenreLongClicked = { TODO() },

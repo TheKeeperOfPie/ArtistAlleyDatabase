@@ -12,8 +12,6 @@ import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaColumnEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaEntry
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection.MultiText.Entry
-import okhttp3.OkHttpClient
-import okhttp3.logging.HttpLoggingInterceptor
 
 object AniListUtils {
 
@@ -53,25 +51,6 @@ object AniListUtils {
         else -> null
     }
 }
-
-internal fun OkHttpClient.Builder.addLoggingInterceptors(
-    tag: String,
-    networkSettings: NetworkSettings,
-) = apply {
-    if (BuildConfig.DEBUG) {
-        addNetworkInterceptor(HttpLoggingInterceptor {
-            Log.d(tag, "OkHttp request: $it")
-        }.apply {
-            level = when (networkSettings.networkLoggingLevel.value) {
-                NetworkSettings.NetworkLoggingLevel.NONE -> HttpLoggingInterceptor.Level.NONE
-                NetworkSettings.NetworkLoggingLevel.BASIC -> HttpLoggingInterceptor.Level.BASIC
-                NetworkSettings.NetworkLoggingLevel.HEADERS -> HttpLoggingInterceptor.Level.HEADERS
-                NetworkSettings.NetworkLoggingLevel.BODY -> HttpLoggingInterceptor.Level.BODY
-            }
-        })
-    }
-}
-
 
 internal fun ApolloClient.Builder.addLoggingInterceptors(
     tag: String,

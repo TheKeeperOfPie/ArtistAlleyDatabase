@@ -12,6 +12,7 @@ android {
 dependencies {
     api(project(":modules:android-utils"))
     api(project(":modules:anilist"))
+    api(project(":modules:animethemes"))
     implementation(project(":modules:compose-utils"))
     api(project(":modules:cds"))
 
@@ -39,4 +40,11 @@ dependencies {
     implementation(group = "", name = "shared-elements-0.1.0-20221204.093513-11", ext = "aar")
 
     implementation(libs.html.text)
+
+    api(libs.media3.exoplayer)
+    runtimeOnly(libs.media3.datasource.okhttp)
+    runtimeOnly(libs.media3.exoplayer.dash)
+    runtimeOnly(libs.media3.exoplayer.hls)
+    runtimeOnly(libs.media3.exoplayer.rtsp)
+    implementation(libs.media3.ui)
 }

@@ -72,6 +72,7 @@ dependencyAnalysis {
                     ":modules:android-utils",
                     ":modules:anilist",
                     ":modules:anime",
+                    ":modules:animethemes",
                     ":modules:art",
                     ":modules:browse",
                     ":modules:compose-utils",

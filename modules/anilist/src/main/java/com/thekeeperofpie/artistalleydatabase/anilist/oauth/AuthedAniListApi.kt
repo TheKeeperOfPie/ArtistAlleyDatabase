@@ -21,6 +21,7 @@ import com.apollographql.apollo3.api.Query
 import com.apollographql.apollo3.network.http.DefaultHttpEngine
 import com.thekeeperofpie.artistalleydatabase.android_utils.NetworkSettings
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
+import com.thekeeperofpie.artistalleydatabase.android_utils.addLoggingInterceptors
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListCache
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils

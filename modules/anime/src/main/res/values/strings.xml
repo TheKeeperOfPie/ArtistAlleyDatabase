@@ -219,4 +219,13 @@
     <string name="anime_media_details_synonyms_expand_content_description">Synonyms expand</string>
 
     <string name="anime_media_details_cds_label">CDs</string>
+    <string name="anime_media_details_songs_label">Songs</string>
+    <string name="anime_media_details_song_expand_content_description">Song expand</string>
+    <string name="anime_media_details_song_play_content_description">Play song</string>
+    <string name="anime_media_details_song_pause_content_description">Pause song</string>
+    <string name="anime_media_details_song_open_link_content_description">Open song link</string>
+    <string name="anime_media_details_song_opening">Opening - %1$s</string>
+    <string name="anime_media_details_song_opening_episodes">Opening - %1$s - %2$s</string>
+    <string name="anime_media_details_song_ending">Ending - %1$s</string>
+    <string name="anime_media_details_song_ending_episodes">Ending - %1$s - %2$s</string>
 </resources>

@@ -165,8 +165,6 @@ dependencies {
     api(libs.moshi.kotlin)
     ksp(kspProcessors.moshi.kotlin.codegen)
 
-    implementation(libs.okhttp3.logging.interceptor)
-
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit.test)
 }
