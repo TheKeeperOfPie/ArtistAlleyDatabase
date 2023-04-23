@@ -7,6 +7,7 @@
     <string name="anime_media_banner_image">Media banner image</string>
     <string name="anime_media_cover_image">Media cover image</string>
     <string name="anime_media_character_image">Character image</string>
+    <string name="anime_media_staff_image">Staff image</string>
     <string name="anime_media_artist_image">Artist image</string>
     <string name="anime_media_artist_no_image">No artist image</string>
     <string name="anime_media_voice_actor_image">Voice actor image</string>
@@ -221,6 +222,8 @@
     <string name="anime_media_details_licensed_label">Licensed</string>
     <string name="anime_media_details_country_label">Country</string>
     <string name="anime_media_details_source_label">Source</string>
+    <string name="anime_media_details_studios_label">Studios</string>
+    <string name="anime_media_details_studios_expand_content_description">Studios expand</string>
     <string name="anime_media_details_synonyms_label">Synonyms</string>
     <string name="anime_media_details_synonyms_expand_content_description">Synonyms expand</string>
 
@@ -243,4 +246,18 @@
     <string name="anime_media_details_streaming_links_label">Streaming</string>
     <string name="anime_media_details_other_links_label">Links</string>
     <string name="anime_media_details_link_content_description">%1$s link</string>
+
+    <string name="anime_media_details_staff_label">Staff</string>
+
+    <string name="anime_media_details_rankings_label">Rankings</string>
+    <string name="anime_media_details_rankings_expand_content_description">Rankings expand</string>
+    <string name="anime_media_details_ranking_unknown">#%1$d %2$s</string>
+
+    <string name="anime_media_details_ranking_rated_all_time">#%1$d highest rated all time</string>
+    <string name="anime_media_details_ranking_rated_year">#%1$d highest rated %2$s</string>
+    <string name="anime_media_details_ranking_rated_season_year">#%1$d highest rated %2$s %3$s</string>
+
+    <string name="anime_media_details_ranking_popular_all_time">#%1$d most popular all time</string>
+    <string name="anime_media_details_ranking_popular_year">#%1$d most popular %2$s</string>
+    <string name="anime_media_details_ranking_popular_season_year">#%1$d most popular %2$s %3$s</string>
 </resources>

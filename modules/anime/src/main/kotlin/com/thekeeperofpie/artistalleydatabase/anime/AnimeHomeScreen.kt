@@ -321,6 +321,8 @@ object AnimeHomeScreen {
                                 onGenreLongClicked = { TODO() },
                                 onCharacterClicked = { TODO() },
                                 onCharacterLongClicked = { TODO() },
+                                onStaffClicked = { TODO() },
+                                onStaffLongClicked = { TODO() },
                                 onTagClicked = ::onTagClick,
                                 onTagLongClicked = { TODO() },
                                 onMediaClicked = ::onMediaClick,

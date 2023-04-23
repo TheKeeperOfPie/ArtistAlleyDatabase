@@ -3,12 +3,14 @@ package com.thekeeperofpie.artistalleydatabase.anime.media
 import android.content.Context
 import android.text.format.DateUtils
 import android.view.animation.PathInterpolator
+import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.twotone._18UpRating
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import com.anilist.MediaDetailsQuery
 import com.anilist.type.MediaFormat
 import com.anilist.type.MediaRelation
 import com.anilist.type.MediaSeason
@@ -201,4 +203,29 @@ object MediaUtils {
 
     fun twitterHashtagsLink(hashtags: List<String>) =
         "https://twitter.com/search?q=${hashtags.joinToString(separator = "+OR ")}&src=typd"
+
+    @Composable
+    fun formatRanking(
+        ranking: MediaDetailsQuery.Data.Media.Ranking,
+        @StringRes seasonYearTextRes: Int,
+        @StringRes yearTextRes: Int,
+        @StringRes allTimeTextRes: Int,
+    ) = if (ranking.season != null && ranking.year != null) {
+        stringResource(
+            seasonYearTextRes,
+            ranking.rank,
+            stringResource(ranking.season.toTextRes()),
+            ranking.year!!
+        )
+    } else if (ranking.year != null) {
+        stringResource(
+            yearTextRes,
+            ranking.rank,
+            ranking.year!!
+        )
+    } else if (ranking.allTime == true) {
+        stringResource(allTimeTextRes, ranking.rank)
+    } else {
+        stringResource(R.string.anime_media_details_ranking_unknown, ranking.rank, ranking.context)
+    }
 }

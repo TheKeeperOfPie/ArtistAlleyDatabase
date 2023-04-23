@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
@@ -78,7 +80,7 @@ object AnimeMediaListRow {
                 .heightIn(min = 180.dp)
                 .clickable(enabled = entry != Entry.Loading, onClick = { onClick(entry) }),
         ) {
-            Row {
+            Row(modifier = Modifier.height(IntrinsicSize.Min)) {
                 CoverImage(entry, onLongPressImage)
 
                 Column(modifier = Modifier.heightIn(min = 180.dp)) {
@@ -307,6 +309,10 @@ object AnimeMediaListRow {
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier
                 .padding(top = 4.dp, bottom = 10.dp)
+                .fillMaxWidth()
+                // SubcomposeLayout doesn't support fill max width, so use a really large number.
+                // The parent will clamp the actual width so all content still fits on screen.
+                .size(width = 39393.dp, height = 24.dp)
                 .fadingEdge(
                     endOpaque = 32.dp,
                     endTransparent = 16.dp,
