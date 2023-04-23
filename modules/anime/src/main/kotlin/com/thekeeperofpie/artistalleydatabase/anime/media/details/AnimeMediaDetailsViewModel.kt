@@ -13,6 +13,7 @@ import com.anilist.MediaDetailsQuery
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AppMediaPlayer
 import com.thekeeperofpie.artistalleydatabase.anime.R
@@ -84,19 +85,9 @@ class AnimeMediaDetailsViewModel @Inject constructor(
                                 id = it.id,
                                 type = it.type,
                                 title = it.song?.title.orEmpty(),
-                                artists = it.song?.artists?.map {
-                                    val voiceActorImageAndCharacter = findCharacter(mediaValue, it)
-                                    AnimeSongEntry.Artist(
-                                        id = it.id,
-                                        name = it.name,
-                                        image = voiceActorImageAndCharacter?.first
-                                            ?: (it.images.firstOrNull {
-                                                it.facet == AnimeTheme.Song.Artist.Images.Facet.SmallCover
-                                            } ?: it.images.firstOrNull())?.link,
-                                        asCharacter = !it.character.isNullOrBlank(),
-                                        character = voiceActorImageAndCharacter?.second,
-                                    )
-                                }.orEmpty(),
+                                spoiler = it.animeThemeEntries.any { it.spoiler },
+                                artists = it.song?.artists?.map { buildArtist(mediaValue, it) }
+                                    .orEmpty(),
                                 animeThemeEntries = it.animeThemeEntries,
                                 videoUrl = video?.link,
                                 audioUrl = video?.audio?.link,
@@ -123,10 +114,10 @@ class AnimeMediaDetailsViewModel @Inject constructor(
     }
 
     // TODO: Something better than exact string matching
-    private fun findCharacter(
+    private fun buildArtist(
         media: MediaDetailsQuery.Data.Media,
         artist: AnimeTheme.Song.Artist,
-    ): Pair<String?, AnimeSongEntry.Artist.Character?>? {
+    ): AnimeSongEntry.Artist {
         val nodes = media.characters?.nodes?.filterNotNull()
         val node = nodes?.find {
             val characterName = it.name ?: return@find false
@@ -145,14 +136,29 @@ class AnimeMediaDetailsViewModel @Inject constructor(
             }
             ?.firstOrNull()
 
-        val character = node
-            ?: edgeAndVoiceActor?.let { (edge, _) -> nodes?.find { it.id == edge.node?.id } }
-            ?: return null
+        val character = (node
+            ?: edgeAndVoiceActor?.let { (edge, _) -> nodes?.find { it.id == edge.node?.id } })
+            ?.let {
+                AnimeSongEntry.Artist.Character(
+                    aniListId = it.id.toString(),
+                    image = it.image?.large,
+                    name = it.name?.userPreferred ?: artist.character ?: "",
+                )
+            }
 
-        return edgeAndVoiceActor?.second?.image?.large to AnimeSongEntry.Artist.Character(
-            aniListId = character.id.toString(),
-            image = character.image?.large,
-            name = character.name?.userPreferred ?: artist.character!!,
+        val artistImage = edgeAndVoiceActor?.second?.image?.large
+            ?: (artist.images.firstOrNull {
+                it.facet == AnimeTheme.Song.Artist.Images.Facet.SmallCover
+            } ?: artist.images.firstOrNull())?.link
+
+        return AnimeSongEntry.Artist(
+            id = artist.id,
+            aniListId = edgeAndVoiceActor?.second?.id?.toString(),
+            animeThemesSlug = artist.slug,
+            name = artist.name,
+            image = artistImage,
+            asCharacter = !artist.character.isNullOrBlank(),
+            character = character,
         )
     }
 
@@ -216,6 +222,7 @@ class AnimeMediaDetailsViewModel @Inject constructor(
         val id: String,
         val type: AnimeTheme.Type?,
         val title: String,
+        val spoiler: Boolean,
         val artists: List<Artist>,
         val animeThemeEntries: List<AnimeThemeEntry>,
         val episodes: String? = animeThemeEntries.firstOrNull()?.episodes,
@@ -225,11 +232,21 @@ class AnimeMediaDetailsViewModel @Inject constructor(
     ) {
         data class Artist(
             val id: String,
+            val aniListId: String?,
+            val animeThemesSlug: String,
             val name: String,
             val image: String?,
             val asCharacter: Boolean,
             val character: Character?,
         ) {
+            val link by lazy {
+                if (aniListId != null) {
+                    AniListUtils.staffUrl(aniListId)
+                } else {
+                    AnimeThemesUtils.artistUrl(animeThemesSlug)
+                }
+            }
+
             data class Character(
                 val aniListId: String,
                 val image: String?,

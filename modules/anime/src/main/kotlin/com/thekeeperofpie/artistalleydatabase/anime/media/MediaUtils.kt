@@ -198,4 +198,7 @@ object MediaUtils {
         0,
         BASE_DATE_FORMAT_FLAGS,
     )
+
+    fun twitterHashtagsLink(hashtags: List<String>) =
+        "https://twitter.com/search?q=${hashtags.joinToString(separator = "+OR ")}&src=typd"
 }

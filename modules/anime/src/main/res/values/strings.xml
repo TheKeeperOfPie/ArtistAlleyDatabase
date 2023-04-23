@@ -216,6 +216,10 @@
     <string name="anime_media_details_mean_score_label">Mean score</string>
     <string name="anime_media_details_popularity_label">Popularity</string>
     <string name="anime_media_details_favorites_label">Favorites</string>
+    <string name="anime_media_details_trending_label">Trending</string>
+    <string name="anime_media_details_hashtags_label">Hashtags</string>
+    <string name="anime_media_details_licensed_label">Licensed</string>
+    <string name="anime_media_details_country_label">Country</string>
     <string name="anime_media_details_source_label">Source</string>
     <string name="anime_media_details_synonyms_label">Synonyms</string>
     <string name="anime_media_details_synonyms_expand_content_description">Synonyms expand</string>
@@ -232,4 +236,11 @@
     <string name="anime_media_details_song_ending_episodes">Ending - Ep. %1$s</string>
     <string name="anime_media_details_song_artist_as_character">%1$s (CV: %2$s)</string>
     <string name="anime_media_details_song_artist_with_character">%1$s (%2$s)</string>
+    <string name="anime_media_details_song_spoiler">Spoiler</string>
+    <string name="anime_media_details_song_spoiler_content_description">Song is spoiler</string>
+
+    <string name="anime_media_details_social_links_label">Socials</string>
+    <string name="anime_media_details_streaming_links_label">Streaming</string>
+    <string name="anime_media_details_other_links_label">Links</string>
+    <string name="anime_media_details_link_content_description">%1$s link</string>
 </resources>

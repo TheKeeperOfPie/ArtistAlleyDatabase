@@ -134,13 +134,24 @@ query MediaDetails($mediaId: Int!) {
         description
         averageScore
         meanScore
+        countryOfOrigin
         duration
         favourites
         source
         synonyms
         episodes
+        externalLinks {
+            id
+            type
+            url
+            icon
+            site
+            color
+        }
         format
         genres
+        hashtag
+        isLicensed
         nextAiringEpisode {
             episode
             airingAt
@@ -187,6 +198,7 @@ query MediaDetails($mediaId: Int!) {
             isMediaSpoiler
             rank
         }
+        trending
         type
         volumes
         chapters

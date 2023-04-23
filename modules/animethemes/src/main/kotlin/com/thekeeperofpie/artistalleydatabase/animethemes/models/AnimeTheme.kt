@@ -31,6 +31,7 @@ data class AnimeTheme(
         @Serializable
         data class Artist(
             val id: String,
+            val slug: String,
             val name: String = "",
             @SerialName("as")
             val character: String? = null,

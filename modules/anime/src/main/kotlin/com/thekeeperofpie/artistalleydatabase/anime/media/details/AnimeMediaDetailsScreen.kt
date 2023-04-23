@@ -42,6 +42,8 @@ import androidx.compose.material.icons.filled.OpenInBrowser
 import androidx.compose.material.icons.filled.PauseCircleOutline
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PlayCircleOutline
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
@@ -99,7 +101,9 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import coil.size.Dimension
 import com.anilist.MediaDetailsQuery.Data.Media
+import com.anilist.type.ExternalLinkType
 import com.anilist.type.MediaRelation
+import com.neovisionaries.i18n.CountryCode
 import com.thekeeperofpie.artistalleydatabase.android_utils.AnimationUtils
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
@@ -118,6 +122,8 @@ import com.thekeeperofpie.artistalleydatabase.compose.CollapsingToolbar
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
 import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.assistChipColors
+import com.thekeeperofpie.artistalleydatabase.compose.multiplyCoerceSaturation
+import com.thekeeperofpie.artistalleydatabase.compose.optionalClickable
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGrid
 import de.charlex.compose.HtmlText
@@ -343,6 +349,10 @@ object AnimeMediaDetailsScreen {
             onTagClicked = onTagClicked,
             onTagLongClicked = onTagLongClicked,
         )
+
+        socialLinksSection(entry = entry)
+        streamingLinksSection(entry = entry)
+        otherLinksSection(entry = entry)
 
         recommendationsSection(
             entry = entry,
@@ -776,6 +786,7 @@ object AnimeMediaDetailsScreen {
                     .padding(horizontal = 16.dp)
                     .animateContentSize(),
             ) {
+                val media = entry.media
                 TwoColumnInfoText(
                     labelOne = stringResource(R.string.anime_media_details_format_label),
                     bodyOne = stringResource(entry.formatTextRes),
@@ -786,33 +797,33 @@ object AnimeMediaDetailsScreen {
 
                 TwoColumnInfoText(
                     labelOne = stringResource(R.string.anime_media_details_episodes_label),
-                    bodyOne = entry.episodes?.toString(),
+                    bodyOne = media.episodes?.toString(),
                     labelTwo = stringResource(R.string.anime_media_details_duration_label),
-                    bodyTwo = entry.duration?.let {
+                    bodyTwo = media.duration?.let {
                         stringResource(R.string.anime_media_details_duration_minutes, it)
                     },
                 )
 
                 TwoColumnInfoText(
                     labelOne = stringResource(R.string.anime_media_details_volumes_label),
-                    bodyOne = entry.volumes?.toString(),
+                    bodyOne = media.volumes?.toString(),
                     labelTwo = stringResource(R.string.anime_media_details_chapters_label),
-                    bodyTwo = entry.chapters?.toString(),
+                    bodyTwo = media.chapters?.toString(),
                 )
 
                 TwoColumnInfoText(
                     labelOne = stringResource(R.string.anime_media_details_source_label),
-                    bodyOne = stringResource(entry.source.toTextRes()),
+                    bodyOne = stringResource(media.source.toTextRes()),
                     labelTwo = stringResource(R.string.anime_media_details_season_label),
-                    bodyTwo = MediaUtils.formatSeasonYear(entry.season, entry.seasonYear),
+                    bodyTwo = MediaUtils.formatSeasonYear(media.season, media.seasonYear),
                 )
 
                 val context = LocalContext.current
 
-                val startDateFormatted = entry.startDate?.let {
+                val startDateFormatted = media.startDate?.let {
                     remember { MediaUtils.formatDateTime(context, it.year, it.month, it.day) }
                 }
-                val endDateFormatted = entry.endDate?.let {
+                val endDateFormatted = media.endDate?.let {
                     remember { MediaUtils.formatDateTime(context, it.year, it.month, it.day) }
                 }
 
@@ -825,17 +836,55 @@ object AnimeMediaDetailsScreen {
 
                 TwoColumnInfoText(
                     labelOne = stringResource(R.string.anime_media_details_average_score_label),
-                    bodyOne = entry.averageScore?.toString(),
+                    bodyOne = media.averageScore?.toString(),
                     labelTwo = stringResource(R.string.anime_media_details_mean_score_label),
-                    bodyTwo = entry.meanScore?.toString(),
+                    bodyTwo = media.meanScore?.toString(),
                 )
 
                 TwoColumnInfoText(
                     labelOne = stringResource(R.string.anime_media_details_popularity_label),
-                    bodyOne = entry.popularity?.toString(),
+                    bodyOne = media.popularity?.toString(),
                     labelTwo = stringResource(R.string.anime_media_details_favorites_label),
-                    bodyTwo = entry.favorites?.toString(),
+                    bodyTwo = media.favourites?.toString(),
                 )
+
+                val uriHandler = LocalUriHandler.current
+                TwoColumnInfoText(
+                    labelOne = stringResource(R.string.anime_media_details_trending_label),
+                    bodyOne = media.trending?.toString(),
+                    labelTwo = "",
+                    bodyTwo = null,
+                )
+
+                TwoColumnInfoText(
+                    labelOne = stringResource(R.string.anime_media_details_licensed_label),
+                    bodyOne = entry.licensedTextRes?.let { stringResource(it) },
+                    labelTwo = stringResource(R.string.anime_media_details_country_label),
+                    bodyTwo = entry.country,
+                )
+
+                if (media.hashtag != null) {
+                    Column(modifier = Modifier
+                        .optionalClickable(
+                            onClick = if (entry.hashtags == null) null else {
+                                {
+                                    uriHandler.openUri(
+                                        MediaUtils.twitterHashtagsLink(entry.hashtags)
+                                    )
+                                }
+                            }
+                        )
+                    ) {
+                        InfoText(
+                            label = stringResource(R.string.anime_media_details_hashtags_label),
+                            body = media.hashtag!!,
+                            showDividerAbove = true
+                        )
+                    }
+                }
+
+                // TODO: trailer, non-character staff, studios, isFavorite, isAdult, airingSchedule,
+                //  streamingEpisodes, rankings, reviews, stats
 
                 if (entry.allSynonyms.size > 1) {
                     var expanded by remember { mutableStateOf(false) }
@@ -904,9 +953,9 @@ object AnimeMediaDetailsScreen {
     }
 
     @Composable
-    private fun ColumnScope.TwoColumnInfoText(
-        labelOne: String, bodyOne: String?,
-        labelTwo: String, bodyTwo: String?,
+    private fun TwoColumnInfoText(
+        labelOne: String, bodyOne: String?, onClickOne: (() -> Unit)? = null,
+        labelTwo: String, bodyTwo: String?, onClickTwo: (() -> Unit)? = null,
         showDividerAbove: Boolean = true
     ) {
         if (bodyOne != null && bodyTwo != null) {
@@ -914,7 +963,11 @@ object AnimeMediaDetailsScreen {
                 Divider()
             }
             Row(modifier = Modifier.height(IntrinsicSize.Min)) {
-                Column(modifier = Modifier.weight(1f)) {
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .optionalClickable(onClickOne)
+                ) {
                     InfoText(label = labelOne, body = bodyOne, showDividerAbove = false)
                 }
                 Box(
@@ -923,14 +976,22 @@ object AnimeMediaDetailsScreen {
                         .width(DividerDefaults.Thickness)
                         .background(color = DividerDefaults.color)
                 )
-                Column(modifier = Modifier.weight(1f)) {
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .optionalClickable(onClickTwo)
+                ) {
                     InfoText(label = labelTwo, body = bodyTwo, showDividerAbove = false)
                 }
             }
         } else if (bodyOne != null) {
-            InfoText(label = labelOne, body = bodyOne, showDividerAbove = showDividerAbove)
+            Column(modifier = Modifier.optionalClickable(onClickOne)) {
+                InfoText(label = labelOne, body = bodyOne, showDividerAbove = showDividerAbove)
+            }
         } else if (bodyTwo != null) {
-            InfoText(label = labelTwo, body = bodyTwo, showDividerAbove = showDividerAbove)
+            Column(modifier = Modifier.optionalClickable(onClickTwo)) {
+                InfoText(label = labelTwo, body = bodyTwo, showDividerAbove = showDividerAbove)
+            }
         }
     }
 
@@ -1011,261 +1072,310 @@ object AnimeMediaDetailsScreen {
         }
 
         ElevatedCard(
-            onClick = { onExpandedToggle(entry.id, !state.expanded()) },
             modifier = modifier.animateContentSize(),
         ) {
-            // TODO: This doesn't line up perfectly (too much space between label and title),
-            //  consider migrating to ConstraintLayout
-            Row {
-                val labelText = when (entry.type) {
-                    AnimeTheme.Type.Opening -> if (entry.episodes.isNullOrBlank()) {
-                        stringResource(R.string.anime_media_details_song_opening)
-                    } else {
-                        stringResource(
-                            R.string.anime_media_details_song_opening_episodes,
-                            entry.episodes,
-                        )
-                    }
-                    AnimeTheme.Type.Ending -> if (entry.episodes.isNullOrBlank()) {
-                        stringResource(R.string.anime_media_details_song_ending)
-                    } else {
-                        stringResource(
-                            R.string.anime_media_details_song_ending_episodes,
-                            entry.episodes,
-                        )
-                    }
-                    null -> null
-                }
-
-                Text(
-                    text = labelText.orEmpty(),
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.surfaceTint,
+            var hidden by remember { mutableStateOf(entry.spoiler) }
+            if (hidden) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
-                        .wrapContentHeight()
-                        .align(Alignment.CenterVertically)
-                        .weight(1f)
-                        .padding(horizontal = 16.dp, vertical = 4.dp)
-                )
+                        .clickable { hidden = false }
+                        .padding(horizontal = 16.dp, vertical = 10.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Warning,
+                        contentDescription = stringResource(
+                            R.string.anime_media_details_song_spoiler_content_description
+                        ),
+                    )
 
-                if (entry.videoUrl != null || entry.audioUrl != null) {
-                    if (!state.expanded()) {
-                        IconButton(onClick = { onClickPlay(entry.id) }) {
-                            if (playing) {
-                                Icon(
-                                    imageVector = Icons.Filled.PauseCircleOutline,
-                                    contentDescription = stringResource(
-                                        R.string.anime_media_details_song_pause_content_description
-                                    ),
-                                )
-                            } else {
-                                Icon(
-                                    imageVector = Icons.Filled.PlayCircleOutline,
-                                    contentDescription = stringResource(
-                                        R.string.anime_media_details_song_play_content_description
-                                    ),
-                                )
-                            }
-                        }
-                    }
-
-                    if (entry.videoUrl != null) {
-                        TrailingDropdownIconButton(
-                            expanded = state.expanded(),
-                            contentDescription = stringResource(
-                                R.string.anime_media_details_song_expand_content_description
-                            ),
-                            onClick = { onExpandedToggle(entry.id, !state.expanded()) },
-                        )
-                    }
+                    Text(
+                        text = stringResource(R.string.anime_media_details_song_spoiler),
+                        style = MaterialTheme.typography.titleSmall,
+                        modifier = Modifier
+                            .align(Alignment.CenterVertically)
+                            .weight(1f)
+                    )
                 }
-            }
-
-            if (state.expanded()) {
-                Box {
-                    var linkButtonVisible by remember { mutableStateOf(true) }
-                    AndroidView(
-                        factory = {
-                            PlayerView(it).apply {
-                                @SuppressLint("UnsafeOptInUsageError")
-                                resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIXED_WIDTH
-                                setControllerVisibilityListener(
-                                    PlayerView.ControllerVisibilityListener {
-                                        val visible = it == View.VISIBLE
-                                        linkButtonVisible = visible
-                                    }
-                                )
-                            }
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .wrapContentHeight()
-                            .heightIn(min = 180.dp),
-                        update = { it.player = mediaPlayer.player },
-                        onReset = { it.player = null },
-                        onRelease = { it.player = null },
-                    )
-
-                    val uriHandler = LocalUriHandler.current
-                    val alpha by animateFloatAsState(
-                        targetValue = if (linkButtonVisible) 1f else 0f,
-                        label = "Song open link button alpha",
-                    )
-                    IconButton(
-                        onClick = { uriHandler.openUri(entry.link!!) },
-                        modifier = Modifier
-                            .align(Alignment.TopEnd)
-                            .alpha(alpha)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.OpenInBrowser,
-                            contentDescription = stringResource(
-                                R.string.anime_media_details_song_open_link_content_description
-                            ),
-                        )
-                    }
-                }
-            } else if (playing) {
-                val progress = mediaPlayer.progress
-                Slider(
-                    value = progress,
-                    onValueChange = { onProgressUpdate(entry.id, it) },
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                )
-            }
-
-            Text(
-                text = entry.title,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Black,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(
-                        start = 16.dp,
-                        end = 16.dp,
-                        top = if (state.expanded()) 10.dp else 0.dp,
-                        bottom = 10.dp
-                    )
-            )
-
-            val artists = entry.artists
-            if (artists.isNotEmpty()) {
-                artists.forEachIndexed { index, artist ->
-                    if (index == 0) {
-                        Divider()
-                    } else {
-                        Divider(modifier = Modifier.padding(start = 64.dp))
-                    }
-                    Row(
-                        modifier = Modifier
-                            .height(IntrinsicSize.Min)
-                            .padding(start = 64.dp)
-                    ) {
-                        val artistImage = artist.image
-                        val characterImage = artist.character?.image
-
-                        @Composable
-                        fun ArtistImage() {
-                            AsyncImage(
-                                model = artistImage,
-                                contentScale = ContentScale.FillHeight,
-                                fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
+            } else {
+                // TODO: This doesn't line up perfectly (too much space between label and title),
+                //  consider migrating to ConstraintLayout
+                Column(
+                    modifier = Modifier.clickable { onExpandedToggle(entry.id, !state.expanded()) },
+                ) {
+                    Row {
+                        if (entry.spoiler) {
+                            Icon(
+                                imageVector = Icons.Filled.Warning,
                                 contentDescription = stringResource(
-                                    if (artist.asCharacter) {
-                                        R.string.anime_media_voice_actor_image
-                                    } else {
-                                        R.string.anime_media_artist_image
-                                    }
+                                    R.string.anime_media_details_song_spoiler_content_description
                                 ),
                                 modifier = Modifier
-                                    .sizeIn(minWidth = 44.dp, minHeight = 64.dp)
-                                    .fillMaxHeight()
+                                    .padding(
+                                        start = 16.dp,
+                                        top = 4.dp,
+                                        bottom = 4.dp,
+                                    )
+                                    .align(Alignment.CenterVertically)
                             )
                         }
 
-                        @Composable
-                        fun CharacterImage() {
-                            AsyncImage(
-                                model = characterImage!!,
-                                contentScale = ContentScale.FillHeight,
-                                fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
-                                contentDescription = stringResource(
-                                    R.string.anime_media_character_image
-                                ),
-                                modifier = Modifier
-                                    .sizeIn(minWidth = 44.dp, minHeight = 64.dp)
-                                    .fillMaxHeight()
-                            )
-                        }
-
-                        val firstImage: (@Composable () -> Unit)?
-                        val secondImage: (@Composable () -> Unit)?
-
-                        val asCharacter = artist.asCharacter
-                        if (asCharacter) {
-                            if (characterImage == null) {
-                                if (artistImage == null) {
-                                    firstImage = null
-                                    secondImage = null
-                                } else {
-                                    firstImage = { ArtistImage() }
-                                    secondImage = null
-                                }
+                        val labelText = when (entry.type) {
+                            AnimeTheme.Type.Opening -> if (entry.episodes.isNullOrBlank()) {
+                                stringResource(R.string.anime_media_details_song_opening)
                             } else {
-                                firstImage = { CharacterImage() }
-                                secondImage = { ArtistImage() }
-                            }
-                        } else {
-                            firstImage = { ArtistImage() }
-                            secondImage = characterImage?.let { { CharacterImage() } }
-                        }
-
-                        if (firstImage == null) {
-                            Box(
-                                contentAlignment = Alignment.Center,
-                                modifier = Modifier
-                                    .size(width = 44.dp, height = 64.dp)
-                                    .background(MaterialTheme.colorScheme.surfaceVariant)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Filled.Person,
-                                    contentDescription = stringResource(
-                                        R.string.anime_media_artist_no_image
-                                    ),
+                                stringResource(
+                                    R.string.anime_media_details_song_opening_episodes,
+                                    entry.episodes,
                                 )
                             }
-                        } else {
-                            firstImage()
-                        }
-
-                        val artistText = if (artist.character == null) {
-                            artist.name
-                        } else if (artist.asCharacter) {
-                            stringResource(
-                                R.string.anime_media_details_song_artist_as_character,
-                                artist.character.name,
-                                artist.name,
-                            )
-                        } else {
-                            stringResource(
-                                R.string.anime_media_details_song_artist_with_character,
-                                artist.name,
-                                artist.character.name,
-                            )
+                            AnimeTheme.Type.Ending -> if (entry.episodes.isNullOrBlank()) {
+                                stringResource(R.string.anime_media_details_song_ending)
+                            } else {
+                                stringResource(
+                                    R.string.anime_media_details_song_ending_episodes,
+                                    entry.episodes,
+                                )
+                            }
+                            null -> null
                         }
 
                         Text(
-                            text = artistText,
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Black,
+                            text = labelText.orEmpty(),
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.surfaceTint,
                             modifier = Modifier
-                                .weight(1f)
+                                .wrapContentHeight()
                                 .align(Alignment.CenterVertically)
-                                .padding(horizontal = 16.dp, vertical = 10.dp)
+                                .weight(1f)
+                                .padding(horizontal = 16.dp, vertical = 4.dp)
                         )
 
-                        if (secondImage != null) {
-                            secondImage()
+                        if (entry.videoUrl != null || entry.audioUrl != null) {
+                            if (!state.expanded()) {
+                                IconButton(onClick = { onClickPlay(entry.id) }) {
+                                    if (playing) {
+                                        Icon(
+                                            imageVector = Icons.Filled.PauseCircleOutline,
+                                            contentDescription = stringResource(
+                                                R.string.anime_media_details_song_pause_content_description
+                                            ),
+                                        )
+                                    } else {
+                                        Icon(
+                                            imageVector = Icons.Filled.PlayCircleOutline,
+                                            contentDescription = stringResource(
+                                                R.string.anime_media_details_song_play_content_description
+                                            ),
+                                        )
+                                    }
+                                }
+                            }
+
+                            if (entry.videoUrl != null) {
+                                TrailingDropdownIconButton(
+                                    expanded = state.expanded(),
+                                    contentDescription = stringResource(
+                                        R.string.anime_media_details_song_expand_content_description
+                                    ),
+                                    onClick = { onExpandedToggle(entry.id, !state.expanded()) },
+                                )
+                            }
+                        }
+                    }
+
+                    if (state.expanded()) {
+                        Box {
+                            var linkButtonVisible by remember { mutableStateOf(true) }
+                            AndroidView(
+                                factory = {
+                                    PlayerView(it).apply {
+                                        @SuppressLint("UnsafeOptInUsageError")
+                                        resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIXED_WIDTH
+                                        setControllerVisibilityListener(
+                                            PlayerView.ControllerVisibilityListener {
+                                                val visible = it == View.VISIBLE
+                                                linkButtonVisible = visible
+                                            }
+                                        )
+                                    }
+                                },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .wrapContentHeight()
+                                    .heightIn(min = 180.dp),
+                                update = { it.player = mediaPlayer.player },
+                                onReset = { it.player = null },
+                                onRelease = { it.player = null },
+                            )
+
+                            val uriHandler = LocalUriHandler.current
+                            val alpha by animateFloatAsState(
+                                targetValue = if (linkButtonVisible) 1f else 0f,
+                                label = "Song open link button alpha",
+                            )
+                            IconButton(
+                                onClick = { uriHandler.openUri(entry.link!!) },
+                                modifier = Modifier
+                                    .align(Alignment.TopEnd)
+                                    .alpha(alpha)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.OpenInBrowser,
+                                    contentDescription = stringResource(
+                                        R.string.anime_media_details_song_open_link_content_description
+                                    ),
+                                )
+                            }
+                        }
+                    } else if (playing) {
+                        val progress = mediaPlayer.progress
+                        Slider(
+                            value = progress,
+                            onValueChange = { onProgressUpdate(entry.id, it) },
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                        )
+                    }
+
+                    Text(
+                        text = entry.title,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Black,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(
+                                start = 16.dp,
+                                end = 16.dp,
+                                top = if (state.expanded()) 10.dp else 0.dp,
+                                bottom = 10.dp
+                            )
+                    )
+                }
+            }
+
+            if (!hidden) {
+                val uriHandler = LocalUriHandler.current
+                val artists = entry.artists
+                if (artists.isNotEmpty()) {
+                    artists.forEachIndexed { index, artist ->
+                        if (index == 0) {
+                            Divider()
+                        } else {
+                            Divider(modifier = Modifier.padding(start = 64.dp))
+                        }
+                        Row(
+                            modifier = Modifier
+                                .height(IntrinsicSize.Min)
+                                .padding(start = 64.dp)
+                                .clickable { uriHandler.openUri(artist.link) }
+                        ) {
+                            val artistImage = artist.image
+                            val characterImage = artist.character?.image
+
+                            @Composable
+                            fun ArtistImage() {
+                                AsyncImage(
+                                    model = artistImage,
+                                    contentScale = ContentScale.FillHeight,
+                                    fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
+                                    contentDescription = stringResource(
+                                        if (artist.asCharacter) {
+                                            R.string.anime_media_voice_actor_image
+                                        } else {
+                                            R.string.anime_media_artist_image
+                                        }
+                                    ),
+                                    modifier = Modifier
+                                        .sizeIn(minWidth = 44.dp, minHeight = 64.dp)
+                                        .fillMaxHeight()
+                                )
+                            }
+
+                            @Composable
+                            fun CharacterImage() {
+                                AsyncImage(
+                                    model = characterImage!!,
+                                    contentScale = ContentScale.FillHeight,
+                                    fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
+                                    contentDescription = stringResource(
+                                        R.string.anime_media_character_image
+                                    ),
+                                    modifier = Modifier
+                                        .sizeIn(minWidth = 44.dp, minHeight = 64.dp)
+                                        .fillMaxHeight()
+                                )
+                            }
+
+                            val firstImage: (@Composable () -> Unit)?
+                            val secondImage: (@Composable () -> Unit)?
+
+                            val asCharacter = artist.asCharacter
+                            if (asCharacter) {
+                                if (characterImage == null) {
+                                    if (artistImage == null) {
+                                        firstImage = null
+                                        secondImage = null
+                                    } else {
+                                        firstImage = { ArtistImage() }
+                                        secondImage = null
+                                    }
+                                } else {
+                                    firstImage = { CharacterImage() }
+                                    secondImage = { ArtistImage() }
+                                }
+                            } else {
+                                firstImage = { ArtistImage() }
+                                secondImage = characterImage?.let { { CharacterImage() } }
+                            }
+
+                            if (firstImage == null) {
+                                Box(
+                                    contentAlignment = Alignment.Center,
+                                    modifier = Modifier
+                                        .size(width = 44.dp, height = 64.dp)
+                                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Filled.Person,
+                                        contentDescription = stringResource(
+                                            R.string.anime_media_artist_no_image
+                                        ),
+                                    )
+                                }
+                            } else {
+                                firstImage()
+                            }
+
+                            val artistText = if (artist.character == null) {
+                                artist.name
+                            } else if (artist.asCharacter) {
+                                stringResource(
+                                    R.string.anime_media_details_song_artist_as_character,
+                                    artist.character.name,
+                                    artist.name,
+                                )
+                            } else {
+                                stringResource(
+                                    R.string.anime_media_details_song_artist_with_character,
+                                    artist.name,
+                                    artist.character.name,
+                                )
+                            }
+
+                            Text(
+                                text = artistText,
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Black,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .align(Alignment.CenterVertically)
+                                    .padding(horizontal = 16.dp, vertical = 10.dp)
+                            )
+
+                            if (secondImage != null) {
+                                secondImage()
+                            }
                         }
                     }
                 }
@@ -1470,6 +1580,61 @@ object AnimeMediaDetailsScreen {
         }
     }
 
+    private fun LazyListScope.socialLinksSection(entry: Entry) {
+        linksSection(R.string.anime_media_details_social_links_label, entry.socialLinks)
+    }
+
+    private fun LazyListScope.streamingLinksSection(entry: Entry) {
+        linksSection(R.string.anime_media_details_streaming_links_label, entry.streamingLinks)
+    }
+
+    private fun LazyListScope.otherLinksSection(entry: Entry) {
+        linksSection(R.string.anime_media_details_other_links_label, entry.otherLinks)
+    }
+
+    private fun LazyListScope.linksSection(@StringRes headerRes: Int, links: List<Entry.Link>) {
+        if (links.isEmpty()) return
+
+        item {
+            SectionHeader(stringResource(headerRes))
+        }
+
+        item {
+            val uriHandler = LocalUriHandler.current
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.padding(horizontal = 16.dp)
+            ) {
+                links.forEach {
+                    androidx.compose.material3.AssistChip(
+                        leadingIcon = if (it.icon == null) null else {
+                            {
+                                AsyncImage(
+                                    model = it.icon,
+                                    contentDescription = stringResource(
+                                        R.string.anime_media_details_link_content_description,
+                                        it.site,
+                                    ),
+                                    modifier = Modifier.size(24.dp),
+                                )
+                            }
+                        },
+                        label = {
+                            AutoHeightText(
+                                text = it.site,
+                            )
+                        },
+                        colors = AssistChipDefaults.assistChipColors(
+                            containerColor = it.color ?: Color.Transparent,
+                            labelColor = it.textColor ?: MaterialTheme.colorScheme.onSurface,
+                        ),
+                        onClick = { uriHandler.openUri(it.url) },
+                    )
+                }
+            }
+        }
+    }
+
     private fun Modifier.bottomFadingEdge(expanded: Boolean, firstStop: Float = 0.8f) =
         graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }
             .drawWithCache {
@@ -1495,23 +1660,16 @@ object AnimeMediaDetailsScreen {
                 listOfNotNull(romaji, english, native).distinct()
             }
         val description get() = media.description
-        val season = media.season
-        val seasonYear = media.seasonYear
 
         val formatTextRes = media.format.toTextRes()
         val statusTextRes = media.status.toTextRes()
+        val licensedTextRes = media.isLicensed
+            ?.let { if (it) UtilsStringR.yes else UtilsStringR.no }
+        val country = CountryCode.getByAlpha2Code(media.countryOfOrigin.toString())?.getName()
+        val hashtags = media.hashtag?.split("#")
+            ?.filter { it.isNotEmpty() }
+            ?.map { "#${it.trim()}" }
 
-        val episodes = media.episodes
-        val duration = media.duration
-        val volumes = media.volumes
-        val chapters = media.chapters
-        val source = media.source
-        val startDate = media.startDate
-        val endDate = media.endDate
-        val averageScore = media.averageScore
-        val meanScore = media.meanScore
-        val popularity = media.popularity
-        val favorites = media.favourites
         val allSynonyms = listOfNotNull(
             media.title?.userPreferred,
             media.title?.romaji,
@@ -1564,6 +1722,25 @@ object AnimeMediaDetailsScreen {
 
         val tags = media.tags?.filterNotNull()?.map(::AnimeMediaTagEntry).orEmpty()
 
+        val links = media.externalLinks?.filterNotNull()?.mapNotNull {
+            Link(
+                id = it.id.toString(),
+                type = it.type,
+                url = it.url ?: return@mapNotNull null,
+                icon = it.icon,
+                site = it.site,
+                color = it.color
+                    ?.let(com.thekeeperofpie.artistalleydatabase.compose.ColorUtils::hexToColor)
+                    ?.multiplyCoerceSaturation(0.75f, 0.75f)
+            )
+        }.orEmpty()
+
+        val socialLinks = links.filter { it.type == ExternalLinkType.SOCIAL }
+        val streamingLinks = links.filter { it.type == ExternalLinkType.STREAMING }
+        val otherLinks = links.filter {
+            it.type != ExternalLinkType.SOCIAL && it.type != ExternalLinkType.STREAMING
+        }
+
         data class Genre(
             val name: String,
             val color: Color = MediaUtils.genreColor(name),
@@ -1594,6 +1771,17 @@ object AnimeMediaDetailsScreen {
             // TODO: Actually surface rating
             val rating: Int?,
             val entry: AnimeMediaListRow.Entry,
+        )
+
+        data class Link(
+            val id: String,
+            val type: ExternalLinkType?,
+            val url: String,
+            val icon: String?,
+            val site: String,
+            val color: Color?,
+            val textColor: Color? = color
+                ?.let(com.thekeeperofpie.artistalleydatabase.compose.ColorUtils::bestTextColor),
         )
     }
 }

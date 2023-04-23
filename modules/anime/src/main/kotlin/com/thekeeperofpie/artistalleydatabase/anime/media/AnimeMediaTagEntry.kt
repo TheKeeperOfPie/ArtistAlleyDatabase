@@ -61,7 +61,8 @@ data class AnimeMediaTagEntry(
                         MaterialTheme.colorScheme.onSurface.copy(alpha = 0.25f)
                     } else {
                         tag.containerColor
-                    }
+                    },
+                    labelColor = tag.textColor ?: MaterialTheme.colorScheme.onSurface,
                 ),
                 leadingIcon = {
                     if (tag.leadingIconVector != null
@@ -85,7 +86,6 @@ data class AnimeMediaTagEntry(
                         } else {
                             title()
                         },
-                        color = tag.textColor,
                     )
                 },
                 modifier = modifier,
