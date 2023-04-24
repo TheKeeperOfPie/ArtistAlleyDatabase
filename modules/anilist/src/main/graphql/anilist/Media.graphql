@@ -218,6 +218,16 @@ query MediaDetails($mediaId: Int!) {
         }
         season
         seasonYear
+        stats {
+            scoreDistribution {
+                score
+                amount
+            }
+            statusDistribution {
+                status
+                amount
+            }
+        }
         status
         startDate {
             year

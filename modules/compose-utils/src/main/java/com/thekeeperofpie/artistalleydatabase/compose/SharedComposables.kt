@@ -502,3 +502,62 @@ fun AutoHeightText(
         modifier = modifier.drawWithCache { onDrawWithContent { if (readyToDraw) drawContent() } }
     )
 }
+
+@Composable
+fun AutoSizeText(
+    text: String,
+    modifier: Modifier = Modifier,
+    color: Color = Color.Unspecified,
+    fontSize: TextUnit = TextUnit.Unspecified,
+    fontStyle: FontStyle? = null,
+    fontWeight: FontWeight? = null,
+    fontFamily: FontFamily? = null,
+    letterSpacing: TextUnit = TextUnit.Unspecified,
+    textDecoration: TextDecoration? = null,
+    textAlign: TextAlign? = null,
+    lineHeight: TextUnit = TextUnit.Unspecified,
+    overflow: TextOverflow = TextOverflow.Clip,
+    softWrap: Boolean = true,
+    maxLines: Int = Int.MAX_VALUE,
+    minLines: Int = 1,
+    style: TextStyle = LocalTextStyle.current,
+    minTextSizeSp: Float = 2f,
+) {
+    var realFontSize by remember { mutableStateOf(fontSize.takeOrElse { style.fontSize }.value) }
+    var readyToDraw by remember { mutableStateOf(false) }
+    var realOverflow by remember { mutableStateOf(overflow) }
+
+    Text(
+        text = text,
+        color = color,
+        fontSize = realFontSize.sp,
+        fontStyle = fontStyle,
+        fontWeight = fontWeight,
+        fontFamily = fontFamily,
+        letterSpacing = letterSpacing,
+        textDecoration = textDecoration,
+        textAlign = textAlign,
+        lineHeight = lineHeight,
+        overflow = realOverflow,
+        softWrap = softWrap,
+        maxLines = maxLines,
+        minLines = minLines,
+        onTextLayout = onTextLayout@{
+            if (!readyToDraw) {
+                if (it.didOverflowHeight || it.didOverflowWidth) {
+                    val nextSize = realFontSize - 1f
+                    if (nextSize > minTextSizeSp) {
+                        realFontSize = nextSize
+                        realOverflow = TextOverflow.Ellipsis
+                    } else {
+                        readyToDraw = true
+                    }
+                } else {
+                    readyToDraw = true
+                }
+            }
+        },
+        style = style,
+        modifier = modifier.drawWithCache { onDrawWithContent { if (readyToDraw) drawContent() } }
+    )
+}

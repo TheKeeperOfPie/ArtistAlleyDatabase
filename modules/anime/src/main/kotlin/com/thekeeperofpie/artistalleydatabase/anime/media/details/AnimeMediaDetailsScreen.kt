@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -28,6 +29,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
@@ -35,6 +37,7 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ImageNotSupported
@@ -89,6 +92,7 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.LineBreak
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
@@ -102,6 +106,7 @@ import coil.request.ImageRequest
 import coil.size.Dimension
 import com.anilist.MediaDetailsQuery.Data.Media
 import com.anilist.type.ExternalLinkType
+import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaRankType
 import com.anilist.type.MediaRelation
 import com.neovisionaries.i18n.CountryCode
@@ -114,12 +119,14 @@ import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaTagEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toColor
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.animethemes.models.AnimeTheme
 import com.thekeeperofpie.artistalleydatabase.cds.grid.CdEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.compose.AccelerateEasing
 import com.thekeeperofpie.artistalleydatabase.compose.AssistChip
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
+import com.thekeeperofpie.artistalleydatabase.compose.AutoSizeText
 import com.thekeeperofpie.artistalleydatabase.compose.CollapsingToolbar
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
 import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
@@ -230,10 +237,10 @@ object AnimeMediaDetailsScreen {
             var songsExpanded by remember { mutableStateOf(false) }
 
             LazyColumn(
+                contentPadding = PaddingValues(bottom = 16.dp),
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(it)
-                    .padding(bottom = 12.dp)
             ) {
                 content(
                     entry = entry,
@@ -357,6 +364,8 @@ object AnimeMediaDetailsScreen {
             onStaffClicked = onStaffClicked,
             onStaffLongClicked = onStaffLongClicked,
         )
+
+        statsSection(entry)
 
         tagSection(
             entry = entry,
@@ -526,6 +535,18 @@ object AnimeMediaDetailsScreen {
             modifier = modifier
                 .fillMaxWidth()
                 .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 10.dp),
+        )
+    }
+
+    @Composable
+    private fun SubsectionHeader(text: String, modifier: Modifier = Modifier) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.surfaceTint,
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(start = 16.dp, end = 16.dp, top = 10.dp, bottom = 4.dp)
         )
     }
 
@@ -1029,33 +1050,6 @@ object AnimeMediaDetailsScreen {
                     bodyTwo = entry.country,
                 )
 
-                ExpandableListInfoText(
-                    labelTextRes = R.string.anime_media_details_rankings_label,
-                    contentDescriptionTextRes = R.string.anime_media_details_rankings_expand_content_description,
-                    values = entry.rankings,
-                    valueToText = {
-                        when (it.type) {
-                            MediaRankType.RATED -> MediaUtils.formatRanking(
-                                ranking = it,
-                                seasonYearTextRes = R.string.anime_media_details_ranking_rated_season_year,
-                                yearTextRes = R.string.anime_media_details_ranking_rated_year,
-                                allTimeTextRes = R.string.anime_media_details_ranking_rated_all_time,
-                            )
-                            MediaRankType.POPULAR -> MediaUtils.formatRanking(
-                                ranking = it,
-                                seasonYearTextRes = R.string.anime_media_details_ranking_popular_season_year,
-                                yearTextRes = R.string.anime_media_details_ranking_popular_year,
-                                allTimeTextRes = R.string.anime_media_details_ranking_popular_all_time,
-                            )
-                            MediaRankType.UNKNOWN__ -> stringResource(
-                                R.string.anime_media_details_ranking_unknown,
-                                it.rank,
-                                it.context,
-                            )
-                        }
-                    },
-                )
-
                 if (media.hashtag != null) {
                     Column(modifier = Modifier
                         .optionalClickable(
@@ -1077,7 +1071,7 @@ object AnimeMediaDetailsScreen {
                 }
 
                 // TODO: trailer, isFavorite, isAdult, airingSchedule,
-                //  streamingEpisodes, reviews, stats
+                //  streamingEpisodes, reviews, trends
 
                 ExpandableListInfoText(
                     labelTextRes = R.string.anime_media_details_studios_label,
@@ -1151,14 +1145,8 @@ object AnimeMediaDetailsScreen {
             Divider()
         }
 
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelLarge,
-            color = MaterialTheme.colorScheme.surfaceTint,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 16.dp, end = 16.dp, top = 10.dp, bottom = 4.dp)
-        )
+        SubsectionHeader(label)
+
         Text(
             text = body,
             style = MaterialTheme.typography.bodyLarge,
@@ -1193,13 +1181,7 @@ object AnimeMediaDetailsScreen {
                     Divider()
                 }
 
-                Text(
-                    text = stringResource(labelTextRes),
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.surfaceTint,
-                    modifier = Modifier
-                        .padding(start = 16.dp, end = 40.dp, top = 10.dp, bottom = 4.dp)
-                )
+                SubsectionHeader(stringResource(labelTextRes))
 
                 values.forEachIndexed { index, value ->
                     if (index != 0) {
@@ -1755,6 +1737,200 @@ object AnimeMediaDetailsScreen {
         )
     }
 
+    private fun LazyListScope.statsSection(entry: Entry) {
+        item {
+            SectionHeader(stringResource(R.string.anime_media_details_stats_label))
+        }
+
+        item {
+            ElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
+                ExpandableListInfoText(
+                    labelTextRes = R.string.anime_media_details_rankings_label,
+                    contentDescriptionTextRes = R.string.anime_media_details_rankings_expand_content_description,
+                    values = entry.rankings,
+                    valueToText = {
+                        when (it.type) {
+                            MediaRankType.RATED -> MediaUtils.formatRanking(
+                                ranking = it,
+                                seasonYearTextRes = R.string.anime_media_details_ranking_rated_season_year,
+                                yearTextRes = R.string.anime_media_details_ranking_rated_year,
+                                allTimeTextRes = R.string.anime_media_details_ranking_rated_all_time,
+                            )
+                            MediaRankType.POPULAR -> MediaUtils.formatRanking(
+                                ranking = it,
+                                seasonYearTextRes = R.string.anime_media_details_ranking_popular_season_year,
+                                yearTextRes = R.string.anime_media_details_ranking_popular_year,
+                                allTimeTextRes = R.string.anime_media_details_ranking_popular_all_time,
+                            )
+                            MediaRankType.UNKNOWN__ -> stringResource(
+                                R.string.anime_media_details_ranking_unknown,
+                                it.rank,
+                                it.context,
+                            )
+                        }
+                    },
+                    showDividerAbove = false,
+                )
+
+                val statusDistribution = entry.media.stats?.statusDistribution
+                    ?.filterNotNull()?.takeIf { it.isNotEmpty() }
+                if (statusDistribution != null) {
+
+                    Divider()
+                    SubsectionHeader(
+                        stringResource(R.string.anime_media_details_status_distribution_label)
+                    )
+                    Row {
+                        val sliceVisibility =
+                            remember { mutableStateMapOf<MediaListStatus, Boolean>() }
+                        val brush = remember(sliceVisibility.values.toList()) {
+                            val total = statusDistribution.sumOf {
+                                val visible = sliceVisibility[it.status] ?: true
+                                it.amount?.takeIf { visible } ?: 0
+                            }.toFloat()
+
+                            val colorStops =
+                                statusDistribution.fold(mutableListOf<Pair<Float, Color>>()) { list, slice ->
+                                    val color = slice.status.toColor()
+                                    val lastValue = list.lastOrNull()?.first ?: 0f
+                                    val visible = sliceVisibility[slice.status] ?: true
+                                    val amount = slice.amount?.takeIf { visible } ?: 0
+
+                                    val portion = amount / total
+                                    list += lastValue to color
+                                    list += lastValue + portion to color
+                                    list
+                                }.toTypedArray()
+
+                            Brush.sweepGradient(*colorStops)
+                        }
+
+                        Box(
+                            modifier = Modifier
+                                .padding(16.dp)
+                                .clip(CircleShape)
+                                .background(brush, CircleShape)
+                                .border(1.dp, MaterialTheme.colorScheme.onSurface, CircleShape)
+                                .widthIn(max = 280.dp)
+                                .weight(0.5f, fill = false)
+                                .aspectRatio(1f)
+                        )
+
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp),
+                        ) {
+                            statusDistribution.forEach {
+                                val visible = sliceVisibility[it.status] ?: true
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier
+                                        .height(IntrinsicSize.Min)
+                                        .clickable {
+                                            it.status?.let { sliceVisibility[it] = !visible }
+                                        },
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .background(color = it.status.toColor())
+                                            .aspectRatio(1f, matchHeightConstraintsFirst = true)
+                                    )
+
+                                    val textRes = when (it.status) {
+                                        MediaListStatus.CURRENT -> R.string.anime_media_details_status_distribution_current
+                                        MediaListStatus.PLANNING -> R.string.anime_media_details_status_distribution_planning
+                                        MediaListStatus.COMPLETED -> R.string.anime_media_details_status_distribution_completed
+                                        MediaListStatus.DROPPED -> R.string.anime_media_details_status_distribution_dropped
+                                        MediaListStatus.PAUSED -> R.string.anime_media_details_status_distribution_paused
+                                        MediaListStatus.REPEATING -> R.string.anime_media_details_status_distribution_repeating
+                                        MediaListStatus.UNKNOWN__, null -> R.string.anime_media_details_status_distribution_unknown
+                                    }
+                                    Text(
+                                        text = stringResource(textRes, it.amount ?: 0),
+                                        style = MaterialTheme.typography.labelLarge,
+                                        modifier = Modifier
+                                            .alpha(if (visible) 1f else 0.38f)
+                                            .padding(horizontal = 16.dp, vertical = 10.dp),
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
+                val scoreDistribution = entry.media.stats?.scoreDistribution
+                    ?.filterNotNull()?.takeIf { it.isNotEmpty() }
+
+                if (scoreDistribution != null) {
+                    Divider()
+                    SubsectionHeader(
+                        stringResource(R.string.anime_media_details_score_distribution_label)
+                    )
+
+                    Row(modifier = Modifier.padding(start = 16.dp, end = 16.dp)) {
+                        val maxAmount = scoreDistribution.maxOf { it.amount ?: 0 } * 1.1f
+                        val firstColorIndex = scoreDistribution.size - MediaUtils.scoreDistributionColors.size
+                        scoreDistribution.forEachIndexed { index, it ->
+                            val score = it.score ?: return@forEachIndexed
+                            val amount = it.amount ?: return@forEachIndexed
+
+                            val color = if (index >= firstColorIndex) {
+                                MediaUtils.scoreDistributionColors[index - firstColorIndex]
+                            } else {
+                                MediaUtils.scoreDistributionColors.first()
+                            }
+
+                            Column(modifier = Modifier.weight(1f)) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(240.dp)
+                                        .background(
+                                            Brush.verticalGradient(
+                                                0f to Color.Transparent,
+                                                1f - (amount / maxAmount) to Color.Transparent,
+                                                1f - (amount / maxAmount) to color,
+                                                1f to color,
+                                            )
+                                        )
+                                )
+
+                                AutoSizeText(
+                                    text = score.toString(),
+                                    style = MaterialTheme.typography.labelSmall,
+                                    textAlign = TextAlign.Center,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                                )
+                            }
+                        }
+                    }
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
+                            .height(IntrinsicSize.Min)
+                    ) {
+                        scoreDistribution.forEach {
+                            val amount = it.amount ?: return@forEach
+                            AutoSizeText(
+                                text = amount.toString(),
+                                style = MaterialTheme.typography.labelSmall,
+                                textAlign = TextAlign.Center,
+                                maxLines = 1,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .wrapContentHeight()
+                                    .padding(horizontal = 8.dp, vertical = 4.dp)
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     private fun LazyListScope.tagSection(
         entry: Entry,
         onTagClicked: (tagId: String, tagName: String) -> Unit = { _, _ -> },
@@ -1914,7 +2090,7 @@ object AnimeMediaDetailsScreen {
                         .orEmpty()
                 )
             }
-        }.orEmpty()
+        }.orEmpty().distinctBy { it.id }
 
         val staff = media.staff?.run {
             nodes?.filterNotNull()?.map { node ->
@@ -1926,7 +2102,7 @@ object AnimeMediaDetailsScreen {
                     role = edge?.role,
                 )
             }
-        }.orEmpty()
+        }.orEmpty().distinctBy { it.id }
 
         val relations = media.relations?.edges?.filterNotNull()
             ?.mapNotNull {

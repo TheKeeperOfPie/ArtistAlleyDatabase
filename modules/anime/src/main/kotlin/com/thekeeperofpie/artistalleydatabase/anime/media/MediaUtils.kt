@@ -12,6 +12,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import com.anilist.MediaDetailsQuery
 import com.anilist.type.MediaFormat
+import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaRelation
 import com.anilist.type.MediaSeason
 import com.anilist.type.MediaSource
@@ -32,6 +33,19 @@ object MediaUtils {
     // Uses a cubic bezier to interpolate tag IDs to more distinct colors,
     // as the tag IDs are not uniformly distributed
     private val tagColorInterpolator = PathInterpolator(0.35f, 0.9f, 0.39f, 0.39f)
+
+    val scoreDistributionColors = listOf(
+        Color(210, 72, 45),
+        Color(210, 100, 45),
+        Color(210, 128, 45),
+        Color(210, 155, 45),
+        Color(210, 183, 45),
+        Color(210, 210, 45),
+        Color(183, 210, 45),
+        Color(155, 210, 45),
+        Color(128, 210, 45),
+        Color(100, 210, 45),
+    )
 
     // TODO: More distinct colors
     fun calculateTagColor(tagId: Int) = Color.hsl(
@@ -227,5 +241,15 @@ object MediaUtils {
         stringResource(allTimeTextRes, ranking.rank)
     } else {
         stringResource(R.string.anime_media_details_ranking_unknown, ranking.rank, ranking.context)
+    }
+
+    fun MediaListStatus?.toColor() = when (this) {
+        MediaListStatus.CURRENT -> Color(146, 86, 243)
+        MediaListStatus.PLANNING -> Color(104, 214, 57)
+        MediaListStatus.COMPLETED -> Color(2, 169, 255)
+        MediaListStatus.DROPPED -> Color(0xFF810831)
+        MediaListStatus.PAUSED -> Color(247, 121, 164)
+        MediaListStatus.REPEATING -> Color(0xFFFF9000)
+        MediaListStatus.UNKNOWN__, null -> Color.White
     }
 }

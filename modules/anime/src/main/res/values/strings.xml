@@ -249,6 +249,8 @@
 
     <string name="anime_media_details_staff_label">Staff</string>
 
+    <string name="anime_media_details_stats_label">Statistics</string>
+
     <string name="anime_media_details_rankings_label">Rankings</string>
     <string name="anime_media_details_rankings_expand_content_description">Rankings expand</string>
     <string name="anime_media_details_ranking_unknown">#%1$d %2$s</string>
@@ -260,4 +262,15 @@
     <string name="anime_media_details_ranking_popular_all_time">#%1$d most popular all time</string>
     <string name="anime_media_details_ranking_popular_year">#%1$d most popular %2$s</string>
     <string name="anime_media_details_ranking_popular_season_year">#%1$d most popular %2$s %3$s</string>
+
+    <string name="anime_media_details_status_distribution_label">Status distribution</string>
+    <string name="anime_media_details_status_distribution_current">Watching - %1$d</string>
+    <string name="anime_media_details_status_distribution_planning">Planning - %1$d</string>
+    <string name="anime_media_details_status_distribution_completed">Completed - %1$d</string>
+    <string name="anime_media_details_status_distribution_dropped">Dropped - %1$d</string>
+    <string name="anime_media_details_status_distribution_paused">Paused - %1$d</string>
+    <string name="anime_media_details_status_distribution_repeating">Repeating - %1$d</string>
+    <string name="anime_media_details_status_distribution_unknown">Unknown - %1$d</string>
+
+    <string name="anime_media_details_score_distribution_label">Score distribution</string>
 </resources>
