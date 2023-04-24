@@ -20,7 +20,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.animethemes.AnimeThemesApi
 import com.thekeeperofpie.artistalleydatabase.animethemes.AnimeThemesUtils
 import com.thekeeperofpie.artistalleydatabase.animethemes.models.AnimeTheme
-import com.thekeeperofpie.artistalleydatabase.animethemes.models.AnimeThemeEntry
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDao
 import com.thekeeperofpie.artistalleydatabase.cds.grid.CdEntryGridModel
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -29,6 +28,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
+@androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 @HiltViewModel
 class AnimeMediaDetailsViewModel @Inject constructor(
     private val application: Application,
@@ -76,23 +76,23 @@ class AnimeMediaDetailsViewModel @Inject constructor(
                     val anime = animeThemesApi.getAnime(mediaId)
                     val songEntries = anime
                         ?.animethemes
-                        ?.map {
-                            val video = it.animeThemeEntries
-                                .firstOrNull()
-                                ?.videos
-                                ?.firstOrNull()
-                            AnimeSongEntry(
-                                id = it.id,
-                                type = it.type,
-                                title = it.song?.title.orEmpty(),
-                                spoiler = it.animeThemeEntries.any { it.spoiler },
-                                artists = it.song?.artists?.map { buildArtist(mediaValue, it) }
-                                    .orEmpty(),
-                                animeThemeEntries = it.animeThemeEntries,
-                                videoUrl = video?.link,
-                                audioUrl = video?.audio?.link,
-                                link = AnimeThemesUtils.buildWebsiteLink(anime, it),
-                            )
+                        ?.flatMap { animeTheme ->
+                            animeTheme.animeThemeEntries.map {
+                                val video = it.videos.firstOrNull()
+                                AnimeSongEntry(
+                                    id = it.id,
+                                    type = animeTheme.type,
+                                    title = animeTheme.song?.title.orEmpty(),
+                                    spoiler = it.spoiler,
+                                    artists = animeTheme.song?.artists
+                                        ?.map { buildArtist(mediaValue, it) }
+                                        .orEmpty(),
+                                    episodes = it.episodes,
+                                    videoUrl = video?.link,
+                                    audioUrl = video?.audio?.link,
+                                    link = AnimeThemesUtils.buildWebsiteLink(anime, animeTheme, it),
+                                )
+                            }
                         }
                         .orEmpty()
 
@@ -224,8 +224,7 @@ class AnimeMediaDetailsViewModel @Inject constructor(
         val title: String,
         val spoiler: Boolean,
         val artists: List<Artist>,
-        val animeThemeEntries: List<AnimeThemeEntry>,
-        val episodes: String? = animeThemeEntries.firstOrNull()?.episodes,
+        val episodes: String?,
         val videoUrl: String?,
         val audioUrl: String?,
         val link: String?,

@@ -84,7 +84,6 @@ dependencyAnalysis {
                     ":modules:settings",
                     ":modules:test-utils",
                     ":modules:vgmdb",
-                    ":modules:web-infra",
                 )
             }
             onUnusedAnnotationProcessors {

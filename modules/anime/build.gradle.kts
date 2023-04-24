@@ -43,7 +43,7 @@ dependencies {
     implementation(libs.nv.i18n)
 
     api(libs.media3.exoplayer)
-    runtimeOnly(libs.media3.datasource.okhttp)
+    implementation(libs.media3.datasource.okhttp)
     runtimeOnly(libs.media3.exoplayer.dash)
     runtimeOnly(libs.media3.exoplayer.hls)
     runtimeOnly(libs.media3.exoplayer.rtsp)

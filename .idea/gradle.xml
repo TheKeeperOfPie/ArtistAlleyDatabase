@@ -29,7 +29,6 @@
             <option value="$PROJECT_DIR$/modules/settings" />
             <option value="$PROJECT_DIR$/modules/test-utils" />
             <option value="$PROJECT_DIR$/modules/vgmdb" />
-            <option value="$PROJECT_DIR$/modules/web-infra" />
           </set>
         </option>
       </GradleProjectSettings>

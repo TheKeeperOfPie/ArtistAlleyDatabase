@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media.details
 
-import android.annotation.SuppressLint
 import android.graphics.drawable.BitmapDrawable
 import android.view.View
 import androidx.annotation.StringRes
@@ -98,6 +97,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.graphics.ColorUtils
+import androidx.media3.common.util.RepeatModeUtil
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
 import androidx.palette.graphics.Palette
@@ -1390,9 +1390,11 @@ object AnimeMediaDetailsScreen {
                             var linkButtonVisible by remember { mutableStateOf(true) }
                             AndroidView(
                                 factory = {
+                                    @Suppress("UnsafeOptInUsageError")
                                     PlayerView(it).apply {
-                                        @SuppressLint("UnsafeOptInUsageError")
                                         resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIXED_WIDTH
+                                        setShowBuffering(PlayerView.SHOW_BUFFERING_ALWAYS)
+                                        setRepeatToggleModes(RepeatModeUtil.REPEAT_TOGGLE_MODE_ONE)
                                         setControllerVisibilityListener(
                                             PlayerView.ControllerVisibilityListener {
                                                 val visible = it == View.VISIBLE
