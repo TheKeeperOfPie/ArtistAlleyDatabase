@@ -55,6 +55,9 @@ dependencyAnalysis {
                 exclude(
                     "androidx.compose.material3:material3",
                     "androidx.compose.ui:ui-tooling-preview",
+                    "androidx.media3:media3-exoplayer-dash",
+                    "androidx.media3:media3-exoplayer-hls",
+                    "androidx.media3:media3-exoplayer-rtsp",
                     "androidx.test.ext:junit",
                     "androidx.test:runner",
                     "com.google.dagger:hilt-android",
@@ -62,7 +65,9 @@ dependencyAnalysis {
                     "com.squareup.moshi:moshi-kotlin",
                     "de.mannodermaus.junit5:android-test-core",
                     "org.jetbrains.kotlinx:kotlinx-serialization-json",
+                    "org.mockito:mockito-core",
                     "org.mockito:mockito-android",
+                    "org.mockito.kotlin:mockito-kotlin",
 
                     // This isn't detected properly, not sure why
                     "com.google.accompanist:accompanist-flowlayout",
@@ -81,6 +86,7 @@ dependencyAnalysis {
                     ":modules:dependencies",
                     ":modules:entry",
                     ":modules:musical-artists",
+                    ":modules:network-utils",
                     ":modules:settings",
                     ":modules:test-utils",
                     ":modules:vgmdb",

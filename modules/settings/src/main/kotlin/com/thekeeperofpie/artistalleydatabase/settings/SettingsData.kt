@@ -2,9 +2,9 @@ package com.thekeeperofpie.artistalleydatabase.settings
 
 import android.net.Uri
 import com.thekeeperofpie.artistalleydatabase.android_utils.Converters
-import com.thekeeperofpie.artistalleydatabase.android_utils.NetworkSettings
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.FilterData
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntry
+import com.thekeeperofpie.artistalleydatabase.network_utils.NetworkSettings
 import kotlinx.serialization.Serializable
 
 @Serializable

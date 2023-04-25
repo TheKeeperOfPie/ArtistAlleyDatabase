@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.vgmdb
 
-import android.app.Application
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumEntryDao
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumRepository
@@ -10,6 +9,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import okhttp3.OkHttpClient
 import javax.inject.Singleton
 
 @Module
@@ -27,11 +27,11 @@ class VgmdbHiltModule {
     @Singleton
     @Provides
     fun provideVgmdbApi(
-        application: Application,
         albumEntryDao: AlbumEntryDao,
         vgmdbArtistDao: VgmdbArtistDao,
-        vgmdbJson: VgmdbJson
-    ) = VgmdbApi(application, albumEntryDao, vgmdbArtistDao, vgmdbJson)
+        vgmdbJson: VgmdbJson,
+        okHttpClient: OkHttpClient,
+    ) = VgmdbApi(albumEntryDao, vgmdbArtistDao, vgmdbJson, okHttpClient)
 
     @Singleton
     @Provides

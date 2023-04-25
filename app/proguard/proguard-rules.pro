@@ -75,3 +75,35 @@
 -dontwarn com.google.errorprone.annotations.CheckReturnValue
 -dontwarn com.google.errorprone.annotations.Immutable
 -dontwarn com.google.errorprone.annotations.RestrictedApi
+
+# Cronet embedded
+-dontwarn org.chromium.net.ThreadStatsUid
+-dontwarn org.chromium.net.impl.CallbackExceptionImpl
+-dontwarn org.chromium.net.impl.CronetEngineBase
+-dontwarn org.chromium.net.impl.CronetEngineBuilderImpl$Pkp
+-dontwarn org.chromium.net.impl.CronetEngineBuilderImpl$QuicHint
+-dontwarn org.chromium.net.impl.CronetEngineBuilderImpl
+-dontwarn org.chromium.net.impl.CronetExceptionImpl
+-dontwarn org.chromium.net.impl.CronetLogger$CronetEngineBuilderInfo
+-dontwarn org.chromium.net.impl.CronetLogger$CronetSource
+-dontwarn org.chromium.net.impl.CronetLogger$CronetTrafficInfo
+-dontwarn org.chromium.net.impl.CronetLogger$CronetVersion
+-dontwarn org.chromium.net.impl.CronetLogger
+-dontwarn org.chromium.net.impl.CronetLoggerFactory
+-dontwarn org.chromium.net.impl.ImplVersion
+-dontwarn org.chromium.net.impl.NetworkExceptionImpl
+-dontwarn org.chromium.net.impl.Preconditions
+-dontwarn org.chromium.net.impl.QuicExceptionImpl
+-dontwarn org.chromium.net.impl.RequestFinishedInfoImpl
+-dontwarn org.chromium.net.impl.UrlRequestBase
+-dontwarn org.chromium.net.impl.UrlResponseInfoImpl$HeaderBlockImpl
+-dontwarn org.chromium.net.impl.UrlResponseInfoImpl
+-dontwarn org.chromium.net.impl.UserAgent
+-dontwarn org.chromium.net.impl.VersionSafeCallbacks$BidirectionalStreamCallback
+-dontwarn org.chromium.net.impl.VersionSafeCallbacks$LibraryLoader
+-dontwarn org.chromium.net.impl.VersionSafeCallbacks$NetworkQualityRttListenerWrapper
+-dontwarn org.chromium.net.impl.VersionSafeCallbacks$NetworkQualityThroughputListenerWrapper
+-dontwarn org.chromium.net.impl.VersionSafeCallbacks$RequestFinishedInfoListener
+-dontwarn org.chromium.net.impl.VersionSafeCallbacks$UploadDataProviderWrapper
+-dontwarn org.chromium.net.impl.VersionSafeCallbacks$UrlRequestCallback
+-dontwarn org.chromium.net.impl.VersionSafeCallbacks$UrlRequestStatusListener

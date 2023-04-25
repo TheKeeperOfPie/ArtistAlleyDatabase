@@ -15,6 +15,7 @@ dependencies {
     api(project(":modules:animethemes"))
     implementation(project(":modules:compose-utils"))
     api(project(":modules:cds"))
+    implementation(project(":modules:network-utils"))
 
     implementation(libs.kotlinx.serialization.json)
 
@@ -43,9 +44,9 @@ dependencies {
     implementation(libs.nv.i18n)
 
     api(libs.media3.exoplayer)
-    implementation(libs.media3.datasource.okhttp)
-    runtimeOnly(libs.media3.exoplayer.dash)
-    runtimeOnly(libs.media3.exoplayer.hls)
-    runtimeOnly(libs.media3.exoplayer.rtsp)
+    implementation(libs.media3.datasource.cronet)
+    implementation(libs.media3.exoplayer.dash)
+    implementation(libs.media3.exoplayer.hls)
+    implementation(libs.media3.exoplayer.rtsp)
     implementation(libs.media3.ui)
 }

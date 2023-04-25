@@ -7,7 +7,6 @@ import androidx.compose.runtime.setValue
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
-import androidx.media3.common.util.UnstableApi
 import androidx.media3.database.StandaloneDatabaseProvider
 import androidx.media3.datasource.DataSource
 import androidx.media3.datasource.FileDataSource
@@ -15,7 +14,7 @@ import androidx.media3.datasource.cache.CacheDataSink
 import androidx.media3.datasource.cache.CacheDataSource
 import androidx.media3.datasource.cache.LeastRecentlyUsedCacheEvictor
 import androidx.media3.datasource.cache.SimpleCache
-import androidx.media3.datasource.okhttp.OkHttpDataSource
+import androidx.media3.datasource.cronet.CronetDataSource
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import com.hoc081098.flowext.interval
@@ -26,23 +25,31 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
-import okhttp3.Cache
-import okhttp3.OkHttpClient
+import org.chromium.net.CronetEngine
 import java.io.File
+import java.util.concurrent.Executors
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
-@UnstableApi
+@androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 @OptIn(ExperimentalCoroutinesApi::class)
 class AppMediaPlayer(
     application: ScopedApplication,
+    cronetEngine: CronetEngine,
 ) {
     // TODO: ID doesn't consider nested duplicate screens; unsure if this matters
     var playingState = MutableStateFlow<Pair<String?, Boolean>>(null to false)
     var progress by mutableStateOf(0f)
 
     val player = ExoPlayer.Builder(application.app)
-        .setMediaSourceFactory(DefaultMediaSourceFactory(DataSourceFactory(application.app)))
+        .setMediaSourceFactory(
+            DefaultMediaSourceFactory(
+                DataSourceFactory(
+                    application.app,
+                    cronetEngine
+                )
+            )
+        )
         .build()
         .apply {
             addListener(object : Player.Listener {
@@ -64,16 +71,11 @@ class AppMediaPlayer(
 
     private class DataSourceFactory(
         application: Application,
+        cronetEngine: CronetEngine,
     ) : DataSource.Factory {
-        private val actualFactory = OkHttpDataSource.Factory(
-            OkHttpClient.Builder()
-                .cache(
-                    Cache(
-                        directory = File(application.cacheDir, "exoplayer/okhttp"),
-                        maxSize = 500L * 1024L * 1024L // 500 MiB
-                    )
-                )
-                .build()
+        private val actualFactory = CronetDataSource.Factory(
+            cronetEngine,
+            Executors.newCachedThreadPool(),
         )
 
         private val cache = SimpleCache(

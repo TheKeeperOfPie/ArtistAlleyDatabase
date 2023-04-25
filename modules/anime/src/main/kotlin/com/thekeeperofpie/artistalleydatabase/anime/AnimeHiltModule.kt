@@ -5,6 +5,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import org.chromium.net.CronetEngine
 import javax.inject.Singleton
 
 @Module
@@ -13,6 +14,6 @@ object AnimeHiltModule {
 
     @Singleton
     @Provides
-    fun provideAppMediaPlayer(scopedApplication: ScopedApplication) =
-        AppMediaPlayer(scopedApplication)
+    fun provideAppMediaPlayer(scopedApplication: ScopedApplication, cronetEngine: CronetEngine) =
+        AppMediaPlayer(scopedApplication, cronetEngine)
 }

@@ -13,6 +13,7 @@ android {
 dependencies {
     api(project(":modules:android-utils"))
     api(project(":modules:entry"))
+    api(project(":modules:network-utils"))
 
     implementation(libs.okhttp)
 

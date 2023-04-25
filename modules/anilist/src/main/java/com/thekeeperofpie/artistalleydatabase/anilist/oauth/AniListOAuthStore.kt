@@ -10,15 +10,17 @@ import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.BuildConfig
+import com.thekeeperofpie.artistalleydatabase.network_utils.NetworkAuthProvider
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import okhttp3.Interceptor
-import okhttp3.Response
 
-class AniListOAuthStore(private val application: Application, masterKey: MasterKey) : Interceptor {
+class AniListOAuthStore(
+    private val application: Application,
+    masterKey: MasterKey,
+) : NetworkAuthProvider {
 
     companion object {
         const val SHARED_PREFS_FILE_NAME = "aniList_encrypted"
@@ -55,6 +57,8 @@ class AniListOAuthStore(private val application: Application, masterKey: MasterK
 
     val authToken = MutableStateFlow<String?>(null)
 
+    override val authHeader get() = authToken.value?.let { "Bearer $it" }
+
     val hasAuth = authToken.map { !it.isNullOrBlank() }
 
     init {
@@ -87,17 +91,5 @@ class AniListOAuthStore(private val application: Application, masterKey: MasterK
             .commit()
 
         authToken.emit(null)
-    }
-
-    override fun intercept(chain: Interceptor.Chain): Response {
-        val token = authToken.value
-        return if (token == null) {
-            chain.proceed(chain.request())
-        } else {
-            chain.request().newBuilder()
-                .addHeader("Authorization", "Bearer $token")
-                .build()
-                .let(chain::proceed)
-        }
     }
 }

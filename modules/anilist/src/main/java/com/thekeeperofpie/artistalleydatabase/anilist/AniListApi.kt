@@ -23,12 +23,11 @@ import com.anilist.fragment.AniListMedia
 import com.apollographql.apollo3.ApolloClient
 import com.apollographql.apollo3.api.Optional
 import com.apollographql.apollo3.network.http.DefaultHttpEngine
-import com.thekeeperofpie.artistalleydatabase.android_utils.NetworkSettings
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
-import com.thekeeperofpie.artistalleydatabase.android_utils.addLoggingInterceptors
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.chunked
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.splitAtIndex
+import com.thekeeperofpie.artistalleydatabase.network_utils.NetworkSettings
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
@@ -47,24 +46,16 @@ import kotlin.time.Duration.Companion.seconds
 
 class AniListApi(
     application: ScopedApplication,
-    cache: AniListCache,
     networkSettings: NetworkSettings,
+    okHttpClient: OkHttpClient,
 ) {
-
     companion object {
         private const val TAG = "AniListApi"
     }
 
     private val apolloClient = ApolloClient.Builder()
         .serverUrl(AniListUtils.GRAPHQL_API_URL)
-        .httpEngine(
-            DefaultHttpEngine(
-                OkHttpClient.Builder()
-                    .cache(cache.cache)
-                    .addLoggingInterceptors(TAG, networkSettings)
-                    .build()
-            )
-        )
+        .httpEngine(DefaultHttpEngine(okHttpClient))
         .addLoggingInterceptors(TAG, networkSettings)
         .build()
 

@@ -1,8 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.animethemes
 
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
-import com.thekeeperofpie.artistalleydatabase.android_utils.NetworkSettings
-import com.thekeeperofpie.artistalleydatabase.android_utils.addLoggingInterceptors
 import com.thekeeperofpie.artistalleydatabase.animethemes.models.Anime
 import com.thekeeperofpie.artistalleydatabase.animethemes.models.AnimeResponse
 import com.thekeeperofpie.artistalleydatabase.animethemes.models.ArtistResponse
@@ -22,21 +20,15 @@ import kotlin.coroutines.resumeWithException
 @OptIn(ExperimentalSerializationApi::class)
 class AnimeThemesApi(
     val appJson: AppJson,
-    networkSettings: NetworkSettings,
+    private val okHttpClient: OkHttpClient,
 ) {
     companion object {
-        private const val TAG = "AnimeThemesApi"
-
         private const val API_BASE_URL = "https://api.animethemes.moe"
         private val ANIME_INCLUDES = listOf(
             "animethemes.song.artists.images",
             "animethemes.animethemeentries.videos.audio",
         ).joinToString(",")
     }
-
-    private val okHttpClient = OkHttpClient.Builder()
-        .addLoggingInterceptors(TAG, networkSettings)
-        .build()
 
     suspend fun getAnime(aniListMediaId: String): Anime? {
         val response = executeGet(

@@ -3,7 +3,6 @@ package com.thekeeperofpie.artistalleydatabase.anilist
 import android.app.Application
 import androidx.security.crypto.MasterKey
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
-import com.thekeeperofpie.artistalleydatabase.android_utils.NetworkSettings
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterEntryDao
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
@@ -11,10 +10,15 @@ import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaEntryDao
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListOAuthStore
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
+import com.thekeeperofpie.artistalleydatabase.network_utils.NetworkAuthProvider
+import com.thekeeperofpie.artistalleydatabase.network_utils.NetworkSettings
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import dagger.multibindings.IntoMap
+import dagger.multibindings.StringKey
+import okhttp3.OkHttpClient
 import javax.inject.Singleton
 
 @Module
@@ -30,22 +34,23 @@ class AniListHiltModule {
     @Provides
     fun provideAniListApi(
         application: ScopedApplication,
-        aniListCache: AniListCache,
-        networkSettings: NetworkSettings
-    ) = AniListApi(application, aniListCache, networkSettings)
+        networkSettings: NetworkSettings,
+        okHttpClient: OkHttpClient,
+    ) = AniListApi(application, networkSettings, okHttpClient)
 
     @Singleton
     @Provides
     fun provideAuthedAniListApi(
         scopedApplication: ScopedApplication,
-        aniListCache: AniListCache,
         aniListOAuthStore: AniListOAuthStore,
         networkSettings: NetworkSettings,
-    ) = AuthedAniListApi(scopedApplication, aniListCache, aniListOAuthStore, networkSettings)
-
-    @Singleton
-    @Provides
-    fun provideAniListCache(application: Application) = AniListCache(application)
+        okHttpClient: OkHttpClient,
+    ) = AuthedAniListApi(
+        scopedApplication,
+        aniListOAuthStore,
+        networkSettings,
+        okHttpClient,
+    )
 
     @Singleton
     @Provides
@@ -91,4 +96,12 @@ class AniListHiltModule {
         characterEntryDao: CharacterEntryDao,
         aniListApi: AniListApi
     ) = CharacterRepository(application, appJson, characterEntryDao, aniListApi)
+
+    @Singleton
+    @Provides
+    @StringKey(AniListUtils.GRAPHQL_API_HOST)
+    @IntoMap
+    fun provideAniListNetworkAuthProvider(
+        oAuthStore: AniListOAuthStore,
+    ): NetworkAuthProvider = oAuthStore
 }

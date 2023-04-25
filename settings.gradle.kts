@@ -58,7 +58,7 @@ dependencyResolutionManagement {
             library("androidx.lifecycle:lifecycle-livedata-ktx:2.6.1")
             library("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.1")
             library("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.1")
-            library("androidx.media3:media3-datasource-okhttp:1.0.1")
+            library("androidx.media3:media3-datasource-cronet:1.0.1")
             library("androidx.media3:media3-exoplayer:1.0.1")
             library("androidx.media3:media3-exoplayer-dash:1.0.1")
             library("androidx.media3:media3-exoplayer-hls:1.0.1")
@@ -82,6 +82,7 @@ dependencyResolutionManagement {
             library("com.google.accompanist:accompanist-placeholder-material:0.31.0-alpha")
             library("com.google.accompanist:accompanist-navigation-animation:0.31.0-alpha")
             library("com.google.dagger:hilt-android:2.45")
+            library("com.google.net.cronet:cronet-okhttp:0.1.0")
             library("com.google.truth:truth:1.1.3")
             library("com.linkedin.dexmaker:dexmaker-mockito-inline:2.28.3")
             library("com.neovisionaries:nv-i18n:1.28")
@@ -140,6 +141,7 @@ include(
     ":modules:dependencies",
     ":modules:entry",
     ":modules:musical-artists",
+    ":modules:network-utils",
     ":modules:settings",
     ":modules:test-utils",
     ":modules:vgmdb",

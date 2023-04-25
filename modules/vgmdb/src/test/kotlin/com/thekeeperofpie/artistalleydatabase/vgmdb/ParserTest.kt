@@ -11,11 +11,10 @@ import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.VgmdbArtist
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.serializer
+import okhttp3.OkHttpClient
 import org.junit.Rule
 import org.junit.jupiter.api.Test
 import org.junit.rules.TemporaryFolder
-import org.mockito.kotlin.doReturn
-import org.mockito.kotlin.mock
 
 class ParserTest {
 
@@ -28,15 +27,7 @@ class ParserTest {
     val tempFolder = TemporaryFolder()
 
     private val parser by lazy {
-        VgmdbParser(
-            mock {
-                on { cacheDir } doReturn tempFolder.apply {
-                    // TODO: Figure out why tempFolder Rule is not executed
-                    create()
-                }.newFolder()
-            },
-            json
-        )
+        VgmdbParser(json, OkHttpClient.Builder().build())
     }
 
     @Test

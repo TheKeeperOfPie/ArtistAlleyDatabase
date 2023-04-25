@@ -6,16 +6,17 @@ import com.anilist.fragment.AniListMedia
 import com.anilist.type.MediaType
 import com.apollographql.apollo3.ApolloClient
 import com.apollographql.apollo3.network.http.LoggingInterceptor
-import com.thekeeperofpie.artistalleydatabase.android_utils.NetworkSettings
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterColumnEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaColumnEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaEntry
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection.MultiText.Entry
+import com.thekeeperofpie.artistalleydatabase.network_utils.NetworkSettings
 
 object AniListUtils {
 
-    const val GRAPHQL_API_URL = "https://graphql.anilist.co/"
+    const val GRAPHQL_API_HOST = "graphql.anilist.co"
+    const val GRAPHQL_API_URL = "https://$GRAPHQL_API_HOST/"
     private const val ANILIST_BASE_URL = "https://anilist.co"
 
     fun characterUrl(id: String) = "$ANILIST_BASE_URL/character/$id"

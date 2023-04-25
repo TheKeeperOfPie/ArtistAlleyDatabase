@@ -142,6 +142,7 @@ if (!aniListSchemaFile.exists()) {
 dependencies {
     api(project(":modules:android-utils"))
     api(project(":modules:entry"))
+    api(project(":modules:network-utils"))
     api(libs.apollo.runtime)
 
     implementation(libs.kotlinx.serialization.json)

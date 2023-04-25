@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.vgmdb
 
-import android.app.Application
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumEntry
 import com.thekeeperofpie.artistalleydatabase.vgmdb.album.DiscEntry
@@ -19,15 +18,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import okhttp3.Cache
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import java.io.File
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.util.Locale
 
-class VgmdbParser(application: Application, private val json: Json) {
+class VgmdbParser(private val json: Json, private val okHttpClient: OkHttpClient) {
 
     companion object {
         private const val BASE_URL = "https://vgmdb.net"
@@ -38,14 +35,6 @@ class VgmdbParser(application: Application, private val json: Json) {
             "Romaji" to "ja-latn",
         )
     }
-
-    private val okHttpClient =
-        OkHttpClient.Builder().cache(
-            Cache(
-                directory = File(application.cacheDir, "vgmdb"),
-                maxSize = 500L * 1024L * 1024L // 500 MiB
-            )
-        ).build()
 
     suspend fun search(query: String) = withContext(Dispatchers.IO) {
         val encodedQuery = URLEncoder.encode(query, StandardCharsets.UTF_8.toString())

@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.android_utils
+package com.thekeeperofpie.artistalleydatabase.network_utils
 
 import android.util.Log
 import okhttp3.OkHttpClient
