@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.search
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -8,7 +9,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -69,6 +74,16 @@ object AnimeSearchScreen {
                             placeholder = { Text(stringResource(id = R.string.anime_search)) },
                             onValueChange = onQueryChange,
                             leadingIcon = { NavMenuIconButton(onClickNav) },
+                            trailingIcon = {
+                                IconButton(onClick = { Modifier.clickable { onQueryChange("") } }) {
+                                    Icon(
+                                        imageVector = Icons.Filled.Clear,
+                                        contentDescription = stringResource(
+                                            R.string.anime_search_clear
+                                        ),
+                                    )
+                                }
+                            },
                             singleLine = true,
                             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                             colors = TextFieldDefaults.colors(

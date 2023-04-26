@@ -6,15 +6,24 @@ import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
+import coil.ImageLoader
+import coil.ImageLoaderFactory
+import coil.disk.DiskCache
+import coil.memory.MemoryCache
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.android_utils.notification.NotificationChannels
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListOAuthStore
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.MainScope
+import okhttp3.OkHttpClient
 import javax.inject.Inject
 
 @HiltAndroidApp
-class CustomApplication : Application(), Configuration.Provider, ScopedApplication {
+class CustomApplication : Application(), Configuration.Provider, ScopedApplication,
+    ImageLoaderFactory {
+
+    @Inject
+    lateinit var okHttpClient: OkHttpClient
 
     companion object {
         const val TAG = "ArtistAlleyDatabase"
@@ -72,4 +81,19 @@ class CustomApplication : Application(), Configuration.Provider, ScopedApplicati
                 )
             )
     }
+
+    override fun newImageLoader() = ImageLoader.Builder(this)
+        .okHttpClient(okHttpClient)
+        .memoryCache {
+            MemoryCache.Builder(this)
+                .maxSizePercent(0.25)
+                .build()
+        }
+        .diskCache {
+            DiskCache.Builder()
+                .directory(cacheDir.resolve("coil"))
+                .maxSizePercent(0.02)
+                .build()
+        }
+        .build()
 }

@@ -30,7 +30,6 @@ import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
@@ -126,6 +125,7 @@ import com.thekeeperofpie.artistalleydatabase.cds.grid.CdEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.compose.AccelerateEasing
 import com.thekeeperofpie.artistalleydatabase.compose.AssistChip
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
+import com.thekeeperofpie.artistalleydatabase.compose.AutoResizeHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.AutoSizeText
 import com.thekeeperofpie.artistalleydatabase.compose.CollapsingToolbar
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
@@ -452,11 +452,12 @@ object AnimeMediaDetailsScreen {
                     ElevatedCard {
                         AsyncImage(
                             model = coverImage(),
+                            contentScale = ContentScale.FillHeight,
                             fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
                             contentDescription = stringResource(R.string.anime_media_cover_image),
                             modifier = Modifier
-                                .wrapContentWidth()
                                 .height(256.dp)
+                                .widthIn(max = 256.dp)
                         )
                     }
 
@@ -471,15 +472,15 @@ object AnimeMediaDetailsScreen {
                                 .fillMaxWidth()
                                 .weight(1f)
                         ) {
-                            AutoHeightText(
+                            AutoResizeHeightText(
                                 text = when (val index = preferredTitle) {
                                     null -> null
                                     else -> entry?.titlesUnique?.get(index)
                                 } ?: titleText(),
-                                style = MaterialTheme.typography.headlineMedium,
+                                style = MaterialTheme.typography.headlineLarge,
                                 modifier = Modifier
                                     .align(Alignment.CenterStart)
-                                    .padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 4.dp)
+                                    .padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 4.dp),
                             )
                         }
 
@@ -531,7 +532,7 @@ object AnimeMediaDetailsScreen {
     private fun SectionHeader(text: String, modifier: Modifier = Modifier) {
         Text(
             text = text,
-            style = MaterialTheme.typography.labelLarge,
+            style = MaterialTheme.typography.titleMedium,
             modifier = modifier
                 .fillMaxWidth()
                 .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 10.dp),
@@ -1860,10 +1861,8 @@ object AnimeMediaDetailsScreen {
                     }
                 }
 
-                val scoreDistribution = entry.media.stats?.scoreDistribution
-                    ?.filterNotNull()?.takeIf { it.isNotEmpty() }
-
-                if (scoreDistribution != null) {
+                val scoreDistribution = entry.scoreDistribution
+                if (scoreDistribution.isNotEmpty()) {
                     Divider()
                     SubsectionHeader(
                         stringResource(R.string.anime_media_details_score_distribution_label)
@@ -2157,6 +2156,30 @@ object AnimeMediaDetailsScreen {
             .sortedByDescending { it.main }
 
         val rankings = media.rankings?.filterNotNull().orEmpty()
+
+        val scoreDistribution = media.stats?.scoreDistribution
+            ?.filterNotNull()
+            ?.let {
+                // TODO: This is a bad hack. Use a real graphing library.
+                // Fill any missing scores so the graph scale is correct
+                if (it.size < 10 && it.all { (it.score ?: 0) % 10 == 0}) {
+                    val list = it.toMutableList()
+                    repeat(10) {
+                        val value = (it + 1) * 10
+                        if (list.none { it.score == value }) {
+                            list += Media.Stats.ScoreDistribution(
+                                score = value,
+                                amount = 0
+                            )
+                        }
+                    }
+                    list
+                } else {
+                    it
+                }
+            }
+            ?.sortedBy { it.score }
+            .orEmpty()
 
         data class Genre(
             val name: String,

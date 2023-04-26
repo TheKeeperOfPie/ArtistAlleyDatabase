@@ -106,6 +106,7 @@ dependencyAnalysis {
                     "androidx.compose.ui:ui-tooling",
                     "androidx.core:core-ktx",
                     "androidx.lifecycle:lifecycle-runtime-ktx",
+                    "io.coil-kt:coil-compose",
                 )
             }
         }

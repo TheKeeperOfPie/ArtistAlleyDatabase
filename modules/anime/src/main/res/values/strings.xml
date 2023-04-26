@@ -60,6 +60,7 @@
     <string name="anime_media_filter_sort_ascending">Ascending</string>
     <string name="anime_media_filter_sort_descending">Descending</string>
     <string name="anime_search">Search anime…</string>
+    <string name="anime_search_clear">Clear</string>
 
     <string name="anime_media_filter_status_label">Status</string>
     <string name="anime_media_filter_status_content_description">Status filter expand</string>

@@ -215,4 +215,5 @@ dependencies {
     ksp(kspProcessors.moshi.kotlin.codegen)
 
     implementation(libs.commons.compress)
+    implementation(libs.coil.compose)
 }

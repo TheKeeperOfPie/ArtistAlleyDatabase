@@ -185,7 +185,7 @@ object MediaUtils {
         )
         year != null && month != null && dayOfMonth == null -> DateUtils.formatDateTime(
             context,
-            LocalDate.of(year, month, 0)
+            LocalDate.of(year, month, 1)
                 .atTime(0, 0)
                 .toInstant(ZoneOffset.UTC)
                 .toEpochMilli(),
@@ -193,7 +193,7 @@ object MediaUtils {
         )
         year != null -> DateUtils.formatDateTime(
             context,
-            LocalDate.of(year, Month.JANUARY, 0)
+            LocalDate.of(year, Month.JANUARY, 1)
                 .atTime(0, 0)
                 .toInstant(ZoneOffset.UTC)
                 .toEpochMilli(),

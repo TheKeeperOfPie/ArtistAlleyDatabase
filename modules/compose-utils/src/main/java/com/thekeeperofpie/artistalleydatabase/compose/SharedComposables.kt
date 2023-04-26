@@ -45,6 +45,7 @@ import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -69,6 +70,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -442,6 +444,102 @@ fun <T> ItemDropdown(
             }
         }
     }
+}
+
+@Composable
+fun AutoResizeHeightText(
+    text: String,
+    modifier: Modifier = Modifier,
+    color: Color = Color.Unspecified,
+    fontSize: TextUnit = TextUnit.Unspecified,
+    fontStyle: FontStyle? = null,
+    fontWeight: FontWeight? = null,
+    fontFamily: FontFamily? = null,
+    letterSpacing: TextUnit = TextUnit.Unspecified,
+    textDecoration: TextDecoration? = null,
+    textAlign: TextAlign? = null,
+    lineHeight: TextUnit = TextUnit.Unspecified,
+    overflow: TextOverflow = TextOverflow.Clip,
+    softWrap: Boolean = true,
+    maxLines: Int = Int.MAX_VALUE,
+    minLines: Int = 1,
+    style: TextStyle = LocalTextStyle.current,
+    minTextSizeSp: Float = 2f,
+) {
+    val initialFontSize = fontSize.takeOrElse { style.fontSize }.value
+    var realFontSize by remember { mutableStateOf(initialFontSize) }
+    val initialLineHeight = lineHeight.takeOrElse { style.lineHeight }.value
+    var realLineHeight by remember { mutableStateOf(initialLineHeight) }
+    var readyToDraw by remember { mutableStateOf(false) }
+
+    var lastSize by remember { mutableStateOf<IntSize?>(null) }
+    var stillCalculating by remember { mutableStateOf(true) }
+    var decreasing by remember { mutableStateOf(true) }
+
+    val cachedFontSizes = remember { mutableStateMapOf<Int, Float>() }
+
+    Text(
+        text = text,
+        color = color,
+        fontSize = realFontSize.sp,
+        fontStyle = fontStyle,
+        fontWeight = fontWeight,
+        fontFamily = fontFamily,
+        letterSpacing = letterSpacing,
+        textDecoration = textDecoration,
+        textAlign = textAlign,
+        lineHeight = realLineHeight.sp,
+        overflow = overflow,
+        softWrap = softWrap,
+        maxLines = maxLines,
+        minLines = minLines,
+        onTextLayout = onTextLayout@{
+            val cachedFontSize = cachedFontSizes[it.size.height]
+            if (stillCalculating && cachedFontSize != null) {
+                realFontSize = cachedFontSize
+                realLineHeight = cachedFontSize / initialFontSize * initialLineHeight
+                stillCalculating = false
+                return@onTextLayout
+            }
+
+            if (!stillCalculating) {
+                if (it.size.height > lastSize!!.height || it.didOverflowHeight) {
+                    stillCalculating = true
+                    decreasing = it.size.height < lastSize!!.height
+                }
+            } else {
+                val scale = if (it.didOverflowHeight) {
+                     if (decreasing) {
+                        0.95f
+                    } else {
+                        // Reset to decreasing if overflowed since
+                        // it doesn't make sense to increase from here
+                        decreasing = true
+                        1 / 0.95f
+                    }
+                } else if (!decreasing) {
+                    (1 / 0.95f)
+                } else 1f
+
+                if (scale != 1f) {
+                    val nextSize = realFontSize * scale
+                    if (nextSize > minTextSizeSp && nextSize <= initialFontSize) {
+                        realFontSize = nextSize
+                        realLineHeight *= scale
+                        return@onTextLayout
+                    }
+                }
+
+                stillCalculating = false
+                cachedFontSizes[it.size.height] = realFontSize
+                readyToDraw = true
+            }
+
+            lastSize = it.size
+        },
+        style = style,
+        modifier = modifier.drawWithCache { onDrawWithContent { if (readyToDraw) drawContent() } }
+    )
 }
 
 @Composable
