@@ -86,6 +86,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -109,6 +110,10 @@ import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaRankType
 import com.anilist.type.MediaRelation
 import com.neovisionaries.i18n.CountryCode
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.YouTubePlayerCallback
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
 import com.thekeeperofpie.artistalleydatabase.android_utils.AnimationUtils
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
@@ -136,8 +141,10 @@ import com.thekeeperofpie.artistalleydatabase.compose.optionalClickable
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGrid
 import de.charlex.compose.HtmlText
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.concurrent.atomic.AtomicReference
 import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -193,6 +200,8 @@ object AnimeMediaDetailsScreen {
         onTagClicked: (tagId: String, tagName: String) -> Unit = { _, _ -> },
         onTagLongClicked: (String) -> Unit = {},
         onMediaClicked: (AnimeMediaListRow.Entry) -> Unit = {},
+        trailerPlaybackPosition: () -> Float,
+        onTrailerPlaybackPositionUpdate: (Float) -> Unit,
         errorRes: @Composable () -> Pair<Int, Exception?>? = { null },
         onErrorDismiss: () -> Unit = {},
     ) {
@@ -267,6 +276,8 @@ object AnimeMediaDetailsScreen {
                     onRecommendationsExpandedToggled = { recommendationsExpanded = it },
                     songsExpanded = { songsExpanded },
                     onSongsExpandedToggled = { songsExpanded = it },
+                    trailerPlaybackPosition = trailerPlaybackPosition,
+                    onTrailerPlaybackPositionUpdate = onTrailerPlaybackPositionUpdate,
                 )
             }
         }
@@ -302,6 +313,8 @@ object AnimeMediaDetailsScreen {
         onRecommendationsExpandedToggled: (Boolean) -> Unit,
         songsExpanded: () -> Boolean,
         onSongsExpandedToggled: (Boolean) -> Unit,
+        trailerPlaybackPosition: () -> Float,
+        onTrailerPlaybackPositionUpdate: (Float) -> Unit,
     ) {
         if (entry == null) {
             if (loading) {
@@ -371,6 +384,12 @@ object AnimeMediaDetailsScreen {
             entry = entry,
             onTagClicked = onTagClicked,
             onTagLongClicked = onTagLongClicked,
+        )
+
+        trailerSection(
+            entry = entry,
+            playbackPosition = trailerPlaybackPosition,
+            onPlaybackPositionUpdate = onTrailerPlaybackPositionUpdate,
         )
 
         socialLinksSection(entry = entry)
@@ -629,145 +648,15 @@ object AnimeMediaDetailsScreen {
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 items(entry.characters, { it.id }) {
-                    val defaultTextColor = MaterialTheme.typography.bodyMedium.color
-
-                    val characterId = it.id
-                    val colors = colorMap[characterId]
-
-                    val animationProgress by animateIntAsState(
-                        if (colors == null) 0 else 255,
-                        label = "Character card color fade in",
-                    )
-
-                    val containerColor = when {
-                        colors == null || animationProgress == 0 ->
-                            MaterialTheme.colorScheme.surface
-                        animationProgress == 255 -> colors.first
-                        else -> Color(
-                            ColorUtils.compositeColors(
-                                ColorUtils.setAlphaComponent(
-                                    colors.first.toArgb(),
-                                    animationProgress
-                                ),
-                                MaterialTheme.colorScheme.surface.toArgb()
-                            )
-                        )
-                    }
-
-                    val textColor = when {
-                        colors == null || animationProgress == 0 -> defaultTextColor
-                        animationProgress == 255 -> colors.second
-                        else -> Color(
-                            ColorUtils.compositeColors(
-                                ColorUtils.setAlphaComponent(
-                                    colors.second.toArgb(),
-                                    animationProgress
-                                ),
-                                defaultTextColor.toArgb()
-                            )
-                        )
-                    }
-
-                    ElevatedCard(
-                        onClick = { onCharacterClicked(it.id) },
-                        colors = CardDefaults.elevatedCardColors(containerColor = containerColor),
-                    ) {
-                        Box {
-                            val voiceActorImage = (it.languageToVoiceActor["Japanese"]
-                                ?: it.languageToVoiceActor.values.firstOrNull())?.image
-
-                            AsyncImage(
-                                model = ImageRequest.Builder(LocalContext.current)
-                                    .data(it.image)
-                                    .allowHardware(false)
-                                    .build(),
-                                contentScale = ContentScale.Crop,
-                                fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
-                                contentDescription = stringResource(
-                                    R.string.anime_media_character_image
-                                ),
-                                onSuccess = {
-                                    if (!colorMap.containsKey(characterId)) {
-                                        (it.result.drawable as? BitmapDrawable)?.bitmap?.let {
-                                            coroutineScope.launch(CustomDispatchers.IO) {
-                                                try {
-                                                    val palette = Palette.from(it)
-                                                        .setRegion(
-                                                            0,
-                                                            // Only capture the bottom 1/4th so
-                                                            // color flows from image better
-                                                            it.height / 4 * 3,
-                                                            // Only capture left 3/5ths to ignore
-                                                            // part covered by voice actor
-                                                            if (voiceActorImage == null) {
-                                                                it.width
-                                                            } else {
-                                                                it.width / 5 * 3
-                                                            },
-                                                            it.height
-                                                        )
-                                                        .generate()
-                                                    val swatch = palette.swatches
-                                                        .maxByOrNull { it.population }
-                                                    if (swatch != null) {
-                                                        withContext(CustomDispatchers.Main) {
-                                                            colorMap[characterId] =
-                                                                Color(swatch.rgb) to
-                                                                        Color(swatch.bodyTextColor)
-                                                        }
-                                                    }
-                                                } catch (ignored: Exception) {
-                                                }
-                                            }
-                                        }
-                                    }
-                                },
-                                modifier = Modifier.size(width = 100.dp, height = 150.dp)
-                            )
-
-                            if (voiceActorImage != null) {
-                                var showVoiceActor by remember { mutableStateOf(true) }
-                                val alpha by animateFloatAsState(
-                                    if (showVoiceActor) 1f else 0f,
-                                    label = "Character card voice actor fade",
-                                )
-
-                                if (showVoiceActor) {
-                                    var showBorder by remember { mutableStateOf(false) }
-                                    val clipShape = RoundedCornerShape(topStart = 8.dp)
-                                    AsyncImage(
-                                        model = ImageRequest.Builder(LocalContext.current)
-                                            .data(voiceActorImage)
-                                            .crossfade(false)
-                                            .listener(onError = { _, _ ->
-                                                showVoiceActor = false
-                                            }, onSuccess = { _, _ ->
-                                                showBorder = true
-                                            })
-                                            .build(),
-                                        contentScale = ContentScale.Crop,
-                                        contentDescription = stringResource(
-                                            R.string.anime_media_voice_actor_image
-                                        ),
-                                        modifier = Modifier
-                                            .size(width = 40.dp, height = 40.dp)
-                                            .align(Alignment.BottomEnd)
-                                            .clip(clipShape)
-                                            .run {
-                                                if (showBorder) {
-                                                    border(
-                                                        width = 1.dp,
-                                                        color = Color.Black,
-                                                        shape = clipShape
-                                                    )
-                                                } else this
-                                            }
-                                            .alpha(alpha)
-                                    )
-                                }
-                            }
-                        }
-
+                    CharacterCard(
+                        coroutineScope = coroutineScope,
+                        id = it.id,
+                        image = it.image,
+                        colorMap = colorMap,
+                        onClick = onCharacterClicked,
+                        innerImage = (it.languageToVoiceActor["Japanese"]
+                            ?: it.languageToVoiceActor.values.firstOrNull())?.image,
+                    ) { textColor ->
                         AutoHeightText(
                             text = it.name.orEmpty(),
                             color = textColor,
@@ -786,6 +675,155 @@ object AnimeMediaDetailsScreen {
                     }
                 }
             }
+        }
+    }
+
+    @Composable
+    private fun CharacterCard(
+        coroutineScope: CoroutineScope,
+        id: String,
+        image: String?,
+        colorMap: MutableMap<String, Pair<Color, Color>>,
+        onClick: (id: String) -> Unit,
+        innerImage: String? = null,
+        content: @Composable (textColor: Color) -> Unit,
+    ) {
+        val defaultTextColor = MaterialTheme.typography.bodyMedium.color
+        val colors = colorMap[id]
+
+        val animationProgress by animateIntAsState(
+            if (colors == null) 0 else 255,
+            label = "Character card color fade in",
+        )
+
+        val containerColor = when {
+            colors == null || animationProgress == 0 ->
+                MaterialTheme.colorScheme.surface
+            animationProgress == 255 -> colors.first
+            else -> Color(
+                ColorUtils.compositeColors(
+                    ColorUtils.setAlphaComponent(
+                        colors.first.toArgb(),
+                        animationProgress
+                    ),
+                    MaterialTheme.colorScheme.surface.toArgb()
+                )
+            )
+        }
+
+        val textColor = when {
+            colors == null || animationProgress == 0 -> defaultTextColor
+            animationProgress == 255 -> colors.second
+            else -> Color(
+                ColorUtils.compositeColors(
+                    ColorUtils.setAlphaComponent(
+                        colors.second.toArgb(),
+                        animationProgress
+                    ),
+                    defaultTextColor.toArgb()
+                )
+            )
+        }
+
+        ElevatedCard(
+            onClick = { onClick(id) },
+            colors = CardDefaults.elevatedCardColors(containerColor = containerColor),
+            modifier = Modifier.width(100.dp),
+        ) {
+            Box {
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(image)
+                        .crossfade(true)
+                        .allowHardware(false)
+                        .build(),
+                    contentScale = ContentScale.Crop,
+                    fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
+                    contentDescription = stringResource(
+                        R.string.anime_media_character_image
+                    ),
+                    onSuccess = {
+                        if (!colorMap.containsKey(id)) {
+                            (it.result.drawable as? BitmapDrawable)?.bitmap?.let {
+                                coroutineScope.launch(CustomDispatchers.IO) {
+                                    try {
+                                        val palette = Palette.from(it)
+                                            .setRegion(
+                                                0,
+                                                // Only capture the bottom 1/4th so
+                                                // color flows from image better
+                                                it.height / 4 * 3,
+                                                // Only capture left 3/5ths to ignore
+                                                // part covered by voice actor
+                                                if (innerImage == null) {
+                                                    it.width
+                                                } else {
+                                                    it.width / 5 * 3
+                                                },
+                                                it.height
+                                            )
+                                            .generate()
+                                        val swatch = palette.swatches
+                                            .maxByOrNull { it.population }
+                                        if (swatch != null) {
+                                            withContext(CustomDispatchers.Main) {
+                                                colorMap[id] =
+                                                    Color(swatch.rgb) to Color(
+                                                        ColorUtils.setAlphaComponent(
+                                                            swatch.bodyTextColor,
+                                                            0xFF
+                                                        )
+                                                    )
+                                            }
+                                        }
+                                    } catch (ignored: Exception) {
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    modifier = Modifier.size(width = 100.dp, height = 150.dp)
+                )
+
+                if (innerImage != null) {
+                    var showInnerImage by remember { mutableStateOf(true) }
+                    if (showInnerImage) {
+                        var showBorder by remember(id) { mutableStateOf(false) }
+                        val alpha by animateFloatAsState(
+                            if (showBorder) 1f else 0f,
+                            label = "Character card inner image fade",
+                        )
+                        val clipShape = RoundedCornerShape(topStart = 8.dp)
+                        AsyncImage(
+                            model = ImageRequest.Builder(LocalContext.current)
+                                .data(innerImage)
+                                .crossfade(false)
+                                .listener(onError = { _, _ ->
+                                    showInnerImage = false
+                                }, onSuccess = { _, _ ->
+                                    showBorder = true
+                                })
+                                .build(),
+                            contentScale = ContentScale.Crop,
+                            contentDescription = stringResource(
+                                R.string.anime_media_voice_actor_image
+                            ),
+                            modifier = Modifier
+                                .size(width = 40.dp, height = 40.dp)
+                                .alpha(alpha)
+                                .align(Alignment.BottomEnd)
+                                .clip(clipShape)
+                                .border(
+                                    width = 1.dp,
+                                    color = Color.Black,
+                                    shape = clipShape
+                                )
+                        )
+                    }
+                }
+            }
+
+            content(textColor)
         }
     }
 
@@ -808,95 +846,13 @@ object AnimeMediaDetailsScreen {
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 items(entry.staff, { it.id }) {
-                    val defaultTextColor = MaterialTheme.typography.bodyMedium.color
-
-                    val staffId = it.id
-                    val colors = colorMap[staffId]
-
-                    val animationProgress by animateIntAsState(
-                        if (colors == null) 0 else 255,
-                        label = "Character card color fade in",
-                    )
-
-                    val containerColor = when {
-                        colors == null || animationProgress == 0 ->
-                            MaterialTheme.colorScheme.surface
-                        animationProgress == 255 -> colors.first
-                        else -> Color(
-                            ColorUtils.compositeColors(
-                                ColorUtils.setAlphaComponent(
-                                    colors.first.toArgb(),
-                                    animationProgress
-                                ),
-                                MaterialTheme.colorScheme.surface.toArgb()
-                            )
-                        )
-                    }
-
-                    val textColor = when {
-                        colors == null || animationProgress == 0 -> defaultTextColor
-                        animationProgress == 255 -> colors.second
-                        else -> Color(
-                            ColorUtils.compositeColors(
-                                ColorUtils.setAlphaComponent(
-                                    colors.second.toArgb(),
-                                    animationProgress
-                                ),
-                                defaultTextColor.toArgb()
-                            )
-                        )
-                    }
-
-                    ElevatedCard(
-                        onClick = { onStaffClicked(it.id) },
-                        colors = CardDefaults.elevatedCardColors(containerColor = containerColor),
-                        modifier = Modifier.width(100.dp)
-                    ) {
-                        Box {
-                            AsyncImage(
-                                model = ImageRequest.Builder(LocalContext.current)
-                                    .data(it.image)
-                                    .allowHardware(false)
-                                    .build(),
-                                contentScale = ContentScale.Crop,
-                                fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
-                                contentDescription = stringResource(
-                                    R.string.anime_media_staff_image
-                                ),
-                                onSuccess = {
-                                    if (!colorMap.containsKey(staffId)) {
-                                        (it.result.drawable as? BitmapDrawable)?.bitmap?.let {
-                                            coroutineScope.launch(CustomDispatchers.IO) {
-                                                try {
-                                                    val palette = Palette.from(it)
-                                                        .setRegion(
-                                                            0,
-                                                            // Only capture the bottom 1/4th so
-                                                            // color flows from image better
-                                                            it.height / 4 * 3,
-                                                            it.width,
-                                                            it.height,
-                                                        )
-                                                        .generate()
-                                                    val swatch = palette.swatches
-                                                        .maxByOrNull { it.population }
-                                                    if (swatch != null) {
-                                                        withContext(CustomDispatchers.Main) {
-                                                            colorMap[staffId] =
-                                                                Color(swatch.rgb) to
-                                                                        Color(swatch.bodyTextColor)
-                                                        }
-                                                    }
-                                                } catch (ignored: Exception) {
-                                                }
-                                            }
-                                        }
-                                    }
-                                },
-                                modifier = Modifier.size(width = 100.dp, height = 150.dp)
-                            )
-                        }
-
+                    CharacterCard(
+                        coroutineScope = coroutineScope,
+                        id = it.id,
+                        image = it.image,
+                        colorMap = colorMap,
+                        onClick = onStaffClicked,
+                    ) { textColor ->
                         it.role?.let {
                             AutoHeightText(
                                 text = it,
@@ -1870,7 +1826,8 @@ object AnimeMediaDetailsScreen {
 
                     Row(modifier = Modifier.padding(start = 16.dp, end = 16.dp)) {
                         val maxAmount = scoreDistribution.maxOf { it.amount ?: 0 } * 1.1f
-                        val firstColorIndex = scoreDistribution.size - MediaUtils.scoreDistributionColors.size
+                        val firstColorIndex =
+                            scoreDistribution.size - MediaUtils.scoreDistributionColors.size
                         scoreDistribution.forEachIndexed { index, it ->
                             val score = it.score ?: return@forEachIndexed
                             val amount = it.amount ?: return@forEachIndexed
@@ -1910,7 +1867,8 @@ object AnimeMediaDetailsScreen {
 
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
+                        modifier = Modifier
+                            .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
                             .height(IntrinsicSize.Min)
                     ) {
                         scoreDistribution.forEach {
@@ -1965,6 +1923,82 @@ object AnimeMediaDetailsScreen {
                             onTagLongClicked = onTagLongClicked
                         )
                     }
+                }
+            }
+        }
+    }
+
+    private fun LazyListScope.trailerSection(
+        entry: Entry,
+        playbackPosition: () -> Float,
+        onPlaybackPositionUpdate: (Float) -> Unit,
+    ) {
+        val trailer = entry.media.trailer ?: return
+        if (trailer.site != "youtube" && trailer.site != "dailymotion") return
+
+        val videoId = trailer.id ?: return
+
+        item {
+            SectionHeader(stringResource(R.string.anime_media_details_trailer_label))
+        }
+
+        if (trailer.site == "youtube") {
+            item {
+                val lifecycleOwner = LocalLifecycleOwner.current
+                ElevatedCard(
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                ) {
+                    val player = remember { AtomicReference<YouTubePlayer>(null) }
+                    AndroidView(
+                        factory = {
+                            YouTubePlayerView(it).apply {
+                                lifecycleOwner.lifecycle.addObserver(this)
+                                getYouTubePlayerWhenReady(object : YouTubePlayerCallback {
+                                    override fun onYouTubePlayer(youTubePlayer: YouTubePlayer) {
+                                        player.set(youTubePlayer)
+                                        youTubePlayer.cueVideo(videoId, playbackPosition())
+                                        youTubePlayer.addListener(object :
+                                            AbstractYouTubePlayerListener() {
+                                            override fun onCurrentSecond(
+                                                youTubePlayer: YouTubePlayer,
+                                                second: Float
+                                            ) {
+                                                onPlaybackPositionUpdate(second)
+                                            }
+                                        })
+                                    }
+                                })
+                            }
+                        },
+                        onRelease = {
+                            lifecycleOwner.lifecycle.removeObserver(it)
+                            it.release()
+                        },
+                        update = {
+                            lifecycleOwner.lifecycle.addObserver(it)
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .aspectRatio(16 / 9f)
+                    )
+                }
+            }
+        } else {
+            item {
+                val uriHandler = LocalUriHandler.current
+                ElevatedCard(
+                    onClick = { uriHandler.openUri(MediaUtils.dailymotionUrl(videoId)) },
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                ) {
+                    AsyncImage(
+                        model = trailer.thumbnail,
+                        contentDescription = stringResource(
+                            R.string.anime_media_details_trailer_dailymotion_content_description
+                        ),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .aspectRatio(16 / 9f)
+                    )
                 }
             }
         }
@@ -2162,7 +2196,7 @@ object AnimeMediaDetailsScreen {
             ?.let {
                 // TODO: This is a bad hack. Use a real graphing library.
                 // Fill any missing scores so the graph scale is correct
-                if (it.size < 10 && it.all { (it.score ?: 0) % 10 == 0}) {
+                if (it.size < 10 && it.all { (it.score ?: 0) % 10 == 0 }) {
                     val list = it.toMutableList()
                     repeat(10) {
                         val value = (it + 1) * 10

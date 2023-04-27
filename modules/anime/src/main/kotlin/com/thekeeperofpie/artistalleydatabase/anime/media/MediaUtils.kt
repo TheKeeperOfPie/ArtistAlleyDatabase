@@ -252,4 +252,6 @@ object MediaUtils {
         MediaListStatus.REPEATING -> Color(0xFFFF9000)
         MediaListStatus.UNKNOWN__, null -> Color.White
     }
+
+    fun dailymotionUrl(videoId: String) = "https://www.dailymotion.com/video/$videoId"
 }

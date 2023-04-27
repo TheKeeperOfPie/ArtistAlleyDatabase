@@ -1,6 +1,8 @@
 package com.thekeeperofpie.artistalleydatabase
 
 import android.app.Application
+import android.media.AudioManager
+import android.media.AudioManagerIgnoreFocus
 import android.os.StrictMode
 import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationManagerCompat
@@ -34,6 +36,8 @@ class CustomApplication : Application(), Configuration.Provider, ScopedApplicati
 
     @Inject
     lateinit var workerFactory: HiltWorkerFactory
+
+    private lateinit var audioManager: AudioManager
 
     override fun getWorkManagerConfiguration() =
         Configuration.Builder()
@@ -96,4 +100,18 @@ class CustomApplication : Application(), Configuration.Provider, ScopedApplicati
                 .build()
         }
         .build()
+
+    override fun getSystemService(name: String): Any? {
+        val service = super.getSystemService(name)
+        if (service is AudioManager) {
+            try {
+                if (!::audioManager.isInitialized) {
+                    audioManager = AudioManagerIgnoreFocus(service)
+                }
+                return audioManager
+            } catch (ignored: Exception) {
+            }
+        }
+        return service
+    }
 }

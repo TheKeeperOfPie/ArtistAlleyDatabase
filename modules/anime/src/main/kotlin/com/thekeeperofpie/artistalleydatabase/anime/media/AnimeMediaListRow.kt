@@ -48,6 +48,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.anilist.fragment.AniListListRowMedia
 import com.anilist.type.MediaSeason
 import com.google.accompanist.placeholder.PlaceholderHighlight
@@ -116,7 +117,10 @@ object AnimeMediaListRow {
             screenKey = "media_row_${entry.id?.valueId}"
         ) {
             AsyncImage(
-                model = entry.image,
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(entry.image)
+                    .crossfade(true)
+                    .build(),
                 contentScale = ContentScale.FillHeight,
                 fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
                 contentDescription = stringResource(R.string.anime_media_cover_image),

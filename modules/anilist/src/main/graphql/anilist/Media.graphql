@@ -247,6 +247,11 @@ query MediaDetails($mediaId: Int!) {
             isMediaSpoiler
             rank
         }
+        trailer {
+            id
+            site
+            thumbnail
+        }
         trending
         type
         volumes

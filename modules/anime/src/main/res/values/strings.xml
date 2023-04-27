@@ -274,4 +274,7 @@
     <string name="anime_media_details_status_distribution_unknown">Unknown - %1$d</string>
 
     <string name="anime_media_details_score_distribution_label">Score distribution</string>
+
+    <string name="anime_media_details_trailer_label">Trailer</string>
+    <string name="anime_media_details_trailer_dailymotion_content_description">Dailymotion media trailer thumbnail</string>
 </resources>

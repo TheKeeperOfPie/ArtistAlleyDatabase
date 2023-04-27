@@ -49,4 +49,5 @@ dependencies {
     implementation(libs.media3.exoplayer.hls)
     implementation(libs.media3.exoplayer.rtsp)
     implementation(libs.media3.ui)
+    implementation(group = "", name = "androidyoutubeplayer-core-12.0.0", ext = "aar")
 }

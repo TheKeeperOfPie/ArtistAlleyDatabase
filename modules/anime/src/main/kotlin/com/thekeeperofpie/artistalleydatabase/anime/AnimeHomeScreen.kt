@@ -325,6 +325,10 @@ object AnimeHomeScreen {
                                 onStaffLongClicked = { TODO() },
                                 onTagClicked = ::onTagClick,
                                 onTagLongClicked = { TODO() },
+                                trailerPlaybackPosition = { viewModel.trailerPlaybackPosition },
+                                onTrailerPlaybackPositionUpdate = {
+                                    viewModel.trailerPlaybackPosition = it
+                                },
                                 onMediaClicked = ::onMediaClick,
                                 errorRes = { viewModel.errorResource.collectAsState().value },
                             )

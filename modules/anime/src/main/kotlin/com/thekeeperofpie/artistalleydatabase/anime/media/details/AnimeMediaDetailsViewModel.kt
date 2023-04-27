@@ -51,6 +51,8 @@ class AnimeMediaDetailsViewModel @Inject constructor(
     var animeSongs = MutableStateFlow<AnimeSongs?>(null)
     var cdEntries = MutableStateFlow<List<CdEntryGridModel>>(emptyList())
 
+    var trailerPlaybackPosition = 0f
+
     private val animeSongStates = MutableStateFlow(emptyMap<String, AnimeSongState>())
 
     fun initialize(mediaId: String) {
