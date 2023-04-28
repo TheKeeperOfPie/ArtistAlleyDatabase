@@ -153,6 +153,7 @@ object AnimeMediaDetailsScreen {
     private const val RELATIONS_ABOVE_FOLD = 3
     private const val RECOMMENDATIONS_ABOVE_FOLD = 5
     private const val SONGS_ABOVE_FOLD = 3
+    private const val STREAMING_EPISODES_ABOVE_FOLD = 3
 
     // Sorted by most relevant for an anime-first viewer
     private val RELATION_SORT_ORDER = listOf(
@@ -244,6 +245,8 @@ object AnimeMediaDetailsScreen {
             var relationsExpanded by remember { mutableStateOf(false) }
             var recommendationsExpanded by remember { mutableStateOf(false) }
             var songsExpanded by remember { mutableStateOf(false) }
+            var streamingEpisodesExpanded by remember { mutableStateOf(false) }
+            var streamingEpisodesHidden by remember { mutableStateOf(true) }
 
             LazyColumn(
                 contentPadding = PaddingValues(bottom = 16.dp),
@@ -276,6 +279,10 @@ object AnimeMediaDetailsScreen {
                     onRecommendationsExpandedToggled = { recommendationsExpanded = it },
                     songsExpanded = { songsExpanded },
                     onSongsExpandedToggled = { songsExpanded = it },
+                    streamingEpisodesExpanded = { streamingEpisodesExpanded },
+                    onStreamingEpisodesExpandedToggled = { streamingEpisodesExpanded = it },
+                    streamingEpisodesHidden = { streamingEpisodesHidden },
+                    onStreamingEpisodesHiddenToggled = { streamingEpisodesHidden = it },
                     trailerPlaybackPosition = trailerPlaybackPosition,
                     onTrailerPlaybackPositionUpdate = onTrailerPlaybackPositionUpdate,
                 )
@@ -313,6 +320,10 @@ object AnimeMediaDetailsScreen {
         onRecommendationsExpandedToggled: (Boolean) -> Unit,
         songsExpanded: () -> Boolean,
         onSongsExpandedToggled: (Boolean) -> Unit,
+        streamingEpisodesExpanded: () -> Boolean,
+        onStreamingEpisodesExpandedToggled: (Boolean) -> Unit,
+        streamingEpisodesHidden: () -> Boolean,
+        onStreamingEpisodesHiddenToggled: (Boolean) -> Unit,
         trailerPlaybackPosition: () -> Float,
         onTrailerPlaybackPositionUpdate: (Float) -> Unit,
     ) {
@@ -390,6 +401,14 @@ object AnimeMediaDetailsScreen {
             entry = entry,
             playbackPosition = trailerPlaybackPosition,
             onPlaybackPositionUpdate = onTrailerPlaybackPositionUpdate,
+        )
+
+        streamingEpisodesSection(
+            entry = entry,
+            expanded = streamingEpisodesExpanded,
+            expandedToggled = onStreamingEpisodesExpandedToggled,
+            hidden = streamingEpisodesHidden,
+            onHiddenToggled = onStreamingEpisodesHiddenToggled,
         )
 
         socialLinksSection(entry = entry)
@@ -1027,8 +1046,7 @@ object AnimeMediaDetailsScreen {
                     }
                 }
 
-                // TODO: trailer, isFavorite, isAdult, airingSchedule,
-                //  streamingEpisodes, reviews, trends
+                // TODO: isFavorite, isAdult, airingSchedule, reviews, trends
 
                 ExpandableListInfoText(
                     labelTextRes = R.string.anime_media_details_studios_label,
@@ -1269,11 +1287,7 @@ object AnimeMediaDetailsScreen {
                                     R.string.anime_media_details_song_spoiler_content_description
                                 ),
                                 modifier = Modifier
-                                    .padding(
-                                        start = 16.dp,
-                                        top = 4.dp,
-                                        bottom = 4.dp,
-                                    )
+                                    .padding(start = 16.dp, top = 4.dp, bottom = 4.dp)
                                     .align(Alignment.CenterVertically)
                             )
                         }
@@ -1624,6 +1638,8 @@ object AnimeMediaDetailsScreen {
         aboveFold: Int,
         expanded: () -> Boolean,
         onExpandedToggled: (Boolean) -> Unit,
+        hidden: () -> Boolean = { false },
+        hiddenContent: @Composable () -> Unit = {},
         itemContent: @Composable (T, paddingBottom: Dp) -> Unit,
     ) {
         if (values.isNotEmpty()) {
@@ -1632,6 +1648,13 @@ object AnimeMediaDetailsScreen {
                     text = stringResource(titleRes),
                     modifier = Modifier.clickable { onExpandedToggled(!expanded()) }
                 )
+            }
+
+            if (hidden()) {
+                item {
+                    hiddenContent()
+                }
+                return
             }
 
             val hasMore = values.size > aboveFold
@@ -1999,6 +2022,92 @@ object AnimeMediaDetailsScreen {
                             .fillMaxWidth()
                             .aspectRatio(16 / 9f)
                     )
+                }
+            }
+        }
+    }
+
+    private fun LazyListScope.streamingEpisodesSection(
+        entry: Entry,
+        expanded: () -> Boolean,
+        expandedToggled: (Boolean) -> Unit,
+        hidden: () -> Boolean,
+        onHiddenToggled: (Boolean) -> Unit,
+    ) {
+        val streamingEpisodes = entry.media.streamingEpisodes?.filterNotNull()
+            ?.takeIf { it.isNotEmpty() } ?: return
+        listSection(
+            titleRes = R.string.anime_media_details_streaming_episodes_label,
+            values = streamingEpisodes,
+            aboveFold = STREAMING_EPISODES_ABOVE_FOLD,
+            expanded = expanded,
+            onExpandedToggled = expandedToggled,
+            hidden = hidden,
+            hiddenContent = {
+                ElevatedCard(
+                    onClick = { onHiddenToggled(false) },
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Filled.Warning,
+                            contentDescription = stringResource(
+                                R.string.anime_media_details_streaming_episode_spoiler_content_description
+                            ),
+                            modifier = Modifier
+                                .padding(start = 16.dp, top = 4.dp, bottom = 4.dp)
+                        )
+
+                        Text(
+                            text = stringResource(
+                                R.string.anime_media_details_streaming_episode_spoiler
+                            ),
+                            style = MaterialTheme.typography.titleSmall,
+                            modifier = Modifier
+                                .padding(horizontal = 16.dp, vertical = 10.dp)
+                                .weight(1f)
+                        )
+                    }
+                }
+            }
+        ) { item, paddingBottom ->
+            val uriHandler = LocalUriHandler.current
+            ElevatedCard(
+                modifier = Modifier
+                    .padding(start = 16.dp, end = 16.dp, bottom = paddingBottom)
+                    .optionalClickable(onClick = item.url?.let { { uriHandler.openUri(it) } }),
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    AsyncImage(
+                        model = item.thumbnail,
+                        contentScale = ContentScale.FillHeight,
+                        contentDescription = stringResource(
+                            R.string.anime_media_details_streaming_episode_content_description
+                        ),
+                        modifier = Modifier.widthIn(max = 200.dp),
+                    )
+
+                    Text(
+                        text = item.title.orEmpty(),
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp, vertical = 10.dp)
+                            .weight(1f),
+                    )
+
+                    val site = item.site
+                    if (site != null) {
+                        val icon =
+                            entry.media.externalLinks?.find { it?.site == site }?.icon
+                        if (icon != null) {
+                            AsyncImage(
+                                model = icon,
+                                contentDescription = stringResource(
+                                    R.string.anime_media_details_streaming_episode_icon_content_description
+                                ),
+                                modifier = Modifier.padding(16.dp),
+                            )
+                        }
+                    }
                 }
             }
         }

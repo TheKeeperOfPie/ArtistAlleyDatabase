@@ -277,4 +277,10 @@
 
     <string name="anime_media_details_trailer_label">Trailer</string>
     <string name="anime_media_details_trailer_dailymotion_content_description">Dailymotion media trailer thumbnail</string>
+
+    <string name="anime_media_details_streaming_episodes_label">Watch</string>
+    <string name="anime_media_details_streaming_episode_content_description">Episode thumbnail</string>
+    <string name="anime_media_details_streaming_episode_icon_content_description">Episode site icon</string>
+    <string name="anime_media_details_streaming_episode_spoiler_content_description">Episodes spoiler warning</string>
+    <string name="anime_media_details_streaming_episode_spoiler">Spoiler</string>
 </resources>

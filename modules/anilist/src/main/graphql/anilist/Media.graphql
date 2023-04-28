@@ -239,6 +239,12 @@ query MediaDetails($mediaId: Int!) {
             month
             day
         }
+        streamingEpisodes {
+            title
+            thumbnail
+            url
+            site
+        }
         tags {
             id
             name
