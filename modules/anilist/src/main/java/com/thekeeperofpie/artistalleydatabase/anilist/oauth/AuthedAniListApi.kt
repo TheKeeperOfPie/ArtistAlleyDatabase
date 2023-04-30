@@ -6,9 +6,12 @@ import com.anilist.GenresQuery
 import com.anilist.MediaAdvancedSearchQuery
 import com.anilist.MediaDetailsQuery
 import com.anilist.MediaTagsQuery
+import com.anilist.SaveMediaEntryEditMutation
 import com.anilist.UserMediaListQuery
+import com.anilist.type.FuzzyDateInput
 import com.anilist.type.MediaFormat
 import com.anilist.type.MediaListSort
+import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaSeason
 import com.anilist.type.MediaSort
 import com.anilist.type.MediaSource
@@ -29,6 +32,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
+import java.time.LocalDate
 
 class AuthedAniListApi(
     scopedApplication: ScopedApplication,
@@ -148,6 +152,50 @@ class AuthedAniListApi(
     suspend fun tags() = query(MediaTagsQuery())
 
     suspend fun mediaDetails(id: String) = query(MediaDetailsQuery(id.toInt()))
+
+    suspend fun saveMediaEntry(
+        id: String?,
+        mediaId: String,
+        type: MediaType?,
+        status: MediaListStatus?,
+        scoreRaw: Int?,
+        progress: Int?,
+        repeat: Int?,
+        priority: Int?,
+        private: Boolean?,
+        startedAt: LocalDate?,
+        completedAt: LocalDate?,
+        hiddenFromStatusLists: Boolean?,
+    ) = apolloClient.mutation(
+        SaveMediaEntryEditMutation(
+            id = Optional.presentIfNotNull(id?.toIntOrNull()),
+            mediaId = mediaId.toInt(),
+            status = Optional.presentIfNotNull(status),
+            scoreRaw = Optional.presentIfNotNull(scoreRaw),
+            progress = Optional.presentIfNotNull(progress.takeIf { type == MediaType.ANIME }),
+            progressVolumes = Optional.presentIfNotNull(
+                progress.takeIf { type != MediaType.ANIME }
+            ),
+            repeat = Optional.presentIfNotNull(repeat),
+            priority = Optional.presentIfNotNull(priority),
+            private = Optional.presentIfNotNull(private),
+            startedAt = Optional.presentIfNotNull(startedAt?.let {
+                FuzzyDateInput(
+                    year = Optional.presentIfNotNull(it.year),
+                    month = Optional.presentIfNotNull(it.monthValue),
+                    day = Optional.presentIfNotNull(it.dayOfMonth),
+                )
+            }),
+            completedAt = Optional.presentIfNotNull(completedAt?.let {
+                FuzzyDateInput(
+                    year = Optional.presentIfNotNull(it.year),
+                    month = Optional.presentIfNotNull(it.monthValue),
+                    day = Optional.presentIfNotNull(it.dayOfMonth),
+                )
+            }),
+            hiddenFromStatusLists = Optional.presentIfNotNull(hiddenFromStatusLists),
+        )
+    ).execute().dataAssertNoErrors.saveMediaListEntry!!
 
     private suspend fun <D : Query.Data> query(query: Query<D>) =
         apolloClient.query(query).execute()

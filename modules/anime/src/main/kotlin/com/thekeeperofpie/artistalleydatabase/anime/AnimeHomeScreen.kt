@@ -30,7 +30,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import androidx.paging.compose.collectAsLazyPagingItems
+import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaSeason
+import com.anilist.type.MediaType
+import com.anilist.type.ScoreFormat
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
@@ -42,11 +45,15 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDetailsViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.media.edit.AnimeMediaEditScreen
+import com.thekeeperofpie.artistalleydatabase.anime.media.edit.AnimeMediaEditViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditData
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeMediaFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.search.AnimeSearchScreen
 import com.thekeeperofpie.artistalleydatabase.anime.search.AnimeSearchViewModel
 import com.thekeeperofpie.artistalleydatabase.compose.ColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
+import java.time.LocalDate
 
 @OptIn(ExperimentalAnimationApi::class)
 object AnimeHomeScreen {
@@ -166,65 +173,42 @@ object AnimeHomeScreen {
                                 onMediaClick = ::onMediaClick,
                             )
                         }
+
                         composable(
                             route = "animeDetails"
-                                    + "?title={title}"
+                                    + "?mediaId={mediaId}"
+                                    + "&title={title}"
                                     + "&subtitleFormatRes={subtitleFormatRes}"
                                     + "&subtitleStatusRes={subtitleStatusRes}"
                                     + "&subtitleSeason={subtitleSeason}"
                                     + "&subtitleSeasonYear={subtitleSeasonYear}"
                                     + "&nextEpisode={nextEpisode}"
                                     + "&nextEpisodeAiringAt={nextEpisodeAiringAt}"
-                                    + "&mediaId={mediaId}"
                                     + "&coverImage={coverImage}"
                                     + "&color={color}"
                                     + "&bannerImage={bannerImage}",
                             arguments = listOf(
-                                navArgument("title") {
-                                    type = NavType.StringType
-                                    nullable = true
-                                },
-                                navArgument("subtitleFormatRes") {
-                                    type = NavType.StringType
-                                    nullable = true
-                                },
-                                navArgument("subtitleStatusRes") {
-                                    type = NavType.StringType
-                                    nullable = true
-                                },
-                                navArgument("subtitleSeason") {
-                                    type = NavType.StringType
-                                    nullable = true
-                                },
-                                navArgument("subtitleSeasonYear") {
-                                    type = NavType.StringType
-                                    nullable = true
-                                },
-                                navArgument("nextEpisode") {
-                                    type = NavType.StringType
-                                    nullable = true
-                                },
-                                navArgument("nextEpisodeAiringAt") {
-                                    type = NavType.StringType
-                                    nullable = true
-                                },
                                 navArgument("mediaId") {
                                     type = NavType.StringType
                                     nullable = false
-                                },
-                                navArgument("coverImage") {
+                                }
+                            ) + listOf(
+                                "title",
+                                "subtitleFormatRes",
+                                "subtitleStatusRes",
+                                "subtitleSeason",
+                                "subtitleSeasonYear",
+                                "nextEpisode",
+                                "nextEpisodeAiringAt",
+                                "coverImage",
+                                "bannerImage",
+                                "color",
+                            ).map {
+                                navArgument(it) {
                                     type = NavType.StringType
                                     nullable = true
-                                },
-                                navArgument("bannerImage") {
-                                    type = NavType.StringType
-                                    nullable = true
-                                },
-                                navArgument("color") {
-                                    type = NavType.StringType
-                                    nullable = true
-                                },
-                            ),
+                                }
+                            },
                             enterTransition = {
                                 slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up)
                             },
@@ -330,7 +314,164 @@ object AnimeHomeScreen {
                                     viewModel.trailerPlaybackPosition = it
                                 },
                                 onMediaClicked = ::onMediaClick,
+                                listEntry = { viewModel.listEntry.collectAsState().value },
+                                onClickEditEntry = {
+                                    val media = mediaAsState.value
+                                    val listEntry = viewModel.listEntry.value
+
+                                    // TODO: Is it possible for only one of the values to be null?
+                                    val startedAt = listEntry?.startedAt
+                                        ?.run { "$year,$month,$day" }
+                                    val completedAt = listEntry?.completedAt
+                                        ?.run { "$year,$month,$day" }
+                                    navController.navigate(
+                                        "animeEdit"
+                                                + "?id=${listEntry?.id}"
+                                                + "&mediaId=${mediaId}"
+                                                + "&title=${media?.title?.userPreferred}"
+                                                + "&image=${media?.coverImage?.extraLarge}"
+                                                + "&type=${media?.type}"
+                                                + "&status=${listEntry?.status}"
+                                                + "&score=${listEntry?.score?.toInt()}"
+                                                + "&progress=${listEntry?.progress}"
+                                                + "&progressMax=${media?.episodes ?: media?.volumes}"
+                                                + "&repeat=${listEntry?.repeat}"
+                                                + "&priority=${listEntry?.priority}"
+                                                + "&startedAt=$startedAt"
+                                                + "&completedAt=$completedAt"
+                                                + "&updatedAt=${listEntry?.updatedAt}"
+                                                + "&createdAt=${listEntry?.createdAt}",
+                                    )
+                                },
                                 errorRes = { viewModel.errorResource.collectAsState().value },
+                            )
+                        }
+
+                        composable(
+                            route = "animeEdit"
+                                    + "?id={id}"
+                                    + "&mediaId={mediaId}"
+                                    + "&title={title}"
+                                    + "&image={image}"
+                                    + "&type={type}"
+                                    + "&status={status}"
+                                    + "&score={score}"
+                                    + "&progress={progress}"
+                                    + "&progressMax={progressMax}"
+                                    + "&repeat={repeat}"
+                                    + "&priority={priority}"
+                                    + "&startedAt={startedAt}"
+                                    + "&completedAt={completedAt}"
+                                    + "&updatedAt={updatedAt}"
+                                    + "&createdAt={createdAt}",
+                            arguments = listOf(
+                                navArgument("mediaId") {
+                                    type = NavType.StringType
+                                    nullable = false
+                                },
+                            ) + listOf(
+                                "id",
+                                "title",
+                                "image",
+                                "type",
+                                "status",
+                                "score",
+                                "progress",
+                                "progressMax",
+                                "repeat",
+                                "priority",
+                                "private",
+                                "startedAt",
+                                "completedAt",
+                                "updatedAt",
+                                "createdAt",
+                            ).map {
+                                navArgument(it) {
+                                    type = NavType.StringType
+                                    nullable = true
+                                }
+                            },
+                            enterTransition = {
+                                slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up)
+                            },
+                            exitTransition = {
+                                slideOutOfContainer(
+                                    AnimatedContentTransitionScope.SlideDirection.Down
+                                )
+                            },
+                        ) {
+                            fun parseLocalDate(serialized: String?): LocalDate? {
+                                val startedAtArray = serialized.orEmpty().split(',')
+                                val startedAtYear = startedAtArray.getOrNull(0)?.toIntOrNull()
+                                val startedAtMonth = startedAtArray.getOrNull(1)?.toIntOrNull()
+                                val startedAtDayOfMonth = startedAtArray.getOrNull(2)?.toIntOrNull()
+                                return if (startedAtYear != null && startedAtMonth != null && startedAtDayOfMonth != null) {
+                                    LocalDate.of(startedAtYear, startedAtMonth, startedAtDayOfMonth)
+                                } else null
+                            }
+
+                            val arguments = it.arguments!!
+                            val viewModel = hiltViewModel<AnimeMediaEditViewModel>().apply {
+                                if (!isInitialized) {
+                                    initialize(
+                                        MediaEditData(
+                                            id = arguments.getString("id"),
+                                            mediaId = arguments.getString("mediaId")!!,
+                                            title = arguments.getString("title").orEmpty(),
+                                            image = arguments.getString("image"),
+                                            type = arguments.getString("type")
+                                                ?.let(MediaType::safeValueOf),
+                                            status = arguments.getString("status")
+                                                ?.let(MediaListStatus::safeValueOf),
+                                            scoreRaw = arguments.getString("score")?.toIntOrNull(),
+                                            progress = arguments.getString("progress")
+                                                ?.toIntOrNull(),
+                                            progressMax = arguments.getString("progressMax")
+                                                ?.toIntOrNull() ?: 1,
+                                            repeat = arguments.getString("repeat")?.toIntOrNull(),
+                                            priority = arguments.getString("priority")
+                                                ?.toIntOrNull(),
+                                            private = arguments.getString("private")?.toBoolean(),
+                                            startedAt = parseLocalDate(arguments.getString("startedAt")),
+                                            completedAt = parseLocalDate(arguments.getString("completedAt")),
+                                            updatedAt = arguments.getString("updatedAt")
+                                                ?.toLongOrNull(),
+                                            createdAt = arguments.getString("createdAt")
+                                                ?.toLongOrNull(),
+                                        )
+                                    )
+                                }
+                            }
+
+                            AnimeMediaEditScreen(
+                                title = { TODO() },
+                                image = { TODO() },
+                                type = { viewModel.type },
+                                updatedAt = { TODO() },
+                                createdAt = { TODO() },
+                                progressMax = { viewModel.progressMax },
+                                status = { viewModel.status },
+                                onStatusChange = { viewModel.status = it },
+                                scoreFormat = {
+                                    viewModel.scoreFormat.collectAsState(ScoreFormat.POINT_100).value
+                                },
+                                score = { viewModel.score },
+                                onScoreChange = { viewModel.score = it },
+                                progress = { viewModel.progress },
+                                onProgressChange = { viewModel.progress = it },
+                                repeat = { viewModel.repeat },
+                                onRepeatChange = { viewModel.repeat = it },
+                                priority = { TODO() },
+                                onPriorityChange = { TODO() },
+                                private = { TODO() },
+                                onPrivateChange = { TODO() },
+                                startDate = { viewModel.startDate },
+                                endDate = { viewModel.endDate },
+                                onDateChange = viewModel::onDateChange,
+                                saving = { viewModel.saving },
+                                onClickSave = { viewModel.onClickSave(navController) },
+                                errorRes = { viewModel.errorRes },
+                                onErrorDismiss = { viewModel.errorRes = null },
                             )
                         }
                     }

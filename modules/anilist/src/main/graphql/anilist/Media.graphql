@@ -86,6 +86,32 @@ query MediaAdvancedSearch($page: Int, $perPage: Int, $search: String, $type: Med
     }
 }
 
+fragment MediaDetailsListEntry on MediaList {
+    id
+    mediaId
+    status
+    score(format: POINT_100)
+    progress
+    progressVolumes
+    repeat
+    priority
+    private
+    notes
+    advancedScores
+    startedAt {
+        year
+        month
+        day
+    }
+    completedAt {
+        year
+        month
+        day
+    }
+    updatedAt
+    createdAt
+}
+
 query MediaDetails($mediaId: Int!) {
     Media(id: $mediaId) {
         bannerImage
@@ -181,6 +207,9 @@ query MediaDetails($mediaId: Int!) {
         genres
         hashtag
         isLicensed
+        mediaListEntry {
+            ...MediaDetailsListEntry
+        }
         nextAiringEpisode {
             episode
             airingAt

@@ -5,5 +5,8 @@ query AuthedUser {
         options {
             profileColor
         }
+        mediaListOptions {
+            scoreFormat
+        }
     }
 }

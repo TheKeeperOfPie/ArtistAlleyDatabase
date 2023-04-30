@@ -83,6 +83,16 @@
     <string name="anime_media_status_hiatus">Hiatus</string>
     <string name="anime_media_status_unknown">Unknown</string>
 
+    <string name="anime_media_list_status_current_anime">Watching</string>
+    <string name="anime_media_list_status_current_not_anime">Reading</string>
+    <string name="anime_media_list_status_planning">Planning</string>
+    <string name="anime_media_list_status_completed">Completed</string>
+    <string name="anime_media_list_status_dropped">Dropped</string>
+    <string name="anime_media_list_status_paused">On hold</string>
+    <string name="anime_media_list_status_repeating">Repeating</string>
+    <string name="anime_media_list_status_unknown">Unknown</string>
+    <string name="anime_media_list_status_none">Not on list</string>
+
     <string name="anime_media_format_tv">TV</string>
     <string name="anime_media_format_tv_short">TV short</string>
     <string name="anime_media_format_movie">Movie</string>
@@ -138,10 +148,6 @@
     <string name="anime_media_filter_airing_date_season_year_today_content_description">Set to current year</string>
     <string name="anime_media_filter_airing_date_season_basic">Basic</string>
     <string name="anime_media_filter_airing_date_season_advanced">Advanced</string>
-    <string name="anime_media_filter_airing_date_today_content_description">Set to today</string>
-    <string name="anime_media_filter_airing_date_start_date_label">Start</string>
-    <string name="anime_media_filter_airing_date_end_date_label">End</string>
-    <string name="anime_media_filter_airing_date_clear_content_description">Clear date</string>
 
     <string name="anime_media_filter_average_score_label">Average score</string>
     <string name="anime_media_filter_average_score_expand_content_description">Average score filter expand</string>
@@ -283,4 +289,48 @@
     <string name="anime_media_details_streaming_episode_icon_content_description">Episode site icon</string>
     <string name="anime_media_details_streaming_episode_spoiler_content_description">Episodes spoiler warning</string>
     <string name="anime_media_details_streaming_episode_spoiler">Spoiler</string>
+    <string name="anime_media_details_fab_user_status_current_anime">Watching %1$d/%2$d</string>
+    <string name="anime_media_details_fab_user_status_current_not_anime">Reading %1$d/%2$d</string>
+    <string name="anime_media_details_fab_user_status_planning">Planning</string>
+    <string name="anime_media_details_fab_user_status_completed">Completed</string>
+    <string name="anime_media_details_fab_user_status_dropped">Dropped %1$d/%2$d</string>
+    <string name="anime_media_details_fab_user_status_paused">On hold</string>
+    <string name="anime_media_details_fab_user_status_repeating">Repeating</string>
+    <string name="anime_media_details_fab_user_status_unknown">Unknown</string>
+    <string name="anime_media_details_fab_user_status_current_anime_icon_content_description">Watching icon</string>
+    <string name="anime_media_details_fab_user_status_current_not_anime_icon_content_description">Reading icon</string>
+    <string name="anime_media_details_fab_user_status_planning_icon_content_description">Planning icon</string>
+    <string name="anime_media_details_fab_user_status_completed_icon_content_description">Completed icon</string>
+    <string name="anime_media_details_fab_user_status_dropped_icon_content_description">Dropped icon</string>
+    <string name="anime_media_details_fab_user_status_paused_icon_content_description">Paused icon</string>
+    <string name="anime_media_details_fab_user_status_repeating_icon_content_description">Repeating icon</string>
+    <string name="anime_media_details_fab_user_status_edit_icon_content_description">Edit entry icon</string>
+
+    <string name="anime_media_edit_date_today_content_description">Set to today</string>
+    <string name="anime_media_edit_date_start_date_label">Start</string>
+    <string name="anime_media_edit_date_end_date_label">End</string>
+    <string name="anime_media_edit_date_clear_content_description">Clear date</string>
+    <string name="anime_media_edit_status_label">Status</string>
+    <string name="anime_media_edit_status_dropdown_content_description">Status dropdown</string>
+    <string name="anime_media_edit_progress_label">Progress</string>
+    <string name="anime_media_edit_progress_decrement_content_description">Decrement progress</string>
+    <string name="anime_media_edit_progress_increment_content_description">Increment progress</string>
+    <string name="anime_media_edit_score_label">Score</string>
+    <string name="anime_media_edit_date_label">Dates</string>
+    <string name="anime_media_edit_repeat_label">Repeating</string>
+    <string name="anime_media_edit_repeat_decrement_content_description">Decrement repeat</string>
+    <string name="anime_media_edit_repeat_increment_content_description">Increment repeat</string>
+
+    <string name="anime_media_edit_score_point_3_dissatisfied">Frowning face icon</string>
+    <string name="anime_media_edit_score_point_3_neutral">Neutral face icon</string>
+    <string name="anime_media_edit_score_point_3_satisfied">Satisfied face icon</string>
+
+    <string name="anime_media_edit_score_point_5_start_1">1 star rating</string>
+    <string name="anime_media_edit_score_point_5_start_2">2 star rating</string>
+    <string name="anime_media_edit_score_point_5_start_3">3 star rating</string>
+    <string name="anime_media_edit_score_point_5_start_4">4 star rating</string>
+    <string name="anime_media_edit_score_point_5_start_5">5 star rating</string>
+    <string name="anime_media_edit_error_invalid_score">Invalid score</string>
+    <string name="anime_media_edit_error_invalid_progress">Invalid progress</string>
+    <string name="anime_media_edit_error_saving">Error saving</string>
 </resources>

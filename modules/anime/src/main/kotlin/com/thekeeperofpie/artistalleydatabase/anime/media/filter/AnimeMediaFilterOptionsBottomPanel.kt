@@ -8,8 +8,6 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,7 +17,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
@@ -43,8 +40,6 @@ import androidx.compose.material.icons.filled.UnfoldLess
 import androidx.compose.material.icons.filled.UnfoldMore
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.BottomSheetScaffold
-import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -60,14 +55,11 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.rememberBottomSheetScaffoldState
-import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -85,6 +77,8 @@ import com.anilist.type.MediaSeason
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
+import com.thekeeperofpie.artistalleydatabase.anime.ui.StartEndDateDialog
+import com.thekeeperofpie.artistalleydatabase.anime.ui.StartEndDateRow
 import com.thekeeperofpie.artistalleydatabase.anime.utils.IncludeExcludeState
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.ButtonFooter
@@ -94,8 +88,6 @@ import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
 import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.filterChipColors
 import kotlinx.coroutines.launch
-import java.time.LocalDate
-import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import java.util.Calendar
@@ -350,45 +342,11 @@ object AnimeMediaFilterOptionsBottomPanel {
             )
 
             if (airingDateShown != null) {
-                AiringDateDialog(
+                StartEndDateDialog(
                     shownForStartDate = airingDateShown,
                     onShownForStartDateToggled = { airingDateShown = it },
                     onDateChange = data.onAiringDateChange,
                 )
-            }
-        }
-    }
-
-    @Composable
-    private fun AiringDateDialog(
-        shownForStartDate: Boolean?,
-        onShownForStartDateToggled: (Boolean?) -> Unit,
-        onDateChange: (start: Boolean, Long?) -> Unit,
-    ) {
-        if (shownForStartDate != null) {
-            val datePickerState = rememberDatePickerState()
-            val confirmEnabled by remember { derivedStateOf { datePickerState.selectedDateMillis != null } }
-            DatePickerDialog(
-                onDismissRequest = { onShownForStartDateToggled(null) },
-                confirmButton = {
-                    TextButton(
-                        onClick = {
-                            onShownForStartDateToggled(null)
-                            onDateChange(shownForStartDate, datePickerState.selectedDateMillis)
-                        },
-                        enabled = confirmEnabled,
-                    ) {
-                        Text(text = stringResource(UtilsStringR.confirm))
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = { onShownForStartDateToggled(null) }) {
-                        Text(text = stringResource(UtilsStringR.cancel))
-                    }
-                },
-                modifier = Modifier.fillMaxSize(),
-            ) {
-                DatePicker(datePickerState)
             }
         }
     }
@@ -1120,141 +1078,12 @@ object AnimeMediaFilterOptionsBottomPanel {
         onRequestDatePicker: (forStart: Boolean) -> Unit,
         onDateChange: (start: Boolean, Long?) -> Unit,
     ) {
-        val localDateUtcNow = LocalDate.now()
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
-        ) {
-            val startDate =
-                data.startDate?.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM))
-                    .orEmpty()
-            val endDate =
-                data.endDate?.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM))
-                    .orEmpty()
-
-            val startInteractionSource = remember { MutableInteractionSource() }
-            LaunchedEffect(startInteractionSource) {
-                startInteractionSource.interactions.collect {
-                    if (it is PressInteraction.Release) {
-                        onRequestDatePicker(true)
-                    }
-                }
-            }
-
-            val hasStartDate = data.startDate != null
-            val isTodayBeforeEnd = data.endDate == null || localDateUtcNow.isBefore(data.endDate)
-                    || localDateUtcNow.isEqual(data.endDate)
-            TextField(
-                value = startDate,
-                onValueChange = {},
-                readOnly = true,
-                label = if (hasStartDate) {
-                    {
-                        Text(
-                            stringResource(R.string.anime_media_filter_airing_date_start_date_label)
-                        )
-                    }
-                } else null,
-                placeholder = { Text(stringResource(R.string.anime_media_filter_airing_date_start_date_label)) },
-                trailingIcon = {
-                    if (hasStartDate || isTodayBeforeEnd) {
-                        IconButton(onClick = {
-                            onDateChange(
-                                true,
-                                if (hasStartDate) {
-                                    null
-                                } else {
-                                    LocalDate.of(
-                                        localDateUtcNow.year,
-                                        localDateUtcNow.month,
-                                        localDateUtcNow.dayOfMonth
-                                    )
-                                        .atStartOfDay(ZoneOffset.UTC)
-                                        .toInstant()
-                                        .toEpochMilli()
-                                }
-                            )
-                        }) {
-                            Icon(
-                                imageVector = if (hasStartDate) {
-                                    Icons.Filled.Clear
-                                } else {
-                                    Icons.Filled.CalendarToday
-                                },
-                                contentDescription = stringResource(
-                                    R.string.anime_media_filter_airing_date_today_content_description
-                                ),
-                            )
-                        }
-                    }
-                },
-                interactionSource = startInteractionSource,
-                modifier = Modifier
-                    .weight(1f),
-            )
-
-            val endInteractionSource = remember { MutableInteractionSource() }
-            LaunchedEffect(endInteractionSource) {
-                endInteractionSource.interactions.collect {
-                    if (it is PressInteraction.Release) {
-                        onRequestDatePicker(false)
-                    }
-                }
-            }
-
-            val hasEndDate = data.endDate != null
-            val isTodayAfterStart =
-                data.startDate == null || localDateUtcNow.isAfter(data.startDate)
-                        || localDateUtcNow.isEqual(data.startDate)
-            TextField(
-                value = endDate,
-                onValueChange = {},
-                readOnly = true,
-                label = if (hasEndDate) {
-                    {
-                        Text(
-                            stringResource(R.string.anime_media_filter_airing_date_end_date_label)
-                        )
-                    }
-                } else null,
-                placeholder = { Text(stringResource(R.string.anime_media_filter_airing_date_end_date_label)) },
-                trailingIcon = {
-                    if (hasEndDate || isTodayAfterStart) {
-                        IconButton(onClick = {
-                            onDateChange(
-                                false,
-                                if (hasEndDate) {
-                                    null
-                                } else {
-                                    LocalDate.of(
-                                        localDateUtcNow.year,
-                                        localDateUtcNow.month,
-                                        localDateUtcNow.dayOfMonth
-                                    )
-                                        .atStartOfDay(ZoneOffset.UTC)
-                                        .toInstant()
-                                        .toEpochMilli()
-                                }
-                            )
-                        }) {
-                            Icon(
-                                imageVector = if (hasEndDate) {
-                                    Icons.Filled.Clear
-                                } else {
-                                    Icons.Filled.CalendarToday
-                                },
-                                contentDescription = stringResource(
-                                    R.string.anime_media_filter_airing_date_today_content_description
-                                ),
-                            )
-                        }
-                    }
-                },
-                interactionSource = endInteractionSource,
-                modifier = Modifier
-                    .weight(1f),
-            )
-        }
+        StartEndDateRow(
+            startDate = data.startDate,
+            endDate = data.endDate,
+            onRequestDatePicker = onRequestDatePicker,
+            onDateChange = onDateChange,
+        )
     }
 
     @Composable

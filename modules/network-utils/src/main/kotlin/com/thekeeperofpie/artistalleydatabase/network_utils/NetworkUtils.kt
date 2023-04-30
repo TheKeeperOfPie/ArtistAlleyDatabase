@@ -9,7 +9,7 @@ fun OkHttpClient.Builder.addLoggingInterceptors(
     networkSettings: NetworkSettings,
 ) = apply {
     if (BuildConfig.DEBUG) {
-        addNetworkInterceptor(HttpLoggingInterceptor {
+        addInterceptor(HttpLoggingInterceptor {
             Log.d(tag, "OkHttp request: $it")
         }.apply {
             level = when (networkSettings.networkLoggingLevel.value) {

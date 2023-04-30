@@ -10,24 +10,33 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.anilist.MediaDetailsQuery
+import com.anilist.fragment.MediaDetailsListEntry
 import com.anilist.type.MediaType
+import com.hoc081098.flowext.startWith
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AppMediaPlayer
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.media.edit.AnimeMediaEditProxy
 import com.thekeeperofpie.artistalleydatabase.animethemes.AnimeThemesApi
 import com.thekeeperofpie.artistalleydatabase.animethemes.AnimeThemesUtils
 import com.thekeeperofpie.artistalleydatabase.animethemes.models.AnimeTheme
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDao
 import com.thekeeperofpie.artistalleydatabase.cds.grid.CdEntryGridModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 @HiltViewModel
 class AnimeMediaDetailsViewModel @Inject constructor(
@@ -53,11 +62,23 @@ class AnimeMediaDetailsViewModel @Inject constructor(
 
     var trailerPlaybackPosition = 0f
 
+    var listEntry = MutableStateFlow<MediaDetailsListEntry?>(null)
+
     private val animeSongStates = MutableStateFlow(emptyMap<String, AnimeSongState>())
 
     fun initialize(mediaId: String) {
         if (::mediaId.isInitialized) return
         this.mediaId = mediaId
+
+        viewModelScope.launch(CustomDispatchers.IO) {
+            media.map { it?.mediaListEntry }
+                .flatMapLatest {
+                    AnimeMediaEditProxy.editResults
+                        .filter { ::mediaId.isInitialized && it?.mediaId?.toString() == mediaId }
+                        .startWith(it)
+                }
+                .collectLatest(listEntry::emit)
+        }
 
         viewModelScope.launch(CustomDispatchers.IO) {
             loading.value = true

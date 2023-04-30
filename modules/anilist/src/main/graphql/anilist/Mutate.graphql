@@ -1,0 +1,39 @@
+mutation SaveMediaEntryEdit(
+    $id: Int,
+    $mediaId: Int!,
+    $status: MediaListStatus,
+    $scoreRaw: Int,
+    $progress: Int,
+    $progressVolumes: Int,
+    $repeat: Int,
+    $priority: Int,
+    $private: Boolean,
+    $notes: String,
+    $startedAt: FuzzyDateInput,
+    $completedAt: FuzzyDateInput,
+    $hiddenFromStatusLists: Boolean,
+) {
+    SaveMediaListEntry(
+        id: $id,
+        mediaId: $mediaId,
+        status: $status,
+        scoreRaw: $scoreRaw,
+        progress: $progress,
+        progressVolumes: $progressVolumes,
+        repeat: $repeat,
+        priority: $priority,
+        private: $private,
+        notes: $notes,
+        startedAt: $startedAt,
+        completedAt: $completedAt,
+        hiddenFromStatusLists: $hiddenFromStatusLists,
+    ) {
+        ...MediaDetailsListEntry
+    }
+}
+
+mutation DeleteMediaEntry($id: Int!) {
+    DeleteMediaListEntry(id: $id) {
+        deleted
+    }
+}

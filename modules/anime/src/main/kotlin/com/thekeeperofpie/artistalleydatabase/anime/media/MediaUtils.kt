@@ -91,6 +91,21 @@ object MediaUtils {
         else -> R.string.anime_media_status_unknown
     }
 
+    fun MediaListStatus?.toTextRes(anime: Boolean) = when (this) {
+        MediaListStatus.CURRENT -> if (anime) {
+            R.string.anime_media_list_status_current_anime
+        } else {
+            R.string.anime_media_list_status_current_not_anime
+        }
+        MediaListStatus.PLANNING -> R.string.anime_media_list_status_planning
+        MediaListStatus.COMPLETED -> R.string.anime_media_list_status_completed
+        MediaListStatus.DROPPED -> R.string.anime_media_list_status_dropped
+        MediaListStatus.PAUSED -> R.string.anime_media_list_status_paused
+        MediaListStatus.REPEATING -> R.string.anime_media_list_status_repeating
+        MediaListStatus.UNKNOWN__ -> R.string.anime_media_list_status_unknown
+        null -> R.string.anime_media_list_status_none
+    }
+
     fun MediaFormat?.toTextRes() = when (this) {
         MediaFormat.TV -> R.string.anime_media_format_tv
         MediaFormat.TV_SHORT -> R.string.anime_media_format_tv_short

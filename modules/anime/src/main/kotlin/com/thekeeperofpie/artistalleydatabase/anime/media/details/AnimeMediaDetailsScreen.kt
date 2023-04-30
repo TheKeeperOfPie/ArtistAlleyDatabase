@@ -38,12 +38,21 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Bookmark
+import androidx.compose.material.icons.filled.CheckBox
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.ImageNotSupported
+import androidx.compose.material.icons.filled.MenuBook
+import androidx.compose.material.icons.filled.Monitor
 import androidx.compose.material.icons.filled.OpenInBrowser
+import androidx.compose.material.icons.filled.PauseCircle
 import androidx.compose.material.icons.filled.PauseCircleOutline
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PlayCircleOutline
+import androidx.compose.material.icons.filled.Repeat
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.filled.WatchLater
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -51,6 +60,8 @@ import androidx.compose.material3.Divider
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
@@ -105,10 +116,12 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import coil.size.Dimension
 import com.anilist.MediaDetailsQuery.Data.Media
+import com.anilist.fragment.MediaDetailsListEntry
 import com.anilist.type.ExternalLinkType
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaRankType
 import com.anilist.type.MediaRelation
+import com.anilist.type.MediaType
 import com.neovisionaries.i18n.CountryCode
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
@@ -203,6 +216,8 @@ object AnimeMediaDetailsScreen {
         onMediaClicked: (AnimeMediaListRow.Entry) -> Unit = {},
         trailerPlaybackPosition: () -> Float,
         onTrailerPlaybackPositionUpdate: (Float) -> Unit,
+        listEntry: @Composable () -> MediaDetailsListEntry?,
+        onClickEditEntry: () -> Unit,
         errorRes: @Composable () -> Pair<Int, Exception?>? = { null },
         onErrorDismiss: () -> Unit = {},
     ) {
@@ -234,6 +249,100 @@ object AnimeMediaDetailsScreen {
                     errorRes()?.second,
                     onErrorDismiss = onErrorDismiss
                 )
+            },
+            floatingActionButton = {
+                val entry = entry()
+                if (entry != null) {
+                    val media = entry.media
+                    val listEntry = listEntry()
+
+                    val expanded by remember {
+                        derivedStateOf { scrollBehavior.state.collapsedFraction == 0f }
+                    }
+
+                    ExtendedFloatingActionButton(
+                        text = {
+                            when (listEntry?.status) {
+                                MediaListStatus.CURRENT -> {
+                                    if (media.type == MediaType.ANIME) {
+                                        stringResource(
+                                            R.string.anime_media_details_fab_user_status_current_anime,
+                                            listEntry.progress ?: 0,
+                                            media.episodes ?: 1,
+                                        )
+                                    } else {
+                                        stringResource(
+                                            R.string.anime_media_details_fab_user_status_current_not_anime,
+                                            listEntry.progressVolumes ?: 0,
+                                            media.volumes ?: 1,
+                                        )
+                                    }
+                                }
+                                MediaListStatus.PLANNING -> stringResource(
+                                    R.string.anime_media_details_fab_user_status_planning
+                                )
+                                MediaListStatus.COMPLETED -> stringResource(
+                                    // TODO: Include rating in completed text
+                                    R.string.anime_media_details_fab_user_status_completed
+                                )
+                                MediaListStatus.DROPPED -> stringResource(
+                                    R.string.anime_media_details_fab_user_status_dropped,
+                                    listEntry.progress ?: listEntry.progressVolumes ?: 0,
+                                    media.episodes ?: media.volumes ?: 1,
+                                )
+                                MediaListStatus.PAUSED -> stringResource(
+                                    R.string.anime_media_details_fab_user_status_paused,
+                                    listEntry.progress ?: listEntry.progressVolumes ?: 0,
+                                    media.episodes ?: media.volumes ?: 1,
+                                )
+                                MediaListStatus.REPEATING -> stringResource(
+                                    R.string.anime_media_details_fab_user_status_repeating,
+                                    listEntry.progress ?: listEntry.progressVolumes ?: 0,
+                                    media.episodes ?: media.volumes ?: 1,
+                                )
+                                MediaListStatus.UNKNOWN__, null -> stringResource(
+                                    R.string.anime_media_details_fab_user_status_unknown
+                                )
+                            }.let {
+                                Text(it)
+                            }
+                        },
+                        icon = {
+                            when (listEntry?.status) {
+                                MediaListStatus.CURRENT -> if (media.type == MediaType.ANIME) {
+                                    Icons.Filled.Monitor to R.string.anime_media_details_fab_user_status_current_anime_icon_content_description
+                                } else {
+                                    Icons.Filled.MenuBook to R.string.anime_media_details_fab_user_status_current_not_anime_icon_content_description
+                                }
+                                MediaListStatus.PLANNING -> if (media.type == MediaType.ANIME) {
+                                    Icons.Filled.WatchLater
+                                } else {
+                                    Icons.Filled.Bookmark
+                                } to R.string.anime_media_details_fab_user_status_planning_icon_content_description
+                                MediaListStatus.COMPLETED -> Icons.Filled.CheckBox to
+                                        R.string.anime_media_details_fab_user_status_completed_icon_content_description
+                                MediaListStatus.DROPPED -> Icons.Filled.Delete to
+                                        R.string.anime_media_details_fab_user_status_dropped_icon_content_description
+                                MediaListStatus.PAUSED -> Icons.Filled.PauseCircle to
+                                        R.string.anime_media_details_fab_user_status_paused_icon_content_description
+                                MediaListStatus.REPEATING -> Icons.Filled.Repeat to
+                                        R.string.anime_media_details_fab_user_status_repeating_icon_content_description
+                                MediaListStatus.UNKNOWN__, null -> Icons.Filled.Edit to
+                                        R.string.anime_media_details_fab_user_status_edit_icon_content_description
+                            }.let { (vector, contentDescription) ->
+                                Icon(
+                                    imageVector = vector,
+                                    contentDescription = stringResource(contentDescription),
+                                )
+                            }
+                        },
+                        expanded = listEntry?.status
+                            ?.takeUnless { it == MediaListStatus.UNKNOWN__ }
+                            ?.takeIf { expanded } != null,
+                        containerColor = color() ?: FloatingActionButtonDefaults.containerColor,
+                        onClick = onClickEditEntry,
+                    )
+                }
             },
             modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
         ) {
