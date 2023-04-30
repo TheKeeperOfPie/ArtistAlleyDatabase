@@ -1,27 +1,26 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media.edit
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import com.anilist.type.MediaListStatus
-import com.anilist.type.MediaType
 import java.time.LocalDate
 
-data class MediaEditData(
-    val id: String?,
-    val mediaId: String,
-    val title: String,
-    val image: String?,
-    val type: MediaType?,
-    val status: MediaListStatus?,
-    val scoreRaw: Int?,
-    val progress: Int?,
-    val progressMax: Int,
-    val repeat: Int?,
-    val priority: Int?,
-    val private: Boolean,
-    val startedAt: LocalDate?,
-    val completedAt: LocalDate?,
-    val updatedAt: Long?,
-    val createdAt: Long?,
+class MediaEditData {
+    var status by mutableStateOf<MediaListStatus?>(null)
+    var score by mutableStateOf("")
+    var progress by mutableStateOf("")
+    var repeat by mutableStateOf("")
+    var startDate by mutableStateOf<LocalDate?>(null)
+    var endDate by mutableStateOf<LocalDate?>(null)
+    var priority by mutableStateOf("")
+    var private by mutableStateOf(false)
+    var updatedAt by mutableStateOf<Long?>(null)
+    var createdAt by mutableStateOf<Long?>(null)
 
-    // TODO: Notes, too much data to pass through navigation params, need to fetch async
-    val notes: String? = null,
-)
+    var showing by mutableStateOf(false)
+    var deleting by mutableStateOf(false)
+    var saving by mutableStateOf(false)
+    var errorRes by mutableStateOf<Pair<Int, Exception?>?>(null)
+}
+

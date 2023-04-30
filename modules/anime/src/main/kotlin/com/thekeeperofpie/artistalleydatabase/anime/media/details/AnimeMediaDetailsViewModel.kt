@@ -12,14 +12,15 @@ import androidx.lifecycle.viewModelScope
 import com.anilist.MediaDetailsQuery
 import com.anilist.fragment.MediaDetailsListEntry
 import com.anilist.type.MediaType
-import com.hoc081098.flowext.startWith
+import com.anilist.type.ScoreFormat
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AppMediaPlayer
 import com.thekeeperofpie.artistalleydatabase.anime.R
-import com.thekeeperofpie.artistalleydatabase.anime.media.edit.AnimeMediaEditProxy
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
+import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditData
 import com.thekeeperofpie.artistalleydatabase.animethemes.AnimeThemesApi
 import com.thekeeperofpie.artistalleydatabase.animethemes.AnimeThemesUtils
 import com.thekeeperofpie.artistalleydatabase.animethemes.models.AnimeTheme
@@ -29,11 +30,14 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.time.Instant
+import java.time.ZoneOffset
 import javax.inject.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -60,26 +64,21 @@ class AnimeMediaDetailsViewModel @Inject constructor(
     var animeSongs = MutableStateFlow<AnimeSongs?>(null)
     var cdEntries = MutableStateFlow<List<CdEntryGridModel>>(emptyList())
 
+    val scoreFormat = aniListApi.authedUser
+        .map { it?.mediaListOptions?.scoreFormat ?: ScoreFormat.POINT_100 }
+        .distinctUntilChanged()
+
     var trailerPlaybackPosition = 0f
 
     var listEntry = MutableStateFlow<MediaDetailsListEntry?>(null)
 
     private val animeSongStates = MutableStateFlow(emptyMap<String, AnimeSongState>())
 
+    val editData = MediaEditData()
+
     fun initialize(mediaId: String) {
         if (::mediaId.isInitialized) return
         this.mediaId = mediaId
-
-        viewModelScope.launch(CustomDispatchers.IO) {
-            media.map { it?.mediaListEntry }
-                .flatMapLatest {
-                    AnimeMediaEditProxy.editResults
-                        .filter { ::mediaId.isInitialized && it?.first == mediaId }
-                        .map { it?.second }
-                        .startWith(it)
-                }
-                .collectLatest(listEntry::emit)
-        }
 
         viewModelScope.launch(CustomDispatchers.IO) {
             loading.value = true
@@ -90,6 +89,8 @@ class AnimeMediaDetailsViewModel @Inject constructor(
             } finally {
                 loading.value = false
             }
+
+            initializeListEntry(media.value?.mediaListEntry)
 
             cdEntries.value = cdEntryDao.searchSeriesByMediaId(appJson, mediaId)
                 .map { CdEntryGridModel.buildFromEntry(application, it) }
@@ -135,6 +136,37 @@ class AnimeMediaDetailsViewModel @Inject constructor(
                 }
             }
         }
+
+        viewModelScope.launch(CustomDispatchers.Main) {
+            combine(listEntry, scoreFormat, ::Pair)
+                .collectLatest { (listEntry, format) ->
+                    initializeListEntry(listEntry)
+
+                    editData.score = listEntry?.score?.toInt()?.let {
+                        when (format) {
+                            ScoreFormat.POINT_10_DECIMAL -> String.format("%.1f", it / 10f)
+                            ScoreFormat.POINT_10 -> (it / 10).toString()
+                            ScoreFormat.POINT_100,
+                            ScoreFormat.POINT_5,
+                            ScoreFormat.POINT_3,
+                            ScoreFormat.UNKNOWN__ -> it.toString()
+                        }
+                    }.orEmpty()
+                }
+        }
+    }
+
+    private fun initializeListEntry(listEntry: MediaDetailsListEntry?) {
+        this.listEntry.value = listEntry
+        editData.status = listEntry?.status
+        editData.progress = listEntry?.progress?.toString().orEmpty()
+        editData.repeat = listEntry?.repeat?.toString().orEmpty()
+        editData.startDate = MediaUtils.parseLocalDate(listEntry?.startedAt)
+        editData.endDate = MediaUtils.parseLocalDate(listEntry?.completedAt)
+        editData.priority = listEntry?.priority?.toString().orEmpty()
+        editData.private = listEntry?.private ?: false
+        editData.updatedAt = listEntry?.updatedAt?.toLong()
+        editData.createdAt = listEntry?.createdAt?.toLong()
     }
 
     // TODO: Something better than exact string matching
@@ -236,6 +268,154 @@ class AnimeMediaDetailsViewModel @Inject constructor(
     fun animeSongsCollapseAll() {
         animeSongStates.value.forEach { it.value.setExpanded(false) }
         mediaPlayer.pause(null)
+    }
+
+    fun onDateChange(start: Boolean, selectedMillis: Long?) {
+        // Selected value is in UTC
+        val selectedDate = selectedMillis?.let {
+            Instant.ofEpochMilli(it)
+                .atZone(ZoneOffset.UTC)
+                .toLocalDate()
+        }
+
+        if (start) {
+            editData.startDate = selectedDate
+        } else {
+            editData.endDate = selectedDate
+        }
+    }
+
+    fun onClickDelete() {
+        if (editData.saving || editData.deleting) return
+        editData.deleting = true
+        viewModelScope.launch(CustomDispatchers.IO) {
+            try {
+                aniListApi.deleteMediaListEntry(listEntry.value?.id?.toString()!!)
+                withContext(CustomDispatchers.Main) {
+                    initializeListEntry(null)
+                    editData.deleting = false
+                    editData.showing = false
+                }
+            } catch (e: Exception) {
+                withContext(CustomDispatchers.Main) {
+                    editData.deleting = false
+                    editData.errorRes = R.string.anime_media_edit_error_deleting to e
+                }
+            }
+        }
+    }
+
+    fun onClickSave() {
+        if (editData.status == null) {
+            editData.saving = false
+            editData.errorRes = R.string.anime_media_edit_error_invalid_status to null
+            return
+        }
+
+        if (editData.saving || editData.deleting) return
+        editData.saving = true
+
+        // Read values on main thread before entering coroutine
+        val score = editData.score
+        val progress = editData.progress
+        val repeat = editData.repeat
+        val priority = editData.priority
+        val status = editData.status
+        val private = editData.private
+        val startDate = editData.startDate
+        val endDate = editData.endDate
+
+        viewModelScope.launch(CustomDispatchers.IO) {
+            fun validateFieldAsInt(field: String): Int? {
+                if (field.isBlank()) return 0
+                return field.toIntOrNull()
+            }
+
+            val scoreRaw = if (score.isBlank()) {
+                0
+            } else when (scoreFormat.first()) {
+                ScoreFormat.POINT_10_DECIMAL -> {
+                    val scoreAsFloat = score.toFloatOrNull()?.let {
+                        (it * 10).takeIf { it < 101f }
+                    }
+                    if (scoreAsFloat == null) {
+                        withContext(CustomDispatchers.Main) {
+                            editData.saving = false
+                            editData.errorRes =
+                                R.string.anime_media_edit_error_invalid_score to null
+                        }
+                        return@launch
+                    } else scoreAsFloat.toInt().coerceAtMost(100)
+                }
+                ScoreFormat.POINT_100,
+                ScoreFormat.POINT_10,
+                ScoreFormat.POINT_5,
+                ScoreFormat.POINT_3,
+                ScoreFormat.UNKNOWN__ -> validateFieldAsInt(score)
+            }
+
+            if (scoreRaw == null) {
+                withContext(CustomDispatchers.Main) {
+                    editData.saving = false
+                    editData.errorRes = R.string.anime_media_edit_error_invalid_score to null
+                }
+                return@launch
+            }
+
+            val progressAsInt = validateFieldAsInt(progress)
+            if (progressAsInt == null) {
+                withContext(CustomDispatchers.Main) {
+                    editData.saving = false
+                    editData.errorRes = R.string.anime_media_edit_error_invalid_progress to null
+                }
+                return@launch
+            }
+
+            val repeatAsInt = validateFieldAsInt(repeat)
+            if (repeatAsInt == null) {
+                withContext(CustomDispatchers.Main) {
+                    editData.saving = false
+                    editData.errorRes = R.string.anime_media_edit_error_invalid_repeat to null
+                }
+                return@launch
+            }
+
+            val priorityAsInt = validateFieldAsInt(priority)
+            if (priorityAsInt == null) {
+                withContext(CustomDispatchers.Main) {
+                    editData.saving = false
+                    editData.errorRes = R.string.anime_media_edit_error_invalid_priority to null
+                }
+                return@launch
+            }
+
+            try {
+                val result = aniListApi.saveMediaListEntry(
+                    id = listEntry.value?.id?.toString(),
+                    mediaId = mediaId,
+                    type = media.value?.type,
+                    status = status,
+                    scoreRaw = scoreRaw,
+                    progress = progressAsInt,
+                    repeat = repeatAsInt,
+                    priority = priorityAsInt,
+                    private = private,
+                    startedAt = startDate,
+                    completedAt = endDate,
+                    hiddenFromStatusLists = null,
+                )
+                withContext(CustomDispatchers.Main) {
+                    editData.saving = false
+                    editData.showing = false
+                    initializeListEntry(result)
+                }
+            } catch (e: Exception) {
+                withContext(CustomDispatchers.Main) {
+                    editData.saving = false
+                    editData.errorRes = R.string.anime_media_edit_error_saving to e
+                }
+            }
+        }
     }
 
     data class AnimeSongs(

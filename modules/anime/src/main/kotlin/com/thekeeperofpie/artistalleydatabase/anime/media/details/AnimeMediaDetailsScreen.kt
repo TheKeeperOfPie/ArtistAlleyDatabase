@@ -2,10 +2,14 @@ package com.thekeeperofpie.artistalleydatabase.anime.media.details
 
 import android.graphics.drawable.BitmapDrawable
 import android.view.View
+import androidx.activity.compose.BackHandler
 import androidx.annotation.StringRes
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.animateIntAsState
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -18,6 +22,7 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -35,6 +40,7 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -54,6 +60,7 @@ import androidx.compose.material.icons.filled.Repeat
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.filled.WatchLater
 import androidx.compose.material3.AssistChipDefaults
+import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
@@ -67,11 +74,15 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberBottomSheetScaffoldState
+import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -122,6 +133,7 @@ import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaRankType
 import com.anilist.type.MediaRelation
 import com.anilist.type.MediaType
+import com.anilist.type.ScoreFormat
 import com.neovisionaries.i18n.CountryCode
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
@@ -138,6 +150,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaTagEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toColor
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
+import com.thekeeperofpie.artistalleydatabase.anime.media.edit.AnimeMediaEditBottomSheet
+import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditData
 import com.thekeeperofpie.artistalleydatabase.animethemes.models.AnimeTheme
 import com.thekeeperofpie.artistalleydatabase.cds.grid.CdEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.compose.AccelerateEasing
@@ -160,6 +174,7 @@ import kotlinx.coroutines.withContext
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.math.roundToInt
 
+@Suppress("NAME_SHADOWING")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 object AnimeMediaDetailsScreen {
 
@@ -217,13 +232,55 @@ object AnimeMediaDetailsScreen {
         trailerPlaybackPosition: () -> Float,
         onTrailerPlaybackPositionUpdate: (Float) -> Unit,
         listEntry: @Composable () -> MediaDetailsListEntry?,
-        onClickEditEntry: () -> Unit,
+        editData: MediaEditData,
+        scoreFormat: @Composable () -> ScoreFormat,
+        onDateChange: (start: Boolean, Long?) -> Unit,
+        onClickDelete: () -> Unit,
+        onClickSave: () -> Unit,
         errorRes: @Composable () -> Pair<Int, Exception?>? = { null },
         onErrorDismiss: () -> Unit = {},
     ) {
+        val bottomSheetScaffoldState = rememberBottomSheetScaffoldState(
+            bottomSheetState = rememberStandardBottomSheetState(
+                initialValue = SheetValue.Hidden,
+                skipHiddenState = false,
+            )
+        )
+
+        val bottomSheetShowing = editData.showing
+        LaunchedEffect(bottomSheetShowing) {
+            launch {
+                if (bottomSheetShowing) {
+                    bottomSheetScaffoldState.bottomSheetState.expand()
+                } else {
+                    bottomSheetScaffoldState.bottomSheetState.hide()
+                }
+            }
+        }
+
+        val currentValue = bottomSheetScaffoldState.bottomSheetState.currentValue
+        LaunchedEffect(currentValue) {
+            launch {
+                if (bottomSheetScaffoldState.bottomSheetState.currentValue == SheetValue.Hidden) {
+                    editData.showing = false
+                }
+            }
+        }
+
+        val scope = rememberCoroutineScope()
+        BackHandler(
+            enabled = bottomSheetScaffoldState.bottomSheetState.currentValue != SheetValue.Hidden
+        ) {
+            scope.launch {
+                bottomSheetScaffoldState.bottomSheetState.hide()
+            }
+        }
+
         val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
-        @Suppress("NAME_SHADOWING")
-        Scaffold(
+        val lazyListState = rememberLazyListState()
+        BottomSheetScaffold(
+            scaffoldState = bottomSheetScaffoldState,
+            sheetPeekHeight = 0.dp,
             topBar = {
                 CollapsingToolbar(
                     maxHeight = 356.dp,
@@ -244,157 +301,209 @@ object AnimeMediaDetailsScreen {
                 }
             },
             snackbarHost = {
-                SnackbarErrorText(
-                    errorRes()?.first,
-                    errorRes()?.second,
-                    onErrorDismiss = onErrorDismiss
-                )
-            },
-            floatingActionButton = {
-                val entry = entry()
-                if (entry != null) {
-                    val media = entry.media
-                    val listEntry = listEntry()
-
-                    val expanded by remember {
-                        derivedStateOf { scrollBehavior.state.collapsedFraction == 0f }
-                    }
-
-                    ExtendedFloatingActionButton(
-                        text = {
-                            when (listEntry?.status) {
-                                MediaListStatus.CURRENT -> {
-                                    if (media.type == MediaType.ANIME) {
-                                        stringResource(
-                                            R.string.anime_media_details_fab_user_status_current_anime,
-                                            listEntry.progress ?: 0,
-                                            media.episodes ?: 1,
-                                        )
-                                    } else {
-                                        stringResource(
-                                            R.string.anime_media_details_fab_user_status_current_not_anime,
-                                            listEntry.progressVolumes ?: 0,
-                                            media.volumes ?: 1,
-                                        )
-                                    }
-                                }
-                                MediaListStatus.PLANNING -> stringResource(
-                                    R.string.anime_media_details_fab_user_status_planning
-                                )
-                                MediaListStatus.COMPLETED -> stringResource(
-                                    // TODO: Include rating in completed text
-                                    R.string.anime_media_details_fab_user_status_completed
-                                )
-                                MediaListStatus.DROPPED -> stringResource(
-                                    R.string.anime_media_details_fab_user_status_dropped,
-                                    listEntry.progress ?: listEntry.progressVolumes ?: 0,
-                                    media.episodes ?: media.volumes ?: 1,
-                                )
-                                MediaListStatus.PAUSED -> stringResource(
-                                    R.string.anime_media_details_fab_user_status_paused,
-                                    listEntry.progress ?: listEntry.progressVolumes ?: 0,
-                                    media.episodes ?: media.volumes ?: 1,
-                                )
-                                MediaListStatus.REPEATING -> stringResource(
-                                    R.string.anime_media_details_fab_user_status_repeating,
-                                    listEntry.progress ?: listEntry.progressVolumes ?: 0,
-                                    media.episodes ?: media.volumes ?: 1,
-                                )
-                                MediaListStatus.UNKNOWN__, null -> stringResource(
-                                    R.string.anime_media_details_fab_user_status_unknown
-                                )
-                            }.let {
-                                Text(it)
-                            }
-                        },
-                        icon = {
-                            when (listEntry?.status) {
-                                MediaListStatus.CURRENT -> if (media.type == MediaType.ANIME) {
-                                    Icons.Filled.Monitor to R.string.anime_media_details_fab_user_status_current_anime_icon_content_description
-                                } else {
-                                    Icons.Filled.MenuBook to R.string.anime_media_details_fab_user_status_current_not_anime_icon_content_description
-                                }
-                                MediaListStatus.PLANNING -> if (media.type == MediaType.ANIME) {
-                                    Icons.Filled.WatchLater
-                                } else {
-                                    Icons.Filled.Bookmark
-                                } to R.string.anime_media_details_fab_user_status_planning_icon_content_description
-                                MediaListStatus.COMPLETED -> Icons.Filled.CheckBox to
-                                        R.string.anime_media_details_fab_user_status_completed_icon_content_description
-                                MediaListStatus.DROPPED -> Icons.Filled.Delete to
-                                        R.string.anime_media_details_fab_user_status_dropped_icon_content_description
-                                MediaListStatus.PAUSED -> Icons.Filled.PauseCircle to
-                                        R.string.anime_media_details_fab_user_status_paused_icon_content_description
-                                MediaListStatus.REPEATING -> Icons.Filled.Repeat to
-                                        R.string.anime_media_details_fab_user_status_repeating_icon_content_description
-                                MediaListStatus.UNKNOWN__, null -> Icons.Filled.Edit to
-                                        R.string.anime_media_details_fab_user_status_edit_icon_content_description
-                            }.let { (vector, contentDescription) ->
-                                Icon(
-                                    imageVector = vector,
-                                    contentDescription = stringResource(contentDescription),
-                                )
-                            }
-                        },
-                        expanded = listEntry?.status
-                            ?.takeUnless { it == MediaListStatus.UNKNOWN__ }
-                            ?.takeIf { expanded } != null,
-                        containerColor = color() ?: FloatingActionButtonDefaults.containerColor,
-                        onClick = onClickEditEntry,
+                val errorRes = errorRes()
+                if (errorRes != null) {
+                    SnackbarErrorText(
+                        errorRes.first,
+                        errorRes.second,
+                        onErrorDismiss = onErrorDismiss
                     )
+                } else if (editData.errorRes != null) {
+                    SnackbarErrorText(
+                        editData.errorRes?.first,
+                        editData.errorRes?.second,
+                        onErrorDismiss = { editData.errorRes = null },
+                    )
+                } else {
+                    // Bottom sheet requires at least one measurable component
+                    Spacer(modifier = Modifier.size(0.dp))
                 }
             },
-            modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
-        ) {
-            val loading = loading()
-            val entry = entry()
-            val animeSongs = animeSongs()
-            val cdEntries = cdEntries()
-
-            var relationsExpanded by remember { mutableStateOf(false) }
-            var recommendationsExpanded by remember { mutableStateOf(false) }
-            var songsExpanded by remember { mutableStateOf(false) }
-            var streamingEpisodesExpanded by remember { mutableStateOf(false) }
-            var streamingEpisodesHidden by remember { mutableStateOf(true) }
-
-            LazyColumn(
-                contentPadding = PaddingValues(bottom = 16.dp),
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(it)
-            ) {
-                content(
-                    entry = entry,
-                    loading = loading,
-                    mediaPlayer = mediaPlayer,
-                    animeSongs = animeSongs,
-                    animeSongState = animeSongState,
-                    onAnimeThemePlayClick = onAnimeSongPlayClick,
-                    onAnimeSongProgressUpdate = onAnimeSongProgressUpdate,
-                    onAnimeSongExpandedToggle = onAnimeSongExpandedToggle,
-                    cdEntries = cdEntries,
-                    onGenreClicked = onGenreClicked,
-                    onGenreLongClicked = onGenreLongClicked,
-                    onCharacterClicked = onCharacterClicked,
-                    onCharacterLongClicked = onCharacterLongClicked,
-                    onStaffClicked = onStaffClicked,
-                    onStaffLongClicked = onStaffLongClicked,
-                    onTagClicked = onTagClicked,
-                    onTagLongClicked = onTagLongClicked,
-                    onMediaClicked = onMediaClicked,
-                    relationsExpanded = { relationsExpanded },
-                    onRelationsExpandedToggled = { relationsExpanded = it },
-                    recommendationsExpanded = { recommendationsExpanded },
-                    onRecommendationsExpandedToggled = { recommendationsExpanded = it },
-                    songsExpanded = { songsExpanded },
-                    onSongsExpandedToggled = { songsExpanded = it },
-                    streamingEpisodesExpanded = { streamingEpisodesExpanded },
-                    onStreamingEpisodesExpandedToggled = { streamingEpisodesExpanded = it },
-                    streamingEpisodesHidden = { streamingEpisodesHidden },
-                    onStreamingEpisodesHiddenToggled = { streamingEpisodesHidden = it },
-                    trailerPlaybackPosition = trailerPlaybackPosition,
-                    onTrailerPlaybackPositionUpdate = onTrailerPlaybackPositionUpdate,
+            sheetContent = {
+                AnimeMediaEditBottomSheet(
+                    editData = editData,
+                    id = { listEntry()?.id?.toString() },
+                    type = { entry()?.media?.type },
+                    progressMax = { entry()?.media?.run { episodes ?: volumes } ?: 0 },
+                    scoreFormat = scoreFormat,
+                    onDateChange = onDateChange,
+                    onClickDelete = onClickDelete,
+                    onClickSave = onClickSave,
                 )
+            },
+        ) {
+            Scaffold(
+                floatingActionButton = {
+                    val entry = entry()
+                    if (entry != null) {
+                        val media = entry.media
+                        val listEntry = listEntry()
+
+                        val expanded by remember {
+                            derivedStateOf { scrollBehavior.state.collapsedFraction == 0f }
+                        }
+
+                        var previousIndex by remember(this) { mutableStateOf(lazyListState.firstVisibleItemIndex) }
+                        var previousScrollOffset by remember(this) { mutableStateOf(lazyListState.firstVisibleItemScrollOffset) }
+                        val showFloatingActionButton by remember(this) {
+                            derivedStateOf {
+                                if (lazyListState.firstVisibleItemIndex < 3) {
+                                    true
+                                } else if (previousIndex != lazyListState.firstVisibleItemIndex) {
+                                    previousIndex > lazyListState.firstVisibleItemIndex
+                                } else {
+                                    previousScrollOffset >= lazyListState.firstVisibleItemScrollOffset
+                                }.also {
+                                    previousIndex = lazyListState.firstVisibleItemIndex
+                                    previousScrollOffset =
+                                        lazyListState.firstVisibleItemScrollOffset
+                                }
+                            }
+                        }
+
+                        AnimatedVisibility(
+                            visible = showFloatingActionButton,
+                            enter = fadeIn(),
+                            exit = fadeOut(),
+                        ) {
+                            ExtendedFloatingActionButton(
+                                text = {
+                                    when (listEntry?.status) {
+                                        MediaListStatus.CURRENT -> {
+                                            if (media.type == MediaType.ANIME) {
+                                                stringResource(
+                                                    R.string.anime_media_details_fab_user_status_current_anime,
+                                                    listEntry.progress ?: 0,
+                                                    media.episodes ?: 1,
+                                                )
+                                            } else {
+                                                stringResource(
+                                                    R.string.anime_media_details_fab_user_status_current_not_anime,
+                                                    listEntry.progressVolumes ?: 0,
+                                                    media.volumes ?: 1,
+                                                )
+                                            }
+                                        }
+                                        MediaListStatus.PLANNING -> stringResource(
+                                            R.string.anime_media_details_fab_user_status_planning
+                                        )
+                                        MediaListStatus.COMPLETED -> stringResource(
+                                            // TODO: Include rating in completed text
+                                            R.string.anime_media_details_fab_user_status_completed
+                                        )
+                                        MediaListStatus.DROPPED -> stringResource(
+                                            R.string.anime_media_details_fab_user_status_dropped,
+                                            listEntry.progress ?: listEntry.progressVolumes ?: 0,
+                                            media.episodes ?: media.volumes ?: 1,
+                                        )
+                                        MediaListStatus.PAUSED -> stringResource(
+                                            R.string.anime_media_details_fab_user_status_paused,
+                                            listEntry.progress ?: listEntry.progressVolumes ?: 0,
+                                            media.episodes ?: media.volumes ?: 1,
+                                        )
+                                        MediaListStatus.REPEATING -> stringResource(
+                                            R.string.anime_media_details_fab_user_status_repeating,
+                                            listEntry.progress ?: listEntry.progressVolumes ?: 0,
+                                            media.episodes ?: media.volumes ?: 1,
+                                        )
+                                        MediaListStatus.UNKNOWN__, null -> stringResource(
+                                            R.string.anime_media_details_fab_user_status_unknown
+                                        )
+                                    }.let {
+                                        Text(it)
+                                    }
+                                },
+                                icon = {
+                                    when (listEntry?.status) {
+                                        MediaListStatus.CURRENT -> if (media.type == MediaType.ANIME) {
+                                            Icons.Filled.Monitor to R.string.anime_media_details_fab_user_status_current_anime_icon_content_description
+                                        } else {
+                                            Icons.Filled.MenuBook to R.string.anime_media_details_fab_user_status_current_not_anime_icon_content_description
+                                        }
+                                        MediaListStatus.PLANNING -> if (media.type == MediaType.ANIME) {
+                                            Icons.Filled.WatchLater
+                                        } else {
+                                            Icons.Filled.Bookmark
+                                        } to R.string.anime_media_details_fab_user_status_planning_icon_content_description
+                                        MediaListStatus.COMPLETED -> Icons.Filled.CheckBox to
+                                                R.string.anime_media_details_fab_user_status_completed_icon_content_description
+                                        MediaListStatus.DROPPED -> Icons.Filled.Delete to
+                                                R.string.anime_media_details_fab_user_status_dropped_icon_content_description
+                                        MediaListStatus.PAUSED -> Icons.Filled.PauseCircle to
+                                                R.string.anime_media_details_fab_user_status_paused_icon_content_description
+                                        MediaListStatus.REPEATING -> Icons.Filled.Repeat to
+                                                R.string.anime_media_details_fab_user_status_repeating_icon_content_description
+                                        MediaListStatus.UNKNOWN__, null -> Icons.Filled.Edit to
+                                                R.string.anime_media_details_fab_user_status_edit_icon_content_description
+                                    }.let { (vector, contentDescription) ->
+                                        Icon(
+                                            imageVector = vector,
+                                            contentDescription = stringResource(contentDescription),
+                                        )
+                                    }
+                                },
+                                expanded = listEntry?.status
+                                    ?.takeUnless { it == MediaListStatus.UNKNOWN__ }
+                                    ?.takeIf { expanded } != null,
+                                containerColor = color()
+                                    ?: FloatingActionButtonDefaults.containerColor,
+                                onClick = { if (showFloatingActionButton) editData.showing = true },
+                            )
+                        }
+                    }
+                },
+                modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
+            ) {
+                val loading = loading()
+                val entry = entry()
+                val animeSongs = animeSongs()
+                val cdEntries = cdEntries()
+
+                var relationsExpanded by remember { mutableStateOf(false) }
+                var recommendationsExpanded by remember { mutableStateOf(false) }
+                var songsExpanded by remember { mutableStateOf(false) }
+                var streamingEpisodesExpanded by remember { mutableStateOf(false) }
+                var streamingEpisodesHidden by remember { mutableStateOf(true) }
+                LazyColumn(
+                    state = lazyListState,
+                    contentPadding = PaddingValues(bottom = 16.dp),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(it)
+                ) {
+                    content(
+                        entry = entry,
+                        loading = loading,
+                        mediaPlayer = mediaPlayer,
+                        animeSongs = animeSongs,
+                        animeSongState = animeSongState,
+                        onAnimeThemePlayClick = onAnimeSongPlayClick,
+                        onAnimeSongProgressUpdate = onAnimeSongProgressUpdate,
+                        onAnimeSongExpandedToggle = onAnimeSongExpandedToggle,
+                        cdEntries = cdEntries,
+                        onGenreClicked = onGenreClicked,
+                        onGenreLongClicked = onGenreLongClicked,
+                        onCharacterClicked = onCharacterClicked,
+                        onCharacterLongClicked = onCharacterLongClicked,
+                        onStaffClicked = onStaffClicked,
+                        onStaffLongClicked = onStaffLongClicked,
+                        onTagClicked = onTagClicked,
+                        onTagLongClicked = onTagLongClicked,
+                        onMediaClicked = onMediaClicked,
+                        relationsExpanded = { relationsExpanded },
+                        onRelationsExpandedToggled = { relationsExpanded = it },
+                        recommendationsExpanded = { recommendationsExpanded },
+                        onRecommendationsExpandedToggled = { recommendationsExpanded = it },
+                        songsExpanded = { songsExpanded },
+                        onSongsExpandedToggled = { songsExpanded = it },
+                        streamingEpisodesExpanded = { streamingEpisodesExpanded },
+                        onStreamingEpisodesExpandedToggled = { streamingEpisodesExpanded = it },
+                        streamingEpisodesHidden = { streamingEpisodesHidden },
+                        onStreamingEpisodesHiddenToggled = { streamingEpisodesHidden = it },
+                        trailerPlaybackPosition = trailerPlaybackPosition,
+                        onTrailerPlaybackPositionUpdate = onTrailerPlaybackPositionUpdate,
+                    )
+                }
             }
         }
     }

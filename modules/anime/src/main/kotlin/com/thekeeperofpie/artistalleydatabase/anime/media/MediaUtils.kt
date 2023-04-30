@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import com.anilist.MediaDetailsQuery
+import com.anilist.fragment.MediaDetailsListEntry
 import com.anilist.type.MediaFormat
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaRelation
@@ -217,11 +218,14 @@ object MediaUtils {
         else -> null
     }
 
-    fun formatEntryDateTime(context: Context, timeInMillis: Long): String = DateUtils.formatDateTime(
-        context,
-        timeInMillis,
-        DateUtils.FORMAT_ABBREV_ALL or DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_WEEKDAY or DateUtils.FORMAT_SHOW_TIME
-    )
+    fun formatEntryDateTime(context: Context, timeInMillis: Long): String =
+        DateUtils.formatDateTime(
+            context,
+            timeInMillis,
+            DateUtils.FORMAT_ABBREV_ALL or DateUtils.FORMAT_SHOW_YEAR or
+                    DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_WEEKDAY or
+                    DateUtils.FORMAT_SHOW_TIME
+        )
 
     fun formatAiringAt(context: Context, timeInMillis: Long): String = DateUtils.formatDateTime(
         context,
@@ -275,4 +279,16 @@ object MediaUtils {
     }
 
     fun dailymotionUrl(videoId: String) = "https://www.dailymotion.com/video/$videoId"
+
+    fun parseLocalDate(startedAt: MediaDetailsListEntry.StartedAt?) =
+        startedAt?.run { parseLocalDate(year, month, day) }
+
+    fun parseLocalDate(completedAt: MediaDetailsListEntry.CompletedAt?) =
+        completedAt?.run { parseLocalDate(year, month, day) }
+
+    private fun parseLocalDate(year: Int?, month: Int?, dayOfMonth: Int?): LocalDate? {
+        return if (year != null && month != null && dayOfMonth != null) {
+            LocalDate.of(year, month, dayOfMonth)
+        } else null
+    }
 }
