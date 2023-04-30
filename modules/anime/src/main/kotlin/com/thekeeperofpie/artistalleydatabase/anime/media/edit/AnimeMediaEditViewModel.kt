@@ -39,24 +39,35 @@ class AnimeMediaEditViewModel @Inject constructor(
     val scoreFormat = aniListApi.authedUser
         .map { it?.mediaListOptions?.scoreFormat ?: ScoreFormat.POINT_100 }
 
+    var id by mutableStateOf<String?>(null)
     var status by mutableStateOf<MediaListStatus?>(null)
     var score by mutableStateOf("")
     var progress by mutableStateOf("")
     var repeat by mutableStateOf("")
     var startDate by mutableStateOf<LocalDate?>(null)
     var endDate by mutableStateOf<LocalDate?>(null)
+    var priority by mutableStateOf("")
+    var private by mutableStateOf(false)
+    var updatedAt by mutableStateOf<Long?>(null)
+    var createdAt by mutableStateOf<Long?>(null)
 
+    var deleting by mutableStateOf(false)
     var saving by mutableStateOf(false)
     var errorRes by mutableStateOf<Pair<Int, Exception?>?>(null)
 
     fun initialize(data: MediaEditData) {
         if (isInitialized) return
         initialData = data
+        id = initialData.id
         status = initialData.status
         progress = initialData.progress?.toString().orEmpty()
         repeat = initialData.repeat?.toString().orEmpty()
         startDate = initialData.startedAt
         endDate = initialData.completedAt
+        priority = initialData.priority?.toString().orEmpty()
+        private = initialData.private
+        updatedAt = initialData.updatedAt
+        createdAt = initialData.createdAt
 
         viewModelScope.launch(Dispatchers.IO) {
             scoreFormat.collectLatest { format ->
@@ -93,12 +104,41 @@ class AnimeMediaEditViewModel @Inject constructor(
         }
     }
 
+    fun onClickDelete(navController: NavController) {
+        if (saving || deleting) return
+        deleting = true
+        viewModelScope.launch(CustomDispatchers.IO) {
+            try {
+                aniListApi.deleteMediaListEntry(initialData.id!!)
+                withContext(CustomDispatchers.Main) {
+                    AnimeMediaEditProxy.editResults.value = initialData.mediaId to null
+                    navController.popBackStack()
+                }
+            } catch (e: Exception) {
+                withContext(CustomDispatchers.Main) {
+                    deleting = false
+                    errorRes = R.string.anime_media_edit_error_deleting to e
+                }
+            }
+        }
+    }
+
     fun onClickSave(navController: NavController) {
-        if (saving) return
+        if (status == null) {
+            saving = false
+            errorRes = R.string.anime_media_edit_error_invalid_status to null
+            return
+        }
+
+        if (saving || deleting) return
         saving = true
 
         viewModelScope.launch(CustomDispatchers.IO) {
-            val scoreAsInt = score.toIntOrNull()
+            fun validateFieldAsInt(field: String): Int? {
+                if (field.isBlank()) return 0
+                return field.toIntOrNull()
+            }
+
             val scoreRaw = if (score.isBlank()) {
                 0
             } else when (scoreFormat.first()) {
@@ -118,19 +158,19 @@ class AnimeMediaEditViewModel @Inject constructor(
                 ScoreFormat.POINT_10,
                 ScoreFormat.POINT_5,
                 ScoreFormat.POINT_3,
-                ScoreFormat.UNKNOWN__ -> {
-                    if (score.isNotBlank() && scoreAsInt == null) {
-                        withContext(CustomDispatchers.Main) {
-                            saving = false
-                            errorRes = R.string.anime_media_edit_error_invalid_score to null
-                        }
-                        return@launch
-                    } else scoreAsInt
-                }
+                ScoreFormat.UNKNOWN__ -> validateFieldAsInt(score)
             }
 
-            val progressAsInt = progress.toIntOrNull()
-            if (progress.isNotBlank() && progressAsInt == null) {
+            if (scoreRaw == null) {
+                withContext(CustomDispatchers.Main) {
+                    saving = false
+                    errorRes = R.string.anime_media_edit_error_invalid_score to null
+                }
+                return@launch
+            }
+
+            val progressAsInt = validateFieldAsInt(progress)
+            if (progressAsInt == null) {
                 withContext(CustomDispatchers.Main) {
                     saving = false
                     errorRes = R.string.anime_media_edit_error_invalid_progress to null
@@ -138,23 +178,41 @@ class AnimeMediaEditViewModel @Inject constructor(
                 return@launch
             }
 
+            val repeatAsInt = validateFieldAsInt(repeat)
+            if (repeatAsInt == null) {
+                withContext(CustomDispatchers.Main) {
+                    saving = false
+                    errorRes = R.string.anime_media_edit_error_invalid_repeat to null
+                }
+                return@launch
+            }
+
+            val priorityAsInt = validateFieldAsInt(priority)
+            if (priorityAsInt == null) {
+                withContext(CustomDispatchers.Main) {
+                    saving = false
+                    errorRes = R.string.anime_media_edit_error_invalid_priority to null
+                }
+                return@launch
+            }
+
             try {
-                val result = aniListApi.saveMediaEntry(
+                val result = aniListApi.saveMediaListEntry(
                     id = initialData.id,
                     mediaId = initialData.mediaId,
                     type = initialData.type,
                     status = status,
                     scoreRaw = scoreRaw,
                     progress = progressAsInt,
-                    repeat = null, // TODO
-                    priority = null,
-                    private = null,
+                    repeat = repeatAsInt,
+                    priority = priorityAsInt,
+                    private = private,
                     startedAt = startDate,
                     completedAt = endDate,
                     hiddenFromStatusLists = null,
                 )
                 withContext(CustomDispatchers.Main) {
-                    AnimeMediaEditProxy.editResults.value = result
+                    AnimeMediaEditProxy.editResults.value = initialData.mediaId to result
                     navController.popBackStack()
                 }
             } catch (e: Exception) {

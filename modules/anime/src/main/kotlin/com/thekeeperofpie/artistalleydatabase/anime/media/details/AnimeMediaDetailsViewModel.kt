@@ -74,7 +74,8 @@ class AnimeMediaDetailsViewModel @Inject constructor(
             media.map { it?.mediaListEntry }
                 .flatMapLatest {
                     AnimeMediaEditProxy.editResults
-                        .filter { ::mediaId.isInitialized && it?.mediaId?.toString() == mediaId }
+                        .filter { ::mediaId.isInitialized && it?.first == mediaId }
+                        .map { it?.second }
                         .startWith(it)
                 }
                 .collectLatest(listEntry::emit)

@@ -332,5 +332,21 @@
     <string name="anime_media_edit_score_point_5_start_5">5 star rating</string>
     <string name="anime_media_edit_error_invalid_score">Invalid score</string>
     <string name="anime_media_edit_error_invalid_progress">Invalid progress</string>
+    <string name="anime_media_edit_error_invalid_repeat">Invalid repeat</string>
+    <string name="anime_media_edit_error_invalid_priority">Invalid priority</string>
     <string name="anime_media_edit_error_saving">Error saving</string>
+    <string name="anime_media_edit_error_deleting">Error deleting</string>
+
+    <string name="anime_media_edit_priority_label">Priority</string>
+    <string name="anime_media_edit_priority_decrement_content_description">Decrement priority</string>
+    <string name="anime_media_edit_priority_increment_content_description">Increment priority</string>
+
+    <string name="anime_media_edit_private_label">Private</string>
+    <string name="anime_media_edit_private_dropdown_content_description">Private dropdown</string>
+    <string name="anime_media_edit_private_true">True</string>
+    <string name="anime_media_edit_private_false">False</string>
+
+    <string name="anime_media_edit_created_at">Entry created: %1$s</string>
+    <string name="anime_media_edit_updated_at">Last updated: %1$s</string>
+    <string name="anime_media_edit_error_invalid_status">Must set status</string>
 </resources>

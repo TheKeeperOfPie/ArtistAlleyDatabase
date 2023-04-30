@@ -16,7 +16,7 @@ data class MediaEditData(
     val progressMax: Int,
     val repeat: Int?,
     val priority: Int?,
-    val private: Boolean?,
+    val private: Boolean,
     val startedAt: LocalDate?,
     val completedAt: LocalDate?,
     val updatedAt: Long?,

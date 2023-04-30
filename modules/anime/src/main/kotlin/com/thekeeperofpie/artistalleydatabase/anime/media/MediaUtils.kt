@@ -217,6 +217,12 @@ object MediaUtils {
         else -> null
     }
 
+    fun formatEntryDateTime(context: Context, timeInMillis: Long): String = DateUtils.formatDateTime(
+        context,
+        timeInMillis,
+        DateUtils.FORMAT_ABBREV_ALL or DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_WEEKDAY or DateUtils.FORMAT_SHOW_TIME
+    )
+
     fun formatAiringAt(context: Context, timeInMillis: Long): String = DateUtils.formatDateTime(
         context,
         timeInMillis,

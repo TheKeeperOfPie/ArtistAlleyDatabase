@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.anilist.oauth
 
 import android.util.Log
 import com.anilist.AuthedUserQuery
+import com.anilist.DeleteMediaEntryMutation
 import com.anilist.GenresQuery
 import com.anilist.MediaAdvancedSearchQuery
 import com.anilist.MediaDetailsQuery
@@ -153,16 +154,20 @@ class AuthedAniListApi(
 
     suspend fun mediaDetails(id: String) = query(MediaDetailsQuery(id.toInt()))
 
-    suspend fun saveMediaEntry(
+    suspend fun deleteMediaListEntry(id: String) =
+        apolloClient.mutation(DeleteMediaEntryMutation(id = id.toInt()))
+            .execute().dataAssertNoErrors
+
+    suspend fun saveMediaListEntry(
         id: String?,
         mediaId: String,
         type: MediaType?,
         status: MediaListStatus?,
-        scoreRaw: Int?,
-        progress: Int?,
-        repeat: Int?,
-        priority: Int?,
-        private: Boolean?,
+        scoreRaw: Int,
+        progress: Int,
+        repeat: Int,
+        priority: Int,
+        private: Boolean,
         startedAt: LocalDate?,
         completedAt: LocalDate?,
         hiddenFromStatusLists: Boolean?,
@@ -170,7 +175,7 @@ class AuthedAniListApi(
         SaveMediaEntryEditMutation(
             id = Optional.presentIfNotNull(id?.toIntOrNull()),
             mediaId = mediaId.toInt(),
-            status = Optional.presentIfNotNull(status),
+            status = Optional.present(status),
             scoreRaw = Optional.presentIfNotNull(scoreRaw),
             progress = Optional.presentIfNotNull(progress.takeIf { type == MediaType.ANIME }),
             progressVolumes = Optional.presentIfNotNull(
@@ -179,18 +184,18 @@ class AuthedAniListApi(
             repeat = Optional.presentIfNotNull(repeat),
             priority = Optional.presentIfNotNull(priority),
             private = Optional.presentIfNotNull(private),
-            startedAt = Optional.presentIfNotNull(startedAt?.let {
+            startedAt = Optional.present(startedAt?.let {
                 FuzzyDateInput(
-                    year = Optional.presentIfNotNull(it.year),
-                    month = Optional.presentIfNotNull(it.monthValue),
-                    day = Optional.presentIfNotNull(it.dayOfMonth),
+                    year = Optional.present(it.year),
+                    month = Optional.present(it.monthValue),
+                    day = Optional.present(it.dayOfMonth),
                 )
             }),
-            completedAt = Optional.presentIfNotNull(completedAt?.let {
+            completedAt = Optional.present(completedAt?.let {
                 FuzzyDateInput(
-                    year = Optional.presentIfNotNull(it.year),
-                    month = Optional.presentIfNotNull(it.monthValue),
-                    day = Optional.presentIfNotNull(it.dayOfMonth),
+                    year = Optional.present(it.year),
+                    month = Optional.present(it.monthValue),
+                    day = Optional.present(it.dayOfMonth),
                 )
             }),
             hiddenFromStatusLists = Optional.presentIfNotNull(hiddenFromStatusLists),

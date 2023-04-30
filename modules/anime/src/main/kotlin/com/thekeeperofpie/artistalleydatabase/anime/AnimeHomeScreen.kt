@@ -431,7 +431,7 @@ object AnimeHomeScreen {
                                             repeat = arguments.getString("repeat")?.toIntOrNull(),
                                             priority = arguments.getString("priority")
                                                 ?.toIntOrNull(),
-                                            private = arguments.getString("private")?.toBoolean(),
+                                            private = arguments.getString("private").toBoolean(),
                                             startedAt = parseLocalDate(arguments.getString("startedAt")),
                                             completedAt = parseLocalDate(arguments.getString("completedAt")),
                                             updatedAt = arguments.getString("updatedAt")
@@ -444,11 +444,10 @@ object AnimeHomeScreen {
                             }
 
                             AnimeMediaEditScreen(
-                                title = { TODO() },
-                                image = { TODO() },
+                                id = { viewModel.id },
                                 type = { viewModel.type },
-                                updatedAt = { TODO() },
-                                createdAt = { TODO() },
+                                updatedAt = { viewModel.updatedAt },
+                                createdAt = { viewModel.createdAt },
                                 progressMax = { viewModel.progressMax },
                                 status = { viewModel.status },
                                 onStatusChange = { viewModel.status = it },
@@ -461,13 +460,15 @@ object AnimeHomeScreen {
                                 onProgressChange = { viewModel.progress = it },
                                 repeat = { viewModel.repeat },
                                 onRepeatChange = { viewModel.repeat = it },
-                                priority = { TODO() },
-                                onPriorityChange = { TODO() },
-                                private = { TODO() },
-                                onPrivateChange = { TODO() },
+                                priority = { viewModel.priority },
+                                onPriorityChange = { viewModel.priority = it },
+                                private = { viewModel.private },
+                                onPrivateChange = { viewModel.private = it },
                                 startDate = { viewModel.startDate },
                                 endDate = { viewModel.endDate },
                                 onDateChange = viewModel::onDateChange,
+                                deleting = { viewModel.deleting },
+                                onClickDelete = { viewModel.onClickDelete(navController) },
                                 saving = { viewModel.saving },
                                 onClickSave = { viewModel.onClickSave(navController) },
                                 errorRes = { viewModel.errorRes },

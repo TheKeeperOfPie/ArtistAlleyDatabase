@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
@@ -45,15 +46,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
 import com.anilist.type.ScoreFormat
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.ui.StartEndDateDialog
 import com.thekeeperofpie.artistalleydatabase.anime.ui.StartEndDateRow
@@ -66,11 +70,10 @@ object AnimeMediaEditScreen {
 
     @Composable
     operator fun invoke(
-        title: () -> String,
-        image: () -> String?,
+        id: () -> String?,
         type: () -> MediaType?,
-        updatedAt: () -> Long,
-        createdAt: () -> Long,
+        updatedAt: () -> Long?,
+        createdAt: () -> Long?,
         progressMax: () -> Int,
         status: () -> MediaListStatus?,
         onStatusChange: (MediaListStatus?) -> Unit,
@@ -83,11 +86,13 @@ object AnimeMediaEditScreen {
         onRepeatChange: (String) -> Unit,
         priority: () -> String,
         onPriorityChange: (String) -> Unit,
-        private: () -> Boolean?,
-        onPrivateChange: (Boolean?) -> Unit,
+        private: () -> Boolean,
+        onPrivateChange: (Boolean) -> Unit,
         startDate: () -> LocalDate?,
         endDate: () -> LocalDate?,
         onDateChange: (start: Boolean, Long?) -> Unit,
+        deleting: () -> Boolean,
+        onClickDelete: () -> Unit,
         saving: () -> Boolean,
         onClickSave: () -> Unit,
         errorRes: () -> Pair<Int, Exception?>?,
@@ -99,7 +104,7 @@ object AnimeMediaEditScreen {
                 SnackbarErrorText(
                     errorRes()?.first,
                     errorRes()?.second,
-                    onErrorDismiss = onErrorDismiss
+                    onErrorDismiss = onErrorDismiss,
                 )
             },
         ) {
@@ -127,21 +132,17 @@ object AnimeMediaEditScreen {
                         },
                         textForValue = { stringResource(it.toTextRes(isAnime)) },
                         onSelectItem = onStatusChange,
-                        modifier = Modifier.padding(16.dp),
+                        modifier = Modifier.padding(horizontal = 16.dp),
                     )
 
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(16.dp),
-                        modifier = Modifier
-                            .height(IntrinsicSize.Min)
-                            .padding(horizontal = 16.dp)
-                    ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            SectionHeader(R.string.anime_media_edit_progress_label)
+                    TwoColumn(
+                        labelOneRes = R.string.anime_media_edit_progress_label,
+                        columnOneContent = {
                             val progress = progress()
                             TextField(
                                 value = progress,
                                 onValueChange = onProgressChange,
+                                singleLine = true,
                                 textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
                                 keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
                                 leadingIcon = {
@@ -199,13 +200,14 @@ object AnimeMediaEditScreen {
                                 },
                                 modifier = Modifier.fillMaxSize(),
                             )
-                        }
-                        Column(modifier = Modifier.weight(1f)) {
-                            SectionHeader(R.string.anime_media_edit_repeat_label)
+                        },
+                        labelTwoRes = R.string.anime_media_edit_repeat_label,
+                        columnTwoContent = {
                             val repeat = repeat()
                             TextField(
                                 value = repeat,
                                 onValueChange = onRepeatChange,
+                                singleLine = true,
                                 textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
                                 keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
                                 leadingIcon = {
@@ -254,7 +256,7 @@ object AnimeMediaEditScreen {
                                 modifier = Modifier.fillMaxSize(),
                             )
                         }
-                    }
+                    )
 
                     ScoreSection(
                         format = scoreFormat,
@@ -278,12 +280,151 @@ object AnimeMediaEditScreen {
                         )
                     }
 
+                    TwoColumn(
+                        labelOneRes = R.string.anime_media_edit_priority_label,
+                        columnOneContent = {
+                            val priority = priority()
+                            TextField(
+                                value = priority,
+                                onValueChange = onPriorityChange,
+                                singleLine = true,
+                                textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
+                                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+                                leadingIcon = {
+                                    val visible = priority.isNotBlank()
+                                            && priority.toIntOrNull()?.let { it > 0 } == true
+                                    val alpha by animateFloatAsState(
+                                        if (visible) 1f else 0f,
+                                        label = "Priority decrement alpha",
+                                    )
+                                    IconButton(
+                                        enabled = visible,
+                                        onClick = {
+                                            priority.toIntOrNull()?.let {
+                                                onPriorityChange((it - 1).toString())
+                                            }
+                                        },
+                                        modifier = Modifier.alpha(alpha),
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Filled.RemoveCircleOutline,
+                                            contentDescription = stringResource(
+                                                R.string.anime_media_edit_priority_decrement_content_description
+                                            ),
+                                        )
+                                    }
+                                },
+                                trailingIcon = {
+                                    IconButton(
+                                        onClick = {
+                                            if (priority.isBlank()) {
+                                                onPriorityChange("1")
+                                            } else {
+                                                priority.toIntOrNull()?.let {
+                                                    onPriorityChange((it + 1).toString())
+                                                }
+                                            }
+                                        }) {
+                                        Icon(
+                                            imageVector = Icons.Filled.AddCircleOutline,
+                                            contentDescription = stringResource(
+                                                R.string.anime_media_edit_priority_increment_content_description
+                                            ),
+                                        )
+                                    }
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                            )
+                        },
+                        labelTwoRes = R.string.anime_media_edit_private_label,
+                        columnTwoContent = {
+                            @Composable
+                            fun Boolean.toPrivateText() = when (this) {
+                                true -> R.string.anime_media_edit_private_true
+                                false -> R.string.anime_media_edit_private_false
+                            }.let { stringResource(it) }
+                            ItemDropdown(
+                                value = private().toPrivateText(),
+                                iconContentDescription = R.string.anime_media_edit_private_dropdown_content_description,
+                                values = {
+                                    listOf(
+                                        true,
+                                        false,
+                                    )
+                                },
+                                textForValue = { it.toPrivateText() },
+                                onSelectItem = onPrivateChange,
+                                modifier = Modifier.fillMaxWidth(),
+                            )
+                        }
+                    )
+
+                    val createdAt = createdAt()
+                    val createdAtShown = createdAt != null && createdAt > 0
+                    if (createdAtShown) {
+                        Text(
+                            text = stringResource(
+                                R.string.anime_media_edit_created_at,
+                                MediaUtils.formatEntryDateTime(
+                                    LocalContext.current,
+                                    createdAt!! * 1000,
+                                ),
+                            ),
+                            modifier = Modifier.padding(
+                                start = 16.dp,
+                                end = 16.dp,
+                                top = 16.dp,
+                                bottom = 4.dp
+                            ),
+                        )
+                    }
+
+                    val updatedAt = updatedAt()
+                    if (updatedAt != null) {
+                        Text(
+                            text = stringResource(
+                                R.string.anime_media_edit_updated_at,
+                                MediaUtils.formatEntryDateTime(
+                                    LocalContext.current,
+                                    updatedAt * 1000,
+                                ),
+                            ),
+                            modifier = Modifier.padding(
+                                start = 16.dp,
+                                end = 16.dp,
+                                top = if (createdAtShown) 4.dp else 16.dp,
+                                bottom = 10.dp
+                            ),
+                        )
+                    }
+
                     Spacer(modifier = Modifier.height(32.dp))
                 }
 
                 Divider()
 
                 Row(modifier = Modifier.align(Alignment.End)) {
+                    if (id() != null) {
+                        TextButton(onClick = onClickDelete) {
+                            Crossfade(
+                                targetState = deleting(),
+                                label = "Media edit delete indicator crossfade"
+                            ) {
+                                if (it) {
+                                    CircularProgressIndicator()
+                                } else {
+                                    Text(
+                                        text = stringResource(UtilsStringR.delete),
+                                        modifier = Modifier.padding(
+                                            horizontal = 16.dp,
+                                            vertical = 10.dp
+                                        )
+                                    )
+                                }
+                            }
+                        }
+                    }
+
                     TextButton(onClick = onClickSave) {
                         Crossfade(
                             targetState = saving(),
@@ -294,12 +435,39 @@ object AnimeMediaEditScreen {
                             } else {
                                 Text(
                                     text = stringResource(UtilsStringR.save),
-                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)
+                                    modifier = Modifier.padding(
+                                        horizontal = 16.dp,
+                                        vertical = 10.dp
+                                    )
                                 )
                             }
                         }
                     }
                 }
+            }
+        }
+    }
+
+    @Composable
+    private fun TwoColumn(
+        @StringRes labelOneRes: Int,
+        columnOneContent: @Composable () -> Unit,
+        @StringRes labelTwoRes: Int,
+        columnTwoContent: @Composable () -> Unit,
+    ) {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier
+                .height(IntrinsicSize.Min)
+                .padding(horizontal = 16.dp)
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                SectionHeader(labelOneRes, horizontalPadding = 0.dp)
+                columnOneContent()
+            }
+            Column(modifier = Modifier.weight(1f)) {
+                SectionHeader(labelTwoRes, horizontalPadding = 0.dp)
+                columnTwoContent()
             }
         }
     }
@@ -438,11 +606,11 @@ object AnimeMediaEditScreen {
                     TextField(
                         value = score(),
                         onValueChange = onScoreChange,
+                        singleLine = true,
                         textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
                         keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
                         modifier = Modifier
-                            .wrapContentWidth()
-                            .widthIn(min = 64.dp),
+                            .widthIn(min = 40.dp),
                     )
                 }
             }
@@ -450,12 +618,17 @@ object AnimeMediaEditScreen {
     }
 
     @Composable
-    private fun SectionHeader(@StringRes titleRes: Int) {
+    private fun SectionHeader(@StringRes titleRes: Int, horizontalPadding: Dp = 16.dp) {
         Text(
             text = stringResource(titleRes),
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier
-                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .padding(
+                    start = horizontalPadding,
+                    end = horizontalPadding,
+                    top = 12.dp,
+                    bottom = 8.dp,
+                )
         )
     }
 }
