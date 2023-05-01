@@ -349,4 +349,7 @@
     <string name="anime_media_edit_created_at">Entry created: %1$s</string>
     <string name="anime_media_edit_updated_at">Last updated: %1$s</string>
     <string name="anime_media_edit_error_invalid_status">Must set status</string>
+    <string name="anime_media_edit_confirm_close_title">Unsaved changes</string>
+    <string name="anime_media_edit_confirm_close_text">Do you want to save changes?</string>
+    <string name="anime_media_edit_confirm_delete_title">Delete entry?</string>
 </resources>

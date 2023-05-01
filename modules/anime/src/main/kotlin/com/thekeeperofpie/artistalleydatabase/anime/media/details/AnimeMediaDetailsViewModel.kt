@@ -2,6 +2,8 @@ package com.thekeeperofpie.artistalleydatabase.anime.media.details
 
 import android.app.Application
 import android.util.Log
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.SheetValue
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -11,6 +13,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.anilist.MediaDetailsQuery
 import com.anilist.fragment.MediaDetailsListEntry
+import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
 import com.anilist.type.ScoreFormat
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
@@ -27,20 +30,18 @@ import com.thekeeperofpie.artistalleydatabase.animethemes.models.AnimeTheme
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDao
 import com.thekeeperofpie.artistalleydatabase.cds.grid.CdEntryGridModel
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.Instant
+import java.time.LocalDate
 import java.time.ZoneOffset
 import javax.inject.Inject
 
-@OptIn(ExperimentalCoroutinesApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 @HiltViewModel
 class AnimeMediaDetailsViewModel @Inject constructor(
@@ -64,9 +65,7 @@ class AnimeMediaDetailsViewModel @Inject constructor(
     var animeSongs = MutableStateFlow<AnimeSongs?>(null)
     var cdEntries = MutableStateFlow<List<CdEntryGridModel>>(emptyList())
 
-    val scoreFormat = aniListApi.authedUser
-        .map { it?.mediaListOptions?.scoreFormat ?: ScoreFormat.POINT_100 }
-        .distinctUntilChanged()
+    val scoreFormat = MutableStateFlow(ScoreFormat.POINT_100)
 
     var trailerPlaybackPosition = 0f
 
@@ -153,6 +152,12 @@ class AnimeMediaDetailsViewModel @Inject constructor(
                         }
                     }.orEmpty()
                 }
+        }
+
+        viewModelScope.launch(CustomDispatchers.IO) {
+            aniListApi.authedUser
+                .mapNotNull { it?.mediaListOptions?.scoreFormat }
+                .collect(scoreFormat::emit)
         }
     }
 
@@ -285,6 +290,32 @@ class AnimeMediaDetailsViewModel @Inject constructor(
         }
     }
 
+    fun onStatusChange(status: MediaListStatus?) {
+        editData.status = status
+        when (status) {
+            MediaListStatus.CURRENT,
+            MediaListStatus.PLANNING,
+            MediaListStatus.PAUSED,
+            MediaListStatus.REPEATING,
+            MediaListStatus.UNKNOWN__, null -> Unit
+            MediaListStatus.COMPLETED -> {
+                media.value?.run { episodes ?: volumes }
+                    ?.let { editData.progress = it.toString() }
+                editData.endDate = LocalDate.now()
+            }
+            MediaListStatus.DROPPED -> {
+                editData.endDate = LocalDate.now()
+            }
+        }
+    }
+
+    fun onEditSheetValueChange(sheetValue: SheetValue): Boolean {
+        if (sheetValue != SheetValue.Hidden) return true
+        if (editData.isEqualTo(listEntry.value, scoreFormat.value)) return true
+        editData.showConfirmClose = true
+        return false
+    }
+
     fun onClickDelete() {
         if (editData.saving || editData.deleting) return
         editData.deleting = true
@@ -295,6 +326,7 @@ class AnimeMediaDetailsViewModel @Inject constructor(
                     initializeListEntry(null)
                     editData.deleting = false
                     editData.showing = false
+                    editData.showConfirmClose = false
                 }
             } catch (e: Exception) {
                 withContext(CustomDispatchers.Main) {
@@ -316,7 +348,7 @@ class AnimeMediaDetailsViewModel @Inject constructor(
         editData.saving = true
 
         // Read values on main thread before entering coroutine
-        val score = editData.score
+        val scoreRaw = editData.scoreRaw(scoreFormat.value)
         val progress = editData.progress
         val repeat = editData.repeat
         val priority = editData.priority
@@ -329,29 +361,6 @@ class AnimeMediaDetailsViewModel @Inject constructor(
             fun validateFieldAsInt(field: String): Int? {
                 if (field.isBlank()) return 0
                 return field.toIntOrNull()
-            }
-
-            val scoreRaw = if (score.isBlank()) {
-                0
-            } else when (scoreFormat.first()) {
-                ScoreFormat.POINT_10_DECIMAL -> {
-                    val scoreAsFloat = score.toFloatOrNull()?.let {
-                        (it * 10).takeIf { it < 101f }
-                    }
-                    if (scoreAsFloat == null) {
-                        withContext(CustomDispatchers.Main) {
-                            editData.saving = false
-                            editData.errorRes =
-                                R.string.anime_media_edit_error_invalid_score to null
-                        }
-                        return@launch
-                    } else scoreAsFloat.toInt().coerceAtMost(100)
-                }
-                ScoreFormat.POINT_100,
-                ScoreFormat.POINT_10,
-                ScoreFormat.POINT_5,
-                ScoreFormat.POINT_3,
-                ScoreFormat.UNKNOWN__ -> validateFieldAsInt(score)
             }
 
             if (scoreRaw == null) {
@@ -407,6 +416,7 @@ class AnimeMediaDetailsViewModel @Inject constructor(
                 withContext(CustomDispatchers.Main) {
                     editData.saving = false
                     editData.showing = false
+                    editData.showConfirmClose = false
                     initializeListEntry(result)
                 }
             } catch (e: Exception) {

@@ -59,6 +59,7 @@ import androidx.compose.material.icons.filled.PlayCircleOutline
 import androidx.compose.material.icons.filled.Repeat
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.filled.WatchLater
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.CardDefaults
@@ -78,7 +79,9 @@ import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.contentColorFor
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
@@ -235,14 +238,17 @@ object AnimeMediaDetailsScreen {
         editData: MediaEditData,
         scoreFormat: @Composable () -> ScoreFormat,
         onDateChange: (start: Boolean, Long?) -> Unit,
+        onStatusChange: (status: MediaListStatus?) -> Unit,
         onClickDelete: () -> Unit,
         onClickSave: () -> Unit,
+        onEditSheetValueChange: (SheetValue) -> Boolean,
         errorRes: @Composable () -> Pair<Int, Exception?>? = { null },
         onErrorDismiss: () -> Unit = {},
     ) {
         val bottomSheetScaffoldState = rememberBottomSheetScaffoldState(
             bottomSheetState = rememberStandardBottomSheetState(
                 initialValue = SheetValue.Hidden,
+                confirmValueChange = onEditSheetValueChange,
                 skipHiddenState = false,
             )
         )
@@ -271,8 +277,10 @@ object AnimeMediaDetailsScreen {
         BackHandler(
             enabled = bottomSheetScaffoldState.bottomSheetState.currentValue != SheetValue.Hidden
         ) {
-            scope.launch {
-                bottomSheetScaffoldState.bottomSheetState.hide()
+            if (onEditSheetValueChange(SheetValue.Hidden)) {
+                scope.launch {
+                    bottomSheetScaffoldState.bottomSheetState.hide()
+                }
             }
         }
 
@@ -327,6 +335,7 @@ object AnimeMediaDetailsScreen {
                     progressMax = { entry()?.media?.run { episodes ?: volumes } ?: 0 },
                     scoreFormat = scoreFormat,
                     onDateChange = onDateChange,
+                    onStatusChange = onStatusChange,
                     onClickDelete = onClickDelete,
                     onClickSave = onClickSave,
                 )
@@ -366,6 +375,13 @@ object AnimeMediaDetailsScreen {
                             enter = fadeIn(),
                             exit = fadeOut(),
                         ) {
+                            val containerColor = color()
+                                ?: FloatingActionButtonDefaults.containerColor
+                            val contentColor =
+                                com.thekeeperofpie.artistalleydatabase.compose.ColorUtils
+                                    .bestTextColor(containerColor)
+                                    ?: contentColorFor(containerColor)
+
                             ExtendedFloatingActionButton(
                                 text = {
                                     when (listEntry?.status) {
@@ -445,8 +461,8 @@ object AnimeMediaDetailsScreen {
                                 expanded = listEntry?.status
                                     ?.takeUnless { it == MediaListStatus.UNKNOWN__ }
                                     ?.takeIf { expanded } != null,
-                                containerColor = color()
-                                    ?: FloatingActionButtonDefaults.containerColor,
+                                containerColor = containerColor,
+                                contentColor = contentColor,
                                 onClick = { if (showFloatingActionButton) editData.showing = true },
                             )
                         }
@@ -505,6 +521,33 @@ object AnimeMediaDetailsScreen {
                     )
                 }
             }
+        }
+        
+        if (editData.showConfirmClose) {
+            AlertDialog(
+                onDismissRequest = { editData.showConfirmClose = false },
+                title = { Text(stringResource(R.string.anime_media_edit_confirm_close_title)) },
+                text = { Text(stringResource(R.string.anime_media_edit_confirm_close_text)) },
+                confirmButton = {
+                    TextButton(onClick = {
+                        editData.showConfirmClose = false
+                        onClickSave()
+                    }) {
+                        Text(stringResource(UtilsStringR.yes))
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = {
+                        editData.showConfirmClose = false
+                        editData.showing = false
+                        scope.launch {
+                            bottomSheetScaffoldState.bottomSheetState.hide()
+                        }
+                    }) {
+                        Text(stringResource(UtilsStringR.no))
+                    }
+                },
+            )
         }
     }
 

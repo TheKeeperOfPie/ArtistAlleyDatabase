@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -31,7 +32,6 @@ import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.anilist.type.MediaSeason
-import com.anilist.type.ScoreFormat
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
@@ -49,7 +49,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.search.AnimeSearchViewModel
 import com.thekeeperofpie.artistalleydatabase.compose.ColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
 
-@OptIn(ExperimentalAnimationApi::class)
+@OptIn(ExperimentalAnimationApi::class, ExperimentalMaterial3Api::class)
 object AnimeHomeScreen {
 
     @Composable
@@ -310,13 +310,12 @@ object AnimeHomeScreen {
                                 onMediaClicked = ::onMediaClick,
                                 listEntry = { viewModel.listEntry.collectAsState().value },
                                 editData = viewModel.editData,
-                                scoreFormat = {
-                                    viewModel.scoreFormat.collectAsState(ScoreFormat.POINT_100)
-                                        .value
-                                },
+                                scoreFormat = { viewModel.scoreFormat.collectAsState().value },
                                 onDateChange = viewModel::onDateChange,
+                                onStatusChange = viewModel::onStatusChange,
                                 onClickDelete = viewModel::onClickDelete,
                                 onClickSave = viewModel::onClickSave,
+                                onEditSheetValueChange = viewModel::onEditSheetValueChange,
                                 errorRes = { viewModel.errorResource.collectAsState().value },
                             )
                         }

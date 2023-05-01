@@ -26,6 +26,7 @@ import androidx.compose.material.icons.filled.SentimentNeutral
 import androidx.compose.material.icons.filled.SentimentVeryDissatisfied
 import androidx.compose.material.icons.filled.SentimentVerySatisfied
 import androidx.compose.material.icons.filled.StarRate
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
@@ -74,10 +75,13 @@ object AnimeMediaEditBottomSheet {
         progressMax: @Composable () -> Int,
         scoreFormat: @Composable () -> ScoreFormat,
         onDateChange: (start: Boolean, Long?) -> Unit,
+        onStatusChange: (status: MediaListStatus?) -> Unit,
         onClickDelete: () -> Unit,
         onClickSave: () -> Unit,
     ) {
         var startEndDateShown by remember { mutableStateOf<Boolean?>(null) }
+        var showDelete by remember { mutableStateOf(false) }
+
         Column(
             modifier = Modifier
                 .verticalScroll(rememberScrollState())
@@ -102,7 +106,7 @@ object AnimeMediaEditBottomSheet {
                     )
                 },
                 textForValue = { stringResource(it.toTextRes(isAnime)) },
-                onSelectItem = { editData.status = it },
+                onSelectItem = onStatusChange,
                 modifier = Modifier.padding(horizontal = 16.dp),
             )
 
@@ -351,7 +355,7 @@ object AnimeMediaEditBottomSheet {
             }
 
             val updatedAt = editData.updatedAt
-            if (updatedAt != null) {
+            if (updatedAt != null && updatedAt > 0) {
                 Text(
                     text = stringResource(
                         R.string.anime_media_edit_updated_at,
@@ -375,7 +379,7 @@ object AnimeMediaEditBottomSheet {
 
             Row(modifier = Modifier.align(Alignment.End)) {
                 if (id() != null) {
-                    TextButton(onClick = onClickDelete) {
+                    TextButton(onClick = { showDelete = true }) {
                         Crossfade(
                             targetState = editData.deleting,
                             label = "Media edit delete indicator crossfade"
@@ -414,6 +418,26 @@ object AnimeMediaEditBottomSheet {
                     }
                 }
             }
+        }
+
+        if (showDelete) {
+            AlertDialog(
+                onDismissRequest = { showDelete = false },
+                title = { Text(stringResource(R.string.anime_media_edit_confirm_delete_title)) },
+                confirmButton = {
+                    TextButton(onClick = {
+                        showDelete = false
+                        onClickDelete()
+                    }) {
+                        Text(stringResource(UtilsStringR.yes))
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDelete = false }) {
+                        Text(stringResource(UtilsStringR.no))
+                    }
+                },
+            )
         }
     }
 
