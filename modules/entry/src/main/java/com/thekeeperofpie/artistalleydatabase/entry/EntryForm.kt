@@ -22,7 +22,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.animation.shrinkVertically
-import androidx.compose.animation.with
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -123,7 +123,7 @@ fun EntryForm(
     AnimatedContent(
         targetState = areSectionsLoading(),
         transitionSpec = {
-            fadeIn(animationSpec = tween(durationMillis = 200, delayMillis = 150)) with
+            fadeIn(animationSpec = tween(durationMillis = 200, delayMillis = 150)) togetherWith
                     fadeOut(animationSpec = tween(100))
         },
         label = "Entry form section fade in",

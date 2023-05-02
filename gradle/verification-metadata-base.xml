@@ -2,7 +2,13 @@
 <verification-metadata>
    <configuration>
       <verify-metadata>true</verify-metadata>
-      <verify-signatures>true</verify-signatures>
+      <verify-signatures>false</verify-signatures>
+      <!-- Key servers don't work with Gradle sync, causes infinite loop, unknown why -->
+      <key-servers enabled="false">
+         <key-server uri="https://keys.openpgp.org"/>
+         <key-server uri="https://keyserver.ubuntu.com"/>
+         <key-server uri="https://pgp.mit.edu"/>
+      </key-servers>
       <trusted-artifacts>
          <trust file=".*-javadoc[.]jar" regex="true"/>
          <trust file=".*-sources[.]jar" regex="true"/>

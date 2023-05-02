@@ -13,9 +13,7 @@ dependencies {
     api(libs.okhttp)
     implementation(libs.okhttp3.logging.interceptor)
 
-    // Cronet embedded causes a weird infinite loop when syncing in IDE, so use a local AAR
-    runtimeOnly(group = "", name = "cronet-embedded-108.5359.79", ext = "aar")
-    runtimeOnly(group = "", name = "cronet-common-108.5359.79", ext = "aar")
+    runtimeOnly(libs.cronet.embedded)
     implementation(libs.cronet.okhttp)
 
     api(libs.hilt.android)
