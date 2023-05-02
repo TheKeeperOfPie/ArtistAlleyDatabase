@@ -51,10 +51,14 @@ class SettingsProvider constructor(
         deserialize("networkLoggingLevel") ?: NetworkSettings.NetworkLoggingLevel.NONE
     )
     override var savedAnimeFilters = MutableStateFlow(deserializeAnimeFilters())
+    override var showAdult = MutableStateFlow(deserialize("showAdult") ?: false)
     override var collapseAnimeFiltersOnClose = MutableStateFlow(
         deserialize("collapseAnimeFiltersOnClose") ?: true
     )
-    override var showAdult = MutableStateFlow(deserialize("showAdult") ?: false)
+    override var showIgnored = MutableStateFlow(deserialize("showIgnored") ?: true)
+    override var ignoredAniListMediaIds =
+        MutableStateFlow(deserialize("ignoredAniListMediaIds") ?: emptySet<Int>())
+
     var searchQuery = MutableStateFlow<ArtEntry?>(deserialize("searchQuery"))
 
     private fun deserializeAnimeFilters(): Map<String, FilterData> {
@@ -72,6 +76,8 @@ class SettingsProvider constructor(
             collapseAnimeFiltersOnClose = collapseAnimeFiltersOnClose.value,
             savedAnimeFilters = savedAnimeFilters.value,
             showAdult = showAdult.value,
+            showIgnored = showIgnored.value,
+            ignoredAniListMediaIds = ignoredAniListMediaIds.value,
         )
 
     // Initialization separated into its own method so that tests can cancel the StateFlow job
@@ -82,6 +88,17 @@ class SettingsProvider constructor(
         subscribeProperty(scope, ::searchQuery)
         subscribeProperty(scope, ::collapseAnimeFiltersOnClose)
         subscribeProperty(scope, ::showAdult)
+        subscribeProperty(scope, ::showIgnored)
+        scope.launch(CustomDispatchers.IO) {
+            ignoredAniListMediaIds.drop(1).collectLatest {
+                val stringValue = appJson.json.run {
+                    encodeToString(it)
+                }
+                sharedPreferences.edit()
+                    .putString("ignoredAniListMediaIds", stringValue)
+                    .apply()
+            }
+        }
         scope.launch(CustomDispatchers.IO) {
             savedAnimeFilters.drop(1).collectLatest {
                 val stringValue = appJson.json.run {
@@ -111,6 +128,8 @@ class SettingsProvider constructor(
         savedAnimeFilters.emit(data.savedAnimeFilters)
         collapseAnimeFiltersOnClose.emit(data.collapseAnimeFiltersOnClose)
         showAdult.emit(data.showAdult)
+        showIgnored.emit(data.showIgnored)
+        ignoredAniListMediaIds.emit(data.ignoredAniListMediaIds)
     }
 
     private inline fun <reified T> deserialize(name: String): T? {

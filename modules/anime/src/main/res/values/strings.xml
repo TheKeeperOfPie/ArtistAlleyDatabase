@@ -179,6 +179,7 @@
     <string name="anime_media_filter_tag_rank_label">Minimum rank</string>
 
     <string name="anime_media_filter_collapse_on_close">Collapse sections on close</string>
+    <string name="anime_media_filter_show_ignored">Show ignored</string>
 
     <string name="anime_media_filter_expand_all_content_description">Expand/collapse all sections</string>
     <string name="anime_media_cover_image_long_press_preview">Preview cover image</string>

@@ -91,6 +91,7 @@ class AnimeMediaFilterController<T>(
     private val airingDateIsAdvanced = MutableStateFlow(false)
 
     val showAdult get() = settings.showAdult
+    val showIgnored get() = settings.showIgnored
 
     // These are kept separated so that recomposition can happen per-section
     private var sortExpanded by mutableStateOf(false)
@@ -636,6 +637,8 @@ class AnimeMediaFilterController<T>(
         onClickExpandAll = ::onClickExpandAll,
         collapseOnClose = { settings.collapseAnimeFiltersOnClose.collectAsState().value },
         onCollapseOnCloseToggled = { settings.collapseAnimeFiltersOnClose.value = it },
+        showIgnored = { settings.showIgnored.collectAsState().value },
+        onShowIgnoredToggled = { settings.showIgnored.value = it },
         onClearFilter = ::onClearFilter,
         onLoadFilter = ::onLoadFilter,
         onSaveFilter = ::onSaveFilter,
@@ -684,6 +687,8 @@ class AnimeMediaFilterController<T>(
         val onClickExpandAll: (expand: Boolean) -> Unit = {},
         val collapseOnClose: @Composable () -> Boolean = { true },
         val onCollapseOnCloseToggled: (Boolean) -> Unit = {},
+        val showIgnored: @Composable () -> Boolean = { true },
+        val onShowIgnoredToggled: (Boolean) -> Unit = {},
         val onClearFilter: () -> Unit = {},
         val onLoadFilter: () -> Unit = {},
         val onSaveFilter: () -> Unit = {},

@@ -264,6 +264,7 @@ object AnimeMediaListScreen {
 
         val id: EntryId
 
-        class Item(media: AniListListRowMedia) : Entry, AnimeMediaListRow.MediaEntry(media)
+        class Item(media: AniListListRowMedia, ignored: Boolean = false) : Entry,
+            AnimeMediaListRow.MediaEntry(media, ignored)
     }
 }

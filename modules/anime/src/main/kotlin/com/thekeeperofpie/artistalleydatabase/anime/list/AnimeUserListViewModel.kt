@@ -9,11 +9,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.anilist.AuthedUserQuery
 import com.anilist.UserMediaListQuery
-import com.hoc081098.flowext.combine
 import com.hoc081098.flowext.startWith
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.combine
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
+import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeMediaFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaFilterEntry
 import com.thekeeperofpie.artistalleydatabase.anime.utils.IncludeExcludeState
@@ -40,6 +41,7 @@ import kotlin.time.Duration.Companion.milliseconds
 class AnimeUserListViewModel @Inject constructor(
     aniListApi: AuthedAniListApi,
     settings: AnimeSettings,
+    private val ignoreList: AnimeMediaIgnoreList
 ) : ViewModel() {
 
     val query = MutableStateFlow("")
@@ -84,6 +86,7 @@ class AnimeUserListViewModel @Inject constructor(
                             filterController.averageScoreRange,
                             filterController.episodesRange,
                             filterController.showAdult,
+                            filterController.showIgnored,
                             filterController.airingDate(),
                             filterController.sources,
                             ::FilterParams,
@@ -194,6 +197,10 @@ class AnimeUserListViewModel @Inject constructor(
 
         if (!filterParams.showAdult) {
             filteredEntries = filteredEntries.filterNot { it.media.isAdult ?: false }
+        }
+
+        if (!filterParams.showIgnored) {
+            filteredEntries = filteredEntries.filterNot { ignoreList.get(it.media.id) }
         }
 
         filteredEntries = when (val airingDate = filterParams.airingDate) {
@@ -370,6 +377,7 @@ class AnimeUserListViewModel @Inject constructor(
         val averageScoreRange: AnimeMediaFilterController.RangeData,
         val episodesRange: AnimeMediaFilterController.RangeData,
         val showAdult: Boolean,
+        val showIgnored: Boolean,
         val airingDate: AnimeMediaFilterController.AiringDate,
         val sources: List<AnimeMediaFilterController.SourceEntry>,
     )

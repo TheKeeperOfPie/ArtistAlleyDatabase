@@ -165,6 +165,7 @@ object AnimeHomeScreen {
                                 onTagClick = ::onTagClick,
                                 onTagLongClick = viewModel::onTagLongClick,
                                 onMediaClick = ::onMediaClick,
+                                onMediaLongClick = viewModel::onMediaLongClick,
                             )
                         }
 

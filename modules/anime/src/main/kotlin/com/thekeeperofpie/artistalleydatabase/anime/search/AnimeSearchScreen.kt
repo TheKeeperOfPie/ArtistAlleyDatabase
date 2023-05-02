@@ -60,6 +60,7 @@ object AnimeSearchScreen {
         onTagClick: (tagId: String, tagName: String) -> Unit = { _, _ -> },
         onTagLongClick: (tagId: String) -> Unit = {},
         onMediaClick: (AnimeMediaListRow.Entry) -> Unit = {},
+        onMediaLongClick: (AnimeMediaListRow.Entry) -> Unit = {},
     ) {
         AnimeMediaFilterOptionsBottomPanel(
             topBar = {
@@ -134,6 +135,7 @@ object AnimeSearchScreen {
                                         is AnimeMediaListScreen.Entry.Item -> AnimeMediaListRow(
                                             entry = it,
                                             onClick = onMediaClick,
+                                            onLongClick = onMediaLongClick,
                                             onTagClick = onTagClick,
                                             onTagLongClick = onTagLongClick,
                                             onLongPressImage = onLongPressImage,

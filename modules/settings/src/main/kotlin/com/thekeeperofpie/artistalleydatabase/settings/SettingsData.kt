@@ -17,4 +17,6 @@ data class SettingsData(
     val collapseAnimeFiltersOnClose: Boolean,
     val savedAnimeFilters: Map<String, FilterData> = emptyMap(),
     val showAdult: Boolean,
+    val showIgnored: Boolean,
+    val ignoredAniListMediaIds: Set<Int>,
 )

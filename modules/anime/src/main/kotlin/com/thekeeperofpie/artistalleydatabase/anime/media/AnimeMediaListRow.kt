@@ -2,7 +2,6 @@ package com.thekeeperofpie.artistalleydatabase.anime.media
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -35,9 +34,13 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
@@ -71,6 +74,7 @@ object AnimeMediaListRow {
         modifier: Modifier = Modifier,
         label: (@Composable () -> Unit)? = null,
         onClick: (Entry) -> Unit = {},
+        onLongClick: (Entry) -> Unit = {},
         onTagClick: (tagId: String, tagName: String) -> Unit = { _, _ -> },
         onTagLongClick: (tagId: String) -> Unit = {},
         onLongPressImage: (entry: Entry) -> Unit = {},
@@ -79,7 +83,12 @@ object AnimeMediaListRow {
             modifier = modifier
                 .fillMaxWidth()
                 .heightIn(min = 180.dp)
-                .clickable(enabled = entry != Entry.Loading, onClick = { onClick(entry) }),
+                .combinedClickable(
+                    enabled = entry != Entry.Loading,
+                    onClick = { onClick(entry) },
+                    onLongClick = { onLongClick(entry) }
+                )
+                .alpha(if (entry.ignored) 0.38f else 1f)
         ) {
             Row(modifier = Modifier.height(IntrinsicSize.Min)) {
                 CoverImage(entry, onLongPressImage)
@@ -339,6 +348,7 @@ object AnimeMediaListRow {
             override val image = null
             override val title = ""
             override val tags = emptyList<AnimeMediaTagEntry>()
+            override var ignored = false
         }
 
         val id: EntryId? get() = null
@@ -359,9 +369,11 @@ object AnimeMediaListRow {
         val nextAiringEpisode: AniListListRowMedia.NextAiringEpisode? get() = null
 
         val tags: List<AnimeMediaTagEntry> get() = emptyList()
+
+        var ignored: Boolean
     }
 
-    open class MediaEntry(media: AniListListRowMedia) : Entry {
+    open class MediaEntry(media: AniListListRowMedia, ignored: Boolean = false) : Entry {
 
         override val id = EntryId("item", media.id.toString())
         override val image = media.coverImage?.large
@@ -381,6 +393,8 @@ object AnimeMediaListRow {
         override val nextAiringEpisode = media.nextAiringEpisode
 
         override val tags = media.tags?.filterNotNull()?.map(::AnimeMediaTagEntry).orEmpty()
+
+        override var ignored by mutableStateOf(ignored)
     }
 }
 
@@ -409,5 +423,6 @@ private fun Preview() {
                 textHiddenRes = R.string.anime_media_tag_spoiler,
             ),
         )
+        override var ignored = false
     })
 }

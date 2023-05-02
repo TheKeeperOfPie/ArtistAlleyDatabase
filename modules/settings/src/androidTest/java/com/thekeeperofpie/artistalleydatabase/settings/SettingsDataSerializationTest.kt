@@ -35,6 +35,7 @@ class SettingsDataSerializationTest {
         val artEntryTwo = ArtEntrySamples.build("two")
         val cropUri = Uri.parse("content://some/path/ArtistAlleyDatabaseCrop.png")
         val networkLoggingLevel = NetworkSettings.NetworkLoggingLevel.BASIC
+        val ignoredIds = setOf(123, 456)
 
         val data = SettingsData(
             artEntryTemplate = artEntryOne,
@@ -43,6 +44,8 @@ class SettingsDataSerializationTest {
             searchQuery = artEntryTwo,
             collapseAnimeFiltersOnClose = true,
             showAdult = true,
+            showIgnored = true,
+            ignoredAniListMediaIds = ignoredIds,
         )
 
         val testParams = listOf(
@@ -53,6 +56,7 @@ class SettingsDataSerializationTest {
             artEntryTwo to ArtEntry::class to SettingsData::searchQuery,
             true to Boolean::class to SettingsData::collapseAnimeFiltersOnClose,
             true to Boolean::class to SettingsData::showAdult,
+            ignoredIds to Set::class to SettingsData::showIgnored,
         )
 
         val provider = SettingsProvider(

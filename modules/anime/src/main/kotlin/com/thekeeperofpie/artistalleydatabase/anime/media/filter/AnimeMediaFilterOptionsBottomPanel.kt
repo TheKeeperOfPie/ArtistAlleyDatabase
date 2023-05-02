@@ -330,9 +330,14 @@ object AnimeMediaFilterOptionsBottomPanel {
                 onShowAdultToggled = data.onShowAdultToggled,
             )
 
-            SettingsSection(
+            CollapseOnCloseSection(
                 collapseOnClose = { data.collapseOnClose() },
                 onCollapseOnCloseToggled = data.onCollapseOnCloseToggled,
+            )
+
+            ShowIgnoredSection(
+                showIgnored = { data.showIgnored() },
+                onShowIgnoredToggled = data.onShowIgnoredToggled,
             )
 
             ActionsSection(
@@ -1197,7 +1202,7 @@ object AnimeMediaFilterOptionsBottomPanel {
     }
 
     @Composable
-    private fun SettingsSection(
+    private fun CollapseOnCloseSection(
         collapseOnClose: @Composable () -> Boolean,
         onCollapseOnCloseToggled: (Boolean) -> Unit,
     ) {
@@ -1217,6 +1222,34 @@ object AnimeMediaFilterOptionsBottomPanel {
             Switch(
                 checked = collapseOnClose(),
                 onCheckedChange = onCollapseOnCloseToggled,
+                modifier = Modifier.padding(end = 16.dp),
+            )
+        }
+
+        Divider()
+    }
+
+    @Composable
+    private fun ShowIgnoredSection(
+        showIgnored: @Composable () -> Boolean,
+        onShowIgnoredToggled: (Boolean) -> Unit,
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+        ) {
+            Text(
+                text = stringResource(R.string.anime_media_filter_show_ignored),
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier
+                    .padding(horizontal = 16.dp, vertical = 10.dp)
+                    .weight(1f)
+            )
+
+            Switch(
+                checked = showIgnored(),
+                onCheckedChange = onShowIgnoredToggled,
                 modifier = Modifier.padding(end = 16.dp),
             )
         }

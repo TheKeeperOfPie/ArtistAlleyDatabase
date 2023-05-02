@@ -6,6 +6,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 interface AnimeSettings {
 
     val savedAnimeFilters: MutableStateFlow<Map<String, FilterData>>
-    val collapseAnimeFiltersOnClose: MutableStateFlow<Boolean>
     val showAdult: MutableStateFlow<Boolean>
+    val collapseAnimeFiltersOnClose: MutableStateFlow<Boolean>
+    val showIgnored: MutableStateFlow<Boolean>
+
+    // TODO: Better database to store ignored IDs
+    val ignoredAniListMediaIds: MutableStateFlow<Set<Int>>
 }
