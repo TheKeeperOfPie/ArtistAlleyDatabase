@@ -65,8 +65,8 @@ dependencyResolutionManagement {
             library("androidx.media3:media3-exoplayer-rtsp:1.0.1")
             library("androidx.media3:media3-ui:1.0.1")
             library("androidx.navigation:navigation-compose:2.6.0-beta01")
-            library("androidx.paging:paging-compose:1.0.0-alpha18")
-            library("androidx.paging:paging-runtime:3.2.0-alpha04")
+            library("androidx.paging:paging-compose:1.0.0-alpha19")
+            library("androidx.paging:paging-runtime:3.2.0-alpha05")
             library("androidx.palette:palette-ktx:1.0.0")
             library("androidx.room:room-compiler:2.6.0-alpha01")
             library("androidx.room:room-ktx:2.6.0-alpha01")
@@ -112,7 +112,7 @@ dependencyResolutionManagement {
             library("org.mockito:mockito-core:5.3.1")
 
             prefix("androidx") {
-                library("androidx.browser:browser:1.5.0")
+                library("androidx.browser:browser:1.6.0-alpha01")
                 library("androidx.security:security-crypto:1.1.0-alpha06")
             }
 
