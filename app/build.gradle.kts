@@ -173,6 +173,7 @@ dependencies {
     runtimeOnly(libs.kotlinx.coroutines.android)
 
     implementation(libs.navigation.compose)
+    implementation(libs.accompanist.navigation.animation)
 
     implementation(libs.hilt.android)
     kapt(kaptProcessors.dagger.hilt.compiler)

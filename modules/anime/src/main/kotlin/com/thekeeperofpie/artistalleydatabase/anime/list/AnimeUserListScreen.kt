@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anime.list
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -23,6 +22,8 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
@@ -35,12 +36,14 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeMediaFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeMediaFilterOptionsBottomPanel
 import com.thekeeperofpie.artistalleydatabase.compose.NavMenuIconButton
+import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 
 object AnimeUserListScreen {
 
     @Composable
     operator fun invoke(
+        nestedScrollConnection: NestedScrollConnection? = null,
         onClickNav: () -> Unit = {},
         query: @Composable () -> String = { "" },
         onQueryChange: (String) -> Unit = {},
@@ -52,6 +55,7 @@ object AnimeUserListScreen {
         onTagClick: (tagId: String, tagName: String) -> Unit = { _, _ -> },
         onTagLongClick: (tagId: String) -> Unit = {},
         onMediaClick: (AnimeMediaListRow.Entry) -> Unit = {},
+        scrollStateSaver: ScrollStateSaver = ScrollStateSaver.STUB,
     ) {
         AnimeMediaFilterOptionsBottomPanel(
             topBar = {
@@ -66,7 +70,7 @@ object AnimeUserListScreen {
                         onValueChange = onQueryChange,
                         leadingIcon = { NavMenuIconButton(onClickNav) },
                         trailingIcon = {
-                            IconButton(onClick = { Modifier.clickable { onQueryChange("") } }) {
+                            IconButton(onClick = { onQueryChange("") }) {
                                 Icon(
                                     imageVector = Icons.Filled.Clear,
                                     contentDescription = stringResource(
@@ -103,7 +107,11 @@ object AnimeUserListScreen {
                 onRefresh = onRefresh,
                 tagShown = tagShown,
                 onTagDismiss = onTagDismiss,
-                modifier = Modifier.padding(it),
+                modifier = Modifier.padding(it).run {
+                    if (nestedScrollConnection == null) this else nestedScroll(
+                        nestedScrollConnection
+                    )
+                },
             ) { onLongPressImage ->
                 when (content) {
                     is AnimeUserListViewModel.ContentState.Error -> AnimeMediaListScreen.Error()
@@ -114,8 +122,9 @@ object AnimeUserListScreen {
                                 .fillMaxSize()
                                 .verticalScroll(rememberScrollState()),
                         ) {}
-                    is AnimeUserListViewModel.ContentState.Success ->
+                    is AnimeUserListViewModel.ContentState.Success -> {
                         LazyColumn(
+                            state = scrollStateSaver.lazyListState(),
                             contentPadding = PaddingValues(horizontal = 16.dp),
                             verticalArrangement = Arrangement.spacedBy(16.dp),
                         ) {
@@ -132,6 +141,7 @@ object AnimeUserListScreen {
                                 }
                             }
                         }
+                    }
                 }
             }
         }

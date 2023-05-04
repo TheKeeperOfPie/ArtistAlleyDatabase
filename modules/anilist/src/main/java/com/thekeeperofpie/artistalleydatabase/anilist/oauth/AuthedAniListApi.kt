@@ -8,6 +8,7 @@ import com.anilist.MediaAdvancedSearchQuery
 import com.anilist.MediaDetailsQuery
 import com.anilist.MediaTagsQuery
 import com.anilist.SaveMediaEntryEditMutation
+import com.anilist.UserByIdQuery
 import com.anilist.UserMediaListQuery
 import com.anilist.type.FuzzyDateInput
 import com.anilist.type.MediaFormat
@@ -201,6 +202,8 @@ class AuthedAniListApi(
             hiddenFromStatusLists = Optional.presentIfNotNull(hiddenFromStatusLists),
         )
     ).execute().dataAssertNoErrors.saveMediaListEntry!!
+
+    suspend fun user(id: String) = query(UserByIdQuery(id.toInt())).dataAssertNoErrors.user
 
     private suspend fun <D : Query.Data> query(query: Query<D>) =
         apolloClient.query(query).execute()

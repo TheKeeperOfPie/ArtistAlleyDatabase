@@ -72,12 +72,10 @@ import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Slider
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
@@ -98,13 +96,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawWithCache
-import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.CompositingStrategy
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -119,7 +112,6 @@ import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.graphics.ColorUtils
 import androidx.media3.common.util.RepeatModeUtil
@@ -142,7 +134,6 @@ import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.YouTubePlayerCallback
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
-import com.thekeeperofpie.artistalleydatabase.android_utils.AnimationUtils
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
@@ -155,9 +146,11 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toColor
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.AnimeMediaEditBottomSheet
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditData
+import com.thekeeperofpie.artistalleydatabase.anime.ui.CoverAndBannerHeader
+import com.thekeeperofpie.artistalleydatabase.anime.ui.DetailsSectionHeader
+import com.thekeeperofpie.artistalleydatabase.anime.ui.descriptionSection
 import com.thekeeperofpie.artistalleydatabase.animethemes.models.AnimeTheme
 import com.thekeeperofpie.artistalleydatabase.cds.grid.CdEntryGridModel
-import com.thekeeperofpie.artistalleydatabase.compose.AccelerateEasing
 import com.thekeeperofpie.artistalleydatabase.compose.AssistChip
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.AutoResizeHeightText
@@ -166,11 +159,11 @@ import com.thekeeperofpie.artistalleydatabase.compose.CollapsingToolbar
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
 import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.assistChipColors
+import com.thekeeperofpie.artistalleydatabase.compose.fadingEdgeBottom
 import com.thekeeperofpie.artistalleydatabase.compose.multiplyCoerceSaturation
 import com.thekeeperofpie.artistalleydatabase.compose.optionalClickable
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGrid
-import de.charlex.compose.HtmlText
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -212,7 +205,7 @@ object AnimeMediaDetailsScreen {
         coverImage: @Composable () -> String? = { null },
         bannerImage: @Composable () -> String? = { null },
         title: @Composable () -> String = { "Title" },
-        subtitle: @Composable () -> String = { "TV - Releasing - 2023" },
+        subtitle: @Composable () -> String? = { "TV - Releasing - 2023" },
         nextEpisode: @Composable () -> Int? = { null },
         nextEpisodeAiringAt: @Composable () -> Int? = { null },
         entry: @Composable () -> Entry? = { null },
@@ -612,7 +605,10 @@ object AnimeMediaDetailsScreen {
             onGenreLongClicked = onGenreLongClicked,
         )
 
-        descriptionSection(entry)
+        descriptionSection(
+            titleTextRes = R.string.anime_media_details_description_label,
+            htmlText = entry.description,
+        )
 
         charactersSection(
             entry = entry,
@@ -698,144 +694,76 @@ object AnimeMediaDetailsScreen {
         nextEpisode: @Composable () -> Int?,
         nextEpisodeAiringAt: @Composable () -> Int?,
     ) {
-        val elevation = lerp(0.dp, 16.dp, AccelerateEasing.transform(progress))
-        var preferredTitle by remember { mutableStateOf<Int?>(null) }
-
-        @Suppress("NAME_SHADOWING")
         val entry = entry()
-        Surface(
-            shape = RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp),
-            color = MaterialTheme.colorScheme.surface,
-            contentColor = MaterialTheme.colorScheme.onSurface,
-            tonalElevation = elevation,
-            shadowElevation = elevation,
-            modifier = Modifier.clickable(enabled = (entry?.titlesUnique?.size ?: 0) > 1) {
+        var preferredTitle by remember { mutableStateOf<Int?>(null) }
+        CoverAndBannerHeader(
+            progress = progress,
+            color = color,
+            coverImage = coverImage,
+            bannerImage = bannerImage,
+            onClickEnabled = (entry?.titlesUnique?.size ?: 0) > 1,
+            onClick = {
                 preferredTitle =
                     ((preferredTitle ?: 0) + 1) % (entry?.titlesUnique?.size ?: 1)
-            }
+            },
         ) {
-            Box {
-                AsyncImage(
-                    model = bannerImage(),
-                    contentScale = ContentScale.FillHeight,
-                    contentDescription = stringResource(R.string.anime_media_banner_image),
+            Box(
+                contentAlignment = Alignment.CenterStart,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+            ) {
+                AutoResizeHeightText(
+                    text = when (val index = preferredTitle) {
+                        null -> null
+                        else -> entry?.titlesUnique?.get(index)
+                    } ?: titleText(),
+                    style = MaterialTheme.typography.headlineLarge,
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .height(180.dp)
-                        .align(Alignment.TopCenter)
-                        .graphicsLayer {
-                            compositingStrategy = CompositingStrategy.Offscreen
-                        }
-                        .drawWithCache {
-                            val brush = Brush.verticalGradient(
-                                AnimationUtils.lerp(0.5f, 0f, progress) to
-                                        Color.Black.copy(
-                                            alpha = AnimationUtils.lerp(1f, 0.25f, progress)
-                                        ),
-                                1f to Color.Transparent,
-                            )
-                            onDrawWithContent {
-                                drawContent()
-                                drawRect(brush, blendMode = BlendMode.DstIn)
-                            }
-                        }
-                        .background(color() ?: Color.Unspecified)
+                        .align(Alignment.CenterStart)
+                        .padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 4.dp),
                 )
+            }
 
-                Row(
+            subtitleText()?.let {
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier
+                        .wrapContentHeight()
+                        .padding(horizontal = 16.dp, vertical = 4.dp)
                         .fillMaxWidth()
-                        .padding(start = 16.dp, top = lerp(100.dp, 10.dp, progress), bottom = 10.dp)
-                        .height(lerp(256.dp, 180.dp, progress))
-                ) {
-                    ElevatedCard {
-                        AsyncImage(
-                            model = coverImage(),
-                            contentScale = ContentScale.FillHeight,
-                            fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
-                            contentDescription = stringResource(R.string.anime_media_cover_image),
-                            modifier = Modifier
-                                .height(256.dp)
-                                .widthIn(max = 256.dp)
-                        )
+                        .wrapContentHeight(Alignment.Bottom)
+                )
+            }
+
+            nextEpisodeAiringAt()?.let { airingAtTime ->
+                nextEpisode()?.let {
+                    val context = LocalContext.current
+                    val airingAt = remember {
+                        MediaUtils.formatAiringAt(context, airingAtTime * 1000L)
                     }
 
-                    Column(
+                    val remainingTime = remember {
+                        MediaUtils.formatRemainingTime(airingAtTime * 1000L)
+                    }
+
+                    Text(
+                        text = stringResource(
+                            R.string.anime_media_next_airing_episode,
+                            it,
+                            airingAt,
+                            remainingTime,
+                        ),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.surfaceTint,
                         modifier = Modifier
-                            .padding(top = lerp(32.dp, 0.dp, progress))
-                            .animateContentSize()
-                    ) {
-                        Box(
-                            contentAlignment = Alignment.CenterStart,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .weight(1f)
-                        ) {
-                            AutoResizeHeightText(
-                                text = when (val index = preferredTitle) {
-                                    null -> null
-                                    else -> entry?.titlesUnique?.get(index)
-                                } ?: titleText(),
-                                style = MaterialTheme.typography.headlineLarge,
-                                modifier = Modifier
-                                    .align(Alignment.CenterStart)
-                                    .padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 4.dp),
-                            )
-                        }
-
-                        subtitleText()?.let {
-                            Text(
-                                text = it,
-                                style = MaterialTheme.typography.bodyMedium,
-                                modifier = Modifier
-                                    .wrapContentHeight()
-                                    .padding(horizontal = 16.dp, vertical = 4.dp)
-                                    .fillMaxWidth()
-                                    .wrapContentHeight(Alignment.Bottom)
-                            )
-                        }
-
-                        nextEpisodeAiringAt()?.let { airingAtTime ->
-                            nextEpisode()?.let {
-                                val context = LocalContext.current
-                                val airingAt = remember {
-                                    MediaUtils.formatAiringAt(context, airingAtTime * 1000L)
-                                }
-
-                                val remainingTime = remember {
-                                    MediaUtils.formatRemainingTime(airingAtTime * 1000L)
-                                }
-
-                                Text(
-                                    text = stringResource(
-                                        R.string.anime_media_next_airing_episode,
-                                        it,
-                                        airingAt,
-                                        remainingTime,
-                                    ),
-                                    style = MaterialTheme.typography.labelMedium,
-                                    color = MaterialTheme.colorScheme.surfaceTint,
-                                    modifier = Modifier
-                                        .wrapContentHeight(Alignment.Bottom)
-                                        .padding(horizontal = 16.dp, vertical = 4.dp)
-                                )
-                            }
-                        }
-                    }
+                            .wrapContentHeight(Alignment.Bottom)
+                            .padding(horizontal = 16.dp, vertical = 4.dp)
+                    )
                 }
             }
         }
-    }
-
-    @Composable
-    private fun SectionHeader(text: String, modifier: Modifier = Modifier) {
-        Text(
-            text = text,
-            style = MaterialTheme.typography.titleMedium,
-            modifier = modifier
-                .fillMaxWidth()
-                .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 10.dp),
-        )
     }
 
     @Composable
@@ -848,35 +776,6 @@ object AnimeMediaDetailsScreen {
                 .fillMaxWidth()
                 .padding(start = 16.dp, end = 16.dp, top = 10.dp, bottom = 4.dp)
         )
-    }
-
-    private fun LazyListScope.descriptionSection(entry: Entry) {
-        entry.description?.let {
-            item {
-                SectionHeader(stringResource(R.string.anime_media_details_description_label))
-            }
-            item {
-                var expanded by remember { mutableStateOf(false) }
-                ElevatedCard(
-                    onClick = { expanded = !expanded },
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp)
-                        .animateContentSize(),
-                ) {
-                    val style = MaterialTheme.typography.bodyMedium
-                    HtmlText(
-                        text = it,
-                        style = style,
-                        color = style.color.takeOrElse { LocalContentColor.current },
-                        modifier = Modifier
-                            .padding(horizontal = 16.dp, vertical = 10.dp)
-                            .wrapContentHeight()
-                            .heightIn(max = if (expanded) Dp.Unspecified else 80.dp)
-                            .bottomFadingEdge(expanded)
-                    )
-                }
-            }
-        }
     }
 
     private fun LazyListScope.genreSection(
@@ -917,7 +816,7 @@ object AnimeMediaDetailsScreen {
         if (entry.characters.isEmpty()) return
         item {
             val coroutineScope = rememberCoroutineScope()
-            SectionHeader(stringResource(R.string.anime_media_details_characters_label))
+            DetailsSectionHeader(stringResource(R.string.anime_media_details_characters_label))
 
             // TODO: Even wider scoped cache?
             // Cache character color calculation
@@ -1115,7 +1014,7 @@ object AnimeMediaDetailsScreen {
         if (entry.staff.isEmpty()) return
         item {
             val coroutineScope = rememberCoroutineScope()
-            SectionHeader(stringResource(R.string.anime_media_details_staff_label))
+            DetailsSectionHeader(stringResource(R.string.anime_media_details_staff_label))
 
             // TODO: Even wider scoped cache?
             // Cache staff color calculation
@@ -1202,7 +1101,7 @@ object AnimeMediaDetailsScreen {
 
     private fun LazyListScope.infoSection(entry: Entry) {
         item {
-            SectionHeader(stringResource(R.string.anime_media_details_information_label))
+            DetailsSectionHeader(stringResource(R.string.anime_media_details_information_label))
         }
         item {
             ElevatedCard(
@@ -1411,7 +1310,7 @@ object AnimeMediaDetailsScreen {
                     .wrapContentHeight()
                     .heightIn(max = if (expanded) Dp.Unspecified else 120.dp)
                     .clickable { expanded = !expanded }
-                    .bottomFadingEdge(expanded)
+                    .fadingEdgeBottom(expanded)
             ) {
                 if (showDividerAbove) {
                     Divider()
@@ -1818,7 +1717,7 @@ object AnimeMediaDetailsScreen {
         if (cdEntries.isEmpty()) return
 
         item {
-            SectionHeader(stringResource(R.string.anime_media_details_cds_label))
+            DetailsSectionHeader(stringResource(R.string.anime_media_details_cds_label))
         }
 
         item {
@@ -1905,7 +1804,7 @@ object AnimeMediaDetailsScreen {
     ) {
         if (values.isNotEmpty()) {
             item {
-                SectionHeader(
+                DetailsSectionHeader(
                     text = stringResource(titleRes),
                     modifier = Modifier.clickable { onExpandedToggled(!expanded()) }
                 )
@@ -1982,7 +1881,7 @@ object AnimeMediaDetailsScreen {
 
     private fun LazyListScope.statsSection(entry: Entry) {
         item {
-            SectionHeader(stringResource(R.string.anime_media_details_stats_label))
+            DetailsSectionHeader(stringResource(R.string.anime_media_details_stats_label))
         }
 
         item {
@@ -2181,7 +2080,7 @@ object AnimeMediaDetailsScreen {
     ) {
         if (entry.tags.isNotEmpty()) {
             item {
-                SectionHeader(stringResource(R.string.anime_media_details_tags_label))
+                DetailsSectionHeader(stringResource(R.string.anime_media_details_tags_label))
             }
 
             item {
@@ -2223,7 +2122,7 @@ object AnimeMediaDetailsScreen {
         val videoId = trailer.id ?: return
 
         item {
-            SectionHeader(stringResource(R.string.anime_media_details_trailer_label))
+            DetailsSectionHeader(stringResource(R.string.anime_media_details_trailer_label))
         }
 
         if (trailer.site == "youtube") {
@@ -2390,7 +2289,7 @@ object AnimeMediaDetailsScreen {
         if (links.isEmpty()) return
 
         item {
-            SectionHeader(stringResource(headerRes))
+            DetailsSectionHeader(stringResource(headerRes))
         }
 
         item {
@@ -2428,21 +2327,6 @@ object AnimeMediaDetailsScreen {
             }
         }
     }
-
-    private fun Modifier.bottomFadingEdge(expanded: Boolean, firstStop: Float = 0.8f) =
-        graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }
-            .drawWithCache {
-                val brush = Brush.verticalGradient(
-                    firstStop to Color.Black,
-                    1f to Color.Transparent,
-                )
-                onDrawWithContent {
-                    drawContent()
-                    if (!expanded) {
-                        drawRect(brush, blendMode = BlendMode.DstIn)
-                    }
-                }
-            }
 
     data class Entry(
         val mediaId: String,

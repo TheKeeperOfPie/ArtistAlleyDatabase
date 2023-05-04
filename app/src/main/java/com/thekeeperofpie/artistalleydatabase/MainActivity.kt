@@ -6,6 +6,8 @@ import android.view.WindowInsets
 import android.view.WindowInsetsController
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,7 +27,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -45,10 +46,12 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.OutOfQuotaPolicy
+import com.google.accompanist.navigation.animation.AnimatedNavHost
+import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.mxalbert.sharedelements.SharedElementsRoot
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeHomeScreen
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeHomeViewModel
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryNavigator
 import com.thekeeperofpie.artistalleydatabase.art.search.ArtSearchViewModel
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseScreen
@@ -76,7 +79,9 @@ import com.thekeeperofpie.artistalleydatabase.utils.DatabaseSyncWorker
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import com.google.accompanist.navigation.animation.composable as animationComposable
 
+@OptIn(ExperimentalAnimationApi::class)
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
@@ -115,9 +120,6 @@ class MainActivity : ComponentActivity() {
                         mutableStateOf(defaultSelectedItemIndex)
                     }
                     val selectedItem = navDrawerItems[selectedItemIndex]
-                    var selectedSubIndex by rememberSaveable {
-                        mutableStateOf(AnimeNavDestinations.DEFAULT_INDEX)
-                    }
 
                     ModalNavigationDrawer(
                         drawerState = drawerState,
@@ -126,8 +128,6 @@ class MainActivity : ComponentActivity() {
                                 navDrawerItems = { navDrawerItems },
                                 selectedIndex = { selectedItemIndex },
                                 onSelectIndex = { selectedItemIndex = it },
-                                selectedSubIndex = { selectedSubIndex },
-                                onSelectSubIndex = { selectedSubIndex = it },
                                 onCloseDrawer = { scope.launch { drawerState.close() } },
                             )
                         },
@@ -136,7 +136,6 @@ class MainActivity : ComponentActivity() {
                                 when (selectedItem) {
                                     NavDrawerItems.Anime -> AnimeScreen(
                                         onClickNav = ::onClickNav,
-                                        selectedSubIndex = { selectedSubIndex },
                                     )
                                     NavDrawerItems.Art -> ArtScreen(::onClickNav)
                                     NavDrawerItems.Cds -> CdsScreen(::onClickNav)
@@ -227,49 +226,10 @@ class MainActivity : ComponentActivity() {
         navDrawerItems: () -> List<NavDrawerItems>,
         selectedIndex: () -> Int,
         onSelectIndex: (Int) -> Unit,
-        selectedSubIndex: () -> Int,
-        onSelectSubIndex: (Int) -> Unit,
         onCloseDrawer: () -> Unit,
     ) {
-        val animeScreenNavIndex = remember { NavDrawerItems.items().indexOf(NavDrawerItems.Anime) }
         ModalDrawerSheet {
             navDrawerItems().forEachIndexed { index, item ->
-                if (index == animeScreenNavIndex) {
-                    // Anime item is custom to account for sub-destinations
-                    NavigationDrawerItem(
-                        icon = { Icon(item.icon, contentDescription = null) },
-                        label = { Text(stringResource(item.titleRes)) },
-                        selected = false,
-                        onClick = {
-                            onCloseDrawer()
-                            onSelectIndex(index)
-                        },
-                        modifier = Modifier
-                            .padding(NavigationDrawerItemDefaults.ItemPadding)
-                    )
-                    if (selectedIndex() == animeScreenNavIndex) {
-                        AnimeNavDestinations.values()
-                            .forEachIndexed { subIndex, destination ->
-                                NavigationDrawerItem(
-                                    label = {
-                                        Text(
-                                            stringResource(destination.textRes)
-                                        )
-                                    },
-                                    selected = selectedSubIndex() == subIndex,
-                                    onClick = {
-                                        onCloseDrawer()
-                                        onSelectSubIndex(subIndex)
-                                    },
-                                    modifier = Modifier
-                                        .padding(NavigationDrawerItemDefaults.ItemPadding)
-                                        .padding(start = 24.dp)
-                                )
-                            }
-                    }
-                    return@forEachIndexed
-                }
-
                 NavigationDrawerItem(
                     icon = { Icon(item.icon, contentDescription = null) },
                     label = { Text(stringResource(item.titleRes)) },
@@ -288,21 +248,38 @@ class MainActivity : ComponentActivity() {
     @Composable
     private fun AnimeScreen(
         onClickNav: () -> Unit,
-        selectedSubIndex: () -> Int,
     ) {
-        val navController = rememberNavController()
+        val navController = rememberAnimatedNavController()
         SharedElementsRoot {
-            NavHost(navController = navController, startDestination = NavDestinations.HOME) {
-                composable(NavDestinations.HOME) {
+            AnimatedNavHost(
+                navController = navController,
+                startDestination = NavDestinations.HOME
+            ) {
+                animationComposable(
+                    NavDestinations.HOME,
+                    enterTransition = {
+                        slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up)
+                    },
+                    exitTransition = {
+                        slideOutOfContainer(
+                            AnimatedContentTransitionScope.SlideDirection.Down
+                        )
+                    },
+                ) {
                     val viewModel = hiltViewModel<AnimeHomeViewModel>()
                     AnimeHomeScreen(
                         onClickNav = onClickNav,
                         needAuth = { viewModel.needAuth },
                         onClickAuth = { viewModel.onClickAuth(this@MainActivity) },
                         onSubmitAuthToken = viewModel::onSubmitAuthToken,
-                        selectedSubIndex = selectedSubIndex,
+                        onTagClick = { tagId, tagName ->
+                            AnimeNavigator.onTagClick(navController, tagId, tagName)
+                        },
+                        onMediaClick = { AnimeNavigator.onMediaClick(navController, it) },
                     )
                 }
+
+                AnimeNavigator.initialize(navController, this, onClickNav)
             }
         }
     }

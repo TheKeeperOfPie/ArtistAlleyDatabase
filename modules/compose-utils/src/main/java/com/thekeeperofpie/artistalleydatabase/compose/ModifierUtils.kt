@@ -46,5 +46,20 @@ fun Modifier.fadingEdge(
         }
 }
 
-fun Modifier.optionalClickable(onClick: (() -> Unit)?) =
-    if (onClick == null) this else clickable(onClick = onClick)
+fun Modifier.fadingEdgeBottom(expanded: Boolean, firstStop: Float = 0.8f) =
+    graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }
+        .drawWithCache {
+            val brush = Brush.verticalGradient(
+                firstStop to Color.Black,
+                1f to Color.Transparent,
+            )
+            onDrawWithContent {
+                drawContent()
+                if (!expanded) {
+                    drawRect(brush, blendMode = BlendMode.DstIn)
+                }
+            }
+        }
+
+fun Modifier.optionalClickable(onClick: (() -> Unit)?, enabled: Boolean = true) =
+    if (onClick == null) this else clickable(enabled = enabled, onClick = onClick)

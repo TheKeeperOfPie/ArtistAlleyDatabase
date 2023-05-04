@@ -15,6 +15,7 @@
     <string name="anime_media_list_no_results">No results</string>
     <string name="anime_screen_user_list">User list</string>
     <string name="anime_screen_search">Search</string>
+    <string name="anime_screen_profile">Profile</string>
 
     <string name="anime_media_sort_default">Default</string>
     <string name="anime_media_sort_id">ID</string>
@@ -353,4 +354,6 @@
     <string name="anime_media_edit_confirm_close_title">Unsaved changes</string>
     <string name="anime_media_edit_confirm_close_text">Do you want to save changes?</string>
     <string name="anime_media_edit_confirm_delete_title">Delete entry?</string>
+    <string name="anime_user_error_loading">Error loading user</string>
+    <string name="anime_user_about_label">About</string>
 </resources>
