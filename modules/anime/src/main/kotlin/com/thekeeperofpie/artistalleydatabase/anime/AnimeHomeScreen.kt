@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
@@ -40,6 +41,7 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
+@OptIn(ExperimentalMaterial3Api::class)
 object AnimeHomeScreen {
 
     @Composable
@@ -77,7 +79,7 @@ object AnimeHomeScreen {
             },
         ) {
             // TODO: Use an offset that mutates the filter bottom panel directly
-            val offset = LocalDensity.current.run { -scrollBehavior.heightOffset.toDp() }
+            val offset = LocalDensity.current.run { -scrollBehavior.state.heightOffset.toDp() }
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier

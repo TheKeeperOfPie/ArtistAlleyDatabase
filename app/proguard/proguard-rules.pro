@@ -107,3 +107,6 @@
 -dontwarn org.chromium.net.impl.VersionSafeCallbacks$UploadDataProviderWrapper
 -dontwarn org.chromium.net.impl.VersionSafeCallbacks$UrlRequestCallback
 -dontwarn org.chromium.net.impl.VersionSafeCallbacks$UrlRequestStatusListener
+
+# For export zip
+-keep class org.apache.commons.compress.archivers.zip.** { *; }

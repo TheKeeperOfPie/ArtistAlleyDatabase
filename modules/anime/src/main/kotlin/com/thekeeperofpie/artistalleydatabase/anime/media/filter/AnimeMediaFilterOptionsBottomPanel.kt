@@ -39,7 +39,6 @@ import androidx.compose.material.icons.filled.RemoveCircleOutline
 import androidx.compose.material.icons.filled.UnfoldLess
 import androidx.compose.material.icons.filled.UnfoldMore
 import androidx.compose.material3.BottomSheetDefaults
-import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -56,8 +55,6 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
-import androidx.compose.material3.rememberBottomSheetScaffoldState
-import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -81,12 +78,15 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.StartEndDateDialog
 import com.thekeeperofpie.artistalleydatabase.anime.ui.StartEndDateRow
 import com.thekeeperofpie.artistalleydatabase.anime.utils.IncludeExcludeState
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
+import com.thekeeperofpie.artistalleydatabase.compose.BottomSheetScaffoldNoAppBarOffset
 import com.thekeeperofpie.artistalleydatabase.compose.ButtonFooter
 import com.thekeeperofpie.artistalleydatabase.compose.CustomOutlinedTextField
 import com.thekeeperofpie.artistalleydatabase.compose.ItemDropdown
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
 import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.filterChipColors
+import com.thekeeperofpie.artistalleydatabase.compose.rememberBottomSheetScaffoldState
+import com.thekeeperofpie.artistalleydatabase.compose.rememberStandardBottomSheetState
 import kotlinx.coroutines.launch
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
@@ -120,7 +120,7 @@ object AnimeMediaFilterOptionsBottomPanel {
             }
         }
 
-        BottomSheetScaffold(
+        BottomSheetScaffoldNoAppBarOffset(
             scaffoldState = scaffoldState,
             sheetPeekHeight = 48.dp,
             sheetDragHandle = {

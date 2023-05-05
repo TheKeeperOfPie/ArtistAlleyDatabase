@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -14,16 +13,19 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
@@ -35,10 +37,13 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeMediaFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeMediaFilterOptionsBottomPanel
+import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBar
 import com.thekeeperofpie.artistalleydatabase.compose.NavMenuIconButton
+import com.thekeeperofpie.artistalleydatabase.compose.NestedScrollSplitter
 import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 
+@OptIn(ExperimentalMaterial3Api::class)
 object AnimeUserListScreen {
 
     @Composable
@@ -57,13 +62,10 @@ object AnimeUserListScreen {
         onMediaClick: (AnimeMediaListRow.Entry) -> Unit = {},
         scrollStateSaver: ScrollStateSaver = ScrollStateSaver.STUB,
     ) {
+        val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
         AnimeMediaFilterOptionsBottomPanel(
             topBar = {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .wrapContentWidth()
-                ) {
+                EnterAlwaysTopAppBar(scrollBehavior = scrollBehavior) {
                     TextField(
                         query(),
                         placeholder = { Text(stringResource(id = R.string.anime_user_list_search)) },
@@ -93,7 +95,7 @@ object AnimeUserListScreen {
             },
             filterData = filterData,
             onTagLongClicked = onTagLongClick,
-        ) {
+        ) { scaffoldPadding ->
             @Suppress("NAME_SHADOWING")
             val content = content()
             val refreshing = when (content) {
@@ -107,11 +109,12 @@ object AnimeUserListScreen {
                 onRefresh = onRefresh,
                 tagShown = tagShown,
                 onTagDismiss = onTagDismiss,
-                modifier = Modifier.padding(it).run {
-                    if (nestedScrollConnection == null) this else nestedScroll(
-                        nestedScrollConnection
+                modifier = Modifier.nestedScroll(
+                    NestedScrollSplitter(
+                        nestedScrollConnection,
+                        scrollBehavior.nestedScrollConnection,
                     )
-                },
+                )
             ) { onLongPressImage ->
                 when (content) {
                     is AnimeUserListViewModel.ContentState.Error -> AnimeMediaListScreen.Error()
@@ -125,7 +128,13 @@ object AnimeUserListScreen {
                     is AnimeUserListViewModel.ContentState.Success -> {
                         LazyColumn(
                             state = scrollStateSaver.lazyListState(),
-                            contentPadding = PaddingValues(horizontal = 16.dp),
+                            contentPadding = PaddingValues(
+                                start = 16.dp,
+                                end = 16.dp,
+                                top = LocalDensity.current
+                                    .run { -scrollBehavior.state.heightOffsetLimit.toDp() },
+                                bottom = scaffoldPadding.calculateBottomPadding()
+                            ),
                             verticalArrangement = Arrangement.spacedBy(16.dp),
                         ) {
                             items(content.entries, { it.id.scopedId }) {

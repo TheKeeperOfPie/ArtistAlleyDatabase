@@ -1,11 +1,8 @@
 package com.thekeeperofpie.artistalleydatabase.anime.search
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -17,10 +14,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
@@ -38,7 +37,9 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeMediaFilte
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeMediaFilterOptionsBottomPanel
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.compose.AppBar
+import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBar
 import com.thekeeperofpie.artistalleydatabase.compose.NavMenuIconButton
+import com.thekeeperofpie.artistalleydatabase.compose.NestedScrollSplitter
 import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
 import kotlinx.coroutines.flow.flowOf
 
@@ -66,14 +67,11 @@ object AnimeSearchScreen {
         onMediaLongClick: (AnimeMediaListRow.Entry) -> Unit = {},
         scrollStateSaver: ScrollStateSaver = ScrollStateSaver.STUB,
     ) {
+        val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
         AnimeMediaFilterOptionsBottomPanel(
             topBar = {
                 if (isRoot()) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .wrapContentWidth()
-                    ) {
+                    EnterAlwaysTopAppBar(scrollBehavior = scrollBehavior) {
                         TextField(
                             query(),
                             placeholder = { Text(stringResource(id = R.string.anime_search)) },
@@ -104,12 +102,13 @@ object AnimeSearchScreen {
                     AppBar(
                         text = title().orEmpty(),
                         onClickBack = onClickNav,
+                        scrollBehavior = scrollBehavior,
                     )
                 }
             },
             filterData = filterData,
             onTagLongClicked = onTagLongClick,
-        ) {
+        ) { scaffoldPadding ->
             @Suppress("NAME_SHADOWING")
             val content = content()
             val refreshing = content.loadState.refresh is LoadState.Loading
@@ -118,12 +117,12 @@ object AnimeSearchScreen {
                 onRefresh = onRefresh,
                 tagShown = tagShown,
                 onTagDismiss = onTagDismiss,
-                modifier = Modifier.padding(it)
-                    .run {
-                        if (nestedScrollConnection == null) this else nestedScroll(
-                            nestedScrollConnection
-                        )
-                    },
+                modifier = Modifier.nestedScroll(
+                    NestedScrollSplitter(
+                        nestedScrollConnection,
+                        scrollBehavior.nestedScrollConnection,
+                    )
+                )
             ) { onLongPressImage ->
                 when (content.loadState.refresh) {
                     LoadState.Loading -> Unit
@@ -135,8 +134,11 @@ object AnimeSearchScreen {
                             LazyColumn(
                                 state = scrollStateSaver.lazyListState(),
                                 contentPadding = PaddingValues(
-                                    horizontal = 16.dp,
-                                    vertical = 16.dp
+                                    start = 16.dp,
+                                    end = 16.dp,
+                                    top = 16.dp + LocalDensity.current
+                                        .run { -scrollBehavior.state.heightOffsetLimit.toDp() },
+                                    bottom = 16.dp + scaffoldPadding.calculateBottomPadding()
                                 ),
                                 verticalArrangement = Arrangement.spacedBy(16.dp),
                             ) {
