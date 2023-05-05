@@ -99,7 +99,7 @@ object AnimeMediaFilterOptionsBottomPanel {
     @Composable
     operator fun <SortOption : AnimeMediaFilterController.Data.SortOption> invoke(
         modifier: Modifier = Modifier,
-        topBar: @Composable () -> Unit = {},
+        topBar: (@Composable () -> Unit)? = null,
         filterData: () -> AnimeMediaFilterController.Data<SortOption>,
         onTagLongClicked: (String) -> Unit = {},
         errorRes: () -> Int? = { null },

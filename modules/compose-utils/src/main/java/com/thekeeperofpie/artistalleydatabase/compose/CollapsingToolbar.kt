@@ -112,13 +112,9 @@ fun EnterAlwaysTopAppBar(
                     if (heightOffsetLimit == 0f) {
                         heightOffsetLimit = -it.height.toFloat()
                     }
-                }.run {
-                    if (heightOffsetLimit != 0f) {
-                        offset(y = LocalDensity.current.run {
-                            scrollBehavior.state.heightOffset.toDp()
-                        })
-                    } else this
-                },
+                }.offset(y = LocalDensity.current.run {
+                    scrollBehavior.state.heightOffset.toDp()
+                }),
             content = content,
         )
     }

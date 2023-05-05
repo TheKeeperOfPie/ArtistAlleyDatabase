@@ -39,6 +39,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import coil.compose.AsyncImage
@@ -58,6 +59,7 @@ object AnimeMediaListScreen {
         modifier: Modifier = Modifier,
         tagShown: () -> AnimeMediaFilterController.TagSection.Tag? = { null },
         onTagDismiss: () -> Unit = {},
+        pullRefreshTopPadding: @Composable () -> Dp = { 0.dp },
         listContent: @Composable (onLongPressImage: (AnimeMediaListRow.Entry) -> Unit) -> Unit,
     ) {
         val pullRefreshState = rememberPullRefreshState(refreshing, onRefresh)
@@ -75,6 +77,7 @@ object AnimeMediaListScreen {
                 refreshing = refreshing,
                 state = pullRefreshState,
                 modifier = Modifier.align(Alignment.TopCenter)
+                    .padding(top = pullRefreshTopPadding())
             )
 
             entryToPreview?.let {

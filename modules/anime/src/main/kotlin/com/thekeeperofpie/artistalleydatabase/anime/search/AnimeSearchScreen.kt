@@ -117,6 +117,11 @@ object AnimeSearchScreen {
                 onRefresh = onRefresh,
                 tagShown = tagShown,
                 onTagDismiss = onTagDismiss,
+                pullRefreshTopPadding = {
+                    LocalDensity.current
+                        .run { (-scrollBehavior.state.heightOffsetLimit.toDp())
+                            .coerceAtLeast(0.dp) }
+                },
                 modifier = Modifier.nestedScroll(
                     NestedScrollSplitter(
                         nestedScrollConnection,
@@ -137,7 +142,8 @@ object AnimeSearchScreen {
                                     start = 16.dp,
                                     end = 16.dp,
                                     top = 16.dp + LocalDensity.current
-                                        .run { -scrollBehavior.state.heightOffsetLimit.toDp() },
+                                        .run { (-scrollBehavior.state.heightOffsetLimit.toDp())
+                                            .coerceAtLeast(0.dp) },
                                     bottom = 16.dp + scaffoldPadding.calculateBottomPadding()
                                 ),
                                 verticalArrangement = Arrangement.spacedBy(16.dp),

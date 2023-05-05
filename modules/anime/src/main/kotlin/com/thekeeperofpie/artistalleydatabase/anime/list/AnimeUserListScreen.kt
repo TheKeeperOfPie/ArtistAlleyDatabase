@@ -109,6 +109,11 @@ object AnimeUserListScreen {
                 onRefresh = onRefresh,
                 tagShown = tagShown,
                 onTagDismiss = onTagDismiss,
+                pullRefreshTopPadding = {
+                    LocalDensity.current
+                        .run { (-scrollBehavior.state.heightOffsetLimit.toDp())
+                            .coerceAtLeast(0.dp) }
+                },
                 modifier = Modifier.nestedScroll(
                     NestedScrollSplitter(
                         nestedScrollConnection,
@@ -132,7 +137,8 @@ object AnimeUserListScreen {
                                 start = 16.dp,
                                 end = 16.dp,
                                 top = LocalDensity.current
-                                    .run { -scrollBehavior.state.heightOffsetLimit.toDp() },
+                                    .run { (-scrollBehavior.state.heightOffsetLimit.toDp())
+                                        .coerceAtLeast(0.dp) },
                                 bottom = scaffoldPadding.calculateBottomPadding()
                             ),
                             verticalArrangement = Arrangement.spacedBy(16.dp),
