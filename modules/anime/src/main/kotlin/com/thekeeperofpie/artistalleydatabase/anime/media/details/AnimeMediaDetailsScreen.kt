@@ -822,6 +822,7 @@ object AnimeMediaDetailsScreen {
             // Cache character color calculation
             val colorMap = remember { mutableStateMapOf<String, Pair<Color, Color>>() }
 
+            val uriHandler = LocalUriHandler.current
             LazyRow(
                 contentPadding = PaddingValues(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -832,7 +833,7 @@ object AnimeMediaDetailsScreen {
                         id = it.id,
                         image = it.image,
                         colorMap = colorMap,
-                        onClick = onCharacterClicked,
+                        onClick = { uriHandler.openUri(AniListUtils.characterUrl(it)) },
                         innerImage = (it.languageToVoiceActor["Japanese"]
                             ?: it.languageToVoiceActor.values.firstOrNull())?.image,
                     ) { textColor ->
@@ -1020,6 +1021,7 @@ object AnimeMediaDetailsScreen {
             // Cache staff color calculation
             val colorMap = remember { mutableStateMapOf<String, Pair<Color, Color>>() }
 
+            val uriHandler = LocalUriHandler.current
             LazyRow(
                 contentPadding = PaddingValues(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -1030,7 +1032,7 @@ object AnimeMediaDetailsScreen {
                         id = it.id,
                         image = it.image,
                         colorMap = colorMap,
-                        onClick = onStaffClicked,
+                        onClick = { uriHandler.openUri(AniListUtils.staffUrl(it)) },
                     ) { textColor ->
                         it.role?.let {
                             AutoHeightText(
