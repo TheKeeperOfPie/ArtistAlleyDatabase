@@ -219,6 +219,7 @@ object AnimeNavigator {
                 onStaffLongClicked = { /*TODO*/ },
                 onTagClicked = { tagId, tagName -> onTagClick(navHostController, tagId, tagName) },
                 onTagLongClicked = { /*TODO*/ },
+                onUserClick = { onUserClick(navHostController, it) },
                 trailerPlaybackPosition = { viewModel.trailerPlaybackPosition },
                 onTrailerPlaybackPositionUpdate = {
                     viewModel.trailerPlaybackPosition = it
@@ -277,6 +278,11 @@ object AnimeNavigator {
         )
     }
 
+    fun onUserClick(navHostController: NavHostController, userId: String) {
+        // TODO: Pass name and image
+        navHostController.navigate("${AnimeNavDestinations.PROFILE.id}?userId=$userId")
+    }
+
     @Composable
     fun SearchScreen(
         title: String?,
@@ -319,6 +325,7 @@ object AnimeNavigator {
             .apply { initialize(userId) }
         AniListUserScreen(
             user = { viewModel.user.collectAsState().value },
+            viewer = { viewModel.viewer.collectAsState().value },
             scrollStateSaver = scrollStateSaver,
         )
     }

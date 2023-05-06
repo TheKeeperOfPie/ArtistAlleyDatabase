@@ -245,6 +245,25 @@ query MediaDetails($mediaId: Int!) {
                 }
             }
         }
+
+        # TODO: Handle pagination
+        reviews(sort: [RATING_DESC]) {
+            nodes {
+                id
+                user {
+                    id
+                    avatar {
+                        medium
+                    }
+                    name
+                }
+                rating
+                ratingAmount
+                score
+                summary
+                updatedAt
+            }
+        }
         season
         seasonYear
         stats {

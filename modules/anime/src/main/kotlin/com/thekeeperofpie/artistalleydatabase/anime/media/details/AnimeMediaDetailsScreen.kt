@@ -35,6 +35,7 @@ import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
@@ -54,11 +55,16 @@ import androidx.compose.material.icons.filled.Monitor
 import androidx.compose.material.icons.filled.OpenInBrowser
 import androidx.compose.material.icons.filled.PauseCircle
 import androidx.compose.material.icons.filled.PauseCircleOutline
+import androidx.compose.material.icons.filled.PeopleAlt
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.PersonOutline
 import androidx.compose.material.icons.filled.PlayCircleOutline
 import androidx.compose.material.icons.filled.Repeat
+import androidx.compose.material.icons.filled.ThumbDownAlt
+import androidx.compose.material.icons.filled.ThumbUpAlt
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.filled.WatchLater
+import androidx.compose.material.icons.outlined.PeopleAlt
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.BottomSheetScaffold
@@ -178,6 +184,7 @@ object AnimeMediaDetailsScreen {
     private const val RECOMMENDATIONS_ABOVE_FOLD = 5
     private const val SONGS_ABOVE_FOLD = 3
     private const val STREAMING_EPISODES_ABOVE_FOLD = 3
+    private const val REVIEWS_ABOVE_FOLD = 3
 
     // Sorted by most relevant for an anime-first viewer
     private val RELATION_SORT_ORDER = listOf(
@@ -225,6 +232,7 @@ object AnimeMediaDetailsScreen {
         onTagClicked: (tagId: String, tagName: String) -> Unit = { _, _ -> },
         onTagLongClicked: (String) -> Unit = {},
         onMediaClicked: (AnimeMediaListRow.Entry) -> Unit = {},
+        onUserClick: (String) -> Unit = {},
         trailerPlaybackPosition: () -> Float,
         onTrailerPlaybackPositionUpdate: (Float) -> Unit,
         listEntry: @Composable () -> MediaDetailsListEntry?,
@@ -473,6 +481,8 @@ object AnimeMediaDetailsScreen {
                 var songsExpanded by remember { mutableStateOf(false) }
                 var streamingEpisodesExpanded by remember { mutableStateOf(false) }
                 var streamingEpisodesHidden by remember { mutableStateOf(true) }
+                var reviewsExpanded by remember { mutableStateOf(false) }
+
                 LazyColumn(
                     state = lazyListState,
                     contentPadding = PaddingValues(bottom = 16.dp),
@@ -499,6 +509,7 @@ object AnimeMediaDetailsScreen {
                         onTagClicked = onTagClicked,
                         onTagLongClicked = onTagLongClicked,
                         onMediaClicked = onMediaClicked,
+                        onUserClick = onUserClick,
                         relationsExpanded = { relationsExpanded },
                         onRelationsExpandedToggled = { relationsExpanded = it },
                         recommendationsExpanded = { recommendationsExpanded },
@@ -509,13 +520,15 @@ object AnimeMediaDetailsScreen {
                         onStreamingEpisodesExpandedToggled = { streamingEpisodesExpanded = it },
                         streamingEpisodesHidden = { streamingEpisodesHidden },
                         onStreamingEpisodesHiddenToggled = { streamingEpisodesHidden = it },
+                        reviewsExpanded = { reviewsExpanded },
+                        onReviewsExpandedToggled = { reviewsExpanded = it },
                         trailerPlaybackPosition = trailerPlaybackPosition,
                         onTrailerPlaybackPositionUpdate = onTrailerPlaybackPositionUpdate,
                     )
                 }
             }
         }
-        
+
         if (editData.showConfirmClose) {
             AlertDialog(
                 onDismissRequest = { editData.showConfirmClose = false },
@@ -568,6 +581,7 @@ object AnimeMediaDetailsScreen {
         onTagClicked: (tagId: String, tagName: String) -> Unit,
         onTagLongClicked: (String) -> Unit,
         onMediaClicked: (AnimeMediaListRow.Entry) -> Unit,
+        onUserClick: (String) -> Unit,
         relationsExpanded: () -> Boolean,
         onRelationsExpandedToggled: (Boolean) -> Unit,
         recommendationsExpanded: () -> Boolean,
@@ -578,6 +592,8 @@ object AnimeMediaDetailsScreen {
         onStreamingEpisodesExpandedToggled: (Boolean) -> Unit,
         streamingEpisodesHidden: () -> Boolean,
         onStreamingEpisodesHiddenToggled: (Boolean) -> Unit,
+        reviewsExpanded: () -> Boolean,
+        onReviewsExpandedToggled: (Boolean) -> Unit,
         trailerPlaybackPosition: () -> Float,
         onTrailerPlaybackPositionUpdate: (Float) -> Unit,
     ) {
@@ -679,6 +695,13 @@ object AnimeMediaDetailsScreen {
             onMediaClicked = onMediaClicked,
             onTagClicked = onTagClicked,
             onTagLongClicked = onTagLongClicked,
+        )
+
+        reviewsSection(
+            reviews = entry.media.reviews?.nodes?.filterNotNull().orEmpty(),
+            expanded = reviewsExpanded,
+            onExpandedToggled = onReviewsExpandedToggled,
+            onUserClick = onUserClick,
         )
     }
 
@@ -2326,6 +2349,140 @@ object AnimeMediaDetailsScreen {
                         onClick = { uriHandler.openUri(it.url) },
                     )
                 }
+            }
+        }
+    }
+
+    private fun LazyListScope.reviewsSection(
+        reviews: List<Media.Reviews.Node>,
+        expanded: () -> Boolean,
+        onExpandedToggled: (Boolean) -> Unit,
+        onUserClick: (String) -> Unit,
+    ) {
+        if (reviews.isEmpty()) return
+        listSection(
+            titleRes = R.string.anime_media_details_reviews_label,
+            values = reviews,
+            aboveFold = REVIEWS_ABOVE_FOLD,
+            expanded = expanded,
+            onExpandedToggled = onExpandedToggled,
+        ) { item, paddingBottom ->
+            val uriHandler = LocalUriHandler.current
+            ElevatedCard(
+                modifier = Modifier
+                    .padding(start = 16.dp, end = 16.dp, bottom = paddingBottom)
+                    .clickable { uriHandler.openUri(AniListUtils.reviewUrl(item.id.toString())) },
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .padding(start = 16.dp)
+                        .height(IntrinsicSize.Min)
+                        .heightIn(min = 72.dp)
+                ) {
+                    AsyncImage(
+                        model = item.user?.avatar?.medium,
+                        contentScale = ContentScale.FillHeight,
+                        contentDescription = stringResource(
+                            R.string.anime_media_details_reviews_user_avatar_content_description
+                        ),
+                        modifier = Modifier
+                            .heightIn(min = 64.dp)
+                            .padding(vertical = 10.dp)
+                            .clip(RoundedCornerShape(4.dp))
+                            .clickable { onUserClick(item.user!!.id.toString()) },
+                    )
+
+                    Box(
+                        Modifier
+                            .weight(1f)
+                            .fillMaxHeight()
+                    ) {
+                        Text(
+                            text = item.user?.name.orEmpty(),
+                            modifier = Modifier
+                                .padding(horizontal = 16.dp, vertical = 10.dp)
+                                .align(Alignment.CenterStart)
+                        )
+                    }
+
+                    item.rating?.let {
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(4.dp),
+                            horizontalAlignment = Alignment.End,
+                            modifier = Modifier
+                                .wrapContentWidth()
+                                .padding(horizontal = 8.dp, vertical = 8.dp)
+                                .align(Alignment.Top),
+                        ) {
+                            val ratingAmount = item.ratingAmount ?: 0
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier
+                                    .height(24.dp),
+                            ) {
+                                AutoHeightText(
+                                    text = it.toString(),
+                                    style = MaterialTheme.typography.labelLarge,
+                                )
+
+                                val ratio = it / ratingAmount.toFloat()
+                                val iconTint = when {
+                                    ratio > 0.6f -> Color.Green
+                                    ratio > 0.4f -> Color.Yellow
+                                    ratio > 0.2f -> Color(0xFFFF9000) // Orange
+                                    else -> Color.Red
+                                }
+                                Icon(
+                                    imageVector = if (ratio > 0.4f) {
+                                        Icons.Filled.ThumbUpAlt
+                                    } else {
+                                        Icons.Filled.ThumbDownAlt
+                                    },
+                                    contentDescription = stringResource(
+                                        R.string.anime_media_details_reviews_rating_upvote_content_description
+                                    ),
+                                    tint = iconTint,
+                                )
+                            }
+
+                            if (ratingAmount > 0) {
+                                Row(
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier
+                                        .height(16.dp)
+                                        .padding(end = 4.dp)
+                                ) {
+                                    AutoHeightText(
+                                        text = ratingAmount.toString(),
+                                        style = MaterialTheme.typography.labelLarge,
+                                    )
+
+                                    Icon(
+                                        imageVector = when {
+                                            it > 100 -> Icons.Filled.PeopleAlt
+                                            it > 50 -> Icons.Outlined.PeopleAlt
+                                            it > 10 -> Icons.Filled.Person
+                                            else -> Icons.Filled.PersonOutline
+                                        },
+                                        contentDescription = stringResource(
+                                            R.string.anime_media_details_reviews_rating_amount_content_description
+                                        ),
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Text(
+                    text = item.summary.orEmpty(),
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp, vertical = 10.dp)
+                )
             }
         }
     }

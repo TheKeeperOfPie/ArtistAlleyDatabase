@@ -13,6 +13,7 @@ query AuthedUser {
 
 query UserById($id: Int!) {
     User(id: $id) {
+        id
         name
         about(asHtml: true)
         avatar {

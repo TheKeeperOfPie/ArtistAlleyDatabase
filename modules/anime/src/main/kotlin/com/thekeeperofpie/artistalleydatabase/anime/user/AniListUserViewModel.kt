@@ -21,6 +21,7 @@ class AniListUserViewModel @Inject constructor(
     private var userId: String? = null
 
     val user = MutableStateFlow<UserByIdQuery.Data.User?>(null)
+    val viewer = aniListApi.authedUser
     var errorResource = MutableStateFlow<Pair<Int, Exception?>?>(null)
 
     private val refreshUptimeMillis = MutableStateFlow(-1L)
