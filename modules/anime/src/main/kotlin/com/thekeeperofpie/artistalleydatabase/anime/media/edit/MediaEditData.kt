@@ -50,8 +50,8 @@ class MediaEditData {
                 }
                 scoreAsFloat?.toInt()?.coerceAtMost(100)
             }
+            ScoreFormat.POINT_10 -> score.toIntOrNull()?.let { it * 10 }
             ScoreFormat.POINT_100,
-            ScoreFormat.POINT_10,
             ScoreFormat.POINT_5,
             ScoreFormat.POINT_3,
             ScoreFormat.UNKNOWN__ -> score.toIntOrNull()

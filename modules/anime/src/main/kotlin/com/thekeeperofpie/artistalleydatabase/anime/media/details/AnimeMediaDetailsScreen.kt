@@ -30,7 +30,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
@@ -68,7 +67,6 @@ import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
-import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
@@ -159,6 +157,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.AutoSizeText
 import com.thekeeperofpie.artistalleydatabase.compose.CollapsingToolbar
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
 import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
+import com.thekeeperofpie.artistalleydatabase.compose.VerticalDivider
 import com.thekeeperofpie.artistalleydatabase.compose.assistChipColors
 import com.thekeeperofpie.artistalleydatabase.compose.fadingEdgeBottom
 import com.thekeeperofpie.artistalleydatabase.compose.multiplyCoerceSaturation
@@ -994,12 +993,9 @@ object AnimeMediaDetailsScreen {
                 ) {
                     InfoText(label = labelOne, body = bodyOne, showDividerAbove = false)
                 }
-                Box(
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .width(DividerDefaults.Thickness)
-                        .background(color = DividerDefaults.color)
-                )
+
+                VerticalDivider()
+
                 Column(
                     modifier = Modifier
                         .weight(1f)

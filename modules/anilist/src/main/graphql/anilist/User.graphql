@@ -88,5 +88,18 @@ query UserById($id: Int!) {
                 }
             }
         }
+
+        statistics {
+            anime {
+                count
+                meanScore
+                minutesWatched
+            }
+            manga {
+                count
+                meanScore
+                chaptersRead
+            }
+        }
     }
 }

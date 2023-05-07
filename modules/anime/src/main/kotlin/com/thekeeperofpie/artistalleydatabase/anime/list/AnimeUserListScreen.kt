@@ -29,6 +29,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.anilist.UserMediaListQuery.Data.MediaListCollection.List.Entry.Media
 import com.anilist.type.MediaListStatus
@@ -61,6 +62,8 @@ object AnimeUserListScreen {
         onTagLongClick: (tagId: String) -> Unit = {},
         onMediaClick: (AnimeMediaListRow.Entry) -> Unit = {},
         scrollStateSaver: ScrollStateSaver = ScrollStateSaver.STUB,
+        bottomNavBarPadding: @Composable () -> Dp = { 0.dp },
+        bottomOffset: @Composable () -> Dp = { 0.dp },
     ) {
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
         AnimeMediaFilterOptionsBottomPanel(
@@ -95,6 +98,8 @@ object AnimeUserListScreen {
             },
             filterData = filterData,
             onTagLongClicked = onTagLongClick,
+            bottomNavBarPadding = bottomNavBarPadding,
+            bottomOffset = bottomOffset,
         ) { scaffoldPadding ->
             @Suppress("NAME_SHADOWING")
             val content = content()
@@ -110,9 +115,10 @@ object AnimeUserListScreen {
                 tagShown = tagShown,
                 onTagDismiss = onTagDismiss,
                 pullRefreshTopPadding = {
-                    LocalDensity.current
-                        .run { (-scrollBehavior.state.heightOffsetLimit.toDp())
-                            .coerceAtLeast(0.dp) }
+                    scrollBehavior.state.heightOffsetLimit
+                        .takeUnless { it == -Float.MAX_VALUE }
+                        ?.let { LocalDensity.current.run { -it.toDp() } }
+                        ?: 0.dp
                 },
                 modifier = Modifier.nestedScroll(
                     NestedScrollSplitter(
@@ -136,9 +142,10 @@ object AnimeUserListScreen {
                             contentPadding = PaddingValues(
                                 start = 16.dp,
                                 end = 16.dp,
-                                top = LocalDensity.current
-                                    .run { (-scrollBehavior.state.heightOffsetLimit.toDp())
-                                        .coerceAtLeast(0.dp) },
+                                top = scrollBehavior.state.heightOffsetLimit
+                                    .takeUnless { it == -Float.MAX_VALUE }
+                                    ?.let { LocalDensity.current.run { -it.toDp() } }
+                                    ?: 0.dp,
                                 bottom = scaffoldPadding.calculateBottomPadding()
                             ),
                             verticalArrangement = Arrangement.spacedBy(16.dp),

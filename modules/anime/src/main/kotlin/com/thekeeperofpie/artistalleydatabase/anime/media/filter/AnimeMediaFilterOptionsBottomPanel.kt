@@ -69,6 +69,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.anilist.type.MediaSeason
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
@@ -105,6 +106,8 @@ object AnimeMediaFilterOptionsBottomPanel {
         errorRes: () -> Int? = { null },
         exception: () -> Exception? = { null },
         expandedForPreview: Boolean = false,
+        bottomNavBarPadding: @Composable () -> Dp = { 0.dp },
+        bottomOffset: @Composable () -> Dp = { 0.dp },
         content: @Composable (PaddingValues) -> Unit,
     ) {
         val scaffoldState = if (expandedForPreview) {
@@ -122,7 +125,7 @@ object AnimeMediaFilterOptionsBottomPanel {
 
         BottomSheetScaffoldNoAppBarOffset(
             scaffoldState = scaffoldState,
-            sheetPeekHeight = 48.dp,
+            sheetPeekHeight = 48.dp + bottomNavBarPadding() + bottomOffset(),
             sheetDragHandle = {
                 Box(Modifier.fillMaxWidth()) {
                     BottomSheetDefaults.DragHandle(modifier = Modifier.align(Alignment.Center))
@@ -164,7 +167,8 @@ object AnimeMediaFilterOptionsBottomPanel {
             sheetContent = {
                 OptionsPanel(
                     filterData = filterData,
-                    onTagLongClicked = onTagLongClicked
+                    onTagLongClicked = onTagLongClicked,
+                    modifier = Modifier.padding(bottom = bottomNavBarPadding() + bottomOffset())
                 )
             },
             sheetTonalElevation = 4.dp,
@@ -189,10 +193,11 @@ object AnimeMediaFilterOptionsBottomPanel {
     private fun <SortOption : AnimeMediaFilterController.Data.SortOption> OptionsPanel(
         filterData: () -> AnimeMediaFilterController.Data<SortOption>,
         onTagLongClicked: (String) -> Unit,
+        modifier: Modifier = Modifier,
     ) {
         var airingDateShown by remember { mutableStateOf<Boolean?>(null) }
         Column(
-            Modifier
+            modifier
                 .fillMaxWidth()
                 .verticalScroll(rememberScrollState())
                 .animateContentSize()
@@ -991,7 +996,7 @@ object AnimeMediaFilterOptionsBottomPanel {
         ) {
             ItemDropdown(
                 label = R.string.anime_media_filter_airing_date_season,
-                value = stringResource(data.season.toTextRes()),
+                value = data.season?.toTextRes()?.let { stringResource(it) }.orEmpty(),
                 iconContentDescription = R.string.anime_media_filter_airing_date_season_dropdown_content_description,
                 values = {
                     listOf(
@@ -1002,7 +1007,7 @@ object AnimeMediaFilterOptionsBottomPanel {
                         MediaSeason.FALL,
                     )
                 },
-                textForValue = { stringResource(it.toTextRes()) },
+                textForValue = { it?.toTextRes()?.let { stringResource(it) }.orEmpty() },
                 onSelectItem = onSeasonChanged,
                 modifier = Modifier.weight(1f),
             )

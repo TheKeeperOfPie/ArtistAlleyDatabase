@@ -6,7 +6,8 @@ import android.view.WindowInsets
 import android.view.WindowInsetsController
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -257,14 +258,8 @@ class MainActivity : ComponentActivity() {
             ) {
                 animationComposable(
                     NavDestinations.HOME,
-                    enterTransition = {
-                        slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up)
-                    },
-                    exitTransition = {
-                        slideOutOfContainer(
-                            AnimatedContentTransitionScope.SlideDirection.Down
-                        )
-                    },
+                    enterTransition = { EnterTransition.None },
+                    exitTransition = { ExitTransition.None },
                 ) {
                     val viewModel = hiltViewModel<AnimeHomeViewModel>()
                     AnimeHomeScreen(

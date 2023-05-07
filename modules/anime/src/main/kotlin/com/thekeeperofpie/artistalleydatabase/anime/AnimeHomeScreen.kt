@@ -15,6 +15,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
@@ -27,6 +28,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.anilist.fragment.UserFavoriteMediaNode
@@ -62,8 +64,16 @@ object AnimeHomeScreen {
         errorRes: () -> Pair<Int, Exception?>? = { null },
         onErrorDismiss: () -> Unit = { },
     ) {
-        var selectedScreen by remember { mutableStateOf(AnimeNavDestinations.SEARCH) }
+        var selectedScreen by rememberSaveable(stateSaver = object : Saver<AnimeNavDestinations, String> {
+            override fun restore(value: String) =
+                AnimeNavDestinations.values().find { it.id == value } ?: AnimeNavDestinations.SEARCH
+
+            override fun SaverScope.save(value: AnimeNavDestinations) = value.id
+        }) { mutableStateOf(AnimeNavDestinations.SEARCH) }
+
         val scrollBehavior = navigationBarEnterAlwaysScrollBehavior()
+
+        @Suppress("UnusedMaterial3ScaffoldPaddingParameter")
         Scaffold(
             snackbarHost = {
                 SnackbarErrorText(
@@ -85,13 +95,33 @@ object AnimeHomeScreen {
                 }
             },
         ) {
-            // TODO: Use an offset that mutates the filter bottom panel directly
-            val offset = LocalDensity.current.run { -scrollBehavior.state.heightOffset.toDp() }
+            @Composable
+            fun bottomNavBarPadding(): Dp {
+                val density = LocalDensity.current
+                return remember {
+                    derivedStateOf {
+                        scrollBehavior.state.heightOffsetLimit
+                            .takeUnless { it == -Float.MAX_VALUE }
+                            ?.let { density.run { -it.toDp() } }
+                            ?: 80.dp
+                    }
+                }.value
+            }
+
+            @Composable
+            fun bottomOffset(): Dp {
+                val density = LocalDensity.current
+                return remember {
+                    derivedStateOf {
+                        density.run { scrollBehavior.state.heightOffset.toDp() }
+                    }
+                }.value
+            }
+
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(bottom = it.calculateBottomPadding() - offset)
             ) {
                 if (needAuth()) {
                     AuthPrompt(onClickAuth = onClickAuth, onSubmitAuthToken = onSubmitAuthToken)
@@ -133,6 +163,8 @@ object AnimeHomeScreen {
                                         AnimeNavDestinations.LIST.id,
                                         scrollPositions
                                     ),
+                                    bottomNavBarPadding = { bottomNavBarPadding() },
+                                    bottomOffset = { bottomOffset() },
                                 )
                             }
                             AnimeNavDestinations.SEARCH -> {
@@ -147,6 +179,8 @@ object AnimeHomeScreen {
                                         scrollPositions
                                     ),
                                     nestedScrollConnection = scrollBehavior.nestedScrollConnection,
+                                    bottomNavBarPadding = { bottomNavBarPadding() },
+                                    bottomOffset = { bottomOffset() },
                                 )
                             }
                             AnimeNavDestinations.PROFILE -> {

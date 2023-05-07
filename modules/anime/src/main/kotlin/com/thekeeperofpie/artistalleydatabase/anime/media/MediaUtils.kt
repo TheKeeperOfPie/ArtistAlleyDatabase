@@ -122,8 +122,7 @@ object MediaUtils {
         null -> R.string.anime_media_format_unknown
     }
 
-    fun MediaSeason?.toTextRes() = when (this) {
-        null,
+    fun MediaSeason.toTextRes() = when (this) {
         MediaSeason.UNKNOWN__ -> R.string.anime_media_filter_airing_date_season_default
         MediaSeason.WINTER -> R.string.anime_media_filter_airing_date_season_winter
         MediaSeason.SPRING -> R.string.anime_media_filter_airing_date_season_spring
@@ -253,7 +252,7 @@ object MediaUtils {
         stringResource(
             seasonYearTextRes,
             ranking.rank,
-            stringResource(ranking.season.toTextRes()),
+            ranking.season?.toTextRes()?.let { stringResource(it) }.orEmpty(),
             ranking.year!!
         )
     } else if (ranking.year != null) {

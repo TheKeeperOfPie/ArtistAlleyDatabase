@@ -4,11 +4,15 @@ import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
@@ -57,6 +61,9 @@ import com.thekeeperofpie.artistalleydatabase.compose.AutoResizeHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.CollapsingToolbar
 import com.thekeeperofpie.artistalleydatabase.compose.ColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
+import com.thekeeperofpie.artistalleydatabase.compose.VerticalDivider
+import kotlin.time.Duration.Companion.minutes
+import kotlin.time.DurationUnit
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Suppress("NAME_SHADOWING")
@@ -146,6 +153,9 @@ object AniListUserScreen {
                     titleTextRes = R.string.anime_user_about_label,
                     htmlText = user.about?.trim()
                 )
+
+                animeStatisticsSection(user)
+                mangaStatisticsSection(user)
 
                 favoriteMediaSection(
                     titleRes = R.string.anime_user_favorite_anime_label,
@@ -240,6 +250,64 @@ object AniListUserScreen {
                     },
                     label = { AutoHeightText(stringResource(R.string.anime_user_following)) },
                 )
+            }
+        }
+    }
+
+    private fun LazyListScope.animeStatisticsSection(user: User) {
+        val statistics = user.statistics?.anime ?: return
+        statisticsSection(
+            titleRes = R.string.anime_user_statistics_anime,
+            statistics.count.toString() to R.string.anime_user_statistics_count,
+            String.format("%.1f", statistics.minutesWatched.minutes.toDouble(DurationUnit.DAYS)) to
+                    R.string.anime_user_statistics_anime_days_watched,
+            String.format("%.1f", statistics.meanScore) to
+                    R.string.anime_user_statistics_mean_score,
+        )
+    }
+
+    private fun LazyListScope.mangaStatisticsSection(user: User) {
+        val statistics = user.statistics?.manga ?: return
+        statisticsSection(
+            titleRes = R.string.anime_user_statistics_manga,
+            statistics.count.toString() to R.string.anime_user_statistics_count,
+            statistics.chaptersRead.toString() to
+                    R.string.anime_user_statistics_manga_chapters_read,
+            String.format("%.1f", statistics.meanScore) to
+                    R.string.anime_user_statistics_mean_score,
+        )
+    }
+
+    private fun LazyListScope.statisticsSection(
+        @StringRes titleRes: Int,
+        vararg pairs: Pair<String, Int>,
+    ) {
+        item {
+            DetailsSectionHeader(stringResource(titleRes))
+        }
+
+        item {
+            ElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
+                Row(modifier = Modifier
+                    .fillMaxWidth()
+                    .height(IntrinsicSize.Min)
+                ) {
+                    pairs.forEachIndexed { index, pair ->
+                        if (index != 0) {
+                            VerticalDivider(modifier = Modifier.padding(vertical = 8.dp))
+                        }
+
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier
+                                .weight(0.33f)
+                                .padding(8.dp)
+                        ) {
+                            Text(text = pair.first, color = MaterialTheme.colorScheme.surfaceTint)
+                            Text(text = stringResource(pair.second))
+                        }
+                    }
+                }
             }
         }
     }

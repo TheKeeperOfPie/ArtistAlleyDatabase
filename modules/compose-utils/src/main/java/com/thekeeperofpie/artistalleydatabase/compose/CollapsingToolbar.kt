@@ -28,6 +28,7 @@ import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -62,9 +63,7 @@ fun CollapsingToolbar(
     }
 
     SideEffect {
-        if (scrollBehavior.state.heightOffsetLimit != pinnedHeightPx - maxHeightPx) {
-            scrollBehavior.state.heightOffsetLimit = pinnedHeightPx - maxHeightPx
-        }
+        scrollBehavior.state.heightOffsetLimit = pinnedHeightPx - maxHeightPx
     }
 
     val progress = scrollBehavior.state.collapsedFraction
@@ -144,7 +143,12 @@ fun EnterAlwaysNavigationBar(
         }
     )
 
-    val offset = LocalDensity.current.run { -scrollBehavior.state.heightOffset.toDp() }
+    val density = LocalDensity.current
+    val offset by remember {
+        derivedStateOf {
+            density.run { -scrollBehavior.state.heightOffset.toDp() }
+        }
+    }
     NavigationBar(
         modifier
             .offset(y = offset)

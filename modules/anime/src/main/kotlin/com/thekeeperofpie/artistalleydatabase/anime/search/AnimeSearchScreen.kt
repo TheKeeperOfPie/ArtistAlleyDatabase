@@ -23,6 +23,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.PagingData
@@ -66,6 +67,8 @@ object AnimeSearchScreen {
         onMediaClick: (AnimeMediaListRow.Entry) -> Unit = {},
         onMediaLongClick: (AnimeMediaListRow.Entry) -> Unit = {},
         scrollStateSaver: ScrollStateSaver = ScrollStateSaver.STUB,
+        bottomNavBarPadding: @Composable () -> Dp = { 0.dp },
+        bottomOffset: @Composable () -> Dp = { 0.dp },
     ) {
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
         AnimeMediaFilterOptionsBottomPanel(
@@ -108,6 +111,8 @@ object AnimeSearchScreen {
             },
             filterData = filterData,
             onTagLongClicked = onTagLongClick,
+            bottomNavBarPadding = bottomNavBarPadding,
+            bottomOffset = bottomOffset,
         ) { scaffoldPadding ->
             @Suppress("NAME_SHADOWING")
             val content = content()
@@ -118,9 +123,10 @@ object AnimeSearchScreen {
                 tagShown = tagShown,
                 onTagDismiss = onTagDismiss,
                 pullRefreshTopPadding = {
-                    LocalDensity.current
-                        .run { (-scrollBehavior.state.heightOffsetLimit.toDp())
-                            .coerceAtLeast(0.dp) }
+                    scrollBehavior.state.heightOffsetLimit
+                        .takeUnless { it == -Float.MAX_VALUE }
+                        ?.let { LocalDensity.current.run { -it.toDp() } }
+                        ?: 0.dp
                 },
                 modifier = Modifier.nestedScroll(
                     NestedScrollSplitter(
@@ -141,9 +147,10 @@ object AnimeSearchScreen {
                                 contentPadding = PaddingValues(
                                     start = 16.dp,
                                     end = 16.dp,
-                                    top = 16.dp + LocalDensity.current
-                                        .run { (-scrollBehavior.state.heightOffsetLimit.toDp())
-                                            .coerceAtLeast(0.dp) },
+                                    top = 16.dp + (scrollBehavior.state.heightOffsetLimit
+                                        .takeUnless { it == -Float.MAX_VALUE }
+                                        ?.let { LocalDensity.current.run { -it.toDp() } }
+                                        ?: 0.dp),
                                     bottom = 16.dp + scaffoldPadding.calculateBottomPadding()
                                 ),
                                 verticalArrangement = Arrangement.spacedBy(16.dp),

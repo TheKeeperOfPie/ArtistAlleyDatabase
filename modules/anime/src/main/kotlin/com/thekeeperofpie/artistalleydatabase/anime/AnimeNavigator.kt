@@ -11,6 +11,8 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
@@ -126,10 +128,9 @@ object AnimeNavigator {
                 arguments.getString("subtitleFormatRes")?.toIntOrNull()
             val subtitleStatusRes =
                 arguments.getString("subtitleStatusRes")?.toIntOrNull()
-            val subtitleSeason =
-                MediaSeason.safeValueOf(
-                    arguments.getString("subtitleSeason") ?: ""
-                )
+            val subtitleSeason = arguments.getString("subtitleSeason")?.let { season ->
+                MediaSeason.values().find { it.rawValue == season }
+            }
             val subtitleSeasonYear =
                 arguments.getString("subtitleSeasonYear")?.toIntOrNull()
             val nextEpisode = arguments.getString("nextEpisode")?.toIntOrNull()
@@ -289,7 +290,7 @@ object AnimeNavigator {
         media: UserFavoriteMediaNode,
     ) = navHostController.navigate(
         "animeDetails?mediaId=${media.id}" +
-                "&title=${media.title}" +
+                "&title=${media.title?.userPreferred}" +
                 "&coverImage=${media.coverImage?.large}" +
                 "&color=${media.coverImage?.color?.let(ColorUtils::hexToColor)?.toArgb()}"
     )
@@ -308,6 +309,8 @@ object AnimeNavigator {
         onMediaClick: (AnimeMediaListRow.Entry) -> Unit,
         scrollStateSaver: ScrollStateSaver,
         nestedScrollConnection: NestedScrollConnection? = null,
+        bottomNavBarPadding: @Composable () -> Dp = { 0.dp },
+        bottomOffset: @Composable () -> Dp = { 0.dp },
     ) {
         val viewModel = hiltViewModel<AnimeSearchViewModel>().apply {
             initialize(AnimeMediaFilterController.InitialParams(tagId = tagId))
@@ -329,6 +332,8 @@ object AnimeNavigator {
             onMediaClick = onMediaClick,
             onMediaLongClick = viewModel::onMediaLongClick,
             scrollStateSaver = scrollStateSaver,
+            bottomNavBarPadding = bottomNavBarPadding,
+            bottomOffset = bottomOffset,
         )
     }
 

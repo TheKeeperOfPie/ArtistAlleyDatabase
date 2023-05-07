@@ -9,6 +9,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.anilist.AuthedUserQuery
 import com.anilist.UserMediaListQuery
+import com.anilist.type.MediaListStatus
 import com.hoc081098.flowext.startWith
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.combine
@@ -95,6 +96,18 @@ class AnimeUserListViewModel @Inject constructor(
                                 filterParams.mediaListCollection
                                     ?.lists
                                     ?.filterNotNull()
+                                    ?.let {
+                                        if (refreshParams.sortOptions.isEmpty()) {
+                                            // If default sort, force COMPLETED list to top
+                                            val index = it.indexOfFirst { it.status == MediaListStatus.COMPLETED }
+                                            if (index >= 0) {
+                                                val mutableList = it.toMutableList()
+                                                val completedList = mutableList.removeAt(index)
+                                                mutableList.add(0, completedList)
+                                                mutableList
+                                            } else it
+                                        } else it
+                                    }
                                     ?.map { toFilteredEntries(filterParams, it) }
                                     ?.flatten()
                                     ?.let(ContentState::Success)

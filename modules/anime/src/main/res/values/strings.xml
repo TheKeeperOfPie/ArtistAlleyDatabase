@@ -136,7 +136,7 @@
     <string name="anime_media_filter_airing_date_content_description">Airing date expand</string>
     <string name="anime_media_filter_airing_date_season">Season</string>
     <string name="anime_media_filter_airing_date_season_dropdown_content_description">Season dropdown</string>
-    <string name="anime_media_filter_airing_date_season_default">Any</string>
+    <string name="anime_media_filter_airing_date_season_default">Unknown</string>
     <string name="anime_media_filter_airing_date_season_winter">Winter</string>
     <string name="anime_media_filter_airing_date_season_spring">Spring</string>
     <string name="anime_media_filter_airing_date_season_summer">Summer</string>
@@ -377,4 +377,10 @@
     <string name="anime_user_favorite_studios_label">Favorite studios</string>
 
     <string name="anime_user_previous_names_label">Previous names</string>
+    <string name="anime_user_statistics_anime">Anime statistics</string>
+    <string name="anime_user_statistics_manga">Manga statistics</string>
+    <string name="anime_user_statistics_count">On list</string>
+    <string name="anime_user_statistics_mean_score">Mean score</string>
+    <string name="anime_user_statistics_anime_days_watched">Days watched</string>
+    <string name="anime_user_statistics_manga_chapters_read">Chapters read</string>
 </resources>

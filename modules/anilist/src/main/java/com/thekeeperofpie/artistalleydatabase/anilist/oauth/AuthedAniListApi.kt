@@ -80,7 +80,7 @@ class AuthedAniListApi(
             UserMediaListQuery(
                 userId = userId,
                 type = type,
-                sort = Optional.presentIfNotNull(sort?.ifEmpty { null }),
+                sort = Optional.present(sort?.ifEmpty { listOf(MediaListSort.FINISHED_ON_DESC) }),
             )
         ).data?.mediaListCollection
 
