@@ -369,4 +369,12 @@
     <string name="anime_user_is_not_follower_content_description">User not following you indicator</string>
     <string name="anime_user_is_following_content_description">Following user indicator</string>
     <string name="anime_user_is_not_following_content_description">Not following user indicator</string>
+
+    <string name="anime_user_favorite_anime_label">Favorite anime</string>
+    <string name="anime_user_favorite_manga_label">Favorite manga</string>
+    <string name="anime_user_favorite_characters_label">Favorite characters</string>
+    <string name="anime_user_favorite_staff_label">Favorite staff</string>
+    <string name="anime_user_favorite_studios_label">Favorite studios</string>
+
+    <string name="anime_user_previous_names_label">Previous names</string>
 </resources>

@@ -17,6 +17,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import androidx.paging.compose.collectAsLazyPagingItems
+import com.anilist.fragment.UserFavoriteMediaNode
 import com.anilist.type.MediaSeason
 import com.google.accompanist.navigation.animation.composable
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
@@ -251,6 +252,12 @@ object AnimeNavigator {
             UserScreen(
                 userId = userId,
                 scrollStateSaver = ScrollStateSaver(),
+                onMediaClick = { onMediaClick(navHostController, it) },
+                onCharacterClicked = { /*TODO*/ },
+                onCharacterLongClicked = { /*TODO*/ },
+                onStaffClicked = { /*TODO*/ },
+                onStaffLongClicked = { /*TODO*/ },
+                onStudioClicked = { /*TODO*/ },
             )
         }
     }
@@ -262,21 +269,30 @@ object AnimeNavigator {
         )
     }
 
-    fun onMediaClick(navHostController: NavHostController, entry: AnimeMediaListRow.Entry) {
+    fun onMediaClick(navHostController: NavHostController, entry: AnimeMediaListRow.Entry) =
         navHostController.navigate(
-            "animeDetails?title=${entry.title}" +
+            "animeDetails?mediaId=${entry.id!!.valueId}" +
+                    "&title=${entry.title}" +
                     "&subtitleFormatRes=${entry.subtitleFormatRes}" +
                     "&subtitleStatusRes=${entry.subtitleStatusRes}" +
                     "&subtitleSeason=${entry.subtitleSeason}" +
                     "&subtitleSeasonYear=${entry.subtitleSeasonYear}" +
                     "&nextEpisode=${entry.nextAiringEpisode?.episode}" +
                     "&nextEpisodeAiringAt=${entry.nextAiringEpisode?.airingAt}" +
-                    "&mediaId=${entry.id!!.valueId}" +
                     "&bannerImage=${entry.imageBanner}" +
                     "&coverImage=${entry.imageExtraLarge}" +
                     "&color=${entry.color?.toArgb()}"
         )
-    }
+
+    fun onMediaClick(
+        navHostController: NavHostController,
+        media: UserFavoriteMediaNode,
+    ) = navHostController.navigate(
+        "animeDetails?mediaId=${media.id}" +
+                "&title=${media.title}" +
+                "&coverImage=${media.coverImage?.large}" +
+                "&color=${media.coverImage?.color?.let(ColorUtils::hexToColor)?.toArgb()}"
+    )
 
     fun onUserClick(navHostController: NavHostController, userId: String) {
         // TODO: Pass name and image
@@ -320,13 +336,25 @@ object AnimeNavigator {
     fun UserScreen(
         userId: String?,
         scrollStateSaver: ScrollStateSaver,
+        onMediaClick: (UserFavoriteMediaNode) -> Unit,
+        onCharacterClicked: (String) -> Unit,
+        onCharacterLongClicked: (String) -> Unit,
+        onStaffClicked: (String) -> Unit,
+        onStaffLongClicked: (String) -> Unit,
+        onStudioClicked: (String) -> Unit,
     ) {
         val viewModel = hiltViewModel<AniListUserViewModel>()
             .apply { initialize(userId) }
         AniListUserScreen(
-            user = { viewModel.user.collectAsState().value },
+            entry = { viewModel.entry.collectAsState().value },
             viewer = { viewModel.viewer.collectAsState().value },
             scrollStateSaver = scrollStateSaver,
+            onMediaClick = onMediaClick,
+            onCharacterClicked = onCharacterClicked,
+            onCharacterLongClicked = onCharacterLongClicked,
+            onStaffClicked = onStaffClicked,
+            onStaffLongClicked = onStaffLongClicked,
+            onStudioClicked = onStudioClicked,
         )
     }
 }

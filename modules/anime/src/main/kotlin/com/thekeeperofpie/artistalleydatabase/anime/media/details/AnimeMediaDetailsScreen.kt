@@ -1,13 +1,11 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media.details
 
-import android.graphics.drawable.BitmapDrawable
 import android.view.View
 import androidx.activity.compose.BackHandler
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
@@ -68,7 +66,6 @@ import androidx.compose.material.icons.outlined.PeopleAlt
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.BottomSheetScaffold
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DividerDefaults
@@ -104,7 +101,6 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
@@ -114,18 +110,14 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.graphics.ColorUtils
 import androidx.media3.common.util.RepeatModeUtil
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
-import androidx.palette.graphics.Palette
 import coil.compose.AsyncImage
-import coil.request.ImageRequest
 import coil.size.Dimension
 import com.anilist.MediaDetailsQuery.Data.Media
 import com.anilist.fragment.MediaDetailsListEntry
@@ -141,10 +133,11 @@ import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.Abs
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.YouTubePlayerCallback
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
-import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anime.AppMediaPlayer
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils
+import com.thekeeperofpie.artistalleydatabase.anime.character.charactersSection
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaTagEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
@@ -152,6 +145,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toColor
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.AnimeMediaEditBottomSheet
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditData
+import com.thekeeperofpie.artistalleydatabase.anime.staff.DetailsStaff
+import com.thekeeperofpie.artistalleydatabase.anime.staff.staffSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.CoverAndBannerHeader
 import com.thekeeperofpie.artistalleydatabase.anime.ui.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.anime.ui.descriptionSection
@@ -170,9 +165,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.multiplyCoerceSaturation
 import com.thekeeperofpie.artistalleydatabase.compose.optionalClickable
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGrid
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.math.roundToInt
 
@@ -627,7 +620,8 @@ object AnimeMediaDetailsScreen {
         )
 
         charactersSection(
-            entry = entry,
+            titleRes = R.string.anime_media_details_characters_label,
+            characters = entry.characters,
             onCharacterClicked = onCharacterClicked,
             onCharacterLongClicked = onCharacterLongClicked,
         )
@@ -657,7 +651,8 @@ object AnimeMediaDetailsScreen {
         cdsSection(cdEntries)
 
         staffSection(
-            entry = entry,
+            titleRes = R.string.anime_media_details_staff_label,
+            staff = entry.staff,
             onStaffClicked = onStaffClicked,
             onStaffLongClicked = onStaffLongClicked,
         )
@@ -720,6 +715,7 @@ object AnimeMediaDetailsScreen {
         val entry = entry()
         var preferredTitle by remember { mutableStateOf<Int?>(null) }
         CoverAndBannerHeader(
+            pinnedHeight = 180.dp,
             progress = progress,
             color = color,
             coverImage = coverImage,
@@ -825,277 +821,6 @@ object AnimeMediaDetailsScreen {
                             label = { AutoHeightText(it.name) },
                             colors = assistChipColors(containerColor = it.color),
                         )
-                    }
-                }
-            }
-        }
-    }
-
-    private fun LazyListScope.charactersSection(
-        entry: Entry,
-        onCharacterClicked: (String) -> Unit,
-        onCharacterLongClicked: (String) -> Unit
-    ) {
-        if (entry.characters.isEmpty()) return
-        item {
-            val coroutineScope = rememberCoroutineScope()
-            DetailsSectionHeader(stringResource(R.string.anime_media_details_characters_label))
-
-            // TODO: Even wider scoped cache?
-            // Cache character color calculation
-            val colorMap = remember { mutableStateMapOf<String, Pair<Color, Color>>() }
-
-            val uriHandler = LocalUriHandler.current
-            LazyRow(
-                contentPadding = PaddingValues(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-            ) {
-                items(entry.characters, { it.id }) {
-                    CharacterCard(
-                        coroutineScope = coroutineScope,
-                        id = it.id,
-                        image = it.image,
-                        colorMap = colorMap,
-                        onClick = { uriHandler.openUri(AniListUtils.characterUrl(it)) },
-                        innerImage = (it.languageToVoiceActor["Japanese"]
-                            ?: it.languageToVoiceActor.values.firstOrNull())?.image,
-                    ) { textColor ->
-                        AutoHeightText(
-                            text = it.name.orEmpty(),
-                            color = textColor,
-                            style = MaterialTheme.typography.bodyMedium.copy(
-                                lineBreak = LineBreak(
-                                    strategy = LineBreak.Strategy.Balanced,
-                                    strictness = LineBreak.Strictness.Strict,
-                                    wordBreak = LineBreak.WordBreak.Default,
-                                )
-                            ),
-                            minTextSizeSp = 8f,
-                            modifier = Modifier
-                                .size(width = 100.dp, height = 56.dp)
-                                .padding(horizontal = 12.dp, vertical = 8.dp)
-                        )
-                    }
-                }
-            }
-        }
-    }
-
-    @Composable
-    private fun CharacterCard(
-        coroutineScope: CoroutineScope,
-        id: String,
-        image: String?,
-        colorMap: MutableMap<String, Pair<Color, Color>>,
-        onClick: (id: String) -> Unit,
-        innerImage: String? = null,
-        content: @Composable (textColor: Color) -> Unit,
-    ) {
-        val defaultTextColor = MaterialTheme.typography.bodyMedium.color
-        val colors = colorMap[id]
-
-        val animationProgress by animateIntAsState(
-            if (colors == null) 0 else 255,
-            label = "Character card color fade in",
-        )
-
-        val containerColor = when {
-            colors == null || animationProgress == 0 ->
-                MaterialTheme.colorScheme.surface
-            animationProgress == 255 -> colors.first
-            else -> Color(
-                ColorUtils.compositeColors(
-                    ColorUtils.setAlphaComponent(
-                        colors.first.toArgb(),
-                        animationProgress
-                    ),
-                    MaterialTheme.colorScheme.surface.toArgb()
-                )
-            )
-        }
-
-        val textColor = when {
-            colors == null || animationProgress == 0 -> defaultTextColor
-            animationProgress == 255 -> colors.second
-            else -> Color(
-                ColorUtils.compositeColors(
-                    ColorUtils.setAlphaComponent(
-                        colors.second.toArgb(),
-                        animationProgress
-                    ),
-                    defaultTextColor.toArgb()
-                )
-            )
-        }
-
-        ElevatedCard(
-            onClick = { onClick(id) },
-            colors = CardDefaults.elevatedCardColors(containerColor = containerColor),
-            modifier = Modifier.width(100.dp),
-        ) {
-            Box {
-                AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(image)
-                        .crossfade(true)
-                        .allowHardware(false)
-                        .build(),
-                    contentScale = ContentScale.Crop,
-                    fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
-                    contentDescription = stringResource(
-                        R.string.anime_media_character_image
-                    ),
-                    onSuccess = {
-                        if (!colorMap.containsKey(id)) {
-                            (it.result.drawable as? BitmapDrawable)?.bitmap?.let {
-                                coroutineScope.launch(CustomDispatchers.IO) {
-                                    try {
-                                        val palette = Palette.from(it)
-                                            .setRegion(
-                                                0,
-                                                // Only capture the bottom 1/4th so
-                                                // color flows from image better
-                                                it.height / 4 * 3,
-                                                // Only capture left 3/5ths to ignore
-                                                // part covered by voice actor
-                                                if (innerImage == null) {
-                                                    it.width
-                                                } else {
-                                                    it.width / 5 * 3
-                                                },
-                                                it.height
-                                            )
-                                            .generate()
-                                        val swatch = palette.swatches
-                                            .maxByOrNull { it.population }
-                                        if (swatch != null) {
-                                            withContext(CustomDispatchers.Main) {
-                                                colorMap[id] =
-                                                    Color(swatch.rgb) to Color(
-                                                        ColorUtils.setAlphaComponent(
-                                                            swatch.bodyTextColor,
-                                                            0xFF
-                                                        )
-                                                    )
-                                            }
-                                        }
-                                    } catch (ignored: Exception) {
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    modifier = Modifier.size(width = 100.dp, height = 150.dp)
-                )
-
-                if (innerImage != null) {
-                    var showInnerImage by remember { mutableStateOf(true) }
-                    if (showInnerImage) {
-                        var showBorder by remember(id) { mutableStateOf(false) }
-                        val alpha by animateFloatAsState(
-                            if (showBorder) 1f else 0f,
-                            label = "Character card inner image fade",
-                        )
-                        val clipShape = RoundedCornerShape(topStart = 8.dp)
-                        AsyncImage(
-                            model = ImageRequest.Builder(LocalContext.current)
-                                .data(innerImage)
-                                .crossfade(false)
-                                .listener(onError = { _, _ ->
-                                    showInnerImage = false
-                                }, onSuccess = { _, _ ->
-                                    showBorder = true
-                                })
-                                .build(),
-                            contentScale = ContentScale.Crop,
-                            contentDescription = stringResource(
-                                R.string.anime_media_voice_actor_image
-                            ),
-                            modifier = Modifier
-                                .size(width = 40.dp, height = 40.dp)
-                                .alpha(alpha)
-                                .align(Alignment.BottomEnd)
-                                .clip(clipShape)
-                                .border(
-                                    width = 1.dp,
-                                    color = Color.Black,
-                                    shape = clipShape
-                                )
-                        )
-                    }
-                }
-            }
-
-            content(textColor)
-        }
-    }
-
-    private fun LazyListScope.staffSection(
-        entry: Entry,
-        onStaffClicked: (String) -> Unit,
-        onStaffLongClicked: (String) -> Unit
-    ) {
-        if (entry.staff.isEmpty()) return
-        item {
-            val coroutineScope = rememberCoroutineScope()
-            DetailsSectionHeader(stringResource(R.string.anime_media_details_staff_label))
-
-            // TODO: Even wider scoped cache?
-            // Cache staff color calculation
-            val colorMap = remember { mutableStateMapOf<String, Pair<Color, Color>>() }
-
-            val uriHandler = LocalUriHandler.current
-            LazyRow(
-                contentPadding = PaddingValues(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-            ) {
-                items(entry.staff, { it.id }) {
-                    CharacterCard(
-                        coroutineScope = coroutineScope,
-                        id = it.id,
-                        image = it.image,
-                        colorMap = colorMap,
-                        onClick = { uriHandler.openUri(AniListUtils.staffUrl(it)) },
-                    ) { textColor ->
-                        it.role?.let {
-                            AutoHeightText(
-                                text = it,
-                                color = textColor,
-                                style = MaterialTheme.typography.bodySmall.copy(
-                                    lineBreak = LineBreak(
-                                        strategy = LineBreak.Strategy.Simple,
-                                        strictness = LineBreak.Strictness.Strict,
-                                        wordBreak = LineBreak.WordBreak.Default,
-                                    )
-                                ),
-                                minLines = 2,
-                                maxLines = 2,
-                                minTextSizeSp = 8f,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(start = 12.dp, end = 12.dp, top = 8.dp)
-                            )
-                        }
-
-                        it.name?.let {
-                            AutoHeightText(
-                                text = it,
-                                color = textColor,
-                                style = MaterialTheme.typography.bodyMedium.copy(
-                                    lineBreak = LineBreak(
-                                        strategy = LineBreak.Strategy.Balanced,
-                                        strictness = LineBreak.Strictness.Strict,
-                                        wordBreak = LineBreak.WordBreak.Default,
-                                    )
-                                ),
-                                minTextSizeSp = 8f,
-                                minLines = 2,
-                                maxLines = 2,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 12.dp, vertical = 8.dp)
-                            )
-                        }
                     }
                 }
             }
@@ -2516,40 +2241,15 @@ object AnimeMediaDetailsScreen {
 
         val genres = media.genres?.filterNotNull().orEmpty().map(::Genre)
 
-        val characters = media.characters?.run {
-            nodes?.filterNotNull()?.map { node ->
-                val edge = edges?.find { it?.node?.id == node.id }
-                Character(
-                    id = node.id.toString(),
-                    name = node.name?.userPreferred,
-                    image = node.image?.large,
-                    languageToVoiceActor = edge?.voiceActors?.filterNotNull()
-                        ?.mapNotNull {
-                            it.languageV2?.let { language ->
-                                language to Character.VoiceActor(
-                                    id = it.id.toString(),
-                                    name = it.name?.userPreferred?.replace(Regex("\\s"), " "),
-                                    image = it.image?.large,
-                                    language = language,
-                                )
-                            }
-                        }
-                        ?.associate { it }
-                        .orEmpty()
-                )
-            }
-        }.orEmpty().distinctBy { it.id }
+        val characters = CharacterUtils.toDetailsCharacters(media.characters?.edges)
 
-        val staff = media.staff?.run {
-            nodes?.filterNotNull()?.map { node ->
-                val edge = edges?.find { it?.node?.id == node.id }
-                Staff(
-                    id = node.id.toString(),
-                    name = node.name?.userPreferred,
-                    image = node.image?.large,
-                    role = edge?.role,
-                )
-            }
+        val staff = media.staff?.edges?.filterNotNull()?.map {
+            DetailsStaff(
+                id = it.node?.id.toString(),
+                name = it.node?.name?.userPreferred,
+                image = it.node?.image?.large,
+                role = it.role,
+            )
         }.orEmpty().distinctBy { it.id }
 
         val relations = media.relations?.edges?.filterNotNull()
@@ -2590,15 +2290,12 @@ object AnimeMediaDetailsScreen {
             it.type != ExternalLinkType.SOCIAL && it.type != ExternalLinkType.STREAMING
         }
 
-        val studios = media.studios?.run {
-            nodes?.filterNotNull()?.map { node ->
-                val edge = edges?.find { it?.node?.id == node.id }
-                Studio(
-                    id = node.id.toString(),
-                    name = node.name,
-                    main = edge?.isMain ?: false,
-                )
-            }
+        val studios = media.studios?.edges?.filterNotNull()?.map {
+            Studio(
+                id = it.node?.id.toString(),
+                name = it.node?.name.orEmpty(),
+                main = it.isMain,
+            )
         }.orEmpty()
             .sortedByDescending { it.main }
 
@@ -2633,20 +2330,6 @@ object AnimeMediaDetailsScreen {
             val color: Color = MediaUtils.genreColor(name),
         )
 
-        data class Character(
-            val id: String,
-            val name: String?,
-            val image: String?,
-            val languageToVoiceActor: Map<String, VoiceActor>,
-        ) {
-            data class VoiceActor(
-                val id: String,
-                val name: String?,
-                val image: String?,
-                val language: String,
-            )
-        }
-
         data class Relation(
             val id: String,
             val relation: MediaRelation,
@@ -2669,13 +2352,6 @@ object AnimeMediaDetailsScreen {
             val color: Color?,
             val textColor: Color? = color
                 ?.let(com.thekeeperofpie.artistalleydatabase.compose.ColorUtils::bestTextColor),
-        )
-
-        data class Staff(
-            val id: String,
-            val name: String?,
-            val image: String?,
-            val role: String?,
         )
 
         data class Studio(

@@ -276,6 +276,12 @@ class MainActivity : ComponentActivity() {
                             AnimeNavigator.onTagClick(navController, tagId, tagName)
                         },
                         onMediaClick = { AnimeNavigator.onMediaClick(navController, it) },
+                        onUserMediaClick = { AnimeNavigator.onMediaClick(navController, it) },
+                        onCharacterClicked = { /*TODO*/ },
+                        onCharacterLongClicked = { /*TODO*/ },
+                        onStaffClicked = { /*TODO*/ },
+                        onStaffLongClicked = { /*TODO*/ },
+                        onStudioClicked = { /*TODO*/ },
                     )
                 }
 

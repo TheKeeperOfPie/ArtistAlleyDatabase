@@ -41,6 +41,32 @@ fragment AniListCharacter on Character {
     }
 }
 
+fragment DetailsCharacterEdge on CharacterEdge {
+    voiceActors {
+        id
+        languageV2
+        image {
+            large
+        }
+        name {
+            full
+            alternative
+            userPreferred
+        }
+    }
+    node {
+        id
+        name {
+            full
+            alternative
+            userPreferred
+        }
+        image {
+            large
+        }
+    }
+}
+
 query CharactersSearch($search: String, $perPage: Int, $page: Int, $mediaPage: Int,
     $mediaPerPage: Int) {
     Page(perPage: $perPage, page: $page) @nonnull {

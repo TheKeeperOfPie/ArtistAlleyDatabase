@@ -29,6 +29,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.anilist.fragment.UserFavoriteMediaNode
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.anime.list.AnimeUserListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.list.AnimeUserListViewModel
@@ -52,6 +53,12 @@ object AnimeHomeScreen {
         onSubmitAuthToken: (String) -> Unit,
         onTagClick: (tagId: String, tagName: String) -> Unit,
         onMediaClick: (AnimeMediaListRow.Entry) -> Unit,
+        onUserMediaClick: (UserFavoriteMediaNode) -> Unit,
+        onCharacterClicked: (String) -> Unit,
+        onCharacterLongClicked: (String) -> Unit,
+        onStaffClicked: (String) -> Unit,
+        onStaffLongClicked: (String) -> Unit,
+        onStudioClicked: (String) -> Unit,
         errorRes: () -> Pair<Int, Exception?>? = { null },
         onErrorDismiss: () -> Unit = { },
     ) {
@@ -149,6 +156,12 @@ object AnimeHomeScreen {
                                         AnimeNavDestinations.PROFILE.id,
                                         scrollPositions
                                     ),
+                                    onMediaClick = onUserMediaClick,
+                                    onCharacterClicked = onCharacterClicked,
+                                    onCharacterLongClicked = onCharacterLongClicked,
+                                    onStaffClicked = onStaffClicked,
+                                    onStaffLongClicked = onStaffLongClicked,
+                                    onStudioClicked = onStudioClicked,
                                 )
                             }
                         }

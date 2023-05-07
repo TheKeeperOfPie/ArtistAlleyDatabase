@@ -42,6 +42,7 @@ dependencies {
 
     implementation(libs.html.text)
     implementation(libs.nv.i18n)
+    implementation(libs.constraintlayout.compose)
 
     api(libs.media3.exoplayer)
     implementation(libs.media3.datasource.cronet)

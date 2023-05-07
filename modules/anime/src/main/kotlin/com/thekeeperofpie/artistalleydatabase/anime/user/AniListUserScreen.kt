@@ -1,5 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.anime.user
 
+import androidx.annotation.StringRes
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -10,30 +12,50 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Divider
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.constraintlayout.compose.Dimension
+import coil.compose.AsyncImage
 import com.anilist.AuthedUserQuery
 import com.anilist.UserByIdQuery.Data.User
+import com.anilist.fragment.UserFavoriteMediaNode
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils
+import com.thekeeperofpie.artistalleydatabase.anime.character.charactersSection
+import com.thekeeperofpie.artistalleydatabase.anime.staff.DetailsStaff
+import com.thekeeperofpie.artistalleydatabase.anime.staff.staffSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.CoverAndBannerHeader
+import com.thekeeperofpie.artistalleydatabase.anime.ui.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.anime.ui.descriptionSection
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.AutoResizeHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.CollapsingToolbar
+import com.thekeeperofpie.artistalleydatabase.compose.ColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -42,23 +64,32 @@ object AniListUserScreen {
 
     @Composable
     operator fun invoke(
-        user: @Composable () -> User?,
+        entry: @Composable () -> Entry?,
         viewer: @Composable () -> AuthedUserQuery.Data.Viewer?,
         scrollStateSaver: ScrollStateSaver,
+        onMediaClick: (UserFavoriteMediaNode) -> Unit,
+        onCharacterClicked: (String) -> Unit,
+        onCharacterLongClicked: (String) -> Unit,
+        onStaffClicked: (String) -> Unit,
+        onStaffLongClicked: (String) -> Unit,
+        onStudioClicked: (String) -> Unit,
     ) {
         val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
-        val user = user()
+        val entry = entry()
+        val user = entry?.user
         val viewer = viewer()
         Scaffold(
             topBar = {
                 CollapsingToolbar(
                     maxHeight = 280.dp,
-                    pinnedHeight = 180.dp,
+                    pinnedHeight = 104.dp,
                     scrollBehavior = scrollBehavior,
                 ) {
                     CoverAndBannerHeader(
+                        progress = it,
                         coverImage = { user?.avatar?.large },
                         bannerImage = { user?.bannerImage },
+                        pinnedHeight = 104.dp,
                         coverSize = 180.dp,
                     ) {
                         Box(
@@ -114,6 +145,41 @@ object AniListUserScreen {
                 descriptionSection(
                     titleTextRes = R.string.anime_user_about_label,
                     htmlText = user.about?.trim()
+                )
+
+                favoriteMediaSection(
+                    titleRes = R.string.anime_user_favorite_anime_label,
+                    entries = entry.anime,
+                    onClickEntry = onMediaClick,
+                )
+
+                favoriteMediaSection(
+                    titleRes = R.string.anime_user_favorite_manga_label,
+                    entries = entry.manga,
+                    onClickEntry = onMediaClick,
+                )
+
+                charactersSection(
+                    titleRes = R.string.anime_user_favorite_characters_label,
+                    characters = entry.characters,
+                    onCharacterClicked = onCharacterClicked,
+                    onCharacterLongClicked = onCharacterLongClicked,
+                )
+
+                staffSection(
+                    titleRes = R.string.anime_user_favorite_staff_label,
+                    staff = entry.staff,
+                    onStaffClicked = onStaffClicked,
+                    onStaffLongClicked = onStaffLongClicked,
+                )
+
+                favoriteStudiosSection(
+                    studios = entry.studios,
+                    onClick = onStudioClicked,
+                )
+
+                previousNamesSection(
+                    names = user.previousNames?.filterNotNull()?.mapNotNull { it.name }.orEmpty()
                 )
             }
         }
@@ -176,5 +242,168 @@ object AniListUserScreen {
                 )
             }
         }
+    }
+
+    private fun LazyListScope.favoriteMediaSection(
+        @StringRes titleRes: Int,
+        entries: List<UserFavoriteMediaNode>,
+        onClickEntry: (UserFavoriteMediaNode) -> Unit,
+    ) {
+        if (entries.isEmpty()) return
+        item {
+            DetailsSectionHeader(stringResource(titleRes))
+        }
+
+        item {
+            LazyRow(
+                contentPadding = PaddingValues(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
+                items(entries, { it.id }) {
+                    val containerColor = (it.coverImage?.color?.let(ColorUtils::hexToColor)
+                        ?: MaterialTheme.colorScheme.surface)
+                    ElevatedCard(
+                        onClick = { onClickEntry(it) },
+                        colors = CardDefaults.elevatedCardColors(containerColor = containerColor),
+                    ) {
+                        ConstraintLayout {
+                            val (image, title) = createRefs()
+                            AsyncImage(
+                                model = it.coverImage?.large,
+                                contentScale = ContentScale.FillHeight,
+                                contentDescription = stringResource(R.string.anime_media_cover_image),
+                                modifier = Modifier
+                                    .constrainAs(image) {
+                                        height = Dimension.value(180.dp)
+                                        width = Dimension.wrapContent
+                                        linkTo(start = parent.start, end = parent.end)
+                                        top.linkTo(parent.top)
+                                    }
+                            )
+
+                            AutoHeightText(
+                                text = it.title?.userPreferred.orEmpty(),
+                                color = ColorUtils.bestTextColor(containerColor)
+                                    ?: Color.Unspecified,
+                                maxLines = 2,
+                                minLines = 2,
+                                modifier = Modifier
+                                    .padding(horizontal = 8.dp, vertical = 8.dp)
+                                    .constrainAs(title) {
+                                        linkTo(start = image.start, end = image.end)
+                                        top.linkTo(image.bottom)
+                                        width = Dimension.fillToConstraints
+                                    }
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun LazyListScope.favoriteStudiosSection(
+        studios: List<Entry.Studio>,
+        onClick: (String) -> Unit,
+    ) {
+        if (studios.isEmpty()) return
+        item {
+            DetailsSectionHeader(stringResource(R.string.anime_user_favorite_studios_label))
+        }
+
+        item {
+            val uriHandler = LocalUriHandler.current
+            ElevatedCard(
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+                    .fillMaxWidth()
+            ) {
+                studios.forEachIndexed { index, studio ->
+                    if (index != 0) {
+                        Divider()
+                    }
+
+                    Text(
+                        text = studio.name,
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { uriHandler.openUri(AniListUtils.studioUrl(studio.id)) }
+                            .padding(horizontal = 16.dp, vertical = 10.dp)
+                    )
+                }
+            }
+        }
+    }
+
+    private fun LazyListScope.previousNamesSection(names: List<String>) {
+        if (names.isEmpty()) return
+        item {
+            DetailsSectionHeader(stringResource(R.string.anime_user_previous_names_label))
+        }
+
+        item {
+            ElevatedCard(
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+                    .fillMaxWidth()
+            ) {
+                names.forEachIndexed { index, name ->
+                    if (index != 0) {
+                        Divider()
+                    }
+
+                    Text(
+                        text = name,
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)
+                    )
+                }
+            }
+        }
+    }
+
+    data class Entry(
+        val user: User,
+    ) {
+        val anime = user.favourites?.anime?.edges
+            ?.sortedBy { it?.favouriteOrder ?: 0 }
+            ?.mapNotNull { it?.node }
+            .orEmpty()
+
+        val manga = user.favourites?.manga?.edges
+            ?.sortedBy { it?.favouriteOrder ?: 0 }
+            ?.mapNotNull { it?.node }
+            .orEmpty()
+
+        val characters = user.favourites?.characters?.edges
+            ?.sortedBy { it?.favouriteOrder ?: 0 }
+            .let(CharacterUtils::toDetailsCharacters)
+
+        val staff = user.favourites?.staff?.edges?.filterNotNull()
+            ?.sortedBy { it.favouriteOrder ?: 0 }
+            ?.map {
+                DetailsStaff(
+                    id = it.node?.id.toString(),
+                    name = it.node?.name?.userPreferred,
+                    image = it.node?.image?.large,
+                    role = it.node?.primaryOccupations?.filterNotNull()?.firstOrNull(),
+                )
+            }.orEmpty().distinctBy { it.id }
+
+        val studios = user.favourites?.studios?.edges?.filterNotNull()
+            ?.sortedBy { it.favouriteOrder ?: 0 }
+            ?.mapNotNull {
+                Studio(
+                    id = it.node?.id?.toString() ?: return@mapNotNull null,
+                    name = it.node?.name ?: return@mapNotNull null,
+                )
+            }
+            .orEmpty()
+
+        data class Studio(
+            val id: String,
+            val name: String,
+        )
     }
 }

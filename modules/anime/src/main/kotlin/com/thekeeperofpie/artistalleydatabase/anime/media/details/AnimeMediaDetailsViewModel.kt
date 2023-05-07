@@ -179,42 +179,35 @@ class AnimeMediaDetailsViewModel @Inject constructor(
         media: MediaDetailsQuery.Data.Media,
         artist: AnimeTheme.Song.Artist,
     ): AnimeSongEntry.Artist {
-        val nodes = media.characters?.nodes?.filterNotNull()
-        val node = nodes?.find {
-            val characterName = it.name ?: return@find false
+        val edges = media.characters?.edges?.filterNotNull()
+        val edge = edges?.find {
+            val characterName = it.node?.name ?: return@find false
             characterName.full == artist.character ||
                     (characterName.alternative?.any { it == artist.character } == true)
         }
 
-        val edgeAndVoiceActor = media.characters?.edges
-            ?.asSequence()
-            ?.filterNotNull()
-            ?.mapNotNull { edge ->
-                edge.voiceActors?.filterNotNull()?.firstOrNull {
-                    it.name?.full == artist.name ||
-                            (it.name?.alternative?.any { it == artist.name } == true)
-                }?.let { edge to it }
-            }
-            ?.firstOrNull()
-
-        val character = (node
-            ?: edgeAndVoiceActor?.let { (edge, _) -> nodes?.find { it.id == edge.node?.id } })
-            ?.let {
-                AnimeSongEntry.Artist.Character(
-                    aniListId = it.id.toString(),
-                    image = it.image?.large,
-                    name = it.name?.userPreferred ?: artist.character ?: "",
-                )
+        val voiceActor = edge?.voiceActors?.filterNotNull()
+            ?.firstOrNull {
+                it.name?.full == artist.name ||
+                        (it.name?.alternative?.any { it == artist.name } == true)
             }
 
-        val artistImage = edgeAndVoiceActor?.second?.image?.large
+        val character = edge?.node?.let {
+            AnimeSongEntry.Artist.Character(
+                aniListId = it.id.toString(),
+                image = it.image?.large,
+                name = it.name?.userPreferred ?: artist.character ?: "",
+            )
+        }
+
+        val artistImage = voiceActor?.image?.large
             ?: (artist.images.firstOrNull {
                 it.facet == AnimeTheme.Song.Artist.Images.Facet.SmallCover
             } ?: artist.images.firstOrNull())?.link
 
         return AnimeSongEntry.Artist(
             id = artist.id,
-            aniListId = edgeAndVoiceActor?.second?.id?.toString(),
+            aniListId = voiceActor?.id?.toString(),
             animeThemesSlug = artist.slug,
             name = artist.name,
             image = artistImage,

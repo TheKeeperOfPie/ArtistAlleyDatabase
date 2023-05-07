@@ -11,6 +11,19 @@ query AuthedUser {
     }
 }
 
+fragment UserFavoriteMediaNode on Media {
+    id
+    coverImage {
+        color
+        large
+    }
+    title {
+        userPreferred
+    }
+    format
+    averageScore
+}
+
 query UserById($id: Int!) {
     User(id: $id) {
         id
@@ -25,6 +38,55 @@ query UserById($id: Int!) {
         createdAt
         previousNames {
             name
+        }
+
+        favourites {
+            anime {
+                edges {
+                    favouriteOrder
+                    node {
+                        ...UserFavoriteMediaNode
+                    }
+                }
+            }
+            manga {
+                edges {
+                    favouriteOrder
+                    node {
+                        ...UserFavoriteMediaNode
+                    }
+                }
+            }
+            characters {
+                edges {
+                    ...DetailsCharacterEdge
+                    favouriteOrder
+                }
+            }
+            staff {
+                edges {
+                    favouriteOrder
+                    node {
+                        id
+                        name {
+                            userPreferred
+                        }
+                        image {
+                            large
+                        }
+                        primaryOccupations
+                    }
+                }
+            }
+            studios {
+                edges {
+                    favouriteOrder
+                    node {
+                        id
+                        name
+                    }
+                }
+            }
         }
     }
 }

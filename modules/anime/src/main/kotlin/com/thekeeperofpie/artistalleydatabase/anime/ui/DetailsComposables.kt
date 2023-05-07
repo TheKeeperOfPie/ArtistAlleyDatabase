@@ -58,8 +58,9 @@ import de.charlex.compose.HtmlText
 fun CoverAndBannerHeader(
     coverImage: @Composable () -> String?,
     bannerImage: @Composable () -> String?,
-    coverSize: Dp = 256.dp,
+    pinnedHeight: Dp,
     progress: Float = 0f,
+    coverSize: Dp = 256.dp,
     color: () -> Color? = { null },
     onClickEnabled: Boolean = false,
     onClick: (() -> Unit)? = null,
@@ -82,7 +83,7 @@ fun CoverAndBannerHeader(
                 contentDescription = stringResource(R.string.anime_media_banner_image),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(180.dp)
+                    .height(lerp(180.dp, pinnedHeight, progress))
                     .align(Alignment.TopCenter)
                     .graphicsLayer {
                         compositingStrategy = CompositingStrategy.Offscreen
