@@ -9,7 +9,6 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -39,7 +38,6 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bookmark
@@ -88,7 +86,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -97,7 +94,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -108,7 +104,6 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -153,8 +148,9 @@ import com.thekeeperofpie.artistalleydatabase.cds.grid.CdEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.compose.AssistChip
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.AutoResizeHeightText
-import com.thekeeperofpie.artistalleydatabase.compose.AutoSizeText
+import com.thekeeperofpie.artistalleydatabase.compose.BarChart
 import com.thekeeperofpie.artistalleydatabase.compose.CollapsingToolbar
+import com.thekeeperofpie.artistalleydatabase.compose.PieChart
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
 import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.VerticalDivider
@@ -1668,82 +1664,27 @@ object AnimeMediaDetailsScreen {
                     SubsectionHeader(
                         stringResource(R.string.anime_media_details_status_distribution_label)
                     )
-                    Row {
-                        val sliceVisibility =
-                            remember { mutableStateMapOf<MediaListStatus, Boolean>() }
-                        val brush = remember(sliceVisibility.values.toList()) {
-                            val total = statusDistribution.sumOf {
-                                val visible = sliceVisibility[it.status] ?: true
-                                it.amount?.takeIf { visible } ?: 0
-                            }.toFloat()
 
-                            val colorStops =
-                                statusDistribution.fold(mutableListOf<Pair<Float, Color>>()) { list, slice ->
-                                    val color = slice.status.toColor()
-                                    val lastValue = list.lastOrNull()?.first ?: 0f
-                                    val visible = sliceVisibility[slice.status] ?: true
-                                    val amount = slice.amount?.takeIf { visible } ?: 0
-
-                                    val portion = amount / total
-                                    list += lastValue to color
-                                    list += lastValue + portion to color
-                                    list
-                                }.toTypedArray()
-
-                            Brush.sweepGradient(*colorStops)
-                        }
-
-                        Box(
-                            modifier = Modifier
-                                .padding(16.dp)
-                                .clip(CircleShape)
-                                .background(brush, CircleShape)
-                                .border(1.dp, MaterialTheme.colorScheme.onSurface, CircleShape)
-                                .widthIn(max = 280.dp)
-                                .weight(0.5f, fill = false)
-                                .aspectRatio(1f)
-                        )
-
-                        Column(
-                            verticalArrangement = Arrangement.spacedBy(8.dp),
-                            modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp),
-                        ) {
-                            statusDistribution.forEach {
-                                val visible = sliceVisibility[it.status] ?: true
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier
-                                        .height(IntrinsicSize.Min)
-                                        .clickable {
-                                            it.status?.let { sliceVisibility[it] = !visible }
-                                        },
-                                ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .background(color = it.status.toColor())
-                                            .aspectRatio(1f, matchHeightConstraintsFirst = true)
-                                    )
-
-                                    val textRes = when (it.status) {
-                                        MediaListStatus.CURRENT -> R.string.anime_media_details_status_distribution_current
-                                        MediaListStatus.PLANNING -> R.string.anime_media_details_status_distribution_planning
-                                        MediaListStatus.COMPLETED -> R.string.anime_media_details_status_distribution_completed
-                                        MediaListStatus.DROPPED -> R.string.anime_media_details_status_distribution_dropped
-                                        MediaListStatus.PAUSED -> R.string.anime_media_details_status_distribution_paused
-                                        MediaListStatus.REPEATING -> R.string.anime_media_details_status_distribution_repeating
-                                        MediaListStatus.UNKNOWN__, null -> R.string.anime_media_details_status_distribution_unknown
-                                    }
-                                    Text(
-                                        text = stringResource(textRes, it.amount ?: 0),
-                                        style = MaterialTheme.typography.labelLarge,
-                                        modifier = Modifier
-                                            .alpha(if (visible) 1f else 0.38f)
-                                            .padding(horizontal = 16.dp, vertical = 10.dp),
-                                    )
-                                }
-                            }
-                        }
-                    }
+                    PieChart(
+                        slices = statusDistribution,
+                        sliceToKey = { it.status },
+                        sliceToAmount = { it.amount ?: 0 },
+                        sliceToColor = { it.status.toColor() },
+                        sliceToText = { slice ->
+                            when (slice.status) {
+                                MediaListStatus.CURRENT -> R.string.anime_media_details_status_distribution_current
+                                MediaListStatus.PLANNING -> R.string.anime_media_details_status_distribution_planning
+                                MediaListStatus.COMPLETED -> R.string.anime_media_details_status_distribution_completed
+                                MediaListStatus.DROPPED -> R.string.anime_media_details_status_distribution_dropped
+                                MediaListStatus.PAUSED -> R.string.anime_media_details_status_distribution_paused
+                                MediaListStatus.REPEATING -> R.string.anime_media_details_status_distribution_repeating
+                                MediaListStatus.UNKNOWN__, null -> R.string.anime_media_details_status_distribution_unknown
+                            }.let { stringResource(it, slice.amount ?: 0) }
+                        },
+                        keySave = { it?.rawValue.orEmpty() },
+                        keyRestore = { key -> MediaListStatus.values().find { it.rawValue == key }
+                            ?: MediaListStatus.UNKNOWN__ },
+                    )
                 }
 
                 val scoreDistribution = entry.scoreDistribution
@@ -1753,67 +1694,20 @@ object AnimeMediaDetailsScreen {
                         stringResource(R.string.anime_media_details_score_distribution_label)
                     )
 
-                    Row(modifier = Modifier.padding(start = 16.dp, end = 16.dp)) {
-                        val maxAmount = scoreDistribution.maxOf { it.amount ?: 0 } * 1.1f
-                        val firstColorIndex =
-                            scoreDistribution.size - MediaUtils.scoreDistributionColors.size
-                        scoreDistribution.forEachIndexed { index, it ->
-                            val score = it.score ?: return@forEachIndexed
-                            val amount = it.amount ?: return@forEachIndexed
-
-                            val color = if (index >= firstColorIndex) {
+                    val firstColorIndex =
+                        scoreDistribution.size - MediaUtils.scoreDistributionColors.size
+                    BarChart(
+                        slices = scoreDistribution,
+                        sliceToAmount = { it.amount ?: 0 },
+                        sliceToColor = { index, _ ->
+                            if (index >= firstColorIndex) {
                                 MediaUtils.scoreDistributionColors[index - firstColorIndex]
                             } else {
                                 MediaUtils.scoreDistributionColors.first()
                             }
-
-                            Column(modifier = Modifier.weight(1f)) {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(240.dp)
-                                        .background(
-                                            Brush.verticalGradient(
-                                                0f to Color.Transparent,
-                                                1f - (amount / maxAmount) to Color.Transparent,
-                                                1f - (amount / maxAmount) to color,
-                                                1f to color,
-                                            )
-                                        )
-                                )
-
-                                AutoSizeText(
-                                    text = score.toString(),
-                                    style = MaterialTheme.typography.labelSmall,
-                                    textAlign = TextAlign.Center,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                                )
-                            }
-                        }
-                    }
-
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
-                            .height(IntrinsicSize.Min)
-                    ) {
-                        scoreDistribution.forEach {
-                            val amount = it.amount ?: return@forEach
-                            AutoSizeText(
-                                text = amount.toString(),
-                                style = MaterialTheme.typography.labelSmall,
-                                textAlign = TextAlign.Center,
-                                maxLines = 1,
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .wrapContentHeight()
-                                    .padding(horizontal = 8.dp, vertical = 4.dp)
-                            )
-                        }
-                    }
+                        },
+                        sliceToText = { it.score.toString() },
+                    )
                 }
             }
         }

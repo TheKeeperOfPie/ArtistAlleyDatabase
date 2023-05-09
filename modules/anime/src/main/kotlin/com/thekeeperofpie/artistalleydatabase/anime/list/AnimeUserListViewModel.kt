@@ -97,7 +97,7 @@ class AnimeUserListViewModel @Inject constructor(
                                     ?.lists
                                     ?.filterNotNull()
                                     ?.let {
-                                        if (refreshParams.sortOptions.isEmpty()) {
+                                        if (refreshParams.sortOptions.none { it.state == IncludeExcludeState.INCLUDE }) {
                                             // If default sort, force COMPLETED list to top
                                             val index = it.indexOfFirst { it.status == MediaListStatus.COMPLETED }
                                             if (index >= 0) {
