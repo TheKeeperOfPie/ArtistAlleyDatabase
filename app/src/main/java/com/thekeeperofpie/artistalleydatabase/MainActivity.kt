@@ -47,12 +47,14 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.OutOfQuotaPolicy
+import com.anilist.fragment.UserFavoriteMediaNode
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.mxalbert.sharedelements.SharedElementsRoot
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeHomeScreen
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeHomeViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
+import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserScreen
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryNavigator
 import com.thekeeperofpie.artistalleydatabase.art.search.ArtSearchViewModel
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseScreen
@@ -251,6 +253,12 @@ class MainActivity : ComponentActivity() {
         onClickNav: () -> Unit,
     ) {
         val navController = rememberAnimatedNavController()
+        val userCallback = object : AniListUserScreen.Callback {
+            override fun onMediaClick(media: UserFavoriteMediaNode) {
+                AnimeNavigator.onMediaClick(navController, media)
+            }
+        }
+
         SharedElementsRoot {
             AnimatedNavHost(
                 navController = navController,
@@ -271,12 +279,7 @@ class MainActivity : ComponentActivity() {
                             AnimeNavigator.onTagClick(navController, tagId, tagName)
                         },
                         onMediaClick = { AnimeNavigator.onMediaClick(navController, it) },
-                        onUserMediaClick = { AnimeNavigator.onMediaClick(navController, it) },
-                        onCharacterClicked = { /*TODO*/ },
-                        onCharacterLongClicked = { /*TODO*/ },
-                        onStaffClicked = { /*TODO*/ },
-                        onStaffLongClicked = { /*TODO*/ },
-                        onStudioClicked = { /*TODO*/ },
+                        userCallback = userCallback,
                     )
                 }
 

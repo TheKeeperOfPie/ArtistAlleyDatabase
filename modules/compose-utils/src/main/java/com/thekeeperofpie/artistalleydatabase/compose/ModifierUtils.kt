@@ -46,7 +46,7 @@ fun Modifier.fadingEdge(
         }
 }
 
-fun Modifier.fadingEdgeBottom(expanded: Boolean, firstStop: Float = 0.8f) =
+fun Modifier.fadingEdgeBottom(show: Boolean = false, firstStop: Float = 0.8f) =
     graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }
         .drawWithCache {
             val brush = Brush.verticalGradient(
@@ -55,7 +55,7 @@ fun Modifier.fadingEdgeBottom(expanded: Boolean, firstStop: Float = 0.8f) =
             )
             onDrawWithContent {
                 drawContent()
-                if (!expanded) {
+                if (show) {
                     drawRect(brush, blendMode = BlendMode.DstIn)
                 }
             }

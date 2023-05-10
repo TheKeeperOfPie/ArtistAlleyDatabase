@@ -94,12 +94,26 @@ query UserById($id: Int!) {
                 count
                 meanScore
                 minutesWatched
+                ...UserMediaStatistics
             }
             manga {
                 count
                 meanScore
                 chaptersRead
+                ...UserMediaStatistics
             }
         }
+    }
+}
+
+fragment UserMediaStatistics on UserStatistics {
+    formats(sort: [COUNT_DESC]) {
+        count
+        format
+    }
+
+    statuses(sort: [COUNT_DESC]) {
+        count
+        status
     }
 }

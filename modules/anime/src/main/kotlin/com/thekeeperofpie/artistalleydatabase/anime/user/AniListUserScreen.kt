@@ -1,90 +1,51 @@
 package com.thekeeperofpie.artistalleydatabase.anime.user
 
-import androidx.annotation.StringRes
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Divider
-import androidx.compose.material3.ElevatedCard
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.constraintlayout.compose.ConstraintLayout
-import androidx.constraintlayout.compose.Dimension
-import coil.compose.AsyncImage
 import com.anilist.AuthedUserQuery
 import com.anilist.UserByIdQuery.Data.User
 import com.anilist.fragment.UserFavoriteMediaNode
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
-import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils
-import com.thekeeperofpie.artistalleydatabase.anime.character.charactersSection
 import com.thekeeperofpie.artistalleydatabase.anime.staff.DetailsStaff
-import com.thekeeperofpie.artistalleydatabase.anime.staff.staffSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.CoverAndBannerHeader
-import com.thekeeperofpie.artistalleydatabase.anime.ui.DetailsSectionHeader
-import com.thekeeperofpie.artistalleydatabase.anime.ui.descriptionSection
-import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.AutoResizeHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.CollapsingToolbar
-import com.thekeeperofpie.artistalleydatabase.compose.ColorUtils
-import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
-import com.thekeeperofpie.artistalleydatabase.compose.VerticalDivider
-import kotlin.time.Duration.Companion.minutes
-import kotlin.time.DurationUnit
+import com.thekeeperofpie.artistalleydatabase.compose.NestedScrollSplitter
+import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
-@Suppress("NAME_SHADOWING")
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 object AniListUserScreen {
 
     @Composable
     operator fun invoke(
+        nestedScrollConnection: NestedScrollConnection? = null,
         entry: @Composable () -> Entry?,
         viewer: @Composable () -> AuthedUserQuery.Data.Viewer?,
-        scrollStateSaver: ScrollStateSaver,
-        onMediaClick: (UserFavoriteMediaNode) -> Unit,
-        onCharacterClicked: (String) -> Unit,
-        onCharacterLongClicked: (String) -> Unit,
-        onStaffClicked: (String) -> Unit,
-        onStaffLongClicked: (String) -> Unit,
-        onStudioClicked: (String) -> Unit,
+        callback: Callback,
+        bottomNavBarPadding: @Composable () -> Dp = { 0.dp },
     ) {
         val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
-        val entry = entry()
-        val user = entry?.user
-        val viewer = viewer()
         Scaffold(
             topBar = {
                 CollapsingToolbar(
@@ -92,6 +53,7 @@ object AniListUserScreen {
                     pinnedHeight = 104.dp,
                     scrollBehavior = scrollBehavior,
                 ) {
+                    val user = entry()?.user
                     CoverAndBannerHeader(
                         progress = it,
                         coverImage = { user?.avatar?.large },
@@ -122,310 +84,54 @@ object AniListUserScreen {
                     }
                 }
             },
-            modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
-        ) {
-            LazyColumn(
-                state = scrollStateSaver.lazyListState(),
-                contentPadding = PaddingValues(bottom = 16.dp),
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(it)
-            ) {
-                if (user == null) {
-                    item {
-                        Box(modifier = Modifier.fillMaxSize()) {
-                            CircularProgressIndicator(
-                                modifier = Modifier
-                                    .align(Alignment.Center)
-                                    .padding(32.dp)
-                            )
-                        }
-                    }
-                    return@LazyColumn
-                }
-
-                followingSection(
-                    user = user,
-                    viewer = viewer,
-                )
-
-                descriptionSection(
-                    titleTextRes = R.string.anime_user_about_label,
-                    htmlText = user.about?.trim()
-                )
-
-                animeStatisticsSection(user)
-                mangaStatisticsSection(user)
-
-                favoriteMediaSection(
-                    titleRes = R.string.anime_user_favorite_anime_label,
-                    entries = entry.anime,
-                    onClickEntry = onMediaClick,
-                )
-
-                favoriteMediaSection(
-                    titleRes = R.string.anime_user_favorite_manga_label,
-                    entries = entry.manga,
-                    onClickEntry = onMediaClick,
-                )
-
-                charactersSection(
-                    titleRes = R.string.anime_user_favorite_characters_label,
-                    characters = entry.characters,
-                    onCharacterClicked = onCharacterClicked,
-                    onCharacterLongClicked = onCharacterLongClicked,
-                )
-
-                staffSection(
-                    titleRes = R.string.anime_user_favorite_staff_label,
-                    staff = entry.staff,
-                    onStaffClicked = onStaffClicked,
-                    onStaffLongClicked = onStaffLongClicked,
-                )
-
-                favoriteStudiosSection(
-                    studios = entry.studios,
-                    onClick = onStudioClicked,
-                )
-
-                previousNamesSection(
-                    names = user.previousNames?.filterNotNull()?.mapNotNull { it.name }.orEmpty()
-                )
-            }
-        }
-    }
-
-    private fun LazyListScope.followingSection(
-        user: User,
-        viewer: AuthedUserQuery.Data.Viewer?,
-    ) {
-        if (user.id == viewer?.id) return
-        item {
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 16.dp, end = 16.dp, top = 10.dp)
-            ) {
-                FilterChip(
-                    onClick = { /*TODO*/ },
-                    selected = user.isFollower == true,
-                    leadingIcon = {
-                        Icon(
-                            imageVector = if (user.isFollower == true) {
-                                Icons.Filled.Check
-                            } else {
-                                Icons.Filled.Close
-                            },
-                            contentDescription = stringResource(
-                                if (user.isFollower == true) {
-                                    R.string.anime_user_is_follower_content_description
-                                } else {
-                                    R.string.anime_user_is_not_follower_content_description
-                                }
-                            ),
-                        )
-                    },
-                    label = { AutoHeightText(stringResource(R.string.anime_user_following_you)) },
-                )
-
-                FilterChip(
-                    onClick = { /*TODO*/ },
-                    selected = user.isFollowing == true,
-                    leadingIcon = {
-                        Icon(
-                            imageVector = if (user.isFollowing == true) {
-                                Icons.Filled.Check
-                            } else {
-                                Icons.Filled.Close
-                            },
-                            contentDescription = stringResource(
-                                if (user.isFollowing == true) {
-                                    R.string.anime_user_is_following_content_description
-                                } else {
-                                    R.string.anime_user_is_not_following_content_description
-                                }
-                            ),
-                        )
-                    },
-                    label = { AutoHeightText(stringResource(R.string.anime_user_following)) },
-                )
-            }
-        }
-    }
-
-    private fun LazyListScope.animeStatisticsSection(user: User) {
-        val statistics = user.statistics?.anime ?: return
-        statisticsSection(
-            titleRes = R.string.anime_user_statistics_anime,
-            statistics.count.toString() to R.string.anime_user_statistics_count,
-            String.format("%.1f", statistics.minutesWatched.minutes.toDouble(DurationUnit.DAYS)) to
-                    R.string.anime_user_statistics_anime_days_watched,
-            String.format("%.1f", statistics.meanScore) to
-                    R.string.anime_user_statistics_mean_score,
-        )
-    }
-
-    private fun LazyListScope.mangaStatisticsSection(user: User) {
-        val statistics = user.statistics?.manga ?: return
-        statisticsSection(
-            titleRes = R.string.anime_user_statistics_manga,
-            statistics.count.toString() to R.string.anime_user_statistics_count,
-            statistics.chaptersRead.toString() to
-                    R.string.anime_user_statistics_manga_chapters_read,
-            String.format("%.1f", statistics.meanScore) to
-                    R.string.anime_user_statistics_mean_score,
-        )
-    }
-
-    private fun LazyListScope.statisticsSection(
-        @StringRes titleRes: Int,
-        vararg pairs: Pair<String, Int>,
-    ) {
-        item {
-            DetailsSectionHeader(stringResource(titleRes))
-        }
-
-        item {
-            ElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
-                Row(modifier = Modifier
-                    .fillMaxWidth()
-                    .height(IntrinsicSize.Min)
+        ) { scaffoldPadding ->
+            Column(modifier = Modifier.padding(scaffoldPadding)) {
+                val pagerState = rememberPagerState()
+                val scope = rememberCoroutineScope()
+                TabRow(
+                    selectedTabIndex = pagerState.currentPage,
+                    modifier = Modifier
+                        .wrapContentHeight()
+                        .fillMaxWidth()
                 ) {
-                    pairs.forEachIndexed { index, pair ->
-                        if (index != 0) {
-                            VerticalDivider(modifier = Modifier.padding(vertical = 8.dp))
-                        }
-
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier
-                                .weight(0.33f)
-                                .padding(8.dp)
-                        ) {
-                            Text(text = pair.first, color = MaterialTheme.colorScheme.surfaceTint)
-                            Text(text = stringResource(pair.second))
-                        }
+                    UserTab.values().forEachIndexed { index, tab ->
+                        Tab(
+                            selected = pagerState.currentPage == index,
+                            onClick = { scope.launch { pagerState.animateScrollToPage(index) } },
+                            text = { Text(text = stringResource(tab.textRes), maxLines = 1) }
+                        )
                     }
                 }
-            }
-        }
-    }
 
-    private fun LazyListScope.favoriteMediaSection(
-        @StringRes titleRes: Int,
-        entries: List<UserFavoriteMediaNode>,
-        onClickEntry: (UserFavoriteMediaNode) -> Unit,
-    ) {
-        if (entries.isEmpty()) return
-        item {
-            DetailsSectionHeader(stringResource(titleRes))
-        }
-
-        item {
-            LazyRow(
-                contentPadding = PaddingValues(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-            ) {
-                items(entries, { it.id }) {
-                    val containerColor = (it.coverImage?.color?.let(ColorUtils::hexToColor)
-                        ?: MaterialTheme.colorScheme.surface)
-                    ElevatedCard(
-                        onClick = { onClickEntry(it) },
-                        colors = CardDefaults.elevatedCardColors(containerColor = containerColor),
-                    ) {
-                        ConstraintLayout {
-                            val (image, title) = createRefs()
-                            AsyncImage(
-                                model = it.coverImage?.large,
-                                contentScale = ContentScale.FillHeight,
-                                contentDescription = stringResource(R.string.anime_media_cover_image),
-                                modifier = Modifier
-                                    .constrainAs(image) {
-                                        height = Dimension.value(180.dp)
-                                        width = Dimension.wrapContent
-                                        linkTo(start = parent.start, end = parent.end)
-                                        top.linkTo(parent.top)
-                                    }
-                            )
-
-                            AutoHeightText(
-                                text = it.title?.userPreferred.orEmpty(),
-                                color = ColorUtils.bestTextColor(containerColor)
-                                    ?: Color.Unspecified,
-                                maxLines = 2,
-                                minLines = 2,
-                                modifier = Modifier
-                                    .padding(horizontal = 8.dp, vertical = 8.dp)
-                                    .constrainAs(title) {
-                                        linkTo(start = image.start, end = image.end)
-                                        top.linkTo(image.bottom)
-                                        width = Dimension.fillToConstraints
-                                    }
-                            )
-                        }
+                HorizontalPager(
+                    pageCount = UserTab.values().size,
+                    state = pagerState,
+                    pageNestedScrollConnection = NestedScrollSplitter(
+                        nestedScrollConnection,
+                        scrollBehavior.nestedScrollConnection,
+                    ),
+                ) {
+                    val user = entry()?.user
+                    when (UserTab.values()[it]) {
+                        UserTab.OVERVIEW -> UserOverviewScreen(
+                            entry = entry,
+                            viewer = viewer(),
+                            callback = callback,
+                            bottomNavBarPadding = bottomNavBarPadding,
+                        )
+                        UserTab.ANIME_STATS -> UserStatsScreen(
+                            user = { user },
+                            statistics = { entry()?.user?.statistics?.anime },
+                            isAnime = true,
+                            bottomNavBarPadding = bottomNavBarPadding,
+                        )
+                        UserTab.MANGA_STATS -> UserStatsScreen(
+                            user = { user },
+                            statistics = { entry()?.user?.statistics?.manga },
+                            isAnime = false,
+                            bottomNavBarPadding = bottomNavBarPadding,
+                        )
                     }
-                }
-            }
-        }
-    }
-
-    private fun LazyListScope.favoriteStudiosSection(
-        studios: List<Entry.Studio>,
-        onClick: (String) -> Unit,
-    ) {
-        if (studios.isEmpty()) return
-        item {
-            DetailsSectionHeader(stringResource(R.string.anime_user_favorite_studios_label))
-        }
-
-        item {
-            val uriHandler = LocalUriHandler.current
-            ElevatedCard(
-                modifier = Modifier
-                    .padding(horizontal = 16.dp)
-                    .fillMaxWidth()
-            ) {
-                studios.forEachIndexed { index, studio ->
-                    if (index != 0) {
-                        Divider()
-                    }
-
-                    Text(
-                        text = studio.name,
-                        style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { uriHandler.openUri(AniListUtils.studioUrl(studio.id)) }
-                            .padding(horizontal = 16.dp, vertical = 10.dp)
-                    )
-                }
-            }
-        }
-    }
-
-    private fun LazyListScope.previousNamesSection(names: List<String>) {
-        if (names.isEmpty()) return
-        item {
-            DetailsSectionHeader(stringResource(R.string.anime_user_previous_names_label))
-        }
-
-        item {
-            ElevatedCard(
-                modifier = Modifier
-                    .padding(horizontal = 16.dp)
-                    .fillMaxWidth()
-            ) {
-                names.forEachIndexed { index, name ->
-                    if (index != 0) {
-                        Divider()
-                    }
-
-                    Text(
-                        text = name,
-                        style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)
-                    )
                 }
             }
         }
@@ -473,5 +179,28 @@ object AniListUserScreen {
             val id: String,
             val name: String,
         )
+    }
+
+    interface Callback {
+        fun onMediaClick(media: UserFavoriteMediaNode)
+        fun onCharacterClicked(id: String) {
+            // TODO
+        }
+
+        fun onCharacterLongClicked(id: String) {
+            // TODO
+        }
+
+        fun onStaffClicked(id: String) {
+            // TODO
+        }
+
+        fun onStaffLongClicked(id: String) {
+            // TODO
+        }
+
+        fun onStudioClicked(id: String) {
+            // TODO
+        }
     }
 }

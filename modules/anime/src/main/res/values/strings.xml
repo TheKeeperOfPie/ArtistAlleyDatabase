@@ -383,4 +383,10 @@
     <string name="anime_user_statistics_mean_score">Mean score</string>
     <string name="anime_user_statistics_anime_days_watched">Days watched</string>
     <string name="anime_user_statistics_manga_chapters_read">Chapters read</string>
+
+    <string name="anime_user_tab_overview">Overview</string>
+    <string name="anime_user_tab_anime_stats">Anime</string>
+    <string name="anime_user_tab_manga_stats">Manga</string>
+    <string name="anime_user_stats_formats_label">Formats</string>
+    <string name="anime_user_stats_statuses_label">Statuses</string>
 </resources>

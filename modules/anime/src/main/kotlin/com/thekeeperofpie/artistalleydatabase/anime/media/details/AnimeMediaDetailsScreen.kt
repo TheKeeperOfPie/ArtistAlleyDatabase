@@ -1052,7 +1052,7 @@ object AnimeMediaDetailsScreen {
                     .wrapContentHeight()
                     .heightIn(max = if (expanded) Dp.Unspecified else 120.dp)
                     .clickable { expanded = !expanded }
-                    .fadingEdgeBottom(expanded)
+                    .fadingEdgeBottom(show = !expanded)
             ) {
                 if (showDividerAbove) {
                     Divider()

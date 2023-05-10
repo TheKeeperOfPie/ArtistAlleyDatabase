@@ -43,6 +43,12 @@ object AnimeNavigator {
         navGraphBuilder: NavGraphBuilder,
         onClickNav: () -> Unit,
     ) {
+        val userCallback = object : AniListUserScreen.Callback {
+            override fun onMediaClick(media: UserFavoriteMediaNode) {
+                onMediaClick(navHostController, media)
+            }
+        }
+
         navGraphBuilder.composable(
             route = AnimeNavDestinations.SEARCH.id
                     + "?title={title}"
@@ -252,13 +258,7 @@ object AnimeNavigator {
             val userId = it.arguments?.getString("userId")
             UserScreen(
                 userId = userId,
-                scrollStateSaver = ScrollStateSaver(),
-                onMediaClick = { onMediaClick(navHostController, it) },
-                onCharacterClicked = { /*TODO*/ },
-                onCharacterLongClicked = { /*TODO*/ },
-                onStaffClicked = { /*TODO*/ },
-                onStaffLongClicked = { /*TODO*/ },
-                onStudioClicked = { /*TODO*/ },
+                callback = userCallback,
             )
         }
     }
@@ -340,26 +340,18 @@ object AnimeNavigator {
     @Composable
     fun UserScreen(
         userId: String?,
-        scrollStateSaver: ScrollStateSaver,
-        onMediaClick: (UserFavoriteMediaNode) -> Unit,
-        onCharacterClicked: (String) -> Unit,
-        onCharacterLongClicked: (String) -> Unit,
-        onStaffClicked: (String) -> Unit,
-        onStaffLongClicked: (String) -> Unit,
-        onStudioClicked: (String) -> Unit,
+        callback: AniListUserScreen.Callback,
+        nestedScrollConnection: NestedScrollConnection? = null,
+        bottomNavBarPadding: @Composable () -> Dp = { 0.dp },
     ) {
         val viewModel = hiltViewModel<AniListUserViewModel>()
             .apply { initialize(userId) }
         AniListUserScreen(
+            nestedScrollConnection = nestedScrollConnection,
             entry = { viewModel.entry.collectAsState().value },
             viewer = { viewModel.viewer.collectAsState().value },
-            scrollStateSaver = scrollStateSaver,
-            onMediaClick = onMediaClick,
-            onCharacterClicked = onCharacterClicked,
-            onCharacterLongClicked = onCharacterLongClicked,
-            onStaffClicked = onStaffClicked,
-            onStaffLongClicked = onStaffLongClicked,
-            onStudioClicked = onStudioClicked,
+            callback = callback,
+            bottomNavBarPadding = bottomNavBarPadding,
         )
     }
 }

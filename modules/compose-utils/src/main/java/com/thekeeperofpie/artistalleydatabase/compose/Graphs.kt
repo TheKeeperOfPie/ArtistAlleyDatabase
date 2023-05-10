@@ -1,22 +1,32 @@
+@file:OptIn(ExperimentalFoundationApi::class)
+
 package com.thekeeperofpie.artistalleydatabase.compose
 
 import android.icu.text.DecimalFormat
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -34,8 +44,12 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.isSpecified
 
 @Composable
 fun <Key, Value> PieChart(
@@ -46,6 +60,7 @@ fun <Key, Value> PieChart(
     sliceToText: @Composable (Value) -> String,
     keySave: (Key) -> String,
     keyRestore: (String) -> Key,
+    pieMaxHeight: Dp = Dp.Unspecified,
 ) {
     Row {
         val sliceVisibility = rememberSaveable(
@@ -100,23 +115,47 @@ fun <Key, Value> PieChart(
                 .border(1.dp, MaterialTheme.colorScheme.onSurface, CircleShape)
                 .widthIn(max = 280.dp)
                 .weight(0.5f, fill = false)
+                .heightIn(max = pieMaxHeight)
                 .aspectRatio(1f)
         )
 
+        var height by remember { mutableStateOf(-1) }
+        val showFadingEdge = pieMaxHeight.isSpecified &&
+                LocalDensity.current.run { height.toDp() } >= pieMaxHeight
+
         Column(
             verticalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp),
+            modifier = Modifier
+                .padding(start = 16.dp, top = 16.dp, bottom = 16.dp)
+                .heightIn(max = pieMaxHeight)
+                .weight(0.5f, fill = false)
+                .fillMaxWidth()
+                .onSizeChanged { height = it.height }
+                .fadingEdgeBottom(showFadingEdge)
+                .run {
+                    if (pieMaxHeight.isSpecified) {
+                        verticalScroll(rememberScrollState())
+                    } else this
+                }
         ) {
             val format = remember { DecimalFormat("#%") }
-            slices.forEach {
-                val visible = sliceVisibility[sliceToKey(it)] ?: true
+            slices.forEach { slice ->
+                val key = sliceToKey(slice)
+                val visible = sliceVisibility[key] ?: true
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
                         .height(IntrinsicSize.Min)
-                        .clickable { sliceVisibility[sliceToKey(it)] = !visible },
+                        .combinedClickable(
+                            onClick = { sliceVisibility[key] = !visible },
+                            onLongClick = {
+                                slices.forEach {
+                                    sliceVisibility[sliceToKey(it)] = slice == it
+                                }
+                            }
+                        ),
                 ) {
-                    val sliceColor = sliceToColor(it)
+                    val sliceColor = sliceToColor(slice)
                     Box(
                         contentAlignment = Alignment.Center,
                         modifier = Modifier
@@ -129,7 +168,7 @@ fun <Key, Value> PieChart(
                                 contentAlignment = Alignment.Center,
                                 modifier = Modifier.matchParentSize()
                             ) {
-                                val amount = sliceToAmount(it).takeIf { visible } ?: 0
+                                val amount = sliceToAmount(slice).takeIf { visible } ?: 0
                                 AutoHeightText(
                                     text = format.format(amount / total),
                                     color = ColorUtils.bestTextColor(sliceColor)
@@ -149,13 +188,17 @@ fun <Key, Value> PieChart(
                     }
 
                     Text(
-                        text = sliceToText(it),
+                        text = sliceToText(slice),
                         style = MaterialTheme.typography.labelLarge,
                         modifier = Modifier
                             .alpha(if (visible) 1f else 0.38f)
                             .padding(horizontal = 16.dp, vertical = 10.dp),
                     )
                 }
+            }
+
+            if (showFadingEdge) {
+                Spacer(Modifier.height(pieMaxHeight * 0.2f))
             }
         }
     }
@@ -173,70 +216,103 @@ fun <Value> ColumnScope.BarChart(
     sliceToText: @Composable (Value) -> String,
 ) {
     var split by rememberSaveable { mutableStateOf(0) }
+    var nonZeroSplit by rememberSaveable { mutableStateOf(0) }
     val format = remember { DecimalFormat("#%") }
     Row(
         verticalAlignment = Alignment.Bottom,
-        modifier = Modifier.padding(start = 16.dp, end = 16.dp)
+        modifier = Modifier
+            .padding(start = 16.dp, end = 16.dp)
+            .animateContentSize()
     ) {
         val total = slices.sumOf(sliceToAmount).toFloat()
-        val firstWeight = split / slices.size.toFloat()
-        val firstPortion = slices.take(split).fold(0) { acc, slice -> acc + sliceToAmount(slice) }
-        if (firstWeight != 0f) {
-            Box(
-                contentAlignment = Alignment.Center,
+        val alpha by animateFloatAsState(
+            targetValue = if (split == 0) 0f else 1f,
+            label = "Bar chart segment alpha"
+        )
+
+        val firstWeight by animateFloatAsState(
+            nonZeroSplit / slices.size.toFloat(),
+            label = "Bar chart 1st segment weight"
+        )
+        val firstPortion =
+            slices.take(nonZeroSplit).fold(0) { acc, slice -> acc + sliceToAmount(slice) }
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .alpha(alpha)
+                .weight(firstWeight.coerceAtLeast(0.001f))
+                .bottomBorder(MaterialTheme.colorScheme.onSurface)
+                .padding(bottom = 1.5.dp) // Offset the other portion's border width
+        ) {
+            AutoWidthText(
+                text = format.format(firstPortion / total),
+                textAlign = TextAlign.Center,
+                maxLines = 1,
                 modifier = Modifier
-                    .alpha(if (split == 0) 0f else 1f)
-                    .weight(firstWeight)
-                    .padding(bottom = 1.5.dp) // Offset the other portion's border width
-                    .bottomBorder(MaterialTheme.colorScheme.onSurface)
-            ) {
-                AutoWidthText(
-                    text = format.format(firstPortion / total),
-                    textAlign = TextAlign.Center,
-                    maxLines = 1,
-                    modifier = Modifier.padding(bottom = 2.dp)
-                        .fillMaxWidth()
-                )
-            }
+                    .padding(bottom = 2.dp)
+                    .fillMaxWidth()
+            )
         }
 
-        val secondWeight = (slices.size - split) / slices.size.toFloat()
-        if (secondWeight != 0f) {
-            val secondPortion = slices.drop(split)
-                .fold(0) { acc, slice -> acc + sliceToAmount(slice) }
+        val spacerWeight by animateFloatAsState(
+            if (split == 0) 1f else 0f,
+            label = "Bar chart spacer weight"
+        )
+        if (spacerWeight > 0f) {
+            Spacer(modifier = Modifier.weight(spacerWeight))
+        }
 
-            Box(
-                contentAlignment = Alignment.Center,
+        val secondWeight by animateFloatAsState(
+            (slices.size - nonZeroSplit) / slices.size.toFloat(),
+            label = "Bar chart 2nd segment weight"
+        )
+        val secondPortion = slices.drop(nonZeroSplit)
+            .fold(0) { acc, slice -> acc + sliceToAmount(slice) }
+
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .alpha(alpha)
+                .weight(secondWeight.coerceAtLeast(0.001f))
+                .bottomBorder(MaterialTheme.colorScheme.surfaceTint, width = 2.dp)
+        ) {
+            AutoWidthText(
+                text = format.format(secondPortion / total),
+                textAlign = TextAlign.Center,
+                maxLines = 1,
                 modifier = Modifier
-                    .alpha(if (split == 0) 0f else 1f)
-                    .weight(secondWeight)
-                    .bottomBorder(MaterialTheme.colorScheme.surfaceTint, width = 2.dp)
-            ) {
-                AutoWidthText(
-                    text = format.format(secondPortion / total),
-                    textAlign = TextAlign.Center,
-                    maxLines = 1,
-                    modifier = Modifier.padding(bottom = 2.dp)
-                        .fillMaxWidth()
-                )
-            }
+                    .padding(bottom = 2.dp)
+                    .fillMaxWidth()
+            )
         }
     }
 
     Row(modifier = Modifier.padding(start = 16.dp, end = 16.dp)) {
         val maxAmount = slices.maxOf { sliceToAmount(it) } * 1.1f
         slices.forEachIndexed { index, it ->
-            val color = sliceToColor(index, it).copy(alpha = if (index >= split) 1f else 0.2f)
+            val color = sliceToColor(index, it)
 
+            val alpha by animateFloatAsState(
+                if (index >= split) 1f else 0.2f,
+                label = "Bar chart color alpha"
+            )
             Column(modifier = Modifier
                 .weight(1f)
-                .clickable { split = index }
+                .clickable {
+                    if (split == index || index == 0) {
+                        split = 0
+                    } else {
+                        split = index
+                        nonZeroSplit = split
+                    }
+                }
             ) {
                 val amount = sliceToAmount(it)
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(240.dp)
+                        .alpha(alpha)
                         .background(
                             Brush.verticalGradient(
                                 0f to Color.Transparent,

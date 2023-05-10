@@ -172,7 +172,7 @@ fun LazyListScope.descriptionSection(@StringRes titleTextRes: Int, htmlText: Str
                     .padding(horizontal = 16.dp, vertical = 10.dp)
                     .wrapContentHeight()
                     .heightIn(max = if (expanded) Dp.Unspecified else 80.dp)
-                    .fadingEdgeBottom(expanded)
+                    .fadingEdgeBottom(show = !expanded)
             )
         }
     }

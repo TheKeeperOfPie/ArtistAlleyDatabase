@@ -31,11 +31,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.anilist.fragment.UserFavoriteMediaNode
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.anime.list.AnimeUserListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.list.AnimeUserListViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
+import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserScreen
 import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysNavigationBar
 import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
@@ -55,12 +55,7 @@ object AnimeHomeScreen {
         onSubmitAuthToken: (String) -> Unit,
         onTagClick: (tagId: String, tagName: String) -> Unit,
         onMediaClick: (AnimeMediaListRow.Entry) -> Unit,
-        onUserMediaClick: (UserFavoriteMediaNode) -> Unit,
-        onCharacterClicked: (String) -> Unit,
-        onCharacterLongClicked: (String) -> Unit,
-        onStaffClicked: (String) -> Unit,
-        onStaffLongClicked: (String) -> Unit,
-        onStudioClicked: (String) -> Unit,
+        userCallback: AniListUserScreen.Callback,
         errorRes: () -> Pair<Int, Exception?>? = { null },
         onErrorDismiss: () -> Unit = { },
     ) {
@@ -186,16 +181,9 @@ object AnimeHomeScreen {
                             AnimeNavDestinations.PROFILE -> {
                                 AnimeNavigator.UserScreen(
                                     userId = null,
-                                    scrollStateSaver = ScrollStateSaver.fromMap(
-                                        AnimeNavDestinations.PROFILE.id,
-                                        scrollPositions
-                                    ),
-                                    onMediaClick = onUserMediaClick,
-                                    onCharacterClicked = onCharacterClicked,
-                                    onCharacterLongClicked = onCharacterLongClicked,
-                                    onStaffClicked = onStaffClicked,
-                                    onStaffLongClicked = onStaffLongClicked,
-                                    onStudioClicked = onStudioClicked,
+                                    callback = userCallback,
+                                    nestedScrollConnection = scrollBehavior.nestedScrollConnection,
+                                    bottomNavBarPadding = { bottomNavBarPadding() },
                                 )
                             }
                         }
