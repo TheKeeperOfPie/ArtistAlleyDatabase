@@ -49,7 +49,7 @@ object BrowseScreen {
         onClick: (tabContent: TabContent, value: BrowseEntryModel) -> Unit = { _, _ -> },
         onPageRequested: (page: Int) -> Unit = {},
     ) {
-        val pagerState = rememberPagerState()
+        val pagerState = rememberPagerState(pageCount = { tabs.size })
         LaunchedEffect(pagerState) {
             snapshotFlow { pagerState.currentPage }.collectLatest(onPageRequested)
         }
@@ -84,7 +84,6 @@ object BrowseScreen {
             },
         ) {
             HorizontalPager(
-                pageCount = tabs.size,
                 state = pagerState,
                 key = { tabs[it].id },
                 modifier = Modifier

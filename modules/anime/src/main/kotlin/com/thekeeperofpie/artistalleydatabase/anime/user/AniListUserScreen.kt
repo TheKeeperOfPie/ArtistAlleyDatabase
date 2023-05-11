@@ -86,7 +86,7 @@ object AniListUserScreen {
             },
         ) { scaffoldPadding ->
             Column(modifier = Modifier.padding(scaffoldPadding)) {
-                val pagerState = rememberPagerState()
+                val pagerState = rememberPagerState(pageCount = { UserTab.values().size })
                 val scope = rememberCoroutineScope()
                 TabRow(
                     selectedTabIndex = pagerState.currentPage,
@@ -104,7 +104,6 @@ object AniListUserScreen {
                 }
 
                 HorizontalPager(
-                    pageCount = UserTab.values().size,
                     state = pagerState,
                     pageNestedScrollConnection = NestedScrollSplitter(
                         nestedScrollConnection,

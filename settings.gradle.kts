@@ -46,13 +46,13 @@ dependencyResolutionManagement {
             plugin("org.barfuin.gradle.taskinfo").version("2.1.0")
             plugin("org.jetbrains.kotlin.plugin.serialization").version("1.8.21")
 
-            library("androidx.activity:activity-compose:1.8.0-alpha03")
-            library("androidx.compose.material3:material3:1.1.0-rc01")
-            library("androidx.compose.material:material-icons-core:1.5.0-alpha03")
-            library("androidx.compose.material:material-icons-extended:1.5.0-alpha03")
-            library("androidx.compose.material:material:1.5.0-alpha03")
-            library("androidx.constraintlayout:constraintlayout-compose:1.0.1")
-            library("androidx.core:core-ktx:1.12.0-alpha03")
+            library("androidx.activity:activity-compose:1.8.0-alpha04")
+            library("androidx.compose.material3:material3:1.2.0-alpha01")
+            library("androidx.compose.material:material-icons-core:1.5.0-alpha04")
+            library("androidx.compose.material:material-icons-extended:1.5.0-alpha04")
+            library("androidx.compose.material:material:1.5.0-alpha04")
+            library("androidx.constraintlayout:constraintlayout-compose:1.1.0-alpha09")
+            library("androidx.core:core-ktx:1.12.0-alpha04")
             library("androidx.hilt:hilt-navigation-compose:1.1.0-alpha01")
             library("androidx.hilt:hilt-work:1.0.0")
             library("androidx.lifecycle:lifecycle-livedata-ktx:2.6.1")
@@ -64,7 +64,7 @@ dependencyResolutionManagement {
             library("androidx.media3:media3-exoplayer-hls:1.0.1")
             library("androidx.media3:media3-exoplayer-rtsp:1.0.1")
             library("androidx.media3:media3-ui:1.0.1")
-            library("androidx.navigation:navigation-compose:2.6.0-beta01")
+            library("androidx.navigation:navigation-compose:2.6.0-rc01")
             library("androidx.paging:paging-compose:1.0.0-alpha19")
             library("androidx.paging:paging-runtime:3.2.0-alpha05")
             library("androidx.palette:palette-ktx:1.0.0")
@@ -117,11 +117,11 @@ dependencyResolutionManagement {
             }
 
             prefix("compose") {
-                library("androidx.compose.animation:animation:1.5.0-alpha03")
-                library("androidx.compose.ui:ui-test-manifest:1.5.0-alpha03")
-                library("androidx.compose.ui:ui-tooling-preview:1.5.0-alpha03")
-                library("androidx.compose.ui:ui-tooling:1.5.0-alpha03")
-                library("androidx.compose.ui:ui:1.5.0-alpha03")
+                library("androidx.compose.animation:animation:1.5.0-alpha04")
+                library("androidx.compose.ui:ui-test-manifest:1.5.0-alpha04")
+                library("androidx.compose.ui:ui-tooling-preview:1.5.0-alpha04")
+                library("androidx.compose.ui:ui-tooling:1.5.0-alpha04")
+                library("androidx.compose.ui:ui:1.5.0-alpha04")
             }
             prefix("junit5") {
                 library("de.mannodermaus.junit5:android-test-core:1.3.0")

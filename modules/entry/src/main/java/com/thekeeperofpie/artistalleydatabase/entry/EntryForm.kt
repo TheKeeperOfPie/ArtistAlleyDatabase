@@ -830,7 +830,7 @@ private fun CustomSection(section: EntrySection.Custom<*>) {
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun MultiImageSelectBox(
-    pagerState: PagerState = rememberPagerState(),
+    pagerState: PagerState? = null,
     imageState: () -> ImageState,
     cropState: () -> CropUtils.CropState,
     loading: () -> Boolean,
@@ -933,8 +933,7 @@ fun MultiImageSelectBox(
         val addAllowed = imageState().addAllowed()
         val size = if (addAllowed) images.size + 1 else images.size
         HorizontalPager(
-            pageCount = size,
-            state = pagerState,
+            state = pagerState ?: rememberPagerState(pageCount = { size }),
             modifier = Modifier.heightIn(max = 10000.dp)
         ) { index ->
             if (index == images.size) {
