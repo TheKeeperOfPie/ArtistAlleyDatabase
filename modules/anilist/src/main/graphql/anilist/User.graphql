@@ -116,4 +116,14 @@ fragment UserMediaStatistics on UserStatistics {
         count
         status
     }
+
+    scores(sort: [MEAN_SCORE]) {
+        count
+        score
+    }
+
+    lengths(sort: [MEAN_SCORE]) {
+        count
+        length
+    }
 }

@@ -24,13 +24,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.anilist.UserByIdQuery
-import com.anilist.fragment.UserMediaStatistics
 import com.anilist.type.MediaFormat
 import com.anilist.type.MediaListStatus
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toColor
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.ui.DetailsSectionHeader
+import com.thekeeperofpie.artistalleydatabase.compose.BarChart
 import com.thekeeperofpie.artistalleydatabase.compose.PieChart
 import com.thekeeperofpie.artistalleydatabase.compose.VerticalDivider
 import kotlin.time.Duration.Companion.minutes
@@ -42,7 +42,7 @@ object UserStatsScreen {
     @Composable
     operator fun invoke(
         user: () -> UserByIdQuery.Data.User?,
-        statistics: @Composable () -> UserMediaStatistics?,
+        statistics: @Composable () -> AniListUserScreen.Entry.Statistics?,
         modifier: Modifier = Modifier,
         isAnime: Boolean,
         bottomNavBarPadding: @Composable () -> Dp = { 0.dp },
@@ -74,15 +74,38 @@ object UserStatsScreen {
                 }
             }
 
+            scoresSection(statistics)
+            lengthsSection(statistics)
+
             formatsSection(statistics)
             statusesSection(statistics, isAnime = isAnime)
         }
     }
 
-    private fun LazyListScope.formatsSection(statistics: UserMediaStatistics) {
+    private fun LazyListScope.scoresSection(statistics: AniListUserScreen.Entry.Statistics) {
+        barChartSection(
+            titleRes = R.string.anime_user_stats_scores_label,
+            slices = statistics.scores,
+            sliceToAmount = { it.count },
+            sliceToColor = { _, _ -> MaterialTheme.colorScheme.surfaceTint },
+            sliceToText = { it.score.toString() },
+        )
+    }
+
+    private fun LazyListScope.lengthsSection(statistics: AniListUserScreen.Entry.Statistics) {
+        barChartSection(
+            titleRes = R.string.anime_user_stats_lengths_label,
+            slices = statistics.lengths,
+            sliceToAmount = { it.count },
+            sliceToColor = { _, _ -> MaterialTheme.colorScheme.surfaceTint },
+            sliceToText = { it.length.orEmpty() },
+        )
+    }
+
+    private fun LazyListScope.formatsSection(statistics: AniListUserScreen.Entry.Statistics) {
         pieChartSection(
             titleRes = R.string.anime_user_stats_formats_label,
-            slices = statistics.formats,
+            slices = statistics.statistics.formats,
             sliceToKey = { it.format },
             sliceToAmount = { it.count },
             sliceToColor = { it.format.toColor() },
@@ -95,10 +118,13 @@ object UserStatsScreen {
         )
     }
 
-    private fun LazyListScope.statusesSection(statistics: UserMediaStatistics, isAnime: Boolean) {
+    private fun LazyListScope.statusesSection(
+        statistics: AniListUserScreen.Entry.Statistics,
+        isAnime: Boolean,
+    ) {
         pieChartSection(
             titleRes = R.string.anime_user_stats_statuses_label,
-            slices = statistics.statuses,
+            slices = statistics.statistics.statuses,
             sliceToKey = { it.status },
             sliceToAmount = { it.count },
             sliceToColor = { it.status.toColor() },
@@ -109,6 +135,34 @@ object UserStatsScreen {
                     ?: MediaListStatus.UNKNOWN__
             },
         )
+    }
+
+    private fun <Value> LazyListScope.barChartSection(
+        @StringRes titleRes: Int,
+        slices: List<Value?>?,
+        sliceToAmount: (Value) -> Int,
+        sliceToColor: @Composable (index: Int, value: Value) -> Color,
+        sliceToText: @Composable (Value) -> String,
+    ) {
+        val slices = slices?.filterNotNull()?.ifEmpty { null } ?: return
+        item {
+            DetailsSectionHeader(stringResource(titleRes))
+        }
+
+        item {
+            ElevatedCard(
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+                    .fillMaxWidth()
+            ) {
+                BarChart(
+                    slices = slices,
+                    sliceToAmount = sliceToAmount,
+                    sliceToColor = sliceToColor,
+                    sliceToText = sliceToText,
+                )
+            }
+        }
     }
 
     private fun <Key, Value> LazyListScope.pieChartSection(
@@ -128,7 +182,9 @@ object UserStatsScreen {
 
         item {
             ElevatedCard(
-                modifier = Modifier.padding(horizontal = 16.dp).fillMaxWidth()
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+                    .fillMaxWidth()
             ) {
                 PieChart(
                     slices = slices,

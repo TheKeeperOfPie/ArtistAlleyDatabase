@@ -212,8 +212,9 @@ fun <Key, Value> PieChart(
 fun <Value> ColumnScope.BarChart(
     slices: List<Value>,
     sliceToAmount: (Value) -> Int,
-    sliceToColor: (index: Int, value: Value) -> Color,
+    sliceToColor: @Composable (index: Int, value: Value) -> Color,
     sliceToText: @Composable (Value) -> String,
+    showBarPadding: Boolean = true,
 ) {
     var split by rememberSaveable { mutableStateOf(0) }
     var nonZeroSplit by rememberSaveable { mutableStateOf(0) }
@@ -296,22 +297,29 @@ fun <Value> ColumnScope.BarChart(
                 if (index >= split) 1f else 0.2f,
                 label = "Bar chart color alpha"
             )
-            Column(modifier = Modifier
-                .weight(1f)
-                .clickable {
-                    if (split == index || index == 0) {
-                        split = 0
-                    } else {
-                        split = index
-                        nonZeroSplit = split
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier
+                    .weight(1f)
+                    .clickable {
+                        if (split == index || index == 0) {
+                            split = 0
+                        } else {
+                            split = index
+                            nonZeroSplit = split
+                        }
                     }
-                }
             ) {
                 val amount = sliceToAmount(it)
                 Box(
                     modifier = Modifier
-                        .fillMaxWidth()
                         .height(240.dp)
+                        .fillMaxWidth()
+                        .run {
+                            if (showBarPadding) {
+                                padding(horizontal = 8.dp)
+                            } else this
+                        }
                         .alpha(alpha)
                         .background(
                             Brush.verticalGradient(

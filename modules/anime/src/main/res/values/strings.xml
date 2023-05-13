@@ -389,4 +389,6 @@
     <string name="anime_user_tab_manga_stats">Manga</string>
     <string name="anime_user_stats_formats_label">Formats</string>
     <string name="anime_user_stats_statuses_label">Statuses</string>
+    <string name="anime_user_stats_scores_label">Scores</string>
+    <string name="anime_user_stats_lengths_label">Lengths</string>
 </resources>

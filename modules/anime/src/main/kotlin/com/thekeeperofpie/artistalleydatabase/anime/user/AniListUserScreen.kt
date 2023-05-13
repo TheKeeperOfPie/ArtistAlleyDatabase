@@ -5,14 +5,14 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import com.anilist.AuthedUserQuery
 import com.anilist.UserByIdQuery.Data.User
 import com.anilist.fragment.UserFavoriteMediaNode
+import com.anilist.fragment.UserMediaStatistics
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils
 import com.thekeeperofpie.artistalleydatabase.anime.staff.DetailsStaff
 import com.thekeeperofpie.artistalleydatabase.anime.ui.CoverAndBannerHeader
@@ -88,11 +89,12 @@ object AniListUserScreen {
             Column(modifier = Modifier.padding(scaffoldPadding)) {
                 val pagerState = rememberPagerState(pageCount = { UserTab.values().size })
                 val scope = rememberCoroutineScope()
-                TabRow(
+                ScrollableTabRow(
                     selectedTabIndex = pagerState.currentPage,
                     modifier = Modifier
-                        .wrapContentHeight()
                         .fillMaxWidth()
+                        .align(Alignment.CenterHorizontally),
+                    divider = { /* No divider, manually draw so that it's full width */ }
                 ) {
                     UserTab.values().forEachIndexed { index, tab ->
                         Tab(
@@ -102,6 +104,8 @@ object AniListUserScreen {
                         )
                     }
                 }
+
+                Divider()
 
                 HorizontalPager(
                     state = pagerState,
@@ -120,13 +124,13 @@ object AniListUserScreen {
                         )
                         UserTab.ANIME_STATS -> UserStatsScreen(
                             user = { user },
-                            statistics = { entry()?.user?.statistics?.anime },
+                            statistics = { entry()?.statisticsAnime },
                             isAnime = true,
                             bottomNavBarPadding = bottomNavBarPadding,
                         )
                         UserTab.MANGA_STATS -> UserStatsScreen(
                             user = { user },
-                            statistics = { entry()?.user?.statistics?.manga },
+                            statistics = { entry()?.statisticsManga },
                             isAnime = false,
                             bottomNavBarPadding = bottomNavBarPadding,
                         )
@@ -173,6 +177,18 @@ object AniListUserScreen {
                 )
             }
             .orEmpty()
+
+        val statisticsAnime = user.statistics?.anime?.let(::Statistics)
+        val statisticsManga = user.statistics?.manga?.let(::Statistics)
+
+        data class Statistics(
+            val statistics: UserMediaStatistics,
+        ) {
+            val scores = statistics.scores?.filterNotNull().orEmpty()
+                .sortedBy { it.score }
+            val lengths = statistics.lengths?.filterNotNull().orEmpty()
+                .sortedBy { it.length?.substringBefore("-")?.toIntOrNull() }
+        }
 
         data class Studio(
             val id: String,

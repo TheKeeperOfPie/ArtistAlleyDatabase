@@ -1707,6 +1707,7 @@ object AnimeMediaDetailsScreen {
                             }
                         },
                         sliceToText = { it.score.toString() },
+                        showBarPadding = false,
                     )
                 }
             }
