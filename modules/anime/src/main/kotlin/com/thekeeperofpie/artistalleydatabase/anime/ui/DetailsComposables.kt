@@ -1,10 +1,12 @@
 @file:OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class)
+@file:Suppress("NAME_SHADOWING")
 
 package com.thekeeperofpie.artistalleydatabase.anime.ui
 
 import androidx.annotation.StringRes
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -26,10 +28,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithCache
@@ -151,19 +149,29 @@ fun DetailsSectionHeader(text: String, modifier: Modifier = Modifier) {
     )
 }
 
-fun LazyListScope.descriptionSection(@StringRes titleTextRes: Int, htmlText: String?) {
+fun LazyListScope.descriptionSection(
+    @StringRes titleTextRes: Int,
+    htmlText: String?,
+    expanded: () -> Boolean,
+    onExpandedChanged: (Boolean) -> Unit,
+) {
     htmlText ?: return
-    item { DetailsSectionHeader(stringResource(titleTextRes)) }
     item {
-        var expanded by remember { mutableStateOf(false) }
+        DetailsSectionHeader(
+            stringResource(titleTextRes),
+            modifier = Modifier.clickable { onExpandedChanged(!expanded()) }
+        )
+    }
+    item {
         ElevatedCard(
-            onClick = { expanded = !expanded },
+            onClick = { onExpandedChanged(!expanded()) },
             modifier = Modifier
                 .padding(horizontal = 16.dp)
                 .fillMaxWidth()
                 .animateContentSize(),
         ) {
             val style = MaterialTheme.typography.bodyMedium
+            val expanded = expanded()
             HtmlText(
                 text = htmlText,
                 style = style,

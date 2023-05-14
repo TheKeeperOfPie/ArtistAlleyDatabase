@@ -6,10 +6,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.SaverScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
 interface ScrollStateSaver {
 
@@ -26,6 +32,18 @@ interface ScrollStateSaver {
             val offset = rememberSaveable { mutableStateOf(0) }
             return remember { ScrollStateSaverImpl(position, offset) }
         }
+
+        @Composable
+        fun scrollPositions() = rememberSaveable(saver = object :
+            Saver<MutableMap<String, Pair<Int, Int>>, String> {
+            override fun restore(value: String) =
+                Json.decodeFromString<Map<String, Pair<Int, Int>>>(value)
+                    .toMutableMap()
+
+            override fun SaverScope.save(value: MutableMap<String, Pair<Int, Int>>) =
+                Json.encodeToString(value)
+
+        }) { mutableStateMapOf() }
 
         @Composable
         fun fromMap(key: String, map: MutableMap<String, Pair<Int, Int>>) = remember {

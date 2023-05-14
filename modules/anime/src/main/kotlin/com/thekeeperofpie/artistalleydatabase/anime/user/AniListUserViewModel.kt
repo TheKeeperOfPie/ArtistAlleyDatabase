@@ -2,10 +2,11 @@ package com.thekeeperofpie.artistalleydatabase.anime.user
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.anilist.fragment.UserMediaStatistics
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.R
-import com.thekeeperofpie.artistalleydatabase.anime.user.stats.UserStatsGenreState
+import com.thekeeperofpie.artistalleydatabase.anime.user.stats.UserStatsDetailsState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -24,8 +25,85 @@ class AniListUserViewModel @Inject constructor(
     val viewer = aniListApi.authedUser
     var errorResource = MutableStateFlow<Pair<Int, Exception?>?>(null)
 
-    val animeGenreState = UserStatsGenreState(viewModelScope, aniListApi, isAnime = true)
-    val mangaGenreState = UserStatsGenreState(viewModelScope, aniListApi, isAnime = false)
+    val animeGenresState = UserStatsDetailsState<UserMediaStatistics.Genre>(
+        viewModelScope,
+        aniListApi,
+        { it.genre.orEmpty() },
+        { it.mediaIds.filterNotNull() },
+        isAnime = true,
+    )
+
+    val animeTagsState = UserStatsDetailsState<UserMediaStatistics.Tag>(
+        viewModelScope,
+        aniListApi,
+        { it.tag?.id.toString() },
+        { it.mediaIds.filterNotNull() },
+        isAnime = true,
+    )
+
+    val animeVoiceActorsState = UserStatsDetailsState<UserMediaStatistics.VoiceActor>(
+        viewModelScope,
+        aniListApi,
+        { it.voiceActor?.id.toString() },
+        { it.mediaIds.filterNotNull() },
+        isAnime = true,
+    )
+
+    val animeStudiosState = UserStatsDetailsState<UserMediaStatistics.Studio>(
+        viewModelScope,
+        aniListApi,
+        { it.studio?.id.toString() },
+        { it.mediaIds.filterNotNull() },
+        isAnime = true,
+    )
+
+    val animeStaffState = UserStatsDetailsState<UserMediaStatistics.Staff>(
+        viewModelScope,
+        aniListApi,
+        { it.staff?.id.toString() },
+        { it.mediaIds.filterNotNull() },
+        isAnime = true,
+    )
+
+    val mangaGenresState = UserStatsDetailsState<UserMediaStatistics.Genre>(
+        viewModelScope,
+        aniListApi,
+        { it.genre.orEmpty() },
+        { it.mediaIds.filterNotNull() },
+        isAnime = false,
+    )
+
+    val mangaTagsState = UserStatsDetailsState<UserMediaStatistics.Tag>(
+        viewModelScope,
+        aniListApi,
+        { it.tag?.id.toString() },
+        { it.mediaIds.filterNotNull() },
+        isAnime = false,
+    )
+
+    val mangaVoiceActorsState = UserStatsDetailsState<UserMediaStatistics.VoiceActor>(
+        viewModelScope,
+        aniListApi,
+        { it.voiceActor?.id.toString() },
+        { it.mediaIds.filterNotNull() },
+        isAnime = false,
+    )
+
+    val mangaStudiosState = UserStatsDetailsState<UserMediaStatistics.Studio>(
+        viewModelScope,
+        aniListApi,
+        { it.studio?.id.toString() },
+        { it.mediaIds.filterNotNull() },
+        isAnime = false,
+    )
+
+    val mangaStaffState = UserStatsDetailsState<UserMediaStatistics.Staff>(
+        viewModelScope,
+        aniListApi,
+        { it.staff?.id.toString() },
+        { it.mediaIds.filterNotNull() },
+        isAnime = false,
+    )
 
     private val refreshUptimeMillis = MutableStateFlow(-1L)
 

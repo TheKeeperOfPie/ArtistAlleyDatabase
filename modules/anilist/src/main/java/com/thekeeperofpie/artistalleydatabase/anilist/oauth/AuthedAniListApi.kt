@@ -74,7 +74,7 @@ class AuthedAniListApi(
 
     suspend fun userMediaList(
         userId: Int,
-        type: MediaType = MediaType.ANIME,
+        type: MediaType,
         sort: List<MediaListSort>? = null,
     ) =
         query(

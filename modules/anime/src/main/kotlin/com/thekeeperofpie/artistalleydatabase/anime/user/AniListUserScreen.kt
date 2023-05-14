@@ -27,11 +27,13 @@ import com.anilist.AuthedUserQuery
 import com.anilist.UserByIdQuery.Data.User
 import com.anilist.fragment.UserFavoriteMediaNode
 import com.anilist.fragment.UserMediaStatistics
+import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils
+import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.staff.DetailsStaff
 import com.thekeeperofpie.artistalleydatabase.anime.ui.CoverAndBannerHeader
-import com.thekeeperofpie.artistalleydatabase.anime.user.stats.UserStatsGenreState
-import com.thekeeperofpie.artistalleydatabase.anime.user.stats.UserStatsScreen
+import com.thekeeperofpie.artistalleydatabase.anime.user.stats.UserMediaScreen
+import com.thekeeperofpie.artistalleydatabase.anime.user.stats.UserStatsDetailsState
 import com.thekeeperofpie.artistalleydatabase.compose.AutoResizeHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.CollapsingToolbar
 import com.thekeeperofpie.artistalleydatabase.compose.NestedScrollSplitter
@@ -44,8 +46,16 @@ object AniListUserScreen {
     operator fun invoke(
         nestedScrollConnection: NestedScrollConnection? = null,
         entry: @Composable () -> Entry?,
-        animeGenreState: UserStatsGenreState,
-        mangaGenreState: UserStatsGenreState,
+        animeGenresState: UserStatsDetailsState<UserMediaStatistics.Genre>,
+        animeTagsState: UserStatsDetailsState<UserMediaStatistics.Tag>,
+        animeVoiceActorsState: UserStatsDetailsState<UserMediaStatistics.VoiceActor>,
+        animeStudiosState: UserStatsDetailsState<UserMediaStatistics.Studio>,
+        animeStaffState: UserStatsDetailsState<UserMediaStatistics.Staff>,
+        mangaGenresState: UserStatsDetailsState<UserMediaStatistics.Genre>,
+        mangaTagsState: UserStatsDetailsState<UserMediaStatistics.Tag>,
+        mangaVoiceActorsState: UserStatsDetailsState<UserMediaStatistics.VoiceActor>,
+        mangaStudiosState: UserStatsDetailsState<UserMediaStatistics.Studio>,
+        mangaStaffState: UserStatsDetailsState<UserMediaStatistics.Staff>,
         viewer: @Composable () -> AuthedUserQuery.Data.Viewer?,
         callback: Callback,
         bottomNavBarPadding: @Composable () -> Dp = { 0.dp },
@@ -113,6 +123,7 @@ object AniListUserScreen {
 
                 HorizontalPager(
                     state = pagerState,
+                    userScrollEnabled = false,
                     pageNestedScrollConnection = NestedScrollSplitter(
                         scrollBehavior.nestedScrollConnection,
                         nestedScrollConnection,
@@ -126,18 +137,26 @@ object AniListUserScreen {
                             callback = callback,
                             bottomNavBarPadding = bottomNavBarPadding,
                         )
-                        UserTab.ANIME_STATS -> UserStatsScreen(
+                        UserTab.ANIME_STATS -> UserMediaScreen(
                             user = { user },
                             statistics = { entry()?.statisticsAnime },
-                            genreState = animeGenreState,
+                            genresState = animeGenresState,
+                            tagsState = animeTagsState,
+                            voiceActorsState = animeVoiceActorsState,
+                            studiosState = animeStudiosState,
+                            staffState = animeStaffState,
                             isAnime = true,
                             callback = callback,
                             bottomNavBarPadding = bottomNavBarPadding,
                         )
-                        UserTab.MANGA_STATS -> UserStatsScreen(
+                        UserTab.MANGA_STATS -> UserMediaScreen(
                             user = { user },
                             statistics = { entry()?.statisticsManga },
-                            genreState = mangaGenreState,
+                            genresState = mangaGenresState,
+                            tagsState = mangaTagsState,
+                            voiceActorsState = mangaVoiceActorsState,
+                            studiosState = mangaStudiosState,
+                            staffState = mangaStaffState,
                             isAnime = false,
                             callback = callback,
                             bottomNavBarPadding = bottomNavBarPadding,
@@ -210,6 +229,7 @@ object AniListUserScreen {
 
     interface Callback {
         fun onMediaClick(media: UserFavoriteMediaNode)
+        fun onMediaClick(media: AnimeMediaListRow.Entry)
         fun onMediaClick(id: String, title: String?, image: String?)
         fun onCharacterClicked(id: String) {
             // TODO
@@ -230,5 +250,13 @@ object AniListUserScreen {
         fun onStudioClicked(id: String) {
             // TODO
         }
+
+        fun onGenreClick(genre: String) {
+            // TODO
+        }
+
+        fun onTagClick(id: String, name: String)
+
+        fun onUserListClick(userId: String, mediaType: MediaType?)
     }
 }

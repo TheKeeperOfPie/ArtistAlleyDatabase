@@ -10,6 +10,7 @@ import androidx.lifecycle.viewModelScope
 import com.anilist.AuthedUserQuery
 import com.anilist.UserMediaListQuery
 import com.anilist.type.MediaListStatus
+import com.anilist.type.MediaType
 import com.hoc081098.flowext.startWith
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.combine
@@ -40,7 +41,7 @@ import kotlin.time.Duration.Companion.milliseconds
 
 @HiltViewModel
 class AnimeUserListViewModel @Inject constructor(
-    aniListApi: AuthedAniListApi,
+    private val aniListApi: AuthedAniListApi,
     settings: AnimeSettings,
     private val ignoreList: AnimeMediaIgnoreList
 ) : ViewModel() {
@@ -50,17 +51,32 @@ class AnimeUserListViewModel @Inject constructor(
     var tagShown by mutableStateOf<AnimeMediaFilterController.TagSection.Tag?>(null)
 
     private var initialized = false
+    private var userId: String? = null
+    private lateinit var mediaType: MediaType
 
     private val filterController =
         AnimeMediaFilterController(MediaListSortOption::class, aniListApi, settings)
 
     private val refreshUptimeMillis = MutableStateFlow(-1L)
 
-    init {
+    fun initialize(userId: String?, mediaType: MediaType) {
+        if (initialized) return
+        initialized = true
+        this.userId = userId
+        this.mediaType = mediaType
+        filterController.initialize(
+            this, refreshUptimeMillis, AnimeMediaFilterController.InitialParams(
+                // Disable "On list" filter, everything in this screen is on the user's list
+                onListEnabled = false
+            )
+        )
+
         viewModelScope.launch(CustomDispatchers.Main) {
             @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
             combine(
-                aniListApi.authedUser.filterNotNull(),
+                aniListApi.authedUser.run {
+                    if (userId == null) filterNotNull() else this
+                },
                 refreshUptimeMillis,
                 filterController.sortOptions,
                 filterController.sortAscending,
@@ -72,7 +88,8 @@ class AnimeUserListViewModel @Inject constructor(
                         val baseResponse = flowOf(refreshParams)
                             .map {
                                 aniListApi.userMediaList(
-                                    userId = refreshParams.authedUser.id,
+                                    userId = userId?.toIntOrNull() ?: refreshParams.authedUser!!.id,
+                                    type = mediaType,
                                     sort = refreshParams.sortApiValue()
                                 )
                             }
@@ -119,17 +136,6 @@ class AnimeUserListViewModel @Inject constructor(
                 }
                 .collectLatest { content = it }
         }
-    }
-
-    fun initialize() {
-        if (initialized) return
-        initialized = true
-        filterController.initialize(
-            this, refreshUptimeMillis, AnimeMediaFilterController.InitialParams(
-                // Disable "On list" filter, everything in this screen is on the user's list
-                onListEnabled = false
-            )
-        )
     }
 
     fun filterData() = filterController.data()
@@ -370,7 +376,7 @@ class AnimeUserListViewModel @Inject constructor(
     }
 
     private data class RefreshParams(
-        val authedUser: AuthedUserQuery.Data.Viewer,
+        val authedUser: AuthedUserQuery.Data.Viewer?,
         val requestMillis: Long = SystemClock.uptimeMillis(),
         val sortOptions: List<AnimeMediaFilterController.SortEntry<MediaListSortOption>>,
         val sortAscending: Boolean,

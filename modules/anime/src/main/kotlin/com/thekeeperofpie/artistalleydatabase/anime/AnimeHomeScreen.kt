@@ -16,10 +16,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.Saver
@@ -32,19 +30,14 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
-import com.thekeeperofpie.artistalleydatabase.anime.list.AnimeUserListScreen
-import com.thekeeperofpie.artistalleydatabase.anime.list.AnimeUserListViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserScreen
 import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysNavigationBar
 import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
 import com.thekeeperofpie.artistalleydatabase.compose.navigationBarEnterAlwaysScrollBehavior
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 
 @OptIn(ExperimentalMaterial3Api::class)
 object AnimeHomeScreen {
@@ -116,6 +109,7 @@ object AnimeHomeScreen {
                 }.value
             }
 
+            val scrollPositions = ScrollStateSaver.scrollPositions()
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
@@ -124,18 +118,6 @@ object AnimeHomeScreen {
                 if (needAuth()) {
                     AuthPrompt(onClickAuth = onClickAuth, onSubmitAuthToken = onSubmitAuthToken)
                 } else {
-                    val scrollPositions =
-                        rememberSaveable(saver = object :
-                            Saver<MutableMap<String, Pair<Int, Int>>, String> {
-                            override fun restore(value: String) =
-                                Json.decodeFromString<Map<String, Pair<Int, Int>>>(value)
-                                    .toMutableMap()
-
-                            override fun SaverScope.save(value: MutableMap<String, Pair<Int, Int>>) =
-                                Json.encodeToString(value)
-
-                        }) { mutableStateMapOf() }
-
                     AnimatedContent(
                         targetState = selectedScreen,
                         transitionSpec = {
@@ -149,54 +131,41 @@ object AnimeHomeScreen {
                         label = "Anime home destination transition",
                     ) {
                         when (it) {
-                            AnimeNavDestinations.LIST -> {
-                                val viewModel = hiltViewModel<AnimeUserListViewModel>()
-                                    .apply { initialize() }
-                                AnimeUserListScreen(
-                                    nestedScrollConnection = scrollBehavior.nestedScrollConnection,
-                                    onClickNav = onClickNav,
-                                    query = { viewModel.query.collectAsState().value },
-                                    onQueryChange = viewModel::onQuery,
-                                    filterData = { viewModel.filterData() },
-                                    onRefresh = viewModel::onRefresh,
-                                    content = { viewModel.content },
-                                    tagShown = { viewModel.tagShown },
-                                    onTagDismiss = viewModel::onTagDismiss,
-                                    onTagClick = onTagClick,
-                                    onTagLongClick = viewModel::onTagLongClick,
-                                    onMediaClick = onMediaClick,
-                                    scrollStateSaver = ScrollStateSaver.fromMap(
-                                        AnimeNavDestinations.LIST.id,
-                                        scrollPositions
-                                    ),
-                                    bottomNavBarPadding = { bottomNavBarPadding() },
-                                    bottomOffset = { bottomOffset() },
-                                )
-                            }
-                            AnimeNavDestinations.SEARCH -> {
-                                AnimeNavigator.SearchScreen(
-                                    title = null,
-                                    tagId = null,
-                                    onClickNav = onClickNav,
-                                    onTagClick = onTagClick,
-                                    onMediaClick = onMediaClick,
-                                    scrollStateSaver = ScrollStateSaver.fromMap(
-                                        AnimeNavDestinations.SEARCH.id,
-                                        scrollPositions
-                                    ),
-                                    nestedScrollConnection = scrollBehavior.nestedScrollConnection,
-                                    bottomNavBarPadding = { bottomNavBarPadding() },
-                                    bottomOffset = { bottomOffset() },
-                                )
-                            }
-                            AnimeNavDestinations.PROFILE -> {
-                                AnimeNavigator.UserScreen(
-                                    userId = null,
-                                    callback = userCallback,
-                                    nestedScrollConnection = scrollBehavior.nestedScrollConnection,
-                                    bottomNavBarPadding = { bottomNavBarPadding() },
-                                )
-                            }
+                            AnimeNavDestinations.LIST -> AnimeNavigator.UserListScreen(
+                                userId = null,
+                                mediaType = MediaType.ANIME,
+                                onClickNav = onClickNav,
+                                showDrawerHandle = true,
+                                onTagClick = onTagClick,
+                                onMediaClick = onMediaClick,
+                                scrollStateSaver = ScrollStateSaver.fromMap(
+                                    AnimeNavDestinations.LIST.id,
+                                    scrollPositions
+                                ),
+                                nestedScrollConnection = scrollBehavior.nestedScrollConnection,
+                                bottomNavBarPadding = { bottomNavBarPadding() },
+                                bottomOffset = { bottomOffset() },
+                            )
+                            AnimeNavDestinations.SEARCH -> AnimeNavigator.SearchScreen(
+                                title = null,
+                                tagId = null,
+                                onClickNav = onClickNav,
+                                onTagClick = onTagClick,
+                                onMediaClick = onMediaClick,
+                                scrollStateSaver = ScrollStateSaver.fromMap(
+                                    AnimeNavDestinations.SEARCH.id,
+                                    scrollPositions
+                                ),
+                                nestedScrollConnection = scrollBehavior.nestedScrollConnection,
+                                bottomNavBarPadding = { bottomNavBarPadding() },
+                                bottomOffset = { bottomOffset() },
+                            )
+                            AnimeNavDestinations.PROFILE -> AnimeNavigator.UserScreen(
+                                userId = null,
+                                callback = userCallback,
+                                nestedScrollConnection = scrollBehavior.nestedScrollConnection,
+                                bottomNavBarPadding = { bottomNavBarPadding() },
+                            )
                         }
                     }
                 }

@@ -21,7 +21,10 @@ import androidx.navigation.navArgument
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.anilist.fragment.UserFavoriteMediaNode
 import com.anilist.type.MediaSeason
+import com.anilist.type.MediaType
 import com.google.accompanist.navigation.animation.composable
+import com.thekeeperofpie.artistalleydatabase.anime.list.AnimeUserListScreen
+import com.thekeeperofpie.artistalleydatabase.anime.list.AnimeUserListViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
@@ -43,16 +46,7 @@ object AnimeNavigator {
         navGraphBuilder: NavGraphBuilder,
         onClickNav: () -> Unit,
     ) {
-        val userCallback = object : AniListUserScreen.Callback {
-            override fun onMediaClick(media: UserFavoriteMediaNode) {
-                onMediaClick(navHostController, media)
-            }
-
-            override fun onMediaClick(id: String, title: String?, image: String?) {
-                onMediaClick(navHostController, id, title, image)
-            }
-        }
-
+        val callback = Callback(navHostController)
         navGraphBuilder.composable(
             route = AnimeNavDestinations.SEARCH.id
                     + "?title={title}"
@@ -82,6 +76,39 @@ object AnimeNavigator {
                 onTagClick = { tagId, tagName -> onTagClick(navHostController, tagId, tagName) },
                 onMediaClick = { onMediaClick(navHostController, it) },
                 scrollStateSaver = ScrollStateSaver(),
+            )
+        }
+
+        navGraphBuilder.composable(
+            route = "userList?userId={userId}" +
+                    "&mediaType={mediaType}",
+            arguments = listOf(
+                navArgument("userId") {
+                    type = NavType.StringType
+                    nullable = true
+                },
+                navArgument("mediaType") {
+                    type = NavType.StringType
+                    nullable = true
+                }
+            ),
+        ) {
+            val arguments = it.arguments!!
+            val userId = arguments.getString("userId")
+            val mediaType = arguments.getString("mediaType")
+                ?.let { MediaType.safeValueOf(it).takeUnless { it == MediaType.UNKNOWN__ } }
+                ?: MediaType.ANIME
+            UserListScreen(
+                userId = userId,
+                mediaType = mediaType,
+                onClickNav = { navHostController.popBackStack() },
+                showDrawerHandle = false,
+                onTagClick = callback::onTagClick,
+                onMediaClick = callback::onMediaClick,
+                scrollStateSaver = ScrollStateSaver.fromMap(
+                    "userList",
+                    ScrollStateSaver.scrollPositions(),
+                ),
             )
         }
 
@@ -262,7 +289,7 @@ object AnimeNavigator {
             val userId = it.arguments?.getString("userId")
             UserScreen(
                 userId = userId,
-                callback = userCallback,
+                callback = callback,
             )
         }
     }
@@ -305,7 +332,8 @@ object AnimeNavigator {
         title: String?,
         image: String?,
     ) = navHostController.navigate(
-        "animeDetails?mediaId=$mediaId" +
+        "animeDetails" +
+                "?mediaId=$mediaId" +
                 "&title=$title" +
                 "&coverImage=$image"
     )
@@ -313,6 +341,16 @@ object AnimeNavigator {
     fun onUserClick(navHostController: NavHostController, userId: String) {
         // TODO: Pass name and image
         navHostController.navigate("${AnimeNavDestinations.PROFILE.id}?userId=$userId")
+    }
+
+    fun onUserListClick(
+        navHostController: NavHostController,
+        userId: String,
+        mediaType: MediaType?
+    ) {
+        navHostController.navigate("userList" +
+                "?userId=$userId" +
+                "&mediaType=${mediaType?.rawValue}")
     }
 
     @Composable
@@ -364,11 +402,76 @@ object AnimeNavigator {
         AniListUserScreen(
             nestedScrollConnection = nestedScrollConnection,
             entry = { viewModel.entry.collectAsState().value },
-            animeGenreState = viewModel.animeGenreState,
-            mangaGenreState = viewModel.mangaGenreState,
+            animeGenresState = viewModel.animeGenresState,
+            animeTagsState = viewModel.animeTagsState,
+            animeVoiceActorsState = viewModel.animeVoiceActorsState,
+            animeStudiosState = viewModel.animeStudiosState,
+            animeStaffState = viewModel.animeStaffState,
+            mangaGenresState = viewModel.mangaGenresState,
+            mangaTagsState = viewModel.mangaTagsState,
+            mangaVoiceActorsState = viewModel.mangaVoiceActorsState,
+            mangaStudiosState = viewModel.mangaStudiosState,
+            mangaStaffState = viewModel.mangaStaffState,
             viewer = { viewModel.viewer.collectAsState().value },
             callback = callback,
             bottomNavBarPadding = bottomNavBarPadding,
         )
+    }
+
+    @Composable
+    fun UserListScreen(
+        userId: String?,
+        mediaType: MediaType,
+        onClickNav: () -> Unit,
+        showDrawerHandle: Boolean,
+        onTagClick: (tagId: String, tagName: String) -> Unit,
+        onMediaClick: (AnimeMediaListRow.Entry) -> Unit,
+        scrollStateSaver: ScrollStateSaver,
+        nestedScrollConnection: NestedScrollConnection? = null,
+        bottomNavBarPadding: @Composable () -> Dp = { 0.dp },
+        bottomOffset: @Composable () -> Dp = { 0.dp },
+    ) {
+        val viewModel = hiltViewModel<AnimeUserListViewModel>()
+            .apply { initialize(userId, mediaType) }
+        AnimeUserListScreen(
+            nestedScrollConnection = nestedScrollConnection,
+            onClickNav = onClickNav,
+            showDrawerHandle = showDrawerHandle,
+            query = { viewModel.query.collectAsState().value },
+            onQueryChange = viewModel::onQuery,
+            filterData = { viewModel.filterData() },
+            onRefresh = viewModel::onRefresh,
+            content = { viewModel.content },
+            tagShown = { viewModel.tagShown },
+            onTagDismiss = viewModel::onTagDismiss,
+            onTagClick = onTagClick,
+            onTagLongClick = viewModel::onTagLongClick,
+            onMediaClick = onMediaClick,
+            scrollStateSaver = scrollStateSaver,
+            bottomNavBarPadding = { bottomNavBarPadding() },
+            bottomOffset = { bottomOffset() },
+        )
+    }
+
+    class Callback(private val navHostController: NavHostController) : AniListUserScreen.Callback {
+        override fun onMediaClick(media: UserFavoriteMediaNode) {
+            onMediaClick(navHostController, media)
+        }
+
+        override fun onMediaClick(media: AnimeMediaListRow.Entry) {
+            onMediaClick(navHostController, media)
+        }
+
+        override fun onMediaClick(id: String, title: String?, image: String?) {
+            onMediaClick(navHostController, id, title, image)
+        }
+
+        override fun onTagClick(id: String, name: String) {
+            onTagClick(navHostController, id, name)
+        }
+
+        override fun onUserListClick(userId: String, mediaType: MediaType?) {
+            onUserListClick(navHostController, userId, mediaType)
+        }
     }
 }

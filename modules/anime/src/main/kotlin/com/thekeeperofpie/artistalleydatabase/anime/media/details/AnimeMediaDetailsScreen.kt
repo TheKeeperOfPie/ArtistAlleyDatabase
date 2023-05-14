@@ -464,6 +464,7 @@ object AnimeMediaDetailsScreen {
                 val animeSongs = animeSongs()
                 val cdEntries = cdEntries()
 
+                var descriptionExpanded by remember { mutableStateOf(false) }
                 var relationsExpanded by remember { mutableStateOf(false) }
                 var recommendationsExpanded by remember { mutableStateOf(false) }
                 var songsExpanded by remember { mutableStateOf(false) }
@@ -498,6 +499,8 @@ object AnimeMediaDetailsScreen {
                         onTagLongClicked = onTagLongClicked,
                         onMediaClicked = onMediaClicked,
                         onUserClick = onUserClick,
+                        descriptionExpanded = { descriptionExpanded },
+                        onDescriptionExpandedToggled = { descriptionExpanded = it },
                         relationsExpanded = { relationsExpanded },
                         onRelationsExpandedToggled = { relationsExpanded = it },
                         recommendationsExpanded = { recommendationsExpanded },
@@ -570,6 +573,8 @@ object AnimeMediaDetailsScreen {
         onTagLongClicked: (String) -> Unit,
         onMediaClicked: (AnimeMediaListRow.Entry) -> Unit,
         onUserClick: (String) -> Unit,
+        descriptionExpanded: () -> Boolean,
+        onDescriptionExpandedToggled: (Boolean) -> Unit,
         relationsExpanded: () -> Boolean,
         onRelationsExpandedToggled: (Boolean) -> Unit,
         recommendationsExpanded: () -> Boolean,
@@ -612,6 +617,8 @@ object AnimeMediaDetailsScreen {
         descriptionSection(
             titleTextRes = R.string.anime_media_details_description_label,
             htmlText = entry.description,
+            expanded = descriptionExpanded,
+            onExpandedChanged = onDescriptionExpandedToggled,
         )
 
         charactersSection(

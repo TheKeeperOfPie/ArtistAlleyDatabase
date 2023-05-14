@@ -145,4 +145,62 @@ fragment UserMediaStatistics on UserStatistics {
         minutesWatched
         mediaIds
     }
+
+    tags(sort: COUNT_DESC) {
+        count
+        tag {
+            id
+            name
+        }
+        meanScore
+        chaptersRead
+        minutesWatched
+        mediaIds
+    }
+
+    voiceActors {
+        count
+        voiceActor {
+            id
+            image {
+                large
+            }
+            name {
+                userPreferred
+            }
+        }
+        meanScore
+        chaptersRead
+        minutesWatched
+        mediaIds
+    }
+
+    studios {
+        count
+        studio {
+            id
+            name
+        }
+        meanScore
+        chaptersRead
+        minutesWatched
+        mediaIds
+    }
+
+    staff {
+        count
+        staff {
+            id
+            image {
+                large
+            }
+            name {
+                userPreferred
+            }
+        }
+        meanScore
+        chaptersRead
+        minutesWatched
+        mediaIds
+    }
 }

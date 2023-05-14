@@ -38,6 +38,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeMediaFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeMediaFilterOptionsBottomPanel
+import com.thekeeperofpie.artistalleydatabase.compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBar
 import com.thekeeperofpie.artistalleydatabase.compose.NavMenuIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.NestedScrollSplitter
@@ -51,6 +52,7 @@ object AnimeUserListScreen {
     operator fun invoke(
         nestedScrollConnection: NestedScrollConnection? = null,
         onClickNav: () -> Unit = {},
+        showDrawerHandle: Boolean = true,
         query: @Composable () -> String = { "" },
         onQueryChange: (String) -> Unit = {},
         filterData: () -> AnimeMediaFilterController.Data<MediaListSortOption>,
@@ -73,7 +75,13 @@ object AnimeUserListScreen {
                         query(),
                         placeholder = { Text(stringResource(id = R.string.anime_user_list_search)) },
                         onValueChange = onQueryChange,
-                        leadingIcon = { NavMenuIconButton(onClickNav) },
+                        leadingIcon = {
+                            if (showDrawerHandle) {
+                                NavMenuIconButton(onClickNav)
+                            } else {
+                                ArrowBackIconButton(onClickNav)
+                            }
+                        },
                         trailingIcon = {
                             IconButton(onClick = { onQueryChange("") }) {
                                 Icon(
@@ -124,6 +132,7 @@ object AnimeUserListScreen {
                     NestedScrollSplitter(
                         nestedScrollConnection,
                         scrollBehavior.nestedScrollConnection,
+                        consumeNone = nestedScrollConnection == null,
                     )
                 )
             ) { onLongPressImage ->

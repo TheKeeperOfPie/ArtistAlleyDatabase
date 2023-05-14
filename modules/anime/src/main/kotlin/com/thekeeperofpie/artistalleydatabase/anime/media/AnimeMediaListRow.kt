@@ -91,7 +91,7 @@ object AnimeMediaListRow {
                 .alpha(if (entry.ignored) 0.38f else 1f)
         ) {
             Row(modifier = Modifier.height(IntrinsicSize.Min)) {
-                CoverImage(entry, onLongPressImage)
+                CoverImage(entry, onClick, onLongPressImage)
 
                 Column(modifier = Modifier.heightIn(min = 180.dp)) {
                     Row(Modifier.fillMaxWidth()) {
@@ -120,7 +120,11 @@ object AnimeMediaListRow {
     }
 
     @Composable
-    private fun CoverImage(entry: Entry, onLongPressImage: (entry: Entry) -> Unit) {
+    private fun CoverImage(
+        entry: Entry,
+        onClick: (Entry) -> Unit = {},
+        onLongPressImage: (entry: Entry) -> Unit,
+    ) {
         SharedElement(
             key = "cover_image_${entry.id?.valueId}",
             screenKey = "media_row_${entry.id?.valueId}"
@@ -130,20 +134,20 @@ object AnimeMediaListRow {
                     .data(entry.image)
                     .crossfade(true)
                     .build(),
-                contentScale = ContentScale.FillHeight,
+                contentScale = ContentScale.Crop,
                 fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
                 contentDescription = stringResource(R.string.anime_media_cover_image),
                 modifier = Modifier
                     .background(MaterialTheme.colorScheme.surfaceVariant)
                     .fillMaxHeight()
                     .heightIn(min = 180.dp)
-                    .width(120.dp)
+                    .width(130.dp)
                     .placeholder(
                         visible = entry == Entry.Loading,
                         highlight = PlaceholderHighlight.shimmer(),
                     )
                     .combinedClickable(
-                        onClick = {},
+                        onClick = { onClick(entry) },
                         onLongClick = { onLongPressImage(entry) },
                         onLongClickLabel = stringResource(
                             R.string.anime_media_cover_image_long_press_preview

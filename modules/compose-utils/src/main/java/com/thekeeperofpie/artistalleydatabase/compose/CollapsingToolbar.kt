@@ -216,39 +216,38 @@ class NavigationBarEnterAlwaysScrollBehavior(
 
 class NestedScrollSplitter(
     private val primary: NestedScrollConnection?,
-    private val secondary: NestedScrollConnection?
+    private val secondary: NestedScrollConnection?,
+    private val consumeNone: Boolean = false,
 ) : NestedScrollConnection {
-    override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
-        return primary?.onPostFling(consumed, available)
+    override suspend fun onPostFling(consumed: Velocity, available: Velocity) =
+        (primary?.onPostFling(consumed, available)
             ?.also { secondary?.onPostFling(consumed, available) }
             ?: secondary?.onPostFling(consumed, available)
-            ?: super.onPostFling(consumed, available)
-    }
+            ?: super.onPostFling(consumed, available))
+            .takeUnless { consumeNone } ?: Velocity.Zero
 
     override fun onPostScroll(
         consumed: Offset,
         available: Offset,
         source: NestedScrollSource
-    ): Offset {
-        return primary?.onPostScroll(consumed, available, source)
-            ?.also { secondary?.onPostScroll(consumed, available, source) }
-            ?: secondary?.onPostScroll(consumed, available, source)
-            ?: super.onPostScroll(consumed, available, source)
-    }
+    ) = (primary?.onPostScroll(consumed, available, source)
+        ?.also { secondary?.onPostScroll(consumed, available, source) }
+        ?: secondary?.onPostScroll(consumed, available, source)
+        ?: super.onPostScroll(consumed, available, source))
+        .takeUnless { consumeNone } ?: Offset.Zero
 
-    override suspend fun onPreFling(available: Velocity): Velocity {
-        return primary?.onPreFling(available)
-            ?.also { secondary?.onPreFling(available) }
-            ?: secondary?.onPreFling(available)
-            ?: super.onPreFling(available)
-    }
+    override suspend fun onPreFling(available: Velocity) = (primary?.onPreFling(available)
+        ?.also { secondary?.onPreFling(available) }
+        ?: secondary?.onPreFling(available)
+        ?: super.onPreFling(available))
+        .takeUnless { consumeNone } ?: Velocity.Zero
 
-    override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
-        return primary?.onPreScroll(available, source)
+    override fun onPreScroll(available: Offset, source: NestedScrollSource) =
+        (primary?.onPreScroll(available, source)
             ?.also { secondary?.onPreScroll(available, source) }
             ?: secondary?.onPreScroll(available, source)
-            ?: super.onPreScroll(available, source)
-    }
+            ?: super.onPreScroll(available, source))
+            .takeUnless { consumeNone } ?: Offset.Zero
 }
 
 private suspend fun settle(

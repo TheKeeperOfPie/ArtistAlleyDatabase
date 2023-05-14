@@ -395,4 +395,8 @@
     <string name="anime_user_start_years_label">Start years</string>
     <string name="anime_user_stats_tab_stats">Stats</string>
     <string name="anime_user_stats_tab_genres">Genres</string>
+    <string name="anime_user_stats_tab_tags">Tags</string>
+    <string name="anime_user_stats_tab_voice_actors">Voice actors</string>
+    <string name="anime_user_stats_tab_studios">Studios</string>
+    <string name="anime_user_stats_tab_staff">Staff</string>
 </resources>

@@ -14,6 +14,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -26,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import com.anilist.UserByIdQuery
 import com.anilist.type.MediaFormat
 import com.anilist.type.MediaListStatus
+import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toColor
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
@@ -37,6 +39,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.VerticalDivider
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.DurationUnit
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Suppress("NAME_SHADOWING")
 object UserStatsBasicScreen {
 
@@ -44,6 +47,7 @@ object UserStatsBasicScreen {
     operator fun invoke(
         user: () -> UserByIdQuery.Data.User?,
         statistics: @Composable () -> AniListUserScreen.Entry.Statistics?,
+        callback: AniListUserScreen.Callback,
         isAnime: Boolean,
         bottomNavBarPadding: @Composable () -> Dp = { 0.dp },
     ) {
@@ -68,9 +72,9 @@ object UserStatsBasicScreen {
             val user = user()
             if (user != null) {
                 if (isAnime) {
-                    animeStatisticsSection(user)
+                    animeStatisticsSection(user, callback)
                 } else {
-                    mangaStatisticsSection(user)
+                    mangaStatisticsSection(user, callback)
                 }
             }
 
@@ -223,7 +227,10 @@ object UserStatsBasicScreen {
         }
     }
 
-    private fun LazyListScope.animeStatisticsSection(user: UserByIdQuery.Data.User) {
+    private fun LazyListScope.animeStatisticsSection(
+        user: UserByIdQuery.Data.User,
+        callback: AniListUserScreen.Callback,
+    ) {
         val statistics = user.statistics?.anime ?: return
         item {
             StatsCard(
@@ -236,11 +243,15 @@ object UserStatsBasicScreen {
                     "%.1f",
                     statistics.meanScore
                 ) to R.string.anime_user_statistics_mean_score,
+                onClick = { callback.onUserListClick(user.id.toString(), MediaType.ANIME) }
             )
         }
     }
 
-    private fun LazyListScope.mangaStatisticsSection(user: UserByIdQuery.Data.User) {
+    private fun LazyListScope.mangaStatisticsSection(
+        user: UserByIdQuery.Data.User,
+        callback: AniListUserScreen.Callback,
+    ) {
         val statistics = user.statistics?.manga ?: return
         item {
             StatsCard(
@@ -249,6 +260,7 @@ object UserStatsBasicScreen {
                         R.string.anime_user_statistics_manga_chapters_read,
                 String.format("%.1f", statistics.meanScore) to
                         R.string.anime_user_statistics_mean_score,
+                onClick = { callback.onUserListClick(user.id.toString(), MediaType.MANGA) }
             )
         }
     }
@@ -256,8 +268,12 @@ object UserStatsBasicScreen {
     @Composable
     private fun StatsCard(
         vararg pairs: Pair<String, Int>,
+        onClick: () -> Unit,
     ) {
-        ElevatedCard(modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp)) {
+        ElevatedCard(
+            onClick = onClick,
+            modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp)
+        ) {
             StatsRow(*pairs)
         }
     }

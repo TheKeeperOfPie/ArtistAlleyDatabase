@@ -1,5 +1,6 @@
 plugins {
     id("compose-library")
+    alias(libs.plugins.org.jetbrains.kotlin.plugin.serialization)
 }
 
 android {
@@ -8,6 +9,8 @@ android {
 
 dependencies {
     implementation(project(":modules:android-utils"))
+    implementation(libs.kotlinx.serialization.json)
+
     api(libs.material)
     api(libs.material3)
     api(libs.compose.ui)
