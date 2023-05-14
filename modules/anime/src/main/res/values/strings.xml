@@ -13,7 +13,8 @@
     <string name="anime_media_voice_actor_image">Voice actor image</string>
     <string name="anime_media_list_error_loading">Error loading media list</string>
     <string name="anime_media_list_no_results">No results</string>
-    <string name="anime_screen_user_list">User list</string>
+    <string name="anime_screen_anime">Anime</string>
+    <string name="anime_screen_manga">Manga</string>
     <string name="anime_screen_search">Search</string>
     <string name="anime_screen_profile">Profile</string>
 

@@ -131,7 +131,7 @@ object AnimeHomeScreen {
                         label = "Anime home destination transition",
                     ) {
                         when (it) {
-                            AnimeNavDestinations.LIST -> AnimeNavigator.UserListScreen(
+                            AnimeNavDestinations.ANIME -> AnimeNavigator.UserListScreen(
                                 userId = null,
                                 mediaType = MediaType.ANIME,
                                 onClickNav = onClickNav,
@@ -139,7 +139,22 @@ object AnimeHomeScreen {
                                 onTagClick = onTagClick,
                                 onMediaClick = onMediaClick,
                                 scrollStateSaver = ScrollStateSaver.fromMap(
-                                    AnimeNavDestinations.LIST.id,
+                                    AnimeNavDestinations.ANIME.id,
+                                    scrollPositions
+                                ),
+                                nestedScrollConnection = scrollBehavior.nestedScrollConnection,
+                                bottomNavBarPadding = { bottomNavBarPadding() },
+                                bottomOffset = { bottomOffset() },
+                            )
+                            AnimeNavDestinations.MANGA -> AnimeNavigator.UserListScreen(
+                                userId = null,
+                                mediaType = MediaType.MANGA,
+                                onClickNav = onClickNav,
+                                showDrawerHandle = true,
+                                onTagClick = onTagClick,
+                                onMediaClick = onMediaClick,
+                                scrollStateSaver = ScrollStateSaver.fromMap(
+                                    AnimeNavDestinations.MANGA.id,
                                     scrollPositions
                                 ),
                                 nestedScrollConnection = scrollBehavior.nestedScrollConnection,

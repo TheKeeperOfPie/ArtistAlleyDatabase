@@ -144,31 +144,36 @@ object AnimeUserListScreen {
                             modifier = Modifier
                                 .fillMaxSize()
                                 .verticalScroll(rememberScrollState()),
-                        ) {}
-                    is AnimeUserListViewModel.ContentState.Success -> {
-                        LazyColumn(
-                            state = scrollStateSaver.lazyListState(),
-                            contentPadding = PaddingValues(
-                                start = 16.dp,
-                                end = 16.dp,
-                                top = scrollBehavior.state.heightOffsetLimit
-                                    .takeUnless { it == -Float.MAX_VALUE }
-                                    ?.let { LocalDensity.current.run { -it.toDp() } }
-                                    ?: 0.dp,
-                                bottom = scaffoldPadding.calculateBottomPadding()
-                            ),
-                            verticalArrangement = Arrangement.spacedBy(16.dp),
                         ) {
-                            items(content.entries, { it.id.scopedId }) {
-                                when (it) {
-                                    is Entry.Header -> Header(it)
-                                    is Entry.Item -> AnimeMediaListRow(
-                                        entry = it,
-                                        onClick = onMediaClick,
-                                        onTagClick = onTagClick,
-                                        onTagLongClick = onTagLongClick,
-                                        onLongPressImage = onLongPressImage
-                                    )
+                        }
+                    is AnimeUserListViewModel.ContentState.Success -> {
+                        if (content.entries.isEmpty()) {
+                            AnimeMediaListScreen.NoResults()
+                        } else {
+                            LazyColumn(
+                                state = scrollStateSaver.lazyListState(),
+                                contentPadding = PaddingValues(
+                                    start = 16.dp,
+                                    end = 16.dp,
+                                    top = scrollBehavior.state.heightOffsetLimit
+                                        .takeUnless { it == -Float.MAX_VALUE }
+                                        ?.let { LocalDensity.current.run { -it.toDp() } }
+                                        ?: 0.dp,
+                                    bottom = scaffoldPadding.calculateBottomPadding()
+                                ),
+                                verticalArrangement = Arrangement.spacedBy(16.dp),
+                            ) {
+                                items(content.entries, { it.id.scopedId }) {
+                                    when (it) {
+                                        is Entry.Header -> Header(it)
+                                        is Entry.Item -> AnimeMediaListRow(
+                                            entry = it,
+                                            onClick = onMediaClick,
+                                            onTagClick = onTagClick,
+                                            onTagLongClick = onTagLongClick,
+                                            onLongPressImage = onLongPressImage
+                                        )
+                                    }
                                 }
                             }
                         }

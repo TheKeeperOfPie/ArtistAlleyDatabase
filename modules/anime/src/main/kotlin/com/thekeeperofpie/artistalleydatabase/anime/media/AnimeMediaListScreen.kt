@@ -110,7 +110,7 @@ object AnimeMediaListScreen {
     fun NoResults() {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier
+            modifier = Modifier.padding(top = 64.dp)
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState()),
         ) {

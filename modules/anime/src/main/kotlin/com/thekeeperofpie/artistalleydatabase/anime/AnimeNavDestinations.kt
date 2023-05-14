@@ -2,9 +2,10 @@ package com.thekeeperofpie.artistalleydatabase.anime
 
 import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ListAlt
+import androidx.compose.material.icons.filled.LibraryBooks
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.ui.graphics.vector.ImageVector
 
 enum class AnimeNavDestinations(
@@ -13,7 +14,8 @@ enum class AnimeNavDestinations(
     @StringRes val textRes: Int,
 ) {
 
-    LIST("anime_list", Icons.Filled.ListAlt, R.string.anime_screen_user_list),
+    ANIME("anime_list", Icons.Filled.VideoLibrary, R.string.anime_screen_anime),
+    MANGA("manga_list", Icons.Filled.LibraryBooks, R.string.anime_screen_manga),
     SEARCH("anime_search", Icons.Filled.Search, R.string.anime_screen_search),
     PROFILE("anime_profile", Icons.Filled.Person, R.string.anime_screen_profile),
 

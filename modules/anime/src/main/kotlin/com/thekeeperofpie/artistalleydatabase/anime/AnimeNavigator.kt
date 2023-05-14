@@ -348,9 +348,11 @@ object AnimeNavigator {
         userId: String,
         mediaType: MediaType?
     ) {
-        navHostController.navigate("userList" +
-                "?userId=$userId" +
-                "&mediaType=${mediaType?.rawValue}")
+        navHostController.navigate(
+            "userList" +
+                    "?userId=$userId" +
+                    "&mediaType=${mediaType?.rawValue}"
+        )
     }
 
     @Composable
@@ -431,7 +433,7 @@ object AnimeNavigator {
         bottomNavBarPadding: @Composable () -> Dp = { 0.dp },
         bottomOffset: @Composable () -> Dp = { 0.dp },
     ) {
-        val viewModel = hiltViewModel<AnimeUserListViewModel>()
+        val viewModel = hiltViewModel<AnimeUserListViewModel>(key = mediaType.rawValue)
             .apply { initialize(userId, mediaType) }
         AnimeUserListScreen(
             nestedScrollConnection = nestedScrollConnection,
