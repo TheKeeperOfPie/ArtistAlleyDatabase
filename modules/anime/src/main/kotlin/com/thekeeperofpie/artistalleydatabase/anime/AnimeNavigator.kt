@@ -368,7 +368,7 @@ object AnimeNavigator {
         bottomOffset: @Composable () -> Dp = { 0.dp },
     ) {
         val viewModel = hiltViewModel<AnimeSearchViewModel>().apply {
-            initialize(AnimeMediaFilterController.InitialParams(tagId = tagId))
+            initialize(AnimeMediaFilterController.InitialParams(tagId = tagId, isAnime = true))
         }
         AnimeSearchScreen(
             nestedScrollConnection = nestedScrollConnection,

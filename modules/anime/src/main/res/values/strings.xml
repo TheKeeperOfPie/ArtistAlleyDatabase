@@ -68,6 +68,10 @@
     <string name="anime_media_filter_status_content_description">Status filter expand</string>
     <string name="anime_media_filter_status_chip_state_content_description">Status chip state</string>
 
+    <string name="anime_media_filter_list_status_label">User list status</string>
+    <string name="anime_media_filter_list_status_content_description">User list status filter expand</string>
+    <string name="anime_media_filter_list_status_chip_state_content_description">User list status chip state</string>
+
     <string name="anime_media_filter_genre_label">Genres</string>
     <string name="anime_media_filter_genre_content_description">Genre filter expand</string>
     <string name="anime_media_filter_genre_chip_state_content_description">Genre chip state</string>

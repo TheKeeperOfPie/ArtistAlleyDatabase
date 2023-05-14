@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media.filter
 
 import com.anilist.type.MediaFormat
+import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaSeason
 import com.anilist.type.MediaSource
 import com.anilist.type.MediaStatus
@@ -17,6 +18,7 @@ data class FilterData(
     val sortAscending: Boolean = false,
     val tagRank: Int? = null,
     val onList: Boolean? = null,
+    val isAnime: Boolean? = null,
     val averageScoreMin: Int? = null,
     val averageScoreMax: Int? = null,
     val episodesMin: Int? = null,
@@ -25,6 +27,8 @@ data class FilterData(
     val sourcesExcluded: List<MediaSource> = emptyList(),
     val statusesIncluded: List<MediaStatus> = emptyList(),
     val statusesExcluded: List<MediaStatus> = emptyList(),
+    val listStatusesIncluded: List<MediaListStatus> = emptyList(),
+    val listStatusesExcluded: List<MediaListStatus> = emptyList(),
     val formatsIncluded: List<MediaFormat> = emptyList(),
     val formatsExcluded: List<MediaFormat> = emptyList(),
 

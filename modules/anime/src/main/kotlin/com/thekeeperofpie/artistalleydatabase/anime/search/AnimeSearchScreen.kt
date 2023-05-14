@@ -111,6 +111,8 @@ object AnimeSearchScreen {
             },
             filterData = filterData,
             onTagLongClicked = onTagLongClick,
+            showMediaListStatus = false,
+            showLoadSave = true,
             bottomNavBarPadding = bottomNavBarPadding,
             bottomOffset = bottomOffset,
         ) { scaffoldPadding ->

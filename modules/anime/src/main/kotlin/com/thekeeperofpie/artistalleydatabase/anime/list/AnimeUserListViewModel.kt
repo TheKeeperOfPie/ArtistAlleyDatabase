@@ -67,7 +67,9 @@ class AnimeUserListViewModel @Inject constructor(
         filterController.initialize(
             this, refreshUptimeMillis, AnimeMediaFilterController.InitialParams(
                 // Disable "On list" filter, everything in this screen is on the user's list
-                onListEnabled = false
+                onListEnabled = false,
+                showListStatusFilter = true,
+                isAnime = mediaType == MediaType.ANIME,
             )
         )
 
@@ -100,6 +102,7 @@ class AnimeUserListViewModel @Inject constructor(
                             filterController.tagsByCategory,
                             filterController.tagRank(),
                             filterController.statuses,
+                            filterController.listStatuses,
                             filterController.formats,
                             filterController.averageScoreRange,
                             filterController.episodesRange,
@@ -113,10 +116,21 @@ class AnimeUserListViewModel @Inject constructor(
                                 filterParams.mediaListCollection
                                     ?.lists
                                     ?.filterNotNull()
+                                    ?.filter {
+                                        val listStatuses = filterParams.listStatuses
+                                            .filter { it.state == IncludeExcludeState.INCLUDE }
+                                            .map { it.value }
+                                        if (listStatuses.isEmpty()) {
+                                            true
+                                        } else {
+                                            listStatuses.contains(it.status)
+                                        }
+                                    }
                                     ?.let {
                                         if (refreshParams.sortOptions.none { it.state == IncludeExcludeState.INCLUDE }) {
                                             // If default sort, force COMPLETED list to top
-                                            val index = it.indexOfFirst { it.status == MediaListStatus.COMPLETED }
+                                            val index =
+                                                it.indexOfFirst { it.status == MediaListStatus.COMPLETED }
                                             if (index >= 0) {
                                                 val mutableList = it.toMutableList()
                                                 val completedList = mutableList.removeAt(index)
@@ -392,6 +406,7 @@ class AnimeUserListViewModel @Inject constructor(
         val tagsByCategory: Map<String, AnimeMediaFilterController.TagSection>,
         val tagRank: Int?,
         val statuses: List<AnimeMediaFilterController.StatusEntry>,
+        val listStatuses: List<AnimeMediaFilterController.ListStatusEntry>,
         val formats: List<AnimeMediaFilterController.FormatEntry>,
         val averageScoreRange: AnimeMediaFilterController.RangeData,
         val episodesRange: AnimeMediaFilterController.RangeData,

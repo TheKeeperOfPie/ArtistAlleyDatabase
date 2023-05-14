@@ -11,6 +11,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.anilist.MediaTagsQuery
 import com.anilist.type.MediaFormat
+import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaSeason
 import com.anilist.type.MediaSource
 import com.anilist.type.MediaStatus
@@ -80,6 +81,7 @@ class AnimeMediaFilterController<T>(
 
     private val tagRank = MutableStateFlow("0")
     val statuses = MutableStateFlow(StatusEntry.statuses())
+    val listStatuses = MutableStateFlow(emptyList<ListStatusEntry>())
     val formats = MutableStateFlow(FormatEntry.formats())
 
     val onListOptions = MutableStateFlow(OnListOption.options())
@@ -96,6 +98,7 @@ class AnimeMediaFilterController<T>(
     // These are kept separated so that recomposition can happen per-section
     private var sortExpanded by mutableStateOf(false)
     private var statusExpanded by mutableStateOf(false)
+    private var listStatusExpanded by mutableStateOf(false)
     private var formatExpanded by mutableStateOf(false)
     private var genresExpanded by mutableStateOf(false)
     private var tagsExpanded by mutableStateOf(false)
@@ -113,11 +116,12 @@ class AnimeMediaFilterController<T>(
     fun initialize(
         viewModel: ViewModel,
         refreshUpdates: StateFlow<*>,
-        params: InitialParams = InitialParams(),
+        params: InitialParams,
     ) {
         if (::initialParams.isInitialized) return
         initialParams = params
 
+        listStatuses.value = ListStatusEntry.statuses(params.isAnime)
         val filterData = params.filterData
         if (filterData != null) {
             setFilterData(filterData)
@@ -162,7 +166,8 @@ class AnimeMediaFilterController<T>(
                                     val tagsIncluded = filterData?.tagsIncluded ?: emptyList()
                                     val tagsExcluded = filterData?.tagsExcluded ?: emptyList()
                                     if (tagsIncluded.isEmpty() && tagsExcluded.isEmpty()
-                                        && initialParams.tagId == null) {
+                                        && initialParams.tagId == null
+                                    ) {
                                         return@run this
                                     }
 
@@ -212,6 +217,11 @@ class AnimeMediaFilterController<T>(
         statuses.value = StatusEntry.statuses(
             included = filterData.statusesIncluded,
             excluded = filterData.statusesExcluded,
+        )
+        listStatuses.value = ListStatusEntry.statuses(
+            isAnime = filterData.isAnime ?: true,
+            included = filterData.listStatusesIncluded,
+            excluded = filterData.listStatusesExcluded,
         )
         formats.value = FormatEntry.formats(
             included = filterData.formatsIncluded,
@@ -272,6 +282,7 @@ class AnimeMediaFilterController<T>(
             sortAscending = sortAscending.value,
             tagRank = tagRank.value.toIntOrNull(),
             onList = onList,
+            isAnime = initialParams.isAnime,
             averageScoreMin = averageScoreRange.value.startInt,
             averageScoreMax = averageScoreRange.value.endInt,
             episodesMin = episodesRange.value.startInt,
@@ -283,6 +294,10 @@ class AnimeMediaFilterController<T>(
             statusesIncluded = statuses.value.filter { it.state == IncludeExcludeState.INCLUDE }
                 .map { it.value },
             statusesExcluded = statuses.value.filter { it.state == IncludeExcludeState.EXCLUDE }
+                .map { it.value },
+            listStatusesIncluded = listStatuses.value.filter { it.state == IncludeExcludeState.INCLUDE }
+                .map { it.value },
+            listStatusesExcluded = listStatuses.value.filter { it.state == IncludeExcludeState.EXCLUDE }
                 .map { it.value },
             formatsIncluded = formats.value.filter { it.state == IncludeExcludeState.INCLUDE }
                 .map { it.value },
@@ -370,6 +385,7 @@ class AnimeMediaFilterController<T>(
     private fun getExpanded(section: Section) = when (section) {
         Section.SORT -> sortExpanded
         Section.STATUS -> statusExpanded
+        Section.LIST_STATUS -> listStatusExpanded
         Section.FORMAT -> formatExpanded
         Section.GENRES -> genresExpanded
         Section.TAGS -> tagsExpanded
@@ -383,6 +399,7 @@ class AnimeMediaFilterController<T>(
     private fun setExpanded(section: Section, expanded: Boolean) = when (section) {
         Section.SORT -> sortExpanded = expanded
         Section.STATUS -> statusExpanded = expanded
+        Section.LIST_STATUS -> listStatusExpanded = expanded
         Section.FORMAT -> formatExpanded = expanded
         Section.GENRES -> genresExpanded = expanded
         Section.TAGS -> tagsExpanded = expanded
@@ -491,6 +508,22 @@ class AnimeMediaFilterController<T>(
                     if (it.value == status) {
                         it.copy(state = it.state.next())
                     } else it
+                }
+            }
+    }
+
+    private fun onListStatusClicked(status: MediaListStatus) {
+        listStatuses.value = listStatuses.value.toMutableList()
+            .apply {
+                replaceAll {
+                    if (it.value == status) {
+                        val newState = if (it.state != IncludeExcludeState.INCLUDE) {
+                            IncludeExcludeState.INCLUDE
+                        } else {
+                            IncludeExcludeState.DEFAULT
+                        }
+                        it.copy(state = newState)
+                    } else it.copy(state = IncludeExcludeState.DEFAULT)
                 }
             }
     }
@@ -605,6 +638,8 @@ class AnimeMediaFilterController<T>(
         onSortAscendingChanged = ::onSortAscendingChanged,
         statuses = { statuses.collectAsState().value },
         onStatusClicked = ::onStatusClicked,
+        listStatuses = { listStatuses.collectAsState().value },
+        onListStatusClicked = ::onListStatusClicked,
         formats = { formats.collectAsState().value },
         onFormatClicked = ::onFormatClicked,
         genres = { genresFiltered.collectAsState(emptyList()).value },
@@ -646,8 +681,11 @@ class AnimeMediaFilterController<T>(
 
     data class InitialParams(
         val onListEnabled: Boolean = true,
+        // TODO: Handle tags split by media type
         val tagId: String? = null,
         val filterData: FilterData? = null,
+        val showListStatusFilter: Boolean = false,
+        val isAnime: Boolean,
     )
 
     class Data<SortOption : Data.SortOption>(
@@ -659,6 +697,8 @@ class AnimeMediaFilterController<T>(
         val onSortAscendingChanged: (Boolean) -> Unit = {},
         val statuses: @Composable () -> List<StatusEntry> = { emptyList() },
         val onStatusClicked: (MediaStatus) -> Unit = {},
+        val listStatuses: @Composable () -> List<ListStatusEntry> = { emptyList() },
+        val onListStatusClicked: (MediaListStatus) -> Unit = {},
         val formats: @Composable () -> List<FormatEntry> = { emptyList() },
         val onFormatClicked: (MediaFormat) -> Unit = {},
         val genres: @Composable () -> List<GenreEntry> = { emptyList() },
@@ -752,6 +792,7 @@ class AnimeMediaFilterController<T>(
     enum class Section {
         SORT,
         STATUS,
+        LIST_STATUS,
         FORMAT,
         GENRES,
         TAGS,
@@ -798,6 +839,39 @@ class AnimeMediaFilterController<T>(
         }
 
         val textRes = value.toTextRes()
+    }
+
+    data class ListStatusEntry(
+        override val value: MediaListStatus,
+        override val state: IncludeExcludeState = IncludeExcludeState.DEFAULT,
+        val isAnime: Boolean,
+    ) : MediaFilterEntry<MediaListStatus> {
+        companion object {
+            fun statuses(
+                isAnime: Boolean,
+                included: List<MediaListStatus> = emptyList(),
+                excluded: List<MediaListStatus> = emptyList(),
+            ) = listOf(
+                MediaListStatus.CURRENT,
+                MediaListStatus.PLANNING,
+                MediaListStatus.COMPLETED,
+                MediaListStatus.DROPPED,
+                MediaListStatus.PAUSED,
+                MediaListStatus.REPEATING,
+            ).map {
+                ListStatusEntry(
+                    it,
+                    IncludeExcludeState.toState(
+                        value = it,
+                        included = included,
+                        excluded = excluded
+                    ),
+                    isAnime,
+                )
+            }
+        }
+
+        val textRes = value.toTextRes(anime = isAnime)
     }
 
     data class FormatEntry(

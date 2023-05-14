@@ -106,6 +106,8 @@ object AnimeUserListScreen {
             },
             filterData = filterData,
             onTagLongClicked = onTagLongClick,
+            showMediaListStatus = true,
+            showLoadSave = false,
             bottomNavBarPadding = bottomNavBarPadding,
             bottomOffset = bottomOffset,
         ) { scaffoldPadding ->
