@@ -14,7 +14,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
-fun Modifier.fadingEdge(
+fun Modifier.fadingEdgeEnd(
     startTransparent: Dp = 4.dp,
     startOpaque: Dp = 16.dp,
     endOpaque: Dp = 16.dp,

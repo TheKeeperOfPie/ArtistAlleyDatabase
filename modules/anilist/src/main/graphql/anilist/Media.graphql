@@ -282,6 +282,20 @@ query MediaDetails($mediaId: Int!) {
     }
 }
 
+query MediaTitlesAndImages($ids: [Int]) {
+    Page {
+        media(id_in: $ids) {
+            id
+            title {
+                userPreferred
+            }
+            coverImage {
+                large
+            }
+        }
+    }
+}
+
 query MediaSearch($search: String, $perPage: Int, $page: Int) {
     Page(perPage: $perPage, page: $page) @nonnull {
         media(search: $search) @nonnull {

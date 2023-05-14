@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.anime.user
 
 import androidx.annotation.StringRes
+import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -27,17 +28,26 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
+import androidx.core.graphics.ColorUtils
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.anilist.AuthedUserQuery
 import com.anilist.UserByIdQuery
 import com.anilist.fragment.UserFavoriteMediaNode
@@ -48,7 +58,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.staff.staffSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.anime.ui.descriptionSection
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
-import com.thekeeperofpie.artistalleydatabase.compose.ColorUtils
+import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 
 @Suppress("NAME_SHADOWING")
 @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
@@ -198,13 +208,35 @@ object UserOverviewScreen {
         }
 
         item {
+            val coroutineScope = rememberCoroutineScope()
+            val colorMap = remember { mutableStateMapOf<String, Pair<Color, Color>>() }
             LazyRow(
                 contentPadding = PaddingValues(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 items(entries, { it.id }) {
-                    val containerColor = (it.coverImage?.color?.let(ColorUtils::hexToColor)
-                        ?: MaterialTheme.colorScheme.surface)
+                    val id = it.id.toString()
+                    val colors = colorMap[id]
+                    val animationProgress by animateIntAsState(
+                        if (colors == null) 0 else 255,
+                        label = "Media card color fade in",
+                    )
+
+                    val containerColor = when {
+                        colors == null || animationProgress == 0 ->
+                            MaterialTheme.colorScheme.surface
+                        animationProgress == 255 -> colors.first
+                        else -> Color(
+                            ColorUtils.compositeColors(
+                                ColorUtils.setAlphaComponent(
+                                    colors.first.toArgb(),
+                                    animationProgress
+                                ),
+                                MaterialTheme.colorScheme.surface.toArgb()
+                            )
+                        )
+                    }
+
                     ElevatedCard(
                         onClick = { onClickEntry(it) },
                         colors = CardDefaults.elevatedCardColors(containerColor = containerColor),
@@ -212,9 +244,21 @@ object UserOverviewScreen {
                         ConstraintLayout {
                             val (image, title) = createRefs()
                             AsyncImage(
-                                model = it.coverImage?.large,
+                                model = ImageRequest.Builder(LocalContext.current)
+                                    .data(it.coverImage?.large)
+                                    .crossfade(true)
+                                    .allowHardware(false)
+                                    .build(),
                                 contentScale = ContentScale.FillHeight,
                                 contentDescription = stringResource(R.string.anime_media_cover_image),
+                                onSuccess = {
+                                    ComposeColorUtils.calculatePalette(
+                                        id = id,
+                                        scope = coroutineScope,
+                                        success = it,
+                                        colorMap = colorMap,
+                                    )
+                                },
                                 modifier = Modifier
                                     .constrainAs(image) {
                                         height = Dimension.value(180.dp)
@@ -226,10 +270,11 @@ object UserOverviewScreen {
 
                             AutoHeightText(
                                 text = it.title?.userPreferred.orEmpty(),
-                                color = ColorUtils.bestTextColor(containerColor)
+                                color = ComposeColorUtils.bestTextColor(containerColor)
                                     ?: Color.Unspecified,
                                 maxLines = 2,
                                 minLines = 2,
+                                overflow = TextOverflow.Ellipsis,
                                 modifier = Modifier
                                     .padding(horizontal = 8.dp, vertical = 8.dp)
                                     .constrainAs(title) {

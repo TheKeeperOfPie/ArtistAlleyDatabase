@@ -7,6 +7,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":modules:android-utils"))
     api(libs.material)
     api(libs.material3)
     api(libs.compose.ui)
@@ -14,4 +15,6 @@ dependencies {
     implementation(libs.activity.compose)
 
     api(libs.paging.compose)
+    api(libs.coil.compose)
+    implementation(libs.palette.ktx)
 }

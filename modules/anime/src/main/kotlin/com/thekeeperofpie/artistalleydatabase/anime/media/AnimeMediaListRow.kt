@@ -61,8 +61,8 @@ import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
-import com.thekeeperofpie.artistalleydatabase.compose.ColorUtils
-import com.thekeeperofpie.artistalleydatabase.compose.fadingEdge
+import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
+import com.thekeeperofpie.artistalleydatabase.compose.fadingEdgeEnd
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -326,7 +326,7 @@ object AnimeMediaListRow {
                 // SubcomposeLayout doesn't support fill max width, so use a really large number.
                 // The parent will clamp the actual width so all content still fits on screen.
                 .size(width = 39393.dp, height = 24.dp)
-                .fadingEdge(
+                .fadingEdgeEnd(
                     endOpaque = 32.dp,
                     endTransparent = 16.dp,
                 )
@@ -379,7 +379,7 @@ object AnimeMediaListRow {
         override val image = media.coverImage?.large
         override val imageExtraLarge = media.coverImage?.extraLarge
         override val imageBanner = media.bannerImage
-        override val color = media.coverImage?.color?.let(ColorUtils::hexToColor)
+        override val color = media.coverImage?.color?.let(ComposeColorUtils::hexToColor)
         override val title = media.title?.userPreferred
 
         override val subtitleFormatRes = media.format.toTextRes()

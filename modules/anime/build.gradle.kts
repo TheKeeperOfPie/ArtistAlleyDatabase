@@ -34,7 +34,6 @@ dependencies {
     implementation(libs.material.icons.extended)
     implementation(libs.accompanist.placeholder.material)
     implementation(libs.accompanist.navigation.animation)
-    implementation(libs.palette.ktx)
 
     implementation(libs.hilt.navigation.compose)
 

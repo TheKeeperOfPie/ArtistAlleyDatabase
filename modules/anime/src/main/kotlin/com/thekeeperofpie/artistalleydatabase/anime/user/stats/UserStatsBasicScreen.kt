@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.anime.user
+package com.thekeeperofpie.artistalleydatabase.anime.user.stats
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Box
@@ -30,6 +30,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toColor
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.ui.DetailsSectionHeader
+import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserScreen
 import com.thekeeperofpie.artistalleydatabase.compose.BarChart
 import com.thekeeperofpie.artistalleydatabase.compose.PieChart
 import com.thekeeperofpie.artistalleydatabase.compose.VerticalDivider
@@ -37,20 +38,19 @@ import kotlin.time.Duration.Companion.minutes
 import kotlin.time.DurationUnit
 
 @Suppress("NAME_SHADOWING")
-object UserStatsScreen {
+object UserStatsBasicScreen {
 
     @Composable
     operator fun invoke(
         user: () -> UserByIdQuery.Data.User?,
         statistics: @Composable () -> AniListUserScreen.Entry.Statistics?,
-        modifier: Modifier = Modifier,
         isAnime: Boolean,
         bottomNavBarPadding: @Composable () -> Dp = { 0.dp },
     ) {
         val statistics = statistics()
         LazyColumn(
             contentPadding = PaddingValues(bottom = 16.dp + bottomNavBarPadding()),
-            modifier = modifier.fillMaxSize()
+            modifier = Modifier.fillMaxSize()
         ) {
             if (statistics == null) {
                 item {
@@ -79,6 +79,9 @@ object UserStatsScreen {
 
             formatsSection(statistics)
             statusesSection(statistics, isAnime = isAnime)
+
+            releaseYearsSection(statistics)
+            startYearsSection(statistics)
         }
     }
 
@@ -134,6 +137,26 @@ object UserStatsScreen {
                 MediaListStatus.values().find { it.rawValue == key }
                     ?: MediaListStatus.UNKNOWN__
             },
+        )
+    }
+
+    private fun LazyListScope.releaseYearsSection(statistics: AniListUserScreen.Entry.Statistics) {
+        barChartSection(
+            titleRes = R.string.anime_user_release_years_label,
+            slices = statistics.releaseYears,
+            sliceToAmount = { it.count },
+            sliceToColor = { _, _ -> MaterialTheme.colorScheme.surfaceTint },
+            sliceToText = { it.releaseYear.toString() },
+        )
+    }
+
+    private fun LazyListScope.startYearsSection(statistics: AniListUserScreen.Entry.Statistics) {
+        barChartSection(
+            titleRes = R.string.anime_user_start_years_label,
+            slices = statistics.startYears,
+            sliceToAmount = { it.count },
+            sliceToColor = { _, _ -> MaterialTheme.colorScheme.surfaceTint },
+            sliceToText = { it.startYear.toString() },
         )
     }
 
@@ -202,51 +225,66 @@ object UserStatsScreen {
 
     private fun LazyListScope.animeStatisticsSection(user: UserByIdQuery.Data.User) {
         val statistics = user.statistics?.anime ?: return
-        statisticsSection(
-            statistics.count.toString() to R.string.anime_user_statistics_count,
-            String.format("%.1f", statistics.minutesWatched.minutes.toDouble(DurationUnit.DAYS)) to
-                    R.string.anime_user_statistics_anime_days_watched,
-            String.format("%.1f", statistics.meanScore) to
-                    R.string.anime_user_statistics_mean_score,
-        )
+        item {
+            StatsCard(
+                statistics.count.toString() to R.string.anime_user_statistics_count,
+                String.format(
+                    "%.1f",
+                    statistics.minutesWatched.minutes.toDouble(DurationUnit.DAYS)
+                ) to R.string.anime_user_statistics_anime_days_watched,
+                String.format(
+                    "%.1f",
+                    statistics.meanScore
+                ) to R.string.anime_user_statistics_mean_score,
+            )
+        }
     }
 
     private fun LazyListScope.mangaStatisticsSection(user: UserByIdQuery.Data.User) {
         val statistics = user.statistics?.manga ?: return
-        statisticsSection(
-            statistics.count.toString() to R.string.anime_user_statistics_count,
-            statistics.chaptersRead.toString() to
-                    R.string.anime_user_statistics_manga_chapters_read,
-            String.format("%.1f", statistics.meanScore) to
-                    R.string.anime_user_statistics_mean_score,
-        )
+        item {
+            StatsCard(
+                statistics.count.toString() to R.string.anime_user_statistics_count,
+                statistics.chaptersRead.toString() to
+                        R.string.anime_user_statistics_manga_chapters_read,
+                String.format("%.1f", statistics.meanScore) to
+                        R.string.anime_user_statistics_mean_score,
+            )
+        }
     }
 
-    private fun LazyListScope.statisticsSection(
+    @Composable
+    private fun StatsCard(
         vararg pairs: Pair<String, Int>,
     ) {
-        item {
-            ElevatedCard(modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp)) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(IntrinsicSize.Min)
-                ) {
-                    pairs.forEachIndexed { index, pair ->
-                        if (index != 0) {
-                            VerticalDivider(modifier = Modifier.padding(vertical = 8.dp))
-                        }
+        ElevatedCard(modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp)) {
+            StatsRow(*pairs)
+        }
+    }
 
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier
-                                .weight(0.33f)
-                                .padding(8.dp)
-                        ) {
-                            Text(text = pair.first, color = MaterialTheme.colorScheme.surfaceTint)
-                            Text(text = stringResource(pair.second))
-                        }
-                    }
+    @Composable
+    fun StatsRow(
+        vararg pairs: Pair<String, Int>,
+        modifier: Modifier = Modifier,
+    ) {
+        Row(
+            modifier = modifier
+                .fillMaxWidth()
+                .height(IntrinsicSize.Min)
+        ) {
+            pairs.forEachIndexed { index, pair ->
+                if (index != 0) {
+                    VerticalDivider(modifier = Modifier.padding(vertical = 8.dp))
+                }
+
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier
+                        .weight(0.33f)
+                        .padding(8.dp)
+                ) {
+                    Text(text = pair.first, color = MaterialTheme.colorScheme.surfaceTint)
+                    Text(text = stringResource(pair.second))
                 }
             }
         }

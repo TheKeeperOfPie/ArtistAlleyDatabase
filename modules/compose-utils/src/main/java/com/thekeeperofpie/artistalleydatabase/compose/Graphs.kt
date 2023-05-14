@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -22,10 +23,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -50,6 +55,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.isSpecified
+import androidx.compose.ui.unit.times
 
 @Composable
 fun <Key, Value> PieChart(
@@ -171,7 +177,7 @@ fun <Key, Value> PieChart(
                                 val amount = sliceToAmount(slice).takeIf { visible } ?: 0
                                 AutoHeightText(
                                     text = format.format(amount / total),
-                                    color = ColorUtils.bestTextColor(sliceColor)
+                                    color = ComposeColorUtils.bestTextColor(sliceColor)
                                         ?: Color.Unspecified,
                                     style = MaterialTheme.typography.labelMedium,
                                 )
@@ -210,6 +216,60 @@ fun <Key, Value> PieChart(
 @Suppress("UnusedReceiverParameter")
 @Composable
 fun <Value> ColumnScope.BarChart(
+    slices: List<Value>,
+    sliceToAmount: (Value) -> Int,
+    sliceToColor: @Composable (index: Int, value: Value) -> Color,
+    sliceToText: @Composable (Value) -> String,
+    showBarPadding: Boolean = true,
+) {
+    if (slices.size > 10) {
+        ScrollableBarChart(
+            slices = slices,
+            sliceToAmount = sliceToAmount,
+            sliceToColor = sliceToColor,
+            sliceToText = sliceToText,
+            showBarPadding = showBarPadding,
+        )
+    } else {
+        FixedBarChart(
+            slices = slices,
+            sliceToAmount = sliceToAmount,
+            sliceToColor = sliceToColor,
+            sliceToText = sliceToText,
+            showBarPadding = showBarPadding,
+        )
+    }
+}
+
+@Composable
+private fun <Value> ScrollableBarChart(
+    slices: List<Value>,
+    sliceToAmount: (Value) -> Int,
+    sliceToColor: @Composable (index: Int, value: Value) -> Color,
+    sliceToText: @Composable (Value) -> String,
+    showBarPadding: Boolean = true,
+) {
+    val maxAmount = slices.maxOf(sliceToAmount) * 1.1f
+    LazyRow(contentPadding = PaddingValues(end = 32.dp), modifier = Modifier.fadingEdgeEnd()) {
+        itemsIndexed(slices) { index, slice ->
+            BarChartBar(
+                index = index,
+                slice = slice,
+                maxAmount = maxAmount,
+                split = 0,
+                onSplitChanged = { },
+                sliceToAmount = sliceToAmount,
+                sliceToColor = sliceToColor,
+                sliceToText = sliceToText,
+                showBarPadding = showBarPadding,
+                modifier = Modifier.width(80.dp)
+            )
+        }
+    }
+}
+
+@Composable
+private fun <Value> FixedBarChart(
     slices: List<Value>,
     sliceToAmount: (Value) -> Int,
     sliceToColor: @Composable (index: Int, value: Value) -> Color,
@@ -289,79 +349,115 @@ fun <Value> ColumnScope.BarChart(
     }
 
     Row(modifier = Modifier.padding(start = 16.dp, end = 16.dp)) {
-        val maxAmount = slices.maxOf { sliceToAmount(it) } * 1.1f
+        val maxAmount = slices.maxOf(sliceToAmount) * 1.1f
         slices.forEachIndexed { index, it ->
-            val color = sliceToColor(index, it)
-
-            val alpha by animateFloatAsState(
-                if (index >= split) 1f else 0.2f,
-                label = "Bar chart color alpha"
-            )
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier
-                    .weight(1f)
-                    .clickable {
-                        if (split == index || index == 0) {
-                            split = 0
-                        } else {
-                            split = index
-                            nonZeroSplit = split
-                        }
+            BarChartBar(
+                index = index,
+                slice = it,
+                maxAmount = maxAmount,
+                split = split,
+                onSplitChanged = {
+                    split = it
+                    if (it != 0) {
+                        nonZeroSplit = it
                     }
-            ) {
-                val amount = sliceToAmount(it)
-                Box(
-                    modifier = Modifier
-                        .height(240.dp)
-                        .fillMaxWidth()
-                        .run {
-                            if (showBarPadding) {
-                                padding(horizontal = 8.dp)
-                            } else this
-                        }
-                        .alpha(alpha)
-                        .background(
-                            Brush.verticalGradient(
-                                0f to Color.Transparent,
-                                1f - (amount / maxAmount) to Color.Transparent,
-                                1f - (amount / maxAmount) to color,
-                                1f to color,
-                            )
-                        )
-                )
+                },
+                sliceToAmount = sliceToAmount,
+                sliceToColor = sliceToColor,
+                sliceToText = sliceToText,
+                showBarPadding = showBarPadding,
+                modifier = Modifier.weight(1f)
+            )
+        }
+    }
+}
 
-                AutoSizeText(
-                    text = sliceToText(it),
-                    style = MaterialTheme.typography.labelSmall,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                )
+@Composable
+private fun <Value> BarChartBar(
+    index: Int,
+    slice: Value,
+    maxAmount: Float,
+    split: Int,
+    onSplitChanged: (Int) -> Unit,
+    sliceToAmount: (Value) -> Int,
+    sliceToColor: @Composable (index: Int, value: Value) -> Color,
+    sliceToText: @Composable (Value) -> String,
+    showBarPadding: Boolean,
+    modifier: Modifier = Modifier,
+) {
+    val color = sliceToColor(index, slice)
 
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 8.dp, end = 8.dp, top = 4.dp, bottom = 12.dp)
-                ) {
-                    // Reserve height using a fixed text measurement
-                    Text(
-                        text = "1",
-                        style = MaterialTheme.typography.labelSmall,
-                        modifier = Modifier.alpha(0f)
-                    )
-                    AutoSizeText(
-                        text = amount.toString(),
-                        style = MaterialTheme.typography.labelSmall,
-                        textAlign = TextAlign.Center,
-                        maxLines = 1,
-                        modifier = Modifier
-                            .wrapContentHeight()
-                    )
+    val alpha by animateFloatAsState(
+        if (index >= split) 1f else 0.2f,
+        label = "Bar chart color alpha"
+    )
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier
+            .clickable {
+                if (split == index || index == 0) {
+                    onSplitChanged(0)
+                } else {
+                    onSplitChanged(index)
                 }
             }
+    ) {
+        val amount = sliceToAmount(slice)
+        Box(
+            contentAlignment = Alignment.BottomCenter,
+            modifier = Modifier
+                .height(240.dp)
+                .fillMaxWidth()
+                .widthIn(max = 120.dp)
+                .run {
+                    if (showBarPadding) {
+                        padding(horizontal = 8.dp)
+                    } else this
+                }
+        ) {
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .alpha(alpha)
+                    .height((amount / maxAmount) * 240.dp)
+                    .run {
+                        if (showBarPadding) {
+                            clip(RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
+                        } else this
+                    }
+                    .background(color)
+            )
+        }
+
+        AutoSizeText(
+            text = sliceToText(slice),
+            style = MaterialTheme.typography.labelSmall,
+            textAlign = TextAlign.Center,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 8.dp, vertical = 4.dp)
+        )
+
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 8.dp, end = 8.dp, top = 4.dp, bottom = 12.dp)
+        ) {
+            // Reserve height using a fixed text measurement
+            Text(
+                text = "1",
+                style = MaterialTheme.typography.labelSmall,
+                modifier = Modifier.alpha(0f)
+            )
+            AutoSizeText(
+                text = amount.toString(),
+                style = MaterialTheme.typography.labelSmall,
+                textAlign = TextAlign.Center,
+                maxLines = 1,
+                modifier = Modifier
+                    .wrapContentHeight()
+            )
         }
     }
 }

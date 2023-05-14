@@ -20,7 +20,7 @@ import com.anilist.fragment.AniListListRowMedia
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.compose.AssistChip
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
-import com.thekeeperofpie.artistalleydatabase.compose.ColorUtils
+import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.assistChipColors
 
 data class AnimeMediaTagEntry(
@@ -93,7 +93,7 @@ data class AnimeMediaTagEntry(
         }
     }
 
-    val textColor = ColorUtils.bestTextColor(containerColor)
+    val textColor = ComposeColorUtils.bestTextColor(containerColor)
 
     constructor(tag: AniListListRowMedia.Tag) : this(
         id = tag.id.toString(),

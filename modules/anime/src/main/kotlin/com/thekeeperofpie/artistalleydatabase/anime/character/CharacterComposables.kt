@@ -2,7 +2,6 @@
 
 package com.thekeeperofpie.artistalleydatabase.anime.character
 
-import android.graphics.drawable.BitmapDrawable
 import androidx.annotation.StringRes
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.animateIntAsState
@@ -44,17 +43,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.ColorUtils
-import androidx.palette.graphics.Palette
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.ui.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
+import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 @Composable
 fun CharacterCard(
@@ -121,44 +117,15 @@ fun CharacterCard(
                     R.string.anime_media_character_image
                 ),
                 onSuccess = {
-                    if (!colorMap.containsKey(id)) {
-                        (it.result.drawable as? BitmapDrawable)?.bitmap?.let {
-                            coroutineScope.launch(CustomDispatchers.IO) {
-                                try {
-                                    val palette = Palette.from(it)
-                                        .setRegion(
-                                            0,
-                                            // Only capture the bottom 1/4th so
-                                            // color flows from image better
-                                            it.height / 4 * 3,
-                                            // Only capture left 3/5ths to ignore
-                                            // part covered by voice actor
-                                            if (innerImage == null) {
-                                                it.width
-                                            } else {
-                                                it.width / 5 * 3
-                                            },
-                                            it.height
-                                        )
-                                        .generate()
-                                    val swatch = palette.swatches
-                                        .maxByOrNull { it.population }
-                                    if (swatch != null) {
-                                        withContext(CustomDispatchers.Main) {
-                                            colorMap[id] =
-                                                Color(swatch.rgb) to Color(
-                                                    ColorUtils.setAlphaComponent(
-                                                        swatch.bodyTextColor,
-                                                        0xFF
-                                                    )
-                                                )
-                                        }
-                                    }
-                                } catch (ignored: Exception) {
-                                }
-                            }
-                        }
-                    }
+                    ComposeColorUtils.calculatePalette(
+                        id = id,
+                        scope = coroutineScope,
+                        success = it,
+                        colorMap = colorMap,
+                        // Only capture left 3/5ths to ignore
+                        // part covered by voice actor
+                        widthEndThreshold = if (innerImage == null) 1f else 3 / 5f,
+                    )
                 },
                 modifier = Modifier.size(width = 100.dp, height = 150.dp)
             )
@@ -193,7 +160,7 @@ fun CharacterCard(
                             .clip(clipShape)
                             .border(
                                 width = 1.dp,
-                                color = Color.Black,
+                                color = containerColor,
                                 shape = clipShape
                             )
                     )

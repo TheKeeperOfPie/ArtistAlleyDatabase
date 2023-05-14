@@ -1,6 +1,8 @@
 package com.thekeeperofpie.artistalleydatabase.anime
 
-import androidx.compose.animation.Crossfade
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -59,7 +61,8 @@ object AnimeHomeScreen {
         errorRes: () -> Pair<Int, Exception?>? = { null },
         onErrorDismiss: () -> Unit = { },
     ) {
-        var selectedScreen by rememberSaveable(stateSaver = object : Saver<AnimeNavDestinations, String> {
+        var selectedScreen by rememberSaveable(stateSaver = object :
+            Saver<AnimeNavDestinations, String> {
             override fun restore(value: String) =
                 AnimeNavDestinations.values().find { it.id == value } ?: AnimeNavDestinations.SEARCH
 
@@ -133,9 +136,17 @@ object AnimeHomeScreen {
 
                         }) { mutableStateMapOf() }
 
-                    Crossfade(
+                    AnimatedContent(
                         targetState = selectedScreen,
-                        label = "Anime home destination crossfade",
+                        transitionSpec = {
+                            slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up)
+                                .togetherWith(
+                                    slideOutOfContainer(
+                                        AnimatedContentTransitionScope.SlideDirection.Down
+                                    )
+                                )
+                        },
+                        label = "Anime home destination transition",
                     ) {
                         when (it) {
                             AnimeNavDestinations.LIST -> {

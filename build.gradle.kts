@@ -119,6 +119,14 @@ dependencyAnalysis {
             }
         }
 
+        project(":modules:compose-utils") {
+            onUnusedDependencies {
+                exclude(
+                    "io.coil-kt:coil-compose",
+                )
+            }
+        }
+
         project(":modules:test-utils") {
             onRuntimeOnly {
                 exclude(

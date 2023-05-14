@@ -7,6 +7,7 @@ import com.anilist.GenresQuery
 import com.anilist.MediaAdvancedSearchQuery
 import com.anilist.MediaDetailsQuery
 import com.anilist.MediaTagsQuery
+import com.anilist.MediaTitlesAndImagesQuery
 import com.anilist.SaveMediaEntryEditMutation
 import com.anilist.UserByIdQuery
 import com.anilist.UserMediaListQuery
@@ -154,6 +155,10 @@ class AuthedAniListApi(
     suspend fun tags() = query(MediaTagsQuery())
 
     suspend fun mediaDetails(id: String) = query(MediaDetailsQuery(id.toInt()))
+
+    suspend fun mediaTitlesAndImages(mediaIds: List<Int>) =
+        query(MediaTitlesAndImagesQuery(ids = Optional.present(mediaIds)))
+            .dataAssertNoErrors.page?.media?.filterNotNull().orEmpty()
 
     suspend fun deleteMediaListEntry(id: String) =
         apolloClient.mutation(DeleteMediaEntryMutation(id = id.toInt()))

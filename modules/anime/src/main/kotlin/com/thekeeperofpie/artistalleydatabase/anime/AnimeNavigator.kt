@@ -32,7 +32,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.search.AnimeSearchScreen
 import com.thekeeperofpie.artistalleydatabase.anime.search.AnimeSearchViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserScreen
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserViewModel
-import com.thekeeperofpie.artistalleydatabase.compose.ColorUtils
+import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
 
 @OptIn(ExperimentalAnimationApi::class, ExperimentalMaterial3Api::class)
@@ -46,6 +46,10 @@ object AnimeNavigator {
         val userCallback = object : AniListUserScreen.Callback {
             override fun onMediaClick(media: UserFavoriteMediaNode) {
                 onMediaClick(navHostController, media)
+            }
+
+            override fun onMediaClick(id: String, title: String?, image: String?) {
+                onMediaClick(navHostController, id, title, image)
             }
         }
 
@@ -166,7 +170,7 @@ object AnimeNavigator {
                 loading = { viewModel.loading.collectAsState().value },
                 color = {
                     mediaAsState.value?.coverImage?.color
-                        ?.let(ColorUtils::hexToColor)
+                        ?.let(ComposeColorUtils::hexToColor)
                         ?: color
                 },
                 coverImage = {
@@ -292,7 +296,18 @@ object AnimeNavigator {
         "animeDetails?mediaId=${media.id}" +
                 "&title=${media.title?.userPreferred}" +
                 "&coverImage=${media.coverImage?.large}" +
-                "&color=${media.coverImage?.color?.let(ColorUtils::hexToColor)?.toArgb()}"
+                "&color=${media.coverImage?.color?.let(ComposeColorUtils::hexToColor)?.toArgb()}"
+    )
+
+    fun onMediaClick(
+        navHostController: NavHostController,
+        mediaId: String,
+        title: String?,
+        image: String?,
+    ) = navHostController.navigate(
+        "animeDetails?mediaId=$mediaId" +
+                "&title=$title" +
+                "&coverImage=$image"
     )
 
     fun onUserClick(navHostController: NavHostController, userId: String) {
@@ -349,6 +364,8 @@ object AnimeNavigator {
         AniListUserScreen(
             nestedScrollConnection = nestedScrollConnection,
             entry = { viewModel.entry.collectAsState().value },
+            animeGenreState = viewModel.animeGenreState,
+            mangaGenreState = viewModel.mangaGenreState,
             viewer = { viewModel.viewer.collectAsState().value },
             callback = callback,
             bottomNavBarPadding = bottomNavBarPadding,

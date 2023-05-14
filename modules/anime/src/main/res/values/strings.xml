@@ -391,4 +391,8 @@
     <string name="anime_user_stats_statuses_label">Statuses</string>
     <string name="anime_user_stats_scores_label">Scores</string>
     <string name="anime_user_stats_lengths_label">Lengths</string>
+    <string name="anime_user_release_years_label">Release years</string>
+    <string name="anime_user_start_years_label">Start years</string>
+    <string name="anime_user_stats_tab_stats">Stats</string>
+    <string name="anime_user_stats_tab_genres">Genres</string>
 </resources>

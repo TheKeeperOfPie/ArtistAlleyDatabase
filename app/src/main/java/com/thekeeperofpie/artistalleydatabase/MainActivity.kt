@@ -257,6 +257,10 @@ class MainActivity : ComponentActivity() {
             override fun onMediaClick(media: UserFavoriteMediaNode) {
                 AnimeNavigator.onMediaClick(navController, media)
             }
+
+            override fun onMediaClick(id: String, title: String?, image: String?) {
+                AnimeNavigator.onMediaClick(navController, id, title, image)
+            }
         }
 
         SharedElementsRoot {

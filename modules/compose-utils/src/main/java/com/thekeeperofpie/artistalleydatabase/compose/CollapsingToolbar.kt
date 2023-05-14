@@ -41,6 +41,7 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.Velocity
 import kotlin.math.abs
 
@@ -111,9 +112,10 @@ fun EnterAlwaysTopAppBar(
                     if (heightOffsetLimit == 0f) {
                         heightOffsetLimit = -it.height.toFloat()
                     }
-                }.offset(y = LocalDensity.current.run {
-                    scrollBehavior.state.heightOffset.toDp()
-                }),
+                }
+                .offset {
+                    IntOffset(x = 0, y = scrollBehavior.state.heightOffset.toInt())
+                },
             content = content,
         )
     }
@@ -151,7 +153,14 @@ fun EnterAlwaysNavigationBar(
     }
     NavigationBar(
         modifier
-            .offset(y = offset)
+            .offset {
+                IntOffset(
+                    x = 0,
+                    y = offset
+                        .toPx()
+                        .toInt()
+                )
+            }
             .then(appBarDragModifier)
             .onSizeChanged {
                 heightOffsetLimit = -it.height.toFloat()

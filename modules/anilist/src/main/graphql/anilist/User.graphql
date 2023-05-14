@@ -117,13 +117,32 @@ fragment UserMediaStatistics on UserStatistics {
         status
     }
 
-    scores(sort: [MEAN_SCORE]) {
+    scores {
         count
         score
     }
 
-    lengths(sort: [MEAN_SCORE]) {
+    lengths {
         count
         length
+    }
+
+    releaseYears {
+        count
+        releaseYear
+    }
+
+    startYears {
+        count
+        startYear
+    }
+
+    genres(sort: COUNT_DESC) {
+        count
+        genre
+        meanScore
+        chaptersRead
+        minutesWatched
+        mediaIds
     }
 }

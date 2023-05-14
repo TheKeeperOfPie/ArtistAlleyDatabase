@@ -150,6 +150,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.AutoResizeHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.BarChart
 import com.thekeeperofpie.artistalleydatabase.compose.CollapsingToolbar
+import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.PieChart
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
 import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
@@ -367,8 +368,7 @@ object AnimeMediaDetailsScreen {
                             val containerColor = color()
                                 ?: FloatingActionButtonDefaults.containerColor
                             val contentColor =
-                                com.thekeeperofpie.artistalleydatabase.compose.ColorUtils
-                                    .bestTextColor(containerColor)
+                                ComposeColorUtils.bestTextColor(containerColor)
                                     ?: contentColorFor(containerColor)
 
                             ExtendedFloatingActionButton(
@@ -2170,7 +2170,7 @@ object AnimeMediaDetailsScreen {
                 icon = it.icon,
                 site = it.site,
                 color = it.color
-                    ?.let(com.thekeeperofpie.artistalleydatabase.compose.ColorUtils::hexToColor)
+                    ?.let(ComposeColorUtils::hexToColor)
                     ?.multiplyCoerceSaturation(0.75f, 0.75f)
             )
         }.orEmpty()
@@ -2242,7 +2242,7 @@ object AnimeMediaDetailsScreen {
             val site: String,
             val color: Color?,
             val textColor: Color? = color
-                ?.let(com.thekeeperofpie.artistalleydatabase.compose.ColorUtils::bestTextColor),
+                ?.let(ComposeColorUtils::bestTextColor),
         )
 
         data class Studio(

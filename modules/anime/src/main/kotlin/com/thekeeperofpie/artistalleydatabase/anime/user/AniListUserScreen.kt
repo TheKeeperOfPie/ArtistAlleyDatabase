@@ -30,6 +30,8 @@ import com.anilist.fragment.UserMediaStatistics
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils
 import com.thekeeperofpie.artistalleydatabase.anime.staff.DetailsStaff
 import com.thekeeperofpie.artistalleydatabase.anime.ui.CoverAndBannerHeader
+import com.thekeeperofpie.artistalleydatabase.anime.user.stats.UserStatsGenreState
+import com.thekeeperofpie.artistalleydatabase.anime.user.stats.UserStatsScreen
 import com.thekeeperofpie.artistalleydatabase.compose.AutoResizeHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.CollapsingToolbar
 import com.thekeeperofpie.artistalleydatabase.compose.NestedScrollSplitter
@@ -42,6 +44,8 @@ object AniListUserScreen {
     operator fun invoke(
         nestedScrollConnection: NestedScrollConnection? = null,
         entry: @Composable () -> Entry?,
+        animeGenreState: UserStatsGenreState,
+        mangaGenreState: UserStatsGenreState,
         viewer: @Composable () -> AuthedUserQuery.Data.Viewer?,
         callback: Callback,
         bottomNavBarPadding: @Composable () -> Dp = { 0.dp },
@@ -110,8 +114,8 @@ object AniListUserScreen {
                 HorizontalPager(
                     state = pagerState,
                     pageNestedScrollConnection = NestedScrollSplitter(
-                        nestedScrollConnection,
                         scrollBehavior.nestedScrollConnection,
+                        nestedScrollConnection,
                     ),
                 ) {
                     val user = entry()?.user
@@ -125,13 +129,17 @@ object AniListUserScreen {
                         UserTab.ANIME_STATS -> UserStatsScreen(
                             user = { user },
                             statistics = { entry()?.statisticsAnime },
+                            genreState = animeGenreState,
                             isAnime = true,
+                            callback = callback,
                             bottomNavBarPadding = bottomNavBarPadding,
                         )
                         UserTab.MANGA_STATS -> UserStatsScreen(
                             user = { user },
                             statistics = { entry()?.statisticsManga },
+                            genreState = mangaGenreState,
                             isAnime = false,
+                            callback = callback,
                             bottomNavBarPadding = bottomNavBarPadding,
                         )
                     }
@@ -188,6 +196,10 @@ object AniListUserScreen {
                 .sortedBy { it.score }
             val lengths = statistics.lengths?.filterNotNull().orEmpty()
                 .sortedBy { it.length?.substringBefore("-")?.toIntOrNull() }
+            val releaseYears = statistics.releaseYears?.filterNotNull().orEmpty()
+                .sortedBy { it.releaseYear }
+            val startYears = statistics.startYears?.filterNotNull().orEmpty()
+                .sortedBy { it.startYear }
         }
 
         data class Studio(
@@ -198,6 +210,7 @@ object AniListUserScreen {
 
     interface Callback {
         fun onMediaClick(media: UserFavoriteMediaNode)
+        fun onMediaClick(id: String, title: String?, image: String?)
         fun onCharacterClicked(id: String) {
             // TODO
         }
