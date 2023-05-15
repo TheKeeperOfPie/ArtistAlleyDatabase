@@ -24,15 +24,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.material.placeholder
 import com.google.accompanist.placeholder.material.shimmer
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserScreen
+import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserViewModel
+import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.DurationUnit
 
@@ -43,9 +45,10 @@ object UserStatsDetailScreen {
     @Composable
     operator fun <Value> invoke(
         statistics: @Composable () -> AniListUserScreen.Entry.Statistics?,
-        state: UserStatsDetailsState<Value>,
-        callback: AniListUserScreen.Callback,
-        bottomNavBarPadding: @Composable () -> Dp = { 0.dp },
+        navigationCallback: AnimeNavigator.NavigationCallback,
+        state: AniListUserViewModel.States.State<Value>,
+        isAnime: Boolean,
+        bottomNavigationState: BottomNavigationState? = null,
         values: (AniListUserScreen.Entry.Statistics) -> List<Value>,
         valueToKey: (Value) -> String,
         valueToText: (Value) -> String = valueToKey,
@@ -60,7 +63,10 @@ object UserStatsDetailScreen {
         val statistics = statistics()
         LazyColumn(
             verticalArrangement = Arrangement.spacedBy(16.dp),
-            contentPadding = PaddingValues(top = 16.dp, bottom = 16.dp + bottomNavBarPadding()),
+            contentPadding = PaddingValues(
+                top = 16.dp,
+                bottom = 16.dp + (bottomNavigationState?.bottomNavBarPadding() ?: 0.dp),
+            ),
             modifier = Modifier.fillMaxSize()
         ) {
             if (statistics == null) {
@@ -90,7 +96,8 @@ object UserStatsDetailScreen {
                         onValueClick = onValueClick,
                         initialItemImage = initialItemImage,
                         state = state,
-                        callback = callback,
+                        isAnime = isAnime,
+                        navigationCallback = navigationCallback,
                     )
                 }
             }
@@ -108,8 +115,9 @@ object UserStatsDetailScreen {
         valueToMediaIds: (Value) -> List<Int>,
         onValueClick: (Value) -> Unit,
         initialItemImage: ((Value) -> String?)?,
-        state: UserStatsDetailsState<Value>,
-        callback: AniListUserScreen.Callback,
+        state: AniListUserViewModel.States.State<Value>,
+        isAnime: Boolean,
+        navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
         ElevatedCard(
             onClick = { onValueClick(value) },
@@ -125,7 +133,7 @@ object UserStatsDetailScreen {
 
             UserStatsBasicScreen.StatsRow(
                 valueToCount(value).toString() to R.string.anime_user_statistics_count,
-                if (state.isAnime) {
+                if (isAnime) {
                     String.format(
                         "%.1f",
                         valueToMinutesWatched(value).minutes.toDouble(DurationUnit.DAYS)
@@ -166,7 +174,7 @@ object UserStatsDetailScreen {
                                 image = media?.coverImage?.large,
                                 loading = media == null,
                                 onClick = {
-                                    callback.onMediaClick(
+                                    navigationCallback.onMediaClick(
                                         id = it.toString(),
                                         title = media?.title?.userPreferred,
                                         image = media?.coverImage?.large,

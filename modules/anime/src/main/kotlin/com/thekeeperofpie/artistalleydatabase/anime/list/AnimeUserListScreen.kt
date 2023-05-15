@@ -22,23 +22,24 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.anilist.UserMediaListQuery.Data.MediaListCollection.List.Entry.Media
 import com.anilist.type.MediaListStatus
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
-import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeMediaFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeMediaFilterOptionsBottomPanel
 import com.thekeeperofpie.artistalleydatabase.compose.ArrowBackIconButton
+import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBar
 import com.thekeeperofpie.artistalleydatabase.compose.NavMenuIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.NestedScrollSplitter
@@ -50,31 +51,22 @@ object AnimeUserListScreen {
 
     @Composable
     operator fun invoke(
-        nestedScrollConnection: NestedScrollConnection? = null,
         onClickNav: () -> Unit = {},
         showDrawerHandle: Boolean = true,
-        query: @Composable () -> String = { "" },
-        onQueryChange: (String) -> Unit = {},
-        filterData: () -> AnimeMediaFilterController.Data<MediaListSortOption>,
-        onRefresh: () -> Unit = {},
-        content: () -> AnimeUserListViewModel.ContentState,
-        tagShown: () -> AnimeMediaFilterController.TagSection.Tag? = { null },
-        onTagDismiss: () -> Unit = {},
-        onTagClick: (tagId: String, tagName: String) -> Unit = { _, _ -> },
-        onTagLongClick: (tagId: String) -> Unit = {},
-        onMediaClick: (AnimeMediaListRow.Entry) -> Unit = {},
+        viewModel: AnimeUserListViewModel = hiltViewModel(),
+        navigationCallback: AnimeNavigator.NavigationCallback =
+            AnimeNavigator.NavigationCallback(null),
         scrollStateSaver: ScrollStateSaver = ScrollStateSaver.STUB,
-        bottomNavBarPadding: @Composable () -> Dp = { 0.dp },
-        bottomOffset: @Composable () -> Dp = { 0.dp },
+        bottomNavigationState: BottomNavigationState? = null,
     ) {
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
         AnimeMediaFilterOptionsBottomPanel(
             topBar = {
                 EnterAlwaysTopAppBar(scrollBehavior = scrollBehavior) {
                     TextField(
-                        query(),
+                        viewModel.query.collectAsState().value,
                         placeholder = { Text(stringResource(id = R.string.anime_user_list_search)) },
-                        onValueChange = onQueryChange,
+                        onValueChange = viewModel::onQuery,
                         leadingIcon = {
                             if (showDrawerHandle) {
                                 NavMenuIconButton(onClickNav)
@@ -83,7 +75,7 @@ object AnimeUserListScreen {
                             }
                         },
                         trailingIcon = {
-                            IconButton(onClick = { onQueryChange("") }) {
+                            IconButton(onClick = { viewModel.onQuery("") }) {
                                 Icon(
                                     imageVector = Icons.Filled.Clear,
                                     contentDescription = stringResource(
@@ -104,15 +96,13 @@ object AnimeUserListScreen {
                     )
                 }
             },
-            filterData = filterData,
-            onTagLongClicked = onTagLongClick,
+            filterData = viewModel::filterData,
+            onTagLongClicked = viewModel::onTagLongClick,
             showMediaListStatus = true,
             showLoadSave = false,
-            bottomNavBarPadding = bottomNavBarPadding,
-            bottomOffset = bottomOffset,
+            bottomNavigationState = bottomNavigationState,
         ) { scaffoldPadding ->
-            @Suppress("NAME_SHADOWING")
-            val content = content()
+            val content = viewModel.content
             val refreshing = when (content) {
                 AnimeUserListViewModel.ContentState.LoadingEmpty -> true
                 is AnimeUserListViewModel.ContentState.Success -> content.loading
@@ -121,9 +111,9 @@ object AnimeUserListScreen {
 
             AnimeMediaListScreen(
                 refreshing = refreshing,
-                onRefresh = onRefresh,
-                tagShown = tagShown,
-                onTagDismiss = onTagDismiss,
+                onRefresh = viewModel::onRefresh,
+                tagShown = viewModel::tagShown,
+                onTagDismiss = viewModel::onTagDismiss,
                 pullRefreshTopPadding = {
                     scrollBehavior.state.heightOffsetLimit
                         .takeUnless { it == -Float.MAX_VALUE }
@@ -132,9 +122,9 @@ object AnimeUserListScreen {
                 },
                 modifier = Modifier.nestedScroll(
                     NestedScrollSplitter(
-                        nestedScrollConnection,
+                        bottomNavigationState?.nestedScrollConnection,
                         scrollBehavior.nestedScrollConnection,
-                        consumeNone = nestedScrollConnection == null,
+                        consumeNone = bottomNavigationState == null,
                     )
                 )
             ) { onLongPressImage ->
@@ -170,10 +160,9 @@ object AnimeUserListScreen {
                                         is Entry.Header -> Header(it)
                                         is Entry.Item -> AnimeMediaListRow(
                                             entry = it,
-                                            onClick = onMediaClick,
-                                            onTagClick = onTagClick,
-                                            onTagLongClick = onTagLongClick,
-                                            onLongPressImage = onLongPressImage
+                                            onTagLongClick = viewModel::onTagLongClick,
+                                            onLongPressImage = onLongPressImage,
+                                            navigationCallback = navigationCallback,
                                         )
                                     }
                                 }
@@ -211,21 +200,19 @@ object AnimeUserListScreen {
 @Preview
 @Composable
 private fun Preview() {
-    AnimeUserListScreen(
-        content = {
-            AnimeUserListViewModel.ContentState.Success(
-                listOf(
-                    AnimeUserListScreen.Entry.Header("Completed", MediaListStatus.COMPLETED),
-                    AnimeUserListScreen.Entry.Item(
-                        Media(
-                            title = Media.Title(
-                                userPreferred = "Ano Hi Mita Hana no Namae wo Bokutachi wa Mada Shiranai.",
-                            ),
-                        )
+    val viewModel = hiltViewModel<AnimeUserListViewModel>().apply {
+        content = AnimeUserListViewModel.ContentState.Success(
+            listOf(
+                AnimeUserListScreen.Entry.Header("Completed", MediaListStatus.COMPLETED),
+                AnimeUserListScreen.Entry.Item(
+                    Media(
+                        title = Media.Title(
+                            userPreferred = "Ano Hi Mita Hana no Namae wo Bokutachi wa Mada Shiranai.",
+                        ),
                     )
                 )
             )
-        },
-        filterData = { AnimeMediaFilterController.Data.forPreview() }
-    )
+        )
+    }
+    AnimeUserListScreen(viewModel = viewModel)
 }

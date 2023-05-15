@@ -1011,8 +1011,6 @@ class AnimeMediaFilterController<T>(
             override val state: IncludeExcludeState = IncludeExcludeState.DEFAULT,
             val clickable: Boolean = true,
         ) : MediaFilterEntry<MediaTagsQuery.Data.MediaTagCollection>, TagSection {
-            val containerColor = MediaUtils.calculateTagColor(value.id)
-
             override val leadingIconVector = MediaUtils.tagLeadingIcon(
                 isAdult = isAdult,
                 isGeneralSpoiler = value.isGeneralSpoiler,

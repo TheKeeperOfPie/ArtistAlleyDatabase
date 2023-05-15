@@ -69,7 +69,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.anilist.type.MediaSeason
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
@@ -79,13 +78,13 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.StartEndDateDialog
 import com.thekeeperofpie.artistalleydatabase.anime.ui.StartEndDateRow
 import com.thekeeperofpie.artistalleydatabase.anime.utils.IncludeExcludeState
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
+import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.compose.BottomSheetScaffoldNoAppBarOffset
 import com.thekeeperofpie.artistalleydatabase.compose.ButtonFooter
 import com.thekeeperofpie.artistalleydatabase.compose.CustomOutlinedTextField
 import com.thekeeperofpie.artistalleydatabase.compose.ItemDropdown
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
 import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
-import com.thekeeperofpie.artistalleydatabase.compose.filterChipColors
 import com.thekeeperofpie.artistalleydatabase.compose.rememberBottomSheetScaffoldState
 import com.thekeeperofpie.artistalleydatabase.compose.rememberStandardBottomSheetState
 import kotlinx.coroutines.launch
@@ -108,8 +107,7 @@ object AnimeMediaFilterOptionsBottomPanel {
         expandedForPreview: Boolean = false,
         showMediaListStatus: Boolean = false,
         showLoadSave: Boolean = false,
-        bottomNavBarPadding: @Composable () -> Dp = { 0.dp },
-        bottomOffset: @Composable () -> Dp = { 0.dp },
+        bottomNavigationState: BottomNavigationState? = null,
         content: @Composable (PaddingValues) -> Unit,
     ) {
         val scaffoldState = if (expandedForPreview) {
@@ -127,7 +125,8 @@ object AnimeMediaFilterOptionsBottomPanel {
 
         BottomSheetScaffoldNoAppBarOffset(
             scaffoldState = scaffoldState,
-            sheetPeekHeight = 48.dp + bottomNavBarPadding() + bottomOffset(),
+            sheetPeekHeight = 48.dp +
+                    (bottomNavigationState?.run { bottomNavBarPadding() + bottomOffset() } ?: 0.dp),
             sheetDragHandle = {
                 Box(Modifier.fillMaxWidth()) {
                     BottomSheetDefaults.DragHandle(modifier = Modifier.align(Alignment.Center))
@@ -172,7 +171,10 @@ object AnimeMediaFilterOptionsBottomPanel {
                     onTagLongClicked = onTagLongClicked,
                     showMediaListStatus = showMediaListStatus,
                     showLoadSave = showLoadSave,
-                    modifier = Modifier.padding(bottom = bottomNavBarPadding() + bottomOffset())
+                    modifier = Modifier.padding(
+                        bottom = bottomNavigationState
+                            ?.run { bottomNavBarPadding() + bottomOffset() } ?: 0.dp
+                    )
                 )
             },
             sheetTonalElevation = 4.dp,
@@ -880,7 +882,6 @@ object AnimeMediaFilterOptionsBottomPanel {
                     onLongClick = { onTagLongClicked(it.id) },
                     enabled = it.clickable,
                     label = { AutoHeightText(it.value.name) },
-                    colors = filterChipColors(containerColor = it.containerColor),
                     leadingIcon = {
                         IncludeExcludeIcon(
                             it,

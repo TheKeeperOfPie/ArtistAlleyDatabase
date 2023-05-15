@@ -5,7 +5,16 @@ import android.text.format.DateUtils
 import android.view.animation.PathInterpolator
 import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Bookmark
+import androidx.compose.material.icons.filled.CheckBox
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.MenuBook
+import androidx.compose.material.icons.filled.Monitor
+import androidx.compose.material.icons.filled.PauseCircle
+import androidx.compose.material.icons.filled.Repeat
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.filled.WatchLater
 import androidx.compose.material.icons.twotone._18UpRating
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
@@ -18,6 +27,7 @@ import com.anilist.type.MediaRelation
 import com.anilist.type.MediaSeason
 import com.anilist.type.MediaSource
 import com.anilist.type.MediaStatus
+import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import java.time.LocalDate
 import java.time.Month
@@ -46,13 +56,6 @@ object MediaUtils {
         Color(155, 210, 45),
         Color(128, 210, 45),
         Color(100, 210, 45),
-    )
-
-    // TODO: More distinct colors
-    fun calculateTagColor(tagId: Int) = Color.hsl(
-        hue = tagColorInterpolator.getInterpolation((tagId % 2000) / 2000f) * 360,
-        lightness = 0.25f,
-        saturation = 0.25f,
     )
 
     fun genreColor(name: String) = Color.hsl(
@@ -105,6 +108,78 @@ object MediaUtils {
         MediaListStatus.REPEATING -> R.string.anime_media_list_status_repeating
         MediaListStatus.UNKNOWN__ -> R.string.anime_media_list_status_unknown
         null -> R.string.anime_media_list_status_none
+    }
+
+    @Composable
+    fun MediaListStatus?.toStatusText(
+        mediaType: MediaType?,
+        progress: Int,
+        progressMax: Int,
+    ) = when (this) {
+        MediaListStatus.CURRENT -> {
+            if (mediaType == MediaType.ANIME) {
+                stringResource(
+                    R.string.anime_media_details_fab_user_status_current_anime,
+                    progress,
+                    progressMax,
+                )
+            } else {
+                stringResource(
+                    R.string.anime_media_details_fab_user_status_current_not_anime,
+                    progress,
+                    progressMax,
+                )
+            }
+        }
+        MediaListStatus.PLANNING -> stringResource(
+            R.string.anime_media_details_fab_user_status_planning
+        )
+        MediaListStatus.COMPLETED -> stringResource(
+            // TODO: Include rating in completed text
+            R.string.anime_media_details_fab_user_status_completed
+        )
+        MediaListStatus.DROPPED -> stringResource(
+            R.string.anime_media_details_fab_user_status_dropped,
+            progress,
+            progressMax,
+        )
+        MediaListStatus.PAUSED -> stringResource(
+            R.string.anime_media_details_fab_user_status_paused,
+            progress,
+            progressMax,
+        )
+        MediaListStatus.REPEATING -> stringResource(
+            R.string.anime_media_details_fab_user_status_repeating,
+            progress,
+            progressMax,
+        )
+        MediaListStatus.UNKNOWN__, null -> stringResource(
+            R.string.anime_media_details_fab_user_status_unknown
+        )
+    }
+
+    @Composable
+    fun MediaListStatus?.toStatusIcon(mediaType: MediaType?) = when (this) {
+        MediaListStatus.CURRENT -> if (mediaType == MediaType.ANIME) {
+            Icons.Filled.Monitor to R.string.anime_media_details_fab_user_status_current_anime_icon_content_description
+        } else {
+            Icons.Filled.MenuBook to R.string.anime_media_details_fab_user_status_current_not_anime_icon_content_description
+        }
+        MediaListStatus.PLANNING -> if (mediaType == MediaType.ANIME) {
+            Icons.Filled.WatchLater
+        } else {
+            Icons.Filled.Bookmark
+        } to R.string.anime_media_details_fab_user_status_planning_icon_content_description
+        MediaListStatus.COMPLETED -> Icons.Filled.CheckBox to
+                R.string.anime_media_details_fab_user_status_completed_icon_content_description
+        MediaListStatus.DROPPED -> Icons.Filled.Delete to
+                R.string.anime_media_details_fab_user_status_dropped_icon_content_description
+        MediaListStatus.PAUSED -> Icons.Filled.PauseCircle to
+                R.string.anime_media_details_fab_user_status_paused_icon_content_description
+        MediaListStatus.REPEATING -> Icons.Filled.Repeat to
+                R.string.anime_media_details_fab_user_status_repeating_icon_content_description
+        MediaListStatus.UNKNOWN__, null -> Icons.Filled.Edit to
+                R.string.anime_media_details_fab_user_status_edit_icon_content_description
     }
 
     fun MediaListStatus?.toColor() = when (this) {

@@ -24,10 +24,8 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,32 +36,29 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.ColorUtils
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.ui.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
+import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
-import kotlinx.coroutines.CoroutineScope
 
 @Composable
 fun CharacterCard(
-    coroutineScope: CoroutineScope,
     id: String,
     image: String?,
-    colorMap: MutableMap<String, Pair<Color, Color>>,
+    colorCalculationState: ColorCalculationState,
     onClick: (id: String) -> Unit,
     innerImage: String? = null,
     content: @Composable (textColor: Color) -> Unit,
 ) {
     val defaultTextColor = MaterialTheme.typography.bodyMedium.color
-    val colors = colorMap[id]
+    val colors = colorCalculationState.colorMap[id]
 
     val animationProgress by animateIntAsState(
         if (colors == null) 0 else 255,
@@ -119,12 +114,13 @@ fun CharacterCard(
                 onSuccess = {
                     ComposeColorUtils.calculatePalette(
                         id = id,
-                        scope = coroutineScope,
                         success = it,
-                        colorMap = colorMap,
+                        colorCalculationState = colorCalculationState,
+                        heightStartThreshold = 3 / 4f,
                         // Only capture left 3/5ths to ignore
                         // part covered by voice actor
                         widthEndThreshold = if (innerImage == null) 1f else 3 / 5f,
+                        selectMaxPopulation = true,
                     )
                 },
                 modifier = Modifier.size(width = 100.dp, height = 150.dp)
@@ -176,7 +172,8 @@ fun LazyListScope.charactersSection(
     @StringRes titleRes: Int,
     characters: List<DetailsCharacter>,
     onCharacterClicked: (String) -> Unit,
-    onCharacterLongClicked: (String) -> Unit
+    onCharacterLongClicked: (String) -> Unit,
+    colorCalculationState: ColorCalculationState,
 ) {
     if (characters.isEmpty()) return
     item {
@@ -184,23 +181,16 @@ fun LazyListScope.charactersSection(
     }
 
     item {
-        val coroutineScope = rememberCoroutineScope()
-        // TODO: Even wider scoped cache?
-        // Cache character color calculation
-        val colorMap = remember { mutableStateMapOf<String, Pair<Color, Color>>() }
-
-        val uriHandler = LocalUriHandler.current
         LazyRow(
             contentPadding = PaddingValues(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             items(characters, { it.id }) {
                 CharacterCard(
-                    coroutineScope = coroutineScope,
                     id = it.id,
                     image = it.image,
-                    colorMap = colorMap,
-                    onClick = { uriHandler.openUri(AniListUtils.characterUrl(it)) },
+                    colorCalculationState = colorCalculationState,
+                    onClick = { onCharacterClicked(it) },
                     innerImage = (it.languageToVoiceActor["Japanese"]
                         ?: it.languageToVoiceActor.values.firstOrNull())?.image,
                 ) { textColor ->

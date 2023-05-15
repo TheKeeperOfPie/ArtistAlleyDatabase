@@ -8,21 +8,18 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
-import androidx.paging.compose.collectAsLazyPagingItems
 import com.anilist.fragment.UserFavoriteMediaNode
 import com.anilist.type.MediaSeason
 import com.anilist.type.MediaType
 import com.google.accompanist.navigation.animation.composable
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anime.list.AnimeUserListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.list.AnimeUserListViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
@@ -35,6 +32,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.search.AnimeSearchScreen
 import com.thekeeperofpie.artistalleydatabase.anime.search.AnimeSearchViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserScreen
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserViewModel
+import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
 
@@ -45,8 +43,9 @@ object AnimeNavigator {
         navHostController: NavHostController,
         navGraphBuilder: NavGraphBuilder,
         onClickNav: () -> Unit,
+        onOpenUri: (String) -> Unit,
     ) {
-        val callback = Callback(navHostController)
+        val navigationCallback = NavigationCallback(navHostController, onOpenUri)
         navGraphBuilder.composable(
             route = AnimeNavDestinations.SEARCH.id
                     + "?title={title}"
@@ -73,8 +72,7 @@ object AnimeNavigator {
                         navHostController.popBackStack()
                     }
                 },
-                onTagClick = { tagId, tagName -> onTagClick(navHostController, tagId, tagName) },
-                onMediaClick = { onMediaClick(navHostController, it) },
+                navigationCallback = navigationCallback,
                 scrollStateSaver = ScrollStateSaver(),
             )
         }
@@ -103,8 +101,7 @@ object AnimeNavigator {
                 mediaType = mediaType,
                 onClickNav = { navHostController.popBackStack() },
                 showDrawerHandle = false,
-                onTagClick = callback::onTagClick,
-                onMediaClick = callback::onMediaClick,
+                navigationCallback = navigationCallback,
                 scrollStateSaver = ScrollStateSaver.fromMap(
                     "userList",
                     ScrollStateSaver.scrollPositions(),
@@ -193,7 +190,6 @@ object AnimeNavigator {
 
             val mediaAsState = viewModel.media.collectAsState()
             AnimeMediaDetailsScreen(
-                onClickBack = navHostController::popBackStack,
                 loading = { viewModel.loading.collectAsState().value },
                 color = {
                     mediaAsState.value?.coverImage?.color
@@ -250,20 +246,15 @@ object AnimeNavigator {
                 onAnimeSongProgressUpdate = viewModel::onAnimeSongProgressUpdate,
                 onAnimeSongExpandedToggle = viewModel::onAnimeSongExpandedToggle,
                 cdEntries = { viewModel.cdEntries.collectAsState().value },
-                onGenreClicked = { /*TODO*/ },
                 onGenreLongClicked = { /*TODO*/ },
-                onCharacterClicked = { /*TODO*/ },
                 onCharacterLongClicked = { /*TODO*/ },
-                onStaffClicked = { /*TODO*/ },
                 onStaffLongClicked = { /*TODO*/ },
-                onTagClicked = { tagId, tagName -> onTagClick(navHostController, tagId, tagName) },
                 onTagLongClicked = { /*TODO*/ },
-                onUserClick = { onUserClick(navHostController, it) },
+                navigationCallback = navigationCallback,
                 trailerPlaybackPosition = { viewModel.trailerPlaybackPosition },
                 onTrailerPlaybackPositionUpdate = {
                     viewModel.trailerPlaybackPosition = it
                 },
-                onMediaClicked = { onMediaClick(navHostController, it) },
                 listEntry = { viewModel.listEntry.collectAsState().value },
                 editData = viewModel.editData,
                 scoreFormat = { viewModel.scoreFormat.collectAsState().value },
@@ -289,7 +280,7 @@ object AnimeNavigator {
             val userId = it.arguments?.getString("userId")
             UserScreen(
                 userId = userId,
-                callback = callback,
+                navigationCallback = navigationCallback,
             )
         }
     }
@@ -360,63 +351,36 @@ object AnimeNavigator {
         title: String?,
         tagId: String?,
         onClickNav: () -> Unit,
-        onTagClick: (tagId: String, tagName: String) -> Unit,
-        onMediaClick: (AnimeMediaListRow.Entry) -> Unit,
+        navigationCallback: NavigationCallback,
         scrollStateSaver: ScrollStateSaver,
-        nestedScrollConnection: NestedScrollConnection? = null,
-        bottomNavBarPadding: @Composable () -> Dp = { 0.dp },
-        bottomOffset: @Composable () -> Dp = { 0.dp },
+        bottomNavigationState: BottomNavigationState? = null,
     ) {
         val viewModel = hiltViewModel<AnimeSearchViewModel>().apply {
             initialize(AnimeMediaFilterController.InitialParams(tagId = tagId, isAnime = true))
         }
         AnimeSearchScreen(
-            nestedScrollConnection = nestedScrollConnection,
             onClickNav = onClickNav,
-            isRoot = { title == null },
-            title = { title },
-            query = { viewModel.query.collectAsState().value },
-            onQueryChange = viewModel::onQuery,
-            filterData = { viewModel.filterData() },
-            onRefresh = viewModel::onRefresh,
-            content = { viewModel.content.collectAsLazyPagingItems() },
-            tagShown = { viewModel.tagShown },
-            onTagDismiss = viewModel::onTagDismiss,
-            onTagClick = onTagClick,
-            onTagLongClick = viewModel::onTagLongClick,
-            onMediaClick = onMediaClick,
-            onMediaLongClick = viewModel::onMediaLongClick,
+            isRoot = title == null,
+            title = title,
+            viewModel  = viewModel,
+            navigationCallback = navigationCallback,
             scrollStateSaver = scrollStateSaver,
-            bottomNavBarPadding = bottomNavBarPadding,
-            bottomOffset = bottomOffset,
+            bottomNavigationState = bottomNavigationState,
         )
     }
 
     @Composable
     fun UserScreen(
         userId: String?,
-        callback: AniListUserScreen.Callback,
-        nestedScrollConnection: NestedScrollConnection? = null,
-        bottomNavBarPadding: @Composable () -> Dp = { 0.dp },
+        navigationCallback: NavigationCallback,
+        bottomNavigationState: BottomNavigationState? = null,
     ) {
         val viewModel = hiltViewModel<AniListUserViewModel>()
             .apply { initialize(userId) }
         AniListUserScreen(
-            nestedScrollConnection = nestedScrollConnection,
-            entry = { viewModel.entry.collectAsState().value },
-            animeGenresState = viewModel.animeGenresState,
-            animeTagsState = viewModel.animeTagsState,
-            animeVoiceActorsState = viewModel.animeVoiceActorsState,
-            animeStudiosState = viewModel.animeStudiosState,
-            animeStaffState = viewModel.animeStaffState,
-            mangaGenresState = viewModel.mangaGenresState,
-            mangaTagsState = viewModel.mangaTagsState,
-            mangaVoiceActorsState = viewModel.mangaVoiceActorsState,
-            mangaStudiosState = viewModel.mangaStudiosState,
-            mangaStaffState = viewModel.mangaStaffState,
-            viewer = { viewModel.viewer.collectAsState().value },
-            callback = callback,
-            bottomNavBarPadding = bottomNavBarPadding,
+            viewModel = viewModel,
+            navigationCallback = navigationCallback,
+            bottomNavigationState = bottomNavigationState,
         )
     }
 
@@ -426,54 +390,67 @@ object AnimeNavigator {
         mediaType: MediaType,
         onClickNav: () -> Unit,
         showDrawerHandle: Boolean,
-        onTagClick: (tagId: String, tagName: String) -> Unit,
-        onMediaClick: (AnimeMediaListRow.Entry) -> Unit,
+        navigationCallback: NavigationCallback,
         scrollStateSaver: ScrollStateSaver,
-        nestedScrollConnection: NestedScrollConnection? = null,
-        bottomNavBarPadding: @Composable () -> Dp = { 0.dp },
-        bottomOffset: @Composable () -> Dp = { 0.dp },
+        bottomNavigationState: BottomNavigationState? = null,
     ) {
         val viewModel = hiltViewModel<AnimeUserListViewModel>(key = mediaType.rawValue)
             .apply { initialize(userId, mediaType) }
         AnimeUserListScreen(
-            nestedScrollConnection = nestedScrollConnection,
             onClickNav = onClickNav,
             showDrawerHandle = showDrawerHandle,
-            query = { viewModel.query.collectAsState().value },
-            onQueryChange = viewModel::onQuery,
-            filterData = { viewModel.filterData() },
-            onRefresh = viewModel::onRefresh,
-            content = { viewModel.content },
-            tagShown = { viewModel.tagShown },
-            onTagDismiss = viewModel::onTagDismiss,
-            onTagClick = onTagClick,
-            onTagLongClick = viewModel::onTagLongClick,
-            onMediaClick = onMediaClick,
+            viewModel = viewModel,
+            navigationCallback = navigationCallback,
             scrollStateSaver = scrollStateSaver,
-            bottomNavBarPadding = { bottomNavBarPadding() },
-            bottomOffset = { bottomOffset() },
+            bottomNavigationState = bottomNavigationState,
         )
     }
 
-    class Callback(private val navHostController: NavHostController) : AniListUserScreen.Callback {
-        override fun onMediaClick(media: UserFavoriteMediaNode) {
-            onMediaClick(navHostController, media)
+    class NavigationCallback(
+        // Null to make previews easier
+        private val navHostController: NavHostController? = null,
+        private val onOpenUri: (String) -> Unit = {},
+    ) {
+        fun onMediaClick(media: UserFavoriteMediaNode) {
+            navHostController?.let { onMediaClick(it, media) }
         }
 
-        override fun onMediaClick(media: AnimeMediaListRow.Entry) {
-            onMediaClick(navHostController, media)
+        fun onMediaClick(media: AnimeMediaListRow.Entry) {
+            navHostController?.let { onMediaClick(it, media) }
         }
 
-        override fun onMediaClick(id: String, title: String?, image: String?) {
-            onMediaClick(navHostController, id, title, image)
+        fun onMediaClick(id: String, title: String?, image: String?) {
+            navHostController?.let { onMediaClick(it, id, title, image) }
         }
 
-        override fun onTagClick(id: String, name: String) {
-            onTagClick(navHostController, id, name)
+        fun onTagClick(id: String, name: String) {
+            navHostController?.let { onTagClick(it, id, name) }
         }
 
-        override fun onUserListClick(userId: String, mediaType: MediaType?) {
-            onUserListClick(navHostController, userId, mediaType)
+        fun onUserListClick(userId: String, mediaType: MediaType?) {
+            navHostController?.let { onUserListClick(it, userId, mediaType) }
+        }
+
+        fun onUserClick(userId: String) {
+            navHostController?.let { onUserClick(it, userId) }
+        }
+
+        fun onCharacterClick(id: String) = onOpenUri(AniListUtils.characterUrl(id))
+
+        fun onCharacterLongClick(id: String) {
+            // TODO
+        }
+
+        fun onStaffClick(id: String) = onOpenUri(AniListUtils.staffUrl(id))
+
+        fun onStaffLongClick(id: String) {
+            // TODO
+        }
+
+        fun onStudioClick(id: String) = onOpenUri(AniListUtils.studioUrl(id))
+
+        fun onGenreClick(genre: String) {
+            // TODO
         }
     }
 }

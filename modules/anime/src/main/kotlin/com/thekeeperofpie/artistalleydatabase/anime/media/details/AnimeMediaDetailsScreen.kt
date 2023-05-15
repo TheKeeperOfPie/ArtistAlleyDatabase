@@ -40,25 +40,16 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Bookmark
-import androidx.compose.material.icons.filled.CheckBox
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.ImageNotSupported
-import androidx.compose.material.icons.filled.MenuBook
-import androidx.compose.material.icons.filled.Monitor
 import androidx.compose.material.icons.filled.OpenInBrowser
-import androidx.compose.material.icons.filled.PauseCircle
 import androidx.compose.material.icons.filled.PauseCircleOutline
 import androidx.compose.material.icons.filled.PeopleAlt
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PersonOutline
 import androidx.compose.material.icons.filled.PlayCircleOutline
-import androidx.compose.material.icons.filled.Repeat
 import androidx.compose.material.icons.filled.ThumbDownAlt
 import androidx.compose.material.icons.filled.ThumbUpAlt
 import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material.icons.filled.WatchLater
 import androidx.compose.material.icons.outlined.PeopleAlt
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChipDefaults
@@ -89,6 +80,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.listSaver
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -127,6 +120,7 @@ import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.You
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.AppMediaPlayer
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils
@@ -135,6 +129,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaTagEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toColor
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toStatusIcon
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toStatusText
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.AnimeMediaEditBottomSheet
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditData
@@ -150,6 +146,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.AutoResizeHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.BarChart
 import com.thekeeperofpie.artistalleydatabase.compose.CollapsingToolbar
+import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.PieChart
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
@@ -159,6 +156,8 @@ import com.thekeeperofpie.artistalleydatabase.compose.assistChipColors
 import com.thekeeperofpie.artistalleydatabase.compose.fadingEdgeBottom
 import com.thekeeperofpie.artistalleydatabase.compose.multiplyCoerceSaturation
 import com.thekeeperofpie.artistalleydatabase.compose.optionalClickable
+import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
+import com.thekeeperofpie.artistalleydatabase.compose.showFloatingActionButtonOnVerticalScroll
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGrid
 import kotlinx.coroutines.launch
@@ -195,7 +194,6 @@ object AnimeMediaDetailsScreen {
 
     @Composable
     operator fun invoke(
-        onClickBack: () -> Unit = {},
         loading: @Composable () -> Boolean = { false },
         color: () -> Color? = { Color.Transparent },
         coverImage: @Composable () -> String? = { null },
@@ -212,16 +210,11 @@ object AnimeMediaDetailsScreen {
         onAnimeSongProgressUpdate: (animeSongId: String, Float) -> Unit,
         onAnimeSongExpandedToggle: (animeSongId: String, expanded: Boolean) -> Unit,
         cdEntries: @Composable () -> List<CdEntryGridModel> = { emptyList() },
-        onGenreClicked: (String) -> Unit = {},
         onGenreLongClicked: (String) -> Unit = {},
-        onCharacterClicked: (String) -> Unit = {},
         onCharacterLongClicked: (String) -> Unit = {},
-        onStaffClicked: (String) -> Unit = {},
         onStaffLongClicked: (String) -> Unit = {},
-        onTagClicked: (tagId: String, tagName: String) -> Unit = { _, _ -> },
         onTagLongClicked: (String) -> Unit = {},
-        onMediaClicked: (AnimeMediaListRow.Entry) -> Unit = {},
-        onUserClick: (String) -> Unit = {},
+        navigationCallback: AnimeNavigator.NavigationCallback,
         trailerPlaybackPosition: () -> Float,
         onTrailerPlaybackPositionUpdate: (Float) -> Unit,
         listEntry: @Composable () -> MediaDetailsListEntry?,
@@ -276,6 +269,7 @@ object AnimeMediaDetailsScreen {
 
         val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
         val lazyListState = rememberLazyListState()
+        val colorCalculationState = rememberColorCalculationState()
         BottomSheetScaffold(
             scaffoldState = bottomSheetScaffoldState,
             sheetPeekHeight = 0.dp,
@@ -295,6 +289,7 @@ object AnimeMediaDetailsScreen {
                         subtitleText = subtitle,
                         nextEpisode = nextEpisode,
                         nextEpisodeAiringAt = nextEpisodeAiringAt,
+                        colorCalculationState = colorCalculationState,
                     )
                 }
             },
@@ -342,24 +337,8 @@ object AnimeMediaDetailsScreen {
                             derivedStateOf { scrollBehavior.state.collapsedFraction == 0f }
                         }
 
-                        var previousIndex by remember(this) { mutableStateOf(lazyListState.firstVisibleItemIndex) }
-                        var previousScrollOffset by remember(this) { mutableStateOf(lazyListState.firstVisibleItemScrollOffset) }
-                        val showFloatingActionButton by remember(this) {
-                            derivedStateOf {
-                                if (lazyListState.firstVisibleItemIndex < 3) {
-                                    true
-                                } else if (previousIndex != lazyListState.firstVisibleItemIndex) {
-                                    previousIndex > lazyListState.firstVisibleItemIndex
-                                } else {
-                                    previousScrollOffset >= lazyListState.firstVisibleItemScrollOffset
-                                }.also {
-                                    previousIndex = lazyListState.firstVisibleItemIndex
-                                    previousScrollOffset =
-                                        lazyListState.firstVisibleItemScrollOffset
-                                }
-                            }
-                        }
-
+                        val showFloatingActionButton =
+                            lazyListState.showFloatingActionButtonOnVerticalScroll()
                         AnimatedVisibility(
                             visible = showFloatingActionButton,
                             enter = fadeIn(),
@@ -373,79 +352,32 @@ object AnimeMediaDetailsScreen {
 
                             ExtendedFloatingActionButton(
                                 text = {
-                                    when (listEntry?.status) {
-                                        MediaListStatus.CURRENT -> {
-                                            if (media.type == MediaType.ANIME) {
-                                                stringResource(
-                                                    R.string.anime_media_details_fab_user_status_current_anime,
-                                                    listEntry.progress ?: 0,
-                                                    media.episodes ?: 1,
-                                                )
-                                            } else {
-                                                stringResource(
-                                                    R.string.anime_media_details_fab_user_status_current_not_anime,
-                                                    listEntry.progressVolumes ?: 0,
-                                                    media.volumes ?: 1,
-                                                )
-                                            }
-                                        }
-                                        MediaListStatus.PLANNING -> stringResource(
-                                            R.string.anime_media_details_fab_user_status_planning
+                                    val progress = if (media.type == MediaType.ANIME) {
+                                        listEntry?.progress
+                                    } else {
+                                        listEntry?.progressVolumes
+                                    } ?: 0
+                                    val progressMax = if (media.type == MediaType.ANIME) {
+                                        media.episodes
+                                    } else {
+                                        media.volumes
+                                    } ?: 1
+
+                                    Text(
+                                        listEntry?.status.toStatusText(
+                                            mediaType = media.type,
+                                            progress = progress,
+                                            progressMax = progressMax
                                         )
-                                        MediaListStatus.COMPLETED -> stringResource(
-                                            // TODO: Include rating in completed text
-                                            R.string.anime_media_details_fab_user_status_completed
-                                        )
-                                        MediaListStatus.DROPPED -> stringResource(
-                                            R.string.anime_media_details_fab_user_status_dropped,
-                                            listEntry.progress ?: listEntry.progressVolumes ?: 0,
-                                            media.episodes ?: media.volumes ?: 1,
-                                        )
-                                        MediaListStatus.PAUSED -> stringResource(
-                                            R.string.anime_media_details_fab_user_status_paused,
-                                            listEntry.progress ?: listEntry.progressVolumes ?: 0,
-                                            media.episodes ?: media.volumes ?: 1,
-                                        )
-                                        MediaListStatus.REPEATING -> stringResource(
-                                            R.string.anime_media_details_fab_user_status_repeating,
-                                            listEntry.progress ?: listEntry.progressVolumes ?: 0,
-                                            media.episodes ?: media.volumes ?: 1,
-                                        )
-                                        MediaListStatus.UNKNOWN__, null -> stringResource(
-                                            R.string.anime_media_details_fab_user_status_unknown
-                                        )
-                                    }.let {
-                                        Text(it)
-                                    }
+                                    )
                                 },
                                 icon = {
-                                    when (listEntry?.status) {
-                                        MediaListStatus.CURRENT -> if (media.type == MediaType.ANIME) {
-                                            Icons.Filled.Monitor to R.string.anime_media_details_fab_user_status_current_anime_icon_content_description
-                                        } else {
-                                            Icons.Filled.MenuBook to R.string.anime_media_details_fab_user_status_current_not_anime_icon_content_description
-                                        }
-                                        MediaListStatus.PLANNING -> if (media.type == MediaType.ANIME) {
-                                            Icons.Filled.WatchLater
-                                        } else {
-                                            Icons.Filled.Bookmark
-                                        } to R.string.anime_media_details_fab_user_status_planning_icon_content_description
-                                        MediaListStatus.COMPLETED -> Icons.Filled.CheckBox to
-                                                R.string.anime_media_details_fab_user_status_completed_icon_content_description
-                                        MediaListStatus.DROPPED -> Icons.Filled.Delete to
-                                                R.string.anime_media_details_fab_user_status_dropped_icon_content_description
-                                        MediaListStatus.PAUSED -> Icons.Filled.PauseCircle to
-                                                R.string.anime_media_details_fab_user_status_paused_icon_content_description
-                                        MediaListStatus.REPEATING -> Icons.Filled.Repeat to
-                                                R.string.anime_media_details_fab_user_status_repeating_icon_content_description
-                                        MediaListStatus.UNKNOWN__, null -> Icons.Filled.Edit to
-                                                R.string.anime_media_details_fab_user_status_edit_icon_content_description
-                                    }.let { (vector, contentDescription) ->
-                                        Icon(
-                                            imageVector = vector,
-                                            contentDescription = stringResource(contentDescription),
-                                        )
-                                    }
+                                    val (vector, contentDescription) = listEntry?.status
+                                        .toStatusIcon(mediaType = media.type)
+                                    Icon(
+                                        imageVector = vector,
+                                        contentDescription = stringResource(contentDescription),
+                                    )
                                 },
                                 expanded = listEntry?.status
                                     ?.takeUnless { it == MediaListStatus.UNKNOWN__ }
@@ -463,14 +395,7 @@ object AnimeMediaDetailsScreen {
                 val entry = entry()
                 val animeSongs = animeSongs()
                 val cdEntries = cdEntries()
-
-                var descriptionExpanded by remember { mutableStateOf(false) }
-                var relationsExpanded by remember { mutableStateOf(false) }
-                var recommendationsExpanded by remember { mutableStateOf(false) }
-                var songsExpanded by remember { mutableStateOf(false) }
-                var streamingEpisodesExpanded by remember { mutableStateOf(false) }
-                var streamingEpisodesHidden by remember { mutableStateOf(true) }
-                var reviewsExpanded by remember { mutableStateOf(false) }
+                val expandedState = rememberExpandedState()
 
                 LazyColumn(
                     state = lazyListState,
@@ -489,32 +414,15 @@ object AnimeMediaDetailsScreen {
                         onAnimeSongProgressUpdate = onAnimeSongProgressUpdate,
                         onAnimeSongExpandedToggle = onAnimeSongExpandedToggle,
                         cdEntries = cdEntries,
-                        onGenreClicked = onGenreClicked,
                         onGenreLongClicked = onGenreLongClicked,
-                        onCharacterClicked = onCharacterClicked,
                         onCharacterLongClicked = onCharacterLongClicked,
-                        onStaffClicked = onStaffClicked,
                         onStaffLongClicked = onStaffLongClicked,
-                        onTagClicked = onTagClicked,
                         onTagLongClicked = onTagLongClicked,
-                        onMediaClicked = onMediaClicked,
-                        onUserClick = onUserClick,
-                        descriptionExpanded = { descriptionExpanded },
-                        onDescriptionExpandedToggled = { descriptionExpanded = it },
-                        relationsExpanded = { relationsExpanded },
-                        onRelationsExpandedToggled = { relationsExpanded = it },
-                        recommendationsExpanded = { recommendationsExpanded },
-                        onRecommendationsExpandedToggled = { recommendationsExpanded = it },
-                        songsExpanded = { songsExpanded },
-                        onSongsExpandedToggled = { songsExpanded = it },
-                        streamingEpisodesExpanded = { streamingEpisodesExpanded },
-                        onStreamingEpisodesExpandedToggled = { streamingEpisodesExpanded = it },
-                        streamingEpisodesHidden = { streamingEpisodesHidden },
-                        onStreamingEpisodesHiddenToggled = { streamingEpisodesHidden = it },
-                        reviewsExpanded = { reviewsExpanded },
-                        onReviewsExpandedToggled = { reviewsExpanded = it },
+                        navigationCallback = navigationCallback,
+                        expandedState = expandedState,
                         trailerPlaybackPosition = trailerPlaybackPosition,
                         onTrailerPlaybackPositionUpdate = onTrailerPlaybackPositionUpdate,
+                        colorCalculationState = colorCalculationState,
                     )
                 }
             }
@@ -563,32 +471,15 @@ object AnimeMediaDetailsScreen {
         onAnimeSongProgressUpdate: (animeSongId: String, Float) -> Unit,
         onAnimeSongExpandedToggle: (animeSongId: String, expanded: Boolean) -> Unit,
         cdEntries: List<CdEntryGridModel>,
-        onGenreClicked: (String) -> Unit,
         onGenreLongClicked: (String) -> Unit,
-        onCharacterClicked: (String) -> Unit,
         onCharacterLongClicked: (String) -> Unit,
-        onStaffClicked: (String) -> Unit,
         onStaffLongClicked: (String) -> Unit,
-        onTagClicked: (tagId: String, tagName: String) -> Unit,
         onTagLongClicked: (String) -> Unit,
-        onMediaClicked: (AnimeMediaListRow.Entry) -> Unit,
-        onUserClick: (String) -> Unit,
-        descriptionExpanded: () -> Boolean,
-        onDescriptionExpandedToggled: (Boolean) -> Unit,
-        relationsExpanded: () -> Boolean,
-        onRelationsExpandedToggled: (Boolean) -> Unit,
-        recommendationsExpanded: () -> Boolean,
-        onRecommendationsExpandedToggled: (Boolean) -> Unit,
-        songsExpanded: () -> Boolean,
-        onSongsExpandedToggled: (Boolean) -> Unit,
-        streamingEpisodesExpanded: () -> Boolean,
-        onStreamingEpisodesExpandedToggled: (Boolean) -> Unit,
-        streamingEpisodesHidden: () -> Boolean,
-        onStreamingEpisodesHiddenToggled: (Boolean) -> Unit,
-        reviewsExpanded: () -> Boolean,
-        onReviewsExpandedToggled: (Boolean) -> Unit,
+        navigationCallback: AnimeNavigator.NavigationCallback,
+        expandedState: ExpandedState,
         trailerPlaybackPosition: () -> Float,
         onTrailerPlaybackPositionUpdate: (Float) -> Unit,
+        colorCalculationState: ColorCalculationState,
     ) {
         if (entry == null) {
             if (loading) {
@@ -610,30 +501,31 @@ object AnimeMediaDetailsScreen {
         }
         genreSection(
             entry = entry,
-            onGenreClicked = onGenreClicked,
+            onGenreClicked = navigationCallback::onGenreClick,
             onGenreLongClicked = onGenreLongClicked,
         )
 
         descriptionSection(
             titleTextRes = R.string.anime_media_details_description_label,
             htmlText = entry.description,
-            expanded = descriptionExpanded,
-            onExpandedChanged = onDescriptionExpandedToggled,
+            expanded = expandedState::description,
+            onExpandedChanged = { expandedState.description = it },
         )
 
         charactersSection(
             titleRes = R.string.anime_media_details_characters_label,
             characters = entry.characters,
-            onCharacterClicked = onCharacterClicked,
+            onCharacterClicked = navigationCallback::onCharacterClick,
             onCharacterLongClicked = onCharacterLongClicked,
+            colorCalculationState = colorCalculationState,
         )
 
         relationsSection(
             entry = entry,
-            relationsExpanded = relationsExpanded,
-            onRelationsExpandedToggled = onRelationsExpandedToggled,
-            onMediaClicked = onMediaClicked,
-            onTagClicked = onTagClicked,
+            relationsExpanded = expandedState::relations,
+            onRelationsExpandedToggled = { expandedState.relations = it },
+            colorCalculationState = colorCalculationState,
+            navigationCallback = navigationCallback,
             onTagLongClicked = onTagLongClicked,
         )
 
@@ -641,8 +533,8 @@ object AnimeMediaDetailsScreen {
 
         songsSection(
             animeSongs = animeSongs,
-            songsExpanded = songsExpanded,
-            onSongsExpandedToggled = onSongsExpandedToggled,
+            songsExpanded = expandedState::songs,
+            onSongsExpandedToggled = { expandedState.songs = it },
             mediaPlayer = mediaPlayer,
             animeSongState = animeSongState,
             onAnimeThemePlayClick = onAnimeThemePlayClick,
@@ -655,16 +547,18 @@ object AnimeMediaDetailsScreen {
         staffSection(
             titleRes = R.string.anime_media_details_staff_label,
             staff = entry.staff,
-            onStaffClicked = onStaffClicked,
-            onStaffLongClicked = onStaffLongClicked,
+            onStaffClick = navigationCallback::onStaffClick,
+            onStaffLongClick = onStaffLongClicked,
+            colorCalculationState = colorCalculationState,
         )
 
         statsSection(entry)
 
         tagSection(
             entry = entry,
-            onTagClicked = onTagClicked,
+            onTagClicked = navigationCallback::onTagClick,
             onTagLongClicked = onTagLongClicked,
+            colorCalculationState = colorCalculationState,
         )
 
         trailerSection(
@@ -675,10 +569,10 @@ object AnimeMediaDetailsScreen {
 
         streamingEpisodesSection(
             entry = entry,
-            expanded = streamingEpisodesExpanded,
-            expandedToggled = onStreamingEpisodesExpandedToggled,
-            hidden = streamingEpisodesHidden,
-            onHiddenToggled = onStreamingEpisodesHiddenToggled,
+            expanded = expandedState::streamingEpisodes,
+            expandedToggled = { expandedState.streamingEpisodes = it },
+            hidden = expandedState::streamingEpisodesHidden,
+            onHiddenToggled = { expandedState.streamingEpisodesHidden = it },
         )
 
         socialLinksSection(entry = entry)
@@ -687,18 +581,18 @@ object AnimeMediaDetailsScreen {
 
         recommendationsSection(
             entry = entry,
-            recommendationsExpanded = recommendationsExpanded,
-            onRecommendationsExpandedToggled = onRecommendationsExpandedToggled,
-            onMediaClicked = onMediaClicked,
-            onTagClicked = onTagClicked,
+            recommendationsExpanded = expandedState::recommendations,
+            onRecommendationsExpandedToggled = { expandedState.recommendations = it },
+            colorCalculationState = colorCalculationState,
+            navigationCallback = navigationCallback,
             onTagLongClicked = onTagLongClicked,
         )
 
         reviewsSection(
             reviews = entry.media.reviews?.nodes?.filterNotNull().orEmpty(),
-            expanded = reviewsExpanded,
-            onExpandedToggled = onReviewsExpandedToggled,
-            onUserClick = onUserClick,
+            expanded = expandedState::reviews,
+            onExpandedToggled = { expandedState.reviews = it },
+            onUserClick = navigationCallback::onUserClick,
         )
     }
 
@@ -713,6 +607,7 @@ object AnimeMediaDetailsScreen {
         subtitleText: @Composable () -> String?,
         nextEpisode: @Composable () -> Int?,
         nextEpisodeAiringAt: @Composable () -> Int?,
+        colorCalculationState: ColorCalculationState,
     ) {
         val entry = entry()
         var preferredTitle by remember { mutableStateOf<Int?>(null) }
@@ -727,6 +622,11 @@ object AnimeMediaDetailsScreen {
                 preferredTitle =
                     ((preferredTitle ?: 0) + 1) % (entry?.titlesUnique?.size ?: 1)
             },
+            coverImageOnSuccess = { success ->
+                entry?.id?.valueId?.let { entryId ->
+                    ComposeColorUtils.calculatePalette(entryId, success, colorCalculationState)
+                }
+            }
         ) {
             Box(
                 contentAlignment = Alignment.CenterStart,
@@ -833,9 +733,9 @@ object AnimeMediaDetailsScreen {
         entry: Entry,
         relationsExpanded: () -> Boolean,
         onRelationsExpandedToggled: (Boolean) -> Unit,
-        onMediaClicked: (AnimeMediaListRow.Entry) -> Unit,
-        onTagClicked: (tagId: String, tagName: String) -> Unit,
         onTagLongClicked: (String) -> Unit,
+        colorCalculationState: ColorCalculationState,
+        navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
         mediaListSection(
             titleRes = R.string.anime_media_details_relations_label,
@@ -844,8 +744,8 @@ object AnimeMediaDetailsScreen {
             aboveFold = RELATIONS_ABOVE_FOLD,
             expanded = relationsExpanded,
             onExpandedToggled = onRelationsExpandedToggled,
-            onMediaClicked = onMediaClicked,
-            onTagClicked = onTagClicked,
+            colorCalculationState = colorCalculationState,
+            navigationCallback = navigationCallback,
             onTagLongClicked = onTagLongClicked,
             label = { RelationLabel(it.relation) },
         )
@@ -1493,8 +1393,8 @@ object AnimeMediaDetailsScreen {
         entry: Entry,
         recommendationsExpanded: () -> Boolean,
         onRecommendationsExpandedToggled: (Boolean) -> Unit,
-        onMediaClicked: (AnimeMediaListRow.Entry) -> Unit,
-        onTagClicked: (tagId: String, tagName: String) -> Unit,
+        colorCalculationState: ColorCalculationState,
+        navigationCallback: AnimeNavigator.NavigationCallback,
         onTagLongClicked: (String) -> Unit,
     ) {
         mediaListSection(
@@ -1504,8 +1404,8 @@ object AnimeMediaDetailsScreen {
             aboveFold = RECOMMENDATIONS_ABOVE_FOLD,
             expanded = recommendationsExpanded,
             onExpandedToggled = onRecommendationsExpandedToggled,
-            onMediaClicked = onMediaClicked,
-            onTagClicked = onTagClicked,
+            colorCalculationState = colorCalculationState,
+            navigationCallback = navigationCallback,
             onTagLongClicked = onTagLongClicked,
         )
     }
@@ -1517,8 +1417,8 @@ object AnimeMediaDetailsScreen {
         aboveFold: Int,
         expanded: () -> Boolean,
         onExpandedToggled: (Boolean) -> Unit,
-        onMediaClicked: (AnimeMediaListRow.Entry) -> Unit,
-        onTagClicked: (tagId: String, tagName: String) -> Unit,
+        colorCalculationState: ColorCalculationState,
+        navigationCallback: AnimeNavigator.NavigationCallback,
         onTagLongClicked: (String) -> Unit,
         label: (@Composable (T) -> Unit)? = null,
     ) = listSection(
@@ -1534,9 +1434,9 @@ object AnimeMediaDetailsScreen {
             label = if (label == null) null else {
                 { label(item) }
             },
-            onClick = onMediaClicked,
-            onTagClick = onTagClicked,
             onTagLongClick = onTagLongClicked,
+            colorCalculationState = colorCalculationState,
+            navigationCallback = navigationCallback,
             modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = paddingBottom)
         )
     }
@@ -1689,8 +1589,10 @@ object AnimeMediaDetailsScreen {
                             }.let { stringResource(it, slice.amount ?: 0) }
                         },
                         keySave = { it?.rawValue.orEmpty() },
-                        keyRestore = { key -> MediaListStatus.values().find { it.rawValue == key }
-                            ?: MediaListStatus.UNKNOWN__ },
+                        keyRestore = { key ->
+                            MediaListStatus.values().find { it.rawValue == key }
+                                ?: MediaListStatus.UNKNOWN__
+                        },
                     )
                 }
 
@@ -1725,6 +1627,7 @@ object AnimeMediaDetailsScreen {
         entry: Entry,
         onTagClicked: (tagId: String, tagName: String) -> Unit = { _, _ -> },
         onTagLongClicked: (tagId: String) -> Unit = {},
+        colorCalculationState: ColorCalculationState,
     ) {
         if (entry.tags.isNotEmpty()) {
             item {
@@ -1737,6 +1640,8 @@ object AnimeMediaDetailsScreen {
                     modifier = Modifier.padding(horizontal = 16.dp)
                 ) {
                     entry.tags.forEach {
+                        val (containerColor, textColor) =
+                            colorCalculationState.getColors(entry.id.valueId)
                         AnimeMediaTagEntry.Chip(
                             tag = it,
                             title = {
@@ -1751,7 +1656,9 @@ object AnimeMediaDetailsScreen {
                                 }
                             },
                             onTagClicked = onTagClicked,
-                            onTagLongClicked = onTagLongClicked
+                            onTagLongClicked = onTagLongClicked,
+                            containerColor = containerColor,
+                            textColor = textColor,
                         )
                     }
                 }
@@ -2257,5 +2164,51 @@ object AnimeMediaDetailsScreen {
             val name: String,
             val main: Boolean,
         )
+    }
+
+    @Composable
+    private fun rememberExpandedState() = rememberSaveable(saver = listSaver(
+        save = {
+            listOf(
+                it.description,
+                it.relations,
+                it.recommendations,
+                it.songs,
+                it.streamingEpisodes,
+                it.streamingEpisodesHidden,
+                it.reviews
+            )
+        },
+        restore = {
+            ExpandedState(
+                description = it[0],
+                relations = it[1],
+                recommendations = it[2],
+                songs = it[3],
+                streamingEpisodes = it[4],
+                streamingEpisodesHidden = it[5],
+                reviews = it[6],
+            )
+        }
+    )) {
+        ExpandedState()
+    }
+
+    private class ExpandedState(
+        description: Boolean = false,
+        relations: Boolean = false,
+        recommendations: Boolean = false,
+        songs: Boolean = false,
+        streamingEpisodes: Boolean = false,
+        streamingEpisodesHidden: Boolean = false,
+        reviews: Boolean = false,
+    ) {
+        var description by mutableStateOf(description)
+        var relations by mutableStateOf(relations)
+        var recommendations by mutableStateOf(recommendations)
+        var songs by mutableStateOf(songs)
+        var streamingEpisodes by mutableStateOf(streamingEpisodes)
+        var streamingEpisodesHidden by mutableStateOf(streamingEpisodesHidden)
+        var reviews by mutableStateOf(reviews)
     }
 }

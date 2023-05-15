@@ -45,6 +45,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
 import coil.compose.AsyncImage
+import coil.compose.AsyncImagePainter
 import com.thekeeperofpie.artistalleydatabase.android_utils.AnimationUtils
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.compose.AccelerateEasing
@@ -62,6 +63,7 @@ fun CoverAndBannerHeader(
     color: () -> Color? = { null },
     onClickEnabled: Boolean = false,
     onClick: (() -> Unit)? = null,
+    coverImageOnSuccess: (AsyncImagePainter.State.Success) -> Unit = {},
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val elevation = lerp(0.dp, 16.dp, AccelerateEasing.transform(progress))
@@ -119,6 +121,7 @@ fun CoverAndBannerHeader(
                         contentScale = ContentScale.FillHeight,
                         error = rememberVectorPainter(Icons.Filled.ImageNotSupported),
                         fallback = null,
+                        onSuccess = coverImageOnSuccess,
                         contentDescription = stringResource(R.string.anime_media_cover_image),
                         modifier = Modifier
                             .height(coverSize)

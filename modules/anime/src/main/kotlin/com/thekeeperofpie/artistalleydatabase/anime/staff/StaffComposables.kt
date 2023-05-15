@@ -9,47 +9,35 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.unit.dp
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterCard
 import com.thekeeperofpie.artistalleydatabase.anime.ui.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
+import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 
 fun LazyListScope.staffSection(
     @StringRes titleRes: Int,
     staff: List<DetailsStaff>,
-    onStaffClicked: (String) -> Unit,
-    onStaffLongClicked: (String) -> Unit
+    onStaffClick: (String) -> Unit,
+    onStaffLongClick: (String) -> Unit,
+    colorCalculationState: ColorCalculationState,
 ) {
     if (staff.isEmpty()) return
     item {
-        val coroutineScope = rememberCoroutineScope()
         DetailsSectionHeader(stringResource(titleRes))
-
-        // TODO: Even wider scoped cache?
-        // Cache staff color calculation
-        val colorMap = remember { mutableStateMapOf<String, Pair<Color, Color>>() }
-
-        val uriHandler = LocalUriHandler.current
         LazyRow(
             contentPadding = PaddingValues(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             items(staff, { it.id }) {
                 CharacterCard(
-                    coroutineScope = coroutineScope,
                     id = it.id,
                     image = it.image,
-                    colorMap = colorMap,
-                    onClick = { uriHandler.openUri(AniListUtils.staffUrl(it)) },
+                    colorCalculationState = colorCalculationState,
+                    onClick = { onStaffClick(it) },
                 ) { textColor ->
                     it.role?.let {
                         AutoHeightText(

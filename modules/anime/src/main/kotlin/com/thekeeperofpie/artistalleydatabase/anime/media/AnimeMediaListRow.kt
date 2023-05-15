@@ -58,9 +58,11 @@ import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.material.placeholder
 import com.google.accompanist.placeholder.material.shimmer
 import com.mxalbert.sharedelements.SharedElement
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
+import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.fadingEdgeEnd
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
@@ -73,11 +75,12 @@ object AnimeMediaListRow {
         entry: Entry,
         modifier: Modifier = Modifier,
         label: (@Composable () -> Unit)? = null,
-        onClick: (Entry) -> Unit = {},
         onLongClick: (Entry) -> Unit = {},
-        onTagClick: (tagId: String, tagName: String) -> Unit = { _, _ -> },
         onTagLongClick: (tagId: String) -> Unit = {},
         onLongPressImage: (entry: Entry) -> Unit = {},
+        colorCalculationState: ColorCalculationState = ColorCalculationState(),
+        navigationCallback: AnimeNavigator.NavigationCallback =
+            AnimeNavigator.NavigationCallback(null),
     ) {
         ElevatedCard(
             modifier = modifier
@@ -85,13 +88,18 @@ object AnimeMediaListRow {
                 .heightIn(min = 180.dp)
                 .combinedClickable(
                     enabled = entry != Entry.Loading,
-                    onClick = { onClick(entry) },
+                    onClick = { navigationCallback.onMediaClick(entry) },
                     onLongClick = { onLongClick(entry) }
                 )
                 .alpha(if (entry.ignored) 0.38f else 1f)
         ) {
             Row(modifier = Modifier.height(IntrinsicSize.Min)) {
-                CoverImage(entry, onClick, onLongPressImage)
+                CoverImage(
+                    entry = entry,
+                    onClick = { navigationCallback.onMediaClick(entry) },
+                    onLongPressImage = onLongPressImage,
+                    colorCalculationState = colorCalculationState,
+                )
 
                 Column(modifier = Modifier.heightIn(min = 180.dp)) {
                     Row(Modifier.fillMaxWidth()) {
@@ -109,10 +117,14 @@ object AnimeMediaListRow {
                     entry.nextAiringEpisode?.let {
                         NextAiringSection(it, entry == Entry.Loading)
                     }
+                    val (containerColor, textColor) =
+                        colorCalculationState.getColors(entry.id?.valueId)
                     TagRow(
                         tags = entry.tags,
-                        onTagClick = onTagClick,
+                        onTagClick = navigationCallback::onTagClick,
                         onTagLongClick = onTagLongClick,
+                        tagContainerColor = containerColor,
+                        tagTextColor = textColor,
                     )
                 }
             }
@@ -124,6 +136,7 @@ object AnimeMediaListRow {
         entry: Entry,
         onClick: (Entry) -> Unit = {},
         onLongPressImage: (entry: Entry) -> Unit,
+        colorCalculationState: ColorCalculationState,
     ) {
         SharedElement(
             key = "cover_image_${entry.id?.valueId}",
@@ -133,9 +146,17 @@ object AnimeMediaListRow {
                 model = ImageRequest.Builder(LocalContext.current)
                     .data(entry.image)
                     .crossfade(true)
+                    .allowHardware(false)
                     .build(),
                 contentScale = ContentScale.Crop,
                 fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
+                onSuccess = {
+                    ComposeColorUtils.calculatePalette(
+                        entry.id?.valueId.orEmpty(),
+                        it,
+                        colorCalculationState,
+                    )
+                },
                 contentDescription = stringResource(R.string.anime_media_cover_image),
                 modifier = Modifier
                     .background(MaterialTheme.colorScheme.surfaceVariant)
@@ -318,8 +339,10 @@ object AnimeMediaListRow {
     @Composable
     private fun TagRow(
         tags: List<AnimeMediaTagEntry>,
-        onTagClick: (tagId: String, tagName: String) -> Unit = { _, _ -> },
-        onTagLongClick: (tagId: String) -> Unit = {},
+        onTagClick: (tagId: String, tagName: String) -> Unit,
+        onTagLongClick: (tagId: String) -> Unit,
+        tagContainerColor: Color,
+        tagTextColor: Color,
     ) {
         LazyRow(
             contentPadding = PaddingValues(start = 12.dp, end = 32.dp),
@@ -340,6 +363,8 @@ object AnimeMediaListRow {
                     tag = it,
                     onTagClicked = onTagClick,
                     onTagLongClicked = onTagLongClick,
+                    containerColor = tagContainerColor,
+                    textColor = tagTextColor,
                     modifier = Modifier.height(24.dp),
                 )
             }

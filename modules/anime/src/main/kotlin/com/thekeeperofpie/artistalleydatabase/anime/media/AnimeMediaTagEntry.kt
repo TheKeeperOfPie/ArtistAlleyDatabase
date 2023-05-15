@@ -20,14 +20,13 @@ import com.anilist.fragment.AniListListRowMedia
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.compose.AssistChip
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
-import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.assistChipColors
+import com.thekeeperofpie.artistalleydatabase.compose.ifNotSpecified
 
 data class AnimeMediaTagEntry(
     val id: String,
     val name: String,
     val shouldHide: Boolean = false,
-    val containerColor: Color = Color.Transparent,
     val leadingIconVector: ImageVector? = null,
     val leadingIconContentDescription: Int? = null,
     val textHiddenRes: Int? = null,
@@ -41,6 +40,8 @@ data class AnimeMediaTagEntry(
             title: @Composable () -> String = { tag.name },
             onTagClicked: (tagId: String, tagName: String) -> Unit = { _, _ -> },
             onTagLongClicked: (tagId: String) -> Unit = {},
+            containerColor: Color,
+            textColor: Color,
         ) {
             val shouldHide = tag.shouldHide
             var hidden by remember(tag.id) { mutableStateOf(shouldHide) }
@@ -57,13 +58,11 @@ data class AnimeMediaTagEntry(
                 ),
                 onLongClick = { onTagLongClicked(tag.id) },
                 colors = assistChipColors(
-                    containerColor = if (hidden) {
-                        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.25f)
-                    } else {
-                        tag.containerColor
-                    },
-                    labelColor = tag.textColor ?: MaterialTheme.colorScheme.onSurface,
+                    containerColor = containerColor
+                        .ifNotSpecified { MaterialTheme.colorScheme.surface },
+                    labelColor = textColor.ifNotSpecified { MaterialTheme.colorScheme.onSurface },
                 ),
+                border = null,
                 leadingIcon = {
                     if (tag.leadingIconVector != null
                         && tag.leadingIconContentDescription != null
@@ -93,15 +92,12 @@ data class AnimeMediaTagEntry(
         }
     }
 
-    val textColor = ComposeColorUtils.bestTextColor(containerColor)
-
     constructor(tag: AniListListRowMedia.Tag) : this(
         id = tag.id.toString(),
         name = tag.name,
         shouldHide = (tag.isAdult ?: false)
                 || (tag.isGeneralSpoiler ?: false)
                 || (tag.isMediaSpoiler ?: false),
-        containerColor = MediaUtils.calculateTagColor(tag.id),
         leadingIconVector = MediaUtils.tagLeadingIcon(
             isAdult = tag.isAdult,
             isGeneralSpoiler = tag.isGeneralSpoiler,
@@ -126,7 +122,6 @@ data class AnimeMediaTagEntry(
         shouldHide = (tag.isAdult ?: false)
                 || (tag.isGeneralSpoiler ?: false)
                 || (tag.isMediaSpoiler ?: false),
-        containerColor = MediaUtils.calculateTagColor(tag.id),
         leadingIconVector = MediaUtils.tagLeadingIcon(
             isAdult = tag.isAdult,
             isGeneralSpoiler = tag.isGeneralSpoiler,

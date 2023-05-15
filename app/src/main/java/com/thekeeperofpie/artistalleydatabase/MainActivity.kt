@@ -33,6 +33,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -251,7 +252,9 @@ class MainActivity : ComponentActivity() {
         onClickNav: () -> Unit,
     ) {
         val navController = rememberAnimatedNavController()
-        val userCallback = AnimeNavigator.Callback(navController)
+        val uriHandler = LocalUriHandler.current
+        val navigationCallback =
+            AnimeNavigator.NavigationCallback(navController, uriHandler::openUri)
         SharedElementsRoot {
             AnimatedNavHost(
                 navController = navController,
@@ -268,15 +271,16 @@ class MainActivity : ComponentActivity() {
                         needAuth = { viewModel.needAuth },
                         onClickAuth = { viewModel.onClickAuth(this@MainActivity) },
                         onSubmitAuthToken = viewModel::onSubmitAuthToken,
-                        onTagClick = { tagId, tagName ->
-                            AnimeNavigator.onTagClick(navController, tagId, tagName)
-                        },
-                        onMediaClick = { AnimeNavigator.onMediaClick(navController, it) },
-                        userCallback = userCallback,
+                        navigationCallback = navigationCallback,
                     )
                 }
 
-                AnimeNavigator.initialize(navController, this, onClickNav)
+                AnimeNavigator.initialize(
+                    navController,
+                    this,
+                    onClickNav,
+                    onOpenUri = uriHandler::openUri
+                )
             }
         }
     }

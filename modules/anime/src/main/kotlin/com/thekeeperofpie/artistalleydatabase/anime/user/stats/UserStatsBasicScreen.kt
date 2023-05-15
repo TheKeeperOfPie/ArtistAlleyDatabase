@@ -22,18 +22,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.anilist.UserByIdQuery
 import com.anilist.type.MediaFormat
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toColor
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.ui.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserScreen
 import com.thekeeperofpie.artistalleydatabase.compose.BarChart
+import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.compose.PieChart
 import com.thekeeperofpie.artistalleydatabase.compose.VerticalDivider
 import kotlin.time.Duration.Companion.minutes
@@ -47,13 +48,15 @@ object UserStatsBasicScreen {
     operator fun invoke(
         user: () -> UserByIdQuery.Data.User?,
         statistics: @Composable () -> AniListUserScreen.Entry.Statistics?,
-        callback: AniListUserScreen.Callback,
+        navigationCallback: AnimeNavigator.NavigationCallback,
         isAnime: Boolean,
-        bottomNavBarPadding: @Composable () -> Dp = { 0.dp },
+        bottomNavigationState: BottomNavigationState? = null,
     ) {
         val statistics = statistics()
         LazyColumn(
-            contentPadding = PaddingValues(bottom = 16.dp + bottomNavBarPadding()),
+            contentPadding = PaddingValues(
+                bottom = 16.dp + (bottomNavigationState?.bottomNavBarPadding() ?: 0.dp),
+            ),
             modifier = Modifier.fillMaxSize()
         ) {
             if (statistics == null) {
@@ -72,9 +75,9 @@ object UserStatsBasicScreen {
             val user = user()
             if (user != null) {
                 if (isAnime) {
-                    animeStatisticsSection(user, callback)
+                    animeStatisticsSection(user, navigationCallback)
                 } else {
-                    mangaStatisticsSection(user, callback)
+                    mangaStatisticsSection(user, navigationCallback)
                 }
             }
 
@@ -229,7 +232,7 @@ object UserStatsBasicScreen {
 
     private fun LazyListScope.animeStatisticsSection(
         user: UserByIdQuery.Data.User,
-        callback: AniListUserScreen.Callback,
+        navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
         val statistics = user.statistics?.anime ?: return
         item {
@@ -243,14 +246,16 @@ object UserStatsBasicScreen {
                     "%.1f",
                     statistics.meanScore
                 ) to R.string.anime_user_statistics_mean_score,
-                onClick = { callback.onUserListClick(user.id.toString(), MediaType.ANIME) }
+                onClick = {
+                    navigationCallback.onUserListClick(user.id.toString(), MediaType.ANIME)
+                }
             )
         }
     }
 
     private fun LazyListScope.mangaStatisticsSection(
         user: UserByIdQuery.Data.User,
-        callback: AniListUserScreen.Callback,
+        navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
         val statistics = user.statistics?.manga ?: return
         item {
@@ -260,7 +265,9 @@ object UserStatsBasicScreen {
                         R.string.anime_user_statistics_manga_chapters_read,
                 String.format("%.1f", statistics.meanScore) to
                         R.string.anime_user_statistics_mean_score,
-                onClick = { callback.onUserListClick(user.id.toString(), MediaType.MANGA) }
+                onClick = {
+                    navigationCallback.onUserListClick(user.id.toString(), MediaType.MANGA)
+                }
             )
         }
     }

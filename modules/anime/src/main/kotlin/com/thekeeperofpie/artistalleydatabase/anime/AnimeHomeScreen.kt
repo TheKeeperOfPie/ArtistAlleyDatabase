@@ -16,7 +16,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -26,14 +25,11 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
-import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
-import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserScreen
+import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysNavigationBar
 import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
@@ -48,9 +44,7 @@ object AnimeHomeScreen {
         needAuth: () -> Boolean,
         onClickAuth: () -> Unit,
         onSubmitAuthToken: (String) -> Unit,
-        onTagClick: (tagId: String, tagName: String) -> Unit,
-        onMediaClick: (AnimeMediaListRow.Entry) -> Unit,
-        userCallback: AniListUserScreen.Callback,
+        navigationCallback: AnimeNavigator.NavigationCallback,
         errorRes: () -> Pair<Int, Exception?>? = { null },
         onErrorDismiss: () -> Unit = { },
     ) {
@@ -63,6 +57,7 @@ object AnimeHomeScreen {
         }) { mutableStateOf(AnimeNavDestinations.SEARCH) }
 
         val scrollBehavior = navigationBarEnterAlwaysScrollBehavior()
+        val bottomNavigationState = BottomNavigationState(scrollBehavior)
 
         @Suppress("UnusedMaterial3ScaffoldPaddingParameter")
         Scaffold(
@@ -86,28 +81,6 @@ object AnimeHomeScreen {
                 }
             },
         ) {
-            @Composable
-            fun bottomNavBarPadding(): Dp {
-                val density = LocalDensity.current
-                return remember {
-                    derivedStateOf {
-                        scrollBehavior.state.heightOffsetLimit
-                            .takeUnless { it == -Float.MAX_VALUE }
-                            ?.let { density.run { -it.toDp() } }
-                            ?: 80.dp
-                    }
-                }.value
-            }
-
-            @Composable
-            fun bottomOffset(): Dp {
-                val density = LocalDensity.current
-                return remember {
-                    derivedStateOf {
-                        density.run { scrollBehavior.state.heightOffset.toDp() }
-                    }
-                }.value
-            }
 
             val scrollPositions = ScrollStateSaver.scrollPositions()
             Box(
@@ -136,50 +109,40 @@ object AnimeHomeScreen {
                                 mediaType = MediaType.ANIME,
                                 onClickNav = onClickNav,
                                 showDrawerHandle = true,
-                                onTagClick = onTagClick,
-                                onMediaClick = onMediaClick,
+                                navigationCallback = navigationCallback,
                                 scrollStateSaver = ScrollStateSaver.fromMap(
                                     AnimeNavDestinations.ANIME.id,
                                     scrollPositions
                                 ),
-                                nestedScrollConnection = scrollBehavior.nestedScrollConnection,
-                                bottomNavBarPadding = { bottomNavBarPadding() },
-                                bottomOffset = { bottomOffset() },
+                                bottomNavigationState = bottomNavigationState,
                             )
                             AnimeNavDestinations.MANGA -> AnimeNavigator.UserListScreen(
                                 userId = null,
                                 mediaType = MediaType.MANGA,
                                 onClickNav = onClickNav,
                                 showDrawerHandle = true,
-                                onTagClick = onTagClick,
-                                onMediaClick = onMediaClick,
+                                navigationCallback = navigationCallback,
                                 scrollStateSaver = ScrollStateSaver.fromMap(
                                     AnimeNavDestinations.MANGA.id,
                                     scrollPositions
                                 ),
-                                nestedScrollConnection = scrollBehavior.nestedScrollConnection,
-                                bottomNavBarPadding = { bottomNavBarPadding() },
-                                bottomOffset = { bottomOffset() },
+                                bottomNavigationState = bottomNavigationState,
                             )
                             AnimeNavDestinations.SEARCH -> AnimeNavigator.SearchScreen(
                                 title = null,
                                 tagId = null,
                                 onClickNav = onClickNav,
-                                onTagClick = onTagClick,
-                                onMediaClick = onMediaClick,
+                                navigationCallback = navigationCallback,
                                 scrollStateSaver = ScrollStateSaver.fromMap(
                                     AnimeNavDestinations.SEARCH.id,
                                     scrollPositions
                                 ),
-                                nestedScrollConnection = scrollBehavior.nestedScrollConnection,
-                                bottomNavBarPadding = { bottomNavBarPadding() },
-                                bottomOffset = { bottomOffset() },
+                                bottomNavigationState = bottomNavigationState,
                             )
                             AnimeNavDestinations.PROFILE -> AnimeNavigator.UserScreen(
                                 userId = null,
-                                callback = userCallback,
-                                nestedScrollConnection = scrollBehavior.nestedScrollConnection,
-                                bottomNavBarPadding = { bottomNavBarPadding() },
+                                navigationCallback = navigationCallback,
+                                bottomNavigationState = bottomNavigationState,
                             )
                         }
                     }

@@ -4,6 +4,7 @@ import android.os.SystemClock
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
@@ -46,7 +47,7 @@ class AnimeSearchViewModel @Inject constructor(
     private val ignoreList: AnimeMediaIgnoreList,
 ) : ViewModel() {
 
-    val query = MutableStateFlow("")
+    var query by mutableStateOf("")
     var content = MutableStateFlow(PagingData.empty<AnimeMediaListScreen.Entry>())
     var tagShown by mutableStateOf<AnimeMediaFilterController.TagSection.Tag?>(null)
 
@@ -61,7 +62,7 @@ class AnimeSearchViewModel @Inject constructor(
         viewModelScope.launch(CustomDispatchers.Main) {
             @OptIn(FlowPreview::class)
             combine(
-                query.debounce(500.milliseconds),
+                snapshotFlow { query }.debounce(500.milliseconds),
                 refreshUptimeMillis,
                 filterController.sortOptions,
                 filterController.sortAscending,
@@ -115,7 +116,9 @@ class AnimeSearchViewModel @Inject constructor(
 
     fun onRefresh() = refreshUptimeMillis.update { SystemClock.uptimeMillis() }
 
-    fun onQuery(query: String) = this.query.update { query }
+    fun onQuery(query: String) {
+        this.query = query
+    }
 
     fun onTagDismiss() {
         tagShown = null

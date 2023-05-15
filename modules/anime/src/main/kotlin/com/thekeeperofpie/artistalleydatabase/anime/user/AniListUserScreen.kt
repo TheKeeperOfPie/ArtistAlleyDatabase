@@ -16,25 +16,21 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.anilist.AuthedUserQuery
 import com.anilist.UserByIdQuery.Data.User
-import com.anilist.fragment.UserFavoriteMediaNode
 import com.anilist.fragment.UserMediaStatistics
-import com.anilist.type.MediaType
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils
-import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.staff.DetailsStaff
 import com.thekeeperofpie.artistalleydatabase.anime.ui.CoverAndBannerHeader
 import com.thekeeperofpie.artistalleydatabase.anime.user.stats.UserMediaScreen
-import com.thekeeperofpie.artistalleydatabase.anime.user.stats.UserStatsDetailsState
 import com.thekeeperofpie.artistalleydatabase.compose.AutoResizeHeightText
+import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.compose.CollapsingToolbar
 import com.thekeeperofpie.artistalleydatabase.compose.NestedScrollSplitter
 import kotlinx.coroutines.launch
@@ -44,21 +40,9 @@ object AniListUserScreen {
 
     @Composable
     operator fun invoke(
-        nestedScrollConnection: NestedScrollConnection? = null,
-        entry: @Composable () -> Entry?,
-        animeGenresState: UserStatsDetailsState<UserMediaStatistics.Genre>,
-        animeTagsState: UserStatsDetailsState<UserMediaStatistics.Tag>,
-        animeVoiceActorsState: UserStatsDetailsState<UserMediaStatistics.VoiceActor>,
-        animeStudiosState: UserStatsDetailsState<UserMediaStatistics.Studio>,
-        animeStaffState: UserStatsDetailsState<UserMediaStatistics.Staff>,
-        mangaGenresState: UserStatsDetailsState<UserMediaStatistics.Genre>,
-        mangaTagsState: UserStatsDetailsState<UserMediaStatistics.Tag>,
-        mangaVoiceActorsState: UserStatsDetailsState<UserMediaStatistics.VoiceActor>,
-        mangaStudiosState: UserStatsDetailsState<UserMediaStatistics.Studio>,
-        mangaStaffState: UserStatsDetailsState<UserMediaStatistics.Staff>,
-        viewer: @Composable () -> AuthedUserQuery.Data.Viewer?,
-        callback: Callback,
-        bottomNavBarPadding: @Composable () -> Dp = { 0.dp },
+        viewModel: AniListUserViewModel,
+        navigationCallback: AnimeNavigator.NavigationCallback,
+        bottomNavigationState: BottomNavigationState? = null,
     ) {
         val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
         Scaffold(
@@ -68,7 +52,7 @@ object AniListUserScreen {
                     pinnedHeight = 104.dp,
                     scrollBehavior = scrollBehavior,
                 ) {
-                    val user = entry()?.user
+                    val user = viewModel.entry?.user
                     CoverAndBannerHeader(
                         progress = it,
                         coverImage = { user?.avatar?.large },
@@ -126,40 +110,30 @@ object AniListUserScreen {
                     userScrollEnabled = false,
                     pageNestedScrollConnection = NestedScrollSplitter(
                         scrollBehavior.nestedScrollConnection,
-                        nestedScrollConnection,
+                        bottomNavigationState?.nestedScrollConnection,
                     ),
                 ) {
-                    val user = entry()?.user
+                    val user = viewModel.entry?.user
                     when (UserTab.values()[it]) {
                         UserTab.OVERVIEW -> UserOverviewScreen(
-                            entry = entry,
-                            viewer = viewer(),
-                            callback = callback,
-                            bottomNavBarPadding = bottomNavBarPadding,
+                            entry = viewModel::entry,
+                            viewer = viewModel.viewer.collectAsState(null).value,
+                            navigationCallback = navigationCallback,
+                            bottomNavigationState = bottomNavigationState,
                         )
                         UserTab.ANIME_STATS -> UserMediaScreen(
                             user = { user },
-                            statistics = { entry()?.statisticsAnime },
-                            genresState = animeGenresState,
-                            tagsState = animeTagsState,
-                            voiceActorsState = animeVoiceActorsState,
-                            studiosState = animeStudiosState,
-                            staffState = animeStaffState,
-                            isAnime = true,
-                            callback = callback,
-                            bottomNavBarPadding = bottomNavBarPadding,
+                            statistics = { viewModel.entry?.statisticsAnime },
+                            state = viewModel.animeStates,
+                            navigationCallback = navigationCallback,
+                            bottomNavigationState = bottomNavigationState,
                         )
                         UserTab.MANGA_STATS -> UserMediaScreen(
                             user = { user },
-                            statistics = { entry()?.statisticsManga },
-                            genresState = mangaGenresState,
-                            tagsState = mangaTagsState,
-                            voiceActorsState = mangaVoiceActorsState,
-                            studiosState = mangaStudiosState,
-                            staffState = mangaStaffState,
-                            isAnime = false,
-                            callback = callback,
-                            bottomNavBarPadding = bottomNavBarPadding,
+                            statistics = { viewModel.entry?.statisticsManga },
+                            state = viewModel.mangaStates,
+                            navigationCallback = navigationCallback,
+                            bottomNavigationState = bottomNavigationState,
                         )
                     }
                 }
@@ -225,38 +199,5 @@ object AniListUserScreen {
             val id: String,
             val name: String,
         )
-    }
-
-    interface Callback {
-        fun onMediaClick(media: UserFavoriteMediaNode)
-        fun onMediaClick(media: AnimeMediaListRow.Entry)
-        fun onMediaClick(id: String, title: String?, image: String?)
-        fun onCharacterClicked(id: String) {
-            // TODO
-        }
-
-        fun onCharacterLongClicked(id: String) {
-            // TODO
-        }
-
-        fun onStaffClicked(id: String) {
-            // TODO
-        }
-
-        fun onStaffLongClicked(id: String) {
-            // TODO
-        }
-
-        fun onStudioClicked(id: String) {
-            // TODO
-        }
-
-        fun onGenreClick(genre: String) {
-            // TODO
-        }
-
-        fun onTagClick(id: String, name: String)
-
-        fun onUserListClick(userId: String, mediaType: MediaType?)
     }
 }

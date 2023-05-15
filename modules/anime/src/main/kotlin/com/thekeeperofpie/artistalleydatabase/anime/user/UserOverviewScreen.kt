@@ -29,10 +29,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -40,10 +38,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
@@ -53,14 +49,17 @@ import coil.request.ImageRequest
 import com.anilist.AuthedUserQuery
 import com.anilist.UserByIdQuery
 import com.anilist.fragment.UserFavoriteMediaNode
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.charactersSection
 import com.thekeeperofpie.artistalleydatabase.anime.staff.staffSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.anime.ui.descriptionSection
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
+import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
+import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
+import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
 
 @Suppress("NAME_SHADOWING")
 @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
@@ -68,17 +67,20 @@ object UserOverviewScreen {
 
     @Composable
     operator fun invoke(
-        entry: @Composable () -> AniListUserScreen.Entry?,
+        entry: () -> AniListUserScreen.Entry?,
         viewer: AuthedUserQuery.Data.Viewer?,
-        callback: AniListUserScreen.Callback,
+        navigationCallback: AnimeNavigator.NavigationCallback,
         modifier: Modifier = Modifier,
-        bottomNavBarPadding: @Composable () -> Dp = { 0.dp },
+        bottomNavigationState: BottomNavigationState? = null,
     ) {
         val entry = entry()
         val user = entry?.user
         var descriptionExpanded by remember { mutableStateOf(false) }
+        val colorCalculationState = rememberColorCalculationState()
         LazyColumn(
-            contentPadding = PaddingValues(bottom = 16.dp + bottomNavBarPadding()),
+            contentPadding = PaddingValues(
+                bottom = 16.dp + (bottomNavigationState?.bottomNavBarPadding() ?: 0.dp)
+            ),
             modifier = modifier.fillMaxSize()
         ) {
             if (user == null) {
@@ -109,32 +111,36 @@ object UserOverviewScreen {
             favoriteMediaSection(
                 titleRes = R.string.anime_user_favorite_anime_label,
                 entries = entry.anime,
-                onClickEntry = callback::onMediaClick,
+                onClickEntry = navigationCallback::onMediaClick,
+                colorCalculationState = colorCalculationState,
             )
 
             favoriteMediaSection(
                 titleRes = R.string.anime_user_favorite_manga_label,
                 entries = entry.manga,
-                onClickEntry = callback::onMediaClick,
+                onClickEntry = navigationCallback::onMediaClick,
+                colorCalculationState = colorCalculationState,
             )
 
             charactersSection(
                 titleRes = R.string.anime_user_favorite_characters_label,
                 characters = entry.characters,
-                onCharacterClicked = callback::onCharacterClicked,
-                onCharacterLongClicked = callback::onCharacterLongClicked,
+                onCharacterClicked = navigationCallback::onCharacterClick,
+                onCharacterLongClicked = navigationCallback::onCharacterLongClick,
+                colorCalculationState = colorCalculationState,
             )
 
             staffSection(
                 titleRes = R.string.anime_user_favorite_staff_label,
                 staff = entry.staff,
-                onStaffClicked = callback::onStaffClicked,
-                onStaffLongClicked = callback::onStaffLongClicked,
+                onStaffClick = navigationCallback::onStaffClick,
+                onStaffLongClick = navigationCallback::onStaffLongClick,
+                colorCalculationState = colorCalculationState,
             )
 
             favoriteStudiosSection(
                 studios = entry.studios,
-                onClick = callback::onStudioClicked,
+                onClick = navigationCallback::onStudioClick,
             )
 
             previousNamesSection(
@@ -206,6 +212,7 @@ object UserOverviewScreen {
         @StringRes titleRes: Int,
         entries: List<UserFavoriteMediaNode>,
         onClickEntry: (UserFavoriteMediaNode) -> Unit,
+        colorCalculationState: ColorCalculationState,
     ) {
         if (entries.isEmpty()) return
         item {
@@ -213,15 +220,13 @@ object UserOverviewScreen {
         }
 
         item {
-            val coroutineScope = rememberCoroutineScope()
-            val colorMap = remember { mutableStateMapOf<String, Pair<Color, Color>>() }
             LazyRow(
                 contentPadding = PaddingValues(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 items(entries, { it.id }) {
                     val id = it.id.toString()
-                    val colors = colorMap[id]
+                    val colors = colorCalculationState.colorMap[id]
                     val animationProgress by animateIntAsState(
                         if (colors == null) 0 else 255,
                         label = "Media card color fade in",
@@ -259,9 +264,10 @@ object UserOverviewScreen {
                                 onSuccess = {
                                     ComposeColorUtils.calculatePalette(
                                         id = id,
-                                        scope = coroutineScope,
                                         success = it,
-                                        colorMap = colorMap,
+                                        colorCalculationState = colorCalculationState,
+                                        heightStartThreshold = 3 / 4f,
+                                        selectMaxPopulation = true,
                                     )
                                 },
                                 modifier = Modifier
@@ -305,7 +311,6 @@ object UserOverviewScreen {
         }
 
         item {
-            val uriHandler = LocalUriHandler.current
             ElevatedCard(
                 modifier = Modifier
                     .padding(horizontal = 16.dp)
@@ -321,7 +326,7 @@ object UserOverviewScreen {
                         style = MaterialTheme.typography.bodyLarge,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { uriHandler.openUri(AniListUtils.studioUrl(studio.id)) }
+                            .clickable { onClick(studio.id) }
                             .padding(horizontal = 16.dp, vertical = 10.dp)
                     )
                 }

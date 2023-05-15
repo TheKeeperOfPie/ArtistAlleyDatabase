@@ -43,6 +43,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.Velocity
+import androidx.compose.ui.unit.dp
 import kotlin.math.abs
 
 /**
@@ -212,6 +213,34 @@ class NavigationBarEnterAlwaysScrollBehavior(
                         settle(state, available.y, snapAnimationSpec, flingAnimationSpec)
             }
         }
+}
+
+class BottomNavigationState(private val scrollBehavior: NavigationBarEnterAlwaysScrollBehavior) {
+
+    val nestedScrollConnection get() = scrollBehavior.nestedScrollConnection
+
+    @Composable
+    fun bottomNavBarPadding(): Dp {
+        val density = LocalDensity.current
+        return remember {
+            derivedStateOf {
+                scrollBehavior.state.heightOffsetLimit
+                    .takeUnless { it == -Float.MAX_VALUE }
+                    ?.let { density.run { -it.toDp() } }
+                    ?: 80.dp
+            }
+        }.value
+    }
+
+    @Composable
+    fun bottomOffset(): Dp {
+        val density = LocalDensity.current
+        return remember {
+            derivedStateOf {
+                density.run { scrollBehavior.state.heightOffset.toDp() }
+            }
+        }.value
+    }
 }
 
 class NestedScrollSplitter(

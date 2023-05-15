@@ -2,13 +2,16 @@ package com.thekeeperofpie.artistalleydatabase.compose
 
 import android.graphics.drawable.BitmapDrawable
 import androidx.annotation.FloatRange
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.isSpecified
 import androidx.compose.ui.graphics.toArgb
 import androidx.core.graphics.ColorUtils
 import androidx.palette.graphics.Palette
+import androidx.palette.graphics.Target
+import androidx.palette.graphics.get
 import coil.compose.AsyncImagePainter
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -29,20 +32,21 @@ object ComposeColorUtils {
         null
     }
 
+
     /**
      * Requires non-hardware bitmaps.
      */
     fun calculatePalette(
         id: String,
-        scope: CoroutineScope,
         success: AsyncImagePainter.State.Success,
-        colorMap: MutableMap<String, Pair<Color, Color>>,
-        heightStartThreshold: Float = 3 / 4f,
+        colorCalculationState: ColorCalculationState,
+        heightStartThreshold: Float = 0f,
         widthEndThreshold: Float = 1f,
+        selectMaxPopulation: Boolean = false,
     ) {
-        if (!colorMap.containsKey(id)) {
+        if (!colorCalculationState.colorMap.containsKey(id)) {
             (success.result.drawable as? BitmapDrawable)?.bitmap?.let {
-                scope.launch(CustomDispatchers.IO) {
+                colorCalculationState.scope.launch(CustomDispatchers.IO) {
                     try {
                         val palette = Palette.from(it)
                             .setRegion(
@@ -51,13 +55,22 @@ object ComposeColorUtils {
                                 (it.width * widthEndThreshold).toInt(),
                                 it.height
                             )
+                            .clearTargets()
                             .clearFilters()
                             .generate()
-                        val swatch = palette.swatches
-                            .maxByOrNull { it.population }
+                        val swatch = if (selectMaxPopulation) {
+                            palette.swatches.maxByOrNull { it.population }
+                        } else {
+                            val target = if (colorCalculationState.isDarkMode) {
+                                Target.DARK_VIBRANT
+                            } else {
+                                Target.LIGHT_VIBRANT
+                            }
+                            palette[target]
+                        } ?: palette.swatches.firstOrNull()
                         if (swatch != null) {
                             withContext(CustomDispatchers.Main) {
-                                colorMap[id] =
+                                colorCalculationState.colorMap[id] =
                                     Color(swatch.rgb) to Color(
                                         ColorUtils.setAlphaComponent(
                                             swatch.bodyTextColor,
@@ -82,3 +95,6 @@ fun Color.multiplyCoerceSaturation(
     ColorUtils.colorToHSL(this.toArgb(), array)
     return Color.hsl(array[0], (array[1] * multiplier).coerceAtMost(maxSaturation), array[2], alpha)
 }
+
+@Composable
+fun Color.ifNotSpecified(color: @Composable () -> Color) = this.takeIf { isSpecified } ?: color()
