@@ -26,8 +26,7 @@ enum class IncludeExcludeState {
             return list.filter {
                 val target = transform(it)
 
-                val passExcludes = excludes.isEmpty() || target.none(excludes::contains)
-                if (!passExcludes) return@filter false
+                if (excludes.isNotEmpty() && !target.none(excludes::contains)) return@filter false
 
                 val targetIncludes = transformIncludes?.invoke(it) ?: target
                 includes.isEmpty() || targetIncludes.containsAll(includes)

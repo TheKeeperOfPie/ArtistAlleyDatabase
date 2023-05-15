@@ -20,6 +20,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.mapLatestNotN
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.list.MediaListSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.utils.IncludeExcludeState
@@ -212,6 +213,21 @@ class AnimeMediaFilterController<T>(
 
     private fun setFilterData(filterData: FilterData) {
         // TODO: sortOption and sortListOption
+        if (filterData.sortOption != null) {
+            sortOptions.value = sortOptions.value.toMutableList().apply {
+                replaceAll {
+                    it.takeUnless { it.value == filterData.sortOption }
+                        ?: it.copy(state = IncludeExcludeState.INCLUDE)
+                }
+            }
+        } else if (filterData.sortListOption != null) {
+            sortOptions.value = sortOptions.value.toMutableList().apply {
+                replaceAll {
+                    it.takeUnless { it.value == filterData.sortListOption }
+                        ?: it.copy(state = IncludeExcludeState.INCLUDE)
+                }
+            }
+        }
         sortAscending.value = filterData.sortAscending
         tagRank.value = filterData.tagRank?.toString() ?: "0"
         statuses.value = StatusEntry.statuses(
@@ -277,8 +293,12 @@ class AnimeMediaFilterController<T>(
             else -> containsOnList
         }
         return FilterData(
-            sortOption = null,
-            sortListOption = null,
+            sortOption = sortOptions.value
+                .firstOrNull { it.state == IncludeExcludeState.INCLUDE }
+                ?.value as? MediaSortOption,
+            sortListOption = sortOptions.value
+                .firstOrNull { it.state == IncludeExcludeState.INCLUDE }
+                ?.value as? MediaListSortOption,
             sortAscending = sortAscending.value,
             tagRank = tagRank.value.toIntOrNull(),
             onList = onList,
@@ -517,13 +537,17 @@ class AnimeMediaFilterController<T>(
             .apply {
                 replaceAll {
                     if (it.value == status) {
-                        val newState = if (it.state != IncludeExcludeState.INCLUDE) {
-                            IncludeExcludeState.INCLUDE
+                        if (initialParams.showListStatusExcludes) {
+                            it.copy(state = it.state.next())
                         } else {
-                            IncludeExcludeState.DEFAULT
+                            val newState = if (it.state != IncludeExcludeState.INCLUDE) {
+                                IncludeExcludeState.INCLUDE
+                            } else {
+                                IncludeExcludeState.DEFAULT
+                            }
+                            it.copy(state = newState)
                         }
-                        it.copy(state = newState)
-                    } else it.copy(state = IncludeExcludeState.DEFAULT)
+                    } else it
                 }
             }
     }
@@ -617,6 +641,12 @@ class AnimeMediaFilterController<T>(
 
     private fun onClearFilter() {
         setFilterData(FilterData())
+        sortOptions.value = sortOptions.value.toMutableList().apply {
+            replaceAll {
+                it.takeIf { it.state == IncludeExcludeState.DEFAULT }
+                    ?: it.copy(state = IncludeExcludeState.DEFAULT)
+            }
+        }
     }
 
     private fun onLoadFilter() {
@@ -680,12 +710,12 @@ class AnimeMediaFilterController<T>(
     )
 
     data class InitialParams(
+        val isAnime: Boolean,
         val onListEnabled: Boolean = true,
         // TODO: Handle tags split by media type
         val tagId: String? = null,
         val filterData: FilterData? = null,
-        val showListStatusFilter: Boolean = false,
-        val isAnime: Boolean,
+        val showListStatusExcludes: Boolean = false,
     )
 
     class Data<SortOption : Data.SortOption>(

@@ -68,7 +68,6 @@ class AnimeUserListViewModel @Inject constructor(
             this, refreshUptimeMillis, AnimeMediaFilterController.InitialParams(
                 // Disable "On list" filter, everything in this screen is on the user's list
                 onListEnabled = false,
-                showListStatusFilter = true,
                 isAnime = mediaType == MediaType.ANIME,
             )
         )

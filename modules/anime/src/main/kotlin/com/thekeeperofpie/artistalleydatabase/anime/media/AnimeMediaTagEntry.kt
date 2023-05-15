@@ -59,8 +59,8 @@ data class AnimeMediaTagEntry(
                 onLongClick = { onTagLongClicked(tag.id) },
                 colors = assistChipColors(
                     containerColor = containerColor
-                        .ifNotSpecified { MaterialTheme.colorScheme.surface },
-                    labelColor = textColor.ifNotSpecified { MaterialTheme.colorScheme.onSurface },
+                        .ifNotSpecified { MaterialTheme.colorScheme.surfaceVariant },
+                    labelColor = textColor.ifNotSpecified { MaterialTheme.colorScheme.onSurfaceVariant },
                 ),
                 border = null,
                 leadingIcon = {

@@ -43,11 +43,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import coil.compose.AsyncImage
-import com.anilist.fragment.AniListListRowMedia
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeMediaFilterController
-import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 
 @OptIn(ExperimentalMaterialApi::class)
 object AnimeMediaListScreen {
@@ -261,13 +259,5 @@ object AnimeMediaListScreen {
                 }
             }
         }
-    }
-
-    sealed interface Entry {
-
-        val id: EntryId
-
-        class Item(media: AniListListRowMedia, ignored: Boolean = false) : Entry,
-            AnimeMediaListRow.MediaEntry(media, ignored)
     }
 }

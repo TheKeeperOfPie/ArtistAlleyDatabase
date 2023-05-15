@@ -20,9 +20,9 @@ import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
-import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeMediaFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortOption
+import com.thekeeperofpie.artistalleydatabase.anime.utils.IncludeExcludeState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -48,7 +48,7 @@ class AnimeSearchViewModel @Inject constructor(
 ) : ViewModel() {
 
     var query by mutableStateOf("")
-    var content = MutableStateFlow(PagingData.empty<AnimeMediaListScreen.Entry>())
+    var content = MutableStateFlow(PagingData.empty<AnimeMediaListRow.MediaEntry>())
     var tagShown by mutableStateOf<AnimeMediaFilterController.TagSection.Tag?>(null)
 
     private var initialized = false
@@ -90,14 +90,29 @@ class AnimeSearchViewModel @Inject constructor(
                     // AniList can return duplicates across pages, manually enforce uniqueness
                     val seenIds = mutableSetOf<Int>()
                     it.filter { seenIds.add(it.id) }
-                        .map<Medium, AnimeMediaListScreen.Entry> {
-                            AnimeMediaListScreen.Entry.Item(it, ignored = ignoreList.get(it.id))
+                        .map<Medium, AnimeMediaListRow.MediaEntry> {
+                            AnimeMediaListRow.MediaEntry(it, ignored = ignoreList.get(it.id))
                         }
                 }
                 .cachedIn(viewModelScope)
                 .flatMapLatest {
-                    combine(flowOf(it), filterController.showIgnored) { pagingData, showIgnored ->
+                    combine(flowOf(it), filterController.showIgnored, filterController.listStatuses) { pagingData, showIgnored, listStatuses ->
+                        val includes = listStatuses
+                            .filter { it.state == IncludeExcludeState.INCLUDE }
+                            .map { it.value }
+                        val excludes = listStatuses
+                            .filter { it.state == IncludeExcludeState.EXCLUDE }
+                            .map { it.value }
                         pagingData.filter {
+                            val listStatus = it.media.mediaListEntry?.status
+                            if (excludes.isNotEmpty() && excludes.contains(listStatus)) {
+                                return@filter false
+                            }
+
+                            if (includes.isNotEmpty() && !includes.contains(listStatus)) {
+                                return@filter false
+                            }
+
                             if (showIgnored) true else !ignoreList.get(it.id.valueId)
                         }
                     }

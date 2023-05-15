@@ -356,13 +356,19 @@ object AnimeNavigator {
         bottomNavigationState: BottomNavigationState? = null,
     ) {
         val viewModel = hiltViewModel<AnimeSearchViewModel>().apply {
-            initialize(AnimeMediaFilterController.InitialParams(tagId = tagId, isAnime = true))
+            initialize(
+                AnimeMediaFilterController.InitialParams(
+                    isAnime = true,
+                    tagId = tagId,
+                    showListStatusExcludes = true,
+                )
+            )
         }
         AnimeSearchScreen(
             onClickNav = onClickNav,
             isRoot = title == null,
             title = title,
-            viewModel  = viewModel,
+            viewModel = viewModel,
             navigationCallback = navigationCallback,
             scrollStateSaver = scrollStateSaver,
             bottomNavigationState = bottomNavigationState,

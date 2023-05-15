@@ -44,6 +44,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBar
 import com.thekeeperofpie.artistalleydatabase.compose.NavMenuIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.NestedScrollSplitter
 import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
+import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -60,6 +61,7 @@ object AnimeUserListScreen {
         bottomNavigationState: BottomNavigationState? = null,
     ) {
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+        val colorCalculationState = rememberColorCalculationState()
         AnimeMediaFilterOptionsBottomPanel(
             topBar = {
                 EnterAlwaysTopAppBar(scrollBehavior = scrollBehavior) {
@@ -98,7 +100,6 @@ object AnimeUserListScreen {
             },
             filterData = viewModel::filterData,
             onTagLongClicked = viewModel::onTagLongClick,
-            showMediaListStatus = true,
             showLoadSave = false,
             bottomNavigationState = bottomNavigationState,
         ) { scaffoldPadding ->
@@ -162,6 +163,7 @@ object AnimeUserListScreen {
                                             entry = it,
                                             onTagLongClick = viewModel::onTagLongClick,
                                             onLongPressImage = onLongPressImage,
+                                            colorCalculationState = colorCalculationState,
                                             navigationCallback = navigationCallback,
                                         )
                                     }
@@ -193,7 +195,7 @@ object AnimeUserListScreen {
             override val id = EntryId("header", name)
         }
 
-        class Item(val media: Media) : Entry, AnimeMediaListRow.MediaEntry(media)
+        class Item(override val media: Media) : Entry, AnimeMediaListRow.MediaEntry(media)
     }
 }
 

@@ -105,7 +105,6 @@ object AnimeMediaFilterOptionsBottomPanel {
         errorRes: () -> Int? = { null },
         exception: () -> Exception? = { null },
         expandedForPreview: Boolean = false,
-        showMediaListStatus: Boolean = false,
         showLoadSave: Boolean = false,
         bottomNavigationState: BottomNavigationState? = null,
         content: @Composable (PaddingValues) -> Unit,
@@ -169,7 +168,6 @@ object AnimeMediaFilterOptionsBottomPanel {
                 OptionsPanel(
                     filterData = filterData,
                     onTagLongClicked = onTagLongClicked,
-                    showMediaListStatus = showMediaListStatus,
                     showLoadSave = showLoadSave,
                     modifier = Modifier.padding(
                         bottom = bottomNavigationState
@@ -199,7 +197,6 @@ object AnimeMediaFilterOptionsBottomPanel {
     private fun <SortOption : AnimeMediaFilterController.Data.SortOption> OptionsPanel(
         filterData: () -> AnimeMediaFilterController.Data<SortOption>,
         onTagLongClicked: (String) -> Unit,
-        showMediaListStatus: Boolean,
         showLoadSave: Boolean,
         modifier: Modifier = Modifier,
     ) {
@@ -235,20 +232,18 @@ object AnimeMediaFilterOptionsBottomPanel {
                 includeExcludeIconContentDescriptionRes = R.string.anime_media_filter_status_chip_state_content_description,
             )
 
-            if (showMediaListStatus) {
-                FilterSection(
-                    expanded = { data.expanded(AnimeMediaFilterController.Section.LIST_STATUS) },
-                    onExpandedChanged = {
-                        data.setExpanded(AnimeMediaFilterController.Section.LIST_STATUS, it)
-                    },
-                    entries = { data.listStatuses() },
-                    onEntryClicked = { data.onListStatusClicked(it.value) },
-                    titleRes = R.string.anime_media_filter_list_status_label,
-                    titleDropdownContentDescriptionRes = R.string.anime_media_filter_list_status_content_description,
-                    valueToText = { stringResource(it.textRes) },
-                    includeExcludeIconContentDescriptionRes = R.string.anime_media_filter_list_status_chip_state_content_description,
-                )
-            }
+            FilterSection(
+                expanded = { data.expanded(AnimeMediaFilterController.Section.LIST_STATUS) },
+                onExpandedChanged = {
+                    data.setExpanded(AnimeMediaFilterController.Section.LIST_STATUS, it)
+                },
+                entries = { data.listStatuses() },
+                onEntryClicked = { data.onListStatusClicked(it.value) },
+                titleRes = R.string.anime_media_filter_list_status_label,
+                titleDropdownContentDescriptionRes = R.string.anime_media_filter_list_status_content_description,
+                valueToText = { stringResource(it.textRes) },
+                includeExcludeIconContentDescriptionRes = R.string.anime_media_filter_list_status_chip_state_content_description,
+            )
 
             FilterSection(
                 expanded = { data.expanded(AnimeMediaFilterController.Section.FORMAT) },

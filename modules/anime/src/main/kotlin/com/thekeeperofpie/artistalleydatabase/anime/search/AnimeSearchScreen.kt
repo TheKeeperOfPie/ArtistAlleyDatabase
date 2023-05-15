@@ -99,7 +99,6 @@ object AnimeSearchScreen {
             },
             filterData = viewModel::filterData,
             onTagLongClicked = viewModel::onTagLongClick,
-            showMediaListStatus = false,
             showLoadSave = true,
             bottomNavigationState = bottomNavigationState,
         ) { scaffoldPadding ->
@@ -149,7 +148,7 @@ object AnimeSearchScreen {
                                     contentType = content.itemContentType()
                                 ) { index ->
                                     when (val item = content[index]) {
-                                        is AnimeMediaListScreen.Entry.Item -> AnimeMediaListRow(
+                                        is AnimeMediaListRow.MediaEntry -> AnimeMediaListRow(
                                             entry = item,
                                             onLongClick = viewModel::onMediaLongClick,
                                             onTagLongClick = viewModel::onTagLongClick,
@@ -185,7 +184,7 @@ private fun Preview() {
     val viewModel = hiltViewModel<AnimeSearchViewModel>().apply {
         content.value = PagingData.from(
             listOf(
-                AnimeMediaListScreen.Entry.Item(
+                AnimeMediaListRow.MediaEntry(
                     Medium(
                         title = Medium.Title(
                             userPreferred = "Ano Hi Mita Hana no Namae wo Bokutachi wa Mada Shiranai.",

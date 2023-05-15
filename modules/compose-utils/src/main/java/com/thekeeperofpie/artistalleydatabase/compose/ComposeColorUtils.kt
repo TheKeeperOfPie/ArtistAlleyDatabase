@@ -55,8 +55,9 @@ object ComposeColorUtils {
                                 (it.width * widthEndThreshold).toInt(),
                                 it.height
                             )
-                            .clearTargets()
-                            .clearFilters()
+                            .run {
+                                if (selectMaxPopulation) clearFilters() else this
+                            }
                             .generate()
                         val swatch = if (selectMaxPopulation) {
                             palette.swatches.maxByOrNull { it.population }
