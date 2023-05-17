@@ -19,7 +19,9 @@ import com.anilist.fragment.UserFavoriteMediaNode
 import com.anilist.type.MediaSeason
 import com.anilist.type.MediaType
 import com.google.accompanist.navigation.animation.composable
+import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
+import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.list.AnimeUserListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.list.AnimeUserListViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
@@ -275,11 +277,59 @@ object AnimeNavigator {
                     type = NavType.StringType
                     nullable = true
                 },
-            )
+            ),
+            enterTransition = {
+                slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up)
+            },
+            exitTransition = {
+                slideOutOfContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Down
+                )
+            },
         ) {
             val userId = it.arguments?.getString("userId")
             UserScreen(
                 userId = userId,
+                navigationCallback = navigationCallback,
+            )
+        }
+
+        navGraphBuilder.composable(
+            route = "ignored"
+                    + "?mediaType={mediaType}",
+            arguments = listOf(
+                navArgument("mediaType") {
+                    type = NavType.StringType
+                    nullable = true
+                },
+            ),
+            enterTransition = {
+                slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up)
+            },
+            exitTransition = {
+                slideOutOfContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Down
+                )
+            },
+        ) {
+            // TODO: Ignored list not actually split by anime and manga
+            val mediaType = it.arguments?.getString("mediaType")
+                ?.let { MediaType.safeValueOf(it).takeUnless { it == MediaType.UNKNOWN__ } }
+                ?: MediaType.ANIME
+            val viewModel = hiltViewModel<AnimeMediaIgnoreViewModel>()
+                .apply { initialize(mediaType) }
+            AnimeSearchScreen(
+                onClickNav = onClickNav,
+                isRoot = false,
+                title = Either.Left(
+                    if (mediaType == MediaType.ANIME) {
+                        R.string.anime_media_ignore_title_anime
+                    } else {
+                        R.string.anime_media_ignore_title_manga
+                    }
+                ),
+                viewModel = viewModel,
+                showIgnoredFilter = false,
                 navigationCallback = navigationCallback,
             )
         }
@@ -367,7 +417,7 @@ object AnimeNavigator {
         AnimeSearchScreen(
             onClickNav = onClickNav,
             isRoot = title == null,
-            title = title,
+            title = title?.let { Either.Right(it) },
             viewModel = viewModel,
             navigationCallback = navigationCallback,
             scrollStateSaver = scrollStateSaver,
@@ -457,6 +507,10 @@ object AnimeNavigator {
 
         fun onGenreClick(genre: String) {
             // TODO
+        }
+
+        fun onIgnoreListOpen(mediaType: MediaType?) {
+            navHostController?.navigate("ignored?mediaType=${mediaType?.rawValue}")
         }
     }
 }

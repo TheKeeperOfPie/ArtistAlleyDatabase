@@ -186,13 +186,21 @@ class AnimeMediaDetailsViewModel @Inject constructor(
                     (characterName.alternative?.any { it == artist.character } == true)
         }
 
-        val voiceActor = edge?.voiceActors?.filterNotNull()
+        val voiceActor = edges
+            ?.flatMap { it.voiceActors?.filterNotNull().orEmpty() }
             ?.firstOrNull {
                 it.name?.full == artist.name ||
                         (it.name?.alternative?.any { it == artist.name } == true)
             }
 
-        val character = edge?.node?.let {
+        // If character search failed, but voiceActor succeeded, try to find the character again
+        val characterEdge = edge ?: voiceActor?.let {
+            edges.find {
+                it.voiceActors?.contains(voiceActor) == true
+            }
+        }
+
+        val character = characterEdge?.node?.let {
             AnimeSongEntry.Artist.Character(
                 aniListId = it.id.toString(),
                 image = it.image?.large,

@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.rememberTransformableState
 import androidx.compose.foundation.gestures.transformable
@@ -74,7 +75,8 @@ object AnimeMediaListScreen {
             PullRefreshIndicator(
                 refreshing = refreshing,
                 state = pullRefreshState,
-                modifier = Modifier.align(Alignment.TopCenter)
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
                     .padding(top = pullRefreshTopPadding())
             )
 
@@ -89,18 +91,30 @@ object AnimeMediaListScreen {
     }
 
     @Composable
-    fun Error() {
+    fun Error(
+        @StringRes errorTextRes: Int? = null,
+        exception: Throwable? = null,
+    ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
+                .padding(top = 64.dp)
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState()),
         ) {
             Text(
-                stringResource(id = R.string.anime_media_list_error_loading),
+                text = stringResource(errorTextRes ?: R.string.anime_media_list_error_loading),
                 style = MaterialTheme.typography.bodyLarge,
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
             )
+
+            if (exception != null) {
+                Text(
+                    text = exception.stackTraceToString(),
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+                )
+            }
         }
     }
 
@@ -108,7 +122,8 @@ object AnimeMediaListScreen {
     fun NoResults() {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.padding(top = 64.dp)
+            modifier = Modifier
+                .padding(top = 64.dp)
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState()),
         ) {

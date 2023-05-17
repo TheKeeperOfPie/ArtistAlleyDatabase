@@ -5,6 +5,7 @@ import com.anilist.AuthedUserQuery
 import com.anilist.DeleteMediaEntryMutation
 import com.anilist.GenresQuery
 import com.anilist.MediaAdvancedSearchQuery
+import com.anilist.MediaByIdsQuery
 import com.anilist.MediaDetailsQuery
 import com.anilist.MediaTagsQuery
 import com.anilist.MediaTitlesAndImagesQuery
@@ -207,6 +208,11 @@ class AuthedAniListApi(
             hiddenFromStatusLists = Optional.presentIfNotNull(hiddenFromStatusLists),
         )
     ).execute().dataAssertNoErrors.saveMediaListEntry!!
+
+    suspend fun mediaByIds(ids: List<Int>) =
+        query(MediaByIdsQuery(ids = Optional.present(ids)))
+            .dataAssertNoErrors.page?.media?.filterNotNull()
+            .orEmpty()
 
     suspend fun user(id: String) = query(UserByIdQuery(id.toInt())).dataAssertNoErrors.user
 

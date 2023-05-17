@@ -402,8 +402,10 @@ object AnimeMediaListRow {
         var ignored: Boolean
     }
 
-    open class MediaEntry(open val media: AniListListRowMedia, ignored: Boolean = false) : Entry {
-
+    open class MediaEntry<MediaType : AniListListRowMedia>(
+        val media: MediaType,
+        ignored: Boolean = false
+    ) : Entry {
         override val id = EntryId("item", media.id.toString())
         override val image = media.coverImage?.large
         override val imageExtraLarge = media.coverImage?.extraLarge

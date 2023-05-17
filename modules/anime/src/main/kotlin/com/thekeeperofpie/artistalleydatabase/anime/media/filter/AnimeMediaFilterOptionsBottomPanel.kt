@@ -106,6 +106,7 @@ object AnimeMediaFilterOptionsBottomPanel {
         exception: () -> Exception? = { null },
         expandedForPreview: Boolean = false,
         showLoadSave: Boolean = false,
+        showIgnoredFilter: Boolean = true,
         bottomNavigationState: BottomNavigationState? = null,
         content: @Composable (PaddingValues) -> Unit,
     ) {
@@ -169,6 +170,7 @@ object AnimeMediaFilterOptionsBottomPanel {
                     filterData = filterData,
                     onTagLongClicked = onTagLongClicked,
                     showLoadSave = showLoadSave,
+                    showIgnoredFilter = showIgnoredFilter,
                     modifier = Modifier.padding(
                         bottom = bottomNavigationState
                             ?.run { bottomNavBarPadding() + bottomOffset() } ?: 0.dp
@@ -198,6 +200,7 @@ object AnimeMediaFilterOptionsBottomPanel {
         filterData: () -> AnimeMediaFilterController.Data<SortOption>,
         onTagLongClicked: (String) -> Unit,
         showLoadSave: Boolean,
+        showIgnoredFilter: Boolean,
         modifier: Modifier = Modifier,
     ) {
         var airingDateShown by remember { mutableStateOf<Boolean?>(null) }
@@ -358,10 +361,12 @@ object AnimeMediaFilterOptionsBottomPanel {
                 onCollapseOnCloseToggled = data.onCollapseOnCloseToggled,
             )
 
-            ShowIgnoredSection(
-                showIgnored = { data.showIgnored() },
-                onShowIgnoredToggled = data.onShowIgnoredToggled,
-            )
+            if (showIgnoredFilter) {
+                ShowIgnoredSection(
+                    showIgnored = { data.showIgnored() },
+                    onShowIgnoredToggled = data.onShowIgnoredToggled,
+                )
+            }
 
             ActionsSection(
                 showLoadSave = showLoadSave,

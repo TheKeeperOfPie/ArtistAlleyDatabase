@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.list
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -22,7 +23,6 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
@@ -37,6 +37,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
+import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeMediaFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeMediaFilterOptionsBottomPanel
 import com.thekeeperofpie.artistalleydatabase.compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
@@ -51,10 +52,10 @@ import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 object AnimeUserListScreen {
 
     @Composable
-    operator fun invoke(
+    operator fun <SortOption : AnimeMediaFilterController.Data.SortOption> invoke(
         onClickNav: () -> Unit = {},
         showDrawerHandle: Boolean = true,
-        viewModel: AnimeUserListViewModel = hiltViewModel(),
+        viewModel: ViewModel<SortOption>,
         navigationCallback: AnimeNavigator.NavigationCallback =
             AnimeNavigator.NavigationCallback(null),
         scrollStateSaver: ScrollStateSaver = ScrollStateSaver.STUB,
@@ -66,9 +67,9 @@ object AnimeUserListScreen {
             topBar = {
                 EnterAlwaysTopAppBar(scrollBehavior = scrollBehavior) {
                     TextField(
-                        viewModel.query.collectAsState().value,
+                        value = viewModel.query,
                         placeholder = { Text(stringResource(id = R.string.anime_user_list_search)) },
-                        onValueChange = viewModel::onQuery,
+                        onValueChange = { viewModel.query = it },
                         leadingIcon = {
                             if (showDrawerHandle) {
                                 NavMenuIconButton(onClickNav)
@@ -77,7 +78,7 @@ object AnimeUserListScreen {
                             }
                         },
                         trailingIcon = {
-                            IconButton(onClick = { viewModel.onQuery("") }) {
+                            IconButton(onClick = { viewModel.query = "" }) {
                                 Icon(
                                     imageVector = Icons.Filled.Clear,
                                     contentDescription = stringResource(
@@ -105,16 +106,16 @@ object AnimeUserListScreen {
         ) { scaffoldPadding ->
             val content = viewModel.content
             val refreshing = when (content) {
-                AnimeUserListViewModel.ContentState.LoadingEmpty -> true
-                is AnimeUserListViewModel.ContentState.Success -> content.loading
-                is AnimeUserListViewModel.ContentState.Error -> false
+                ContentState.LoadingEmpty -> true
+                is ContentState.Success -> content.loading
+                is ContentState.Error -> false
             }
 
             AnimeMediaListScreen(
                 refreshing = refreshing,
                 onRefresh = viewModel::onRefresh,
                 tagShown = viewModel::tagShown,
-                onTagDismiss = viewModel::onTagDismiss,
+                onTagDismiss = { viewModel.tagShown = null },
                 pullRefreshTopPadding = {
                     scrollBehavior.state.heightOffsetLimit
                         .takeUnless { it == -Float.MAX_VALUE }
@@ -130,8 +131,11 @@ object AnimeUserListScreen {
                 )
             ) { onLongPressImage ->
                 when (content) {
-                    is AnimeUserListViewModel.ContentState.Error -> AnimeMediaListScreen.Error()
-                    AnimeUserListViewModel.ContentState.LoadingEmpty ->
+                    is ContentState.Error -> AnimeMediaListScreen.Error(
+                        content.errorRes,
+                        content.exception,
+                    )
+                    ContentState.LoadingEmpty ->
                         // Empty column to allow pull refresh to work
                         Column(
                             modifier = Modifier
@@ -139,7 +143,7 @@ object AnimeUserListScreen {
                                 .verticalScroll(rememberScrollState()),
                         ) {
                         }
-                    is AnimeUserListViewModel.ContentState.Success -> {
+                    is ContentState.Success -> {
                         if (content.entries.isEmpty()) {
                             AnimeMediaListScreen.NoResults()
                         } else {
@@ -195,7 +199,31 @@ object AnimeUserListScreen {
             override val id = EntryId("header", name)
         }
 
-        class Item(override val media: Media) : Entry, AnimeMediaListRow.MediaEntry(media)
+        class Item(media: Media) : Entry, AnimeMediaListRow.MediaEntry<Media>(media)
+    }
+
+    sealed interface ContentState {
+        object LoadingEmpty : ContentState
+
+        data class Success(
+            val entries: List<Entry>,
+            val loading: Boolean = false,
+        ) : ContentState
+
+        data class Error(
+            @StringRes val errorRes: Int? = null,
+            val exception: Throwable? = null
+        ) : ContentState
+    }
+
+    interface ViewModel<SortOption : AnimeMediaFilterController.Data.SortOption> {
+        var query: String
+        val content: ContentState
+        var tagShown: AnimeMediaFilterController.TagSection.Tag?
+
+        fun filterData(): AnimeMediaFilterController.Data<SortOption>
+        fun onRefresh()
+        fun onTagLongClick(tagId: String)
     }
 }
 
@@ -203,7 +231,7 @@ object AnimeUserListScreen {
 @Composable
 private fun Preview() {
     val viewModel = hiltViewModel<AnimeUserListViewModel>().apply {
-        content = AnimeUserListViewModel.ContentState.Success(
+        content = AnimeUserListScreen.ContentState.Success(
             listOf(
                 AnimeUserListScreen.Entry.Header("Completed", MediaListStatus.COMPLETED),
                 AnimeUserListScreen.Entry.Item(

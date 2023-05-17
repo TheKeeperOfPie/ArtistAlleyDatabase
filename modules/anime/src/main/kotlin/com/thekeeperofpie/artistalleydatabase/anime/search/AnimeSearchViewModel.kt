@@ -15,7 +15,6 @@ import androidx.paging.filter
 import androidx.paging.map
 import com.anilist.MediaAdvancedSearchQuery.Data.Page.Medium
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
-import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.combine
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
@@ -45,16 +44,16 @@ class AnimeSearchViewModel @Inject constructor(
     aniListApi: AuthedAniListApi,
     settings: AnimeSettings,
     private val ignoreList: AnimeMediaIgnoreList,
-) : ViewModel() {
+) : ViewModel(), AnimeSearchScreen.ViewModel<MediaSortOption, Medium> {
 
-    var query by mutableStateOf("")
-    var content = MutableStateFlow(PagingData.empty<AnimeMediaListRow.MediaEntry>())
-    var tagShown by mutableStateOf<AnimeMediaFilterController.TagSection.Tag?>(null)
+    override var query by mutableStateOf("")
+    override var content = MutableStateFlow(PagingData.empty<AnimeMediaListRow.MediaEntry<Medium>>())
+    override var tagShown by mutableStateOf<AnimeMediaFilterController.TagSection.Tag?>(null)
 
     private var initialized = false
 
     private val filterController =
-        AnimeMediaFilterController(MediaSortOption::class, aniListApi, settings)
+        AnimeMediaFilterController(MediaSortOption::class, aniListApi, settings, ignoreList)
 
     private val refreshUptimeMillis = MutableStateFlow(-1L)
 
@@ -66,17 +65,7 @@ class AnimeSearchViewModel @Inject constructor(
                 refreshUptimeMillis,
                 filterController.sortOptions,
                 filterController.sortAscending,
-                filterController.genres,
-                filterController.tagsByCategory,
-                filterController.tagRank(),
-                filterController.statuses,
-                filterController.formats,
-                filterController.showAdult,
-                filterController.onListOptions,
-                filterController.averageScoreRange,
-                filterController.episodesRange,
-                filterController.airingDate(),
-                filterController.sources,
+                filterController.filterParams(),
                 AnimeMediaSearchPagingSource::RefreshParams
             )
                 .flowOn(CustomDispatchers.IO)
@@ -90,9 +79,7 @@ class AnimeSearchViewModel @Inject constructor(
                     // AniList can return duplicates across pages, manually enforce uniqueness
                     val seenIds = mutableSetOf<Int>()
                     it.filter { seenIds.add(it.id) }
-                        .map<Medium, AnimeMediaListRow.MediaEntry> {
-                            AnimeMediaListRow.MediaEntry(it, ignored = ignoreList.get(it.id))
-                        }
+                        .map { AnimeMediaListRow.MediaEntry(it, ignored = ignoreList.get(it.id)) }
                 }
                 .cachedIn(viewModelScope)
                 .flatMapLatest {
@@ -127,26 +114,18 @@ class AnimeSearchViewModel @Inject constructor(
         filterController.initialize(this, refreshUptimeMillis, filterParams)
     }
 
-    fun filterData() = filterController.data()
+    override fun filterData() = filterController.data()
 
-    fun onRefresh() = refreshUptimeMillis.update { SystemClock.uptimeMillis() }
+    override fun onRefresh() = refreshUptimeMillis.update { SystemClock.uptimeMillis() }
 
-    fun onQuery(query: String) {
-        this.query = query
-    }
-
-    fun onTagDismiss() {
-        tagShown = null
-    }
-
-    fun onTagLongClick(tagId: String) {
+    override fun onTagLongClick(tagId: String) {
         tagShown = filterController.tagsByCategory.value.values
             .asSequence()
             .mapNotNull { it.findTag(tagId) }
             .firstOrNull()
     }
 
-    fun onMediaLongClick(entry: AnimeMediaListRow.Entry) {
+    override fun onMediaLongClick(entry: AnimeMediaListRow.Entry) {
         val mediaId = entry.id?.valueId ?: return
         val ignored = !entry.ignored
         ignoreList.set(mediaId, ignored)

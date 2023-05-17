@@ -30,10 +30,13 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
 import com.anilist.MediaAdvancedSearchQuery.Data.Page.Medium
+import com.anilist.fragment.AniListListRowMedia
+import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
+import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeMediaFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeMediaFilterOptionsBottomPanel
 import com.thekeeperofpie.artistalleydatabase.compose.AppBar
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
@@ -42,16 +45,19 @@ import com.thekeeperofpie.artistalleydatabase.compose.NavMenuIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.NestedScrollSplitter
 import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
 import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
+import kotlinx.coroutines.flow.StateFlow
 
 @OptIn(ExperimentalMaterial3Api::class)
 object AnimeSearchScreen {
 
     @Composable
-    operator fun invoke(
+    operator fun <SortOption : AnimeMediaFilterController.Data.SortOption,
+            MediaType : AniListListRowMedia> invoke(
         onClickNav: () -> Unit = {},
         isRoot: Boolean = true,
-        title: String? = null,
-        viewModel: AnimeSearchViewModel = hiltViewModel(),
+        title: Either<Int, String>? = null,
+        viewModel: ViewModel<SortOption, MediaType>,
+        showIgnoredFilter: Boolean = true,
         navigationCallback: AnimeNavigator.NavigationCallback =
             AnimeNavigator.NavigationCallback(null),
         scrollStateSaver: ScrollStateSaver = ScrollStateSaver.STUB,
@@ -66,10 +72,10 @@ object AnimeSearchScreen {
                         TextField(
                             viewModel.query,
                             placeholder = { Text(stringResource(id = R.string.anime_search)) },
-                            onValueChange = viewModel::onQuery,
+                            onValueChange = { viewModel.query = it },
                             leadingIcon = { NavMenuIconButton(onClickNav) },
                             trailingIcon = {
-                                IconButton(onClick = { viewModel.onQuery("") }) {
+                                IconButton(onClick = { viewModel.query = "" }) {
                                     Icon(
                                         imageVector = Icons.Filled.Clear,
                                         contentDescription = stringResource(
@@ -90,8 +96,13 @@ object AnimeSearchScreen {
                         )
                     }
                 } else if (title != null) {
+                    val text = if (title is Either.Left) {
+                        stringResource(title.value)
+                    } else {
+                        title.rightOrNull().orEmpty()
+                    }
                     AppBar(
-                        text = title,
+                        text = text,
                         onClickBack = onClickNav,
                         scrollBehavior = scrollBehavior,
                     )
@@ -100,6 +111,7 @@ object AnimeSearchScreen {
             filterData = viewModel::filterData,
             onTagLongClicked = viewModel::onTagLongClick,
             showLoadSave = true,
+            showIgnoredFilter = showIgnoredFilter,
             bottomNavigationState = bottomNavigationState,
         ) { scaffoldPadding ->
             val content = viewModel.content.collectAsLazyPagingItems()
@@ -108,7 +120,7 @@ object AnimeSearchScreen {
                 refreshing = refreshing,
                 onRefresh = viewModel::onRefresh,
                 tagShown = viewModel::tagShown,
-                onTagDismiss = viewModel::onTagDismiss,
+                onTagDismiss = { viewModel.tagShown = null },
                 pullRefreshTopPadding = {
                     scrollBehavior.state.heightOffsetLimit
                         .takeUnless { it == -Float.MAX_VALUE }
@@ -119,12 +131,13 @@ object AnimeSearchScreen {
                     NestedScrollSplitter(
                         bottomNavigationState?.nestedScrollConnection,
                         scrollBehavior.nestedScrollConnection,
+                        consumeNone = true,
                     )
                 )
             ) { onLongPressImage ->
-                when (content.loadState.refresh) {
+                when (val refreshState = content.loadState.refresh) {
                     LoadState.Loading -> Unit
-                    is LoadState.Error -> AnimeMediaListScreen.Error()
+                    is LoadState.Error -> AnimeMediaListScreen.Error(exception = refreshState.error)
                     is LoadState.NotLoading -> {
                         if (content.itemCount == 0) {
                             AnimeMediaListScreen.NoResults()
@@ -175,6 +188,18 @@ object AnimeSearchScreen {
                 }
             }
         }
+    }
+
+    interface ViewModel<SortOption : AnimeMediaFilterController.Data.SortOption,
+            MediaType : AniListListRowMedia> {
+        var query: String
+        val content: StateFlow<PagingData<AnimeMediaListRow.MediaEntry<MediaType>>>
+        var tagShown: AnimeMediaFilterController.TagSection.Tag?
+
+        fun filterData(): AnimeMediaFilterController.Data<SortOption>
+        fun onRefresh()
+        fun onTagLongClick(tagId: String)
+        fun onMediaLongClick(entry: AnimeMediaListRow.Entry)
     }
 }
 

@@ -404,4 +404,7 @@
     <string name="anime_user_stats_tab_voice_actors">Voice actors</string>
     <string name="anime_user_stats_tab_studios">Studios</string>
     <string name="anime_user_stats_tab_staff">Staff</string>
+
+    <string name="anime_media_ignore_title_anime">Ignored anime</string>
+    <string name="anime_media_ignore_title_manga">Ignored manga</string>
 </resources>

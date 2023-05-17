@@ -296,6 +296,20 @@ query MediaTitlesAndImages($ids: [Int]) {
     }
 }
 
+query MediaByIds($ids: [Int]) {
+    Page {
+        media(id_in: $ids) {
+            ...AniListListRowMedia
+            title {
+                romaji
+                native
+                english
+            }
+            synonyms
+        }
+    }
+}
+
 query MediaSearch($search: String, $perPage: Int, $page: Int) {
     Page(perPage: $perPage, page: $page) @nonnull {
         media(search: $search) @nonnull {

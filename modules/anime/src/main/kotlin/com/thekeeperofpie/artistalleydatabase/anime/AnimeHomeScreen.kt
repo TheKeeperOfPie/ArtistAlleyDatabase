@@ -8,9 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -31,11 +29,11 @@ import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysNavigationBar
+import com.thekeeperofpie.artistalleydatabase.compose.NavigationBarItem
 import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
 import com.thekeeperofpie.artistalleydatabase.compose.navigationBarEnterAlwaysScrollBehavior
 
-@OptIn(ExperimentalMaterial3Api::class)
 object AnimeHomeScreen {
 
     @Composable
@@ -71,11 +69,19 @@ object AnimeHomeScreen {
             bottomBar = {
                 EnterAlwaysNavigationBar(scrollBehavior = scrollBehavior) {
                     AnimeNavDestinations.values().forEach { destination ->
+                        val onLongClick = if (destination == AnimeNavDestinations.ANIME) {
+                            {
+                                navigationCallback.onIgnoreListOpen(MediaType.ANIME)
+                            }
+                            // TODO: Support manga only lists, need to store ignored IDs in
+                            //  separate settings field
+                        } else null
                         NavigationBarItem(
                             icon = { Icon(destination.icon, contentDescription = null) },
                             label = { Text(stringResource(destination.textRes)) },
                             selected = selectedScreen == destination,
-                            onClick = { selectedScreen = destination }
+                            onClick = { selectedScreen = destination },
+                            onLongClick = onLongClick,
                         )
                     }
                 }

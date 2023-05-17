@@ -6,7 +6,6 @@ import com.anilist.MediaAdvancedSearchQuery
 import com.anilist.type.MediaSort
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeMediaFilterController
-import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaFilterEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.utils.IncludeExcludeState
 import java.time.LocalDate
@@ -28,7 +27,8 @@ class AnimeMediaSearchPagingSource(
     override suspend fun load(
         params: LoadParams<Int>,
     ): LoadResult<Int, MediaAdvancedSearchQuery.Data.Page.Medium> = try {
-        val flattenedTags = refreshParams.tagsByCategory.values.flatMap {
+        val filterParams = refreshParams.filterParams
+        val flattenedTags = filterParams.tagsByCategory.values.flatMap {
             when (it) {
                 is AnimeMediaFilterController.TagSection.Category -> it.flatten()
                 is AnimeMediaFilterController.TagSection.Tag -> listOf(it)
@@ -38,7 +38,7 @@ class AnimeMediaSearchPagingSource(
         // AniList pages start at 1
         val page = params.key ?: 1
 
-        val onListOptions = refreshParams.onListOptions
+        val onListOptions = filterParams.onListOptions
         val containsOnList = onListOptions.find { it.value }?.state == IncludeExcludeState.INCLUDE
         val containsNotOnList =
             onListOptions.find { !it.value }?.state == IncludeExcludeState.INCLUDE
@@ -53,10 +53,10 @@ class AnimeMediaSearchPagingSource(
             page = page,
             perPage = 10,
             sort = refreshParams.sortApiValue(),
-            genreIn = refreshParams.genres
+            genreIn = filterParams.genres
                 .filter { it.state == IncludeExcludeState.INCLUDE }
                 .map { it.value },
-            genreNotIn = refreshParams.genres
+            genreNotIn = filterParams.genres
                 .filter { it.state == IncludeExcludeState.EXCLUDE }
                 .map { it.value },
             tagIn = flattenedTags
@@ -65,42 +65,42 @@ class AnimeMediaSearchPagingSource(
             tagNotIn = flattenedTags
                 .filter { it.state == IncludeExcludeState.EXCLUDE }
                 .map { it.value.name },
-            statusIn = refreshParams.statuses
+            statusIn = filterParams.statuses
                 .filter { it.state == IncludeExcludeState.INCLUDE }
                 .map { it.value },
-            statusNotIn = refreshParams.statuses
+            statusNotIn = filterParams.statuses
                 .filter { it.state == IncludeExcludeState.EXCLUDE }
                 .map { it.value },
-            formatIn = refreshParams.formats
+            formatIn = filterParams.formats
                 .filter { it.state == IncludeExcludeState.INCLUDE }
                 .map { it.value },
-            formatNotIn = refreshParams.formats
+            formatNotIn = filterParams.formats
                 .filter { it.state == IncludeExcludeState.EXCLUDE }
                 .map { it.value },
-            showAdult = refreshParams.showAdult,
+            showAdult = filterParams.showAdult,
             onList = onList,
-            season = (refreshParams.airingDate as? AnimeMediaFilterController.AiringDate.Basic)
+            season = (filterParams.airingDate as? AnimeMediaFilterController.AiringDate.Basic)
                 ?.season,
-            seasonYear = (refreshParams.airingDate as? AnimeMediaFilterController.AiringDate.Basic)
+            seasonYear = (filterParams.airingDate as? AnimeMediaFilterController.AiringDate.Basic)
                 ?.seasonYear
                 ?.toIntOrNull(),
-            startDateGreater = (refreshParams.airingDate as? AnimeMediaFilterController.AiringDate.Advanced)
+            startDateGreater = (filterParams.airingDate as? AnimeMediaFilterController.AiringDate.Advanced)
                 ?.startDate
                 ?.minus(1, ChronoUnit.DAYS)
                 ?.toApiFuzzyDateInt(),
-            startDateLesser = (refreshParams.airingDate as? AnimeMediaFilterController.AiringDate.Advanced)
+            startDateLesser = (filterParams.airingDate as? AnimeMediaFilterController.AiringDate.Advanced)
                 ?.endDate
                 ?.plus(1, ChronoUnit.DAYS)
                 ?.toApiFuzzyDateInt(),
-            averageScoreGreater = refreshParams.averageScoreRange.apiStart,
-            averageScoreLesser = refreshParams.averageScoreRange.apiEnd,
+            averageScoreGreater = filterParams.averageScoreRange.apiStart,
+            averageScoreLesser = filterParams.averageScoreRange.apiEnd,
             // Episode greater is not inclusive, offset by -1 to ensure correct results
-            episodesGreater = refreshParams.episodesRange.apiStart?.let { it.coerceAtLeast(1) - 1 },
-            episodesLesser = refreshParams.episodesRange.apiEnd,
-            sourcesIn = refreshParams.sources
+            episodesGreater = filterParams.episodesRange.apiStart?.let { it.coerceAtLeast(1) - 1 },
+            episodesLesser = filterParams.episodesRange.apiEnd,
+            sourcesIn = filterParams.sources
                 .filter { it.state == IncludeExcludeState.INCLUDE }
                 .map { it.value },
-            minimumTagRank = refreshParams.tagRank,
+            minimumTagRank = filterParams.tagRank,
         )
 
         val data = result.dataAssertNoErrors
@@ -132,17 +132,7 @@ class AnimeMediaSearchPagingSource(
         val requestMillis: Long,
         val sortOptions: List<AnimeMediaFilterController.SortEntry<MediaSortOption>>,
         val sortAscending: Boolean,
-        val genres: List<MediaFilterEntry<String>>,
-        val tagsByCategory: Map<String, AnimeMediaFilterController.TagSection>,
-        val tagRank: Int?,
-        val statuses: List<AnimeMediaFilterController.StatusEntry>,
-        val formats: List<AnimeMediaFilterController.FormatEntry>,
-        val showAdult: Boolean,
-        val onListOptions: List<AnimeMediaFilterController.OnListOption>,
-        val averageScoreRange: AnimeMediaFilterController.RangeData,
-        val episodesRange: AnimeMediaFilterController.RangeData,
-        val airingDate: AnimeMediaFilterController.AiringDate,
-        val sources: List<AnimeMediaFilterController.SourceEntry>,
+        val filterParams: AnimeMediaFilterController.FilterParams,
     ) {
         fun sortApiValue() = sortOptions.filter { it.state == IncludeExcludeState.INCLUDE }
             .map { it.value.toApiValue(sortAscending) }
