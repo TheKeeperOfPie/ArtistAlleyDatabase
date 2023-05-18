@@ -77,8 +77,6 @@ open class AnimeUserListViewModel @Inject constructor(
                     if (userId == null) filterNotNull() else this
                 },
                 refreshUptimeMillis,
-                filterController.sortOptions,
-                filterController.sortAscending,
                 ::RefreshParams
             )
                 .debounce(100.milliseconds)
@@ -87,13 +85,17 @@ open class AnimeUserListViewModel @Inject constructor(
                         val baseResponse = aniListApi.userMediaList(
                             userId = userId?.toIntOrNull() ?: refreshParams.authedUser!!.id,
                             type = mediaType,
-                            sort = refreshParams.sortApiValue()
                         )
                         combine(
                             snapshotFlow { query }.debounce(500.milliseconds),
                             filterController.filterParams(),
-                            ::Pair
-                        ).map { (query, filterParams) ->
+                            filterController.sortOptions,
+                            filterController.sortAscending,
+                            ::FilterParams
+                        ).map {
+                            val (query, filterParams, sortOptions, sortAscending) = it
+                            val sortOption =
+                                sortOptions.find { it.state == IncludeExcludeState.INCLUDE }?.value
                             baseResponse?.lists
                                 ?.filterNotNull()
                                 ?.filter {
@@ -107,7 +109,7 @@ open class AnimeUserListViewModel @Inject constructor(
                                     }
                                 }
                                 ?.let {
-                                    if (refreshParams.sortOptions.none { it.state == IncludeExcludeState.INCLUDE }) {
+                                    if (sortOption == null) {
                                         // If default sort, force COMPLETED list to top
                                         val index =
                                             it.indexOfFirst { it.status == MediaListStatus.COMPLETED }
@@ -119,7 +121,15 @@ open class AnimeUserListViewModel @Inject constructor(
                                         } else it
                                     } else it
                                 }
-                                ?.map { toFilteredEntries(query, filterParams, it) }
+                                ?.map {
+                                    toFilteredEntries(
+                                        query,
+                                        sortOption,
+                                        sortAscending,
+                                        filterParams,
+                                        it
+                                    )
+                                }
                                 ?.flatten()
                                 ?.let(AnimeUserListScreen.ContentState::Success)
                                 ?: AnimeUserListScreen.ContentState.Error()
@@ -145,6 +155,8 @@ open class AnimeUserListViewModel @Inject constructor(
 
     private fun toFilteredEntries(
         query: String,
+        sortOption: MediaListSortOption?,
+        sortAscending: Boolean,
         filterParams: AnimeMediaFilterController.FilterParams,
         list: UserMediaListQuery.Data.MediaListCollection.List
     ): List<AnimeUserListScreen.Entry> {
@@ -166,23 +178,64 @@ open class AnimeUserListViewModel @Inject constructor(
             }
         }
 
+        if (sortOption != null) {
+            val baseComparator: Comparator<AnimeUserListScreen.Entry.Item> = when (sortOption) {
+                MediaListSortOption.SCORE -> compareBy { it.media.averageScore }
+                MediaListSortOption.STATUS -> compareBy { it.media.status }
+                MediaListSortOption.PROGRESS -> if (mediaType == MediaType.ANIME) {
+                    compareBy { it.media.mediaListEntry?.progress }
+                } else {
+                    compareBy { it.media.mediaListEntry?.progressVolumes }
+                }
+                MediaListSortOption.PRIORITY -> compareBy { it.media.mediaListEntry?.priority }
+                MediaListSortOption.STARTED_ON ->
+                    compareBy<AnimeUserListScreen.Entry.Item, Int?>(nullsLast()) {
+                        it.media.startDate?.year
+                    }
+                        .thenComparing(compareBy(nullsLast()) { it.media.startDate?.month })
+                        .thenComparing(compareBy(nullsLast()) { it.media.startDate?.day })
+                MediaListSortOption.FINISHED_ON ->
+                    compareBy<AnimeUserListScreen.Entry.Item, Int?>(nullsLast()) {
+                        it.media.endDate?.year
+                    }
+                        .thenComparing(compareBy(nullsLast()) { it.media.endDate?.month })
+                        .thenComparing(compareBy(nullsLast()) { it.media.endDate?.day })
+                MediaListSortOption.ADDED_TIME -> compareBy { it.media.id }
+                MediaListSortOption.UPDATED_TIME -> compareBy { it.media.updatedAt }
+                MediaListSortOption.TITLE_ROMAJI -> compareBy { it.media.title?.romaji }
+                MediaListSortOption.TITLE_ENGLISH -> compareBy { it.media.title?.english }
+                MediaListSortOption.TITLE_NATIVE -> compareBy { it.media.title?.native }
+                MediaListSortOption.POPULARITY -> compareBy { it.media.popularity }
+            }
+
+            val comparator = nullsFirst(baseComparator).let {
+                if (sortAscending) it else it.reversed()
+            }
+
+            filteredEntries = filteredEntries.sortedWith(comparator)
+        }
+
         return if (filteredEntries.isEmpty()) {
             filteredEntries
         } else {
-            mutableListOf(AnimeUserListScreen.Entry.Header(
-                list.name.orEmpty(),
-                list.status
-            )) + filteredEntries
+            mutableListOf(
+                AnimeUserListScreen.Entry.Header(
+                    list.name.orEmpty(),
+                    list.status,
+                )
+            ) + filteredEntries
         }
     }
 
     private data class RefreshParams(
         val authedUser: AuthedUserQuery.Data.Viewer?,
         val requestMillis: Long = SystemClock.uptimeMillis(),
+    )
+
+    private data class FilterParams(
+        val query: String,
+        val filterParams: AnimeMediaFilterController.FilterParams,
         val sortOptions: List<AnimeMediaFilterController.SortEntry<MediaListSortOption>>,
         val sortAscending: Boolean,
-    ) {
-        fun sortApiValue() = sortOptions.filter { it.state == IncludeExcludeState.INCLUDE }
-            .map { it.value.toApiValue(sortAscending) }
-    }
+    )
 }

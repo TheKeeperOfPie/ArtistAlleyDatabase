@@ -1,7 +1,6 @@
-query UserMediaList($userId: Int!, $type: MediaType!, $chunk: Int, $perChunk: Int,
-    $sort: [MediaListSort]) {
-    MediaListCollection(userId: $userId, type: $type, chunk: $chunk, perChunk: $perChunk,
-        sort: $sort) {
+query UserMediaList($userId: Int!, $type: MediaType!, $chunk: Int, $perChunk: Int) {
+    # Sort for this API is completely broken
+    MediaListCollection(userId: $userId, type: $type, chunk: $chunk, perChunk: $perChunk) {
         hasNextChunk
         lists {
             entries {
@@ -9,6 +8,12 @@ query UserMediaList($userId: Int!, $type: MediaType!, $chunk: Int, $perChunk: In
                 media {
                     ...AniListListRowMedia
 
+                    mediaListEntry {
+                        status
+                        progress
+                        progressVolumes
+                        priority
+                    }
                     # TODO: Disable this on restricted networks/offer an option?
                     title {
                         romaji
@@ -16,6 +21,12 @@ query UserMediaList($userId: Int!, $type: MediaType!, $chunk: Int, $perChunk: In
                         english
                     }
                     synonyms
+                    endDate {
+                        year
+                        month
+                        day
+                    }
+                    updatedAt
                 }
             }
             name

@@ -14,7 +14,6 @@ import com.anilist.UserByIdQuery
 import com.anilist.UserMediaListQuery
 import com.anilist.type.FuzzyDateInput
 import com.anilist.type.MediaFormat
-import com.anilist.type.MediaListSort
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaSeason
 import com.anilist.type.MediaSort
@@ -76,13 +75,11 @@ class AuthedAniListApi(
     suspend fun userMediaList(
         userId: Int,
         type: MediaType,
-        sort: List<MediaListSort>? = null,
     ) =
         query(
             UserMediaListQuery(
                 userId = userId,
                 type = type,
-                sort = Optional.present(sort?.ifEmpty { listOf(MediaListSort.FINISHED_ON_DESC) }),
             )
         ).data?.mediaListCollection
 
