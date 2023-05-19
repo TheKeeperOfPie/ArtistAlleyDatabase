@@ -3,8 +3,10 @@ package com.thekeeperofpie.artistalleydatabase.anime.user
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.anilist.MediaTitlesAndImagesQuery
@@ -38,6 +40,7 @@ class AniListUserViewModel @Inject constructor(
     var entry by mutableStateOf<AniListUserScreen.Entry?>(null)
     val viewer = aniListApi.authedUser
     var errorResource by mutableStateOf<Pair<Int, Exception?>?>(null)
+    val colorMap = mutableStateMapOf<String, Pair<Color, Color>>()
 
     val animeStates = States.Anime(viewModelScope, aniListApi)
     val mangaStates = States.Manga(viewModelScope, aniListApi)

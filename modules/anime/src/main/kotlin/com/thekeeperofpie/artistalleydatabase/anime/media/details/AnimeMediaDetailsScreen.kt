@@ -100,6 +100,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.media3.common.util.RepeatModeUtil
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
@@ -126,6 +127,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils
 import com.thekeeperofpie.artistalleydatabase.anime.character.charactersSection
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
+import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaTagEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toColor
@@ -194,9 +196,11 @@ object AnimeMediaDetailsScreen {
 
     @Composable
     operator fun invoke(
+        viewModel: AnimeMediaDetailsViewModel = hiltViewModel(),
         loading: @Composable () -> Boolean = { false },
         color: () -> Color? = { Color.Transparent },
         coverImage: @Composable () -> String? = { null },
+        coverImageWidthToHeightRatio: Float = 1f,
         bannerImage: @Composable () -> String? = { null },
         title: @Composable () -> String = { "Title" },
         subtitle: @Composable () -> String? = { "TV - Releasing - 2023" },
@@ -269,7 +273,7 @@ object AnimeMediaDetailsScreen {
 
         val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
         val lazyListState = rememberLazyListState()
-        val colorCalculationState = rememberColorCalculationState()
+        val colorCalculationState = rememberColorCalculationState(viewModel.colorMap)
         BottomSheetScaffold(
             scaffoldState = bottomSheetScaffoldState,
             sheetPeekHeight = 0.dp,
@@ -284,6 +288,7 @@ object AnimeMediaDetailsScreen {
                         progress = it,
                         color = color,
                         coverImage = coverImage,
+                        coverImageWidthToHeightRatio = coverImageWidthToHeightRatio,
                         bannerImage = bannerImage,
                         titleText = title,
                         subtitleText = subtitle,
@@ -407,6 +412,7 @@ object AnimeMediaDetailsScreen {
                     content(
                         entry = entry,
                         loading = loading,
+                        errorRes = errorRes,
                         mediaPlayer = mediaPlayer,
                         animeSongs = animeSongs,
                         animeSongState = animeSongState,
@@ -456,14 +462,10 @@ object AnimeMediaDetailsScreen {
         }
     }
 
-    @Composable
-    private fun Error() {
-        Text("TODO: Error state")
-    }
-
     private fun LazyListScope.content(
         entry: Entry?,
         loading: Boolean,
+        errorRes: @Composable () -> Pair<Int, Exception?>? = { null },
         mediaPlayer: @Composable () -> AppMediaPlayer,
         animeSongs: AnimeMediaDetailsViewModel.AnimeSongs?,
         animeSongState: (animeSongId: String) -> AnimeMediaDetailsViewModel.AnimeSongState,
@@ -494,7 +496,11 @@ object AnimeMediaDetailsScreen {
                 }
             } else {
                 item {
-                    Error()
+                    val errorRes = errorRes()
+                    AnimeMediaListScreen.Error(
+                        errorTextRes = errorRes?.first,
+                        exception = errorRes?.second,
+                    )
                 }
             }
             return
@@ -602,6 +608,7 @@ object AnimeMediaDetailsScreen {
         progress: Float,
         color: () -> Color?,
         coverImage: @Composable () -> String?,
+        coverImageWidthToHeightRatio: Float,
         bannerImage: @Composable () -> String?,
         titleText: @Composable () -> String,
         subtitleText: @Composable () -> String?,
@@ -616,6 +623,7 @@ object AnimeMediaDetailsScreen {
             progress = progress,
             color = color,
             coverImage = coverImage,
+            coverImageWidthToHeightRatio = coverImageWidthToHeightRatio,
             bannerImage = bannerImage,
             onClickEnabled = (entry?.titlesUnique?.size ?: 0) > 1,
             onClick = {

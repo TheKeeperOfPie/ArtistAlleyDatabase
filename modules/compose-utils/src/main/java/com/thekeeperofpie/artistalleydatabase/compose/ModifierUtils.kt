@@ -63,3 +63,6 @@ fun Modifier.fadingEdgeBottom(show: Boolean = false, firstStop: Float = 0.8f) =
 
 fun Modifier.optionalClickable(onClick: (() -> Unit)?, enabled: Boolean = true) =
     if (onClick == null) this else clickable(enabled = enabled, onClick = onClick)
+
+fun Modifier.conditionally(apply: Boolean, block: Modifier.() -> Modifier) =
+    if (apply) block() else this

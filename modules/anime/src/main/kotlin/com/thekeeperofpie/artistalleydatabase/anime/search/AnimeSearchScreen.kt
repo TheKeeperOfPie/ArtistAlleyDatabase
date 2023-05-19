@@ -17,6 +17,7 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
@@ -64,7 +65,7 @@ object AnimeSearchScreen {
         bottomNavigationState: BottomNavigationState? = null,
     ) {
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
-        val colorCalculationState = rememberColorCalculationState()
+        val colorCalculationState = rememberColorCalculationState(viewModel.colorMap)
         AnimeMediaFilterOptionsBottomPanel(
             topBar = {
                 if (isRoot) {
@@ -195,6 +196,7 @@ object AnimeSearchScreen {
         var query: String
         val content: StateFlow<PagingData<AnimeMediaListRow.MediaEntry<MediaType>>>
         var tagShown: AnimeMediaFilterController.TagSection.Tag?
+        val colorMap: MutableMap<String, Pair<Color, Color>>
 
         fun filterData(): AnimeMediaFilterController.Data<SortOption>
         fun onRefresh()

@@ -2,7 +2,6 @@ package com.thekeeperofpie.artistalleydatabase.compose
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.graphics.Color
@@ -20,9 +19,10 @@ class ColorCalculationState @OptIn(DelicateCoroutinesApi::class) constructor(
 }
 
 @Composable
-fun rememberColorCalculationState(): ColorCalculationState {
+fun rememberColorCalculationState(
+    colorMap: MutableMap<String, Pair<Color, Color>>,
+): ColorCalculationState {
     val scope = rememberCoroutineScope()
-    val colorMap = remember { mutableStateMapOf<String, Pair<Color, Color>>() }
     val isSystemInDarkTheme = isSystemInDarkTheme()
     val isDarkMode = remember(isSystemInDarkTheme) { isSystemInDarkTheme }
     return ColorCalculationState(scope, colorMap, isDarkMode)

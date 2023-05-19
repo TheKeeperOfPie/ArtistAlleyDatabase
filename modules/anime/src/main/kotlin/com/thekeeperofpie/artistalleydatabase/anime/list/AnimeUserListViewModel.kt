@@ -2,9 +2,11 @@ package com.thekeeperofpie.artistalleydatabase.anime.list
 
 import android.os.SystemClock
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.anilist.AuthedUserQuery
@@ -39,7 +41,7 @@ import kotlin.time.Duration.Companion.milliseconds
 open class AnimeUserListViewModel @Inject constructor(
     private val aniListApi: AuthedAniListApi,
     settings: AnimeSettings,
-    private val ignoreList: AnimeMediaIgnoreList
+    ignoreList: AnimeMediaIgnoreList
 ) : ViewModel(), AnimeUserListScreen.ViewModel<MediaListSortOption> {
 
     override var query by mutableStateOf("")
@@ -47,6 +49,7 @@ open class AnimeUserListViewModel @Inject constructor(
         AnimeUserListScreen.ContentState.LoadingEmpty
     )
     override var tagShown by mutableStateOf<AnimeMediaFilterController.TagSection.Tag?>(null)
+    override val colorMap = mutableStateMapOf<String, Pair<Color, Color>>()
 
     private var initialized = false
     private var userId: String? = null

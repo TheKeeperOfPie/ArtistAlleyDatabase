@@ -122,6 +122,7 @@ object AnimeNavigator {
                     + "&nextEpisode={nextEpisode}"
                     + "&nextEpisodeAiringAt={nextEpisodeAiringAt}"
                     + "&coverImage={coverImage}"
+                    + "&coverImageWidthToHeightRatio={coverImageWidthToHeightRatio}"
                     + "&color={color}"
                     + "&bannerImage={bannerImage}",
             arguments = listOf(
@@ -138,6 +139,7 @@ object AnimeNavigator {
                 "nextEpisode",
                 "nextEpisodeAiringAt",
                 "coverImage",
+                "coverImageWidthToHeightRatio",
                 "bannerImage",
                 "color",
             ).map {
@@ -159,6 +161,8 @@ object AnimeNavigator {
             val title = arguments.getString("title")
             val mediaId = arguments.getString("mediaId")!!
             val coverImage = arguments.getString("coverImage")
+            val coverImageWidthToHeightRatio = arguments.getString("coverImageWidthToHeightRatio")
+                ?.toFloatOrNull() ?: 1f
             val bannerImage = arguments.getString("bannerImage")
             val subtitleFormatRes =
                 arguments.getString("subtitleFormatRes")?.toIntOrNull()
@@ -201,6 +205,7 @@ object AnimeNavigator {
                 coverImage = {
                     mediaAsState.value?.coverImage?.extraLarge ?: coverImage
                 },
+                coverImageWidthToHeightRatio = coverImageWidthToHeightRatio,
                 bannerImage = {
                     mediaAsState.value?.bannerImage ?: bannerImage
                 },
@@ -342,7 +347,11 @@ object AnimeNavigator {
         )
     }
 
-    fun onMediaClick(navHostController: NavHostController, entry: AnimeMediaListRow.Entry) =
+    fun onMediaClick(
+        navHostController: NavHostController,
+        entry: AnimeMediaListRow.Entry,
+        imageWidthToHeightRatio: Float,
+    ) =
         navHostController.navigate(
             "animeDetails?mediaId=${entry.id!!.valueId}" +
                     "&title=${entry.title}" +
@@ -354,16 +363,19 @@ object AnimeNavigator {
                     "&nextEpisodeAiringAt=${entry.nextAiringEpisode?.airingAt}" +
                     "&bannerImage=${entry.imageBanner}" +
                     "&coverImage=${entry.imageExtraLarge}" +
+                    "&coverImageWidthToHeightRatio=$imageWidthToHeightRatio" +
                     "&color=${entry.color?.toArgb()}"
         )
 
     fun onMediaClick(
         navHostController: NavHostController,
         media: UserFavoriteMediaNode,
+        imageWidthToHeightRatio: Float,
     ) = navHostController.navigate(
         "animeDetails?mediaId=${media.id}" +
                 "&title=${media.title?.userPreferred}" +
                 "&coverImage=${media.coverImage?.large}" +
+                "&coverImageWidthToHeightRatio=$imageWidthToHeightRatio" +
                 "&color=${media.coverImage?.color?.let(ComposeColorUtils::hexToColor)?.toArgb()}"
     )
 
@@ -372,11 +384,13 @@ object AnimeNavigator {
         mediaId: String,
         title: String?,
         image: String?,
+        imageWidthToHeightRatio: Float,
     ) = navHostController.navigate(
         "animeDetails" +
                 "?mediaId=$mediaId" +
                 "&title=$title" +
-                "&coverImage=$image"
+                "&coverImage=$image" +
+                "&coverImageWidthToHeightRatio=$imageWidthToHeightRatio"
     )
 
     fun onUserClick(navHostController: NavHostController, userId: String) {
@@ -467,16 +481,21 @@ object AnimeNavigator {
         private val navHostController: NavHostController? = null,
         private val onOpenUri: (String) -> Unit = {},
     ) {
-        fun onMediaClick(media: UserFavoriteMediaNode) {
-            navHostController?.let { onMediaClick(it, media) }
+        fun onMediaClick(media: UserFavoriteMediaNode, imageWidthToHeightRatio: Float) {
+            navHostController?.let { onMediaClick(it, media, imageWidthToHeightRatio) }
         }
 
-        fun onMediaClick(media: AnimeMediaListRow.Entry) {
-            navHostController?.let { onMediaClick(it, media) }
+        fun onMediaClick(media: AnimeMediaListRow.Entry, imageWidthToHeightRatio: Float) {
+            navHostController?.let { onMediaClick(it, media, imageWidthToHeightRatio) }
         }
 
-        fun onMediaClick(id: String, title: String?, image: String?) {
-            navHostController?.let { onMediaClick(it, id, title, image) }
+        fun onMediaClick(
+            id: String,
+            title: String?,
+            image: String?,
+            imageWidthToHeightRatio: Float,
+        ) {
+            navHostController?.let { onMediaClick(it, id, title, image, imageWidthToHeightRatio) }
         }
 
         fun onTagClick(id: String, name: String) {

@@ -15,8 +15,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -28,6 +30,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithCache
@@ -40,15 +46,18 @@ import androidx.compose.ui.graphics.isSpecified
 import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
 import coil.compose.AsyncImage
 import coil.compose.AsyncImagePainter
+import coil.request.ImageRequest
 import com.thekeeperofpie.artistalleydatabase.android_utils.AnimationUtils
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.compose.AccelerateEasing
+import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.compose.fadingEdgeBottom
 import com.thekeeperofpie.artistalleydatabase.compose.optionalClickable
 import de.charlex.compose.HtmlText
@@ -60,6 +69,7 @@ fun CoverAndBannerHeader(
     pinnedHeight: Dp,
     progress: Float = 0f,
     coverSize: Dp = 256.dp,
+    coverImageWidthToHeightRatio: Float = 1f,
     color: () -> Color? = { null },
     onClickEnabled: Boolean = false,
     onClick: (() -> Unit)? = null,
@@ -78,7 +88,10 @@ fun CoverAndBannerHeader(
     ) {
         Box {
             AsyncImage(
-                model = bannerImage(),
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(bannerImage())
+                    .crossfade(true)
+                    .build(),
                 contentScale = ContentScale.FillHeight,
                 contentDescription = stringResource(R.string.anime_media_banner_image),
                 modifier = Modifier
@@ -116,23 +129,42 @@ fun CoverAndBannerHeader(
                     .height(lerp(coverSize, coverSize - 76.dp, progress))
             ) {
                 ElevatedCard {
+                    var success by remember { mutableStateOf(false) }
                     AsyncImage(
-                        model = coverImage(),
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(coverImage())
+                            .crossfade(true)
+                            .build(),
                         contentScale = ContentScale.FillHeight,
                         error = rememberVectorPainter(Icons.Filled.ImageNotSupported),
                         fallback = null,
-                        onSuccess = coverImageOnSuccess,
+                        onSuccess = {
+                            success = true
+                            coverImageOnSuccess(it)
+                        },
                         contentDescription = stringResource(R.string.anime_media_cover_image),
                         modifier = Modifier
+                            .conditionally(
+                                coverImageWidthToHeightRatio == 1f,
+                                Modifier::animateContentSize
+                            )
                             .height(coverSize)
+                            .run {
+                                if (coverImageWidthToHeightRatio != 1f) {
+                                    width(coverSize * coverImageWidthToHeightRatio)
+                                } else if (success) {
+                                    wrapContentWidth()
+                                } else this
+                            }
                             .widthIn(max = coverSize)
                     )
                 }
 
                 Column(
                     modifier = Modifier
-                        .padding(top = lerp(32.dp, 0.dp, progress))
                         .animateContentSize()
+                        .padding(top = lerp(32.dp, 0.dp, progress))
+                        .widthIn(min = 120.dp)
                 ) {
                     content()
                 }

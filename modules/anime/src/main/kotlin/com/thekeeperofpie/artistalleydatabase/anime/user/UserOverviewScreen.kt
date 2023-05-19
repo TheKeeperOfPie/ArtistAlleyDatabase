@@ -49,6 +49,9 @@ import coil.request.ImageRequest
 import com.anilist.AuthedUserQuery
 import com.anilist.UserByIdQuery
 import com.anilist.fragment.UserFavoriteMediaNode
+import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
+import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
+import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.charactersSection
@@ -60,6 +63,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
+import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
 
 @Suppress("NAME_SHADOWING")
 @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
@@ -69,6 +73,7 @@ object UserOverviewScreen {
     operator fun invoke(
         entry: () -> AniListUserScreen.Entry?,
         viewer: AuthedUserQuery.Data.Viewer?,
+        colorMap: MutableMap<String, Pair<Color, Color>>,
         navigationCallback: AnimeNavigator.NavigationCallback,
         modifier: Modifier = Modifier,
         bottomNavigationState: BottomNavigationState? = null,
@@ -76,7 +81,7 @@ object UserOverviewScreen {
         val entry = entry()
         val user = entry?.user
         var descriptionExpanded by remember { mutableStateOf(false) }
-        val colorCalculationState = rememberColorCalculationState()
+        val colorCalculationState = rememberColorCalculationState(colorMap)
         LazyColumn(
             contentPadding = PaddingValues(
                 bottom = 16.dp + (bottomNavigationState?.bottomNavBarPadding() ?: 0.dp)
@@ -211,7 +216,7 @@ object UserOverviewScreen {
     private fun LazyListScope.favoriteMediaSection(
         @StringRes titleRes: Int,
         entries: List<UserFavoriteMediaNode>,
-        onClickEntry: (UserFavoriteMediaNode) -> Unit,
+        onClickEntry: (UserFavoriteMediaNode, imageWidthToHeightRatio: Float) -> Unit,
         colorCalculationState: ColorCalculationState,
     ) {
         if (entries.isEmpty()) return
@@ -247,8 +252,9 @@ object UserOverviewScreen {
                         )
                     }
 
+                    var widthToHeightRatio by remember { MutableSingle(1f) }
                     ElevatedCard(
-                        onClick = { onClickEntry(it) },
+                        onClick = { onClickEntry(it, widthToHeightRatio) },
                         colors = CardDefaults.elevatedCardColors(containerColor = containerColor),
                     ) {
                         ConstraintLayout {
@@ -262,6 +268,7 @@ object UserOverviewScreen {
                                 contentScale = ContentScale.FillHeight,
                                 contentDescription = stringResource(R.string.anime_media_cover_image),
                                 onSuccess = {
+                                    widthToHeightRatio = it.widthToHeightRatio()
                                     ComposeColorUtils.calculatePalette(
                                         id = id,
                                         success = it,

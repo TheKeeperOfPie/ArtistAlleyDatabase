@@ -58,6 +58,9 @@ import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.material.placeholder
 import com.google.accompanist.placeholder.material.shimmer
 import com.mxalbert.sharedelements.SharedElement
+import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
+import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
+import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
@@ -65,6 +68,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.fadingEdgeEnd
+import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -82,13 +86,14 @@ object AnimeMediaListRow {
         navigationCallback: AnimeNavigator.NavigationCallback =
             AnimeNavigator.NavigationCallback(null),
     ) {
+        var imageWidthToHeightRatio by remember { MutableSingle(1f) }
         ElevatedCard(
             modifier = modifier
                 .fillMaxWidth()
                 .heightIn(min = 180.dp)
                 .combinedClickable(
                     enabled = entry != Entry.Loading,
-                    onClick = { navigationCallback.onMediaClick(entry) },
+                    onClick = { navigationCallback.onMediaClick(entry, imageWidthToHeightRatio) },
                     onLongClick = { onLongClick(entry) }
                 )
                 .alpha(if (entry.ignored) 0.38f else 1f)
@@ -96,9 +101,10 @@ object AnimeMediaListRow {
             Row(modifier = Modifier.height(IntrinsicSize.Min)) {
                 CoverImage(
                     entry = entry,
-                    onClick = { navigationCallback.onMediaClick(entry) },
+                    onClick = { navigationCallback.onMediaClick(entry, imageWidthToHeightRatio) },
                     onLongPressImage = onLongPressImage,
                     colorCalculationState = colorCalculationState,
+                    onRatioAvailable = { imageWidthToHeightRatio = it}
                 )
 
                 Column(modifier = Modifier.heightIn(min = 180.dp)) {
@@ -137,6 +143,7 @@ object AnimeMediaListRow {
         onClick: (Entry) -> Unit = {},
         onLongPressImage: (entry: Entry) -> Unit,
         colorCalculationState: ColorCalculationState,
+        onRatioAvailable: (Float) -> Unit,
     ) {
         SharedElement(
             key = "cover_image_${entry.id?.valueId}",
@@ -151,6 +158,7 @@ object AnimeMediaListRow {
                 contentScale = ContentScale.Crop,
                 fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
                 onSuccess = {
+                    onRatioAvailable(it.widthToHeightRatio())
                     ComposeColorUtils.calculatePalette(
                         entry.id?.valueId.orEmpty(),
                         it,

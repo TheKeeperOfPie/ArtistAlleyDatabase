@@ -19,6 +19,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -30,11 +31,15 @@ import coil.request.ImageRequest
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.material.placeholder
 import com.google.accompanist.placeholder.material.shimmer
+import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
+import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
+import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserScreen
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserViewModel
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
+import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.DurationUnit
 
@@ -173,11 +178,12 @@ object UserStatsDetailScreen {
                             InnerCard(
                                 image = media?.coverImage?.large,
                                 loading = media == null,
-                                onClick = {
+                                onClick = { ratio ->
                                     navigationCallback.onMediaClick(
                                         id = it.toString(),
                                         title = media?.title?.userPreferred,
                                         image = media?.coverImage?.large,
+                                        imageWidthToHeightRatio = ratio,
                                     )
                                 }
                             )
@@ -192,14 +198,20 @@ object UserStatsDetailScreen {
     }
 
     @Composable
-    private fun InnerCard(image: String?, loading: Boolean, onClick: () -> Unit) {
-        Card(onClick = onClick) {
+    private fun InnerCard(
+        image: String?,
+        loading: Boolean,
+        onClick: (widthToHeightRatio: Float) -> Unit
+    ) {
+        var widthToHeightRatio by remember { MutableSingle(1f) }
+        Card(onClick = { onClick(widthToHeightRatio) }) {
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
                     .data(image)
                     .crossfade(true)
                     .build(),
                 contentScale = ContentScale.Crop,
+                onSuccess = { widthToHeightRatio = it.widthToHeightRatio() },
                 contentDescription = stringResource(R.string.anime_media_cover_image),
                 modifier = Modifier
                     .fillMaxHeight()

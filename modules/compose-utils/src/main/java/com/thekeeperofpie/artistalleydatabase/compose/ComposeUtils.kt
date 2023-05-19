@@ -7,6 +7,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import coil.compose.AsyncImagePainter
 import kotlin.reflect.KProperty
 
 fun <T> observableStateOf(value: T, onChange: (T) -> Unit) =
@@ -44,3 +45,6 @@ fun LazyListState.showFloatingActionButtonOnVerticalScroll(firstIndexToHide: Int
         }
     }.value
 }
+
+fun AsyncImagePainter.State.Success.widthToHeightRatio() = result.drawable.intrinsicWidth /
+        result.drawable.intrinsicHeight.coerceAtLeast(0).toFloat()

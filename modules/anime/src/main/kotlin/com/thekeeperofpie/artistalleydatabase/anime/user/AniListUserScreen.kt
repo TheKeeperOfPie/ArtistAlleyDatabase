@@ -118,6 +118,7 @@ object AniListUserScreen {
                         UserTab.OVERVIEW -> UserOverviewScreen(
                             entry = viewModel::entry,
                             viewer = viewModel.viewer.collectAsState(null).value,
+                            colorMap = viewModel.colorMap,
                             navigationCallback = navigationCallback,
                             bottomNavigationState = bottomNavigationState,
                         )

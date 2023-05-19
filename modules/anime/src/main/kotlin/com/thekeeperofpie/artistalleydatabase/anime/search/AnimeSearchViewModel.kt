@@ -2,9 +2,11 @@ package com.thekeeperofpie.artistalleydatabase.anime.search
 
 import android.os.SystemClock
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
@@ -49,6 +51,7 @@ class AnimeSearchViewModel @Inject constructor(
     override var query by mutableStateOf("")
     override var content = MutableStateFlow(PagingData.empty<AnimeMediaListRow.MediaEntry<Medium>>())
     override var tagShown by mutableStateOf<AnimeMediaFilterController.TagSection.Tag?>(null)
+    override val colorMap = mutableStateMapOf<String, Pair<Color, Color>>()
 
     private var initialized = false
 
