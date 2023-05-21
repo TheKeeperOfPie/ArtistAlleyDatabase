@@ -55,8 +55,13 @@ open class AnimeUserListViewModel @Inject constructor(
     private var userId: String? = null
     private lateinit var mediaType: MediaType
 
-    private val filterController =
-        AnimeMediaFilterController(MediaListSortOption::class, aniListApi, settings, ignoreList)
+    private val filterController = AnimeMediaFilterController(
+        MediaListSortOption::class,
+        aniListApi,
+        settings,
+        ignoreList,
+        listOf(MediaListSortOption.UPDATED_TIME),
+    )
 
     private val refreshUptimeMillis = MutableStateFlow(-1L)
 
@@ -203,8 +208,8 @@ open class AnimeUserListViewModel @Inject constructor(
                     }
                         .thenComparing(compareBy(nullsLast()) { it.media.endDate?.month })
                         .thenComparing(compareBy(nullsLast()) { it.media.endDate?.day })
-                MediaListSortOption.ADDED_TIME -> compareBy { it.media.id }
-                MediaListSortOption.UPDATED_TIME -> compareBy { it.media.updatedAt }
+                MediaListSortOption.ADDED_TIME -> compareBy { it.media.mediaListEntry?.createdAt }
+                MediaListSortOption.UPDATED_TIME -> compareBy { it.media.mediaListEntry?.updatedAt }
                 MediaListSortOption.TITLE_ROMAJI -> compareBy { it.media.title?.romaji }
                 MediaListSortOption.TITLE_ENGLISH -> compareBy { it.media.title?.english }
                 MediaListSortOption.TITLE_NATIVE -> compareBy { it.media.title?.native }

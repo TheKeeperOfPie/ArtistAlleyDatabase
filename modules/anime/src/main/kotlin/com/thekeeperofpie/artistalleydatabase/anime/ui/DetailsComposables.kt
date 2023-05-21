@@ -150,10 +150,10 @@ fun CoverAndBannerHeader(
                             )
                             .height(coverSize)
                             .run {
-                                if (coverImageWidthToHeightRatio != 1f) {
-                                    width(coverSize * coverImageWidthToHeightRatio)
-                                } else if (success) {
+                                if (success) {
                                     wrapContentWidth()
+                                } else if (coverImageWidthToHeightRatio != 1f) {
+                                    width(coverSize * coverImageWidthToHeightRatio)
                                 } else this
                             }
                             .widthIn(max = coverSize)

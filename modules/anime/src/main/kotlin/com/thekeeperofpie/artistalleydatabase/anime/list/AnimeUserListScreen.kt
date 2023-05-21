@@ -1,11 +1,15 @@
 package com.thekeeperofpie.artistalleydatabase.anime.list
 
+import androidx.activity.compose.BackHandler
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -49,7 +53,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
 import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 object AnimeUserListScreen {
 
     @Composable
@@ -67,6 +71,9 @@ object AnimeUserListScreen {
         AnimeMediaFilterOptionsBottomPanel(
             topBar = {
                 EnterAlwaysTopAppBar(scrollBehavior = scrollBehavior) {
+                    BackHandler(viewModel.query.isNotEmpty() && !WindowInsets.isImeVisible) {
+                        viewModel.query = ""
+                    }
                     TextField(
                         value = viewModel.query,
                         placeholder = { Text(stringResource(id = R.string.anime_user_list_search)) },

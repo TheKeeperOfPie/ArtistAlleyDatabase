@@ -1,8 +1,12 @@
 package com.thekeeperofpie.artistalleydatabase.anime.search
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -48,7 +52,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
 import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
 import kotlinx.coroutines.flow.StateFlow
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 object AnimeSearchScreen {
 
     @Composable
@@ -70,6 +74,9 @@ object AnimeSearchScreen {
             topBar = {
                 if (isRoot) {
                     EnterAlwaysTopAppBar(scrollBehavior = scrollBehavior) {
+                        BackHandler(viewModel.query.isNotEmpty() && !WindowInsets.isImeVisible) {
+                            viewModel.query = ""
+                        }
                         TextField(
                             viewModel.query,
                             placeholder = { Text(stringResource(id = R.string.anime_search)) },

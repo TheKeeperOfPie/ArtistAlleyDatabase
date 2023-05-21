@@ -1059,14 +1059,15 @@ object AnimeMediaDetailsScreen {
         val state = state(entry.id)
         val mediaPlayer = mediaPlayer()
         val playingState by mediaPlayer.playingState.collectAsState()
-        val playing by remember {
-            derivedStateOf { playingState.first == entry.id && playingState.second }
+        val active by remember {
+            derivedStateOf { playingState.first == entry.id }
         }
+        val playing = active && playingState.second
 
         ElevatedCard(
             modifier = modifier.animateContentSize(),
         ) {
-            var hidden by remember { mutableStateOf(entry.spoiler) }
+            var hidden by remember { mutableStateOf(entry.spoiler && !active) }
             if (hidden) {
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -1219,7 +1220,7 @@ object AnimeMediaDetailsScreen {
                                 )
                             }
                         }
-                    } else if (playing) {
+                    } else if (active) {
                         val progress = mediaPlayer.progress
                         Slider(
                             value = progress,

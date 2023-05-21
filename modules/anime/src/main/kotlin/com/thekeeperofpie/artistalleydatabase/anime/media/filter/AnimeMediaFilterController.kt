@@ -51,13 +51,16 @@ class AnimeMediaFilterController<T>(
     private val aniListApi: AuthedAniListApi,
     private val settings: AnimeSettings,
     private val ignoreList: AnimeMediaIgnoreList,
+    defaultEnabled: List<T> = emptyList(),
 ) where T : AnimeMediaFilterController.Data.SortOption, T : Enum<*> {
 
     companion object {
         private const val TAG = "AnimeMediaFilterController"
     }
 
-    val sortOptions = MutableStateFlow(SortEntry.options(sortEnumClass))
+    val sortOptions = MutableStateFlow(SortEntry.options(sortEnumClass).map {
+        if (defaultEnabled.contains(it.value)) it.copy(state = IncludeExcludeState.INCLUDE) else it
+    })
     val sortAscending = MutableStateFlow(false)
 
     val genres = MutableStateFlow(emptyList<GenreEntry>())

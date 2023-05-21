@@ -13,6 +13,8 @@ query UserMediaList($userId: Int!, $type: MediaType!, $chunk: Int, $perChunk: In
                         progress
                         progressVolumes
                         priority
+                        updatedAt
+                        createdAt
                     }
                     # TODO: Disable this on restricted networks/offer an option?
                     title {

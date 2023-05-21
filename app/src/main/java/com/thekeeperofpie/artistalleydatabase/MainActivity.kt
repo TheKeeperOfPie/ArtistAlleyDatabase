@@ -186,7 +186,7 @@ class MainActivity : ComponentActivity() {
                                         )
                                     }
                                     NavDrawerItems.Settings -> SettingsScreen(::onClickNav)
-                                }.run { /* exhaust */ }
+                                }
                             }
 
                             if (BuildConfig.DEBUG) {

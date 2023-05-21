@@ -324,7 +324,7 @@ object AnimeNavigator {
             val viewModel = hiltViewModel<AnimeMediaIgnoreViewModel>()
                 .apply { initialize(mediaType) }
             AnimeSearchScreen(
-                onClickNav = onClickNav,
+                onClickNav = { navHostController.popBackStack() },
                 isRoot = false,
                 title = Either.Left(
                     if (mediaType == MediaType.ANIME) {
