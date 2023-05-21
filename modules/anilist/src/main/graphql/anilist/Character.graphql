@@ -55,15 +55,79 @@ fragment DetailsCharacterEdge on CharacterEdge {
         }
     }
     node {
+        ...CharacterNavigationData
+        name {
+            full
+            alternative
+        }
+    }
+}
+
+fragment CharacterNavigationData on Character {
+    id
+    name {
+        userPreferred
+    }
+    image {
+        large
+    }
+}
+
+query CharacterDetails($id: Int!) {
+    Character(id: $id) {
         id
         name {
             full
             alternative
+            alternativeSpoiler
+            native
             userPreferred
         }
+        description(asHtml: true)
+        age
+        dateOfBirth {
+            year
+            month
+            day
+        }
+        gender
+        bloodType
         image {
             large
         }
+        favourites
+
+        # TODO: Pagination
+        media(sort: [POPULARITY_DESC]) {
+            edges {
+                characterName
+                characterRole
+                voiceActorRoles {
+                    voiceActor {
+                        id
+                        name {
+                            full
+                            userPreferred
+                        }
+                        languageV2
+                        image {
+                            large
+                        }
+                        favourites
+                    }
+
+                    # TODO: roleNotes, dubGroup?
+                    # roleNotes
+                    # dubGroup
+                }
+
+                node {
+                    ...AniListListRowMedia
+                }
+            }
+        }
+
+        # TODO: Favorite
     }
 }
 

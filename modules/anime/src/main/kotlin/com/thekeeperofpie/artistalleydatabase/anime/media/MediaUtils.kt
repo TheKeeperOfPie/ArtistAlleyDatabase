@@ -2,7 +2,6 @@ package com.thekeeperofpie.artistalleydatabase.anime.media
 
 import android.content.Context
 import android.text.format.DateUtils
-import android.view.animation.PathInterpolator
 import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bookmark
@@ -40,10 +39,6 @@ object MediaUtils {
     // TODO: Find an alternative
     @Suppress("DEPRECATION")
     const val BASE_DATE_FORMAT_FLAGS = DateUtils.FORMAT_ABBREV_ALL or DateUtils.FORMAT_UTC
-
-    // Uses a cubic bezier to interpolate tag IDs to more distinct colors,
-    // as the tag IDs are not uniformly distributed
-    private val tagColorInterpolator = PathInterpolator(0.35f, 0.9f, 0.39f, 0.39f)
 
     val scoreDistributionColors = listOf(
         Color(210, 72, 45),

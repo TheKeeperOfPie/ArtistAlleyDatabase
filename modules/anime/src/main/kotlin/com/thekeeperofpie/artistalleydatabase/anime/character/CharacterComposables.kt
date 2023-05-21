@@ -41,20 +41,27 @@ import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.ColorUtils
 import coil.compose.AsyncImage
+import coil.compose.AsyncImagePainter
 import coil.request.ImageRequest
+import com.anilist.fragment.CharacterNavigationData
+import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
+import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
+import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.ui.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
+import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
 
 @Composable
 fun CharacterCard(
     id: String,
     image: String?,
     colorCalculationState: ColorCalculationState,
-    onClick: (id: String) -> Unit,
+    onClick: () -> Unit,
     innerImage: String? = null,
+    onImageSuccess: (AsyncImagePainter.State.Success) -> Unit = {},
     content: @Composable (textColor: Color) -> Unit,
 ) {
     val defaultTextColor = MaterialTheme.typography.bodyMedium.color
@@ -95,7 +102,7 @@ fun CharacterCard(
     }
 
     ElevatedCard(
-        onClick = { onClick(id) },
+        onClick = onClick,
         colors = CardDefaults.elevatedCardColors(containerColor = containerColor),
         modifier = Modifier.width(100.dp),
     ) {
@@ -112,6 +119,7 @@ fun CharacterCard(
                     R.string.anime_media_character_image
                 ),
                 onSuccess = {
+                    onImageSuccess(it)
                     ComposeColorUtils.calculatePalette(
                         id = id,
                         success = it,
@@ -171,7 +179,7 @@ fun CharacterCard(
 fun LazyListScope.charactersSection(
     @StringRes titleRes: Int,
     characters: List<DetailsCharacter>,
-    onCharacterClicked: (String) -> Unit,
+    onCharacterClicked: (CharacterNavigationData, imageWidthToHeightRatio: Float) -> Unit,
     onCharacterLongClicked: (String) -> Unit,
     colorCalculationState: ColorCalculationState,
 ) {
@@ -186,13 +194,19 @@ fun LazyListScope.charactersSection(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             items(characters, { it.id }) {
+                var imageWidthToHeightRatio by remember { MutableSingle(1f) }
                 CharacterCard(
                     id = it.id,
                     image = it.image,
                     colorCalculationState = colorCalculationState,
-                    onClick = { onCharacterClicked(it) },
+                    onClick = {
+                        it.character?.let {
+                            onCharacterClicked(it, imageWidthToHeightRatio )
+                        }
+                    },
                     innerImage = (it.languageToVoiceActor["Japanese"]
                         ?: it.languageToVoiceActor.values.firstOrNull())?.image,
+                    onImageSuccess = { imageWidthToHeightRatio = it.widthToHeightRatio() },
                 ) { textColor ->
                     AutoHeightText(
                         text = it.name.orEmpty(),

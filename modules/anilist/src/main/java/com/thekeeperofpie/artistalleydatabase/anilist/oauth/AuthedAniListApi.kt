@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.anilist.oauth
 
 import android.util.Log
 import com.anilist.AuthedUserQuery
+import com.anilist.CharacterDetailsQuery
 import com.anilist.DeleteMediaEntryMutation
 import com.anilist.GenresQuery
 import com.anilist.MediaAdvancedSearchQuery
@@ -152,7 +153,7 @@ class AuthedAniListApi(
 
     suspend fun tags() = query(MediaTagsQuery())
 
-    suspend fun mediaDetails(id: String) = query(MediaDetailsQuery(id.toInt()))
+    suspend fun mediaDetails(id: String) = query(MediaDetailsQuery(id.toInt())).dataAssertNoErrors.media!!
 
     suspend fun mediaTitlesAndImages(mediaIds: List<Int>) =
         query(MediaTitlesAndImagesQuery(ids = Optional.present(mediaIds)))
@@ -212,6 +213,9 @@ class AuthedAniListApi(
             .orEmpty()
 
     suspend fun user(id: String) = query(UserByIdQuery(id.toInt())).dataAssertNoErrors.user
+
+    suspend fun characterDetails(id: String) = query(CharacterDetailsQuery(id.toInt()))
+        .dataAssertNoErrors.character!!
 
     private suspend fun <D : Query.Data> query(query: Query<D>) =
         apolloClient.query(query).execute()

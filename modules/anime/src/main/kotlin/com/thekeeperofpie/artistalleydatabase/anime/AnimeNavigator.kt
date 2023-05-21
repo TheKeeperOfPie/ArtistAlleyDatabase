@@ -15,12 +15,15 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
+import com.anilist.fragment.CharacterNavigationData
 import com.anilist.fragment.UserFavoriteMediaNode
 import com.anilist.type.MediaSeason
 import com.anilist.type.MediaType
 import com.google.accompanist.navigation.animation.composable
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
+import com.thekeeperofpie.artistalleydatabase.anime.character.AnimeCharacterDetailsViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.list.AnimeUserListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.list.AnimeUserListViewModel
@@ -194,26 +197,25 @@ object AnimeNavigator {
                 onDispose { viewModel.animeSongsCollapseAll() }
             }
 
-            val mediaAsState = viewModel.media.collectAsState()
             AnimeMediaDetailsScreen(
-                loading = { viewModel.loading.collectAsState().value },
+                viewModel = viewModel,
                 color = {
-                    mediaAsState.value?.coverImage?.color
+                    viewModel.entry?.media?.coverImage?.color
                         ?.let(ComposeColorUtils::hexToColor)
                         ?: color
                 },
                 coverImage = {
-                    mediaAsState.value?.coverImage?.extraLarge ?: coverImage
+                    viewModel.entry?.media?.coverImage?.extraLarge ?: coverImage
                 },
                 coverImageWidthToHeightRatio = coverImageWidthToHeightRatio,
                 bannerImage = {
-                    mediaAsState.value?.bannerImage ?: bannerImage
+                    viewModel.entry?.media?.bannerImage ?: bannerImage
                 },
                 title = {
-                    mediaAsState.value?.title?.userPreferred ?: title ?: ""
+                    viewModel.entry?.media?.title?.userPreferred ?: title ?: ""
                 },
                 subtitle = {
-                    mediaAsState.value?.let {
+                    viewModel.entry?.media?.let {
                         listOfNotNull(
                             stringResource(it.format.toTextRes()),
                             stringResource(it.status.toTextRes()),
@@ -234,43 +236,83 @@ object AnimeNavigator {
                         .ifEmpty { null }
                 },
                 nextEpisode = {
-                    mediaAsState.value?.nextAiringEpisode?.episode
+                    viewModel.entry?.media?.nextAiringEpisode?.episode
                         ?: nextEpisode
                 },
                 nextEpisodeAiringAt = {
-                    mediaAsState.value?.nextAiringEpisode?.airingAt
+                    viewModel.entry?.media?.nextAiringEpisode?.airingAt
                         ?: nextEpisodeAiringAt
                 },
                 entry = {
-                    mediaAsState.value?.let {
+                    viewModel.entry?.media?.let {
                         AnimeMediaDetailsScreen.Entry(mediaId, it)
                     }
                 },
-                mediaPlayer = { viewModel.mediaPlayer },
-                animeSongs = { viewModel.animeSongs.collectAsState().value },
-                animeSongState = viewModel::getAnimeSongState,
-                onAnimeSongPlayClick = viewModel::onAnimeSongPlayAudioClick,
-                onAnimeSongProgressUpdate = viewModel::onAnimeSongProgressUpdate,
-                onAnimeSongExpandedToggle = viewModel::onAnimeSongExpandedToggle,
-                cdEntries = { viewModel.cdEntries.collectAsState().value },
                 onGenreLongClicked = { /*TODO*/ },
                 onCharacterLongClicked = { /*TODO*/ },
                 onStaffLongClicked = { /*TODO*/ },
                 onTagLongClicked = { /*TODO*/ },
                 navigationCallback = navigationCallback,
-                trailerPlaybackPosition = { viewModel.trailerPlaybackPosition },
-                onTrailerPlaybackPositionUpdate = {
-                    viewModel.trailerPlaybackPosition = it
-                },
                 listEntry = { viewModel.listEntry.collectAsState().value },
-                editData = viewModel.editData,
                 scoreFormat = { viewModel.scoreFormat.collectAsState().value },
-                onDateChange = viewModel::onDateChange,
-                onStatusChange = viewModel::onStatusChange,
-                onClickDelete = viewModel::onClickDelete,
-                onClickSave = viewModel::onClickSave,
-                onEditSheetValueChange = viewModel::onEditSheetValueChange,
-                errorRes = { viewModel.errorResource.collectAsState().value },
+                errorRes = { viewModel.errorResource },
+            )
+        }
+
+        navGraphBuilder.composable(
+            route = "characterDetails"
+                    + "?characterId={characterId}"
+                    + "&name={name}"
+                    + "&coverImage={coverImage}"
+                    + "&coverImageWidthToHeightRatio={coverImageWidthToHeightRatio}"
+                    + "&bannerImage={bannerImage}",
+            arguments = listOf(
+                navArgument("characterId") {
+                    type = NavType.StringType
+                    nullable = false
+                }
+            ) + listOf(
+                "name",
+                "coverImage",
+                "coverImageWidthToHeightRatio",
+                "bannerImage",
+            ).map {
+                navArgument(it) {
+                    type = NavType.StringType
+                    nullable = true
+                }
+            },
+            enterTransition = {
+                slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up)
+            },
+            exitTransition = {
+                slideOutOfContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Down
+                )
+            },
+        ) {
+            val arguments = it.arguments!!
+            val characterId = arguments.getString("characterId")!!
+            val name = arguments.getString("name")
+            val coverImage = arguments.getString("coverImage")
+            val coverImageWidthToHeightRatio = arguments.getString("coverImageWidthToHeightRatio")
+                ?.toFloatOrNull() ?: 1f
+            val bannerImage = arguments.getString("bannerImage")
+
+            val viewModel = hiltViewModel<AnimeCharacterDetailsViewModel>().apply {
+                initialize(characterId)
+            }
+
+            CharacterDetailsScreen(
+                viewModel = viewModel,
+                coverImage = { viewModel.entry?.character?.image?.large ?: coverImage },
+                coverImageWidthToHeightRatio = coverImageWidthToHeightRatio,
+                bannerImage = {
+                    // TODO
+                    bannerImage
+                },
+                title = { viewModel.entry?.character?.name?.userPreferred ?: name ?: "" },
+                navigationCallback = navigationCallback,
             )
         }
 
@@ -393,6 +435,18 @@ object AnimeNavigator {
                 "&coverImageWidthToHeightRatio=$imageWidthToHeightRatio"
     )
 
+    fun onCharacterClick(
+        navHostController: NavHostController,
+        character: CharacterNavigationData,
+        imageWidthToHeightRatio: Float,
+    ) = navHostController.navigate(
+        "characterDetails" +
+                "?characterId=${character.id}" +
+                "&name=${character.name?.userPreferred}" +
+                "&coverImage=${character.image?.large}" +
+                "&coverImageWidthToHeightRatio=$imageWidthToHeightRatio"
+    )
+
     fun onUserClick(navHostController: NavHostController, userId: String) {
         // TODO: Pass name and image
         navHostController.navigate("${AnimeNavDestinations.PROFILE.id}?userId=$userId")
@@ -510,7 +564,9 @@ object AnimeNavigator {
             navHostController?.let { onUserClick(it, userId) }
         }
 
-        fun onCharacterClick(id: String) = onOpenUri(AniListUtils.characterUrl(id))
+        fun onCharacterClick(character: CharacterNavigationData, imageWidthToHeightRatio: Float) {
+            navHostController?.let { onCharacterClick(it, character, imageWidthToHeightRatio) }
+        }
 
         fun onCharacterLongClick(id: String) {
             // TODO

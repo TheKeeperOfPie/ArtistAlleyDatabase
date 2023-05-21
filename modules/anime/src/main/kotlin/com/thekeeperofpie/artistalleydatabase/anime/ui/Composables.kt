@@ -2,17 +2,24 @@
 
 package com.thekeeperofpie.artistalleydatabase.anime.ui
 
+import androidx.annotation.StringRes
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -25,8 +32,10 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.anime.R
@@ -209,6 +218,77 @@ fun StartEndDateDialog(
             modifier = Modifier.fillMaxSize(),
         ) {
             DatePicker(datePickerState)
+        }
+    }
+}
+
+fun <T> LazyListScope.listSection(
+    @StringRes titleRes: Int,
+    values: Collection<T>,
+    aboveFold: Int,
+    expanded: () -> Boolean,
+    onExpandedToggled: (Boolean) -> Unit,
+    hidden: () -> Boolean = { false },
+    hiddenContent: @Composable () -> Unit = {},
+    itemContent: @Composable (T, paddingBottom: Dp) -> Unit,
+) {
+    if (values.isNotEmpty()) {
+        item {
+            DetailsSectionHeader(
+                text = stringResource(titleRes),
+                modifier = Modifier.clickable { onExpandedToggled(!expanded()) }
+            )
+        }
+
+        if (hidden()) {
+            item {
+                hiddenContent()
+            }
+            return
+        }
+
+        val hasMore = values.size > aboveFold
+
+        itemsIndexed(values.take(aboveFold)) { index, item ->
+            val paddingBottom = if (index == values.size
+                    .coerceAtMost(aboveFold) - 1
+            ) {
+                if (hasMore) 16.dp else 0.dp
+            } else {
+                16.dp
+            }
+            itemContent(item, paddingBottom)
+        }
+
+        if (hasMore) {
+            if (expanded()) {
+                items(values.drop(aboveFold)) {
+                    itemContent(it, 16.dp)
+                }
+            }
+
+            item {
+                @Suppress("NAME_SHADOWING") val expanded = expanded()
+                ElevatedCard(
+                    onClick = { onExpandedToggled(!expanded) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                ) {
+                    Text(
+                        text = stringResource(
+                            if (expanded) {
+                                UtilsStringR.show_less
+                            } else {
+                                UtilsStringR.show_more
+                            }
+                        ),
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp, vertical = 10.dp)
+                            .align(Alignment.CenterHorizontally)
+                    )
+                }
+            }
         }
     }
 }

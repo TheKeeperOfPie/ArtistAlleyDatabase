@@ -22,7 +22,8 @@ object CharacterUtils {
                         }
                     }
                     ?.associate { it }
-                    .orEmpty()
+                    .orEmpty(),
+                character = it.node,
             )
         }.orEmpty().distinctBy { it.id }
 }

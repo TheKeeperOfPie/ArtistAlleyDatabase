@@ -10,6 +10,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -23,6 +24,7 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ImageNotSupported
+import androidx.compose.material3.Divider
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LocalContentColor
@@ -57,13 +59,15 @@ import coil.request.ImageRequest
 import com.thekeeperofpie.artistalleydatabase.android_utils.AnimationUtils
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.compose.AccelerateEasing
+import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
+import com.thekeeperofpie.artistalleydatabase.compose.VerticalDivider
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.compose.fadingEdgeBottom
 import com.thekeeperofpie.artistalleydatabase.compose.optionalClickable
 import de.charlex.compose.HtmlText
 
 @Composable
-fun CoverAndBannerHeader(
+internal fun CoverAndBannerHeader(
     coverImage: @Composable () -> String?,
     bannerImage: @Composable () -> String?,
     pinnedHeight: Dp,
@@ -174,7 +178,7 @@ fun CoverAndBannerHeader(
 }
 
 @Composable
-fun DetailsSectionHeader(text: String, modifier: Modifier = Modifier) {
+internal fun DetailsSectionHeader(text: String, modifier: Modifier = Modifier) {
     Text(
         text = text,
         style = MaterialTheme.typography.titleMedium,
@@ -184,13 +188,25 @@ fun DetailsSectionHeader(text: String, modifier: Modifier = Modifier) {
     )
 }
 
-fun LazyListScope.descriptionSection(
+@Composable
+internal fun DetailsSubsectionHeader(text: String, modifier: Modifier = Modifier) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.labelLarge,
+        color = MaterialTheme.colorScheme.surfaceTint,
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(start = 16.dp, end = 16.dp, top = 10.dp, bottom = 4.dp)
+    )
+}
+
+internal fun LazyListScope.descriptionSection(
     @StringRes titleTextRes: Int,
     htmlText: String?,
     expanded: () -> Boolean,
     onExpandedChanged: (Boolean) -> Unit,
 ) {
-    htmlText ?: return
+    htmlText?.takeUnless(String::isEmpty) ?: return
     item {
         DetailsSectionHeader(
             stringResource(titleTextRes),
@@ -218,5 +234,135 @@ fun LazyListScope.descriptionSection(
                     .fadingEdgeBottom(show = !expanded)
             )
         }
+    }
+}
+
+
+@Composable
+internal fun TwoColumnInfoText(
+    labelOne: String, bodyOne: String?, onClickOne: (() -> Unit)? = null,
+    labelTwo: String, bodyTwo: String?, onClickTwo: (() -> Unit)? = null,
+    showDividerAbove: Boolean = true
+) {
+    if (bodyOne != null && bodyTwo != null) {
+        if (showDividerAbove) {
+            Divider()
+        }
+        Row(modifier = Modifier.height(IntrinsicSize.Min)) {
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .optionalClickable(onClickOne)
+            ) {
+                InfoText(label = labelOne, body = bodyOne, showDividerAbove = false)
+            }
+
+            VerticalDivider()
+
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .optionalClickable(onClickTwo)
+            ) {
+                InfoText(label = labelTwo, body = bodyTwo, showDividerAbove = false)
+            }
+        }
+    } else if (bodyOne != null) {
+        Column(modifier = Modifier.optionalClickable(onClickOne)) {
+            InfoText(label = labelOne, body = bodyOne, showDividerAbove = showDividerAbove)
+        }
+    } else if (bodyTwo != null) {
+        Column(modifier = Modifier.optionalClickable(onClickTwo)) {
+            InfoText(label = labelTwo, body = bodyTwo, showDividerAbove = showDividerAbove)
+        }
+    }
+}
+
+@Suppress("UnusedReceiverParameter")
+@Composable
+internal fun ColumnScope.InfoText(
+    label: String,
+    body: String,
+    showDividerAbove: Boolean = true
+) {
+    if (showDividerAbove) {
+        Divider()
+    }
+
+    DetailsSubsectionHeader(label)
+
+    Text(
+        text = body,
+        style = MaterialTheme.typography.bodyLarge,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 10.dp)
+    )
+}
+
+@Composable
+internal fun <T> ExpandableListInfoText(
+    @StringRes labelTextRes: Int,
+    @StringRes contentDescriptionTextRes: Int,
+    values: List<T>,
+    valueToText: @Composable (T) -> String,
+    onClick: ((T) -> Unit)? = null,
+    showDividerAbove: Boolean = true,
+) {
+    if (values.isEmpty()) return
+
+    var expanded by remember { mutableStateOf(false) }
+
+    Box {
+        Column(
+            modifier = Modifier
+                .wrapContentHeight()
+                .heightIn(max = if (expanded) Dp.Unspecified else 120.dp)
+                .clickable { expanded = !expanded }
+                .fadingEdgeBottom(show = !expanded)
+        ) {
+            if (showDividerAbove) {
+                Divider()
+            }
+
+            DetailsSubsectionHeader(stringResource(labelTextRes))
+
+            values.forEachIndexed { index, value ->
+                if (index != 0) {
+                    Divider(modifier = Modifier.padding(start = 16.dp))
+                }
+
+                val bottomPadding = if (index == values.size - 1) {
+                    12.dp
+                } else {
+                    8.dp
+                }
+
+                Text(
+                    text = valueToText(value),
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .optionalClickable(
+                            onClick = onClick
+                                ?.takeIf { expanded }
+                                ?.let { { onClick(value) } }
+                        )
+                        .padding(
+                            start = 16.dp,
+                            end = 16.dp,
+                            top = 8.dp,
+                            bottom = bottomPadding,
+                        )
+                )
+            }
+        }
+
+        TrailingDropdownIconButton(
+            expanded = expanded,
+            contentDescription = stringResource(contentDescriptionTextRes),
+            onClick = { expanded = !expanded },
+            modifier = Modifier.align(Alignment.TopEnd),
+        )
     }
 }

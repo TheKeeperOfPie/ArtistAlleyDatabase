@@ -13,7 +13,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -35,7 +34,6 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -97,7 +95,6 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -122,7 +119,6 @@ import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTube
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
-import com.thekeeperofpie.artistalleydatabase.anime.AppMediaPlayer
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils
 import com.thekeeperofpie.artistalleydatabase.anime.character.charactersSection
@@ -135,12 +131,17 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toStatusIco
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toStatusText
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.AnimeMediaEditBottomSheet
-import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditData
+import com.thekeeperofpie.artistalleydatabase.anime.media.mediaListSection
 import com.thekeeperofpie.artistalleydatabase.anime.staff.DetailsStaff
 import com.thekeeperofpie.artistalleydatabase.anime.staff.staffSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.CoverAndBannerHeader
 import com.thekeeperofpie.artistalleydatabase.anime.ui.DetailsSectionHeader
+import com.thekeeperofpie.artistalleydatabase.anime.ui.DetailsSubsectionHeader
+import com.thekeeperofpie.artistalleydatabase.anime.ui.ExpandableListInfoText
+import com.thekeeperofpie.artistalleydatabase.anime.ui.InfoText
+import com.thekeeperofpie.artistalleydatabase.anime.ui.TwoColumnInfoText
 import com.thekeeperofpie.artistalleydatabase.anime.ui.descriptionSection
+import com.thekeeperofpie.artistalleydatabase.anime.ui.listSection
 import com.thekeeperofpie.artistalleydatabase.animethemes.models.AnimeTheme
 import com.thekeeperofpie.artistalleydatabase.cds.grid.CdEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.compose.AssistChip
@@ -153,9 +154,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.PieChart
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
 import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
-import com.thekeeperofpie.artistalleydatabase.compose.VerticalDivider
 import com.thekeeperofpie.artistalleydatabase.compose.assistChipColors
-import com.thekeeperofpie.artistalleydatabase.compose.fadingEdgeBottom
 import com.thekeeperofpie.artistalleydatabase.compose.multiplyCoerceSaturation
 import com.thekeeperofpie.artistalleydatabase.compose.optionalClickable
 import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
@@ -197,7 +196,6 @@ object AnimeMediaDetailsScreen {
     @Composable
     operator fun invoke(
         viewModel: AnimeMediaDetailsViewModel = hiltViewModel(),
-        loading: @Composable () -> Boolean = { false },
         color: () -> Color? = { Color.Transparent },
         coverImage: @Composable () -> String? = { null },
         coverImageWidthToHeightRatio: Float = 1f,
@@ -207,40 +205,25 @@ object AnimeMediaDetailsScreen {
         nextEpisode: @Composable () -> Int? = { null },
         nextEpisodeAiringAt: @Composable () -> Int? = { null },
         entry: @Composable () -> Entry? = { null },
-        mediaPlayer: @Composable () -> AppMediaPlayer,
-        animeSongs: @Composable () -> AnimeMediaDetailsViewModel.AnimeSongs? = { null },
-        animeSongState: (animeSongId: String) -> AnimeMediaDetailsViewModel.AnimeSongState,
-        onAnimeSongPlayClick: (animeSongId: String) -> Unit = {},
-        onAnimeSongProgressUpdate: (animeSongId: String, Float) -> Unit,
-        onAnimeSongExpandedToggle: (animeSongId: String, expanded: Boolean) -> Unit,
-        cdEntries: @Composable () -> List<CdEntryGridModel> = { emptyList() },
         onGenreLongClicked: (String) -> Unit = {},
         onCharacterLongClicked: (String) -> Unit = {},
         onStaffLongClicked: (String) -> Unit = {},
         onTagLongClicked: (String) -> Unit = {},
         navigationCallback: AnimeNavigator.NavigationCallback,
-        trailerPlaybackPosition: () -> Float,
-        onTrailerPlaybackPositionUpdate: (Float) -> Unit,
         listEntry: @Composable () -> MediaDetailsListEntry?,
-        editData: MediaEditData,
         scoreFormat: @Composable () -> ScoreFormat,
-        onDateChange: (start: Boolean, Long?) -> Unit,
-        onStatusChange: (status: MediaListStatus?) -> Unit,
-        onClickDelete: () -> Unit,
-        onClickSave: () -> Unit,
-        onEditSheetValueChange: (SheetValue) -> Boolean,
         errorRes: @Composable () -> Pair<Int, Exception?>? = { null },
         onErrorDismiss: () -> Unit = {},
     ) {
         val bottomSheetScaffoldState = rememberBottomSheetScaffoldState(
             bottomSheetState = rememberStandardBottomSheetState(
                 initialValue = SheetValue.Hidden,
-                confirmValueChange = onEditSheetValueChange,
+                confirmValueChange = viewModel::onEditSheetValueChange,
                 skipHiddenState = false,
             )
         )
 
-        val bottomSheetShowing = editData.showing
+        val bottomSheetShowing = viewModel.editData.showing
         LaunchedEffect(bottomSheetShowing) {
             launch {
                 if (bottomSheetShowing) {
@@ -255,7 +238,7 @@ object AnimeMediaDetailsScreen {
         LaunchedEffect(currentValue) {
             launch {
                 if (bottomSheetScaffoldState.bottomSheetState.currentValue == SheetValue.Hidden) {
-                    editData.showing = false
+                    viewModel.editData.showing = false
                 }
             }
         }
@@ -264,7 +247,7 @@ object AnimeMediaDetailsScreen {
         BackHandler(
             enabled = bottomSheetScaffoldState.bottomSheetState.currentValue != SheetValue.Hidden
         ) {
-            if (onEditSheetValueChange(SheetValue.Hidden)) {
+            if (viewModel.onEditSheetValueChange(SheetValue.Hidden)) {
                 scope.launch {
                     bottomSheetScaffoldState.bottomSheetState.hide()
                 }
@@ -306,28 +289,31 @@ object AnimeMediaDetailsScreen {
                         errorRes.second,
                         onErrorDismiss = onErrorDismiss
                     )
-                } else if (editData.errorRes != null) {
-                    SnackbarErrorText(
-                        editData.errorRes?.first,
-                        editData.errorRes?.second,
-                        onErrorDismiss = { editData.errorRes = null },
-                    )
                 } else {
-                    // Bottom sheet requires at least one measurable component
-                    Spacer(modifier = Modifier.size(0.dp))
+                    val editData = viewModel.editData
+                    if (editData.errorRes != null) {
+                        SnackbarErrorText(
+                            editData.errorRes?.first,
+                            editData.errorRes?.second,
+                            onErrorDismiss = { editData.errorRes = null },
+                        )
+                    } else {
+                        // Bottom sheet requires at least one measurable component
+                        Spacer(modifier = Modifier.size(0.dp))
+                    }
                 }
             },
             sheetContent = {
                 AnimeMediaEditBottomSheet(
-                    editData = editData,
+                    editData = viewModel.editData,
                     id = { listEntry()?.id?.toString() },
                     type = { entry()?.media?.type },
                     progressMax = { entry()?.media?.run { episodes ?: volumes } ?: 0 },
                     scoreFormat = scoreFormat,
-                    onDateChange = onDateChange,
-                    onStatusChange = onStatusChange,
-                    onClickDelete = onClickDelete,
-                    onClickSave = onClickSave,
+                    onDateChange = viewModel::onDateChange,
+                    onStatusChange = viewModel::onStatusChange,
+                    onClickDelete = viewModel::onClickDelete,
+                    onClickSave = viewModel::onClickSave,
                 )
             },
         ) {
@@ -389,17 +375,18 @@ object AnimeMediaDetailsScreen {
                                     ?.takeIf { expanded } != null,
                                 containerColor = containerColor,
                                 contentColor = contentColor,
-                                onClick = { if (showFloatingActionButton) editData.showing = true },
+                                onClick = {
+                                    if (showFloatingActionButton) {
+                                        viewModel.editData.showing = true
+                                    }
+                                },
                             )
                         }
                     }
                 },
                 modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
             ) {
-                val loading = loading()
                 val entry = entry()
-                val animeSongs = animeSongs()
-                val cdEntries = cdEntries()
                 val expandedState = rememberExpandedState()
 
                 LazyColumn(
@@ -410,47 +397,38 @@ object AnimeMediaDetailsScreen {
                         .padding(it)
                 ) {
                     content(
+                        viewModel = viewModel,
                         entry = entry,
-                        loading = loading,
                         errorRes = errorRes,
-                        mediaPlayer = mediaPlayer,
-                        animeSongs = animeSongs,
-                        animeSongState = animeSongState,
-                        onAnimeThemePlayClick = onAnimeSongPlayClick,
-                        onAnimeSongProgressUpdate = onAnimeSongProgressUpdate,
-                        onAnimeSongExpandedToggle = onAnimeSongExpandedToggle,
-                        cdEntries = cdEntries,
                         onGenreLongClicked = onGenreLongClicked,
                         onCharacterLongClicked = onCharacterLongClicked,
                         onStaffLongClicked = onStaffLongClicked,
                         onTagLongClicked = onTagLongClicked,
                         navigationCallback = navigationCallback,
                         expandedState = expandedState,
-                        trailerPlaybackPosition = trailerPlaybackPosition,
-                        onTrailerPlaybackPositionUpdate = onTrailerPlaybackPositionUpdate,
                         colorCalculationState = colorCalculationState,
                     )
                 }
             }
         }
 
-        if (editData.showConfirmClose) {
+        if (viewModel.editData.showConfirmClose) {
             AlertDialog(
-                onDismissRequest = { editData.showConfirmClose = false },
+                onDismissRequest = { viewModel.editData.showConfirmClose = false },
                 title = { Text(stringResource(R.string.anime_media_edit_confirm_close_title)) },
                 text = { Text(stringResource(R.string.anime_media_edit_confirm_close_text)) },
                 confirmButton = {
                     TextButton(onClick = {
-                        editData.showConfirmClose = false
-                        onClickSave()
+                        viewModel.editData.showConfirmClose = false
+                        viewModel.onClickSave()
                     }) {
                         Text(stringResource(UtilsStringR.yes))
                     }
                 },
                 dismissButton = {
                     TextButton(onClick = {
-                        editData.showConfirmClose = false
-                        editData.showing = false
+                        viewModel.editData.showConfirmClose = false
+                        viewModel.editData.showing = false
                         scope.launch {
                             bottomSheetScaffoldState.bottomSheetState.hide()
                         }
@@ -463,28 +441,19 @@ object AnimeMediaDetailsScreen {
     }
 
     private fun LazyListScope.content(
+        viewModel: AnimeMediaDetailsViewModel,
         entry: Entry?,
-        loading: Boolean,
         errorRes: @Composable () -> Pair<Int, Exception?>? = { null },
-        mediaPlayer: @Composable () -> AppMediaPlayer,
-        animeSongs: AnimeMediaDetailsViewModel.AnimeSongs?,
-        animeSongState: (animeSongId: String) -> AnimeMediaDetailsViewModel.AnimeSongState,
-        onAnimeThemePlayClick: (animeSongId: String) -> Unit,
-        onAnimeSongProgressUpdate: (animeSongId: String, Float) -> Unit,
-        onAnimeSongExpandedToggle: (animeSongId: String, expanded: Boolean) -> Unit,
-        cdEntries: List<CdEntryGridModel>,
         onGenreLongClicked: (String) -> Unit,
         onCharacterLongClicked: (String) -> Unit,
         onStaffLongClicked: (String) -> Unit,
         onTagLongClicked: (String) -> Unit,
         navigationCallback: AnimeNavigator.NavigationCallback,
         expandedState: ExpandedState,
-        trailerPlaybackPosition: () -> Float,
-        onTrailerPlaybackPositionUpdate: (Float) -> Unit,
         colorCalculationState: ColorCalculationState,
     ) {
         if (entry == null) {
-            if (loading) {
+            if (viewModel.loading) {
                 item {
                     Box(modifier = Modifier.fillMaxSize()) {
                         CircularProgressIndicator(
@@ -538,17 +507,12 @@ object AnimeMediaDetailsScreen {
         infoSection(entry)
 
         songsSection(
-            animeSongs = animeSongs,
+            viewModel = viewModel,
             songsExpanded = expandedState::songs,
             onSongsExpandedToggled = { expandedState.songs = it },
-            mediaPlayer = mediaPlayer,
-            animeSongState = animeSongState,
-            onAnimeThemePlayClick = onAnimeThemePlayClick,
-            onAnimeSongProgressUpdate = onAnimeSongProgressUpdate,
-            onAnimeSongExpandedToggle = onAnimeSongExpandedToggle,
         )
 
-        cdsSection(cdEntries)
+        cdsSection(viewModel.cdEntries)
 
         staffSection(
             titleRes = R.string.anime_media_details_staff_label,
@@ -569,8 +533,8 @@ object AnimeMediaDetailsScreen {
 
         trailerSection(
             entry = entry,
-            playbackPosition = trailerPlaybackPosition,
-            onPlaybackPositionUpdate = onTrailerPlaybackPositionUpdate,
+            playbackPosition = { viewModel.trailerPlaybackPosition },
+            onPlaybackPositionUpdate = { viewModel.trailerPlaybackPosition = it },
         )
 
         streamingEpisodesSection(
@@ -695,18 +659,6 @@ object AnimeMediaDetailsScreen {
         }
     }
 
-    @Composable
-    private fun SubsectionHeader(text: String, modifier: Modifier = Modifier) {
-        Text(
-            text = text,
-            style = MaterialTheme.typography.labelLarge,
-            color = MaterialTheme.colorScheme.surfaceTint,
-            modifier = modifier
-                .fillMaxWidth()
-                .padding(start = 16.dp, end = 16.dp, top = 10.dp, bottom = 4.dp)
-        )
-    }
-
     private fun LazyListScope.genreSection(
         entry: Entry,
         onGenreClicked: (String) -> Unit,
@@ -754,7 +706,7 @@ object AnimeMediaDetailsScreen {
             onExpandedToggled = onRelationsExpandedToggled,
             colorCalculationState = colorCalculationState,
             navigationCallback = navigationCallback,
-            onTagLongClicked = onTagLongClicked,
+            onTagLongClick = onTagLongClicked,
             label = { RelationLabel(it.relation) },
         )
     }
@@ -886,146 +838,12 @@ object AnimeMediaDetailsScreen {
         }
     }
 
-    @Composable
-    private fun TwoColumnInfoText(
-        labelOne: String, bodyOne: String?, onClickOne: (() -> Unit)? = null,
-        labelTwo: String, bodyTwo: String?, onClickTwo: (() -> Unit)? = null,
-        showDividerAbove: Boolean = true
-    ) {
-        if (bodyOne != null && bodyTwo != null) {
-            if (showDividerAbove) {
-                Divider()
-            }
-            Row(modifier = Modifier.height(IntrinsicSize.Min)) {
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .optionalClickable(onClickOne)
-                ) {
-                    InfoText(label = labelOne, body = bodyOne, showDividerAbove = false)
-                }
-
-                VerticalDivider()
-
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .optionalClickable(onClickTwo)
-                ) {
-                    InfoText(label = labelTwo, body = bodyTwo, showDividerAbove = false)
-                }
-            }
-        } else if (bodyOne != null) {
-            Column(modifier = Modifier.optionalClickable(onClickOne)) {
-                InfoText(label = labelOne, body = bodyOne, showDividerAbove = showDividerAbove)
-            }
-        } else if (bodyTwo != null) {
-            Column(modifier = Modifier.optionalClickable(onClickTwo)) {
-                InfoText(label = labelTwo, body = bodyTwo, showDividerAbove = showDividerAbove)
-            }
-        }
-    }
-
-    @Suppress("UnusedReceiverParameter")
-    @Composable
-    private fun ColumnScope.InfoText(
-        label: String,
-        body: String,
-        showDividerAbove: Boolean = true
-    ) {
-        if (showDividerAbove) {
-            Divider()
-        }
-
-        SubsectionHeader(label)
-
-        Text(
-            text = body,
-            style = MaterialTheme.typography.bodyLarge,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 10.dp)
-        )
-    }
-
-    @Composable
-    private fun <T> ExpandableListInfoText(
-        @StringRes labelTextRes: Int,
-        @StringRes contentDescriptionTextRes: Int,
-        values: List<T>,
-        valueToText: @Composable (T) -> String,
-        onClick: ((T) -> Unit)? = null,
-        showDividerAbove: Boolean = true,
-    ) {
-        if (values.isEmpty()) return
-
-        var expanded by remember { mutableStateOf(false) }
-
-        Box {
-            Column(
-                modifier = Modifier
-                    .wrapContentHeight()
-                    .heightIn(max = if (expanded) Dp.Unspecified else 120.dp)
-                    .clickable { expanded = !expanded }
-                    .fadingEdgeBottom(show = !expanded)
-            ) {
-                if (showDividerAbove) {
-                    Divider()
-                }
-
-                SubsectionHeader(stringResource(labelTextRes))
-
-                values.forEachIndexed { index, value ->
-                    if (index != 0) {
-                        Divider(modifier = Modifier.padding(start = 16.dp))
-                    }
-
-                    val bottomPadding = if (index == values.size - 1) {
-                        12.dp
-                    } else {
-                        8.dp
-                    }
-
-                    Text(
-                        text = valueToText(value),
-                        style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .optionalClickable(
-                                onClick = onClick
-                                    ?.takeIf { expanded }
-                                    ?.let { { onClick(value) } }
-                            )
-                            .padding(
-                                start = 16.dp,
-                                end = 16.dp,
-                                top = 8.dp,
-                                bottom = bottomPadding,
-                            )
-                    )
-                }
-            }
-
-            TrailingDropdownIconButton(
-                expanded = expanded,
-                contentDescription = stringResource(contentDescriptionTextRes),
-                onClick = { expanded = !expanded },
-                modifier = Modifier.align(Alignment.TopEnd),
-            )
-        }
-    }
-
     private fun LazyListScope.songsSection(
-        animeSongs: AnimeMediaDetailsViewModel.AnimeSongs?,
+        viewModel: AnimeMediaDetailsViewModel,
         songsExpanded: () -> Boolean,
         onSongsExpandedToggled: (Boolean) -> Unit,
-        mediaPlayer: @Composable () -> AppMediaPlayer,
-        animeSongState: (animeSongId: String) -> AnimeMediaDetailsViewModel.AnimeSongState,
-        onAnimeThemePlayClick: (animeSongId: String) -> Unit,
-        onAnimeSongProgressUpdate: (animeSongId: String, Float) -> Unit,
-        onAnimeSongExpandedToggle: (animeSongId: String, expanded: Boolean) -> Unit,
     ) {
-        if (animeSongs == null) return
+        val animeSongs = viewModel.animeSongs ?: return
         listSection(
             titleRes = R.string.anime_media_details_songs_label,
             values = animeSongs.entries,
@@ -1034,30 +852,21 @@ object AnimeMediaDetailsScreen {
             onExpandedToggled = onSongsExpandedToggled,
         ) { item, paddingBottom ->
             AnimeThemeRow(
+                viewModel = viewModel,
                 entry = item,
-                mediaPlayer = mediaPlayer,
-                state = animeSongState,
-                onClickPlay = onAnimeThemePlayClick,
-                onProgressUpdate = onAnimeSongProgressUpdate,
-                onExpandedToggle = onAnimeSongExpandedToggle,
                 modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = paddingBottom)
             )
         }
     }
 
-    @Suppress("NAME_SHADOWING")
     @Composable
     private fun AnimeThemeRow(
+        viewModel: AnimeMediaDetailsViewModel,
         entry: AnimeMediaDetailsViewModel.AnimeSongEntry,
-        mediaPlayer: @Composable () -> AppMediaPlayer,
-        state: (animeSongId: String) -> AnimeMediaDetailsViewModel.AnimeSongState,
-        onClickPlay: (animeSongId: String) -> Unit,
-        onProgressUpdate: (animeSongId: String, Float) -> Unit,
-        onExpandedToggle: (animeSongId: String, expanded: Boolean) -> Unit,
         modifier: Modifier = Modifier,
     ) {
-        val state = state(entry.id)
-        val mediaPlayer = mediaPlayer()
+        val state = viewModel.getAnimeSongState(entry.id)
+        val mediaPlayer = viewModel.mediaPlayer
         val playingState by mediaPlayer.playingState.collectAsState()
         val active by remember {
             derivedStateOf { playingState.first == entry.id }
@@ -1095,7 +904,9 @@ object AnimeMediaDetailsScreen {
                 // TODO: This doesn't line up perfectly (too much space between label and title),
                 //  consider migrating to ConstraintLayout
                 Column(
-                    modifier = Modifier.clickable { onExpandedToggle(entry.id, !state.expanded()) },
+                    modifier = Modifier.clickable {
+                        viewModel.onAnimeSongExpandedToggle(entry.id, !state.expanded())
+                    },
                 ) {
                     Row {
                         if (entry.spoiler) {
@@ -1143,7 +954,9 @@ object AnimeMediaDetailsScreen {
 
                         if (entry.videoUrl != null || entry.audioUrl != null) {
                             if (!state.expanded()) {
-                                IconButton(onClick = { onClickPlay(entry.id) }) {
+                                IconButton(
+                                    onClick = { viewModel.onAnimeSongPlayAudioClick(entry.id) },
+                                ) {
                                     if (playing) {
                                         Icon(
                                             imageVector = Icons.Filled.PauseCircleOutline,
@@ -1168,7 +981,12 @@ object AnimeMediaDetailsScreen {
                                     contentDescription = stringResource(
                                         R.string.anime_media_details_song_expand_content_description
                                     ),
-                                    onClick = { onExpandedToggle(entry.id, !state.expanded()) },
+                                    onClick = {
+                                        viewModel.onAnimeSongExpandedToggle(
+                                            entry.id,
+                                            !state.expanded(),
+                                        )
+                                    },
                                 )
                             }
                         }
@@ -1224,7 +1042,7 @@ object AnimeMediaDetailsScreen {
                         val progress = mediaPlayer.progress
                         Slider(
                             value = progress,
-                            onValueChange = { onProgressUpdate(entry.id, it) },
+                            onValueChange = { viewModel.onAnimeSongProgressUpdate(entry.id, it) },
                             modifier = Modifier.padding(horizontal = 16.dp),
                         )
                     }
@@ -1415,110 +1233,8 @@ object AnimeMediaDetailsScreen {
             onExpandedToggled = onRecommendationsExpandedToggled,
             colorCalculationState = colorCalculationState,
             navigationCallback = navigationCallback,
-            onTagLongClicked = onTagLongClicked,
-        )
-    }
-
-    private fun <T> LazyListScope.mediaListSection(
-        @StringRes titleRes: Int,
-        values: Collection<T>,
-        valueToEntry: (T) -> AnimeMediaListRow.Entry,
-        aboveFold: Int,
-        expanded: () -> Boolean,
-        onExpandedToggled: (Boolean) -> Unit,
-        colorCalculationState: ColorCalculationState,
-        navigationCallback: AnimeNavigator.NavigationCallback,
-        onTagLongClicked: (String) -> Unit,
-        label: (@Composable (T) -> Unit)? = null,
-    ) = listSection(
-        titleRes = titleRes,
-        values = values,
-        aboveFold = aboveFold,
-        expanded = expanded,
-        onExpandedToggled = onExpandedToggled,
-    ) { item, paddingBottom ->
-        val entry = valueToEntry(item)
-        AnimeMediaListRow(
-            entry = entry,
-            label = if (label == null) null else {
-                { label(item) }
-            },
             onTagLongClick = onTagLongClicked,
-            colorCalculationState = colorCalculationState,
-            navigationCallback = navigationCallback,
-            modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = paddingBottom)
         )
-    }
-
-    private fun <T> LazyListScope.listSection(
-        @StringRes titleRes: Int,
-        values: Collection<T>,
-        aboveFold: Int,
-        expanded: () -> Boolean,
-        onExpandedToggled: (Boolean) -> Unit,
-        hidden: () -> Boolean = { false },
-        hiddenContent: @Composable () -> Unit = {},
-        itemContent: @Composable (T, paddingBottom: Dp) -> Unit,
-    ) {
-        if (values.isNotEmpty()) {
-            item {
-                DetailsSectionHeader(
-                    text = stringResource(titleRes),
-                    modifier = Modifier.clickable { onExpandedToggled(!expanded()) }
-                )
-            }
-
-            if (hidden()) {
-                item {
-                    hiddenContent()
-                }
-                return
-            }
-
-            val hasMore = values.size > aboveFold
-
-            itemsIndexed(values.take(aboveFold)) { index, item ->
-                val paddingBottom = if (index == values.size
-                        .coerceAtMost(aboveFold) - 1
-                ) {
-                    if (hasMore) 16.dp else 0.dp
-                } else {
-                    16.dp
-                }
-                itemContent(item, paddingBottom)
-            }
-
-            if (hasMore) {
-                if (expanded()) {
-                    items(values.drop(aboveFold)) {
-                        itemContent(it, 16.dp)
-                    }
-                }
-
-                item {
-                    @Suppress("NAME_SHADOWING") val expanded = expanded()
-                    ElevatedCard(
-                        onClick = { onExpandedToggled(!expanded) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp)
-                    ) {
-                        Text(
-                            text = stringResource(
-                                if (expanded) {
-                                    UtilsStringR.show_less
-                                } else {
-                                    UtilsStringR.show_more
-                                }
-                            ),
-                            modifier = Modifier
-                                .padding(horizontal = 16.dp, vertical = 10.dp)
-                                .align(Alignment.CenterHorizontally)
-                        )
-                    }
-                }
-            }
-        }
     }
 
     @Composable
@@ -1577,7 +1293,7 @@ object AnimeMediaDetailsScreen {
                 if (statusDistribution != null) {
 
                     Divider()
-                    SubsectionHeader(
+                    DetailsSubsectionHeader(
                         stringResource(R.string.anime_media_details_status_distribution_label)
                     )
 
@@ -1608,7 +1324,7 @@ object AnimeMediaDetailsScreen {
                 val scoreDistribution = entry.scoreDistribution
                 if (scoreDistribution.isNotEmpty()) {
                     Divider()
-                    SubsectionHeader(
+                    DetailsSubsectionHeader(
                         stringResource(R.string.anime_media_details_score_distribution_label)
                     )
 

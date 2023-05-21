@@ -24,6 +24,7 @@ fun LazyListScope.staffSection(
     onStaffClick: (String) -> Unit,
     onStaffLongClick: (String) -> Unit,
     colorCalculationState: ColorCalculationState,
+    roleLines: Int = 1,
 ) {
     if (staff.isEmpty()) return
     item {
@@ -37,7 +38,7 @@ fun LazyListScope.staffSection(
                     id = it.id,
                     image = it.image,
                     colorCalculationState = colorCalculationState,
-                    onClick = { onStaffClick(it) },
+                    onClick = { onStaffClick(it.id) },
                 ) { textColor ->
                     it.role?.let {
                         AutoHeightText(
@@ -50,8 +51,8 @@ fun LazyListScope.staffSection(
                                     wordBreak = LineBreak.WordBreak.Default,
                                 )
                             ),
-                            minLines = 2,
-                            maxLines = 2,
+                            minLines = roleLines,
+                            maxLines = roleLines,
                             minTextSizeSp = 8f,
                             modifier = Modifier
                                 .fillMaxWidth()

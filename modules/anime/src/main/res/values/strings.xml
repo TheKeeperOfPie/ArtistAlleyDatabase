@@ -12,6 +12,7 @@
     <string name="anime_media_artist_no_image">No artist image</string>
     <string name="anime_media_voice_actor_image">Voice actor image</string>
     <string name="anime_media_list_error_loading">Error loading media list</string>
+    <string name="anime_character_error_loading">Error loading character</string>
     <string name="anime_media_list_no_results">No results</string>
     <string name="anime_screen_anime">Anime</string>
     <string name="anime_screen_manga">Manga</string>
@@ -407,4 +408,13 @@
 
     <string name="anime_media_ignore_title_anime">Ignored anime</string>
     <string name="anime_media_ignore_title_manga">Ignored manga</string>
+
+    <string name="anime_character_details_description_label">Description</string>
+    <string name="anime_character_details_voice_actors_label">Voice actors</string>
+    <string name="anime_character_details_media_label">Media</string>
+    <string name="anime_character_details_age_label">Age</string>
+    <string name="anime_character_details_date_of_birth_label">Date of birth</string>
+    <string name="anime_character_details_gender_label">Gender</string>
+    <string name="anime_character_details_blood_type_label">Blood type</string>
+    <string name="anime_character_details_favorites_label">Favorites</string>
 </resources>

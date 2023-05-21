@@ -63,11 +63,11 @@ class AnimeMediaDetailsViewModel @Inject constructor(
 
     lateinit var mediaId: String
 
-    val loading = MutableStateFlow(false)
-    val media = MutableStateFlow<MediaDetailsQuery.Data.Media?>(null)
-    var errorResource = MutableStateFlow<Pair<Int, Exception?>?>(null)
-    var animeSongs = MutableStateFlow<AnimeSongs?>(null)
-    var cdEntries = MutableStateFlow<List<CdEntryGridModel>>(emptyList())
+    var loading by mutableStateOf(true)
+    var entry by mutableStateOf<AnimeMediaDetailsScreen.Entry?>(null)
+    var errorResource by mutableStateOf<Pair<Int, Exception?>?>(null)
+    var animeSongs by mutableStateOf<AnimeSongs?>(null)
+    var cdEntries by mutableStateOf(emptyList<CdEntryGridModel>())
 
     val scoreFormat = MutableStateFlow(ScoreFormat.POINT_100)
 
@@ -75,7 +75,7 @@ class AnimeMediaDetailsViewModel @Inject constructor(
 
     var listEntry = MutableStateFlow<MediaDetailsListEntry?>(null)
 
-    private val animeSongStates = MutableStateFlow(emptyMap<String, AnimeSongState>())
+    private var animeSongStates by mutableStateOf(emptyMap<String, AnimeSongState>())
 
     val editData = MediaEditData()
 
@@ -84,24 +84,35 @@ class AnimeMediaDetailsViewModel @Inject constructor(
         this.mediaId = mediaId
 
         viewModelScope.launch(CustomDispatchers.IO) {
-            loading.value = true
-            try {
-                media.value = aniListApi.mediaDetails(mediaId).data?.media
+            val media = try {
+                aniListApi.mediaDetails(mediaId).also {
+                    val entry = AnimeMediaDetailsScreen.Entry(mediaId, it)
+                    withContext(CustomDispatchers.Main) {
+                        this@AnimeMediaDetailsViewModel.entry = entry
+                    }
+                }
             } catch (e: Exception) {
-                errorResource.value = R.string.anime_media_error_loading_details to e
+                withContext(CustomDispatchers.Main) {
+                    errorResource = R.string.anime_media_error_loading_details to e
+                }
+                null
             } finally {
-                loading.value = false
+                withContext(CustomDispatchers.Main) {
+                    loading = false
+                }
             }
 
             withContext(CustomDispatchers.Main) {
-                initializeListEntry(media.value?.mediaListEntry)
+                initializeListEntry(entry?.media?.mediaListEntry)
             }
 
-            cdEntries.value = cdEntryDao.searchSeriesByMediaId(appJson, mediaId)
+            val cdEntries = cdEntryDao.searchSeriesByMediaId(appJson, mediaId)
                 .map { CdEntryGridModel.buildFromEntry(application, it) }
+            withContext(CustomDispatchers.Main) {
+                this@AnimeMediaDetailsViewModel.cdEntries = cdEntries
+            }
 
-            val mediaValue = media.value
-            if (mediaValue?.type == MediaType.ANIME) {
+            if (media?.type == MediaType.ANIME) {
                 try {
                     val anime = animeThemesApi.getAnime(mediaId)
                     val songEntries = anime
@@ -115,7 +126,7 @@ class AnimeMediaDetailsViewModel @Inject constructor(
                                     title = animeTheme.song?.title.orEmpty(),
                                     spoiler = it.spoiler,
                                     artists = animeTheme.song?.artists
-                                        ?.map { buildArtist(mediaValue, it) }
+                                        ?.map { buildArtist(media, it) }
                                         .orEmpty(),
                                     episodes = it.episodes,
                                     videoUrl = video?.link,
@@ -132,8 +143,8 @@ class AnimeMediaDetailsViewModel @Inject constructor(
                             .associateBy { it.id }
 
                         withContext(CustomDispatchers.Main) {
-                            animeSongStates.value = songStates
-                            animeSongs.value = AnimeSongs(songEntries)
+                            animeSongStates = songStates
+                            animeSongs = AnimeSongs(songEntries)
                         }
                     }
                 } catch (e: Exception) {
@@ -230,12 +241,12 @@ class AnimeMediaDetailsViewModel @Inject constructor(
         )
     }
 
-    fun getAnimeSongState(animeSongId: String) = animeSongStates.value[animeSongId]!!
+    fun getAnimeSongState(animeSongId: String) = animeSongStates[animeSongId]!!
 
     fun onAnimeSongPlayAudioClick(animeSongId: String) {
-        val state = animeSongStates.value[animeSongId]!!
+        val state = animeSongStates[animeSongId]!!
         mediaPlayer.playPause(state.id, state.entry.audioUrl!!)
-        animeSongStates.value.forEach { it.value.setExpanded(false) }
+        animeSongStates.forEach { it.value.setExpanded(false) }
     }
 
     fun onAnimeSongProgressUpdate(animeSongId: String, progress: Float) {
@@ -243,7 +254,7 @@ class AnimeMediaDetailsViewModel @Inject constructor(
     }
 
     fun onAnimeSongExpandedToggle(animeSongId: String, expanded: Boolean) {
-        animeSongStates.value.forEach {
+        animeSongStates.forEach {
             if (it.key == animeSongId) {
                 if (expanded) {
                     if (!it.value.expanded()) {
@@ -264,21 +275,21 @@ class AnimeMediaDetailsViewModel @Inject constructor(
 
     override fun onStart(owner: LifecycleOwner) {
         super.onStart(owner)
-        animeSongStates.value.forEach { mediaPlayer.pause(it.key) }
+        animeSongStates.forEach { mediaPlayer.pause(it.key) }
     }
 
     override fun onStop(owner: LifecycleOwner) {
         super.onStop(owner)
-        animeSongStates.value.forEach { mediaPlayer.pause(it.key) }
+        animeSongStates.forEach { mediaPlayer.pause(it.key) }
     }
 
     override fun onCleared() {
-        animeSongStates.value.forEach { mediaPlayer.stop(it.key) }
+        animeSongStates.forEach { mediaPlayer.stop(it.key) }
         super.onCleared()
     }
 
     fun animeSongsCollapseAll() {
-        animeSongStates.value.forEach { it.value.setExpanded(false) }
+        animeSongStates.forEach { it.value.setExpanded(false) }
         mediaPlayer.pause(null)
     }
 
@@ -306,7 +317,7 @@ class AnimeMediaDetailsViewModel @Inject constructor(
             MediaListStatus.REPEATING,
             MediaListStatus.UNKNOWN__, null -> Unit
             MediaListStatus.COMPLETED -> {
-                media.value?.run { episodes ?: volumes }
+                entry?.media?.run { episodes ?: volumes }
                     ?.let { editData.progress = it.toString() }
                 editData.endDate = LocalDate.now()
             }
@@ -409,7 +420,7 @@ class AnimeMediaDetailsViewModel @Inject constructor(
                 val result = aniListApi.saveMediaListEntry(
                     id = listEntry.value?.id?.toString(),
                     mediaId = mediaId,
-                    type = media.value?.type,
+                    type = entry?.media?.type,
                     status = status,
                     scoreRaw = scoreRaw,
                     progress = progressAsInt,
