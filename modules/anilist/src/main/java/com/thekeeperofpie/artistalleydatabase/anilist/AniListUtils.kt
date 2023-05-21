@@ -23,10 +23,10 @@ object AniListUtils {
 
     fun staffUrl(id: String) = "$ANILIST_BASE_URL/staff/$id"
 
-    fun mediaUrl(type: MediaType?, id: String) = when (type) {
+    fun mediaUrl(type: MediaType, id: String) = when (type) {
         MediaType.ANIME -> animeUrl(id)
         MediaType.MANGA -> mangaUrl(id)
-        else -> null
+        MediaType.UNKNOWN__ -> animeUrl(id)
     }
 
     fun mediaUrl(type: MediaEntry.Type?, id: String) = when (type) {

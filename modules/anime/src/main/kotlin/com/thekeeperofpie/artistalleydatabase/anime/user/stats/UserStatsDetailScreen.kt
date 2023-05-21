@@ -176,13 +176,13 @@ object UserStatsDetailScreen {
                         items(mediaIds, key = { it }) {
                             val media = medias.getOrNull()?.get(it)
                             InnerCard(
-                                image = media?.coverImage?.large,
+                                image = media?.coverImage?.extraLarge,
                                 loading = media == null,
                                 onClick = { ratio ->
                                     navigationCallback.onMediaClick(
                                         id = it.toString(),
                                         title = media?.title?.userPreferred,
-                                        image = media?.coverImage?.large,
+                                        image = media?.coverImage?.extraLarge,
                                         imageWidthToHeightRatio = ratio,
                                     )
                                 }

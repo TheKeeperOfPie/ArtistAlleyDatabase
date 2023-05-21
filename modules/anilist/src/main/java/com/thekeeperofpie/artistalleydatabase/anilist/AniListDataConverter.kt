@@ -37,7 +37,7 @@ class AniListDataConverter @Inject constructor(
                 else -> null
             },
             image = media.coverImage?.medium,
-            imageLink = AniListUtils.mediaUrl(media.type, media.id.toString()),
+            imageLink = media.type?.let { AniListUtils.mediaUrl(it, media.id.toString()) },
             serializedValue = serializedValue,
             searchableValue = (listOf(
                 media.title?.romaji,

@@ -30,7 +30,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
@@ -38,6 +37,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.ImageNotSupported
 import androidx.compose.material.icons.filled.OpenInBrowser
 import androidx.compose.material.icons.filled.PauseCircleOutline
@@ -139,9 +139,9 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.anime.ui.DetailsSubsectionHeader
 import com.thekeeperofpie.artistalleydatabase.anime.ui.ExpandableListInfoText
 import com.thekeeperofpie.artistalleydatabase.anime.ui.InfoText
-import com.thekeeperofpie.artistalleydatabase.anime.ui.TwoColumnInfoText
 import com.thekeeperofpie.artistalleydatabase.anime.ui.descriptionSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.listSection
+import com.thekeeperofpie.artistalleydatabase.anime.ui.twoColumnInfoText
 import com.thekeeperofpie.artistalleydatabase.animethemes.models.AnimeTheme
 import com.thekeeperofpie.artistalleydatabase.cds.grid.CdEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.compose.AssistChip
@@ -482,7 +482,7 @@ object AnimeMediaDetailsScreen {
 
         descriptionSection(
             titleTextRes = R.string.anime_media_details_description_label,
-            htmlText = entry.description,
+            htmlText = entry.media.description,
             expanded = expandedState::description,
             onExpandedChanged = { expandedState.description = it },
         )
@@ -722,7 +722,7 @@ object AnimeMediaDetailsScreen {
                     .animateContentSize(),
             ) {
                 val media = entry.media
-                TwoColumnInfoText(
+                twoColumnInfoText(
                     labelOne = stringResource(R.string.anime_media_details_format_label),
                     bodyOne = stringResource(entry.formatTextRes),
                     labelTwo = stringResource(R.string.anime_media_details_status_label),
@@ -730,7 +730,7 @@ object AnimeMediaDetailsScreen {
                     showDividerAbove = false,
                 )
 
-                TwoColumnInfoText(
+                twoColumnInfoText(
                     labelOne = stringResource(R.string.anime_media_details_episodes_label),
                     bodyOne = media.episodes?.toString(),
                     labelTwo = stringResource(R.string.anime_media_details_duration_label),
@@ -739,14 +739,14 @@ object AnimeMediaDetailsScreen {
                     },
                 )
 
-                TwoColumnInfoText(
+                twoColumnInfoText(
                     labelOne = stringResource(R.string.anime_media_details_volumes_label),
                     bodyOne = media.volumes?.toString(),
                     labelTwo = stringResource(R.string.anime_media_details_chapters_label),
                     bodyTwo = media.chapters?.toString(),
                 )
 
-                TwoColumnInfoText(
+                twoColumnInfoText(
                     labelOne = stringResource(R.string.anime_media_details_source_label),
                     bodyOne = stringResource(media.source.toTextRes()),
                     labelTwo = stringResource(R.string.anime_media_details_season_label),
@@ -762,21 +762,21 @@ object AnimeMediaDetailsScreen {
                     remember { MediaUtils.formatDateTime(context, it.year, it.month, it.day) }
                 }
 
-                TwoColumnInfoText(
+                twoColumnInfoText(
                     labelOne = stringResource(R.string.anime_media_details_start_date_label),
                     bodyOne = startDateFormatted,
                     labelTwo = stringResource(R.string.anime_media_details_end_date_label),
                     bodyTwo = endDateFormatted,
                 )
 
-                TwoColumnInfoText(
+                twoColumnInfoText(
                     labelOne = stringResource(R.string.anime_media_details_average_score_label),
                     bodyOne = media.averageScore?.toString(),
                     labelTwo = stringResource(R.string.anime_media_details_mean_score_label),
                     bodyTwo = media.meanScore?.toString(),
                 )
 
-                TwoColumnInfoText(
+                twoColumnInfoText(
                     labelOne = stringResource(R.string.anime_media_details_popularity_label),
                     bodyOne = media.popularity?.toString(),
                     labelTwo = stringResource(R.string.anime_media_details_favorites_label),
@@ -784,14 +784,14 @@ object AnimeMediaDetailsScreen {
                 )
 
                 val uriHandler = LocalUriHandler.current
-                TwoColumnInfoText(
+                twoColumnInfoText(
                     labelOne = stringResource(R.string.anime_media_details_trending_label),
                     bodyOne = media.trending?.toString(),
                     labelTwo = "",
                     bodyTwo = null,
                 )
 
-                TwoColumnInfoText(
+                twoColumnInfoText(
                     labelOne = stringResource(R.string.anime_media_details_licensed_label),
                     bodyOne = entry.licensedTextRes?.let { stringResource(it) },
                     labelTwo = stringResource(R.string.anime_media_details_country_label),
@@ -1660,74 +1660,85 @@ object AnimeMediaDetailsScreen {
                                 .align(Alignment.CenterStart)
                         )
                     }
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .align(Alignment.Top)
+                            .padding(horizontal = 8.dp, vertical = 8.dp)
+                            .height(24.dp),
+                    ) {
+                        val score = item.score
+                        if (score != null) {
+                            AutoHeightText(
+                                text = score.toString(),
+                                style = MaterialTheme.typography.labelLarge,
+                            )
 
-                    item.rating?.let {
-                        Column(
-                            verticalArrangement = Arrangement.spacedBy(4.dp),
-                            horizontalAlignment = Alignment.End,
-                            modifier = Modifier
-                                .wrapContentWidth()
-                                .padding(horizontal = 8.dp, vertical = 8.dp)
-                                .align(Alignment.Top),
-                        ) {
-                            val ratingAmount = item.ratingAmount ?: 0
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier
-                                    .height(24.dp),
-                            ) {
-                                AutoHeightText(
-                                    text = it.toString(),
-                                    style = MaterialTheme.typography.labelLarge,
-                                )
-
-                                val ratio = it / ratingAmount.toFloat()
-                                val iconTint = when {
-                                    ratio > 0.6f -> Color.Green
-                                    ratio > 0.4f -> Color.Yellow
-                                    ratio > 0.2f -> Color(0xFFFF9000) // Orange
+                            val iconTint = remember(score) {
+                                when {
+                                    score > 80 -> Color.Green
+                                    score > 70 -> Color.Yellow
+                                    score > 50 -> Color(0xFFFF9000) // Orange
                                     else -> Color.Red
                                 }
-                                Icon(
-                                    imageVector = if (ratio > 0.4f) {
-                                        Icons.Filled.ThumbUpAlt
-                                    } else {
-                                        Icons.Filled.ThumbDownAlt
-                                    },
-                                    contentDescription = stringResource(
-                                        R.string.anime_media_details_reviews_rating_upvote_content_description
-                                    ),
-                                    tint = iconTint,
-                                )
                             }
+                            Icon(
+                                imageVector = Icons.Filled.BarChart,
+                                contentDescription = stringResource(
+                                    R.string.anime_media_rating_icon_content_description
+                                ),
+                                tint = iconTint,
+                            )
+                        }
 
-                            if (ratingAmount > 0) {
-                                Row(
-                                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier
-                                        .height(16.dp)
-                                        .padding(end = 4.dp)
-                                ) {
-                                    AutoHeightText(
-                                        text = ratingAmount.toString(),
-                                        style = MaterialTheme.typography.labelLarge,
-                                    )
+                        val ratingAmount = item.ratingAmount ?: 0
+                        val rating = item.rating
+                        if (rating != null) {
+                            AutoHeightText(
+                                text = rating.toString(),
+                                style = MaterialTheme.typography.labelLarge,
+                                modifier = Modifier.padding(start = 8.dp),
+                            )
 
-                                    Icon(
-                                        imageVector = when {
-                                            it > 100 -> Icons.Filled.PeopleAlt
-                                            it > 50 -> Icons.Outlined.PeopleAlt
-                                            it > 10 -> Icons.Filled.Person
-                                            else -> Icons.Filled.PersonOutline
-                                        },
-                                        contentDescription = stringResource(
-                                            R.string.anime_media_details_reviews_rating_amount_content_description
-                                        ),
-                                    )
-                                }
+                            val ratio = rating / ratingAmount.toFloat()
+                            val iconTint = when {
+                                ratio > 0.6f -> Color.Green
+                                ratio > 0.4f -> Color.Yellow
+                                ratio > 0.2f -> Color(0xFFFF9000) // Orange
+                                else -> Color.Red
                             }
+                            Icon(
+                                imageVector = if (ratio > 0.4f) {
+                                    Icons.Filled.ThumbUpAlt
+                                } else {
+                                    Icons.Filled.ThumbDownAlt
+                                },
+                                contentDescription = stringResource(
+                                    R.string.anime_media_details_reviews_rating_upvote_content_description
+                                ),
+                                tint = iconTint,
+                            )
+                        }
+
+                        if (ratingAmount > 0) {
+                            AutoHeightText(
+                                text = ratingAmount.toString(),
+                                style = MaterialTheme.typography.labelLarge,
+                                modifier = Modifier.padding(start = 8.dp),
+                            )
+
+                            Icon(
+                                imageVector = when {
+                                    ratingAmount > 100 -> Icons.Filled.PeopleAlt
+                                    ratingAmount > 50 -> Icons.Outlined.PeopleAlt
+                                    ratingAmount > 10 -> Icons.Filled.Person
+                                    else -> Icons.Filled.PersonOutline
+                                },
+                                contentDescription = stringResource(
+                                    R.string.anime_media_details_reviews_rating_amount_content_description
+                                ),
+                            )
                         }
                     }
                 }
@@ -1747,11 +1758,10 @@ object AnimeMediaDetailsScreen {
         val media: Media,
     ) {
         val id = EntryId("media", mediaId)
-        val titlesUnique
-            get() = media.title?.run {
-                listOfNotNull(romaji, english, native).distinct()
-            }
-        val description get() = media.description
+        val titlesUnique = media.title
+            ?.run { listOfNotNull(romaji, english, native) }
+            ?.distinct()
+            .orEmpty()
 
         val formatTextRes = media.format.toTextRes()
         val statusTextRes = media.status.toTextRes()
@@ -1818,7 +1828,16 @@ object AnimeMediaDetailsScreen {
         val streamingLinks = links.filter { it.type == ExternalLinkType.STREAMING }
         val otherLinks = links.filter {
             it.type != ExternalLinkType.SOCIAL && it.type != ExternalLinkType.STREAMING
-        }
+        } + listOfNotNull(
+            media.type?.let {
+                Link(
+                    id = "AniList",
+                    type = ExternalLinkType.INFO,
+                    url = AniListUtils.mediaUrl(it, mediaId),
+                    site = "AniList",
+                )
+            }
+        )
 
         val studios = media.studios?.edges?.filterNotNull()?.map {
             Studio(
@@ -1877,9 +1896,9 @@ object AnimeMediaDetailsScreen {
             val id: String,
             val type: ExternalLinkType?,
             val url: String,
-            val icon: String?,
             val site: String,
-            val color: Color?,
+            val icon: String? = null,
+            val color: Color? = null,
             val textColor: Color? = color
                 ?.let(ComposeColorUtils::bestTextColor),
         )

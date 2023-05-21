@@ -22,7 +22,6 @@ fragment AniListListRowMedia on Media {
     coverImage {
         color
         extraLarge
-        large
     }
     title {
         userPreferred
@@ -290,7 +289,7 @@ query MediaTitlesAndImages($ids: [Int]) {
                 userPreferred
             }
             coverImage {
-                large
+                extraLarge
             }
         }
     }

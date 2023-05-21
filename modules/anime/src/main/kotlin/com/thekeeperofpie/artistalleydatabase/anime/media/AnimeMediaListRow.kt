@@ -57,7 +57,6 @@ import com.anilist.type.MediaSeason
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.material.placeholder
 import com.google.accompanist.placeholder.material.shimmer
-import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
 import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
 import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
@@ -145,45 +144,40 @@ object AnimeMediaListRow {
         colorCalculationState: ColorCalculationState,
         onRatioAvailable: (Float) -> Unit,
     ) {
-        SharedElement(
-            key = "cover_image_${entry.id?.valueId}",
-            screenKey = "media_row_${entry.id?.valueId}"
-        ) {
-            AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(entry.image)
-                    .crossfade(true)
-                    .allowHardware(false)
-                    .build(),
-                contentScale = ContentScale.Crop,
-                fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
-                onSuccess = {
-                    onRatioAvailable(it.widthToHeightRatio())
-                    ComposeColorUtils.calculatePalette(
-                        entry.id?.valueId.orEmpty(),
-                        it,
-                        colorCalculationState,
-                    )
-                },
-                contentDescription = stringResource(R.string.anime_media_cover_image),
-                modifier = Modifier
-                    .background(MaterialTheme.colorScheme.surfaceVariant)
-                    .fillMaxHeight()
-                    .heightIn(min = 180.dp)
-                    .width(130.dp)
-                    .placeholder(
-                        visible = entry == Entry.Loading,
-                        highlight = PlaceholderHighlight.shimmer(),
-                    )
-                    .combinedClickable(
-                        onClick = { onClick(entry) },
-                        onLongClick = { onLongPressImage(entry) },
-                        onLongClickLabel = stringResource(
-                            R.string.anime_media_cover_image_long_press_preview
-                        ),
-                    )
-            )
-        }
+        AsyncImage(
+            model = ImageRequest.Builder(LocalContext.current)
+                .data(entry.image)
+                .crossfade(true)
+                .allowHardware(false)
+                .build(),
+            contentScale = ContentScale.Crop,
+            fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
+            onSuccess = {
+                onRatioAvailable(it.widthToHeightRatio())
+                ComposeColorUtils.calculatePalette(
+                    entry.id?.valueId.orEmpty(),
+                    it,
+                    colorCalculationState,
+                )
+            },
+            contentDescription = stringResource(R.string.anime_media_cover_image),
+            modifier = Modifier
+                .background(MaterialTheme.colorScheme.surfaceVariant)
+                .fillMaxHeight()
+                .heightIn(min = 180.dp)
+                .width(130.dp)
+                .placeholder(
+                    visible = entry == Entry.Loading,
+                    highlight = PlaceholderHighlight.shimmer(),
+                )
+                .combinedClickable(
+                    onClick = { onClick(entry) },
+                    onLongClick = { onLongPressImage(entry) },
+                    onLongClickLabel = stringResource(
+                        R.string.anime_media_cover_image_long_press_preview
+                    ),
+                )
+        )
     }
 
     @Composable
@@ -415,8 +409,7 @@ object AnimeMediaListRow {
         ignored: Boolean = false
     ) : Entry {
         override val id = EntryId("item", media.id.toString())
-        override val image = media.coverImage?.large
-        override val imageExtraLarge = media.coverImage?.extraLarge
+        override val image = media.coverImage?.extraLarge
         override val imageBanner = media.bannerImage
         override val color = media.coverImage?.color?.let(ComposeColorUtils::hexToColor)
         override val title = media.title?.userPreferred

@@ -42,8 +42,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.staff.staffSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.CoverAndBannerHeader
 import com.thekeeperofpie.artistalleydatabase.anime.ui.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.anime.ui.InfoText
-import com.thekeeperofpie.artistalleydatabase.anime.ui.TwoColumnInfoText
 import com.thekeeperofpie.artistalleydatabase.anime.ui.descriptionSection
+import com.thekeeperofpie.artistalleydatabase.anime.ui.twoColumnInfoText
 import com.thekeeperofpie.artistalleydatabase.compose.AutoResizeHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.CollapsingToolbar
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
@@ -247,7 +247,7 @@ object CharacterDetailsScreen {
                     .padding(horizontal = 16.dp)
                     .animateContentSize(),
             ) {
-                TwoColumnInfoText(
+                var contentShown = twoColumnInfoText(
                     labelOne = stringResource(R.string.anime_character_details_age_label),
                     bodyOne = entry.character.age,
                     labelTwo = stringResource(R.string.anime_character_details_date_of_birth_label),
@@ -257,17 +257,19 @@ object CharacterDetailsScreen {
                     showDividerAbove = false,
                 )
 
-                TwoColumnInfoText(
+                contentShown = twoColumnInfoText(
                     labelOne = stringResource(R.string.anime_character_details_gender_label),
                     bodyOne = entry.character.gender,
                     labelTwo = stringResource(R.string.anime_character_details_blood_type_label),
                     bodyTwo = entry.character.bloodType,
+                    showDividerAbove = contentShown,
                 )
 
                 entry.character.favourites?.let {
                     InfoText(
                         label = stringResource(R.string.anime_character_details_favorites_label),
                         body = it.toString(),
+                        showDividerAbove = contentShown,
                     )
                 }
             }

@@ -238,12 +238,15 @@ internal fun LazyListScope.descriptionSection(
 }
 
 
+/**
+ * @return True if anything shown
+ */
 @Composable
-internal fun TwoColumnInfoText(
+internal fun twoColumnInfoText(
     labelOne: String, bodyOne: String?, onClickOne: (() -> Unit)? = null,
     labelTwo: String, bodyTwo: String?, onClickTwo: (() -> Unit)? = null,
     showDividerAbove: Boolean = true
-) {
+): Boolean {
     if (bodyOne != null && bodyTwo != null) {
         if (showDividerAbove) {
             Divider()
@@ -275,7 +278,11 @@ internal fun TwoColumnInfoText(
         Column(modifier = Modifier.optionalClickable(onClickTwo)) {
             InfoText(label = labelTwo, body = bodyTwo, showDividerAbove = showDividerAbove)
         }
+    } else {
+        return false
     }
+
+    return true
 }
 
 @Suppress("UnusedReceiverParameter")
