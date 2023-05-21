@@ -30,6 +30,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -90,10 +91,19 @@ open class AnimeUserListViewModel @Inject constructor(
                 .debounce(100.milliseconds)
                 .flatMapLatest { refreshParams ->
                     withContext(CustomDispatchers.IO) {
-                        val baseResponse = aniListApi.userMediaList(
-                            userId = userId?.toIntOrNull() ?: refreshParams.authedUser!!.id,
-                            type = mediaType,
-                        )
+                        val baseResponse = try {
+                            aniListApi.userMediaList(
+                                userId = userId?.toIntOrNull() ?: refreshParams.authedUser!!.id,
+                                type = mediaType,
+                            )
+                        } catch (exception: Exception) {
+                            return@withContext flowOf(
+                                AnimeUserListScreen.ContentState.Error(
+                                    exception = exception
+                                )
+                            )
+                        }
+
                         combine(
                             snapshotFlow { query }.debounce(500.milliseconds),
                             filterController.filterParams(),

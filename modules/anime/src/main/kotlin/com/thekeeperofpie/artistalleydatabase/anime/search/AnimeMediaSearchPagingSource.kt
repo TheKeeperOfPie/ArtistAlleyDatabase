@@ -102,16 +102,14 @@ class AnimeMediaSearchPagingSource(
                 .map { it.value },
             minimumTagRank = filterParams.tagRank,
         )
-
-        val data = result.dataAssertNoErrors
-        val pageInfo = data.page.pageInfo
+        val pageInfo = result.page.pageInfo
         val itemsAfter = if (pageInfo.hasNextPage != true) {
             0
         } else {
             pageInfo.total?.let { (it - (page * 10)) }?.takeIf { it > 0 }
         }
         LoadResult.Page(
-            data = data.page.media.filterNotNull(),
+            data = result.page.media.filterNotNull(),
             prevKey = (page - 1).takeIf { page > 1 },
             nextKey = (page + 1).takeIf { pageInfo.hasNextPage == true },
             itemsBefore = (page - 1) * 10,

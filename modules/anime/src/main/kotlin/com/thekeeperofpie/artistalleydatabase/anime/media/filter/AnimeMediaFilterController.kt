@@ -141,7 +141,7 @@ class AnimeMediaFilterController<T>(
                 .mapLatestNotNull {
                     withContext(CustomDispatchers.IO) {
                         try {
-                            aniListApi.genres().dataAssertNoErrors
+                            aniListApi.genres()
                                 .genreCollection
                                 ?.filterNotNull()
                                 ?.map(::GenreEntry)
@@ -167,8 +167,7 @@ class AnimeMediaFilterController<T>(
                 .mapLatestNotNull {
                     withContext(CustomDispatchers.IO) {
                         try {
-                            aniListApi.tags().dataAssertNoErrors
-                                .mediaTagCollection
+                            aniListApi.tags().mediaTagCollection
                                 ?.filterNotNull()
                                 ?.let(::buildTagSections)
                                 ?.run {

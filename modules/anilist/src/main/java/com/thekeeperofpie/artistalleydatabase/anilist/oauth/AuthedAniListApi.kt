@@ -22,7 +22,6 @@ import com.anilist.type.MediaSource
 import com.anilist.type.MediaStatus
 import com.anilist.type.MediaType
 import com.apollographql.apollo3.ApolloClient
-import com.apollographql.apollo3.api.ApolloResponse
 import com.apollographql.apollo3.api.Optional
 import com.apollographql.apollo3.api.Query
 import com.apollographql.apollo3.network.http.DefaultHttpEngine
@@ -71,7 +70,7 @@ class AuthedAniListApi(
         }
     }
 
-    private suspend fun viewer() = query(AuthedUserQuery()).data?.viewer
+    private suspend fun viewer() = query(AuthedUserQuery()).viewer
 
     suspend fun userMediaList(
         userId: Int,
@@ -82,7 +81,7 @@ class AuthedAniListApi(
                 userId = userId,
                 type = type,
             )
-        ).data?.mediaListCollection
+        ).mediaListCollection
 
     suspend fun searchMedia(
         query: String,
@@ -109,7 +108,7 @@ class AuthedAniListApi(
         episodesLesser: Int?,
         sourcesIn: List<MediaSource>?,
         minimumTagRank: Int?,
-    ): ApolloResponse<MediaAdvancedSearchQuery.Data> {
+    ): MediaAdvancedSearchQuery.Data {
         val sortParam =
             if (query.isEmpty() && sort?.size == 1 && sort.contains(MediaSort.SEARCH_MATCH)) {
                 // On a default, empty search, sort by TRENDING_DESC
@@ -153,15 +152,15 @@ class AuthedAniListApi(
 
     suspend fun tags() = query(MediaTagsQuery())
 
-    suspend fun mediaDetails(id: String) = query(MediaDetailsQuery(id.toInt())).dataAssertNoErrors.media!!
+    suspend fun mediaDetails(id: String) = query(MediaDetailsQuery(id.toInt())).media!!
 
     suspend fun mediaTitlesAndImages(mediaIds: List<Int>) =
         query(MediaTitlesAndImagesQuery(ids = Optional.present(mediaIds)))
-            .dataAssertNoErrors.page?.media?.filterNotNull().orEmpty()
+            .page?.media?.filterNotNull().orEmpty()
 
     suspend fun deleteMediaListEntry(id: String) =
         apolloClient.mutation(DeleteMediaEntryMutation(id = id.toInt()))
-            .execute().dataAssertNoErrors
+            .execute().dataOrThrow()
 
     suspend fun saveMediaListEntry(
         id: String?,
@@ -205,18 +204,18 @@ class AuthedAniListApi(
             }),
             hiddenFromStatusLists = Optional.presentIfNotNull(hiddenFromStatusLists),
         )
-    ).execute().dataAssertNoErrors.saveMediaListEntry!!
+    ).execute().dataOrThrow().saveMediaListEntry!!
 
     suspend fun mediaByIds(ids: List<Int>) =
         query(MediaByIdsQuery(ids = Optional.present(ids)))
-            .dataAssertNoErrors.page?.media?.filterNotNull()
+            .page?.media?.filterNotNull()
             .orEmpty()
 
-    suspend fun user(id: String) = query(UserByIdQuery(id.toInt())).dataAssertNoErrors.user
+    suspend fun user(id: String) = query(UserByIdQuery(id.toInt())).user
 
     suspend fun characterDetails(id: String) = query(CharacterDetailsQuery(id.toInt()))
-        .dataAssertNoErrors.character!!
+        .character!!
 
     private suspend fun <D : Query.Data> query(query: Query<D>) =
-        apolloClient.query(query).execute()
+        apolloClient.query(query).execute().dataOrThrow()
 }
