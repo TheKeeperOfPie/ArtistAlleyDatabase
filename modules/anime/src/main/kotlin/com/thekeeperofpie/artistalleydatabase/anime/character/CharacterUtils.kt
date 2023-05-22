@@ -1,6 +1,8 @@
 package com.thekeeperofpie.artistalleydatabase.anime.character
 
 import com.anilist.fragment.DetailsCharacterEdge
+import com.anilist.type.CharacterRole
+import com.thekeeperofpie.artistalleydatabase.anime.R
 
 object CharacterUtils {
 
@@ -26,4 +28,11 @@ object CharacterUtils {
                 character = it.node,
             )
         }.orEmpty().distinctBy { it.id }
+
+    fun CharacterRole.toTextRes() = when (this) {
+        CharacterRole.MAIN -> R.string.anime_character_role_main
+        CharacterRole.SUPPORTING -> R.string.anime_character_role_supporting
+        CharacterRole.BACKGROUND -> R.string.anime_character_role_background
+        CharacterRole.UNKNOWN__ -> R.string.anime_character_role_unknown
+    }
 }

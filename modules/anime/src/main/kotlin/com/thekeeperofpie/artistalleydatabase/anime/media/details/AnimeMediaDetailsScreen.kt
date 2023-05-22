@@ -1783,13 +1783,17 @@ object AnimeMediaDetailsScreen {
 
         val characters = CharacterUtils.toDetailsCharacters(media.characters?.edges)
 
-        val staff = media.staff?.edges?.filterNotNull()?.map {
-            DetailsStaff(
-                id = it.node?.id.toString(),
-                name = it.node?.name?.userPreferred,
-                image = it.node?.image?.large,
-                role = it.role,
-            )
+        val staff = media.staff?.edges?.filterNotNull()?.mapNotNull {
+            val role = it.role
+            it.node?.let {
+                DetailsStaff(
+                    id = it.id.toString(),
+                    name = it.name?.userPreferred,
+                    image = it.image?.large,
+                    role = role,
+                    staff = it,
+                )
+            }
         }.orEmpty().distinctBy { it.id }
 
         val relations = media.relations?.edges?.filterNotNull()

@@ -161,12 +161,14 @@ object AniListUserScreen {
 
         val staff = user.favourites?.staff?.edges?.filterNotNull()
             ?.sortedBy { it.favouriteOrder ?: 0 }
+            ?.mapNotNull { it.node }
             ?.map {
                 DetailsStaff(
-                    id = it.node?.id.toString(),
-                    name = it.node?.name?.userPreferred,
-                    image = it.node?.image?.large,
-                    role = it.node?.primaryOccupations?.filterNotNull()?.firstOrNull(),
+                    id = it.id.toString(),
+                    name = it.name?.userPreferred,
+                    image = it.image?.large,
+                    role = it.primaryOccupations?.filterNotNull()?.firstOrNull(),
+                    staff = it,
                 )
             }.orEmpty().distinctBy { it.id }
 

@@ -43,15 +43,11 @@ fragment AniListCharacter on Character {
 
 fragment DetailsCharacterEdge on CharacterEdge {
     voiceActors {
-        id
+        ...StaffNavigationData
         languageV2
-        image {
-            large
-        }
         name {
             full
             alternative
-            userPreferred
         }
     }
     node {
@@ -104,15 +100,11 @@ query CharacterDetails($id: Int!) {
                 characterRole
                 voiceActorRoles {
                     voiceActor {
-                        id
+                        ...StaffNavigationData
                         name {
                             full
-                            userPreferred
                         }
                         languageV2
-                        image {
-                            large
-                        }
                         favourites
                     }
 

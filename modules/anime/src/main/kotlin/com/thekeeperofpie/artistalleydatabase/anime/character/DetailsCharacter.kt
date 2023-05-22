@@ -6,7 +6,7 @@ data class DetailsCharacter(
     val id: String,
     val name: String?,
     val image: String?,
-    val languageToVoiceActor: Map<String, VoiceActor>,
+    val languageToVoiceActor: Map<String, VoiceActor> = emptyMap(),
     val character: CharacterNavigationData?,
 ) {
     data class VoiceActor(

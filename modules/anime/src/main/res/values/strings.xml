@@ -13,11 +13,13 @@
     <string name="anime_media_voice_actor_image">Voice actor image</string>
     <string name="anime_media_list_error_loading">Error loading media list</string>
     <string name="anime_character_error_loading">Error loading character</string>
+    <string name="anime_staff_error_loading">Error loading staff</string>
     <string name="anime_media_list_no_results">No results</string>
     <string name="anime_screen_anime">Anime</string>
     <string name="anime_screen_manga">Manga</string>
     <string name="anime_screen_search">Search</string>
     <string name="anime_screen_profile">Profile</string>
+    <string name="anime_description_spoiler">[Spoiler]</string>
 
     <string name="anime_media_sort_default">Default</string>
     <string name="anime_media_sort_id">ID</string>
@@ -417,4 +419,33 @@
     <string name="anime_character_details_gender_label">Gender</string>
     <string name="anime_character_details_blood_type_label">Blood type</string>
     <string name="anime_character_details_favorites_label">Favorites</string>
+    <string name="anime_character_details_alternative_names_label">Alternative names</string>
+    <string name="anime_character_details_alternative_names_expand_content_description">Alternative names expand</string>
+    <string name="anime_character_details_alternative_names_spoiler_expand_content_description">Alternative names spoiler expand</string>
+    <string name="anime_character_details_alternative_names_spoiler_warning">Spoiler</string>
+    <string name="anime_character_details_alternative_names_spoiler_warning_content_description">Character alternative name spoiler warning icon</string>
+
+    <string name="anime_staff_overview_label">Overview</string>
+    <string name="anime_staff_media_label">Media</string>
+    <string name="anime_staff_staff_label">Staff</string>
+    <string name="anime_staff_details_description_label">Description</string>
+    <string name="anime_staff_details_information_label">Information</string>
+    <string name="anime_staff_details_age_label">Age</string>
+    <string name="anime_staff_details_gender_label">Gender</string>
+    <string name="anime_staff_details_date_of_birth_label">Date of birth</string>
+    <string name="anime_staff_details_date_of_death_label">Date of death</string>
+    <string name="anime_staff_details_home_town_label">Home town</string>
+    <string name="anime_staff_details_blood_type_label">Blood type</string>
+    <string name="anime_staff_details_primary_occupations_label">Occupations</string>
+    <string name="anime_staff_details_primary_occupations_expand_content_description">Occupations expand</string>
+    <string name="anime_staff_details_years_active_label">Years active</string>
+    <string name="anime_staff_details_years_active_beginning">%1$d - Present</string>
+    <string name="anime_staff_details_years_active_beginning_and_end">%1$d - %1$d</string>
+    <string name="anime_staff_details_characters_label">Characters</string>
+    <string name="anime_staff_media_year_unknown">TBA</string>
+
+    <string name="anime_character_role_main">Main</string>
+    <string name="anime_character_role_supporting">Supporting</string>
+    <string name="anime_character_role_background">Background</string>
+    <string name="anime_character_role_unknown">Unknown</string>
 </resources>

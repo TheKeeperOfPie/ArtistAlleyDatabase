@@ -69,7 +69,7 @@ import de.charlex.compose.HtmlText
 @Composable
 internal fun CoverAndBannerHeader(
     coverImage: @Composable () -> String?,
-    bannerImage: @Composable () -> String?,
+    bannerImage: @Composable () -> String? = { null },
     pinnedHeight: Dp,
     progress: Float = 0f,
     coverSize: Dp = 256.dp,
@@ -223,8 +223,9 @@ internal fun LazyListScope.descriptionSection(
         ) {
             val style = MaterialTheme.typography.bodyMedium
             val expanded = expanded()
+
             HtmlText(
-                text = htmlText,
+                text = htmlText.replaceSpoilers(),
                 style = style,
                 color = style.color.takeOrElse { LocalContentColor.current },
                 modifier = Modifier
@@ -237,6 +238,12 @@ internal fun LazyListScope.descriptionSection(
     }
 }
 
+// TODO: Find a way to show spoilers on click
+@Composable
+private fun String.replaceSpoilers(): String {
+    val spoilerRegex = Regex("(?<=<span class='markdown_spoiler'><span>).+?(?=</span></span>)")
+    return replace(spoilerRegex, stringResource(R.string.anime_description_spoiler))
+}
 
 /**
  * @return True if anything shown
@@ -315,18 +322,21 @@ internal fun <T> ExpandableListInfoText(
     valueToText: @Composable (T) -> String,
     onClick: ((T) -> Unit)? = null,
     showDividerAbove: Boolean = true,
+    allowExpand: Boolean = values.size > 3
 ) {
     if (values.isEmpty()) return
 
-    var expanded by remember { mutableStateOf(false) }
+    var expanded by remember { mutableStateOf(!allowExpand) }
 
     Box {
         Column(
             modifier = Modifier
                 .wrapContentHeight()
-                .heightIn(max = if (expanded) Dp.Unspecified else 120.dp)
-                .clickable { expanded = !expanded }
-                .fadingEdgeBottom(show = !expanded)
+                .conditionally(allowExpand) {
+                    heightIn(max = if (expanded) Dp.Unspecified else 120.dp)
+                        .clickable { expanded = !expanded }
+                        .fadingEdgeBottom(show = !expanded)
+                }
         ) {
             if (showDividerAbove) {
                 Divider()
@@ -365,11 +375,13 @@ internal fun <T> ExpandableListInfoText(
             }
         }
 
-        TrailingDropdownIconButton(
-            expanded = expanded,
-            contentDescription = stringResource(contentDescriptionTextRes),
-            onClick = { expanded = !expanded },
-            modifier = Modifier.align(Alignment.TopEnd),
-        )
+        if (allowExpand) {
+            TrailingDropdownIconButton(
+                expanded = expanded,
+                contentDescription = stringResource(contentDescriptionTextRes),
+                onClick = { expanded = !expanded },
+                modifier = Modifier.align(Alignment.TopEnd),
+            )
+        }
     }
 }

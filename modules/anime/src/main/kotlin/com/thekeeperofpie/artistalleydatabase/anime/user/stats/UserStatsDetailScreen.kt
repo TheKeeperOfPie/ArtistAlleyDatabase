@@ -62,7 +62,7 @@ object UserStatsDetailScreen {
         valueToChaptersRead: (Value) -> Int,
         valueToMeanScore: (Value) -> Double,
         valueToMediaIds: (Value) -> List<Int>,
-        onValueClick: (Value) -> Unit,
+        onValueClick: (Value, imageWidthToHeightRatio: Float) -> Unit,
         initialItemImage: ((Value) -> String?)? = null
     ) {
         val statistics = statistics()
@@ -118,14 +118,15 @@ object UserStatsDetailScreen {
         valueToChaptersRead: (Value) -> Int,
         valueToMeanScore: (Value) -> Double,
         valueToMediaIds: (Value) -> List<Int>,
-        onValueClick: (Value) -> Unit,
+        onValueClick: (Value, imageWidthToHeightRatio: Float) -> Unit,
         initialItemImage: ((Value) -> String?)?,
         state: AniListUserViewModel.States.State<Value>,
         isAnime: Boolean,
         navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
+        var firstItemImageWidthToHeightRatio by remember { MutableSingle(1f) }
         ElevatedCard(
-            onClick = { onValueClick(value) },
+            onClick = { onValueClick(value, firstItemImageWidthToHeightRatio) },
             modifier = Modifier
                 .padding(horizontal = 16.dp)
                 .height(IntrinsicSize.Min),
@@ -168,7 +169,12 @@ object UserStatsDetailScreen {
                                 InnerCard(
                                     image = initialItemImage,
                                     loading = false,
-                                    onClick = { onValueClick(value) }
+                                    onClick = {
+                                        onValueClick(value, firstItemImageWidthToHeightRatio)
+                                    },
+                                    onImageRatioCalculated = {
+                                        firstItemImageWidthToHeightRatio = it
+                                    },
                                 )
                             }
                         }
@@ -201,17 +207,17 @@ object UserStatsDetailScreen {
     private fun InnerCard(
         image: String?,
         loading: Boolean,
-        onClick: (widthToHeightRatio: Float) -> Unit
+        onClick: () -> Unit,
+        onImageRatioCalculated: (Float) -> Unit,
     ) {
-        var widthToHeightRatio by remember { MutableSingle(1f) }
-        Card(onClick = { onClick(widthToHeightRatio) }) {
+        Card(onClick = onClick) {
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
                     .data(image)
                     .crossfade(true)
                     .build(),
                 contentScale = ContentScale.Crop,
-                onSuccess = { widthToHeightRatio = it.widthToHeightRatio() },
+                onSuccess = { onImageRatioCalculated(it.widthToHeightRatio()) },
                 contentDescription = stringResource(R.string.anime_media_cover_image),
                 modifier = Modifier
                     .fillMaxHeight()
@@ -222,5 +228,20 @@ object UserStatsDetailScreen {
                     )
             )
         }
+    }
+
+    @Composable
+    private fun InnerCard(
+        image: String?,
+        loading: Boolean,
+        onClick: (widthToHeightRatio: Float) -> Unit,
+    ) {
+        var widthToHeightRatio by remember { MutableSingle(1f) }
+        InnerCard(
+            image = image,
+            loading = loading,
+            onClick = { onClick(widthToHeightRatio) },
+            onImageRatioCalculated = { widthToHeightRatio = it },
+        )
     }
 }

@@ -73,7 +73,7 @@ object UserMediaScreen {
                     valueToChaptersRead = UserMediaStatistics.Genre::chaptersRead,
                     valueToMeanScore = UserMediaStatistics.Genre::meanScore,
                     valueToMediaIds = { it.mediaIds.filterNotNull() },
-                    onValueClick = { navigationCallback.onGenreClick(it.genre!!) },
+                    onValueClick = { value, _ -> navigationCallback.onGenreClick(value.genre!!) },
                 )
                 UserStatsTab.TAGS -> UserStatsDetailScreen(
                     statistics = statistics,
@@ -88,10 +88,10 @@ object UserMediaScreen {
                     valueToChaptersRead = UserMediaStatistics.Tag::chaptersRead,
                     valueToMeanScore = UserMediaStatistics.Tag::meanScore,
                     valueToMediaIds = { it.mediaIds.filterNotNull() },
-                    onValueClick = {
+                    onValueClick = { value, _ ->
                         navigationCallback.onTagClick(
-                            it.tag?.id.toString(),
-                            it.tag?.name.orEmpty()
+                            value.tag?.id.toString(),
+                            value.tag?.name.orEmpty()
                         )
                     },
                 )
@@ -108,8 +108,8 @@ object UserMediaScreen {
                     valueToChaptersRead = UserMediaStatistics.VoiceActor::chaptersRead,
                     valueToMeanScore = UserMediaStatistics.VoiceActor::meanScore,
                     valueToMediaIds = { it.mediaIds.filterNotNull() },
-                    onValueClick = {
-                        navigationCallback.onStaffClick(it.voiceActor?.id.toString())
+                    onValueClick = { value, imageWidthToHeightRatio ->
+                        navigationCallback.onStaffClick(value.voiceActor!!, imageWidthToHeightRatio)
                     },
                     initialItemImage = { it.voiceActor?.image?.large },
                 )
@@ -126,7 +126,9 @@ object UserMediaScreen {
                     valueToChaptersRead = UserMediaStatistics.Studio::chaptersRead,
                     valueToMeanScore = UserMediaStatistics.Studio::meanScore,
                     valueToMediaIds = { it.mediaIds.filterNotNull() },
-                    onValueClick = { navigationCallback.onStudioClick(it.studio?.id.toString()) },
+                    onValueClick = { value, _ ->
+                        navigationCallback.onStudioClick(value.studio?.id.toString())
+                    },
                 )
                 UserStatsTab.STAFF -> UserStatsDetailScreen(
                     statistics = statistics,
@@ -141,7 +143,9 @@ object UserMediaScreen {
                     valueToChaptersRead = UserMediaStatistics.Staff::chaptersRead,
                     valueToMeanScore = UserMediaStatistics.Staff::meanScore,
                     valueToMediaIds = { it.mediaIds.filterNotNull() },
-                    onValueClick = { navigationCallback.onStaffClick(it.staff?.id.toString()) },
+                    onValueClick = { value, imageWidthToHeightRatio ->
+                        navigationCallback.onStaffClick(value.staff!!, imageWidthToHeightRatio)
+                    },
                     initialItemImage = { it.staff?.image?.large },
                 )
             }

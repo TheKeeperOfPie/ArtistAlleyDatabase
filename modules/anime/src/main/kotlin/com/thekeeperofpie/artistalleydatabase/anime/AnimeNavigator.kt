@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.anime
 
 import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
@@ -16,6 +17,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import com.anilist.fragment.CharacterNavigationData
+import com.anilist.fragment.MediaNavigationData
+import com.anilist.fragment.StaffNavigationData
 import com.anilist.fragment.UserFavoriteMediaNode
 import com.anilist.type.MediaSeason
 import com.anilist.type.MediaType
@@ -35,6 +38,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDeta
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeMediaFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.search.AnimeSearchScreen
 import com.thekeeperofpie.artistalleydatabase.anime.search.AnimeSearchViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffDetailsScreen
+import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserScreen
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserViewModel
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
@@ -151,6 +156,7 @@ object AnimeNavigator {
                     nullable = true
                 }
             },
+            popEnterTransition = { EnterTransition.None },
             enterTransition = {
                 slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up)
             },
@@ -264,8 +270,7 @@ object AnimeNavigator {
                     + "?characterId={characterId}"
                     + "&name={name}"
                     + "&coverImage={coverImage}"
-                    + "&coverImageWidthToHeightRatio={coverImageWidthToHeightRatio}"
-                    + "&bannerImage={bannerImage}",
+                    + "&coverImageWidthToHeightRatio={coverImageWidthToHeightRatio}",
             arguments = listOf(
                 navArgument("characterId") {
                     type = NavType.StringType
@@ -275,13 +280,13 @@ object AnimeNavigator {
                 "name",
                 "coverImage",
                 "coverImageWidthToHeightRatio",
-                "bannerImage",
             ).map {
                 navArgument(it) {
                     type = NavType.StringType
                     nullable = true
                 }
             },
+            popEnterTransition = { EnterTransition.None },
             enterTransition = {
                 slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up)
             },
@@ -297,7 +302,6 @@ object AnimeNavigator {
             val coverImage = arguments.getString("coverImage")
             val coverImageWidthToHeightRatio = arguments.getString("coverImageWidthToHeightRatio")
                 ?.toFloatOrNull() ?: 1f
-            val bannerImage = arguments.getString("bannerImage")
 
             val viewModel = hiltViewModel<AnimeCharacterDetailsViewModel>().apply {
                 initialize(characterId)
@@ -307,11 +311,58 @@ object AnimeNavigator {
                 viewModel = viewModel,
                 coverImage = { viewModel.entry?.character?.image?.large ?: coverImage },
                 coverImageWidthToHeightRatio = coverImageWidthToHeightRatio,
-                bannerImage = {
-                    // TODO
-                    bannerImage
-                },
                 title = { viewModel.entry?.character?.name?.userPreferred ?: name ?: "" },
+                navigationCallback = navigationCallback,
+            )
+        }
+
+        navGraphBuilder.composable(
+            route = "staffDetails"
+                    + "?staffId={staffId}"
+                    + "&name={name}"
+                    + "&coverImage={coverImage}"
+                    + "&coverImageWidthToHeightRatio={coverImageWidthToHeightRatio}",
+            arguments = listOf(
+                navArgument("staffId") {
+                    type = NavType.StringType
+                    nullable = false
+                }
+            ) + listOf(
+                "name",
+                "coverImage",
+                "coverImageWidthToHeightRatio",
+            ).map {
+                navArgument(it) {
+                    type = NavType.StringType
+                    nullable = true
+                }
+            },
+            popEnterTransition = { EnterTransition.None },
+            enterTransition = {
+                slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up)
+            },
+            exitTransition = {
+                slideOutOfContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Down
+                )
+            },
+        ) {
+            val arguments = it.arguments!!
+            val staffId = arguments.getString("staffId")!!
+            val name = arguments.getString("name")
+            val coverImage = arguments.getString("coverImage")
+            val coverImageWidthToHeightRatio = arguments.getString("coverImageWidthToHeightRatio")
+                ?.toFloatOrNull() ?: 1f
+
+            val viewModel = hiltViewModel<StaffDetailsViewModel>().apply {
+                initialize(staffId)
+            }
+
+            StaffDetailsScreen(
+                viewModel = viewModel,
+                coverImage = { viewModel.entry?.staff?.image?.large ?: coverImage },
+                coverImageWidthToHeightRatio = coverImageWidthToHeightRatio,
+                title = { viewModel.entry?.staff?.name?.userPreferred ?: name ?: "" },
                 navigationCallback = navigationCallback,
             )
         }
@@ -325,6 +376,7 @@ object AnimeNavigator {
                     nullable = true
                 },
             ),
+            popEnterTransition = { EnterTransition.None },
             enterTransition = {
                 slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up)
             },
@@ -416,9 +468,20 @@ object AnimeNavigator {
     ) = navHostController.navigate(
         "animeDetails?mediaId=${media.id}" +
                 "&title=${media.title?.userPreferred}" +
-                "&coverImage=${media.coverImage?.large}" +
+                "&coverImage=${media.coverImage?.extraLarge}" +
                 "&coverImageWidthToHeightRatio=$imageWidthToHeightRatio" +
                 "&color=${media.coverImage?.color?.let(ComposeColorUtils::hexToColor)?.toArgb()}"
+    )
+
+    fun onMediaClick(
+        navHostController: NavHostController,
+        media: MediaNavigationData,
+        imageWidthToHeightRatio: Float,
+    ) = navHostController.navigate(
+        "animeDetails?mediaId=${media.id}" +
+                "&title=${media.title?.userPreferred}" +
+                "&coverImage=${media.coverImage?.extraLarge}" +
+                "&coverImageWidthToHeightRatio=$imageWidthToHeightRatio"
     )
 
     fun onMediaClick(
@@ -442,6 +505,18 @@ object AnimeNavigator {
     ) = navHostController.navigate(
         "characterDetails" +
                 "?characterId=${character.id}" +
+                "&name=${character.name?.userPreferred}" +
+                "&coverImage=${character.image?.large}" +
+                "&coverImageWidthToHeightRatio=$imageWidthToHeightRatio"
+    )
+
+    fun onStaffClick(
+        navHostController: NavHostController,
+        character: StaffNavigationData,
+        imageWidthToHeightRatio: Float,
+    ) = navHostController.navigate(
+        "staffDetails" +
+                "?staffId=${character.id}" +
                 "&name=${character.name?.userPreferred}" +
                 "&coverImage=${character.image?.large}" +
                 "&coverImageWidthToHeightRatio=$imageWidthToHeightRatio"
@@ -543,6 +618,10 @@ object AnimeNavigator {
             navHostController?.let { onMediaClick(it, media, imageWidthToHeightRatio) }
         }
 
+        fun onMediaClick(media: MediaNavigationData, imageWidthToHeightRatio: Float) {
+            navHostController?.let { onMediaClick(it, media, imageWidthToHeightRatio) }
+        }
+
         fun onMediaClick(
             id: String,
             title: String?,
@@ -572,7 +651,9 @@ object AnimeNavigator {
             // TODO
         }
 
-        fun onStaffClick(id: String) = onOpenUri(AniListUtils.staffUrl(id))
+        fun onStaffClick(staff: StaffNavigationData, imageWidthToHeightRatio: Float) {
+            navHostController?.let { onStaffClick(it, staff, imageWidthToHeightRatio) }
+        }
 
         fun onStaffLongClick(id: String) {
             // TODO

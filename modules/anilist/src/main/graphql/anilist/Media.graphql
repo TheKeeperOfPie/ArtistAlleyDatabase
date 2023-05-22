@@ -111,6 +111,16 @@ fragment MediaDetailsListEntry on MediaList {
     createdAt
 }
 
+fragment MediaNavigationData on Media {
+    id
+    title {
+        userPreferred
+    }
+    coverImage {
+        extraLarge
+    }
+}
+
 query MediaDetails($mediaId: Int!) {
     Media(id: $mediaId) {
         bannerImage
@@ -126,7 +136,7 @@ query MediaDetails($mediaId: Int!) {
         }
 
         # TODO: Handle pagination
-        characters(sort: [RELEVANCE, ROLE, FAVOURITES_DESC], perPage: 50) {
+        characters(sort: [RELEVANCE, ROLE, FAVOURITES_DESC], perPage: 25) {
             edges {
                 ...DetailsCharacterEdge
             }
@@ -142,13 +152,7 @@ query MediaDetails($mediaId: Int!) {
             edges {
                 role
                 node {
-                    id
-                    name {
-                        userPreferred
-                    }
-                    image {
-                        large
-                    }
+                    ...StaffNavigationData
                 }
             }
         }

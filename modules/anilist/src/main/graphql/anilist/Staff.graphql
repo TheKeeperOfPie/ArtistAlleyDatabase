@@ -6,3 +6,113 @@ fragment AniListStaffName on StaffName {
     native
     alternative
 }
+
+fragment StaffNavigationData on Staff {
+    id
+    name {
+        userPreferred
+    }
+    image {
+        large
+    }
+}
+
+query StaffDetails($id: Int!) {
+    Staff(id: $id) {
+        name {
+            full
+            native
+            alternative
+            userPreferred
+        }
+        image {
+            large
+        }
+        description(asHtml: true)
+        languageV2
+        primaryOccupations
+        age
+        gender
+        yearsActive
+        homeTown
+        bloodType
+        favourites
+        dateOfBirth {
+            year
+            month
+            day
+        }
+        dateOfDeath {
+            year
+            month
+            day
+        }
+        # TODO: Handle pagination
+        characters(sort: [FAVOURITES_DESC], perPage: 25) {
+            nodes {
+                ...CharacterNavigationData
+            }
+        }
+        characterMedia(sort: [START_DATE_DESC]) {
+            pageInfo {
+                total
+                perPage
+                currentPage
+                lastPage
+                hasNextPage
+            }
+            edges {
+                characterRole
+                characterName
+                node {
+                    id
+                    isAdult
+                    coverImage {
+                        large
+                    }
+                    startDate {
+                        year
+                        month
+                        day
+                    }
+                }
+                characters {
+                    ...CharacterNavigationData
+                }
+            }
+        }
+        staffMedia(sort: [START_DATE_DESC]) {
+            pageInfo {
+                total
+                perPage
+                currentPage
+                lastPage
+                hasNextPage
+            }
+            edges {
+                id
+                staffRole
+                node {
+                    ...MediaNavigationData
+                    id
+                    type
+                    isAdult
+                    title {
+                        userPreferred
+                    }
+                    coverImage {
+                        extraLarge
+                    }
+                    startDate {
+                        year
+                        month
+                        day
+                    }
+                }
+                characters {
+                    ...CharacterNavigationData
+                }
+            }
+        }
+    }
+}

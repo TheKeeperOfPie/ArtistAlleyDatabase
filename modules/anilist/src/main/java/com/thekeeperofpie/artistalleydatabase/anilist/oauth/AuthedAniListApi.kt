@@ -11,6 +11,7 @@ import com.anilist.MediaDetailsQuery
 import com.anilist.MediaTagsQuery
 import com.anilist.MediaTitlesAndImagesQuery
 import com.anilist.SaveMediaEntryEditMutation
+import com.anilist.StaffDetailsQuery
 import com.anilist.UserByIdQuery
 import com.anilist.UserMediaListQuery
 import com.anilist.type.FuzzyDateInput
@@ -215,6 +216,8 @@ class AuthedAniListApi(
 
     suspend fun characterDetails(id: String) = query(CharacterDetailsQuery(id.toInt()))
         .character!!
+
+    suspend fun staffDetails(id: String) = query(StaffDetailsQuery(id.toInt())).staff!!
 
     private suspend fun <D : Query.Data> query(query: Query<D>) =
         apolloClient.query(query).execute().dataOrThrow()

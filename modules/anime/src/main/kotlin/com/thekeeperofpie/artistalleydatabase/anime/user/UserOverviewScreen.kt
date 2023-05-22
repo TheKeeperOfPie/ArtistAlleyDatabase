@@ -261,7 +261,7 @@ object UserOverviewScreen {
                             val (image, title) = createRefs()
                             AsyncImage(
                                 model = ImageRequest.Builder(LocalContext.current)
-                                    .data(it.coverImage?.large)
+                                    .data(it.coverImage?.extraLarge)
                                     .crossfade(true)
                                     .allowHardware(false)
                                     .build(),

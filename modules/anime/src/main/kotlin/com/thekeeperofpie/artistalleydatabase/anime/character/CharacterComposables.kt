@@ -38,6 +38,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.LineBreak
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.ColorUtils
 import coil.compose.AsyncImage
@@ -62,6 +63,7 @@ fun CharacterCard(
     onClick: () -> Unit,
     innerImage: String? = null,
     onImageSuccess: (AsyncImagePainter.State.Success) -> Unit = {},
+    width: Dp = 100.dp,
     content: @Composable (textColor: Color) -> Unit,
 ) {
     val defaultTextColor = MaterialTheme.typography.bodyMedium.color
@@ -104,7 +106,7 @@ fun CharacterCard(
     ElevatedCard(
         onClick = onClick,
         colors = CardDefaults.elevatedCardColors(containerColor = containerColor),
-        modifier = Modifier.width(100.dp),
+        modifier = Modifier.width(width),
     ) {
         Box {
             AsyncImage(
@@ -131,7 +133,7 @@ fun CharacterCard(
                         selectMaxPopulation = true,
                     )
                 },
-                modifier = Modifier.size(width = 100.dp, height = 150.dp)
+                modifier = Modifier.size(width = width, height = width * 1.5f)
             )
 
             if (innerImage != null) {
