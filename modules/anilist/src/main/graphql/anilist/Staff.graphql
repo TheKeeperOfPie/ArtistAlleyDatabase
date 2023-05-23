@@ -53,66 +53,70 @@ query StaffDetails($id: Int!) {
                 ...CharacterNavigationData
             }
         }
-        characterMedia(sort: [START_DATE_DESC]) {
-            pageInfo {
-                total
-                perPage
-                currentPage
-                lastPage
-                hasNextPage
-            }
-            edges {
-                characterRole
-                characterName
-                node {
-                    id
-                    isAdult
-                    coverImage {
-                        large
-                    }
-                    startDate {
-                        year
-                        month
-                        day
-                    }
-                }
-                characters {
-                    ...CharacterNavigationData
-                }
+    }
+}
+
+fragment StaffDetailsCharacterMediaPage on MediaConnection {
+    pageInfo {
+        total
+        currentPage
+        hasNextPage
+    }
+    edges {
+        characterRole
+        characterName
+        node {
+            ...MediaNavigationData
+            isAdult
+            startDate {
+                year
+                month
+                day
             }
         }
-        staffMedia(sort: [START_DATE_DESC]) {
-            pageInfo {
-                total
-                perPage
-                currentPage
-                lastPage
-                hasNextPage
+        characters {
+            ...CharacterNavigationData
+        }
+    }
+}
+
+query StaffDetailsCharacterMediaPagination($id: Int!, $page: Int!) {
+    Staff(id: $id) {
+        characterMedia(sort: [START_DATE_DESC], page: $page) {
+            ...StaffDetailsCharacterMediaPage
+        }
+    }
+}
+
+fragment StaffDetailsStaffMediaPage on MediaConnection {
+    pageInfo {
+        total
+        currentPage
+        hasNextPage
+    }
+    edges {
+        id
+        staffRole
+        node {
+            ...MediaNavigationData
+            type
+            isAdult
+            startDate {
+                year
+                month
+                day
             }
-            edges {
-                id
-                staffRole
-                node {
-                    ...MediaNavigationData
-                    id
-                    type
-                    isAdult
-                    title {
-                        userPreferred
-                    }
-                    coverImage {
-                        extraLarge
-                    }
-                    startDate {
-                        year
-                        month
-                        day
-                    }
-                }
-                characters {
-                    ...CharacterNavigationData
-                }
-            }
+        }
+        characters {
+            ...CharacterNavigationData
+        }
+    }
+}
+
+query StaffDetailsStaffMediaPagination($id: Int!, $page: Int!) {
+    Staff(id: $id) {
+        staffMedia(sort: [START_DATE_DESC], page: $page) {
+            ...StaffDetailsStaffMediaPage
         }
     }
 }

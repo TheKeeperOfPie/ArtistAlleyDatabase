@@ -448,4 +448,5 @@
     <string name="anime_character_role_supporting">Supporting</string>
     <string name="anime_character_role_background">Background</string>
     <string name="anime_character_role_unknown">Unknown</string>
+    <string name="anime_staff_details_media_load_retry">Retry</string>
 </resources>

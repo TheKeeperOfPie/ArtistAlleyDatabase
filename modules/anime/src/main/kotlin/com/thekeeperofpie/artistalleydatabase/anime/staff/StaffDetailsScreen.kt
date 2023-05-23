@@ -19,6 +19,7 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
@@ -34,7 +35,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.anilist.StaffDetailsQuery.Data.Staff
-import com.anilist.type.CharacterRole
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.character.DetailsCharacter
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
@@ -155,12 +155,14 @@ object StaffDetailsScreen {
                                 navigationCallback = navigationCallback,
                             )
                             StaffTab.MEDIA -> StaffMediaScreen(
-                                entry = entry,
+                                mediaTimeline = viewModel.mediaTimeline.collectAsState().value,
+                                onRequestYear = viewModel::onRequestMediaYear,
                                 colorCalculationState = colorCalculationState,
                                 navigationCallback = navigationCallback,
                             )
                             StaffTab.STAFF -> StaffStaffScreen(
-                                entry = entry,
+                                staffTimeline = viewModel.staffTimeline.collectAsState().value,
+                                onRequestYear = viewModel::onRequestStaffYear,
                                 colorCalculationState = colorCalculationState,
                                 navigationCallback = navigationCallback,
                             )
@@ -230,74 +232,6 @@ object StaffDetailsScreen {
                 character = it,
             )
         }
-
-        val mediaTimeline = staff.characterMedia?.edges?.filterNotNull().orEmpty()
-            .groupBy { it.node?.startDate?.year }
-            .mapValues {
-                it.value.sortedWith(
-                    compareBy<Staff.CharacterMedia.Edge, Int?>(nullsLast()) {
-                        it.node?.startDate?.year
-                    }
-                        .thenComparing(compareBy(nullsLast()) { it.node?.startDate?.month })
-                        .thenComparing(compareBy(nullsLast()) { it.node?.startDate?.day })
-                        .reversed()
-                )
-                    .filter { if (showAdult) true else it.node?.isAdult == false }
-                    .flatMap { edge ->
-                        edge.characters?.filterNotNull().orEmpty()
-                            .map {
-                                TimelineCharacter(
-                                    id = "${edge.node?.id}_${it.id}",
-                                    character = it,
-                                    role = edge.characterRole,
-                                    media = edge.node,
-                                )
-                            }
-                    }
-                    .distinctBy { it.id }
-            }
-            .entries
-            .sortedWith(compareByDescending(nullsLast()) { it.key })
-
-        val staffTimeline = staff.staffMedia?.edges?.filterNotNull().orEmpty()
-            .groupBy { it.node?.startDate?.year }
-            .mapValues {
-                it.value.sortedWith(
-                    compareBy<Staff.StaffMedia.Edge, Int?>(nullsLast()) {
-                        it.node?.startDate?.year
-                    }
-                        .thenComparing(compareBy(nullsLast()) { it.node?.startDate?.month })
-                        .thenComparing(compareBy(nullsLast()) { it.node?.startDate?.day })
-                        .reversed()
-                )
-                    .filter { if (showAdult) true else it.node?.isAdult == false }
-                    .mapNotNull { edge ->
-                        val node = edge.node ?: return@mapNotNull null
-                        TimelineMedia(
-                            id = "${edge.id}_${node.id}",
-                            media = node,
-                            role = edge.staffRole,
-                            character = edge.characters?.firstOrNull(),
-                        )
-                    }
-                    .distinctBy { it.id }
-            }
-            .entries
-            .sortedWith(compareByDescending(nullsLast()) { it.key })
-
-        data class TimelineCharacter(
-            val id: String,
-            val character: Staff.CharacterMedia.Edge.Character,
-            val role: CharacterRole?,
-            val media: Staff.CharacterMedia.Edge.Node?,
-        )
-
-        data class TimelineMedia(
-            val id: String,
-            val media: Staff.StaffMedia.Edge.Node,
-            val role: String?,
-            val character: Staff.StaffMedia.Edge.Character?,
-        )
     }
 
     @Composable

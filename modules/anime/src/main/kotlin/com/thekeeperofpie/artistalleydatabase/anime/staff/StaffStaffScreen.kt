@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.anime.staff
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -8,10 +9,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.LineBreak
@@ -26,11 +31,13 @@ import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
 
+@OptIn(ExperimentalMaterial3Api::class)
 object StaffStaffScreen {
 
     @Composable
     operator fun invoke(
-        entry: StaffDetailsScreen.Entry,
+        staffTimeline: StaffDetailsViewModel.StaffTimeline,
+        onRequestYear: (Int?) -> Unit,
         colorCalculationState: ColorCalculationState,
         navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
@@ -38,9 +45,9 @@ object StaffStaffScreen {
             contentPadding = PaddingValues(bottom = 16.dp),
             modifier = Modifier.fillMaxSize()
         ) {
-
-            entry.staffTimeline.forEach { (year, entries) ->
+            staffTimeline.yearsToMedia.forEach { (year, entries) ->
                 item {
+                    onRequestYear(year)
                     Text(
                         text = year?.toString()
                             ?: stringResource(R.string.anime_staff_media_year_unknown),
@@ -58,19 +65,31 @@ object StaffStaffScreen {
                     ) {
                         items(entries, { it.id }) {
                             var imageWidthToHeightRatio by remember { MutableSingle(1f) }
+                            var innerImageWidthToHeightRatio by remember { MutableSingle(1f) }
                             CharacterCard(
                                 id = it.id,
-                                image = it.media?.coverImage?.extraLarge,
+                                image = it.media.coverImage?.extraLarge,
                                 colorCalculationState = colorCalculationState,
                                 innerImage = it.character?.image?.large,
                                 onImageSuccess = {
                                     imageWidthToHeightRatio = it.widthToHeightRatio()
+                                },
+                                onInnerImageSuccess = {
+                                    innerImageWidthToHeightRatio = it.widthToHeightRatio()
                                 },
                                 onClick = {
                                     navigationCallback.onMediaClick(
                                         it.media,
                                         imageWidthToHeightRatio
                                     )
+                                },
+                                onClickInnerImage = {
+                                    it.character?.let {
+                                        navigationCallback.onCharacterClick(
+                                            it,
+                                            innerImageWidthToHeightRatio
+                                        )
+                                    }
                                 },
                                 width = 140.dp,
                             ) { textColor ->
@@ -118,6 +137,48 @@ object StaffStaffScreen {
                     }
                 }
             }
+
+            when (val loadMoreState = staffTimeline.loadMoreState) {
+                is StaffDetailsViewModel.StaffTimeline.LoadMoreState.Error -> item {
+                    ErrorRow(
+                        loadMoreState.throwable,
+                        onClick = {
+                            // TODO: This doesn't actually work, need to signal a manual override
+                            onRequestYear(staffTimeline.yearsToMedia.lastOrNull()?.first)
+                        }
+                    )
+                }
+                StaffDetailsViewModel.StaffTimeline.LoadMoreState.Loading ->
+                    item { LoadingRow() }
+                StaffDetailsViewModel.StaffTimeline.LoadMoreState.None -> Unit
+            }
+        }
+    }
+
+    @Composable
+    fun LoadingRow() {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            CircularProgressIndicator(modifier = Modifier.padding(32.dp))
+        }
+    }
+
+    @Composable
+    fun ErrorRow(throwable: Throwable, onClick: () -> Unit) {
+        ElevatedCard(
+            onClick = onClick,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+        ) {
+            Text(
+                text = stringResource(R.string.anime_staff_details_media_load_retry),
+                modifier = Modifier
+                    .padding(horizontal = 16.dp, vertical = 10.dp)
+                    .align(Alignment.CenterHorizontally)
+            )
         }
     }
 }
