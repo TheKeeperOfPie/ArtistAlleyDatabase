@@ -191,18 +191,18 @@ fun StartEndDateRow(
 @Composable
 fun StartEndDateDialog(
     shownForStartDate: Boolean?,
-    onShownForStartDateToggled: (Boolean?) -> Unit,
+    onShownForStartDateChange: (Boolean?) -> Unit,
     onDateChange: (start: Boolean, Long?) -> Unit,
 ) {
     if (shownForStartDate != null) {
         val datePickerState = rememberDatePickerState()
         val confirmEnabled by remember { derivedStateOf { datePickerState.selectedDateMillis != null } }
         DatePickerDialog(
-            onDismissRequest = { onShownForStartDateToggled(null) },
+            onDismissRequest = { onShownForStartDateChange(null) },
             confirmButton = {
                 TextButton(
                     onClick = {
-                        onShownForStartDateToggled(null)
+                        onShownForStartDateChange(null)
                         onDateChange(shownForStartDate, datePickerState.selectedDateMillis)
                     },
                     enabled = confirmEnabled,
@@ -211,7 +211,7 @@ fun StartEndDateDialog(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { onShownForStartDateToggled(null) }) {
+                TextButton(onClick = { onShownForStartDateChange(null) }) {
                     Text(text = stringResource(UtilsStringR.cancel))
                 }
             },
@@ -227,7 +227,7 @@ fun <T> LazyListScope.listSection(
     values: Collection<T>,
     aboveFold: Int,
     expanded: () -> Boolean,
-    onExpandedToggled: (Boolean) -> Unit,
+    onExpandedChange: (Boolean) -> Unit,
     hidden: () -> Boolean = { false },
     hiddenContent: @Composable () -> Unit = {},
     itemContent: @Composable (T, paddingBottom: Dp) -> Unit,
@@ -236,7 +236,7 @@ fun <T> LazyListScope.listSection(
         item {
             DetailsSectionHeader(
                 text = stringResource(titleRes),
-                modifier = Modifier.clickable { onExpandedToggled(!expanded()) }
+                modifier = Modifier.clickable { onExpandedChange(!expanded()) }
             )
         }
 
@@ -270,7 +270,7 @@ fun <T> LazyListScope.listSection(
             item {
                 @Suppress("NAME_SHADOWING") val expanded = expanded()
                 ElevatedCard(
-                    onClick = { onExpandedToggled(!expanded) },
+                    onClick = { onExpandedChange(!expanded) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp)

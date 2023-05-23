@@ -108,7 +108,7 @@ object AnimeUserListScreen {
                 }
             },
             filterData = viewModel::filterData,
-            onTagLongClicked = viewModel::onTagLongClick,
+            onTagLongClick = viewModel::onTagLongClick,
             showLoadSave = false,
             bottomNavigationState = bottomNavigationState,
         ) { scaffoldPadding ->

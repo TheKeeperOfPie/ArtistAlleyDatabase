@@ -24,6 +24,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
@@ -211,10 +212,15 @@ object UserStatsDetailScreen {
         onImageRatioCalculated: (Float) -> Unit,
     ) {
         Card(onClick = onClick) {
+            val density = LocalDensity.current
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
                     .data(image)
                     .crossfade(true)
+                    .size(
+                        width = density.run { 130.dp.roundToPx() },
+                        height = density.run { 180.dp.roundToPx() },
+                    )
                     .build(),
                 contentScale = ContentScale.Crop,
                 onSuccess = { onImageRatioCalculated(it.widthToHeightRatio()) },

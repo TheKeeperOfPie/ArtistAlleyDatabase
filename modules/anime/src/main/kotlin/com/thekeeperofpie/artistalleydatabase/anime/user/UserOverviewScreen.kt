@@ -38,6 +38,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -110,7 +111,7 @@ object UserOverviewScreen {
                 titleTextRes = R.string.anime_user_about_label,
                 htmlText = user.about?.trim(),
                 expanded = { descriptionExpanded },
-                onExpandedChanged = { descriptionExpanded = it },
+                onExpandedChange = { descriptionExpanded = it },
             )
 
             favoriteMediaSection(
@@ -130,8 +131,9 @@ object UserOverviewScreen {
             charactersSection(
                 titleRes = R.string.anime_user_favorite_characters_label,
                 characters = entry.characters,
-                onCharacterClicked = navigationCallback::onCharacterClick,
-                onCharacterLongClicked = navigationCallback::onCharacterLongClick,
+                onCharacterClick = navigationCallback::onCharacterClick,
+                onCharacterLongClick = navigationCallback::onCharacterLongClick,
+                onStaffClick = navigationCallback::onStaffClick,
                 colorCalculationState = colorCalculationState,
             )
 
@@ -263,7 +265,13 @@ object UserOverviewScreen {
                                 model = ImageRequest.Builder(LocalContext.current)
                                     .data(it.coverImage?.extraLarge)
                                     .crossfade(true)
-                                    .allowHardware(false)
+                                    .allowHardware(colorCalculationState.hasColor(id))
+                                    .size(
+                                        width = coil.size.Dimension.Undefined,
+                                        height = coil.size.Dimension.Pixels(
+                                            LocalDensity.current.run { 180.dp.roundToPx() }
+                                        ),
+                                    )
                                     .build(),
                                 contentScale = ContentScale.FillHeight,
                                 contentDescription = stringResource(R.string.anime_media_cover_image),

@@ -250,7 +250,7 @@ object AnimeMediaEditBottomSheet {
             if (startEndDateShown != null) {
                 StartEndDateDialog(
                     shownForStartDate = startEndDateShown,
-                    onShownForStartDateToggled = { startEndDateShown = it },
+                    onShownForStartDateChange = { startEndDateShown = it },
                     onDateChange = onDateChange,
                 )
             }

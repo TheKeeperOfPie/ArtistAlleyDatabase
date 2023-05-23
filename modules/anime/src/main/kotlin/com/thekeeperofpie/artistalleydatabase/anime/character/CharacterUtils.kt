@@ -20,6 +20,7 @@ object CharacterUtils {
                                 name = it.name?.userPreferred?.replace(Regex("\\s"), " "),
                                 image = it.image?.large,
                                 language = language,
+                                staff = it,
                             )
                         }
                     }

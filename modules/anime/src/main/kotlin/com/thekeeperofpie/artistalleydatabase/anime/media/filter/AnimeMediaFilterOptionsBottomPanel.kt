@@ -101,7 +101,7 @@ object AnimeMediaFilterOptionsBottomPanel {
         modifier: Modifier = Modifier,
         topBar: (@Composable () -> Unit)? = null,
         filterData: () -> AnimeMediaFilterController.Data<SortOption>,
-        onTagLongClicked: (String) -> Unit = {},
+        onTagLongClick: (String) -> Unit = {},
         errorRes: () -> Int? = { null },
         exception: () -> Exception? = { null },
         expandedForPreview: Boolean = false,
@@ -168,7 +168,7 @@ object AnimeMediaFilterOptionsBottomPanel {
             sheetContent = {
                 OptionsPanel(
                     filterData = filterData,
-                    onTagLongClicked = onTagLongClicked,
+                    onTagLongClick = onTagLongClick,
                     showLoadSave = showLoadSave,
                     showIgnoredFilter = showIgnoredFilter,
                     modifier = Modifier.padding(
@@ -198,7 +198,7 @@ object AnimeMediaFilterOptionsBottomPanel {
     @Composable
     private fun <SortOption : AnimeMediaFilterController.Data.SortOption> OptionsPanel(
         filterData: () -> AnimeMediaFilterController.Data<SortOption>,
-        onTagLongClicked: (String) -> Unit,
+        onTagLongClick: (String) -> Unit,
         showLoadSave: Boolean,
         showIgnoredFilter: Boolean,
         modifier: Modifier = Modifier,
@@ -216,7 +216,7 @@ object AnimeMediaFilterOptionsBottomPanel {
 
             SortSection(
                 expanded = { data.expanded(AnimeMediaFilterController.Section.SORT) },
-                onExpandedChanged = {
+                onExpandedChange = {
                     data.setExpanded(AnimeMediaFilterController.Section.SORT, it)
                 },
                 data = filterData,
@@ -224,11 +224,11 @@ object AnimeMediaFilterOptionsBottomPanel {
 
             FilterSection(
                 expanded = { data.expanded(AnimeMediaFilterController.Section.STATUS) },
-                onExpandedChanged = {
+                onExpandedChange = {
                     data.setExpanded(AnimeMediaFilterController.Section.STATUS, it)
                 },
                 entries = { data.statuses() },
-                onEntryClicked = { data.onStatusClicked(it.value) },
+                onEntryClick = { data.onStatusClick(it.value) },
                 titleRes = R.string.anime_media_filter_status_label,
                 titleDropdownContentDescriptionRes = R.string.anime_media_filter_status_content_description,
                 valueToText = { stringResource(it.textRes) },
@@ -237,11 +237,11 @@ object AnimeMediaFilterOptionsBottomPanel {
 
             FilterSection(
                 expanded = { data.expanded(AnimeMediaFilterController.Section.LIST_STATUS) },
-                onExpandedChanged = {
+                onExpandedChange = {
                     data.setExpanded(AnimeMediaFilterController.Section.LIST_STATUS, it)
                 },
                 entries = { data.listStatuses() },
-                onEntryClicked = { data.onListStatusClicked(it.value) },
+                onEntryClick = { data.onListStatusClick(it.value) },
                 titleRes = R.string.anime_media_filter_list_status_label,
                 titleDropdownContentDescriptionRes = R.string.anime_media_filter_list_status_content_description,
                 valueToText = { stringResource(it.textRes) },
@@ -250,11 +250,11 @@ object AnimeMediaFilterOptionsBottomPanel {
 
             FilterSection(
                 expanded = { data.expanded(AnimeMediaFilterController.Section.FORMAT) },
-                onExpandedChanged = {
+                onExpandedChange = {
                     data.setExpanded(AnimeMediaFilterController.Section.FORMAT, it)
                 },
                 entries = { data.formats() },
-                onEntryClicked = { data.onFormatClicked(it.value) },
+                onEntryClick = { data.onFormatClick(it.value) },
                 titleRes = R.string.anime_media_filter_format_label,
                 titleDropdownContentDescriptionRes = R.string.anime_media_filter_format_content_description,
                 valueToText = { stringResource(it.textRes) },
@@ -263,11 +263,11 @@ object AnimeMediaFilterOptionsBottomPanel {
 
             FilterSection(
                 expanded = { data.expanded(AnimeMediaFilterController.Section.GENRES) },
-                onExpandedChanged = {
+                onExpandedChange = {
                     data.setExpanded(AnimeMediaFilterController.Section.GENRES, it)
                 },
                 entries = { data.genres() },
-                onEntryClicked = { data.onGenreClicked(it.value) },
+                onEntryClick = { data.onGenreClick(it.value) },
                 titleRes = R.string.anime_media_filter_genre_label,
                 titleDropdownContentDescriptionRes = R.string.anime_media_filter_genre_content_description,
                 valueToText = { it.value },
@@ -276,25 +276,25 @@ object AnimeMediaFilterOptionsBottomPanel {
 
             TagSection(
                 expanded = { data.expanded(AnimeMediaFilterController.Section.TAGS) },
-                onExpandedChanged = {
+                onExpandedChange = {
                     data.setExpanded(AnimeMediaFilterController.Section.TAGS, it)
                 },
                 tags = { data.tags() },
-                onTagClicked = data.onTagClicked,
-                onTagLongClicked = onTagLongClicked,
+                onTagClick = data.onTagClick,
+                onTagLongClick = onTagLongClick,
                 tagRank = { data.tagRank() },
-                onTagRankChanged = data.onTagRankChanged,
+                onTagRankChange = data.onTagRankChange,
             )
 
             AiringDateSection(
                 expanded = { data.expanded(AnimeMediaFilterController.Section.AIRING_DATE) },
-                onExpandedChanged = {
+                onExpandedChange = {
                     data.setExpanded(AnimeMediaFilterController.Section.AIRING_DATE, it)
                 },
                 data = { data.airingDate() },
-                onSeasonChanged = data.onSeasonChanged,
-                onSeasonYearChanged = data.onSeasonYearChanged,
-                onIsAdvancedToggled = data.onAiringDateIsAdvancedToggled,
+                onSeasonChange = data.onSeasonChange,
+                onSeasonYearChange = data.onSeasonYearChange,
+                onIsAdvancedToggle = data.onAiringDateIsAdvancedToggle,
                 onRequestDatePicker = { airingDateShown = it },
                 onDateChange = data.onAiringDateChange,
             )
@@ -302,11 +302,11 @@ object AnimeMediaFilterOptionsBottomPanel {
             if (data.onListEnabled()) {
                 FilterSection(
                     expanded = { data.expanded(AnimeMediaFilterController.Section.ON_LIST) },
-                    onExpandedChanged = {
+                    onExpandedChange = {
                         data.setExpanded(AnimeMediaFilterController.Section.ON_LIST, it)
                     },
                     entries = { data.onListOptions() },
-                    onEntryClicked = { data.onOnListClicked(it) },
+                    onEntryClick = { data.onOnListClick(it) },
                     titleRes = R.string.anime_media_filter_on_list_label,
                     titleDropdownContentDescriptionRes = R.string.anime_media_filter_on_list_dropdown_content_description,
                     valueToText = { stringResource(it.textRes) },
@@ -317,33 +317,33 @@ object AnimeMediaFilterOptionsBottomPanel {
 
             RangeDataSection(
                 expanded = { data.expanded(AnimeMediaFilterController.Section.AVERAGE_SCORE) },
-                onExpandedChanged = {
+                onExpandedChange = {
                     data.setExpanded(AnimeMediaFilterController.Section.AVERAGE_SCORE, it)
                 },
                 range = { data.averageScoreRange() },
-                onRangeChange = data.onAverageScoreChanged,
+                onRangeChange = data.onAverageScoreChange,
                 titleRes = R.string.anime_media_filter_average_score_label,
                 titleDropdownContentDescriptionRes = R.string.anime_media_filter_average_score_expand_content_description,
             )
 
             RangeDataSection(
                 expanded = { data.expanded(AnimeMediaFilterController.Section.EPISODES) },
-                onExpandedChanged = {
+                onExpandedChange = {
                     data.setExpanded(AnimeMediaFilterController.Section.EPISODES, it)
                 },
                 range = { data.episodesRange() },
-                onRangeChange = data.onEpisodesChanged,
+                onRangeChange = data.onEpisodesChange,
                 titleRes = R.string.anime_media_filter_episodes_label,
                 titleDropdownContentDescriptionRes = R.string.anime_media_filter_episodes_expand_content_description,
             )
 
             FilterSection(
                 expanded = { data.expanded(AnimeMediaFilterController.Section.SOURCE) },
-                onExpandedChanged = {
+                onExpandedChange = {
                     data.setExpanded(AnimeMediaFilterController.Section.SOURCE, it)
                 },
                 entries = { data.sources() },
-                onEntryClicked = { data.onSourceClicked(it.value) },
+                onEntryClick = { data.onSourceClick(it.value) },
                 titleRes = R.string.anime_media_filter_source_label,
                 titleDropdownContentDescriptionRes = R.string.anime_media_filter_source_expand_content_description,
                 valueToText = { stringResource(it.textRes) },
@@ -353,18 +353,18 @@ object AnimeMediaFilterOptionsBottomPanel {
 
             AdultSection(
                 showAdult = { data.showAdult() },
-                onShowAdultToggled = data.onShowAdultToggled,
+                onShowAdultChange = data.onShowAdultToggle,
             )
 
             CollapseOnCloseSection(
                 collapseOnClose = { data.collapseOnClose() },
-                onCollapseOnCloseToggled = data.onCollapseOnCloseToggled,
+                onCollapseOnCloseChange = data.onCollapseOnCloseToggle,
             )
 
             if (showIgnoredFilter) {
                 ShowIgnoredSection(
                     showIgnored = { data.showIgnored() },
-                    onShowIgnoredToggled = data.onShowIgnoredToggled,
+                    onShowIgnoredChange = data.onShowIgnoredToggle,
                 )
             }
 
@@ -378,7 +378,7 @@ object AnimeMediaFilterOptionsBottomPanel {
             if (airingDateShown != null) {
                 StartEndDateDialog(
                     shownForStartDate = airingDateShown,
-                    onShownForStartDateToggled = { airingDateShown = it },
+                    onShownForStartDateChange = { airingDateShown = it },
                     onDateChange = data.onAiringDateChange,
                 )
             }
@@ -397,18 +397,18 @@ object AnimeMediaFilterOptionsBottomPanel {
     @Composable
     private fun Section(
         expanded: Boolean,
-        onExpandedChanged: (Boolean) -> Unit,
+        onExpandedChange: (Boolean) -> Unit,
         @StringRes titleRes: Int,
         @StringRes titleDropdownContentDescriptionRes: Int,
         summaryText: (@Composable () -> String?)? = null,
-        onSummaryClicked: () -> Unit = {},
+        onSummaryClick: () -> Unit = {},
         content: @Composable () -> Unit
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { onExpandedChanged(!expanded) }
+                .clickable { onExpandedChange(!expanded) }
         ) {
             FlowRow(
                 verticalArrangement = Arrangement.Center,
@@ -424,7 +424,7 @@ object AnimeMediaFilterOptionsBottomPanel {
                     summaryText?.invoke()?.let {
                         FilterChip(
                             selected = true,
-                            onClick = onSummaryClicked,
+                            onClick = onSummaryClick,
                             label = { Text(it) },
                             modifier = Modifier
                                 .padding(0.dp)
@@ -437,7 +437,7 @@ object AnimeMediaFilterOptionsBottomPanel {
             TrailingDropdownIconButton(
                 expanded = expanded,
                 contentDescription = stringResource(titleDropdownContentDescriptionRes),
-                onClick = { onExpandedChanged(!expanded) },
+                onClick = { onExpandedChange(!expanded) },
             )
         }
 
@@ -474,9 +474,9 @@ object AnimeMediaFilterOptionsBottomPanel {
     @Composable
     private fun <Entry : MediaFilterEntry<*>> FilterSection(
         expanded: () -> Boolean,
-        onExpandedChanged: (Boolean) -> Unit,
+        onExpandedChange: (Boolean) -> Unit,
         entries: @Composable () -> List<Entry>,
-        onEntryClicked: (Entry) -> Unit,
+        onEntryClick: (Entry) -> Unit,
         @StringRes titleRes: Int,
         @StringRes titleDropdownContentDescriptionRes: Int,
         valueToText: @Composable (Entry) -> String,
@@ -489,7 +489,7 @@ object AnimeMediaFilterOptionsBottomPanel {
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { onExpandedChanged(!expanded) }
+                .clickable { onExpandedChange(!expanded) }
         ) {
             FlowRow(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -504,7 +504,7 @@ object AnimeMediaFilterOptionsBottomPanel {
                     if (!expanded && it.state == IncludeExcludeState.DEFAULT) return@forEach
                     FilterChip(
                         selected = it.state != IncludeExcludeState.DEFAULT,
-                        onClick = { onEntryClicked(it) },
+                        onClick = { onEntryClick(it) },
                         label = { Text(valueToText(it)) },
                         leadingIcon = if (!showIcons) null else {
                             {
@@ -521,7 +521,7 @@ object AnimeMediaFilterOptionsBottomPanel {
             TrailingDropdownIconButton(
                 expanded = expanded,
                 contentDescription = stringResource(titleDropdownContentDescriptionRes),
-                onClick = { onExpandedChanged(!expanded) },
+                onClick = { onExpandedChange(!expanded) },
                 modifier = Modifier.align(Alignment.Top),
             )
         }
@@ -532,7 +532,7 @@ object AnimeMediaFilterOptionsBottomPanel {
     @Composable
     private fun <SortOption : AnimeMediaFilterController.Data.SortOption> SortSection(
         expanded: () -> Boolean,
-        onExpandedChanged: (Boolean) -> Unit,
+        onExpandedChange: (Boolean) -> Unit,
         data: () -> AnimeMediaFilterController.Data<SortOption>,
     ) {
         @Suppress("NAME_SHADOWING")
@@ -544,7 +544,7 @@ object AnimeMediaFilterOptionsBottomPanel {
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { onExpandedChanged(!expanded) }
+                .clickable { onExpandedChange(!expanded) }
         ) {
             FlowRow(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -559,7 +559,7 @@ object AnimeMediaFilterOptionsBottomPanel {
                     if (!expanded && it.state == IncludeExcludeState.DEFAULT) return@forEach
                     FilterChip(
                         selected = it.state != IncludeExcludeState.DEFAULT,
-                        onClick = { data.onSortClicked(it.value) },
+                        onClick = { data.onSortClick(it.value) },
                         label = { Text(stringResource(it.value.textRes)) },
                         modifier = Modifier.animateContentSize()
                     )
@@ -571,7 +571,7 @@ object AnimeMediaFilterOptionsBottomPanel {
                     val sortAscending = data.sortAscending()
                     FilterChip(
                         selected = true,
-                        onClick = { data.onSortAscendingChanged(!sortAscending) },
+                        onClick = { data.onSortAscendingChange(!sortAscending) },
                         leadingIcon = {
                             Icon(
                                 imageVector = if (sortAscending) {
@@ -596,7 +596,7 @@ object AnimeMediaFilterOptionsBottomPanel {
             TrailingDropdownIconButton(
                 expanded = expanded,
                 contentDescription = stringResource(R.string.anime_media_filter_sort_content_description),
-                onClick = { onExpandedChanged(!expanded) },
+                onClick = { onExpandedChange(!expanded) },
                 modifier = Modifier.align(Alignment.Top),
             )
         }
@@ -620,7 +620,7 @@ object AnimeMediaFilterOptionsBottomPanel {
             ) {
                 FilterChip(
                     selected = sortAscending,
-                    onClick = { data.onSortAscendingChanged(true) },
+                    onClick = { data.onSortAscendingChange(true) },
                     label = { Text(ascendingText(true)) },
                     leadingIcon = {
                         Icon(
@@ -635,7 +635,7 @@ object AnimeMediaFilterOptionsBottomPanel {
 
                 FilterChip(
                     selected = !sortAscending,
-                    onClick = { data.onSortAscendingChanged(false) },
+                    onClick = { data.onSortAscendingChange(false) },
                     label = { Text(ascendingText(false)) },
                     leadingIcon = {
                         Icon(
@@ -656,18 +656,18 @@ object AnimeMediaFilterOptionsBottomPanel {
     @Composable
     private fun TagSection(
         expanded: () -> Boolean,
-        onExpandedChanged: (Boolean) -> Unit,
+        onExpandedChange: (Boolean) -> Unit,
         tags: @Composable () -> Map<String, AnimeMediaFilterController.TagSection>,
-        onTagClicked: (String) -> Unit,
-        onTagLongClicked: (String) -> Unit,
+        onTagClick: (String) -> Unit,
+        onTagLongClick: (String) -> Unit,
         tagRank: @Composable () -> String,
-        onTagRankChanged: (String) -> Unit,
+        onTagRankChange: (String) -> Unit,
     ) {
         @Suppress("NAME_SHADOWING")
         val expanded = expanded()
         Section(
             expanded = expanded,
-            onExpandedChanged = onExpandedChanged,
+            onExpandedChange = onExpandedChange,
             titleRes = R.string.anime_media_filter_tag_label,
             titleDropdownContentDescriptionRes = R.string.anime_media_filter_tag_content_description,
             summaryText = {
@@ -678,7 +678,7 @@ object AnimeMediaFilterOptionsBottomPanel {
                     else -> "≥ $tagRank"
                 }
             },
-            onSummaryClicked = { onTagRankChanged("") },
+            onSummaryClick = { onTagRankChange("") },
         ) {
             Column(modifier = Modifier.animateContentSize()) {
                 @Suppress("NAME_SHADOWING")
@@ -690,8 +690,8 @@ object AnimeMediaFilterOptionsBottomPanel {
                         tags = children,
                         level = 0,
                         parentExpanded = expanded,
-                        onTagClicked = onTagClicked,
-                        onTagLongClicked = onTagLongClicked,
+                        onTagClick = onTagClick,
+                        onTagLongClick = onTagLongClick,
                     )
                 }
 
@@ -709,8 +709,8 @@ object AnimeMediaFilterOptionsBottomPanel {
                         children = section.children.values,
                         parentExpanded = expanded,
                         level = 0,
-                        onTagClicked = onTagClicked,
-                        onTagLongClicked = onTagLongClicked,
+                        onTagClick = onTagClick,
+                        onTagLongClick = onTagLongClick,
                         showDivider = expanded || index != subcategoriesToShow.size - 1,
                     )
                 }
@@ -735,7 +735,7 @@ object AnimeMediaFilterOptionsBottomPanel {
                             value = tagRank.toIntOrNull()?.coerceIn(0, 100)?.toFloat() ?: 0f,
                             valueRange = 0f..100f,
                             steps = 100,
-                            onValueChange = { onTagRankChanged(it.roundToInt().toString()) },
+                            onValueChange = { onTagRankChange(it.roundToInt().toString()) },
                             modifier = Modifier
                                 .weight(1f)
                                 .padding(horizontal = 4.dp),
@@ -743,7 +743,7 @@ object AnimeMediaFilterOptionsBottomPanel {
 
                         CustomOutlinedTextField(
                             value = tagRank,
-                            onValueChange = { onTagRankChanged(it) },
+                            onValueChange = { onTagRankChange(it) },
                             textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
                             keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
                             contentPadding = OutlinedTextFieldDefaults.contentPadding(
@@ -766,8 +766,8 @@ object AnimeMediaFilterOptionsBottomPanel {
         children: Collection<AnimeMediaFilterController.TagSection>,
         parentExpanded: Boolean,
         level: Int,
-        onTagClicked: (String) -> Unit,
-        onTagLongClicked: (String) -> Unit,
+        onTagClick: (String) -> Unit,
+        onTagLongClick: (String) -> Unit,
         showDivider: Boolean,
     ) {
         var expanded by remember(name) { mutableStateOf(false) }
@@ -833,8 +833,8 @@ object AnimeMediaFilterOptionsBottomPanel {
                     tagsToShow,
                     parentExpanded = expanded,
                     level,
-                    onTagClicked,
-                    onTagLongClicked
+                    onTagClick,
+                    onTagLongClick
                 )
             }
 
@@ -844,8 +844,8 @@ object AnimeMediaFilterOptionsBottomPanel {
                     section.children.values,
                     parentExpanded = parentExpanded && expanded,
                     level + 1,
-                    onTagClicked,
-                    onTagLongClicked,
+                    onTagClick,
+                    onTagLongClick,
                     showDivider = index != subcategoriesToShow.size - 1,
                 )
             }
@@ -861,8 +861,8 @@ object AnimeMediaFilterOptionsBottomPanel {
         tags: List<AnimeMediaFilterController.TagSection.Tag>,
         parentExpanded: Boolean,
         level: Int,
-        onTagClicked: (String) -> Unit,
-        onTagLongClicked: (String) -> Unit,
+        onTagClick: (String) -> Unit,
+        onTagLongClick: (String) -> Unit,
     ) {
         FlowRow(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -875,11 +875,11 @@ object AnimeMediaFilterOptionsBottomPanel {
                 if (!parentExpanded && it.state == IncludeExcludeState.DEFAULT) return@forEach
                 com.thekeeperofpie.artistalleydatabase.compose.FilterChip(
                     selected = it.state != IncludeExcludeState.DEFAULT,
-                    onClick = { onTagClicked(it.id) },
+                    onClick = { onTagClick(it.id) },
                     onLongClickLabel = stringResource(
                         R.string.anime_media_tag_long_click_content_description
                     ),
-                    onLongClick = { onTagLongClicked(it.id) },
+                    onLongClick = { onTagLongClick(it.id) },
                     enabled = it.clickable,
                     label = { AutoHeightText(it.value.name) },
                     leadingIcon = {
@@ -897,11 +897,11 @@ object AnimeMediaFilterOptionsBottomPanel {
     @Composable
     private fun AiringDateSection(
         expanded: () -> Boolean,
-        onExpandedChanged: (Boolean) -> Unit,
+        onExpandedChange: (Boolean) -> Unit,
         data: @Composable () -> AnimeMediaFilterController.AiringDate,
-        onSeasonChanged: (MediaSeason?) -> Unit,
-        onSeasonYearChanged: (String) -> Unit,
-        onIsAdvancedToggled: (Boolean) -> Unit,
+        onSeasonChange: (MediaSeason?) -> Unit,
+        onSeasonYearChange: (String) -> Unit,
+        onIsAdvancedToggle: (Boolean) -> Unit,
         onRequestDatePicker: (Boolean) -> Unit,
         onDateChange: (start: Boolean, Long?) -> Unit,
     ) {
@@ -912,7 +912,7 @@ object AnimeMediaFilterOptionsBottomPanel {
         val data = data()
         Section(
             expanded = expanded,
-            onExpandedChanged = onExpandedChanged,
+            onExpandedChange = onExpandedChange,
             titleRes = R.string.anime_media_filter_airing_date,
             titleDropdownContentDescriptionRes = R.string.anime_media_filter_airing_date_content_description,
             summaryText = {
@@ -949,11 +949,11 @@ object AnimeMediaFilterOptionsBottomPanel {
                     }
                 }
             },
-            onSummaryClicked = {
+            onSummaryClick = {
                 when (data) {
                     is AnimeMediaFilterController.AiringDate.Basic -> {
-                        onSeasonChanged(null)
-                        onSeasonYearChanged("")
+                        onSeasonChange(null)
+                        onSeasonYearChange("")
                     }
                     is AnimeMediaFilterController.AiringDate.Advanced -> {
                         onDateChange(true, null)
@@ -978,13 +978,13 @@ object AnimeMediaFilterOptionsBottomPanel {
                         Tab(
                             selected = tabIndex == 0,
                             text = { Text(stringResource(R.string.anime_media_filter_airing_date_season_basic)) },
-                            onClick = { onIsAdvancedToggled(false) },
+                            onClick = { onIsAdvancedToggle(false) },
                         )
 
                         Tab(
                             selected = tabIndex == 1,
                             text = { Text(stringResource(R.string.anime_media_filter_airing_date_season_advanced)) },
-                            onClick = { onIsAdvancedToggled(true) },
+                            onClick = { onIsAdvancedToggle(true) },
                         )
                     }
 
@@ -992,8 +992,8 @@ object AnimeMediaFilterOptionsBottomPanel {
                         is AnimeMediaFilterController.AiringDate.Basic ->
                             AiringDateBasicSection(
                                 data = data,
-                                onSeasonChanged = onSeasonChanged,
-                                onSeasonYearChanged = onSeasonYearChanged,
+                                onSeasonChange = onSeasonChange,
+                                onSeasonYearChange = onSeasonYearChange,
                             )
                         is AnimeMediaFilterController.AiringDate.Advanced ->
                             AiringDateAdvancedSection(
@@ -1010,8 +1010,8 @@ object AnimeMediaFilterOptionsBottomPanel {
     @Composable
     private fun AiringDateBasicSection(
         data: AnimeMediaFilterController.AiringDate.Basic,
-        onSeasonChanged: (MediaSeason?) -> Unit,
-        onSeasonYearChanged: (String) -> Unit,
+        onSeasonChange: (MediaSeason?) -> Unit,
+        onSeasonYearChange: (String) -> Unit,
     ) {
         Row(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -1031,20 +1031,20 @@ object AnimeMediaFilterOptionsBottomPanel {
                     )
                 },
                 textForValue = { it?.toTextRes()?.let { stringResource(it) }.orEmpty() },
-                onSelectItem = onSeasonChanged,
+                onSelectItem = onSeasonChange,
                 modifier = Modifier.weight(1f),
             )
 
             TextField(
                 value = data.seasonYear,
-                onValueChange = onSeasonYearChanged,
+                onValueChange = onSeasonYearChange,
                 label = { Text(stringResource(R.string.anime_media_filter_airing_date_season_year)) },
                 keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
                 leadingIcon = if (data.seasonYear.isNotBlank()) {
                     @Composable {
                         IconButton(onClick = {
                             data.seasonYear.toIntOrNull()?.let {
-                                onSeasonYearChanged((it - 1).toString())
+                                onSeasonYearChange((it - 1).toString())
                             }
                         }) {
                             Icon(
@@ -1062,7 +1062,7 @@ object AnimeMediaFilterOptionsBottomPanel {
                         if (!isYearBlank) {
                             IconButton(onClick = {
                                 data.seasonYear.toIntOrNull()?.let {
-                                    onSeasonYearChanged((it + 1).toString())
+                                    onSeasonYearChange((it + 1).toString())
                                 }
                             }) {
                                 Icon(
@@ -1076,11 +1076,11 @@ object AnimeMediaFilterOptionsBottomPanel {
 
                         IconButton(onClick = {
                             if (isYearBlank) {
-                                onSeasonYearChanged(
+                                onSeasonYearChange(
                                     Calendar.getInstance()[Calendar.YEAR].toString()
                                 )
                             } else {
-                                onSeasonYearChanged("")
+                                onSeasonYearChange("")
                             }
                         }) {
                             Icon(
@@ -1122,7 +1122,7 @@ object AnimeMediaFilterOptionsBottomPanel {
     @Composable
     private fun RangeDataSection(
         expanded: () -> Boolean,
-        onExpandedChanged: (Boolean) -> Unit,
+        onExpandedChange: (Boolean) -> Unit,
         range: @Composable () -> AnimeMediaFilterController.RangeData,
         onRangeChange: (String, String) -> Unit,
         @StringRes titleRes: Int,
@@ -1132,11 +1132,11 @@ object AnimeMediaFilterOptionsBottomPanel {
         val expanded = expanded()
         Section(
             expanded = expanded,
-            onExpandedChanged = onExpandedChanged,
+            onExpandedChange = onExpandedChange,
             titleRes = titleRes,
             titleDropdownContentDescriptionRes = titleDropdownContentDescriptionRes,
             summaryText = { range().summaryText },
-            onSummaryClicked = { onRangeChange("", "") },
+            onSummaryClick = { onRangeChange("", "") },
         ) {
             AnimatedVisibility(
                 visible = expanded,
@@ -1204,7 +1204,7 @@ object AnimeMediaFilterOptionsBottomPanel {
     @Composable
     private fun AdultSection(
         showAdult: @Composable () -> Boolean,
-        onShowAdultToggled: (Boolean) -> Unit,
+        onShowAdultChange: (Boolean) -> Unit,
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -1221,7 +1221,7 @@ object AnimeMediaFilterOptionsBottomPanel {
 
             Switch(
                 checked = showAdult(),
-                onCheckedChange = onShowAdultToggled,
+                onCheckedChange = onShowAdultChange,
                 modifier = Modifier.padding(end = 16.dp),
             )
         }
@@ -1232,7 +1232,7 @@ object AnimeMediaFilterOptionsBottomPanel {
     @Composable
     private fun CollapseOnCloseSection(
         collapseOnClose: @Composable () -> Boolean,
-        onCollapseOnCloseToggled: (Boolean) -> Unit,
+        onCollapseOnCloseChange: (Boolean) -> Unit,
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -1249,7 +1249,7 @@ object AnimeMediaFilterOptionsBottomPanel {
 
             Switch(
                 checked = collapseOnClose(),
-                onCheckedChange = onCollapseOnCloseToggled,
+                onCheckedChange = onCollapseOnCloseChange,
                 modifier = Modifier.padding(end = 16.dp),
             )
         }
@@ -1260,7 +1260,7 @@ object AnimeMediaFilterOptionsBottomPanel {
     @Composable
     private fun ShowIgnoredSection(
         showIgnored: @Composable () -> Boolean,
-        onShowIgnoredToggled: (Boolean) -> Unit,
+        onShowIgnoredChange: (Boolean) -> Unit,
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -1277,7 +1277,7 @@ object AnimeMediaFilterOptionsBottomPanel {
 
             Switch(
                 checked = showIgnored(),
-                onCheckedChange = onShowIgnoredToggled,
+                onCheckedChange = onShowIgnoredChange,
                 modifier = Modifier.padding(end = 16.dp),
             )
         }

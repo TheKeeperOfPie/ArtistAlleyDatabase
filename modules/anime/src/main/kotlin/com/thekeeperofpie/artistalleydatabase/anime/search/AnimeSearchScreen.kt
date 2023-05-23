@@ -117,7 +117,7 @@ object AnimeSearchScreen {
                 }
             },
             filterData = viewModel::filterData,
-            onTagLongClicked = viewModel::onTagLongClick,
+            onTagLongClick = viewModel::onTagLongClick,
             showLoadSave = true,
             showIgnoredFilter = showIgnoredFilter,
             bottomNavigationState = bottomNavigationState,

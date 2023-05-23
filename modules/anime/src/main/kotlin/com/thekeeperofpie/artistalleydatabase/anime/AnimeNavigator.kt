@@ -254,10 +254,10 @@ object AnimeNavigator {
                         AnimeMediaDetailsScreen.Entry(mediaId, it)
                     }
                 },
-                onGenreLongClicked = { /*TODO*/ },
-                onCharacterLongClicked = { /*TODO*/ },
-                onStaffLongClicked = { /*TODO*/ },
-                onTagLongClicked = { /*TODO*/ },
+                onGenreLongClick = { /*TODO*/ },
+                onCharacterLongClick = { /*TODO*/ },
+                onStaffLongClick = { /*TODO*/ },
+                onTagLongClick = { /*TODO*/ },
                 navigationCallback = navigationCallback,
                 listEntry = { viewModel.listEntry.collectAsState().value },
                 scoreFormat = { viewModel.scoreFormat.collectAsState().value },

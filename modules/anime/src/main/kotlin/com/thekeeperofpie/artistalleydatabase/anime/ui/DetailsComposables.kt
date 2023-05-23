@@ -49,6 +49,7 @@ import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -56,6 +57,7 @@ import androidx.compose.ui.unit.lerp
 import coil.compose.AsyncImage
 import coil.compose.AsyncImagePainter
 import coil.request.ImageRequest
+import coil.size.Dimension
 import com.thekeeperofpie.artistalleydatabase.android_utils.AnimationUtils
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.compose.AccelerateEasing
@@ -95,6 +97,10 @@ internal fun CoverAndBannerHeader(
                 model = ImageRequest.Builder(LocalContext.current)
                     .data(bannerImage())
                     .crossfade(true)
+                    .size(
+                        width = Dimension.Undefined,
+                        height = Dimension.Pixels(LocalDensity.current.run { 180.dp.roundToPx() }),
+                    )
                     .build(),
                 contentScale = ContentScale.FillHeight,
                 contentDescription = stringResource(R.string.anime_media_banner_image),
@@ -138,6 +144,12 @@ internal fun CoverAndBannerHeader(
                         model = ImageRequest.Builder(LocalContext.current)
                             .data(coverImage())
                             .crossfade(true)
+                            .size(
+                                width = Dimension.Undefined,
+                                height = Dimension.Pixels(
+                                    LocalDensity.current.run { coverSize.roundToPx() }
+                                ),
+                            )
                             .build(),
                         contentScale = ContentScale.FillHeight,
                         error = rememberVectorPainter(Icons.Filled.ImageNotSupported),
@@ -204,18 +216,18 @@ internal fun LazyListScope.descriptionSection(
     @StringRes titleTextRes: Int,
     htmlText: String?,
     expanded: () -> Boolean,
-    onExpandedChanged: (Boolean) -> Unit,
+    onExpandedChange: (Boolean) -> Unit,
 ) {
     htmlText?.takeUnless(String::isEmpty) ?: return
     item {
         DetailsSectionHeader(
             stringResource(titleTextRes),
-            modifier = Modifier.clickable { onExpandedChanged(!expanded()) }
+            modifier = Modifier.clickable { onExpandedChange(!expanded()) }
         )
     }
     item {
         ElevatedCard(
-            onClick = { onExpandedChanged(!expanded()) },
+            onClick = { onExpandedChange(!expanded()) },
             modifier = Modifier
                 .padding(horizontal = 16.dp)
                 .fillMaxWidth()

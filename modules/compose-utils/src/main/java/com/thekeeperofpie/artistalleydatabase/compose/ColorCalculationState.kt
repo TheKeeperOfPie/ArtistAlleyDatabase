@@ -16,6 +16,8 @@ class ColorCalculationState @OptIn(DelicateCoroutinesApi::class) constructor(
 ) {
     fun getColors(id: String?) = colorMap[id.orEmpty()]
         ?: (Color.Unspecified to Color.Unspecified)
+
+    fun hasColor(id: String?) = colorMap.contains(id)
 }
 
 @Composable

@@ -488,7 +488,7 @@ class AnimeMediaFilterController<T>(
         }
     }
 
-    private fun onSortClicked(option: T) {
+    private fun onSortClick(option: T) {
         sortOptions.value = sortOptions.value.toMutableList()
             .apply {
                 replaceAll {
@@ -504,9 +504,9 @@ class AnimeMediaFilterController<T>(
             }
     }
 
-    private fun onSortAscendingChanged(ascending: Boolean) = sortAscending.update { ascending }
+    private fun onSortAscendingChange(ascending: Boolean) = sortAscending.update { ascending }
 
-    private fun onGenreClicked(genreName: String) {
+    private fun onGenreClick(genreName: String) {
         genres.value = genres.value.toMutableList()
             .apply {
                 replaceAll {
@@ -517,7 +517,7 @@ class AnimeMediaFilterController<T>(
             }
     }
 
-    private fun onTagClicked(tagId: String) {
+    private fun onTagClick(tagId: String) {
         if (tagId == initialParams.tagId) return
         tagsByCategory.value = tagsByCategory.value
             .mapValues { (_, value) ->
@@ -528,7 +528,7 @@ class AnimeMediaFilterController<T>(
             }
     }
 
-    private fun onStatusClicked(status: MediaStatus) {
+    private fun onStatusClick(status: MediaStatus) {
         statuses.value = statuses.value.toMutableList()
             .apply {
                 replaceAll {
@@ -539,7 +539,7 @@ class AnimeMediaFilterController<T>(
             }
     }
 
-    private fun onListStatusClicked(status: MediaListStatus) {
+    private fun onListStatusClick(status: MediaListStatus) {
         listStatuses.value = listStatuses.value.toMutableList()
             .apply {
                 replaceAll {
@@ -559,7 +559,7 @@ class AnimeMediaFilterController<T>(
             }
     }
 
-    private fun onFormatClicked(format: MediaFormat) {
+    private fun onFormatClick(format: MediaFormat) {
         formats.value = formats.value.toMutableList()
             .apply {
                 replaceAll {
@@ -570,12 +570,12 @@ class AnimeMediaFilterController<T>(
             }
     }
 
-    private fun onSeasonChanged(season: MediaSeason?) {
+    private fun onSeasonChange(season: MediaSeason?) {
         val value = airingDate.value
         airingDate.value = value.copy(first = value.first.copy(season = season))
     }
 
-    private fun onSeasonYearChanged(seasonYear: String) {
+    private fun onSeasonYearChange(seasonYear: String) {
         val value = airingDate.value
         airingDate.value = value.copy(first = value.first.copy(seasonYear = seasonYear))
     }
@@ -598,7 +598,7 @@ class AnimeMediaFilterController<T>(
         )
     }
 
-    private fun onOnListClicked(option: OnListOption) {
+    private fun onOnListClick(option: OnListOption) {
         onListOptions.value = onListOptions.value.toMutableList()
             .apply {
                 replaceAll {
@@ -614,18 +614,18 @@ class AnimeMediaFilterController<T>(
             }
     }
 
-    private fun onAverageScoreChanged(start: String, end: String) {
+    private fun onAverageScoreChange(start: String, end: String) {
         averageScoreRange.value = averageScoreRange.value.copy(startString = start, endString = end)
     }
 
-    private fun onEpisodesChanged(start: String, end: String) {
+    private fun onEpisodesChange(start: String, end: String) {
         episodesRange.value = episodesRange.value.copy(
             startString = start,
             endString = end.takeIf { it != "150" }.orEmpty(),
         )
     }
 
-    private fun onSourceClicked(source: MediaSource) {
+    private fun onSourceClick(source: MediaSource) {
         sources.value = sources.value.toMutableList()
             .apply {
                 replaceAll {
@@ -670,47 +670,47 @@ class AnimeMediaFilterController<T>(
         expanded = ::getExpanded,
         setExpanded = ::setExpanded,
         sortOptions = { sortOptions.collectAsState().value },
-        onSortClicked = ::onSortClicked,
+        onSortClick = ::onSortClick,
         sortAscending = { sortAscending.collectAsState().value },
-        onSortAscendingChanged = ::onSortAscendingChanged,
+        onSortAscendingChange = ::onSortAscendingChange,
         statuses = { statuses.collectAsState().value },
-        onStatusClicked = ::onStatusClicked,
+        onStatusClick = ::onStatusClick,
         listStatuses = { listStatuses.collectAsState().value },
-        onListStatusClicked = ::onListStatusClicked,
+        onListStatusClick = ::onListStatusClick,
         formats = { formats.collectAsState().value },
-        onFormatClicked = ::onFormatClicked,
+        onFormatClick = ::onFormatClick,
         genres = { genresFiltered.collectAsState(emptyList()).value },
-        onGenreClicked = ::onGenreClicked,
+        onGenreClick = ::onGenreClick,
         tags = { tagsByCategoryFiltered.collectAsState(emptyMap()).value },
-        onTagClicked = ::onTagClicked,
+        onTagClick = ::onTagClick,
         tagRank = { tagRank.collectAsState().value },
-        onTagRankChanged = { tagRank.value = it },
+        onTagRankChange = { tagRank.value = it },
         airingDate = {
             airingDate.collectAsState().value.let {
                 if (airingDateIsAdvanced.collectAsState().value) it.second else it.first
             }
         },
-        onAiringDateIsAdvancedToggled = { airingDateIsAdvanced.value = it },
+        onAiringDateIsAdvancedToggle = { airingDateIsAdvanced.value = it },
         onAiringDateChange = ::onAiringDateChange,
-        onSeasonChanged = ::onSeasonChanged,
-        onSeasonYearChanged = ::onSeasonYearChanged,
+        onSeasonChange = ::onSeasonChange,
+        onSeasonYearChange = ::onSeasonYearChange,
         onListEnabled = { initialParams.onListEnabled },
         onListOptions = { onListOptions.collectAsState().value },
-        onOnListClicked = ::onOnListClicked,
+        onOnListClick = ::onOnListClick,
         averageScoreRange = { averageScoreRange.collectAsState().value },
-        onAverageScoreChanged = ::onAverageScoreChanged,
+        onAverageScoreChange = ::onAverageScoreChange,
         episodesRange = { episodesRange.collectAsState().value },
-        onEpisodesChanged = ::onEpisodesChanged,
+        onEpisodesChange = ::onEpisodesChange,
         sources = { sources.collectAsState().value },
-        onSourceClicked = ::onSourceClicked,
+        onSourceClick = ::onSourceClick,
         showAdult = { settings.showAdult.collectAsState().value },
-        onShowAdultToggled = { settings.showAdult.value = it },
+        onShowAdultToggle = { settings.showAdult.value = it },
         showExpandAll = { showExpandAll },
         onClickExpandAll = ::onClickExpandAll,
         collapseOnClose = { settings.collapseAnimeFiltersOnClose.collectAsState().value },
-        onCollapseOnCloseToggled = { settings.collapseAnimeFiltersOnClose.value = it },
+        onCollapseOnCloseToggle = { settings.collapseAnimeFiltersOnClose.value = it },
         showIgnored = { settings.showIgnored.collectAsState().value },
-        onShowIgnoredToggled = { settings.showIgnored.value = it },
+        onShowIgnoredToggle = { settings.showIgnored.value = it },
         onClearFilter = ::onClearFilter,
         onLoadFilter = ::onLoadFilter,
         onSaveFilter = ::onSaveFilter,
@@ -946,43 +946,43 @@ class AnimeMediaFilterController<T>(
         val expanded: (Section) -> Boolean = { false },
         val setExpanded: (Section, Boolean) -> Unit = { _, _ -> },
         val sortOptions: @Composable () -> List<SortEntry<SortOption>>,
-        val onSortClicked: (SortOption) -> Unit = {},
+        val onSortClick: (SortOption) -> Unit = {},
         val sortAscending: @Composable () -> Boolean = { false },
-        val onSortAscendingChanged: (Boolean) -> Unit = {},
+        val onSortAscendingChange: (Boolean) -> Unit = {},
         val statuses: @Composable () -> List<StatusEntry> = { emptyList() },
-        val onStatusClicked: (MediaStatus) -> Unit = {},
+        val onStatusClick: (MediaStatus) -> Unit = {},
         val listStatuses: @Composable () -> List<ListStatusEntry> = { emptyList() },
-        val onListStatusClicked: (MediaListStatus) -> Unit = {},
+        val onListStatusClick: (MediaListStatus) -> Unit = {},
         val formats: @Composable () -> List<FormatEntry> = { emptyList() },
-        val onFormatClicked: (MediaFormat) -> Unit = {},
+        val onFormatClick: (MediaFormat) -> Unit = {},
         val genres: @Composable () -> List<GenreEntry> = { emptyList() },
-        val onGenreClicked: (String) -> Unit = {},
+        val onGenreClick: (String) -> Unit = {},
         val tags: @Composable () -> Map<String, TagSection> = { emptyMap() },
-        val onTagClicked: (String) -> Unit = {},
+        val onTagClick: (String) -> Unit = {},
         val tagRank: @Composable () -> String = { "" },
-        val onTagRankChanged: (String) -> Unit = {},
+        val onTagRankChange: (String) -> Unit = {},
         val airingDate: @Composable () -> AiringDate = { AiringDate.Basic() },
-        val onSeasonChanged: (MediaSeason?) -> Unit = {},
-        val onSeasonYearChanged: (String) -> Unit = {},
-        val onAiringDateIsAdvancedToggled: (Boolean) -> Unit = {},
+        val onSeasonChange: (MediaSeason?) -> Unit = {},
+        val onSeasonYearChange: (String) -> Unit = {},
+        val onAiringDateIsAdvancedToggle: (Boolean) -> Unit = {},
         val onAiringDateChange: (start: Boolean, selectedMillis: Long?) -> Unit = { _, _ -> },
         val onListEnabled: () -> Boolean = { true },
         val onListOptions: @Composable () -> List<OnListOption> = { OnListOption.options() },
-        val onOnListClicked: (OnListOption) -> Unit = {},
+        val onOnListClick: (OnListOption) -> Unit = {},
         val averageScoreRange: @Composable () -> RangeData = { RangeData(100) },
-        val onAverageScoreChanged: (start: String, end: String) -> Unit = { _, _ -> },
+        val onAverageScoreChange: (start: String, end: String) -> Unit = { _, _ -> },
         val episodesRange: @Composable () -> RangeData = { RangeData(151) },
-        val onEpisodesChanged: (start: String, end: String) -> Unit = { _, _ -> },
+        val onEpisodesChange: (start: String, end: String) -> Unit = { _, _ -> },
         val sources: @Composable () -> List<SourceEntry> = { emptyList() },
-        val onSourceClicked: (MediaSource) -> Unit = {},
+        val onSourceClick: (MediaSource) -> Unit = {},
         val showAdult: @Composable () -> Boolean = { false },
-        val onShowAdultToggled: (Boolean) -> Unit = {},
+        val onShowAdultToggle: (Boolean) -> Unit = {},
         val showExpandAll: () -> Boolean = { true },
         val onClickExpandAll: (expand: Boolean) -> Unit = {},
         val collapseOnClose: @Composable () -> Boolean = { true },
-        val onCollapseOnCloseToggled: (Boolean) -> Unit = {},
+        val onCollapseOnCloseToggle: (Boolean) -> Unit = {},
         val showIgnored: @Composable () -> Boolean = { true },
-        val onShowIgnoredToggled: (Boolean) -> Unit = {},
+        val onShowIgnoredToggle: (Boolean) -> Unit = {},
         val onClearFilter: () -> Unit = {},
         val onLoadFilter: () -> Unit = {},
         val onSaveFilter: () -> Unit = {},

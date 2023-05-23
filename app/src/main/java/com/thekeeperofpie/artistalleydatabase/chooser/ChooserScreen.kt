@@ -54,7 +54,7 @@ object ChooserScreen {
         query: @Composable () -> String = { "" },
         onQueryChange: (String) -> Unit = {},
         options: () -> List<EntrySearchOption> = { emptyList() },
-        onOptionChanged: (EntrySearchOption) -> Unit = {},
+        onOptionChange: (EntrySearchOption) -> Unit = {},
         entries: @Composable () -> LazyPagingItems<ArtEntryGridModel> =
             { emptyFlow<PagingData<ArtEntryGridModel>>().collectAsLazyPagingItems() },
         selectedItems: () -> Collection<Int> = { emptyList() },
@@ -67,7 +67,7 @@ object ChooserScreen {
             query = query,
             onQueryChange = onQueryChange,
             options = options,
-            onOptionChanged = onOptionChanged,
+            onOptionChange = onOptionChange,
         ) { paddingValues ->
             Column {
                 EntryGrid.EntriesGrid(
@@ -98,7 +98,7 @@ object ChooserScreen {
         query: @Composable () -> String = { "" },
         onQueryChange: (String) -> Unit = {},
         options: () -> List<EntrySearchOption> = { emptyList() },
-        onOptionChanged: (EntrySearchOption) -> Unit = {},
+        onOptionChange: (EntrySearchOption) -> Unit = {},
         content: @Composable (PaddingValues) -> Unit,
     ) {
         Scaffold(
@@ -156,7 +156,7 @@ object ChooserScreen {
                                         .fillMaxWidth()
                                         .clickable {
                                             option.enabled = !option.enabled
-                                            onOptionChanged(option)
+                                            onOptionChange(option)
                                         }
                                 ) {
                                     Checkbox(

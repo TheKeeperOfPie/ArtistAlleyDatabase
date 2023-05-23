@@ -205,10 +205,10 @@ object AnimeMediaDetailsScreen {
         nextEpisode: @Composable () -> Int? = { null },
         nextEpisodeAiringAt: @Composable () -> Int? = { null },
         entry: @Composable () -> Entry? = { null },
-        onGenreLongClicked: (String) -> Unit = {},
-        onCharacterLongClicked: (String) -> Unit = {},
-        onStaffLongClicked: (String) -> Unit = {},
-        onTagLongClicked: (String) -> Unit = {},
+        onGenreLongClick: (String) -> Unit = {},
+        onCharacterLongClick: (String) -> Unit = {},
+        onStaffLongClick: (String) -> Unit = {},
+        onTagLongClick: (String) -> Unit = {},
         navigationCallback: AnimeNavigator.NavigationCallback,
         listEntry: @Composable () -> MediaDetailsListEntry?,
         scoreFormat: @Composable () -> ScoreFormat,
@@ -400,10 +400,10 @@ object AnimeMediaDetailsScreen {
                         viewModel = viewModel,
                         entry = entry,
                         errorRes = errorRes,
-                        onGenreLongClicked = onGenreLongClicked,
-                        onCharacterLongClicked = onCharacterLongClicked,
-                        onStaffLongClicked = onStaffLongClicked,
-                        onTagLongClicked = onTagLongClicked,
+                        onGenreLongClick = onGenreLongClick,
+                        onCharacterLongClick = onCharacterLongClick,
+                        onStaffLongClick = onStaffLongClick,
+                        onTagLongClick = onTagLongClick,
                         navigationCallback = navigationCallback,
                         expandedState = expandedState,
                         colorCalculationState = colorCalculationState,
@@ -444,10 +444,10 @@ object AnimeMediaDetailsScreen {
         viewModel: AnimeMediaDetailsViewModel,
         entry: Entry?,
         errorRes: @Composable () -> Pair<Int, Exception?>? = { null },
-        onGenreLongClicked: (String) -> Unit,
-        onCharacterLongClicked: (String) -> Unit,
-        onStaffLongClicked: (String) -> Unit,
-        onTagLongClicked: (String) -> Unit,
+        onGenreLongClick: (String) -> Unit,
+        onCharacterLongClick: (String) -> Unit,
+        onStaffLongClick: (String) -> Unit,
+        onTagLongClick: (String) -> Unit,
         navigationCallback: AnimeNavigator.NavigationCallback,
         expandedState: ExpandedState,
         colorCalculationState: ColorCalculationState,
@@ -476,32 +476,33 @@ object AnimeMediaDetailsScreen {
         }
         genreSection(
             entry = entry,
-            onGenreClicked = navigationCallback::onGenreClick,
-            onGenreLongClicked = onGenreLongClicked,
+            onGenreClick = navigationCallback::onGenreClick,
+            onGenreLongClick = onGenreLongClick,
         )
 
         descriptionSection(
             titleTextRes = R.string.anime_media_details_description_label,
             htmlText = entry.media.description,
             expanded = expandedState::description,
-            onExpandedChanged = { expandedState.description = it },
+            onExpandedChange = { expandedState.description = it },
         )
 
         charactersSection(
             titleRes = R.string.anime_media_details_characters_label,
             characters = entry.characters,
-            onCharacterClicked = navigationCallback::onCharacterClick,
-            onCharacterLongClicked = onCharacterLongClicked,
+            onCharacterClick = navigationCallback::onCharacterClick,
+            onCharacterLongClick = onCharacterLongClick,
+            onStaffClick = navigationCallback::onStaffClick,
             colorCalculationState = colorCalculationState,
         )
 
         relationsSection(
             entry = entry,
             relationsExpanded = expandedState::relations,
-            onRelationsExpandedToggled = { expandedState.relations = it },
+            onRelationsExpandedChange = { expandedState.relations = it },
             colorCalculationState = colorCalculationState,
             navigationCallback = navigationCallback,
-            onTagLongClicked = onTagLongClicked,
+            onTagLongClick = onTagLongClick,
         )
 
         infoSection(entry)
@@ -509,7 +510,7 @@ object AnimeMediaDetailsScreen {
         songsSection(
             viewModel = viewModel,
             songsExpanded = expandedState::songs,
-            onSongsExpandedToggled = { expandedState.songs = it },
+            onSongsExpandedChange = { expandedState.songs = it },
         )
 
         cdsSection(viewModel.cdEntries)
@@ -518,7 +519,7 @@ object AnimeMediaDetailsScreen {
             titleRes = R.string.anime_media_details_staff_label,
             staff = entry.staff,
             onStaffClick = navigationCallback::onStaffClick,
-            onStaffLongClick = onStaffLongClicked,
+            onStaffLongClick = onStaffLongClick,
             colorCalculationState = colorCalculationState,
         )
 
@@ -526,8 +527,8 @@ object AnimeMediaDetailsScreen {
 
         tagSection(
             entry = entry,
-            onTagClicked = navigationCallback::onTagClick,
-            onTagLongClicked = onTagLongClicked,
+            onTagClick = navigationCallback::onTagClick,
+            onTagLongClick = onTagLongClick,
             colorCalculationState = colorCalculationState,
         )
 
@@ -540,9 +541,9 @@ object AnimeMediaDetailsScreen {
         streamingEpisodesSection(
             entry = entry,
             expanded = expandedState::streamingEpisodes,
-            expandedToggled = { expandedState.streamingEpisodes = it },
+            onExpandedChange = { expandedState.streamingEpisodes = it },
             hidden = expandedState::streamingEpisodesHidden,
-            onHiddenToggled = { expandedState.streamingEpisodesHidden = it },
+            onHiddenChange = { expandedState.streamingEpisodesHidden = it },
         )
 
         socialLinksSection(entry = entry)
@@ -552,16 +553,16 @@ object AnimeMediaDetailsScreen {
         recommendationsSection(
             entry = entry,
             recommendationsExpanded = expandedState::recommendations,
-            onRecommendationsExpandedToggled = { expandedState.recommendations = it },
+            onRecommendationsExpandedChange = { expandedState.recommendations = it },
             colorCalculationState = colorCalculationState,
             navigationCallback = navigationCallback,
-            onTagLongClicked = onTagLongClicked,
+            onTagLongClick = onTagLongClick,
         )
 
         reviewsSection(
             reviews = entry.media.reviews?.nodes?.filterNotNull().orEmpty(),
             expanded = expandedState::reviews,
-            onExpandedToggled = { expandedState.reviews = it },
+            onExpandedChange = { expandedState.reviews = it },
             onUserClick = navigationCallback::onUserClick,
         )
     }
@@ -661,8 +662,8 @@ object AnimeMediaDetailsScreen {
 
     private fun LazyListScope.genreSection(
         entry: Entry,
-        onGenreClicked: (String) -> Unit,
-        onGenreLongClicked: (String) -> Unit
+        onGenreClick: (String) -> Unit,
+        onGenreLongClick: (String) -> Unit
     ) {
         if (entry.genres.isNotEmpty()) {
             item {
@@ -675,11 +676,11 @@ object AnimeMediaDetailsScreen {
                 ) {
                     entry.genres.forEach {
                         AssistChip(
-                            onClick = { onGenreClicked(it.name) },
+                            onClick = { onGenreClick(it.name) },
                             onLongClickLabel = stringResource(
                                 R.string.anime_media_tag_long_click_content_description
                             ),
-                            onLongClick = { onGenreLongClicked(it.name) },
+                            onLongClick = { onGenreLongClick(it.name) },
                             label = { AutoHeightText(it.name) },
                             colors = assistChipColors(containerColor = it.color),
                         )
@@ -692,8 +693,8 @@ object AnimeMediaDetailsScreen {
     private fun LazyListScope.relationsSection(
         entry: Entry,
         relationsExpanded: () -> Boolean,
-        onRelationsExpandedToggled: (Boolean) -> Unit,
-        onTagLongClicked: (String) -> Unit,
+        onRelationsExpandedChange: (Boolean) -> Unit,
+        onTagLongClick: (String) -> Unit,
         colorCalculationState: ColorCalculationState,
         navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
@@ -703,10 +704,10 @@ object AnimeMediaDetailsScreen {
             valueToEntry = { it.entry },
             aboveFold = RELATIONS_ABOVE_FOLD,
             expanded = relationsExpanded,
-            onExpandedToggled = onRelationsExpandedToggled,
+            onExpandedChange = onRelationsExpandedChange,
             colorCalculationState = colorCalculationState,
             navigationCallback = navigationCallback,
-            onTagLongClick = onTagLongClicked,
+            onTagLongClick = onTagLongClick,
             label = { RelationLabel(it.relation) },
         )
     }
@@ -841,7 +842,7 @@ object AnimeMediaDetailsScreen {
     private fun LazyListScope.songsSection(
         viewModel: AnimeMediaDetailsViewModel,
         songsExpanded: () -> Boolean,
-        onSongsExpandedToggled: (Boolean) -> Unit,
+        onSongsExpandedChange: (Boolean) -> Unit,
     ) {
         val animeSongs = viewModel.animeSongs ?: return
         listSection(
@@ -849,7 +850,7 @@ object AnimeMediaDetailsScreen {
             values = animeSongs.entries,
             aboveFold = SONGS_ABOVE_FOLD,
             expanded = songsExpanded,
-            onExpandedToggled = onSongsExpandedToggled,
+            onExpandedChange = onSongsExpandedChange,
         ) { item, paddingBottom ->
             AnimeThemeRow(
                 viewModel = viewModel,
@@ -1219,10 +1220,10 @@ object AnimeMediaDetailsScreen {
     private fun LazyListScope.recommendationsSection(
         entry: Entry,
         recommendationsExpanded: () -> Boolean,
-        onRecommendationsExpandedToggled: (Boolean) -> Unit,
+        onRecommendationsExpandedChange: (Boolean) -> Unit,
         colorCalculationState: ColorCalculationState,
         navigationCallback: AnimeNavigator.NavigationCallback,
-        onTagLongClicked: (String) -> Unit,
+        onTagLongClick: (String) -> Unit,
     ) {
         mediaListSection(
             titleRes = R.string.anime_media_details_recommendations_label,
@@ -1230,10 +1231,10 @@ object AnimeMediaDetailsScreen {
             valueToEntry = { it.entry },
             aboveFold = RECOMMENDATIONS_ABOVE_FOLD,
             expanded = recommendationsExpanded,
-            onExpandedToggled = onRecommendationsExpandedToggled,
+            onExpandedChange = onRecommendationsExpandedChange,
             colorCalculationState = colorCalculationState,
             navigationCallback = navigationCallback,
-            onTagLongClick = onTagLongClicked,
+            onTagLongClick = onTagLongClick,
         )
     }
 
@@ -1350,8 +1351,8 @@ object AnimeMediaDetailsScreen {
 
     private fun LazyListScope.tagSection(
         entry: Entry,
-        onTagClicked: (tagId: String, tagName: String) -> Unit = { _, _ -> },
-        onTagLongClicked: (tagId: String) -> Unit = {},
+        onTagClick: (tagId: String, tagName: String) -> Unit = { _, _ -> },
+        onTagLongClick: (tagId: String) -> Unit = {},
         colorCalculationState: ColorCalculationState,
     ) {
         if (entry.tags.isNotEmpty()) {
@@ -1380,8 +1381,8 @@ object AnimeMediaDetailsScreen {
                                     )
                                 }
                             },
-                            onTagClicked = onTagClicked,
-                            onTagLongClicked = onTagLongClicked,
+                            onTagClick = onTagClick,
+                            onTagLongClick = onTagLongClick,
                             containerColor = containerColor,
                             textColor = textColor,
                         )
@@ -1470,9 +1471,9 @@ object AnimeMediaDetailsScreen {
     private fun LazyListScope.streamingEpisodesSection(
         entry: Entry,
         expanded: () -> Boolean,
-        expandedToggled: (Boolean) -> Unit,
+        onExpandedChange: (Boolean) -> Unit,
         hidden: () -> Boolean,
-        onHiddenToggled: (Boolean) -> Unit,
+        onHiddenChange: (Boolean) -> Unit,
     ) {
         val streamingEpisodes = entry.media.streamingEpisodes?.filterNotNull()
             ?.takeIf { it.isNotEmpty() } ?: return
@@ -1481,11 +1482,11 @@ object AnimeMediaDetailsScreen {
             values = streamingEpisodes,
             aboveFold = STREAMING_EPISODES_ABOVE_FOLD,
             expanded = expanded,
-            onExpandedToggled = expandedToggled,
+            onExpandedChange = onExpandedChange,
             hidden = hidden,
             hiddenContent = {
                 ElevatedCard(
-                    onClick = { onHiddenToggled(false) },
+                    onClick = { onHiddenChange(false) },
                     modifier = Modifier.padding(horizontal = 16.dp),
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -1611,7 +1612,7 @@ object AnimeMediaDetailsScreen {
     private fun LazyListScope.reviewsSection(
         reviews: List<Media.Reviews.Node>,
         expanded: () -> Boolean,
-        onExpandedToggled: (Boolean) -> Unit,
+        onExpandedChange: (Boolean) -> Unit,
         onUserClick: (String) -> Unit,
     ) {
         if (reviews.isEmpty()) return
@@ -1620,7 +1621,7 @@ object AnimeMediaDetailsScreen {
             values = reviews,
             aboveFold = REVIEWS_ABOVE_FOLD,
             expanded = expanded,
-            onExpandedToggled = onExpandedToggled,
+            onExpandedChange = onExpandedChange,
         ) { item, paddingBottom ->
             val uriHandler = LocalUriHandler.current
             ElevatedCard(

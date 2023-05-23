@@ -222,7 +222,7 @@ object CharacterDetailsScreen {
             titleTextRes = R.string.anime_character_details_description_label,
             htmlText = entry.character.description,
             expanded = expandedState::description,
-            onExpandedChanged = { expandedState.description = it },
+            onExpandedChange = { expandedState.description = it },
         )
 
         staffSection(
@@ -413,7 +413,7 @@ object CharacterDetailsScreen {
             valueToEntry = { it },
             aboveFold = MEDIA_ABOVE_FOLD,
             expanded = expanded,
-            onExpandedToggled = onExpandedChange,
+            onExpandedChange = onExpandedChange,
             colorCalculationState = colorCalculationState,
             navigationCallback = navigationCallback,
             onTagLongClick = onTagLongClick,

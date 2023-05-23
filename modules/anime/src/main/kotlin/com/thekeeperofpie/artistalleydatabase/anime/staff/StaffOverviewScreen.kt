@@ -40,15 +40,16 @@ object StaffOverviewScreen {
                 titleTextRes = R.string.anime_staff_details_description_label,
                 htmlText = entry.staff.description,
                 expanded = expandedState::description,
-                onExpandedChanged = { expandedState.description = it },
+                onExpandedChange = { expandedState.description = it },
             )
 
             // TODO: Use full width UI that scrolls vertically?
             charactersSection(
                 titleRes = R.string.anime_staff_details_characters_label,
                 characters = entry.characters,
-                onCharacterClicked = navigationCallback::onCharacterClick,
-                onCharacterLongClicked = navigationCallback::onCharacterLongClick,
+                onCharacterClick = navigationCallback::onCharacterClick,
+                onCharacterLongClick = navigationCallback::onCharacterLongClick,
+                onStaffClick = navigationCallback::onStaffClick,
                 colorCalculationState = colorCalculationState,
             )
 

@@ -38,8 +38,8 @@ data class AnimeMediaTagEntry(
             tag: AnimeMediaTagEntry,
             modifier: Modifier = Modifier,
             title: @Composable () -> String = { tag.name },
-            onTagClicked: (tagId: String, tagName: String) -> Unit = { _, _ -> },
-            onTagLongClicked: (tagId: String) -> Unit = {},
+            onTagClick: (tagId: String, tagName: String) -> Unit = { _, _ -> },
+            onTagLongClick: (tagId: String) -> Unit = {},
             containerColor: Color,
             textColor: Color,
         ) {
@@ -48,7 +48,7 @@ data class AnimeMediaTagEntry(
             AssistChip(
                 onClick = {
                     if (!hidden) {
-                        onTagClicked(tag.id, tag.name)
+                        onTagClick(tag.id, tag.name)
                     } else {
                         hidden = false
                     }
@@ -56,7 +56,7 @@ data class AnimeMediaTagEntry(
                 onLongClickLabel = stringResource(
                     R.string.anime_media_tag_long_click_content_description
                 ),
-                onLongClick = { onTagLongClicked(tag.id) },
+                onLongClick = { onTagLongClick(tag.id) },
                 colors = assistChipColors(
                     containerColor = containerColor
                         .ifNotSpecified { MaterialTheme.colorScheme.surfaceVariant },

@@ -57,7 +57,7 @@ object HomeScreen {
         query: @Composable () -> String = { "" },
         onQueryChange: (String) -> Unit = {},
         options: () -> List<EntrySearchOption> = { emptyList() },
-        onOptionChanged: (EntrySearchOption) -> Unit = {},
+        onOptionChange: (EntrySearchOption) -> Unit = {},
         entries: @Composable () -> LazyPagingItems<GridModel> =
             { emptyFlow<PagingData<GridModel>>().collectAsLazyPagingItems() },
         selectedItems: () -> Collection<Int> = { emptyList() },
@@ -75,7 +75,7 @@ object HomeScreen {
             onQueryChange = onQueryChange,
             showFab = { selectedItems().isEmpty() },
             options = options,
-            onOptionChanged = onOptionChanged,
+            onOptionChange = onOptionChange,
             onClickAddFab = onClickAddFab,
         ) {
             EntryGrid(
@@ -100,7 +100,7 @@ object HomeScreen {
         query: @Composable () -> String = { "" },
         onQueryChange: (String) -> Unit = {},
         options: () -> List<EntrySearchOption> = { emptyList() },
-        onOptionChanged: (EntrySearchOption) -> Unit = {},
+        onOptionChange: (EntrySearchOption) -> Unit = {},
         showFab: () -> Boolean = { true },
         onClickAddFab: () -> Unit = {},
         content: @Composable (PaddingValues) -> Unit,
@@ -161,7 +161,7 @@ object HomeScreen {
                                         .fillMaxWidth()
                                         .clickable {
                                             option.enabled = !option.enabled
-                                            onOptionChanged(option)
+                                            onOptionChange(option)
                                         }
                                 ) {
                                     Checkbox(

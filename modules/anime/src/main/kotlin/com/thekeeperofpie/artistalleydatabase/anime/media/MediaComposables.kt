@@ -16,7 +16,7 @@ fun <T> LazyListScope.mediaListSection(
     valueToEntry: (T) -> AnimeMediaListRow.Entry,
     aboveFold: Int,
     expanded: () -> Boolean,
-    onExpandedToggled: (Boolean) -> Unit,
+    onExpandedChange: (Boolean) -> Unit,
     colorCalculationState: ColorCalculationState,
     navigationCallback: AnimeNavigator.NavigationCallback,
     onTagLongClick: (String) -> Unit,
@@ -26,7 +26,7 @@ fun <T> LazyListScope.mediaListSection(
     values = values,
     aboveFold = aboveFold,
     expanded = expanded,
-    onExpandedToggled = onExpandedToggled,
+    onExpandedChange = onExpandedChange,
 ) { item, paddingBottom ->
     val entry = valueToEntry(item)
     AnimeMediaListRow(

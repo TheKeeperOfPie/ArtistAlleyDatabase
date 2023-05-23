@@ -299,7 +299,7 @@ class MainActivity : ComponentActivity() {
                         query = { viewModel.query.collectAsState().value?.query.orEmpty() },
                         onQueryChange = viewModel::onQuery,
                         options = { viewModel.options },
-                        onOptionChanged = { viewModel.refreshQuery() },
+                        onOptionChange = { viewModel.refreshQuery() },
                         entries = { viewModel.results.collectAsLazyPagingItems() },
                         selectedItems = { viewModel.selectedEntries.keys },
                         onClickAddFab = {
@@ -347,7 +347,7 @@ class MainActivity : ComponentActivity() {
                         query = { viewModel.query.collectAsState().value?.query.orEmpty() },
                         onQueryChange = viewModel::onQuery,
                         options = { viewModel.options },
-                        onOptionChanged = { viewModel.refreshQuery() },
+                        onOptionChange = { viewModel.refreshQuery() },
                         entries = { viewModel.results.collectAsLazyPagingItems() },
                         selectedItems = { viewModel.selectedEntries.keys },
                         onClickAddFab = {

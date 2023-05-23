@@ -46,12 +46,14 @@ import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import coil.size.Dimension
 import com.anilist.fragment.AniListListRowMedia
 import com.anilist.type.MediaSeason
 import com.google.accompanist.placeholder.PlaceholderHighlight
@@ -103,7 +105,7 @@ object AnimeMediaListRow {
                     onClick = { navigationCallback.onMediaClick(entry, imageWidthToHeightRatio) },
                     onLongPressImage = onLongPressImage,
                     colorCalculationState = colorCalculationState,
-                    onRatioAvailable = { imageWidthToHeightRatio = it}
+                    onRatioAvailable = { imageWidthToHeightRatio = it }
                 )
 
                 Column(modifier = Modifier.heightIn(min = 180.dp)) {
@@ -148,7 +150,11 @@ object AnimeMediaListRow {
             model = ImageRequest.Builder(LocalContext.current)
                 .data(entry.image)
                 .crossfade(true)
-                .allowHardware(false)
+                .allowHardware(colorCalculationState.hasColor(entry.id?.valueId.orEmpty()))
+                .size(
+                    width = Dimension.Pixels(LocalDensity.current.run { 130.dp.roundToPx() }),
+                    height = Dimension.Undefined
+                )
                 .build(),
             contentScale = ContentScale.Crop,
             fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
@@ -363,8 +369,8 @@ object AnimeMediaListRow {
             items(tags, { it.id }) {
                 AnimeMediaTagEntry.Chip(
                     tag = it,
-                    onTagClicked = onTagClick,
-                    onTagLongClicked = onTagLongClick,
+                    onTagClick = onTagClick,
+                    onTagLongClick = onTagLongClick,
                     containerColor = tagContainerColor,
                     textColor = tagTextColor,
                     modifier = Modifier.height(24.dp),

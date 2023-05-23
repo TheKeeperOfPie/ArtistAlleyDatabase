@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.anime.character
 
 import com.anilist.fragment.CharacterNavigationData
+import com.anilist.fragment.StaffNavigationData
 
 data class DetailsCharacter(
     val id: String,
@@ -14,5 +15,6 @@ data class DetailsCharacter(
         val name: String?,
         val image: String?,
         val language: String,
+        val staff: StaffNavigationData,
     )
 }

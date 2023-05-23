@@ -257,7 +257,7 @@ private fun <Value> ScrollableBarChart(
                 slice = slice,
                 maxAmount = maxAmount,
                 split = 0,
-                onSplitChanged = { },
+                onSplitChange = { },
                 sliceToAmount = sliceToAmount,
                 sliceToColor = sliceToColor,
                 sliceToText = sliceToText,
@@ -356,7 +356,7 @@ private fun <Value> FixedBarChart(
                 slice = it,
                 maxAmount = maxAmount,
                 split = split,
-                onSplitChanged = {
+                onSplitChange = {
                     split = it
                     if (it != 0) {
                         nonZeroSplit = it
@@ -378,7 +378,7 @@ private fun <Value> BarChartBar(
     slice: Value,
     maxAmount: Float,
     split: Int,
-    onSplitChanged: (Int) -> Unit,
+    onSplitChange: (Int) -> Unit,
     sliceToAmount: (Value) -> Int,
     sliceToColor: @Composable (index: Int, value: Value) -> Color,
     sliceToText: @Composable (Value) -> String,
@@ -396,9 +396,9 @@ private fun <Value> BarChartBar(
         modifier = modifier
             .clickable {
                 if (split == index || index == 0) {
-                    onSplitChanged(0)
+                    onSplitChange(0)
                 } else {
-                    onSplitChanged(index)
+                    onSplitChange(index)
                 }
             }
     ) {

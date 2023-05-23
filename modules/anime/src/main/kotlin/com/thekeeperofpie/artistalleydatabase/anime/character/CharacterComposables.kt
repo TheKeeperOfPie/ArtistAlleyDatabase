@@ -36,6 +36,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.unit.Dp
@@ -45,6 +46,7 @@ import coil.compose.AsyncImage
 import coil.compose.AsyncImagePainter
 import coil.request.ImageRequest
 import com.anilist.fragment.CharacterNavigationData
+import com.anilist.fragment.StaffNavigationData
 import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
 import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
 import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
@@ -53,6 +55,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
+import com.thekeeperofpie.artistalleydatabase.compose.optionalClickable
 import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
 
 @Composable
@@ -62,7 +65,9 @@ fun CharacterCard(
     colorCalculationState: ColorCalculationState,
     onClick: () -> Unit,
     innerImage: String? = null,
+    onClickInnerImage: (() -> Unit)? = null,
     onImageSuccess: (AsyncImagePainter.State.Success) -> Unit = {},
+    onInnerImageSuccess: (AsyncImagePainter.State.Success) -> Unit = {},
     width: Dp = 100.dp,
     content: @Composable (textColor: Color) -> Unit,
 ) {
@@ -109,11 +114,16 @@ fun CharacterCard(
         modifier = Modifier.width(width),
     ) {
         Box {
+            val density = LocalDensity.current
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
                     .data(image)
                     .crossfade(true)
-                    .allowHardware(false)
+                    .allowHardware(colorCalculationState.hasColor(id))
+                    .size(
+                        width = density.run { width.roundToPx() },
+                        height = density.run { (width * 1.5f).roundToPx() },
+                    )
                     .build(),
                 contentScale = ContentScale.Crop,
                 fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
@@ -145,6 +155,7 @@ fun CharacterCard(
                         label = "Character card inner image fade",
                     )
                     val clipShape = RoundedCornerShape(topStart = 8.dp)
+                    val size = LocalDensity.current.run { 40.dp.roundToPx() }
                     AsyncImage(
                         model = ImageRequest.Builder(LocalContext.current)
                             .data(innerImage)
@@ -154,16 +165,19 @@ fun CharacterCard(
                             }, onSuccess = { _, _ ->
                                 showBorder = true
                             })
+                            .size(width = size, height = size)
                             .build(),
                         contentScale = ContentScale.Crop,
                         contentDescription = stringResource(
                             R.string.anime_media_voice_actor_image
                         ),
+                        onSuccess = onInnerImageSuccess,
                         modifier = Modifier
                             .size(width = 40.dp, height = 40.dp)
                             .alpha(alpha)
                             .align(Alignment.BottomEnd)
                             .clip(clipShape)
+                            .optionalClickable(onClickInnerImage)
                             .border(
                                 width = 1.dp,
                                 color = containerColor,
@@ -181,8 +195,9 @@ fun CharacterCard(
 fun LazyListScope.charactersSection(
     @StringRes titleRes: Int,
     characters: List<DetailsCharacter>,
-    onCharacterClicked: (CharacterNavigationData, imageWidthToHeightRatio: Float) -> Unit,
-    onCharacterLongClicked: (String) -> Unit,
+    onCharacterClick: (CharacterNavigationData, imageWidthToHeightRatio: Float) -> Unit,
+    onCharacterLongClick: (String) -> Unit,
+    onStaffClick: (StaffNavigationData, imageWidthToHeightRatio: Float) -> Unit,
     colorCalculationState: ColorCalculationState,
 ) {
     if (characters.isEmpty()) return
@@ -197,18 +212,28 @@ fun LazyListScope.charactersSection(
         ) {
             items(characters, { it.id }) {
                 var imageWidthToHeightRatio by remember { MutableSingle(1f) }
+                var innerImageWidthToHeightRatio by remember { MutableSingle(1f) }
+                val voiceActor = (it.languageToVoiceActor["Japanese"]
+                    ?: it.languageToVoiceActor.values.firstOrNull())
                 CharacterCard(
                     id = it.id,
                     image = it.image,
                     colorCalculationState = colorCalculationState,
                     onClick = {
                         it.character?.let {
-                            onCharacterClicked(it, imageWidthToHeightRatio )
+                            onCharacterClick(it, imageWidthToHeightRatio)
                         }
                     },
-                    innerImage = (it.languageToVoiceActor["Japanese"]
-                        ?: it.languageToVoiceActor.values.firstOrNull())?.image,
+                    innerImage = voiceActor?.image,
+                    onClickInnerImage = voiceActor?.image?.let {
+                        {
+                            onStaffClick(voiceActor.staff, innerImageWidthToHeightRatio)
+                        }
+                    },
                     onImageSuccess = { imageWidthToHeightRatio = it.widthToHeightRatio() },
+                    onInnerImageSuccess = {
+                        innerImageWidthToHeightRatio = it.widthToHeightRatio()
+                    },
                 ) { textColor ->
                     AutoHeightText(
                         text = it.name.orEmpty(),
