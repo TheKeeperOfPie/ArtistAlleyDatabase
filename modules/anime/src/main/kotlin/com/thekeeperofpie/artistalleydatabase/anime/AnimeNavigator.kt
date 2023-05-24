@@ -27,6 +27,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anime.character.AnimeCharacterDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterDetailsScreen
+import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeIgnoreScreen
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.list.AnimeUserListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.list.AnimeUserListViewModel
@@ -417,18 +418,14 @@ object AnimeNavigator {
                 ?: MediaType.ANIME
             val viewModel = hiltViewModel<AnimeMediaIgnoreViewModel>()
                 .apply { initialize(mediaType) }
-            AnimeSearchScreen(
+            AnimeIgnoreScreen(
                 onClickNav = { navHostController.popBackStack() },
-                isRoot = false,
-                title = Either.Left(
-                    if (mediaType == MediaType.ANIME) {
-                        R.string.anime_media_ignore_title_anime
-                    } else {
-                        R.string.anime_media_ignore_title_manga
-                    }
-                ),
+                titleRes = if (mediaType == MediaType.ANIME) {
+                    R.string.anime_media_ignore_title_anime
+                } else {
+                    R.string.anime_media_ignore_title_manga
+                },
                 viewModel = viewModel,
-                showIgnoredFilter = false,
                 navigationCallback = navigationCallback,
             )
         }

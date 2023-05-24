@@ -7,7 +7,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.R
 enum class MediaSortOption(@StringRes override val textRes: Int) :
     AnimeMediaFilterController.Data.SortOption {
 
-    // Omissions: CHAPTERS/VOLUMES are only applicable for manga, and SEARCH_MATCH is used as a default
+    // TODO: CHAPTERS/VOLUMES for manga
+    // Omissions: SEARCH_MATCH is used as a default
     ID(R.string.anime_media_sort_id),
     TITLE_ROMAJI(R.string.anime_media_sort_title_romaji),
     TITLE_ENGLISH(R.string.anime_media_sort_title_english),

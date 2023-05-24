@@ -5,8 +5,8 @@
     <string name="anime_auth_button">Log in</string>
     <string name="anime_user_list_search">Search user list…</string>
     <string name="anime_media_banner_image">Media banner image</string>
-    <string name="anime_media_cover_image">Media cover image</string>
-    <string name="anime_media_character_image">Character image</string>
+    <string name="anime_media_cover_image_content_description">Media cover image</string>
+    <string name="anime_media_character_image_content_description">Character image</string>
     <string name="anime_media_staff_image">Staff image</string>
     <string name="anime_media_artist_image">Artist image</string>
     <string name="anime_media_artist_no_image">No artist image</string>
@@ -64,8 +64,12 @@
     <string name="anime_media_filter_sort_direction_descending_content_description">Sort direction descending</string>
     <string name="anime_media_filter_sort_ascending">Ascending</string>
     <string name="anime_media_filter_sort_descending">Descending</string>
+
     <string name="anime_search">Search anime…</string>
     <string name="anime_search_clear">Clear</string>
+    <string name="anime_search_filter">Filter by type</string>
+    <string name="anime_search_type_anime">Anime</string>
+    <string name="anime_search_type_character">Characters</string>
 
     <string name="anime_media_filter_status_label">Status</string>
     <string name="anime_media_filter_status_content_description">Status filter expand</string>
@@ -410,6 +414,8 @@
 
     <string name="anime_media_ignore_title_anime">Ignored anime</string>
     <string name="anime_media_ignore_title_manga">Ignored manga</string>
+    <string name="anime_media_ignore_search_anime">Search anime…</string>
+    <string name="anime_media_ignore_search_manga">Search manga…</string>
 
     <string name="anime_character_details_description_label">Description</string>
     <string name="anime_character_details_voice_actors_label">Voice actors</string>
@@ -424,6 +430,19 @@
     <string name="anime_character_details_alternative_names_spoiler_expand_content_description">Alternative names spoiler expand</string>
     <string name="anime_character_details_alternative_names_spoiler_warning">Spoiler</string>
     <string name="anime_character_details_alternative_names_spoiler_warning_content_description">Character alternative name spoiler warning icon</string>
+
+    <string name="anime_character_role_main">Main</string>
+    <string name="anime_character_role_supporting">Supporting</string>
+    <string name="anime_character_role_background">Background</string>
+    <string name="anime_character_role_unknown">Unknown</string>
+
+    <string name="anime_character_sort_id">ID</string>
+    <string name="anime_character_sort_role">Role</string>
+    <string name="anime_character_sort_favorites">Favorites</string>
+    <string name="anime_character_sort_relevance">Relevance</string>
+    <string name="anime_character_image">Character image</string>
+    <string name="anime_character_image_long_press_preview">Preview character image</string>
+    <string name="anime_character_favorites_icon_content_description">Favorites</string>
 
     <string name="anime_staff_overview_label">Overview</string>
     <string name="anime_staff_media_label">Media</string>
@@ -442,11 +461,6 @@
     <string name="anime_staff_details_years_active_beginning">%1$d - Present</string>
     <string name="anime_staff_details_years_active_beginning_and_end">%1$d - %1$d</string>
     <string name="anime_staff_details_characters_label">Characters</string>
-    <string name="anime_staff_media_year_unknown">TBA</string>
-
-    <string name="anime_character_role_main">Main</string>
-    <string name="anime_character_role_supporting">Supporting</string>
-    <string name="anime_character_role_background">Background</string>
-    <string name="anime_character_role_unknown">Unknown</string>
     <string name="anime_staff_details_media_load_retry">Retry</string>
+    <string name="anime_staff_media_year_unknown">TBA</string>
 </resources>

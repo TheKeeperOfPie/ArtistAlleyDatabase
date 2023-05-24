@@ -1104,7 +1104,7 @@ object AnimeMediaDetailsScreen {
                                     contentScale = ContentScale.FillHeight,
                                     fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
                                     contentDescription = stringResource(
-                                        R.string.anime_media_character_image
+                                        R.string.anime_media_character_image_content_description
                                     ),
                                     modifier = Modifier
                                         .sizeIn(minWidth = 44.dp, minHeight = 64.dp)

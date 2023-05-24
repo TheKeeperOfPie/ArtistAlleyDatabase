@@ -274,7 +274,7 @@ object UserOverviewScreen {
                                     )
                                     .build(),
                                 contentScale = ContentScale.FillHeight,
-                                contentDescription = stringResource(R.string.anime_media_cover_image),
+                                contentDescription = stringResource(R.string.anime_media_cover_image_content_description),
                                 onSuccess = {
                                     widthToHeightRatio = it.widthToHeightRatio()
                                     ComposeColorUtils.calculatePalette(

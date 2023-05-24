@@ -262,7 +262,7 @@ object AnimeMediaListScreen {
                         model = entry.imageExtraLarge,
                         contentScale = ContentScale.FillWidth,
                         fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
-                        contentDescription = stringResource(R.string.anime_media_cover_image),
+                        contentDescription = stringResource(R.string.anime_media_cover_image_content_description),
                         onSuccess = {
                             imageIntrinsicWidth = it.result.drawable.intrinsicWidth
                             imageIntrinsicHeight = it.result.drawable.intrinsicHeight

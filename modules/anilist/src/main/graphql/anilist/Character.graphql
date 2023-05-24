@@ -41,6 +41,31 @@ fragment AniListCharacter on Character {
     }
 }
 
+
+query CharacterAdvancedSearch(
+    $page: Int,
+    $perPage: Int,
+    $search: String,
+    $isBirthday: Boolean,
+    $sort: [CharacterSort],
+) {
+    Page(page: $page, perPage: $perPage) @nonnull {
+        pageInfo @nonnull {
+            hasNextPage
+            total
+        }
+        characters(search: $search, isBirthday: $isBirthday, sort: $sort) {
+            ...CharacterNavigationData
+            favourites
+            media(sort: [TRENDING_DESC, POPULARITY_DESC, FAVOURITES_DESC], perPage: 5) {
+                nodes {
+                    ...MediaNavigationData
+                }
+            }
+        }
+    }
+}
+
 fragment DetailsCharacterEdge on CharacterEdge {
     voiceActors {
         ...StaffNavigationData

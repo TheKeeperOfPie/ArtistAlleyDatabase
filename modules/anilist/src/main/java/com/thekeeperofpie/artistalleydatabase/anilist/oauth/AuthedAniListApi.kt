@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.anilist.oauth
 
 import android.util.Log
 import com.anilist.AuthedUserQuery
+import com.anilist.CharacterAdvancedSearchQuery
 import com.anilist.CharacterDetailsQuery
 import com.anilist.DeleteMediaEntryMutation
 import com.anilist.GenresQuery
@@ -16,6 +17,7 @@ import com.anilist.StaffDetailsQuery
 import com.anilist.StaffDetailsStaffMediaPaginationQuery
 import com.anilist.UserByIdQuery
 import com.anilist.UserMediaListQuery
+import com.anilist.type.CharacterSort
 import com.anilist.type.FuzzyDateInput
 import com.anilist.type.MediaFormat
 import com.anilist.type.MediaListStatus
@@ -117,7 +119,7 @@ class AuthedAniListApi(
                 // On a default, empty search, sort by TRENDING_DESC
                 Optional.Present(listOf(MediaSort.TRENDING_DESC))
             } else {
-                Optional.presentIfNotNull(sort?.ifEmpty { null })
+                Optional.presentIfNotNull(listOf(MediaSort.SEARCH_MATCH) + sort.orEmpty())
             }
 
         return query(
@@ -216,16 +218,42 @@ class AuthedAniListApi(
 
     suspend fun user(id: String) = query(UserByIdQuery(id.toInt())).user
 
+    suspend fun searchCharacters(
+        query: String,
+        page: Int? = null,
+        perPage: Int? = null,
+        isBirthday: Boolean? = null,
+        sort: List<CharacterSort>? = null,
+    ) = query(
+        CharacterAdvancedSearchQuery(
+            search = Optional.presentIfNotNull(query.ifEmpty { null }),
+            page = Optional.Present(page),
+            perPage = Optional.Present(perPage),
+            isBirthday = Optional.presentIfNotNull(isBirthday),
+            sort = Optional.presentIfNotNull(sort),
+        )
+    )
+
     suspend fun characterDetails(id: String) = query(CharacterDetailsQuery(id.toInt()))
         .character!!
 
     suspend fun staffDetails(id: String) = query(StaffDetailsQuery(id.toInt())).staff!!
 
     suspend fun staffDetailsCharacterMediaPagination(id: String, page: Int) =
-        query(StaffDetailsCharacterMediaPaginationQuery(id = id.toInt(), page = page)).staff?.characterMedia!!
+        query(
+            StaffDetailsCharacterMediaPaginationQuery(
+                id = id.toInt(),
+                page = page
+            )
+        ).staff?.characterMedia!!
 
     suspend fun staffDetailsStaffMediaPagination(id: String, page: Int) =
-        query(StaffDetailsStaffMediaPaginationQuery(id = id.toInt(), page = page)).staff?.staffMedia!!
+        query(
+            StaffDetailsStaffMediaPaginationQuery(
+                id = id.toInt(),
+                page = page
+            )
+        ).staff?.staffMedia!!
 
     private suspend fun <D : Query.Data> query(query: Query<D>) =
         apolloClient.query(query).execute().dataOrThrow()

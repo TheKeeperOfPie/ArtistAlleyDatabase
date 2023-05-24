@@ -331,58 +331,62 @@ object CharacterDetailsScreen {
                                         )
                                 )
                             }
-                            if (alternativeNames.isNotEmpty()) {
-                                Divider(modifier = Modifier.padding(start = 16.dp))
-                            }
 
-                            if (hidden) {
-                                Row(
-                                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier
-                                        .clickable { hidden = false }
-                                        .padding(
-                                            start = 16.dp,
-                                            end = 16.dp,
-                                            top = 8.dp,
-                                            bottom = 12.dp,
-                                        )
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Filled.Warning,
-                                        contentDescription = stringResource(
-                                            R.string.anime_character_details_alternative_names_spoiler_warning_content_description
-                                        ),
-                                    )
+                            if (alternativeNamesSpoiler.isNotEmpty()) {
 
-                                    Text(
-                                        text = stringResource(R.string.anime_character_details_alternative_names_spoiler_warning),
-                                        style = MaterialTheme.typography.titleSmall,
-                                        modifier = Modifier
-                                            .align(Alignment.CenterVertically)
-                                            .weight(1f)
-                                    )
+                                if (alternativeNames.isNotEmpty()) {
+                                    Divider(modifier = Modifier.padding(start = 16.dp))
                                 }
-                            } else {
-                                alternativeNamesSpoiler.forEachIndexed { index, name ->
-                                    val bottomPadding = if (index == alternativeNamesSpoiler.size - 1) {
-                                        12.dp
-                                    } else {
-                                        8.dp
-                                    }
-
-                                    Text(
-                                        text = name,
-                                        style = MaterialTheme.typography.bodyLarge,
+                                if (hidden) {
+                                    Row(
+                                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
                                         modifier = Modifier
-                                            .fillMaxWidth()
+                                            .clickable { hidden = false }
                                             .padding(
                                                 start = 16.dp,
                                                 end = 16.dp,
                                                 top = 8.dp,
-                                                bottom = bottomPadding,
+                                                bottom = 12.dp,
                                             )
-                                    )
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Filled.Warning,
+                                            contentDescription = stringResource(
+                                                R.string.anime_character_details_alternative_names_spoiler_warning_content_description
+                                            ),
+                                        )
+
+                                        Text(
+                                            text = stringResource(R.string.anime_character_details_alternative_names_spoiler_warning),
+                                            style = MaterialTheme.typography.titleSmall,
+                                            modifier = Modifier
+                                                .align(Alignment.CenterVertically)
+                                                .weight(1f)
+                                        )
+                                    }
+                                } else {
+                                    alternativeNamesSpoiler.forEachIndexed { index, name ->
+                                        val bottomPadding =
+                                            if (index == alternativeNamesSpoiler.size - 1) {
+                                                12.dp
+                                            } else {
+                                                8.dp
+                                            }
+
+                                        Text(
+                                            text = name,
+                                            style = MaterialTheme.typography.bodyLarge,
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(
+                                                    start = 16.dp,
+                                                    end = 16.dp,
+                                                    top = 8.dp,
+                                                    bottom = bottomPadding,
+                                                )
+                                        )
+                                    }
                                 }
                             }
                         }

@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.anime.search
 
 import android.os.SystemClock
+import androidx.annotation.StringRes
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
@@ -19,6 +20,7 @@ import com.anilist.MediaAdvancedSearchQuery.Data.Page.Medium
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
+import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeMediaFilterController
@@ -31,6 +33,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
@@ -40,18 +44,18 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
 
-@OptIn(ExperimentalCoroutinesApi::class)
+@OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
 @HiltViewModel
 class AnimeSearchViewModel @Inject constructor(
     aniListApi: AuthedAniListApi,
     settings: AnimeSettings,
     private val ignoreList: AnimeMediaIgnoreList,
-) : ViewModel(), AnimeSearchScreen.ViewModel<MediaSortOption, Medium> {
+) : ViewModel() {
 
-    override var query by mutableStateOf("")
-    override var content = MutableStateFlow(PagingData.empty<AnimeMediaListRow.MediaEntry<Medium>>())
-    override var tagShown by mutableStateOf<AnimeMediaFilterController.TagSection.Tag?>(null)
-    override val colorMap = mutableStateMapOf<String, Pair<Color, Color>>()
+    var query by mutableStateOf("")
+    var content = MutableStateFlow(PagingData.empty<AnimeSearchEntry>())
+    var tagShown by mutableStateOf<AnimeMediaFilterController.TagSection.Tag?>(null)
+    val colorMap = mutableStateMapOf<String, Pair<Color, Color>>()
 
     private var initialized = false
 
@@ -60,33 +64,100 @@ class AnimeSearchViewModel @Inject constructor(
 
     private val refreshUptimeMillis = MutableStateFlow(-1L)
 
+    var selectedType by mutableStateOf(SearchType.ANIME)
+    private val results: Map<SearchType, MutableStateFlow<PagingData<out AnimeSearchEntry>>> =
+        mapOf(
+            SearchType.ANIME to MutableStateFlow(PagingData.empty<AnimeSearchEntry.Media<Medium>>()),
+            SearchType.CHARACTER to MutableStateFlow(PagingData.empty<AnimeSearchEntry.Character>()),
+        )
+
     init {
         viewModelScope.launch(CustomDispatchers.Main) {
-            @OptIn(FlowPreview::class)
-            combine(
-                snapshotFlow { query }.debounce(500.milliseconds),
-                refreshUptimeMillis,
-                filterController.sortOptions,
-                filterController.sortAscending,
-                filterController.filterParams(),
-                AnimeMediaSearchPagingSource::RefreshParams
-            )
-                .flowOn(CustomDispatchers.IO)
+            snapshotFlow { selectedType }
+                .flatMapLatest { results[it]!! }
+                .collectLatest {
+                    @Suppress("UNCHECKED_CAST")
+                    content.emit(it as PagingData<AnimeSearchEntry>)
+                }
+        }
+
+        viewModelScope.launch(CustomDispatchers.Main) {
+            snapshotFlow { selectedType }
+                .flatMapLatest {
+                    if (it == SearchType.CHARACTER) {
+                        combine(
+                            snapshotFlow { query }.debounce(500.milliseconds),
+                            refreshUptimeMillis,
+                        ) { query, requestMillis ->
+                            AnimeSearchCharacterPagingSource.RefreshParams(
+                                query = query,
+                                requestMillis = requestMillis,
+                                sortOptions = emptyList(),
+                                sortAscending = false,
+                                // TODO: Actually hook up filters
+                            )
+                        }
+                    } else {
+                        emptyFlow()
+                    }
+                }
                 .debounce(100.milliseconds)
+                .distinctUntilChanged()
                 .flatMapLatest {
                     Pager(PagingConfig(pageSize = 10, enablePlaceholders = true)) {
-                        AnimeMediaSearchPagingSource(aniListApi, it)
+                        AnimeSearchCharacterPagingSource(aniListApi, it)
                     }.flow
                 }
                 .map {
                     // AniList can return duplicates across pages, manually enforce uniqueness
                     val seenIds = mutableSetOf<Int>()
                     it.filter { seenIds.add(it.id) }
-                        .map { AnimeMediaListRow.MediaEntry(it, ignored = ignoreList.get(it.id)) }
+                        .map { AnimeSearchEntry.Character(it) }
+                }
+                .flowOn(CustomDispatchers.IO)
+                .cachedIn(viewModelScope)
+                .collectLatest {
+                    results[SearchType.CHARACTER]!!.emit(it)
+                }
+        }
+
+        viewModelScope.launch(CustomDispatchers.Main) {
+            snapshotFlow { selectedType }
+                .flatMapLatest {
+                    if (it == SearchType.ANIME) {
+                        combine(
+                            snapshotFlow { query }.debounce(500.milliseconds),
+                            refreshUptimeMillis,
+                            filterController.sortOptions,
+                            filterController.sortAscending,
+                            filterController.filterParams(),
+                            AnimeSearchMediaPagingSource::RefreshParams
+                        )
+                    } else {
+                        emptyFlow()
+                    }
+                }
+                .flowOn(CustomDispatchers.IO)
+                .debounce(100.milliseconds)
+                .distinctUntilChanged()
+                .flatMapLatest {
+                    Pager(PagingConfig(pageSize = 10, enablePlaceholders = true)) {
+                        AnimeSearchMediaPagingSource(aniListApi, it)
+                    }.flow
+                }
+                .map {
+                    // AniList can return duplicates across pages, manually enforce uniqueness
+                    val seenIds = mutableSetOf<Int>()
+                    it.filter { seenIds.add(it.id) }
+                        .map { AnimeSearchEntry.Media(it, ignored = ignoreList.get(it.id)) }
                 }
                 .cachedIn(viewModelScope)
                 .flatMapLatest {
-                    combine(flowOf(it), filterController.showIgnored, filterController.listStatuses) { pagingData, showIgnored, listStatuses ->
+                    combine(
+                        flowOf(it),
+                        filterController.showIgnored,
+                        filterController.listStatuses
+                    ) { pagingData, showIgnored, listStatuses ->
                         val includes = listStatuses
                             .filter { it.state == IncludeExcludeState.INCLUDE }
                             .map { it.value }
@@ -107,7 +178,9 @@ class AnimeSearchViewModel @Inject constructor(
                         }
                     }
                 }
-                .collectLatest(content::emit)
+                .collectLatest {
+                    results[SearchType.ANIME]!!.emit(it)
+                }
         }
     }
 
@@ -117,21 +190,26 @@ class AnimeSearchViewModel @Inject constructor(
         filterController.initialize(this, refreshUptimeMillis, filterParams)
     }
 
-    override fun filterData() = filterController.data()
+    fun filterData() = filterController.data()
 
-    override fun onRefresh() = refreshUptimeMillis.update { SystemClock.uptimeMillis() }
+    fun onRefresh() = refreshUptimeMillis.update { SystemClock.uptimeMillis() }
 
-    override fun onTagLongClick(tagId: String) {
+    fun onTagLongClick(tagId: String) {
         tagShown = filterController.tagsByCategory.value.values
             .asSequence()
             .mapNotNull { it.findTag(tagId) }
             .firstOrNull()
     }
 
-    override fun onMediaLongClick(entry: AnimeMediaListRow.Entry) {
+    fun onMediaLongClick(entry: AnimeMediaListRow.Entry) {
         val mediaId = entry.id?.valueId ?: return
         val ignored = !entry.ignored
         ignoreList.set(mediaId, ignored)
         entry.ignored = ignored
+    }
+
+    enum class SearchType(@StringRes val textRes: Int) {
+        ANIME(R.string.anime_search_type_anime),
+        CHARACTER(R.string.anime_search_type_character),
     }
 }

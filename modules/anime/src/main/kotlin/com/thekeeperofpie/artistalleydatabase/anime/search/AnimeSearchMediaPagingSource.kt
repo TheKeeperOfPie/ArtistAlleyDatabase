@@ -11,7 +11,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.utils.IncludeExcludeState
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 
-class AnimeMediaSearchPagingSource(
+class AnimeSearchMediaPagingSource(
     private val aniListApi: AuthedAniListApi,
     private val refreshParams: RefreshParams,
 ) : PagingSource<Int, MediaAdvancedSearchQuery.Data.Page.Medium>() {

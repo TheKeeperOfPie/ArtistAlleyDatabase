@@ -224,7 +224,7 @@ object UserStatsDetailScreen {
                     .build(),
                 contentScale = ContentScale.Crop,
                 onSuccess = { onImageRatioCalculated(it.widthToHeightRatio()) },
-                contentDescription = stringResource(R.string.anime_media_cover_image),
+                contentDescription = stringResource(R.string.anime_media_cover_image_content_description),
                 modifier = Modifier
                     .fillMaxHeight()
                     .size(width = 130.dp, height = 180.dp)

@@ -158,7 +158,7 @@ internal fun CoverAndBannerHeader(
                             success = true
                             coverImageOnSuccess(it)
                         },
-                        contentDescription = stringResource(R.string.anime_media_cover_image),
+                        contentDescription = stringResource(R.string.anime_media_cover_image_content_description),
                         modifier = Modifier
                             .conditionally(
                                 coverImageWidthToHeightRatio == 1f,

@@ -2,8 +2,10 @@ package com.thekeeperofpie.artistalleydatabase.anime.search
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.isImeVisible
@@ -11,6 +13,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.FilterList
+import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -20,8 +24,11 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
@@ -35,13 +42,12 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
 import com.anilist.MediaAdvancedSearchQuery.Data.Page.Medium
-import com.anilist.fragment.AniListListRowMedia
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
-import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeMediaFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeMediaFilterOptionsBottomPanel
 import com.thekeeperofpie.artistalleydatabase.compose.AppBar
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
@@ -49,19 +55,18 @@ import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBar
 import com.thekeeperofpie.artistalleydatabase.compose.NavMenuIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.NestedScrollSplitter
 import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
+import com.thekeeperofpie.artistalleydatabase.compose.dropdown.DropdownMenuItem
 import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
-import kotlinx.coroutines.flow.StateFlow
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 object AnimeSearchScreen {
 
     @Composable
-    operator fun <SortOption : AnimeMediaFilterController.Data.SortOption,
-            MediaType : AniListListRowMedia> invoke(
+    operator fun invoke(
         onClickNav: () -> Unit = {},
         isRoot: Boolean = true,
         title: Either<Int, String>? = null,
-        viewModel: ViewModel<SortOption, MediaType>,
+        viewModel: AnimeSearchViewModel = hiltViewModel(),
         showIgnoredFilter: Boolean = true,
         navigationCallback: AnimeNavigator.NavigationCallback =
             AnimeNavigator.NavigationCallback(null),
@@ -83,13 +88,41 @@ object AnimeSearchScreen {
                             onValueChange = { viewModel.query = it },
                             leadingIcon = { NavMenuIconButton(onClickNav) },
                             trailingIcon = {
-                                IconButton(onClick = { viewModel.query = "" }) {
-                                    Icon(
-                                        imageVector = Icons.Filled.Clear,
-                                        contentDescription = stringResource(
-                                            R.string.anime_search_clear
-                                        ),
-                                    )
+                                Row {
+                                    IconButton(onClick = { viewModel.query = "" }) {
+                                        Icon(
+                                            imageVector = Icons.Filled.Clear,
+                                            contentDescription = stringResource(
+                                                R.string.anime_search_clear
+                                            ),
+                                        )
+                                    }
+                                    var typeMenuShown by remember { mutableStateOf(false) }
+                                    Box {
+                                        IconButton(onClick = { typeMenuShown = true }) {
+                                            Icon(
+                                                imageVector = Icons.Filled.FilterList,
+                                                contentDescription = stringResource(
+                                                    R.string.anime_search_filter
+                                                ),
+                                            )
+                                        }
+                                        DropdownMenu(
+                                            expanded = typeMenuShown,
+                                            onDismissRequest = { typeMenuShown = false },
+                                        ) {
+                                            AnimeSearchViewModel.SearchType.values().forEach {
+                                                // TODO: Exclusive select radio buttons
+                                                DropdownMenuItem(
+                                                    text = { Text(stringResource(it.textRes)) },
+                                                    onClick = {
+                                                        viewModel.selectedType = it
+                                                        typeMenuShown = false
+                                                    },
+                                                )
+                                            }
+                                        }
+                                    }
                                 }
                             },
                             singleLine = true,
@@ -165,11 +198,11 @@ object AnimeSearchScreen {
                             ) {
                                 items(
                                     count = content.itemCount,
-                                    key = content.itemKey { it.id.scopedId },
-                                    contentType = content.itemContentType()
+                                    key = content.itemKey { it.entryId.scopedId },
+                                    contentType = content.itemContentType { it.entryId.type }
                                 ) { index ->
                                     when (val item = content[index]) {
-                                        is AnimeMediaListRow.MediaEntry -> AnimeMediaListRow(
+                                        is AnimeSearchEntry.Media<*> -> AnimeMediaListRow(
                                             entry = item,
                                             onLongClick = viewModel::onMediaLongClick,
                                             onTagLongClick = viewModel::onTagLongClick,
@@ -177,6 +210,14 @@ object AnimeSearchScreen {
                                             colorCalculationState = colorCalculationState,
                                             navigationCallback = navigationCallback,
                                         )
+                                        is AnimeSearchEntry.Character -> CharacterListRow(
+                                            entry = item,
+                                            onLongPressImage = { /* TODO */ },
+                                            colorCalculationState = colorCalculationState,
+                                            navigationCallback = navigationCallback,
+                                        )
+
+                                        // TODO: Separated placeholder types
                                         null -> AnimeMediaListRow(AnimeMediaListRow.Entry.Loading)
                                     }
                                 }
@@ -197,19 +238,6 @@ object AnimeSearchScreen {
             }
         }
     }
-
-    interface ViewModel<SortOption : AnimeMediaFilterController.Data.SortOption,
-            MediaType : AniListListRowMedia> {
-        var query: String
-        val content: StateFlow<PagingData<AnimeMediaListRow.MediaEntry<MediaType>>>
-        var tagShown: AnimeMediaFilterController.TagSection.Tag?
-        val colorMap: MutableMap<String, Pair<Color, Color>>
-
-        fun filterData(): AnimeMediaFilterController.Data<SortOption>
-        fun onRefresh()
-        fun onTagLongClick(tagId: String)
-        fun onMediaLongClick(entry: AnimeMediaListRow.Entry)
-    }
 }
 
 @Preview
@@ -218,12 +246,13 @@ private fun Preview() {
     val viewModel = hiltViewModel<AnimeSearchViewModel>().apply {
         content.value = PagingData.from(
             listOf(
-                AnimeMediaListRow.MediaEntry(
+                AnimeSearchEntry.Media(
                     Medium(
                         title = Medium.Title(
                             userPreferred = "Ano Hi Mita Hana no Namae wo Bokutachi wa Mada Shiranai.",
                         ),
-                    )
+                    ),
+                    ignored = false
                 )
             )
         )

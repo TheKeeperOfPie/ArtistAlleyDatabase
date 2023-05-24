@@ -22,7 +22,6 @@ import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeMediaFilterController
-import com.thekeeperofpie.artistalleydatabase.anime.search.AnimeSearchScreen
 import com.thekeeperofpie.artistalleydatabase.anime.utils.IncludeExcludeState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -43,13 +42,13 @@ class AnimeMediaIgnoreViewModel @Inject constructor(
     private val aniListApi: AuthedAniListApi,
     private val settings: AnimeSettings,
     private val ignoreList: AnimeMediaIgnoreList,
-) : ViewModel(), AnimeSearchScreen.ViewModel<MediaIgnoreSortOption, Medium> {
+) : ViewModel() {
 
-    override var query by mutableStateOf("")
-    override var content =
+    var query by mutableStateOf("")
+    var content =
         MutableStateFlow(PagingData.empty<AnimeMediaListRow.MediaEntry<Medium>>())
-    override var tagShown by mutableStateOf<AnimeMediaFilterController.TagSection.Tag?>(null)
-    override val colorMap = mutableStateMapOf<String, Pair<Color, Color>>()
+    var tagShown by mutableStateOf<AnimeMediaFilterController.TagSection.Tag?>(null)
+    val colorMap = mutableStateMapOf<String, Pair<Color, Color>>()
 
     private var initialized = false
     private lateinit var mediaType: MediaType
@@ -126,18 +125,18 @@ class AnimeMediaIgnoreViewModel @Inject constructor(
         }
     }
 
-    override fun filterData() = filterController.data()
+    fun filterData() = filterController.data()
 
-    override fun onRefresh() = refreshUptimeMillis.update { SystemClock.uptimeMillis() }
+    fun onRefresh() = refreshUptimeMillis.update { SystemClock.uptimeMillis() }
 
-    override fun onTagLongClick(tagId: String) {
+    fun onTagLongClick(tagId: String) {
         tagShown = filterController.tagsByCategory.value.values
             .asSequence()
             .mapNotNull { it.findTag(tagId) }
             .firstOrNull()
     }
 
-    override fun onMediaLongClick(entry: AnimeMediaListRow.Entry) {
+    fun onMediaLongClick(entry: AnimeMediaListRow.Entry) {
         val mediaId = entry.id?.valueId ?: return
         val ignored = !ignoreList.get(mediaId)
         ignoreList.set(mediaId, ignored)

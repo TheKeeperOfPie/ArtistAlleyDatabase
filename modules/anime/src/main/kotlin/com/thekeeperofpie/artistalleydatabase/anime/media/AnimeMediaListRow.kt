@@ -166,7 +166,7 @@ object AnimeMediaListRow {
                     colorCalculationState,
                 )
             },
-            contentDescription = stringResource(R.string.anime_media_cover_image),
+            contentDescription = stringResource(R.string.anime_media_cover_image_content_description),
             modifier = Modifier
                 .background(MaterialTheme.colorScheme.surfaceVariant)
                 .fillMaxHeight()
