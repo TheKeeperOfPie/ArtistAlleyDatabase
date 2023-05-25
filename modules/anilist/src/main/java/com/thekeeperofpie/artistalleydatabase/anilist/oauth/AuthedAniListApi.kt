@@ -90,6 +90,7 @@ class AuthedAniListApi(
 
     suspend fun searchMedia(
         query: String,
+        mediaType: MediaType,
         page: Int? = null,
         perPage: Int? = null,
         sort: List<MediaSort>? = null,
@@ -127,7 +128,7 @@ class AuthedAniListApi(
                 search = Optional.presentIfNotNull(query.ifEmpty { null }),
                 page = Optional.Present(page),
                 perPage = Optional.Present(perPage),
-                type = MediaType.ANIME,
+                type = mediaType,
                 sort = sortParam,
                 genreIn = Optional.presentIfNotNull(genreIn.ifEmpty { null }),
                 genreNotIn = Optional.presentIfNotNull(genreNotIn.ifEmpty { null }),
@@ -224,15 +225,24 @@ class AuthedAniListApi(
         perPage: Int? = null,
         isBirthday: Boolean? = null,
         sort: List<CharacterSort>? = null,
-    ) = query(
-        CharacterAdvancedSearchQuery(
-            search = Optional.presentIfNotNull(query.ifEmpty { null }),
-            page = Optional.Present(page),
-            perPage = Optional.Present(perPage),
-            isBirthday = Optional.presentIfNotNull(isBirthday),
-            sort = Optional.presentIfNotNull(sort),
+    ): CharacterAdvancedSearchQuery.Data {
+        val sortParam =
+            if (query.isEmpty() && sort?.size == 1 && sort.contains(CharacterSort.SEARCH_MATCH)) {
+                // On a default, empty search, sort by FAVOURITES_DESC
+                Optional.Present(listOf(CharacterSort.FAVOURITES_DESC))
+            } else {
+                Optional.presentIfNotNull(listOf(CharacterSort.SEARCH_MATCH) + sort.orEmpty())
+            }
+        return query(
+            CharacterAdvancedSearchQuery(
+                search = Optional.presentIfNotNull(query.ifEmpty { null }),
+                page = Optional.Present(page),
+                perPage = Optional.Present(perPage),
+                isBirthday = Optional.presentIfNotNull(isBirthday),
+                sort = sortParam,
+            )
         )
-    )
+    }
 
     suspend fun characterDetails(id: String) = query(CharacterDetailsQuery(id.toInt()))
         .character!!

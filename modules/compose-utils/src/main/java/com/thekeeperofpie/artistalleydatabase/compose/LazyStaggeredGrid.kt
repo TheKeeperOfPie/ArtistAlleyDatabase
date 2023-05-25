@@ -8,6 +8,7 @@ import androidx.compose.foundation.gestures.ScrollableDefaults
 import androidx.compose.foundation.gestures.ScrollableState
 import androidx.compose.foundation.gestures.rememberScrollableState
 import androidx.compose.foundation.gestures.scrollable
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyItemScope
@@ -17,6 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.paging.compose.LazyPagingItems
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -28,6 +30,7 @@ object LazyStaggeredGrid {
     operator fun <T : Any> invoke(
         state: LazyStaggeredGridState,
         modifier: Modifier,
+        contentPadding: PaddingValues? = null,
         content: @Composable LazyStaggeredGridScope<T>.() -> Unit,
     ) {
         val gridScope = LazyStaggeredGridScope<T>()
@@ -61,6 +64,7 @@ object LazyStaggeredGrid {
                     }
                 }
                 LazyColumn(
+                    contentPadding = contentPadding ?: PaddingValues(0.dp),
                     userScrollEnabled = false,
                     state = listState,
                     modifier = Modifier.weight(1f)

@@ -46,7 +46,6 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.rememberScrollState
@@ -830,7 +829,7 @@ private fun CustomSection(section: EntrySection.Custom<*>) {
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun MultiImageSelectBox(
-    pagerState: PagerState? = null,
+    pagerState: PagerState,
     imageState: () -> ImageState,
     cropState: () -> CropUtils.CropState,
     loading: () -> Boolean,
@@ -930,10 +929,8 @@ fun MultiImageSelectBox(
         onBackPress = { heightAnimation.animateTo(1f, tween(1000)) }
     ) {
         val images = imageState().images()
-        val addAllowed = imageState().addAllowed()
-        val size = if (addAllowed) images.size + 1 else images.size
         HorizontalPager(
-            state = pagerState ?: rememberPagerState(pageCount = { size }),
+            state = pagerState,
             modifier = Modifier.heightIn(max = 10000.dp)
         ) { index ->
             if (index == images.size) {

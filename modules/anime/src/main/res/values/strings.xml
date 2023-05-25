@@ -65,10 +65,13 @@
     <string name="anime_media_filter_sort_ascending">Ascending</string>
     <string name="anime_media_filter_sort_descending">Descending</string>
 
-    <string name="anime_search">Search anime…</string>
+    <string name="anime_search_anime">Search anime…</string>
+    <string name="anime_search_manga">Search manga…</string>
+    <string name="anime_search_characters">Search characters…</string>
     <string name="anime_search_clear">Clear</string>
     <string name="anime_search_filter">Filter by type</string>
     <string name="anime_search_type_anime">Anime</string>
+    <string name="anime_search_type_manga">Manga</string>
     <string name="anime_search_type_character">Characters</string>
 
     <string name="anime_media_filter_status_label">Status</string>

@@ -6,26 +6,24 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.isImeVisible
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.LoadState
@@ -39,6 +37,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeMediaFilterOptionsBottomPanel
 import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBar
 import com.thekeeperofpie.artistalleydatabase.compose.NavMenuIconButton
+import com.thekeeperofpie.artistalleydatabase.compose.StaticSearchBar
 import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -60,11 +59,11 @@ object AnimeIgnoreScreen {
                     BackHandler(viewModel.query.isNotEmpty() && !WindowInsets.isImeVisible) {
                         viewModel.query = ""
                     }
-                    TextField(
-                        viewModel.query,
-                        placeholder = { Text(stringResource(titleRes)) },
-                        onValueChange = { viewModel.query = it },
+                    StaticSearchBar(
+                        query = viewModel.query,
+                        onQueryChange = { viewModel.query = it },
                         leadingIcon = { NavMenuIconButton(onClickNav) },
+                        placeholder = { Text(stringResource(titleRes)) },
                         trailingIcon = {
                             IconButton(onClick = { viewModel.query = "" }) {
                                 Icon(
@@ -75,15 +74,6 @@ object AnimeIgnoreScreen {
                                 )
                             }
                         },
-                        singleLine = true,
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                        colors = TextFieldDefaults.colors(
-                            focusedContainerColor = MaterialTheme.colorScheme.surface,
-                            unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-                            disabledContainerColor = MaterialTheme.colorScheme.surface,
-                        ),
-                        modifier = Modifier
-                            .fillMaxWidth()
                     )
                 }
             },
@@ -94,34 +84,38 @@ object AnimeIgnoreScreen {
         ) { scaffoldPadding ->
             val content = viewModel.content.collectAsLazyPagingItems()
             val refreshing = content.loadState.refresh is LoadState.Loading
+            val density = LocalDensity.current
+            val topBarPadding by remember {
+                derivedStateOf {
+                    scrollBehavior.state.heightOffsetLimit
+                        .takeUnless { it == -Float.MAX_VALUE }
+                        ?.let { density.run { -it.toDp() } }
+                        ?: 0.dp
+                }
+            }
             AnimeMediaListScreen(
                 refreshing = refreshing,
                 onRefresh = viewModel::onRefresh,
                 tagShown = viewModel::tagShown,
                 onTagDismiss = { viewModel.tagShown = null },
-                pullRefreshTopPadding = {
-                    scrollBehavior.state.heightOffsetLimit
-                        .takeUnless { it == -Float.MAX_VALUE }
-                        ?.let { LocalDensity.current.run { -it.toDp() } }
-                        ?: 0.dp
-                },
+                pullRefreshTopPadding = { topBarPadding },
                 modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
             ) { onLongPressImage ->
                 when (val refreshState = content.loadState.refresh) {
                     LoadState.Loading -> Unit
-                    is LoadState.Error -> AnimeMediaListScreen.Error(exception = refreshState.error)
+                    is LoadState.Error -> AnimeMediaListScreen.Error(
+                        exception = refreshState.error,
+                        modifier = Modifier.padding(top = topBarPadding),
+                    )
                     is LoadState.NotLoading -> {
                         if (content.itemCount == 0) {
-                            AnimeMediaListScreen.NoResults()
+                            AnimeMediaListScreen.NoResults(Modifier.padding(top = topBarPadding))
                         } else {
                             LazyColumn(
                                 contentPadding = PaddingValues(
                                     start = 16.dp,
                                     end = 16.dp,
-                                    top = 16.dp + (scrollBehavior.state.heightOffsetLimit
-                                        .takeUnless { it == -Float.MAX_VALUE }
-                                        ?.let { LocalDensity.current.run { -it.toDp() } }
-                                        ?: 0.dp),
+                                    top = 16.dp + topBarPadding,
                                     bottom = 16.dp + scaffoldPadding.calculateBottomPadding()
                                 ),
                                 verticalArrangement = Arrangement.spacedBy(16.dp),

@@ -1,8 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.home
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -10,44 +7,49 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.FilterList
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.DockedSearchBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.R
+import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBar
 import com.thekeeperofpie.artistalleydatabase.compose.LazyStaggeredGrid
 import com.thekeeperofpie.artistalleydatabase.compose.NavMenuIconButton
-import com.thekeeperofpie.artistalleydatabase.compose.bottomBorder
+import com.thekeeperofpie.artistalleydatabase.compose.NestedScrollSplitter
+import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGrid
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridModel
 import com.thekeeperofpie.artistalleydatabase.entry.search.EntrySearchOption
 import com.thekeeperofpie.artistalleydatabase.navigation.NavDestinations
 import kotlinx.coroutines.flow.emptyFlow
 
+@Suppress("NAME_SHADOWING")
 @OptIn(ExperimentalMaterial3Api::class)
 object HomeScreen {
 
@@ -69,6 +71,7 @@ object HomeScreen {
         onConfirmDelete: () -> Unit = {},
         lazyStaggeredGridState: LazyStaggeredGrid.LazyStaggeredGridState,
     ) {
+        val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
         Chrome(
             onClickNav = onClickNav,
             query = query,
@@ -77,12 +80,28 @@ object HomeScreen {
             options = options,
             onOptionChange = onOptionChange,
             onClickAddFab = onClickAddFab,
+            scrollBehavior = scrollBehavior,
         ) {
+            val density = LocalDensity.current
+            val topBarPadding by remember {
+                derivedStateOf {
+                    PaddingValues(
+                        top = scrollBehavior.state.heightOffsetLimit
+                            .takeUnless { it == -Float.MAX_VALUE }
+                            ?.let { density.run { -it.toDp() } }
+                            ?: 0.dp
+                    )
+                }
+            }
+            val topOffset by remember {
+                derivedStateOf {
+                    topBarPadding.calculateTopPadding() + density.run { scrollBehavior.state.heightOffset.toDp() }
+                }
+            }
             EntryGrid(
                 imageScreenKey = NavDestinations.HOME,
                 entries = entries,
-                entriesSize = { entries().itemCount.takeIf { query().isNotEmpty() }},
-                paddingValues = it,
+                entriesSize = { entries().itemCount.takeIf { query().isNotEmpty() } },
                 selectedItems = selectedItems,
                 onClickEntry = onClickEntry,
                 onLongClickEntry = onLongClickEntry,
@@ -90,6 +109,8 @@ object HomeScreen {
                 onClickEdit = onClickEdit,
                 onConfirmDelete = onConfirmDelete,
                 lazyStaggeredGridState = lazyStaggeredGridState,
+                contentPadding = topBarPadding,
+                topOffset = topOffset,
             )
         }
     }
@@ -103,62 +124,69 @@ object HomeScreen {
         onOptionChange: (EntrySearchOption) -> Unit = {},
         showFab: () -> Boolean = { true },
         onClickAddFab: () -> Unit = {},
+        scrollBehavior: TopAppBarScrollBehavior,
         content: @Composable (PaddingValues) -> Unit,
     ) {
         Scaffold(
             topBar = {
-                var showOptions by rememberSaveable { mutableStateOf(false) }
-
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .wrapContentWidth()
-                        .run {
-                            if (showOptions) {
-                                bottomBorder(MaterialTheme.colorScheme.onBackground)
-                            } else this
-                        }
-                ) {
-                    TextField(
-                        query(),
-                        placeholder = { Text(stringResource(id = R.string.search)) },
-                        onValueChange = onQueryChange,
-                        leadingIcon = { NavMenuIconButton(onClickNav) },
-                        trailingIcon = {
-                            if (options().isNotEmpty()) {
-                                IconButton(onClick = { showOptions = !showOptions }) {
-                                    Icon(
-                                        imageVector = Icons.Default.FilterList,
-                                        contentDescription = stringResource(
-                                            R.string.search_filter_content_description
-                                        )
-                                    )
-                                }
-                            }
-                        },
-                        singleLine = true,
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                        keyboardActions = KeyboardActions(onSearch = { showOptions = false }),
-                        colors = TextFieldDefaults.colors(
-                            focusedContainerColor = MaterialTheme.colorScheme.surface,
-                            unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-                            disabledContainerColor = MaterialTheme.colorScheme.surface,
-                        ),
+                EnterAlwaysTopAppBar(scrollBehavior = scrollBehavior) {
+                    Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                    )
-
-                    AnimatedVisibility(
-                        visible = showOptions,
-                        enter = expandVertically(),
-                        exit = shrinkVertically(),
+                            .wrapContentWidth()
+                            .padding(bottom = 8.dp)
                     ) {
-                        Column {
-                            options().forEach { option ->
+                        var active by remember { mutableStateOf(false) }
+                        DockedSearchBar(
+                            query = query(),
+                            onQueryChange = onQueryChange,
+                            active = active,
+                            onActiveChange = {},
+                            leadingIcon = { NavMenuIconButton(onClickNav) },
+                            placeholder = { Text(stringResource(R.string.search)) },
+                            trailingIcon = {
+                                Row {
+                                    IconButton(onClick = { onQueryChange("") }) {
+                                        Icon(
+                                            imageVector = Icons.Filled.Clear,
+                                            contentDescription = stringResource(
+                                                R.string.search_clear
+                                            ),
+                                        )
+                                    }
+
+                                    IconButton(onClick = { active = !active }) {
+                                        Icon(
+                                            imageVector = if (active) {
+                                                Icons.Filled.ExpandLess
+                                            } else {
+                                                Icons.Filled.ExpandMore
+                                            },
+                                            contentDescription = stringResource(
+                                                if (active) {
+                                                    R.string.search_options_collapse
+                                                } else {
+                                                    R.string.search_options_expand
+                                                }
+                                            ),
+                                        )
+                                    }
+                                }
+                            },
+                            onSearch = { active = false },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(start = 16.dp, end = 16.dp, top = 4.dp)
+                        ) {
+                            val options = options()
+                            options.forEachIndexed { index, option ->
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
                                     modifier = Modifier
                                         .fillMaxWidth()
+                                        .conditionally(index == options.lastIndex) {
+                                            padding(bottom = 8.dp)
+                                        }
                                         .clickable {
                                             option.enabled = !option.enabled
                                             onOptionChange(option)
@@ -195,6 +223,12 @@ object HomeScreen {
                 }
             },
             content = content,
+            modifier = Modifier.nestedScroll(
+                NestedScrollSplitter(
+                    primary = scrollBehavior.nestedScrollConnection,
+                    consumeNone = true,
+                )
+            ),
         )
     }
 }

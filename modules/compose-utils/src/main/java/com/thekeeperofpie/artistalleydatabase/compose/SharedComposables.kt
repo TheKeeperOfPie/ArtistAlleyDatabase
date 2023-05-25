@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package com.thekeeperofpie.artistalleydatabase.compose
 
 import android.util.Log
@@ -39,6 +41,7 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SearchBar
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -316,7 +319,7 @@ fun Modifier.bottomBorder(color: Color, width: Dp = Dp.Hairline): Modifier = bor
     color,
     startOffsetX = { 0f },
     startOffsetY = { size.height - (width.value * density) },
-    endOffsetX = { size.width},
+    endOffsetX = { size.width },
     endOffsetY = { size.height }
 )
 
@@ -514,7 +517,7 @@ fun AutoResizeHeightText(
                 }
             } else {
                 val scale = if (it.didOverflowHeight) {
-                     if (decreasing) {
+                    if (decreasing) {
                         0.95f
                     } else {
                         // Reset to decreasing if overflowed since
@@ -731,5 +734,31 @@ fun VerticalDivider(modifier: Modifier = Modifier) {
             .fillMaxHeight()
             .width(DividerDefaults.Thickness)
             .background(color = DividerDefaults.color)
+    )
+}
+
+@Composable
+fun StaticSearchBar(
+    query: String,
+    onQueryChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    placeholder: @Composable (() -> Unit)? = null,
+    leadingIcon: @Composable (() -> Unit)? = null,
+    trailingIcon: @Composable (() -> Unit)? = null,
+    onSearch: (String) -> Unit = {},
+) {
+    SearchBar(
+        query = query,
+        onQueryChange = onQueryChange,
+        onSearch = onSearch,
+        active = false,
+        onActiveChange = {},
+        leadingIcon = leadingIcon,
+        placeholder = placeholder,
+        trailingIcon = trailingIcon,
+        content = {},
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
     )
 }

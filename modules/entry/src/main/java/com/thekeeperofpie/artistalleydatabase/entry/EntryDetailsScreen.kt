@@ -311,7 +311,10 @@ object EntryDetailsScreen {
             AddBackPressInvokeTogether(label = "FAB alpha") {
                 alphaAnimation.animateTo(0f, tween(250))
             }
-            val pagerState = rememberPagerState()
+            val images = imageState().images()
+            val addAllowed = imageState().addAllowed()
+            val size = if (addAllowed) images.size + 1 else images.size
+            val pagerState = rememberPagerState(pageCount = { size })
             MultiImageSelectBox(
                 pagerState = pagerState,
                 imageState = imageState,

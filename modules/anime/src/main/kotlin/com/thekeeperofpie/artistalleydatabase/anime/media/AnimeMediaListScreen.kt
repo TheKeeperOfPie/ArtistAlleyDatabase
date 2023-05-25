@@ -92,14 +92,13 @@ object AnimeMediaListScreen {
 
     @Composable
     fun Error(
+        modifier: Modifier = Modifier,
         @StringRes errorTextRes: Int? = null,
         exception: Throwable? = null,
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier
-                .padding(top = 64.dp)
-                .fillMaxSize()
+            modifier = modifier.fillMaxSize()
                 .verticalScroll(rememberScrollState()),
         ) {
             Text(
@@ -119,11 +118,10 @@ object AnimeMediaListScreen {
     }
 
     @Composable
-    fun NoResults() {
+    fun NoResults(modifier: Modifier = Modifier) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier
-                .padding(top = 64.dp)
+            modifier = modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState()),
         ) {

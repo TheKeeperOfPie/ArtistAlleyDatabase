@@ -9,14 +9,15 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class SettingsData(
-    val artEntryTemplate: ArtEntry?,
+    val artEntryTemplate: ArtEntry? = null,
     @Serializable(with = Converters.UriConverter::class)
-    val cropDocumentUri: Uri?,
-    val networkLoggingLevel: NetworkSettings.NetworkLoggingLevel,
-    val searchQuery: ArtEntry?,
-    val collapseAnimeFiltersOnClose: Boolean,
+    val cropDocumentUri: Uri? = null,
+    val networkLoggingLevel: NetworkSettings.NetworkLoggingLevel = NetworkSettings.NetworkLoggingLevel.NONE,
+    val searchQuery: ArtEntry? = null,
+    val collapseAnimeFiltersOnClose: Boolean = true,
     val savedAnimeFilters: Map<String, FilterData> = emptyMap(),
-    val showAdult: Boolean,
-    val showIgnored: Boolean,
-    val ignoredAniListMediaIds: Set<Int>,
+    val showAdult: Boolean = false,
+    val showIgnored: Boolean = false,
+    val ignoredAniListMediaIds: Set<Int> = emptySet(),
+    val navDrawerStartDestination: String? = null,
 )

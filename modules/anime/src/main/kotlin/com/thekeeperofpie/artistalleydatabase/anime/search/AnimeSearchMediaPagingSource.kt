@@ -4,6 +4,7 @@ import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.anilist.MediaAdvancedSearchQuery
 import com.anilist.type.MediaSort
+import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeMediaFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortOption
@@ -14,6 +15,7 @@ import java.time.temporal.ChronoUnit
 class AnimeSearchMediaPagingSource(
     private val aniListApi: AuthedAniListApi,
     private val refreshParams: RefreshParams,
+    private val mediaType: MediaType,
 ) : PagingSource<Int, MediaAdvancedSearchQuery.Data.Page.Medium>() {
 
     override val jumpingSupported = true
@@ -50,6 +52,7 @@ class AnimeSearchMediaPagingSource(
 
         val result = aniListApi.searchMedia(
             query = refreshParams.query,
+            mediaType = mediaType,
             page = page,
             perPage = 10,
             sort = refreshParams.sortApiValue(),

@@ -245,7 +245,7 @@ class BottomNavigationState(private val scrollBehavior: NavigationBarEnterAlways
 
 class NestedScrollSplitter(
     private val primary: NestedScrollConnection?,
-    private val secondary: NestedScrollConnection?,
+    private val secondary: NestedScrollConnection? = null,
     private val consumeNone: Boolean = false,
 ) : NestedScrollConnection {
     override suspend fun onPostFling(consumed: Velocity, available: Velocity) =

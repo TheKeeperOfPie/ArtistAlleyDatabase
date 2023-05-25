@@ -18,13 +18,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.serializer
 import kotlin.reflect.KProperty0
 import kotlin.reflect.full.createType
 
-class SettingsProvider constructor(
+class SettingsProvider(
     application: Application,
     masterKey: MasterKey,
     private val appJson: AppJson,
@@ -60,6 +59,7 @@ class SettingsProvider constructor(
         MutableStateFlow(deserialize("ignoredAniListMediaIds") ?: emptySet<Int>())
 
     var searchQuery = MutableStateFlow<ArtEntry?>(deserialize("searchQuery"))
+    var navDrawerStartDestination = MutableStateFlow<String?>(deserialize("navDrawerStartDestination"))
 
     private fun deserializeAnimeFilters(): Map<String, FilterData> {
         val stringValue = sharedPreferences.getString("savedAnimeFilters", "")
@@ -78,6 +78,7 @@ class SettingsProvider constructor(
             showAdult = showAdult.value,
             showIgnored = showIgnored.value,
             ignoredAniListMediaIds = ignoredAniListMediaIds.value,
+            navDrawerStartDestination = navDrawerStartDestination.value,
         )
 
     // Initialization separated into its own method so that tests can cancel the StateFlow job
@@ -89,6 +90,7 @@ class SettingsProvider constructor(
         subscribeProperty(scope, ::collapseAnimeFiltersOnClose)
         subscribeProperty(scope, ::showAdult)
         subscribeProperty(scope, ::showIgnored)
+        subscribeProperty(scope, ::navDrawerStartDestination)
         scope.launch(CustomDispatchers.IO) {
             ignoredAniListMediaIds.drop(1).collectLatest {
                 val stringValue = appJson.json.run {
@@ -130,6 +132,7 @@ class SettingsProvider constructor(
         showAdult.emit(data.showAdult)
         showIgnored.emit(data.showIgnored)
         ignoredAniListMediaIds.emit(data.ignoredAniListMediaIds)
+        navDrawerStartDestination.emit(data.navDrawerStartDestination)
     }
 
     private inline fun <reified T> deserialize(name: String): T? {

@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
@@ -23,16 +22,16 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -50,6 +49,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBar
 import com.thekeeperofpie.artistalleydatabase.compose.NavMenuIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.NestedScrollSplitter
 import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
+import com.thekeeperofpie.artistalleydatabase.compose.StaticSearchBar
 import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 
@@ -74,10 +74,9 @@ object AnimeUserListScreen {
                     BackHandler(viewModel.query.isNotEmpty() && !WindowInsets.isImeVisible) {
                         viewModel.query = ""
                     }
-                    TextField(
-                        value = viewModel.query,
-                        placeholder = { Text(stringResource(id = R.string.anime_user_list_search)) },
-                        onValueChange = { viewModel.query = it },
+                    StaticSearchBar(
+                        query = viewModel.query,
+                        onQueryChange = { viewModel.query = it },
                         leadingIcon = {
                             if (showDrawerHandle) {
                                 NavMenuIconButton(onClickNav)
@@ -85,6 +84,7 @@ object AnimeUserListScreen {
                                 ArrowBackIconButton(onClickNav)
                             }
                         },
+                        placeholder = { Text(stringResource(R.string.anime_user_list_search)) },
                         trailingIcon = {
                             IconButton(onClick = { viewModel.query = "" }) {
                                 Icon(
@@ -95,15 +95,6 @@ object AnimeUserListScreen {
                                 )
                             }
                         },
-                        singleLine = true,
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                        colors = TextFieldDefaults.colors(
-                            focusedContainerColor = MaterialTheme.colorScheme.surface,
-                            unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-                            disabledContainerColor = MaterialTheme.colorScheme.surface,
-                        ),
-                        modifier = Modifier
-                            .fillMaxWidth()
                     )
                 }
             },
@@ -118,18 +109,22 @@ object AnimeUserListScreen {
                 is ContentState.Success -> content.loading
                 is ContentState.Error -> false
             }
+            val density = LocalDensity.current
+            val topBarPadding by remember {
+                derivedStateOf {
+                    scrollBehavior.state.heightOffsetLimit
+                        .takeUnless { it == -Float.MAX_VALUE }
+                        ?.let { density.run { -it.toDp() } }
+                        ?: 0.dp
+                }
+            }
 
             AnimeMediaListScreen(
                 refreshing = refreshing,
                 onRefresh = viewModel::onRefresh,
                 tagShown = viewModel::tagShown,
                 onTagDismiss = { viewModel.tagShown = null },
-                pullRefreshTopPadding = {
-                    scrollBehavior.state.heightOffsetLimit
-                        .takeUnless { it == -Float.MAX_VALUE }
-                        ?.let { LocalDensity.current.run { -it.toDp() } }
-                        ?: 0.dp
-                },
+                pullRefreshTopPadding = { topBarPadding },
                 modifier = Modifier.nestedScroll(
                     NestedScrollSplitter(
                         bottomNavigationState?.nestedScrollConnection,
@@ -140,8 +135,9 @@ object AnimeUserListScreen {
             ) { onLongPressImage ->
                 when (content) {
                     is ContentState.Error -> AnimeMediaListScreen.Error(
-                        content.errorRes,
-                        content.exception,
+                        errorTextRes = content.errorRes,
+                        exception = content.exception,
+                        modifier = Modifier.padding(top = topBarPadding),
                     )
                     ContentState.LoadingEmpty ->
                         // Empty column to allow pull refresh to work
@@ -153,7 +149,7 @@ object AnimeUserListScreen {
                         }
                     is ContentState.Success -> {
                         if (content.entries.isEmpty()) {
-                            AnimeMediaListScreen.NoResults()
+                            AnimeMediaListScreen.NoResults(Modifier.padding(top = topBarPadding))
                         } else {
                             LazyColumn(
                                 state = scrollStateSaver.lazyListState(),

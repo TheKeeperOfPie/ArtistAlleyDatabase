@@ -41,6 +41,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.paging.compose.LazyPagingItems
 import coil.compose.AsyncImage
@@ -53,6 +54,7 @@ import com.mxalbert.sharedelements.SharedElementsTransitionSpec
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.compose.ButtonFooter
 import com.thekeeperofpie.artistalleydatabase.compose.LazyStaggeredGrid
+import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils
 import com.thekeeperofpie.artistalleydatabase.entry.R
 
@@ -63,7 +65,9 @@ object EntryGrid {
         imageScreenKey: String,
         entries: @Composable () -> LazyPagingItems<T>,
         entriesSize: @Composable () -> Int?,
-        paddingValues: PaddingValues,
+        paddingValues: PaddingValues? = null,
+        contentPadding: PaddingValues? = null,
+        topOffset: Dp = 0.dp,
         selectedItems: () -> Collection<Int> = { emptyList() },
         onClickEntry: (index: Int, entry: T) -> Unit = { _, _ -> },
         onLongClickEntry: (index: Int, entry: T) -> Unit = { _, _ -> },
@@ -76,7 +80,9 @@ object EntryGrid {
 
         Box(
             modifier = Modifier
-                .padding(paddingValues)
+                .conditionally(paddingValues != null) {
+                    padding(paddingValues!!)
+                }
         ) {
             Column {
                 EntriesGrid(
@@ -86,6 +92,7 @@ object EntryGrid {
                     onClickEntry = onClickEntry,
                     onLongClickEntry = onLongClickEntry,
                     lazyStaggeredGridState = lazyStaggeredGridState,
+                    contentPadding = contentPadding,
                     modifier = Modifier
                         .weight(1f, true)
                 )
@@ -112,7 +119,7 @@ object EntryGrid {
                     modifier = Modifier
                         .align(Alignment.TopCenter)
                         .wrapContentSize()
-                        .padding(top = 8.dp)
+                        .padding(top = 8.dp + topOffset)
                         .background(
                             MaterialTheme.colorScheme.secondary,
                             RoundedCornerShape(8.dp)
@@ -140,6 +147,7 @@ object EntryGrid {
     fun <T : EntryGridModel> EntriesGrid(
         imageScreenKey: String,
         modifier: Modifier = Modifier,
+        contentPadding: PaddingValues? = null,
         entries: @Composable () -> LazyPagingItems<T>,
         selectedItems: () -> Collection<Int> = { emptyList() },
         onClickEntry: (index: Int, entry: T) -> Unit = { _, _ -> },
@@ -152,10 +160,10 @@ object EntryGrid {
                     lazyStaggeredGridState.columnCount
         }.let(::Dimension)
 
-        @Suppress("RemoveExplicitTypeArguments") // Kotlin can't infer it.id below
         LazyStaggeredGrid<T>(
             state = lazyStaggeredGridState,
             modifier = modifier,
+            contentPadding = contentPadding,
         ) {
             items(entries(), key = { it.id.scopedId }) { index, item ->
                 Entry(

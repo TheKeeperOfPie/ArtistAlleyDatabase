@@ -1,38 +1,36 @@
 package com.thekeeperofpie.artistalleydatabase.anime.search
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.isImeVisible
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.FilterList
-import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ScrollableTabRow
+import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -55,7 +53,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBar
 import com.thekeeperofpie.artistalleydatabase.compose.NavMenuIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.NestedScrollSplitter
 import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
-import com.thekeeperofpie.artistalleydatabase.compose.dropdown.DropdownMenuItem
+import com.thekeeperofpie.artistalleydatabase.compose.StaticSearchBar
 import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -82,13 +80,26 @@ object AnimeSearchScreen {
                         BackHandler(viewModel.query.isNotEmpty() && !WindowInsets.isImeVisible) {
                             viewModel.query = ""
                         }
-                        TextField(
-                            viewModel.query,
-                            placeholder = { Text(stringResource(id = R.string.anime_search)) },
-                            onValueChange = { viewModel.query = it },
-                            leadingIcon = { NavMenuIconButton(onClickNav) },
-                            trailingIcon = {
-                                Row {
+                        Column {
+                            StaticSearchBar(
+                                query = viewModel.query,
+                                onQueryChange = { viewModel.query = it },
+                                leadingIcon = { NavMenuIconButton(onClickNav) },
+                                placeholder = {
+                                    Text(
+                                        stringResource(
+                                            when (viewModel.selectedType) {
+                                                AnimeSearchViewModel.SearchType.ANIME ->
+                                                    R.string.anime_search_anime
+                                                AnimeSearchViewModel.SearchType.MANGA ->
+                                                    R.string.anime_search_manga
+                                                AnimeSearchViewModel.SearchType.CHARACTER ->
+                                                    R.string.anime_search_characters
+                                            }
+                                        )
+                                    )
+                                },
+                                trailingIcon = {
                                     IconButton(onClick = { viewModel.query = "" }) {
                                         Icon(
                                             imageVector = Icons.Filled.Clear,
@@ -97,44 +108,36 @@ object AnimeSearchScreen {
                                             ),
                                         )
                                     }
-                                    var typeMenuShown by remember { mutableStateOf(false) }
-                                    Box {
-                                        IconButton(onClick = { typeMenuShown = true }) {
-                                            Icon(
-                                                imageVector = Icons.Filled.FilterList,
-                                                contentDescription = stringResource(
-                                                    R.string.anime_search_filter
-                                                ),
-                                            )
-                                        }
-                                        DropdownMenu(
-                                            expanded = typeMenuShown,
-                                            onDismissRequest = { typeMenuShown = false },
-                                        ) {
-                                            AnimeSearchViewModel.SearchType.values().forEach {
-                                                // TODO: Exclusive select radio buttons
-                                                DropdownMenuItem(
-                                                    text = { Text(stringResource(it.textRes)) },
-                                                    onClick = {
-                                                        viewModel.selectedType = it
-                                                        typeMenuShown = false
-                                                    },
+                                },
+                                modifier = Modifier.background(MaterialTheme.colorScheme.surface)
+                            )
+
+                            val selectedTypeIndex = AnimeSearchViewModel.SearchType.values()
+                                .indexOf(viewModel.selectedType)
+                            ScrollableTabRow(
+                                selectedTabIndex = selectedTypeIndex,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .align(Alignment.CenterHorizontally),
+                                divider = { /* No divider, manually draw so that it's full width */ }
+                            ) {
+                                AnimeSearchViewModel.SearchType.values()
+                                    .forEachIndexed { index, tab ->
+                                        Tab(
+                                            selected = selectedTypeIndex == index,
+                                            onClick = { viewModel.selectedType = tab },
+                                            text = {
+                                                Text(
+                                                    text = stringResource(tab.textRes),
+                                                    maxLines = 1,
                                                 )
                                             }
-                                        }
+                                        )
                                     }
-                                }
-                            },
-                            singleLine = true,
-                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                            colors = TextFieldDefaults.colors(
-                                focusedContainerColor = MaterialTheme.colorScheme.surface,
-                                unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-                                disabledContainerColor = MaterialTheme.colorScheme.surface,
-                            ),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                        )
+                            }
+
+                            Divider()
+                        }
                     }
                 } else if (title != null) {
                     val text = if (title is Either.Left) {
@@ -157,17 +160,21 @@ object AnimeSearchScreen {
         ) { scaffoldPadding ->
             val content = viewModel.content.collectAsLazyPagingItems()
             val refreshing = content.loadState.refresh is LoadState.Loading
+            val density = LocalDensity.current
+            val topBarPadding by remember {
+                derivedStateOf {
+                    scrollBehavior.state.heightOffsetLimit
+                        .takeUnless { it == -Float.MAX_VALUE }
+                        ?.let { density.run { -it.toDp() } }
+                        ?: 0.dp
+                }
+            }
             AnimeMediaListScreen(
                 refreshing = refreshing,
                 onRefresh = viewModel::onRefresh,
                 tagShown = viewModel::tagShown,
                 onTagDismiss = { viewModel.tagShown = null },
-                pullRefreshTopPadding = {
-                    scrollBehavior.state.heightOffsetLimit
-                        .takeUnless { it == -Float.MAX_VALUE }
-                        ?.let { LocalDensity.current.run { -it.toDp() } }
-                        ?: 0.dp
-                },
+                pullRefreshTopPadding = { topBarPadding },
                 modifier = Modifier.nestedScroll(
                     NestedScrollSplitter(
                         bottomNavigationState?.nestedScrollConnection,
@@ -178,20 +185,20 @@ object AnimeSearchScreen {
             ) { onLongPressImage ->
                 when (val refreshState = content.loadState.refresh) {
                     LoadState.Loading -> Unit
-                    is LoadState.Error -> AnimeMediaListScreen.Error(exception = refreshState.error)
+                    is LoadState.Error -> AnimeMediaListScreen.Error(
+                        exception = refreshState.error,
+                        modifier = Modifier.padding(top = topBarPadding),
+                    )
                     is LoadState.NotLoading -> {
                         if (content.itemCount == 0) {
-                            AnimeMediaListScreen.NoResults()
+                            AnimeMediaListScreen.NoResults(Modifier.padding(top = topBarPadding))
                         } else {
                             LazyColumn(
                                 state = scrollStateSaver.lazyListState(),
                                 contentPadding = PaddingValues(
                                     start = 16.dp,
                                     end = 16.dp,
-                                    top = 16.dp + (scrollBehavior.state.heightOffsetLimit
-                                        .takeUnless { it == -Float.MAX_VALUE }
-                                        ?.let { LocalDensity.current.run { -it.toDp() } }
-                                        ?: 0.dp),
+                                    top = 16.dp + topBarPadding,
                                     bottom = 16.dp + scaffoldPadding.calculateBottomPadding()
                                 ),
                                 verticalArrangement = Arrangement.spacedBy(16.dp),

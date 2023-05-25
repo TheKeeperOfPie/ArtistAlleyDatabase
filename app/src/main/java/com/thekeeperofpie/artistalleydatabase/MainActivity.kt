@@ -12,6 +12,7 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -74,6 +75,7 @@ import com.thekeeperofpie.artistalleydatabase.search.advanced.AdvancedSearchScre
 import com.thekeeperofpie.artistalleydatabase.search.advanced.AdvancedSearchViewModel
 import com.thekeeperofpie.artistalleydatabase.search.results.SearchResultsScreen
 import com.thekeeperofpie.artistalleydatabase.search.results.SearchResultsViewModel
+import com.thekeeperofpie.artistalleydatabase.settings.SettingsProvider
 import com.thekeeperofpie.artistalleydatabase.settings.SettingsScreen
 import com.thekeeperofpie.artistalleydatabase.settings.SettingsViewModel
 import com.thekeeperofpie.artistalleydatabase.ui.theme.ArtistAlleyDatabaseTheme
@@ -100,6 +102,9 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var cdEntryNavigator: CdEntryNavigator
 
+    @Inject
+    lateinit var settings: SettingsProvider
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -107,13 +112,16 @@ class MainActivity : ComponentActivity() {
             WindowCompat.setDecorFitsSystemWindows(window, false)
         }
 
+        val startDestinationFromIntent = intent.getStringExtra(STARTING_NAV_DESTINATION)
+        val startDestinationFromSettings = settings.navDrawerStartDestination.value
+        val startDestination = startDestinationFromIntent ?: startDestinationFromSettings
         setContent {
             ArtistAlleyDatabaseTheme {
                 Surface {
                     val drawerState = rememberDrawerState(DrawerValue.Closed)
                     val scope = rememberCoroutineScope()
                     val navDrawerItems = NavDrawerItems.items()
-                    val defaultSelectedItemIndex = intent.getStringExtra(STARTING_NAV_DESTINATION)
+                    val defaultSelectedItemIndex = startDestination
                         ?.let { navId -> navDrawerItems.indexOfFirst { it.id == navId } }
                         ?: NavDrawerItems.INITIAL_INDEX
 
@@ -129,88 +137,93 @@ class MainActivity : ComponentActivity() {
                             StartDrawer(
                                 navDrawerItems = { navDrawerItems },
                                 selectedIndex = { selectedItemIndex },
-                                onSelectIndex = { selectedItemIndex = it },
+                                onSelectIndex = {
+                                    selectedItemIndex = it
+                                    if (startDestinationFromIntent == null) {
+                                        settings.navDrawerStartDestination.value =
+                                            navDrawerItems[it].id
+                                    }
+                                },
                                 onCloseDrawer = { scope.launch { drawerState.close() } },
                             )
-                        },
-                        content = {
-                            val block = @Composable {
-                                when (selectedItem) {
-                                    NavDrawerItems.Anime -> AnimeScreen(
+                        }
+                    ) {
+                        val block = @Composable {
+                            when (selectedItem) {
+                                NavDrawerItems.Anime -> AnimeScreen(
+                                    onClickNav = ::onClickNav,
+                                )
+                                NavDrawerItems.Art -> ArtScreen(::onClickNav)
+                                NavDrawerItems.Cds -> CdsScreen(::onClickNav)
+                                NavDrawerItems.Browse -> BrowseScreen(::onClickNav)
+                                NavDrawerItems.Search -> SearchScreen(::onClickNav)
+                                NavDrawerItems.Import -> {
+                                    val viewModel = hiltViewModel<ImportViewModel>()
+                                    ImportScreen(
                                         onClickNav = ::onClickNav,
+                                        uriString = viewModel.importUriString.orEmpty(),
+                                        onUriStringEdit = { viewModel.importUriString = it },
+                                        onContentUriSelected = {
+                                            viewModel.importUriString = it?.toString()
+                                        },
+                                        dryRun = { viewModel.dryRun },
+                                        onToggleDryRun = {
+                                            viewModel.dryRun = !viewModel.dryRun
+                                        },
+                                        replaceAll = { viewModel.replaceAll },
+                                        onToggleReplaceAll = {
+                                            viewModel.replaceAll = !viewModel.replaceAll
+                                        },
+                                        syncAfter = { viewModel.syncAfter },
+                                        onToggleSyncAfter = {
+                                            viewModel.syncAfter = !viewModel.syncAfter
+                                        },
+                                        onClickImport = viewModel::onClickImport,
+                                        importProgress = { viewModel.importProgress },
+                                        errorRes = { viewModel.errorResource },
+                                        onErrorDismiss = { viewModel.errorResource = null }
                                     )
-                                    NavDrawerItems.Art -> ArtScreen(::onClickNav)
-                                    NavDrawerItems.Cds -> CdsScreen(::onClickNav)
-                                    NavDrawerItems.Browse -> BrowseScreen(::onClickNav)
-                                    NavDrawerItems.Search -> SearchScreen(::onClickNav)
-                                    NavDrawerItems.Import -> {
-                                        val viewModel = hiltViewModel<ImportViewModel>()
-                                        ImportScreen(
-                                            onClickNav = ::onClickNav,
-                                            uriString = viewModel.importUriString.orEmpty(),
-                                            onUriStringEdit = { viewModel.importUriString = it },
-                                            onContentUriSelected = {
-                                                viewModel.importUriString = it?.toString()
-                                            },
-                                            dryRun = { viewModel.dryRun },
-                                            onToggleDryRun = {
-                                                viewModel.dryRun = !viewModel.dryRun
-                                            },
-                                            replaceAll = { viewModel.replaceAll },
-                                            onToggleReplaceAll = {
-                                                viewModel.replaceAll = !viewModel.replaceAll
-                                            },
-                                            syncAfter = { viewModel.syncAfter },
-                                            onToggleSyncAfter = {
-                                                viewModel.syncAfter = !viewModel.syncAfter
-                                            },
-                                            onClickImport = viewModel::onClickImport,
-                                            importProgress = { viewModel.importProgress },
-                                            errorRes = { viewModel.errorResource },
-                                            onErrorDismiss = { viewModel.errorResource = null }
-                                        )
-                                    }
-                                    NavDrawerItems.Export -> {
-                                        val viewModel = hiltViewModel<ExportViewModel>()
-                                        ExportScreen(
-                                            onClickNav = ::onClickNav,
-                                            uriString = { viewModel.exportUriString.orEmpty() },
-                                            onUriStringEdit = { viewModel.exportUriString = it },
-                                            onContentUriSelected = {
-                                                viewModel.exportUriString = it?.toString()
-                                            },
-                                            onClickExport = viewModel::onClickExport,
-                                            exportProgress = { viewModel.exportProgress },
-                                            errorRes = { viewModel.errorResource },
-                                            onErrorDismiss = { viewModel.errorResource = null }
-                                        )
-                                    }
-                                    NavDrawerItems.Settings -> SettingsScreen(::onClickNav)
                                 }
-                            }
-
-                            if (BuildConfig.DEBUG) {
-                                Column {
-                                    Box(modifier = Modifier.weight(1f)) {
-                                        block()
-                                    }
-                                    Box(
-                                        modifier = Modifier
-                                            .background(colorResource(R.color.launcher_background))
-                                            .fillMaxWidth()
-                                            .height(56.dp)
-                                    ) {
-                                        Text(
-                                            text = stringResource(R.string.debug_variant),
-                                            modifier = Modifier.align(Alignment.Center)
-                                        )
-                                    }
+                                NavDrawerItems.Export -> {
+                                    val viewModel = hiltViewModel<ExportViewModel>()
+                                    ExportScreen(
+                                        onClickNav = ::onClickNav,
+                                        uriString = { viewModel.exportUriString.orEmpty() },
+                                        onUriStringEdit = { viewModel.exportUriString = it },
+                                        onContentUriSelected = {
+                                            viewModel.exportUriString = it?.toString()
+                                        },
+                                        onClickExport = viewModel::onClickExport,
+                                        exportProgress = { viewModel.exportProgress },
+                                        errorRes = { viewModel.errorResource },
+                                        onErrorDismiss = { viewModel.errorResource = null }
+                                    )
                                 }
-                            } else {
-                                block()
+                                NavDrawerItems.Settings -> SettingsScreen(::onClickNav)
                             }
                         }
-                    )
+
+                        if (BuildConfig.DEBUG) {
+                            Column {
+                                Box(modifier = Modifier.weight(1f)) {
+                                    block()
+                                }
+                                Box(
+                                    modifier = Modifier
+                                        .background(colorResource(R.color.launcher_background))
+                                        .fillMaxWidth()
+                                        .height(56.dp)
+                                ) {
+                                    Text(
+                                        text = stringResource(R.string.debug_variant),
+                                        modifier = Modifier.align(Alignment.Center)
+                                    )
+                                }
+                            }
+                        } else {
+                            block()
+                        }
+                    }
                 }
             }
         }
@@ -231,6 +244,7 @@ class MainActivity : ComponentActivity() {
         onCloseDrawer: () -> Unit,
     ) {
         ModalDrawerSheet {
+            Spacer(modifier = Modifier.height(16.dp))
             navDrawerItems().forEachIndexed { index, item ->
                 NavigationDrawerItem(
                     icon = { Icon(item.icon, contentDescription = null) },
