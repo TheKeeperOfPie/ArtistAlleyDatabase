@@ -128,7 +128,7 @@ fun CharacterCard(
                 contentScale = ContentScale.Crop,
                 fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
                 contentDescription = stringResource(
-                    R.string.anime_media_character_image_content_description
+                    R.string.anime_character_image_content_description
                 ),
                 onSuccess = {
                     onImageSuccess(it)

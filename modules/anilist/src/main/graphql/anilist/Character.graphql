@@ -57,9 +57,17 @@ query CharacterAdvancedSearch(
         characters(search: $search, isBirthday: $isBirthday, sort: $sort) {
             ...CharacterNavigationData
             favourites
+
             media(sort: [TRENDING_DESC, POPULARITY_DESC, FAVOURITES_DESC], perPage: 5) {
-                nodes {
-                    ...MediaNavigationData
+                edges {
+                    id
+                    voiceActors {
+                        ...StaffNavigationData
+                        languageV2
+                    }
+                    node {
+                        ...MediaNavigationData
+                    }
                 }
             }
         }

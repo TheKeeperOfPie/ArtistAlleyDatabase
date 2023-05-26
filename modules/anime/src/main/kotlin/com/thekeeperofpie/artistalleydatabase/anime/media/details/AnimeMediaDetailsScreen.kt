@@ -105,6 +105,7 @@ import coil.compose.AsyncImage
 import coil.size.Dimension
 import com.anilist.MediaDetailsQuery.Data.Media
 import com.anilist.fragment.MediaDetailsListEntry
+import com.anilist.fragment.UserNavigationData
 import com.anilist.type.ExternalLinkType
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaRankType
@@ -116,7 +117,10 @@ import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.YouTubePlayerCallback
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
+import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
+import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
+import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
@@ -159,6 +163,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.multiplyCoerceSaturation
 import com.thekeeperofpie.artistalleydatabase.compose.optionalClickable
 import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.showFloatingActionButtonOnVerticalScroll
+import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGrid
 import kotlinx.coroutines.launch
@@ -1104,7 +1109,7 @@ object AnimeMediaDetailsScreen {
                                     contentScale = ContentScale.FillHeight,
                                     fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
                                     contentDescription = stringResource(
-                                        R.string.anime_media_character_image_content_description
+                                        R.string.anime_character_image_content_description
                                     ),
                                     modifier = Modifier
                                         .sizeIn(minWidth = 44.dp, minHeight = 64.dp)
@@ -1613,7 +1618,7 @@ object AnimeMediaDetailsScreen {
         reviews: List<Media.Reviews.Node>,
         expanded: () -> Boolean,
         onExpandedChange: (Boolean) -> Unit,
-        onUserClick: (String) -> Unit,
+        onUserClick: (UserNavigationData, imageWidthToHeightRatio: Float) -> Unit,
     ) {
         if (reviews.isEmpty()) return
         listSection(
@@ -1636,17 +1641,19 @@ object AnimeMediaDetailsScreen {
                         .height(IntrinsicSize.Min)
                         .heightIn(min = 72.dp)
                 ) {
+                    var imageWidthToHeightRatio by remember { MutableSingle(1f) }
                     AsyncImage(
-                        model = item.user?.avatar?.medium,
+                        model = item.user?.avatar?.large,
                         contentScale = ContentScale.FillHeight,
                         contentDescription = stringResource(
                             R.string.anime_media_details_reviews_user_avatar_content_description
                         ),
+                        onSuccess = { imageWidthToHeightRatio = it.widthToHeightRatio() },
                         modifier = Modifier
                             .heightIn(min = 64.dp)
                             .padding(vertical = 10.dp)
                             .clip(RoundedCornerShape(4.dp))
-                            .clickable { onUserClick(item.user!!.id.toString()) },
+                            .clickable { onUserClick(item.user!!, imageWidthToHeightRatio) },
                     )
 
                     Box(

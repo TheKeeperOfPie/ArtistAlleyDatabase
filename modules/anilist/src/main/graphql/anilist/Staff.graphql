@@ -120,3 +120,34 @@ query StaffDetailsStaffMediaPagination($id: Int!, $page: Int!) {
         }
     }
 }
+
+query StaffSearch(
+    $page: Int,
+    $perPage: Int,
+    $search: String,
+    $isBirthday: Boolean,
+    $sort: [StaffSort],
+) {
+    Page(page: $page, perPage: $perPage) @nonnull {
+        pageInfo @nonnull {
+            hasNextPage
+            total
+        }
+
+        staff(search: $search, isBirthday: $isBirthday, sort: $sort) {
+            ...StaffNavigationData
+            favourites
+            primaryOccupations
+            characters(sort: [FAVOURITES_DESC], perPage: 5) {
+                nodes {
+                    ...CharacterNavigationData
+                }
+            }
+            staffMedia(sort: [TRENDING_DESC], perPage: 5) {
+                nodes {
+                    ...MediaNavigationData
+                }
+            }
+        }
+    }
+}

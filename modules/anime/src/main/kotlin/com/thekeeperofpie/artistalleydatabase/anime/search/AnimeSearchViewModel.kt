@@ -81,6 +81,8 @@ class AnimeSearchViewModel @Inject constructor(
                     SearchType.ANIME,
                     SearchType.MANGA -> PagingData.empty<AnimeSearchEntry.Media<Medium>>(loadStates)
                     SearchType.CHARACTER -> PagingData.empty<AnimeSearchEntry.Character>(loadStates)
+                    SearchType.STAFF -> PagingData.empty<AnimeSearchEntry.Staff>(loadStates)
+                    SearchType.USER -> PagingData.empty<AnimeSearchEntry.User>(loadStates)
                 }.let(::MutableStateFlow)
             }.associate { it }
         }
@@ -150,6 +152,48 @@ class AnimeSearchViewModel @Inject constructor(
             pagingSource = { AnimeSearchCharacterPagingSource(aniListApi, it) },
             id = { it.id },
             entry = { AnimeSearchEntry.Character(it) },
+        )
+
+        collectSearch(
+            searchType = SearchType.STAFF,
+            flow = {
+                combine(
+                    snapshotFlow { query }.debounce(500.milliseconds),
+                    refreshUptimeMillis,
+                ) { query, requestMillis ->
+                    AnimeSearchStaffPagingSource.RefreshParams(
+                        query = query,
+                        requestMillis = requestMillis,
+                        sortOptions = emptyList(),
+                        sortAscending = false,
+                        // TODO: Actually hook up filters
+                    )
+                }
+            },
+            pagingSource = { AnimeSearchStaffPagingSource(aniListApi, it) },
+            id = { it.id },
+            entry = { AnimeSearchEntry.Staff(it) },
+        )
+
+        collectSearch(
+            searchType = SearchType.USER,
+            flow = {
+                combine(
+                    snapshotFlow { query }.debounce(500.milliseconds),
+                    refreshUptimeMillis,
+                ) { query, requestMillis ->
+                    AnimeSearchUserPagingSource.RefreshParams(
+                        query = query,
+                        requestMillis = requestMillis,
+                        sortOptions = emptyList(),
+                        sortAscending = false,
+                        // TODO: Actually hook up filters
+                    )
+                }
+            },
+            pagingSource = { AnimeSearchUserPagingSource(aniListApi, it) },
+            id = { it.id },
+            entry = { AnimeSearchEntry.User(it) },
         )
     }
 
@@ -242,5 +286,7 @@ class AnimeSearchViewModel @Inject constructor(
         ANIME(R.string.anime_search_type_anime),
         MANGA(R.string.anime_search_type_manga),
         CHARACTER(R.string.anime_search_type_character),
+        STAFF(R.string.anime_search_type_staff),
+        USER(R.string.anime_search_type_user),
     }
 }

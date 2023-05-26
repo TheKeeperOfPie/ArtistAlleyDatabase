@@ -6,8 +6,8 @@
     <string name="anime_user_list_search">Search user list…</string>
     <string name="anime_media_banner_image">Media banner image</string>
     <string name="anime_media_cover_image_content_description">Media cover image</string>
-    <string name="anime_media_character_image_content_description">Character image</string>
-    <string name="anime_media_staff_image">Staff image</string>
+    <string name="anime_character_image_content_description">Character image</string>
+    <string name="anime_staff_image_content_description">Staff image</string>
     <string name="anime_media_artist_image">Artist image</string>
     <string name="anime_media_artist_no_image">No artist image</string>
     <string name="anime_media_voice_actor_image">Voice actor image</string>
@@ -68,11 +68,15 @@
     <string name="anime_search_anime">Search anime…</string>
     <string name="anime_search_manga">Search manga…</string>
     <string name="anime_search_characters">Search characters…</string>
+    <string name="anime_search_staff">Search staff…</string>
+    <string name="anime_search_user">Search users…</string>
     <string name="anime_search_clear">Clear</string>
     <string name="anime_search_filter">Filter by type</string>
     <string name="anime_search_type_anime">Anime</string>
     <string name="anime_search_type_manga">Manga</string>
     <string name="anime_search_type_character">Characters</string>
+    <string name="anime_search_type_staff">Staff</string>
+    <string name="anime_search_type_user">Users</string>
 
     <string name="anime_media_filter_status_label">Status</string>
     <string name="anime_media_filter_status_content_description">Status filter expand</string>
@@ -415,6 +419,13 @@
     <string name="anime_user_stats_tab_studios">Studios</string>
     <string name="anime_user_stats_tab_staff">Staff</string>
 
+    <string name="anime_user_image">User image</string>
+    <string name="anime_user_image_long_press_preview">Preview user image</string>
+    <string name="anime_user_sort_id">ID</string>
+    <string name="anime_user_sort_username">Username</string>
+    <string name="anime_user_sort_watched_time">Watched time</string>
+    <string name="anime_user_sort_chapters_read">Chapters read</string>
+
     <string name="anime_media_ignore_title_anime">Ignored anime</string>
     <string name="anime_media_ignore_title_manga">Ignored manga</string>
     <string name="anime_media_ignore_search_anime">Search anime…</string>
@@ -466,4 +477,12 @@
     <string name="anime_staff_details_characters_label">Characters</string>
     <string name="anime_staff_details_media_load_retry">Retry</string>
     <string name="anime_staff_media_year_unknown">TBA</string>
+
+    <string name="anime_staff_sort_id">ID</string>
+    <string name="anime_staff_sort_role">Role</string>
+    <string name="anime_staff_sort_language">Language</string>
+    <string name="anime_staff_sort_favorites">Favorites</string>
+    <string name="anime_staff_image">Staff image</string>
+    <string name="anime_staff_image_long_press_preview">Preview staff image</string>
+    <string name="anime_staff_favorites_icon_content_description">Favorites</string>
 </resources>

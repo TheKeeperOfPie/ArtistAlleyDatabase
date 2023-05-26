@@ -20,6 +20,7 @@ import com.anilist.fragment.CharacterNavigationData
 import com.anilist.fragment.MediaNavigationData
 import com.anilist.fragment.StaffNavigationData
 import com.anilist.fragment.UserFavoriteMediaNode
+import com.anilist.fragment.UserNavigationData
 import com.anilist.type.MediaSeason
 import com.anilist.type.MediaType
 import com.google.accompanist.navigation.animation.composable
@@ -519,9 +520,13 @@ object AnimeNavigator {
                 "&coverImageWidthToHeightRatio=$imageWidthToHeightRatio"
     )
 
-    fun onUserClick(navHostController: NavHostController, userId: String) {
+    fun onUserClick(
+        navHostController: NavHostController,
+        user: UserNavigationData,
+        imageWidthToHeightRatio: Float,
+    ) {
         // TODO: Pass name and image
-        navHostController.navigate("${AnimeNavDestinations.PROFILE.id}?userId=$userId")
+        navHostController.navigate("${AnimeNavDestinations.PROFILE.id}?userId=${user.id}")
     }
 
     fun onUserListClick(
@@ -636,8 +641,8 @@ object AnimeNavigator {
             navHostController?.let { onUserListClick(it, userId, mediaType) }
         }
 
-        fun onUserClick(userId: String) {
-            navHostController?.let { onUserClick(it, userId) }
+        fun onUserClick(userNavigationData: UserNavigationData, imageWidthToHeightRatio: Float) {
+            navHostController?.let { onUserClick(it, userNavigationData, imageWidthToHeightRatio) }
         }
 
         fun onCharacterClick(character: CharacterNavigationData, imageWidthToHeightRatio: Float) {

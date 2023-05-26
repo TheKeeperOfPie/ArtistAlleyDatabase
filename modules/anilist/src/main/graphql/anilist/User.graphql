@@ -186,3 +186,43 @@ fragment UserMediaStatistics on UserStatistics {
         mediaIds
     }
 }
+
+fragment UserNavigationData on User {
+    id
+    avatar {
+        large
+    }
+    name
+}
+
+query UserSearch($page: Int, $perPage: Int, $search: String, $sort: [UserSort]) {
+    Page(page: $page, perPage: $perPage) @nonnull {
+        pageInfo @nonnull {
+            hasNextPage
+            total
+        }
+
+        users(search: $search, sort: $sort) {
+            ...UserNavigationData
+            bannerImage
+            favourites {
+                anime {
+                    edges {
+                        favouriteOrder
+                        node {
+                            ...MediaNavigationData
+                        }
+                    }
+                }
+                manga {
+                    edges {
+                        favouriteOrder
+                        node {
+                            ...MediaNavigationData
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

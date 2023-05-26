@@ -1,7 +1,5 @@
-package com.thekeeperofpie.artistalleydatabase.anime.character
+package com.thekeeperofpie.artistalleydatabase.anime.user
 
-import android.content.Context
-import androidx.annotation.StringRes
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -25,12 +23,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ImageNotSupported
-import androidx.compose.material.icons.filled.PeopleAlt
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.PersonOutline
-import androidx.compose.material.icons.outlined.PeopleAlt
 import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
@@ -47,12 +40,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import coil.size.Dimension
-import com.anilist.CharacterAdvancedSearchQuery.Data.Page.Character
+import com.anilist.UserSearchQuery.Data.Page.User
+import com.anilist.fragment.MediaNavigationData
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.material.placeholder
 import com.google.accompanist.placeholder.material.shimmer
@@ -67,7 +60,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
 
 @OptIn(ExperimentalFoundationApi::class)
-object CharacterListRow {
+object UserListRow {
 
     @Composable
     operator fun invoke(
@@ -85,19 +78,19 @@ object CharacterListRow {
                 .clickable(
                     enabled = true, // TODO: placeholder,
                     onClick = {
-                        navigationCallback.onCharacterClick(
-                            entry.character,
+                        navigationCallback.onUserClick(
+                            entry.user,
                             imageWidthToHeightRatio,
                         )
                     },
                 )
         ) {
             Row(modifier = Modifier.height(IntrinsicSize.Min)) {
-                CharacterImage(
+                UserImage(
                     entry = entry,
                     onClick = {
-                        navigationCallback.onCharacterClick(
-                            entry.character,
+                        navigationCallback.onUserClick(
+                            entry.user,
                             imageWidthToHeightRatio,
                         )
                     },
@@ -111,41 +104,34 @@ object CharacterListRow {
                         .heightIn(min = 180.dp)
                         .padding(bottom = 12.dp)
                 ) {
-                    Row(Modifier.fillMaxWidth()) {
-                        NameText(
-                            entry = entry,
-                            modifier = Modifier
-                                .weight(1f)
-                                .wrapContentHeight(Alignment.Top)
-                        )
-
-                        StatsSection(entry = entry)
-                    }
+                    NameText(
+                        entry = entry,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .wrapContentHeight(Alignment.Top)
+                    )
 
                     Spacer(Modifier.weight(1f))
 
-                    MediaRow(
-                        entry = entry,
-                        navigationCallback = navigationCallback,
-                    )
+                    MediaRow(entry = entry, onMediaClick = navigationCallback::onMediaClick)
                 }
             }
         }
     }
 
     @Composable
-    private fun CharacterImage(
+    private fun UserImage(
         entry: Entry,
-        onClick: () -> Unit,
+        onClick: () -> Unit = {},
         onLongPressImage: () -> Unit,
         colorCalculationState: ColorCalculationState,
         onRatioAvailable: (Float) -> Unit,
     ) {
         AsyncImage(
             model = ImageRequest.Builder(LocalContext.current)
-                .data(entry.character.image?.large)
+                .data(entry.user.avatar?.large)
                 .crossfade(true)
-                .allowHardware(colorCalculationState.hasColor(entry.character.id.toString()))
+                .allowHardware(colorCalculationState.hasColor(entry.user.id.toString()))
                 .size(
                     width = Dimension.Pixels(LocalDensity.current.run { 130.dp.roundToPx() }),
                     height = Dimension.Undefined
@@ -156,7 +142,7 @@ object CharacterListRow {
             onSuccess = {
                 onRatioAvailable(it.widthToHeightRatio())
                 ComposeColorUtils.calculatePalette(
-                    entry.character.id.toString(),
+                    entry.user.id.toString(),
                     it,
                     colorCalculationState,
                 )
@@ -184,7 +170,7 @@ object CharacterListRow {
     @Composable
     private fun NameText(entry: Entry, modifier: Modifier = Modifier) {
         AutoHeightText(
-            text = entry.character.name?.userPreferred ?: "Loading...",
+            text = entry.user.name,
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Black,
             modifier = modifier
@@ -197,50 +183,9 @@ object CharacterListRow {
     }
 
     @Composable
-    private fun StatsSection(
-        entry: Entry,
-    ) {
-        val favorites = entry.character.favourites ?: return
-        val loading = false // TODO: placeholder
-        Column(
-            verticalArrangement = Arrangement.spacedBy(4.dp),
-            horizontalAlignment = Alignment.End,
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp),
-        ) {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .height(24.dp)
-                    .placeholder(
-                        visible = loading,
-                        highlight = PlaceholderHighlight.shimmer(),
-                    ),
-            ) {
-                AutoHeightText(
-                    text = favorites.toString(),
-                    style = MaterialTheme.typography.labelLarge,
-                )
-
-                Icon(
-                    imageVector = when {
-                        favorites > 2000 -> Icons.Filled.PeopleAlt
-                        favorites > 1000 -> Icons.Outlined.PeopleAlt
-                        favorites > 100 -> Icons.Filled.Person
-                        else -> Icons.Filled.PersonOutline
-                    },
-                    contentDescription = stringResource(
-                        R.string.anime_character_favorites_icon_content_description
-                    ),
-                )
-            }
-        }
-    }
-
-    @Composable
     private fun MediaRow(
         entry: Entry,
-        navigationCallback: AnimeNavigator.NavigationCallback,
+        onMediaClick: (MediaNavigationData, imageWidthToHeightRatio: Float) -> Unit
     ) {
         val media = entry.media.takeIf { it.isNotEmpty() } ?: return
         val context = LocalContext.current
@@ -253,72 +198,49 @@ object CharacterListRow {
                 // The parent will clamp the actual width so all content still fits on screen.
                 .size(width = 39393.dp, height = 96.dp)
         ) {
-            if (entry.voiceActor?.image?.large != null) {
-                item(entry.voiceActor.id) {
-                    StaffOrMediaImage(
-                        context = context,
-                        density = density,
-                        image = entry.voiceActor.image?.large,
-                        contentDescriptionTextRes = R.string.anime_staff_image_content_description,
-                        onClick = { ratio ->
-                            navigationCallback.onStaffClick(entry.voiceActor, ratio)
-                        },
-                    )
-                }
-            }
-
             items(media, key = { it.id }) {
-                StaffOrMediaImage(
-                    context = context,
-                    density = density,
-                    image = it.coverImage?.extraLarge,
-                    contentDescriptionTextRes = R.string.anime_media_cover_image_content_description,
-                    onClick = { ratio -> navigationCallback.onMediaClick(it, ratio) },
+                var imageWidthToHeightRatio by remember { mutableStateOf<Float?>(null) }
+                AsyncImage(
+                    model = ImageRequest.Builder(context)
+                        .data(it.coverImage?.extraLarge)
+                        .size(
+                            width = density.run { 64.dp.roundToPx() },
+                            height = density.run { 96.dp.roundToPx() },
+                        )
+                        .crossfade(true)
+                        .build(),
+                    contentScale = ContentScale.Crop,
+                    contentDescription = stringResource(
+                        R.string.anime_media_cover_image_content_description
+                    ),
+                    onSuccess = { imageWidthToHeightRatio = it.widthToHeightRatio() },
+                    modifier = Modifier
+                        .size(width = 64.dp, height = 96.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(MaterialTheme.colorScheme.surfaceColorAtElevation(4.dp))
+                        .clickable { onMediaClick(it, imageWidthToHeightRatio ?: 1f) }
+                        .placeholder(
+                            visible = imageWidthToHeightRatio == null,
+                            highlight = PlaceholderHighlight.shimmer(),
+                        )
                 )
             }
         }
     }
 
-    @Composable
-    private fun StaffOrMediaImage(
-        context: Context,
-        density: Density,
-        image: String?,
-        @StringRes contentDescriptionTextRes: Int,
-        onClick: (imageWidthToHeightRatio: Float) -> Unit,
-    ) {
-        var imageWidthToHeightRatio by remember { mutableStateOf<Float?>(null) }
-        AsyncImage(
-            model = ImageRequest.Builder(context)
-                .data(image)
-                .size(
-                    width = density.run { 64.dp.roundToPx() },
-                    height = density.run { 96.dp.roundToPx() },
-                )
-                .crossfade(true)
-                .build(),
-            contentScale = ContentScale.Crop,
-            contentDescription = stringResource(contentDescriptionTextRes),
-            onSuccess = { imageWidthToHeightRatio = it.widthToHeightRatio() },
-            modifier = Modifier
-                .size(width = 64.dp, height = 96.dp)
-                .clip(RoundedCornerShape(12.dp))
-                .background(MaterialTheme.colorScheme.surfaceColorAtElevation(4.dp))
-                .clickable { onClick(imageWidthToHeightRatio ?: 1f) }
-                .placeholder(
-                    visible = imageWidthToHeightRatio == null,
-                    highlight = PlaceholderHighlight.shimmer(),
-                )
-        )
-    }
+    open class Entry(val user: User) {
+        val anime = user.favourites?.anime?.edges
+            ?.filterNotNull()
+            ?.sortedBy { it.favouriteOrder }
+            ?.mapNotNull { it.node }
+            .orEmpty()
 
-    open class Entry(val character: Character) {
-        val media = character.media?.edges?.mapNotNull { it?.node }.orEmpty().distinctBy { it.id }
-        val voiceActor = character.media?.edges?.filterNotNull()
-            ?.flatMap { it.voiceActors?.filterNotNull().orEmpty() }
-            ?.groupBy { it.languageV2 }
-            ?.let {
-                it["Japanese"]?.firstOrNull() ?: it.entries.firstOrNull()?.value?.firstOrNull()
-            }
+        val manga = user.favourites?.manga?.edges
+            ?.filterNotNull()
+            ?.sortedBy { it.favouriteOrder }
+            ?.mapNotNull { it.node }
+            .orEmpty()
+
+        val media = (anime + manga).distinctBy { it.id }
     }
 }

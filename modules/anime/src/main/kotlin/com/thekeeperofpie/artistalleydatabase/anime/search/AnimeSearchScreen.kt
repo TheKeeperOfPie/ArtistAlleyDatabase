@@ -47,6 +47,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeMediaFilterOptionsBottomPanel
+import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffListRow
+import com.thekeeperofpie.artistalleydatabase.anime.user.UserListRow
 import com.thekeeperofpie.artistalleydatabase.compose.AppBar
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBar
@@ -95,6 +97,10 @@ object AnimeSearchScreen {
                                                     R.string.anime_search_manga
                                                 AnimeSearchViewModel.SearchType.CHARACTER ->
                                                     R.string.anime_search_characters
+                                                AnimeSearchViewModel.SearchType.STAFF ->
+                                                    R.string.anime_search_staff
+                                                AnimeSearchViewModel.SearchType.USER ->
+                                                    R.string.anime_search_user
                                             }
                                         )
                                     )
@@ -218,6 +224,18 @@ object AnimeSearchScreen {
                                             navigationCallback = navigationCallback,
                                         )
                                         is AnimeSearchEntry.Character -> CharacterListRow(
+                                            entry = item,
+                                            onLongPressImage = { /* TODO */ },
+                                            colorCalculationState = colorCalculationState,
+                                            navigationCallback = navigationCallback,
+                                        )
+                                        is AnimeSearchEntry.Staff -> StaffListRow(
+                                            entry = item,
+                                            onLongPressImage = { /* TODO */ },
+                                            colorCalculationState = colorCalculationState,
+                                            navigationCallback = navigationCallback,
+                                        )
+                                        is AnimeSearchEntry.User -> UserListRow(
                                             entry = item,
                                             onLongPressImage = { /* TODO */ },
                                             colorCalculationState = colorCalculationState,

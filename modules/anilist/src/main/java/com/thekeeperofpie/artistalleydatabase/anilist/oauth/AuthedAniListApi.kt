@@ -15,8 +15,10 @@ import com.anilist.SaveMediaEntryEditMutation
 import com.anilist.StaffDetailsCharacterMediaPaginationQuery
 import com.anilist.StaffDetailsQuery
 import com.anilist.StaffDetailsStaffMediaPaginationQuery
+import com.anilist.StaffSearchQuery
 import com.anilist.UserByIdQuery
 import com.anilist.UserMediaListQuery
+import com.anilist.UserSearchQuery
 import com.anilist.type.CharacterSort
 import com.anilist.type.FuzzyDateInput
 import com.anilist.type.MediaFormat
@@ -26,6 +28,8 @@ import com.anilist.type.MediaSort
 import com.anilist.type.MediaSource
 import com.anilist.type.MediaStatus
 import com.anilist.type.MediaType
+import com.anilist.type.StaffSort
+import com.anilist.type.UserSort
 import com.apollographql.apollo3.ApolloClient
 import com.apollographql.apollo3.api.Optional
 import com.apollographql.apollo3.api.Query
@@ -217,8 +221,6 @@ class AuthedAniListApi(
             .page?.media?.filterNotNull()
             .orEmpty()
 
-    suspend fun user(id: String) = query(UserByIdQuery(id.toInt())).user
-
     suspend fun searchCharacters(
         query: String,
         page: Int? = null,
@@ -247,6 +249,31 @@ class AuthedAniListApi(
     suspend fun characterDetails(id: String) = query(CharacterDetailsQuery(id.toInt()))
         .character!!
 
+    suspend fun searchStaff(
+        query: String,
+        page: Int? = null,
+        perPage: Int? = null,
+        isBirthday: Boolean? = null,
+        sort: List<StaffSort>? = null,
+    ): StaffSearchQuery.Data {
+        val sortParam =
+            if (query.isEmpty() && sort?.size == 1 && sort.contains(StaffSort.SEARCH_MATCH)) {
+                // On a default, empty search, sort by FAVOURITES_DESC
+                Optional.Present(listOf(StaffSort.FAVOURITES_DESC))
+            } else {
+                Optional.presentIfNotNull(listOf(StaffSort.SEARCH_MATCH) + sort.orEmpty())
+            }
+        return query(
+            StaffSearchQuery(
+                search = Optional.presentIfNotNull(query.ifEmpty { null }),
+                page = Optional.Present(page),
+                perPage = Optional.Present(perPage),
+                isBirthday = Optional.presentIfNotNull(isBirthday),
+                sort = sortParam,
+            )
+        )
+    }
+
     suspend fun staffDetails(id: String) = query(StaffDetailsQuery(id.toInt())).staff!!
 
     suspend fun staffDetailsCharacterMediaPagination(id: String, page: Int) =
@@ -264,6 +291,31 @@ class AuthedAniListApi(
                 page = page
             )
         ).staff?.staffMedia!!
+
+    suspend fun searchUsers(
+        query: String,
+        page: Int? = null,
+        perPage: Int? = null,
+        sort: List<UserSort>? = null,
+    ): UserSearchQuery.Data {
+        val sortParam =
+            if (query.isEmpty() && sort?.size == 1 && sort.contains(UserSort.SEARCH_MATCH)) {
+                // On a default, empty search, sort by WATCHED_TIME_DESC
+                Optional.Present(listOf(UserSort.WATCHED_TIME_DESC))
+            } else {
+                Optional.presentIfNotNull(listOf(UserSort.SEARCH_MATCH) + sort.orEmpty())
+            }
+        return query(
+            UserSearchQuery(
+                search = Optional.presentIfNotNull(query.ifEmpty { null }),
+                page = Optional.Present(page),
+                perPage = Optional.Present(perPage),
+                sort = sortParam,
+            )
+        )
+    }
+
+    suspend fun user(id: String) = query(UserByIdQuery(id.toInt())).user
 
     private suspend fun <D : Query.Data> query(query: Query<D>) =
         apolloClient.query(query).execute().dataOrThrow()
