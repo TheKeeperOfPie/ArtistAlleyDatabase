@@ -37,9 +37,14 @@
                 <data android:host="anilist.co"/>
                 <data android:path="/"/>
                 <data android:pathAdvancedPattern="/anime/[0-9]+/.*"/>
+                <data android:pathAdvancedPattern="/anime/[0-9]+"/>
+                <data android:pathAdvancedPattern="/manga/[0-9]+"/>
                 <data android:pathAdvancedPattern="/manga/[0-9]+/.*"/>
+                <data android:pathAdvancedPattern="/character/[0-9]+"/>
                 <data android:pathAdvancedPattern="/character/[0-9]+/.*"/>
+                <data android:pathAdvancedPattern="/staff/[0-9]+"/>
                 <data android:pathAdvancedPattern="/staff/[0-9]+/.*"/>
+                <data android:pathAdvancedPattern="/user/[0-9]+"/>
                 <data android:pathAdvancedPattern="/user/[0-9]+/.*"/>
             </intent-filter>
         </activity>

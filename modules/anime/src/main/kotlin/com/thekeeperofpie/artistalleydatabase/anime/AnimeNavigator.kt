@@ -148,7 +148,9 @@ object AnimeNavigator {
                     + "&color={color}"
                     + "&bannerImage={bannerImage}",
             deepLinks = listOf(
+                navDeepLink { uriPattern = "${AniListUtils.ANILIST_BASE_URL}/anime/{mediaId}" },
                 navDeepLink { uriPattern = "${AniListUtils.ANILIST_BASE_URL}/anime/{mediaId}/.*" },
+                navDeepLink { uriPattern = "${AniListUtils.ANILIST_BASE_URL}/manga/{mediaId}" },
                 navDeepLink { uriPattern = "${AniListUtils.ANILIST_BASE_URL}/manga/{mediaId}/.*" },
             ),
             arguments = listOf(
@@ -280,9 +282,14 @@ object AnimeNavigator {
                     + "&name={name}"
                     + "&coverImage={coverImage}"
                     + "&coverImageWidthToHeightRatio={coverImageWidthToHeightRatio}",
-            deepLinks = listOf(navDeepLink {
-                uriPattern = "${AniListUtils.ANILIST_BASE_URL}/character/{characterId}/.*"
-            }),
+            deepLinks = listOf(
+                navDeepLink {
+                    uriPattern = "${AniListUtils.ANILIST_BASE_URL}/character/{characterId}"
+                },
+                navDeepLink {
+                    uriPattern = "${AniListUtils.ANILIST_BASE_URL}/character/{characterId}/.*"
+                },
+            ),
             arguments = listOf(
                 navArgument("characterId") {
                     type = NavType.StringType
@@ -325,9 +332,10 @@ object AnimeNavigator {
                     + "&name={name}"
                     + "&coverImage={coverImage}"
                     + "&coverImageWidthToHeightRatio={coverImageWidthToHeightRatio}",
-            deepLinks = listOf(navDeepLink {
-                uriPattern = "${AniListUtils.ANILIST_BASE_URL}/staff/{staffId}/.*"
-            }),
+            deepLinks = listOf(
+                navDeepLink { uriPattern = "${AniListUtils.ANILIST_BASE_URL}/staff/{staffId}" },
+                navDeepLink { uriPattern = "${AniListUtils.ANILIST_BASE_URL}/staff/{staffId}/.*" },
+            ),
             arguments = listOf(
                 navArgument("staffId") {
                     type = NavType.StringType
@@ -367,9 +375,10 @@ object AnimeNavigator {
         navGraphBuilder.composable(
             route = AnimeNavDestinations.USER.id
                     + "?userId={userId}",
-            deepLinks = listOf(navDeepLink {
-                uriPattern = "${AniListUtils.ANILIST_BASE_URL}/user/{userId}/.*"
-            }),
+            deepLinks = listOf(
+                navDeepLink { uriPattern = "${AniListUtils.ANILIST_BASE_URL}/user/{userId}" },
+                navDeepLink { uriPattern = "${AniListUtils.ANILIST_BASE_URL}/user/{userId}/.*" },
+            ),
             arguments = listOf(
                 navArgument("userId") {
                     type = NavType.StringType
