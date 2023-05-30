@@ -246,7 +246,7 @@ object EntryGrid {
                             model = ImageRequest.Builder(LocalContext.current)
                                 .data(entry.imageUri)
                                 .size(expectedWidth, Dimension.Undefined)
-                                .crossfade(false)
+                                .crossfade(true)
                                 .memoryCacheKey(EntryUtils.getImageCacheKey(entry))
                                 .build(),
                             contentDescription = stringResource(

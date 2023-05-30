@@ -35,6 +35,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.anilist.StaffDetailsQuery.Data.Staff
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.character.DetailsCharacter
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
@@ -45,6 +46,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
 import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
+import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
@@ -185,6 +187,8 @@ object StaffDetailsScreen {
         colorCalculationState: ColorCalculationState,
     ) {
         CoverAndBannerHeader(
+            screenKey = AnimeNavDestinations.STAFF_DETAILS.id,
+            entryId = EntryId("anime_staff", staffId),
             pinnedHeight = 180.dp,
             progress = progress,
             color = color,

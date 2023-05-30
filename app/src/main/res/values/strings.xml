@@ -1,10 +1,6 @@
 <resources>
     <string name="save">Save</string>
     <string name="search">Search</string>
-    <string name="search_clear">Clear search</string>
-    <string name="search_options_collapse">Collapse search options</string>
-    <string name="search_options_expand">Expand search options</string>
-    <string name="search_add_entry">Add new entry</string>
     <string name="error_fail_to_select_image">Failed to select image</string>
     <string name="export_destination">Export destination</string>
     <string name="export">Export</string>

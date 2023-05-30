@@ -11,9 +11,11 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatc
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.milliseconds
 
 @HiltViewModel
 class AnimeCharacterDetailsViewModel @Inject constructor(
@@ -32,9 +34,17 @@ class AnimeCharacterDetailsViewModel @Inject constructor(
         this.characterId = characterId
 
         viewModelScope.launch(CustomDispatchers.IO) {
+            val startTime = System.currentTimeMillis()
             try {
                 val character = aniListApi.characterDetails(characterId)
                 val entry = CharacterDetailsScreen.Entry(character)
+                val endTime = System.currentTimeMillis()
+                val timeDifference = endTime - startTime
+                if (timeDifference < 450) {
+                    // Prevent shared transition from previous screen for lazily loaded content
+                    // TODO: Find a better way to prevent shared transitions for lazy content
+                    delay((450 - timeDifference).milliseconds)
+                }
                 withContext(CustomDispatchers.Main) {
                     this@AnimeCharacterDetailsViewModel.entry = entry
                 }

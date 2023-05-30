@@ -1,10 +1,15 @@
-package com.thekeeperofpie.artistalleydatabase.home
+package com.thekeeperofpie.artistalleydatabase.entry
 
+import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material.icons.Icons
@@ -37,7 +42,6 @@ import androidx.compose.ui.unit.dp
 import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
-import com.thekeeperofpie.artistalleydatabase.R
 import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBar
 import com.thekeeperofpie.artistalleydatabase.compose.LazyStaggeredGrid
 import com.thekeeperofpie.artistalleydatabase.compose.NavMenuIconButton
@@ -46,17 +50,18 @@ import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGrid
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridModel
 import com.thekeeperofpie.artistalleydatabase.entry.search.EntrySearchOption
-import com.thekeeperofpie.artistalleydatabase.navigation.NavDestinations
 import kotlinx.coroutines.flow.emptyFlow
 
 @Suppress("NAME_SHADOWING")
-@OptIn(ExperimentalMaterial3Api::class)
-object HomeScreen {
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+object EntryHomeScreen {
 
     @Composable
     operator fun <GridModel : EntryGridModel> invoke(
+        screenKey: String,
         onClickNav: () -> Unit = {},
-        query: @Composable () -> String = { "" },
+        query: () -> String = { "" },
+        entriesSize: () -> Int,
         onQueryChange: (String) -> Unit = {},
         options: () -> List<EntrySearchOption> = { emptyList() },
         onOptionChange: (EntrySearchOption) -> Unit = {},
@@ -75,6 +80,7 @@ object HomeScreen {
         Chrome(
             onClickNav = onClickNav,
             query = query,
+            entriesSize = entriesSize,
             onQueryChange = onQueryChange,
             showFab = { selectedItems().isEmpty() },
             options = options,
@@ -99,7 +105,7 @@ object HomeScreen {
                 }
             }
             EntryGrid(
-                imageScreenKey = NavDestinations.HOME,
+                imageScreenKey = screenKey,
                 entries = entries,
                 entriesSize = { entries().itemCount.takeIf { query().isNotEmpty() } },
                 selectedItems = selectedItems,
@@ -118,7 +124,8 @@ object HomeScreen {
     @Composable
     private fun Chrome(
         onClickNav: () -> Unit = {},
-        query: @Composable () -> String = { "" },
+        query: () -> String = { "" },
+        entriesSize: () -> Int,
         onQueryChange: (String) -> Unit = {},
         options: () -> List<EntrySearchOption> = { emptyList() },
         onOptionChange: (EntrySearchOption) -> Unit = {},
@@ -136,6 +143,11 @@ object HomeScreen {
                             .wrapContentWidth()
                             .padding(bottom = 8.dp)
                     ) {
+                        val isNotEmpty by remember { derivedStateOf { query().isNotEmpty() } }
+                        BackHandler(isNotEmpty && !WindowInsets.isImeVisible) {
+                            onQueryChange("")
+                        }
+
                         var active by remember { mutableStateOf(false) }
                         DockedSearchBar(
                             query = query(),
@@ -143,16 +155,33 @@ object HomeScreen {
                             active = active,
                             onActiveChange = {},
                             leadingIcon = { NavMenuIconButton(onClickNav) },
-                            placeholder = { Text(stringResource(R.string.search)) },
+                            placeholder = {
+                                val entriesSize = entriesSize()
+                                Text(
+                                    if (entriesSize > 0) {
+                                        stringResource(
+                                            R.string.entry_search_hint_with_entry_count,
+                                            entriesSize(),
+                                        )
+                                    } else {
+                                        stringResource(R.string.entry_search_hint)
+                                    }
+                                )
+                            },
                             trailingIcon = {
                                 Row {
-                                    IconButton(onClick = { onQueryChange("") }) {
-                                        Icon(
-                                            imageVector = Icons.Filled.Clear,
-                                            contentDescription = stringResource(
-                                                R.string.search_clear
-                                            ),
-                                        )
+                                    val showClear by remember {
+                                        derivedStateOf { query().isNotEmpty() }
+                                    }
+                                    AnimatedVisibility(showClear) {
+                                        IconButton(onClick = { onQueryChange("") }) {
+                                            Icon(
+                                                imageVector = Icons.Filled.Clear,
+                                                contentDescription = stringResource(
+                                                    R.string.entry_search_clear
+                                                ),
+                                            )
+                                        }
                                     }
 
                                     IconButton(onClick = { active = !active }) {
@@ -164,9 +193,9 @@ object HomeScreen {
                                             },
                                             contentDescription = stringResource(
                                                 if (active) {
-                                                    R.string.search_options_collapse
+                                                    R.string.entry_search_options_collapse
                                                 } else {
-                                                    R.string.search_options_expand
+                                                    R.string.entry_search_options_expand
                                                 }
                                             ),
                                         )
@@ -217,7 +246,7 @@ object HomeScreen {
                     ) {
                         Icon(
                             Icons.Filled.Add,
-                            contentDescription = stringResource(R.string.search_add_entry)
+                            contentDescription = stringResource(R.string.entry_search_add_entry)
                         )
                     }
                 }

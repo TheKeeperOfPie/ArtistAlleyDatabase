@@ -1,21 +1,20 @@
 package com.thekeeperofpie.artistalleydatabase.anime
 
-import androidx.compose.animation.AnimatedContentTransitionScope
-import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
+import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import androidx.navigation.navDeepLink
 import com.anilist.fragment.CharacterNavigationData
 import com.anilist.fragment.MediaNavigationData
 import com.anilist.fragment.StaffNavigationData
@@ -23,7 +22,6 @@ import com.anilist.fragment.UserFavoriteMediaNode
 import com.anilist.fragment.UserNavigationData
 import com.anilist.type.MediaSeason
 import com.anilist.type.MediaType
-import com.google.accompanist.navigation.animation.composable
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anime.character.AnimeCharacterDetailsViewModel
@@ -48,16 +46,29 @@ import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
 
-@OptIn(ExperimentalAnimationApi::class, ExperimentalMaterial3Api::class)
 object AnimeNavigator {
 
     fun initialize(
         navHostController: NavHostController,
         navGraphBuilder: NavGraphBuilder,
         onClickNav: () -> Unit,
-        onOpenUri: (String) -> Unit,
+        navigationCallback: NavigationCallback,
     ) {
-        val navigationCallback = NavigationCallback(navHostController, onOpenUri)
+        navGraphBuilder.composable(
+            route = AnimeNavDestinations.HOME.id,
+            deepLinks = listOf(navDeepLink { uriPattern = "${AniListUtils.ANILIST_BASE_URL}/" }),
+        ) {
+            val viewModel = hiltViewModel<AnimeHomeViewModel>()
+            val context = LocalContext.current
+            AnimeHomeScreen(
+                onClickNav = onClickNav,
+                needAuth = { viewModel.needAuth },
+                onClickAuth = { viewModel.onClickAuth(context) },
+                onSubmitAuthToken = viewModel::onSubmitAuthToken,
+                navigationCallback = navigationCallback,
+            )
+        }
+
         navGraphBuilder.composable(
             route = AnimeNavDestinations.SEARCH.id
                     + "?title={title}"
@@ -90,7 +101,8 @@ object AnimeNavigator {
         }
 
         navGraphBuilder.composable(
-            route = "userList?userId={userId}" +
+            route = AnimeNavDestinations.USER_LIST.id +
+                    "?userId={userId}" +
                     "&mediaType={mediaType}",
             arguments = listOf(
                 navArgument("userId") {
@@ -115,14 +127,14 @@ object AnimeNavigator {
                 showDrawerHandle = false,
                 navigationCallback = navigationCallback,
                 scrollStateSaver = ScrollStateSaver.fromMap(
-                    "userList",
+                    AnimeNavDestinations.USER_LIST.id,
                     ScrollStateSaver.scrollPositions(),
                 ),
             )
         }
 
         navGraphBuilder.composable(
-            route = "animeDetails"
+            route = AnimeNavDestinations.MEDIA_DETAILS.id
                     + "?mediaId={mediaId}"
                     + "&title={title}"
                     + "&subtitleFormatRes={subtitleFormatRes}"
@@ -135,6 +147,10 @@ object AnimeNavigator {
                     + "&coverImageWidthToHeightRatio={coverImageWidthToHeightRatio}"
                     + "&color={color}"
                     + "&bannerImage={bannerImage}",
+            deepLinks = listOf(
+                navDeepLink { uriPattern = "${AniListUtils.ANILIST_BASE_URL}/anime/{mediaId}/.*" },
+                navDeepLink { uriPattern = "${AniListUtils.ANILIST_BASE_URL}/manga/{mediaId}/.*" },
+            ),
             arguments = listOf(
                 navArgument("mediaId") {
                     type = NavType.StringType
@@ -157,15 +173,6 @@ object AnimeNavigator {
                     type = NavType.StringType
                     nullable = true
                 }
-            },
-            popEnterTransition = { EnterTransition.None },
-            enterTransition = {
-                slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up)
-            },
-            exitTransition = {
-                slideOutOfContainer(
-                    AnimatedContentTransitionScope.SlideDirection.Down
-                )
             },
         ) {
             val arguments = it.arguments!!
@@ -268,11 +275,14 @@ object AnimeNavigator {
         }
 
         navGraphBuilder.composable(
-            route = "characterDetails"
+            route = AnimeNavDestinations.CHARACTER_DETAILS.id
                     + "?characterId={characterId}"
                     + "&name={name}"
                     + "&coverImage={coverImage}"
                     + "&coverImageWidthToHeightRatio={coverImageWidthToHeightRatio}",
+            deepLinks = listOf(navDeepLink {
+                uriPattern = "${AniListUtils.ANILIST_BASE_URL}/character/{characterId}/.*"
+            }),
             arguments = listOf(
                 navArgument("characterId") {
                     type = NavType.StringType
@@ -287,15 +297,6 @@ object AnimeNavigator {
                     type = NavType.StringType
                     nullable = true
                 }
-            },
-            popEnterTransition = { EnterTransition.None },
-            enterTransition = {
-                slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up)
-            },
-            exitTransition = {
-                slideOutOfContainer(
-                    AnimatedContentTransitionScope.SlideDirection.Down
-                )
             },
         ) {
             val arguments = it.arguments!!
@@ -319,11 +320,14 @@ object AnimeNavigator {
         }
 
         navGraphBuilder.composable(
-            route = "staffDetails"
+            route = AnimeNavDestinations.STAFF_DETAILS.id
                     + "?staffId={staffId}"
                     + "&name={name}"
                     + "&coverImage={coverImage}"
                     + "&coverImageWidthToHeightRatio={coverImageWidthToHeightRatio}",
+            deepLinks = listOf(navDeepLink {
+                uriPattern = "${AniListUtils.ANILIST_BASE_URL}/staff/{staffId}/.*"
+            }),
             arguments = listOf(
                 navArgument("staffId") {
                     type = NavType.StringType
@@ -338,15 +342,6 @@ object AnimeNavigator {
                     type = NavType.StringType
                     nullable = true
                 }
-            },
-            popEnterTransition = { EnterTransition.None },
-            enterTransition = {
-                slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up)
-            },
-            exitTransition = {
-                slideOutOfContainer(
-                    AnimatedContentTransitionScope.SlideDirection.Down
-                )
             },
         ) {
             val arguments = it.arguments!!
@@ -370,23 +365,17 @@ object AnimeNavigator {
         }
 
         navGraphBuilder.composable(
-            route = AnimeNavDestinations.PROFILE.id
+            route = AnimeNavDestinations.USER.id
                     + "?userId={userId}",
+            deepLinks = listOf(navDeepLink {
+                uriPattern = "${AniListUtils.ANILIST_BASE_URL}/user/{userId}/.*"
+            }),
             arguments = listOf(
                 navArgument("userId") {
                     type = NavType.StringType
                     nullable = true
                 },
             ),
-            popEnterTransition = { EnterTransition.None },
-            enterTransition = {
-                slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up)
-            },
-            exitTransition = {
-                slideOutOfContainer(
-                    AnimatedContentTransitionScope.SlideDirection.Down
-                )
-            },
         ) {
             val userId = it.arguments?.getString("userId")
             UserScreen(
@@ -396,7 +385,7 @@ object AnimeNavigator {
         }
 
         navGraphBuilder.composable(
-            route = "ignored"
+            route = AnimeNavDestinations.IGNORED.id
                     + "?mediaType={mediaType}",
             arguments = listOf(
                 navArgument("mediaType") {
@@ -404,14 +393,6 @@ object AnimeNavigator {
                     nullable = true
                 },
             ),
-            enterTransition = {
-                slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up)
-            },
-            exitTransition = {
-                slideOutOfContainer(
-                    AnimatedContentTransitionScope.SlideDirection.Down
-                )
-            },
         ) {
             // TODO: Ignored list not actually split by anime and manga
             val mediaType = it.arguments?.getString("mediaType")
@@ -445,7 +426,8 @@ object AnimeNavigator {
         imageWidthToHeightRatio: Float,
     ) =
         navHostController.navigate(
-            "animeDetails?mediaId=${entry.id!!.valueId}" +
+            AnimeNavDestinations.MEDIA_DETAILS.id +
+                    "?mediaId=${entry.id!!.valueId}" +
                     "&title=${entry.title}" +
                     "&subtitleFormatRes=${entry.subtitleFormatRes}" +
                     "&subtitleStatusRes=${entry.subtitleStatusRes}" +
@@ -464,7 +446,8 @@ object AnimeNavigator {
         media: UserFavoriteMediaNode,
         imageWidthToHeightRatio: Float,
     ) = navHostController.navigate(
-        "animeDetails?mediaId=${media.id}" +
+        AnimeNavDestinations.MEDIA_DETAILS.id +
+                "?mediaId=${media.id}" +
                 "&title=${media.title?.userPreferred}" +
                 "&coverImage=${media.coverImage?.extraLarge}" +
                 "&coverImageWidthToHeightRatio=$imageWidthToHeightRatio" +
@@ -476,7 +459,8 @@ object AnimeNavigator {
         media: MediaNavigationData,
         imageWidthToHeightRatio: Float,
     ) = navHostController.navigate(
-        "animeDetails?mediaId=${media.id}" +
+        AnimeNavDestinations.MEDIA_DETAILS.id +
+                "?mediaId=${media.id}" +
                 "&title=${media.title?.userPreferred}" +
                 "&coverImage=${media.coverImage?.extraLarge}" +
                 "&coverImageWidthToHeightRatio=$imageWidthToHeightRatio"
@@ -489,7 +473,7 @@ object AnimeNavigator {
         image: String?,
         imageWidthToHeightRatio: Float,
     ) = navHostController.navigate(
-        "animeDetails" +
+        AnimeNavDestinations.MEDIA_DETAILS.id +
                 "?mediaId=$mediaId" +
                 "&title=$title" +
                 "&coverImage=$image" +
@@ -501,7 +485,7 @@ object AnimeNavigator {
         character: CharacterNavigationData,
         imageWidthToHeightRatio: Float,
     ) = navHostController.navigate(
-        "characterDetails" +
+        AnimeNavDestinations.CHARACTER_DETAILS.id +
                 "?characterId=${character.id}" +
                 "&name=${character.name?.userPreferred}" +
                 "&coverImage=${character.image?.large}" +
@@ -513,7 +497,7 @@ object AnimeNavigator {
         character: StaffNavigationData,
         imageWidthToHeightRatio: Float,
     ) = navHostController.navigate(
-        "staffDetails" +
+        AnimeNavDestinations.STAFF_DETAILS.id +
                 "?staffId=${character.id}" +
                 "&name=${character.name?.userPreferred}" +
                 "&coverImage=${character.image?.large}" +
@@ -526,7 +510,7 @@ object AnimeNavigator {
         imageWidthToHeightRatio: Float,
     ) {
         // TODO: Pass name and image
-        navHostController.navigate("${AnimeNavDestinations.PROFILE.id}?userId=${user.id}")
+        navHostController.navigate("${AnimeNavDestinations.USER.id}?userId=${user.id}")
     }
 
     fun onUserListClick(
@@ -535,7 +519,7 @@ object AnimeNavigator {
         mediaType: MediaType?
     ) {
         navHostController.navigate(
-            "userList" +
+            AnimeNavDestinations.USER_LIST.id +
                     "?userId=$userId" +
                     "&mediaType=${mediaType?.rawValue}"
         )
@@ -668,7 +652,7 @@ object AnimeNavigator {
         }
 
         fun onIgnoreListOpen(mediaType: MediaType?) {
-            navHostController?.navigate("ignored?mediaType=${mediaType?.rawValue}")
+            navHostController?.navigate(AnimeNavDestinations.IGNORED.id + "?mediaType=${mediaType?.rawValue}")
         }
     }
 }

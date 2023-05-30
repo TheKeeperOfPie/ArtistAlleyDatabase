@@ -1,6 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime
 
-import android.app.Activity
+import android.content.Context
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -30,9 +30,7 @@ class AnimeHomeViewModel @Inject constructor(
         }
     }
 
-    fun onClickAuth(activity: Activity) {
-        oAuthStore.launchAuthRequest(activity)
-    }
+    fun onClickAuth(context: Context) = oAuthStore.launchAuthRequest(context)
 
     fun onSubmitAuthToken(token: String) {
         viewModelScope.launch(CustomDispatchers.IO) {

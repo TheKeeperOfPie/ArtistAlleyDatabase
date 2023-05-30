@@ -42,7 +42,7 @@ class DatabaseSyncWorker @AssistedInject constructor(
                 setClass(appContext, MainActivity::class.java)
                 putExtra(
                     MainActivity.STARTING_NAV_DESTINATION,
-                    NavDrawerItems.Browse.id,
+                    NavDrawerItems.BROWSE.id,
                 )
             },
             PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE

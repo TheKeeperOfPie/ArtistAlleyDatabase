@@ -24,6 +24,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.anilist.UserByIdQuery.Data.User
 import com.anilist.fragment.UserMediaStatistics
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils
 import com.thekeeperofpie.artistalleydatabase.anime.staff.DetailsStaff
@@ -33,6 +34,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.AutoResizeHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.compose.CollapsingToolbar
 import com.thekeeperofpie.artistalleydatabase.compose.NestedScrollSplitter
+import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
@@ -54,6 +56,8 @@ object AniListUserScreen {
                 ) {
                     val user = viewModel.entry?.user
                     CoverAndBannerHeader(
+                        screenKey = AnimeNavDestinations.USER.id,
+                        entryId = user?.id?.let { EntryId("anime_user", it.toString()) },
                         progress = it,
                         coverImage = { user?.avatar?.large },
                         bannerImage = { user?.bannerImage },

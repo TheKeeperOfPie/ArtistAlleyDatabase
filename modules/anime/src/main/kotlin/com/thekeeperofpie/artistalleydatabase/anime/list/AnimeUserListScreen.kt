@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.anilist.UserMediaListQuery.Data.MediaListCollection.List.Entry.Media
 import com.anilist.type.MediaListStatus
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
@@ -71,7 +72,8 @@ object AnimeUserListScreen {
         AnimeMediaFilterOptionsBottomPanel(
             topBar = {
                 EnterAlwaysTopAppBar(scrollBehavior = scrollBehavior) {
-                    BackHandler(viewModel.query.isNotEmpty() && !WindowInsets.isImeVisible) {
+                    val isNotEmpty by remember { derivedStateOf { viewModel.query.isNotEmpty() } }
+                    BackHandler(isNotEmpty && !WindowInsets.isImeVisible) {
                         viewModel.query = ""
                     }
                     StaticSearchBar(
@@ -168,6 +170,7 @@ object AnimeUserListScreen {
                                     when (it) {
                                         is Entry.Header -> Header(it)
                                         is Entry.Item -> AnimeMediaListRow(
+                                            screenKey = AnimeNavDestinations.USER_LIST.id,
                                             entry = it,
                                             onTagLongClick = viewModel::onTagLongClick,
                                             onLongPressImage = onLongPressImage,

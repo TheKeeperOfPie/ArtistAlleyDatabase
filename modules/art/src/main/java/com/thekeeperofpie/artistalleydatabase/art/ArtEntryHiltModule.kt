@@ -24,7 +24,6 @@ import com.thekeeperofpie.artistalleydatabase.art.persistence.ArtSyncer
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseSelectionNavigator
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseTabViewModel
 import com.thekeeperofpie.artistalleydatabase.data.DataConverter
-import com.thekeeperofpie.artistalleydatabase.entry.EntryNavigator
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -167,11 +166,4 @@ object ArtEntryHiltModule {
         artEntryNavigator: ArtEntryNavigator
     ): BrowseSelectionNavigator =
         artEntryNavigator
-
-    @IntoSet
-    @Singleton
-    @Provides
-    fun bindArtEntryNavigatorAsEntryNavigator(
-        artEntryNavigator: ArtEntryNavigator
-    ): EntryNavigator = artEntryNavigator
 }

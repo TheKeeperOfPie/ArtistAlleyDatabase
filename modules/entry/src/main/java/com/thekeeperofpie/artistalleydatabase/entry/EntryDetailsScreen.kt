@@ -76,6 +76,7 @@ object EntryDetailsScreen {
     @OptIn(ExperimentalFoundationApi::class)
     @Composable
     operator fun invoke(
+        screenKey: String,
         onClickBack: () -> Unit,
         imageState: () -> ImageState,
         onImageClickOpen: (index: Int) -> Unit = {},
@@ -139,6 +140,7 @@ object EntryDetailsScreen {
                             .verticalScroll(rememberScrollState())
                     ) {
                         HeaderImage(
+                            screenKey = screenKey,
                             imageState = imageState,
                             loading = areSectionsLoading,
                             onImageClickOpen = onImageClickOpen,
@@ -301,6 +303,7 @@ object EntryDetailsScreen {
     @OptIn(ExperimentalFoundationApi::class)
     @Composable
     private fun HeaderImage(
+        screenKey: String,
         imageState: () -> ImageState,
         loading: () -> Boolean = { false },
         onImageClickOpen: (index: Int) -> Unit = {},
@@ -325,7 +328,7 @@ object EntryDetailsScreen {
                 if (uri != null) {
                     SharedElement(
                         key = "${it.entryId?.scopedId}_image",
-                        screenKey = "artEntryDetails",
+                        screenKey = screenKey,
                         // Try to disable the fade animation
                         transitionSpec = SharedElementsTransitionSpec(
                             fadeMode = FadeMode.In,

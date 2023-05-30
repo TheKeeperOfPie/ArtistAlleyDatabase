@@ -35,4 +35,11 @@
     <string name="entry_add_image_content_description">Click to add image</string>
     <string name="entry_confirm_exit_title">Exit?</string>
     <string name="entry_confirm_exit_description">There are unsaved changes</string>
+
+    <string name="entry_search_hint">Search…</string>
+    <string name="entry_search_hint_with_entry_count">Search %1$d entries…</string>
+    <string name="entry_search_clear">Clear search</string>
+    <string name="entry_search_options_collapse">Collapse search options</string>
+    <string name="entry_search_options_expand">Expand search options</string>
+    <string name="entry_search_add_entry">Add new entry</string>
 </resources>

@@ -15,7 +15,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -41,17 +40,19 @@ import com.thekeeperofpie.artistalleydatabase.art.grid.ArtEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.compose.ButtonFooter
 import com.thekeeperofpie.artistalleydatabase.compose.LazyStaggeredGrid.rememberLazyStaggeredGridState
 import com.thekeeperofpie.artistalleydatabase.compose.bottomBorder
+import com.thekeeperofpie.artistalleydatabase.entry.EntryStringR
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGrid
 import com.thekeeperofpie.artistalleydatabase.entry.search.EntrySearchOption
 import kotlinx.coroutines.flow.emptyFlow
 
-@OptIn(ExperimentalMaterial3Api::class)
+@Suppress("NAME_SHADOWING")
 object ChooserScreen {
 
     @Composable
     operator fun invoke(
         columnCount: Int = 2,
         query: @Composable () -> String = { "" },
+        entriesSize: () -> Int,
         onQueryChange: (String) -> Unit = {},
         options: () -> List<EntrySearchOption> = { emptyList() },
         onOptionChange: (EntrySearchOption) -> Unit = {},
@@ -65,6 +66,7 @@ object ChooserScreen {
     ) {
         Chrome(
             query = query,
+            entriesSize = entriesSize,
             onQueryChange = onQueryChange,
             options = options,
             onOptionChange = onOptionChange,
@@ -96,6 +98,7 @@ object ChooserScreen {
     @Composable
     private fun Chrome(
         query: @Composable () -> String = { "" },
+        entriesSize: () -> Int,
         onQueryChange: (String) -> Unit = {},
         options: () -> List<EntrySearchOption> = { emptyList() },
         onOptionChange: (EntrySearchOption) -> Unit = {},
@@ -117,7 +120,19 @@ object ChooserScreen {
                 ) {
                     TextField(
                         query(),
-                        placeholder = { Text(stringResource(id = R.string.search)) },
+                        placeholder = {
+                            val entriesSize = entriesSize()
+                            Text(
+                                if (entriesSize > 0) {
+                                    stringResource(
+                                        EntryStringR.entry_search_hint_with_entry_count,
+                                        entriesSize(),
+                                    )
+                                } else {
+                                    stringResource(EntryStringR.entry_search_hint)
+                                }
+                            )
+                        },
                         onValueChange = onQueryChange,
                         trailingIcon = {
                             if (options().isNotEmpty()) {

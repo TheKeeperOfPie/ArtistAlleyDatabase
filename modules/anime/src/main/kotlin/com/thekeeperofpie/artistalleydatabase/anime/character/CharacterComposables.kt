@@ -47,6 +47,7 @@ import coil.compose.AsyncImagePainter
 import coil.request.ImageRequest
 import com.anilist.fragment.CharacterNavigationData
 import com.anilist.fragment.StaffNavigationData
+import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
 import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
 import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
@@ -57,10 +58,12 @@ import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.optionalClickable
 import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
+import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 
 @Composable
 fun CharacterCard(
-    id: String,
+    screenKey: String,
+    id: EntryId,
     image: String?,
     colorCalculationState: ColorCalculationState,
     onClick: () -> Unit,
@@ -72,7 +75,7 @@ fun CharacterCard(
     content: @Composable (textColor: Color) -> Unit,
 ) {
     val defaultTextColor = MaterialTheme.typography.bodyMedium.color
-    val colors = colorCalculationState.colorMap[id]
+    val colors = colorCalculationState.colorMap[id.scopedId]
 
     val animationProgress by animateIntAsState(
         if (colors == null) 0 else 255,
@@ -115,36 +118,41 @@ fun CharacterCard(
     ) {
         Box {
             val density = LocalDensity.current
-            AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(image)
-                    .crossfade(true)
-                    .allowHardware(colorCalculationState.hasColor(id))
-                    .size(
-                        width = density.run { width.roundToPx() },
-                        height = density.run { (width * 1.5f).roundToPx() },
-                    )
-                    .build(),
-                contentScale = ContentScale.Crop,
-                fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
-                contentDescription = stringResource(
-                    R.string.anime_character_image_content_description
-                ),
-                onSuccess = {
-                    onImageSuccess(it)
-                    ComposeColorUtils.calculatePalette(
-                        id = id,
-                        success = it,
-                        colorCalculationState = colorCalculationState,
-                        heightStartThreshold = 3 / 4f,
-                        // Only capture left 3/5ths to ignore
-                        // part covered by voice actor
-                        widthEndThreshold = if (innerImage == null) 1f else 3 / 5f,
-                        selectMaxPopulation = true,
-                    )
-                },
-                modifier = Modifier.size(width = width, height = width * 1.5f)
-            )
+            SharedElement(
+                key = "${id.scopedId}_image",
+                screenKey = screenKey,
+            ) {
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(image)
+                        .crossfade(true)
+                        .allowHardware(colorCalculationState.hasColor(id.scopedId))
+                        .size(
+                            width = density.run { width.roundToPx() },
+                            height = density.run { (width * 1.5f).roundToPx() },
+                        )
+                        .build(),
+                    contentScale = ContentScale.Crop,
+                    fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
+                    contentDescription = stringResource(
+                        R.string.anime_character_image_content_description
+                    ),
+                    onSuccess = {
+                        onImageSuccess(it)
+                        ComposeColorUtils.calculatePalette(
+                            id = id.scopedId,
+                            success = it,
+                            colorCalculationState = colorCalculationState,
+                            heightStartThreshold = 3 / 4f,
+                            // Only capture left 3/5ths to ignore
+                            // part covered by voice actor
+                            widthEndThreshold = if (innerImage == null) 1f else 3 / 5f,
+                            selectMaxPopulation = true,
+                        )
+                    },
+                    modifier = Modifier.size(width = width, height = width * 1.5f)
+                )
+            }
 
             if (innerImage != null) {
                 var showInnerImage by remember { mutableStateOf(true) }
@@ -193,6 +201,7 @@ fun CharacterCard(
 }
 
 fun LazyListScope.charactersSection(
+    screenKey: String,
     @StringRes titleRes: Int,
     characters: List<DetailsCharacter>,
     onCharacterClick: (CharacterNavigationData, imageWidthToHeightRatio: Float) -> Unit,
@@ -216,7 +225,8 @@ fun LazyListScope.charactersSection(
                 val voiceActor = (it.languageToVoiceActor["Japanese"]
                     ?: it.languageToVoiceActor.values.firstOrNull())
                 CharacterCard(
-                    id = it.id,
+                    screenKey = screenKey,
+                    id = EntryId("anime_character", it.id),
                     image = it.image,
                     colorCalculationState = colorCalculationState,
                     onClick = {

@@ -6,7 +6,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.withResumed
@@ -36,9 +35,9 @@ class ChooserActivity : ComponentActivity() {
         val allowMultiple = intent.extras?.getBoolean(Intent.EXTRA_ALLOW_MULTIPLE) ?: false
 
         setContent {
-            ArtistAlleyDatabaseTheme {
+            val navController = rememberNavController()
+            ArtistAlleyDatabaseTheme(navController) {
                 Surface {
-                    val navController = rememberNavController()
                     SharedElementsRoot {
                         NavHost(
                             navController = navController,
@@ -47,9 +46,8 @@ class ChooserActivity : ComponentActivity() {
                             composable(NavDestinations.HOME) {
                                 val viewModel = hiltViewModel<ChooserViewModel>()
                                 ChooserScreen(
-                                    query = {
-                                        viewModel.query.collectAsState().value?.query.orEmpty()
-                                    },
+                                    query = { viewModel.query?.query.orEmpty() },
+                                    entriesSize = { viewModel.entriesSize },
                                     onQueryChange = viewModel::onQuery,
                                     options = { viewModel.options },
                                     onOptionChange = { viewModel.refreshQuery() },

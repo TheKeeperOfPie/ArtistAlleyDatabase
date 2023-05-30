@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime
 
+import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.togetherWith
@@ -8,6 +9,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.LibraryBooks
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -23,6 +29,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.anilist.type.MediaType
@@ -47,12 +54,12 @@ object AnimeHomeScreen {
         onErrorDismiss: () -> Unit = { },
     ) {
         var selectedScreen by rememberSaveable(stateSaver = object :
-            Saver<AnimeNavDestinations, String> {
+            Saver<NavDestinations, String> {
             override fun restore(value: String) =
-                AnimeNavDestinations.values().find { it.id == value } ?: AnimeNavDestinations.SEARCH
+                NavDestinations.values().find { it.id == value } ?: NavDestinations.SEARCH
 
-            override fun SaverScope.save(value: AnimeNavDestinations) = value.id
-        }) { mutableStateOf(AnimeNavDestinations.SEARCH) }
+            override fun SaverScope.save(value: NavDestinations) = value.id
+        }) { mutableStateOf(NavDestinations.SEARCH) }
 
         val scrollBehavior = navigationBarEnterAlwaysScrollBehavior()
         val bottomNavigationState = BottomNavigationState(scrollBehavior)
@@ -68,8 +75,8 @@ object AnimeHomeScreen {
             },
             bottomBar = {
                 EnterAlwaysNavigationBar(scrollBehavior = scrollBehavior) {
-                    AnimeNavDestinations.values().forEach { destination ->
-                        val onLongClick = if (destination == AnimeNavDestinations.ANIME) {
+                    NavDestinations.values().forEach { destination ->
+                        val onLongClick = if (destination == NavDestinations.ANIME) {
                             {
                                 navigationCallback.onIgnoreListOpen(MediaType.ANIME)
                             }
@@ -87,7 +94,6 @@ object AnimeHomeScreen {
                 }
             },
         ) {
-
             val scrollPositions = ScrollStateSaver.scrollPositions()
             Box(
                 contentAlignment = Alignment.Center,
@@ -110,42 +116,42 @@ object AnimeHomeScreen {
                         label = "Anime home destination transition",
                     ) {
                         when (it) {
-                            AnimeNavDestinations.ANIME -> AnimeNavigator.UserListScreen(
+                            NavDestinations.ANIME -> AnimeNavigator.UserListScreen(
                                 userId = null,
                                 mediaType = MediaType.ANIME,
                                 onClickNav = onClickNav,
                                 showDrawerHandle = true,
                                 navigationCallback = navigationCallback,
                                 scrollStateSaver = ScrollStateSaver.fromMap(
-                                    AnimeNavDestinations.ANIME.id,
+                                    NavDestinations.ANIME.id,
                                     scrollPositions
                                 ),
                                 bottomNavigationState = bottomNavigationState,
                             )
-                            AnimeNavDestinations.MANGA -> AnimeNavigator.UserListScreen(
+                            NavDestinations.MANGA -> AnimeNavigator.UserListScreen(
                                 userId = null,
                                 mediaType = MediaType.MANGA,
                                 onClickNav = onClickNav,
                                 showDrawerHandle = true,
                                 navigationCallback = navigationCallback,
                                 scrollStateSaver = ScrollStateSaver.fromMap(
-                                    AnimeNavDestinations.MANGA.id,
+                                    NavDestinations.MANGA.id,
                                     scrollPositions
                                 ),
                                 bottomNavigationState = bottomNavigationState,
                             )
-                            AnimeNavDestinations.SEARCH -> AnimeNavigator.SearchScreen(
+                            NavDestinations.SEARCH -> AnimeNavigator.SearchScreen(
                                 title = null,
                                 tagId = null,
                                 onClickNav = onClickNav,
                                 navigationCallback = navigationCallback,
                                 scrollStateSaver = ScrollStateSaver.fromMap(
-                                    AnimeNavDestinations.SEARCH.id,
+                                    NavDestinations.SEARCH.id,
                                     scrollPositions
                                 ),
                                 bottomNavigationState = bottomNavigationState,
                             )
-                            AnimeNavDestinations.PROFILE -> AnimeNavigator.UserScreen(
+                            NavDestinations.PROFILE -> AnimeNavigator.UserScreen(
                                 userId = null,
                                 navigationCallback = navigationCallback,
                                 bottomNavigationState = bottomNavigationState,
@@ -183,5 +189,16 @@ object AnimeHomeScreen {
                 Text(stringResource(UtilsStringR.confirm))
             }
         }
+    }
+
+    private enum class NavDestinations(
+        val id: String,
+        val icon: ImageVector,
+        @StringRes val textRes: Int,
+    ) {
+        ANIME("anime_list", Icons.Filled.VideoLibrary, R.string.anime_screen_anime),
+        MANGA("manga_list", Icons.Filled.LibraryBooks, R.string.anime_screen_manga),
+        SEARCH("anime_search", Icons.Filled.Search, R.string.anime_screen_search),
+        PROFILE("anime_profile", Icons.Filled.Person, R.string.anime_screen_profile),
     }
 }

@@ -13,6 +13,7 @@ import androidx.sqlite.db.SupportSQLiteQuery
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.cds.search.CdSearchQuery
 import com.thekeeperofpie.artistalleydatabase.data.Series
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.yield
 
 @Dao
@@ -112,6 +113,14 @@ interface CdEntryDao {
         """
     )
     fun getEntriesSize(): Int
+
+    @Query(
+        """
+        SELECT COUNT(*)
+        FROM cd_entries
+        """
+    )
+    fun getEntriesSizeFlow(): Flow<Int>
 
     @Transaction
     suspend fun iterateEntries(

@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.ImageNotSupported
@@ -41,6 +42,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
@@ -59,6 +61,7 @@ import com.anilist.type.MediaSeason
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.material.placeholder
 import com.google.accompanist.placeholder.material.shimmer
+import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
 import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
 import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
@@ -77,6 +80,7 @@ object AnimeMediaListRow {
 
     @Composable
     operator fun invoke(
+        screenKey: String,
         entry: Entry,
         modifier: Modifier = Modifier,
         label: (@Composable () -> Unit)? = null,
@@ -101,6 +105,7 @@ object AnimeMediaListRow {
         ) {
             Row(modifier = Modifier.height(IntrinsicSize.Min)) {
                 CoverImage(
+                    screenKey = screenKey,
                     entry = entry,
                     onClick = { navigationCallback.onMediaClick(entry, imageWidthToHeightRatio) },
                     onLongPressImage = onLongPressImage,
@@ -140,50 +145,58 @@ object AnimeMediaListRow {
 
     @Composable
     private fun CoverImage(
+        screenKey: String,
         entry: Entry,
         onClick: (Entry) -> Unit = {},
         onLongPressImage: (entry: Entry) -> Unit,
         colorCalculationState: ColorCalculationState,
         onRatioAvailable: (Float) -> Unit,
     ) {
-        AsyncImage(
-            model = ImageRequest.Builder(LocalContext.current)
-                .data(entry.image)
-                .crossfade(true)
-                .allowHardware(colorCalculationState.hasColor(entry.id?.valueId.orEmpty()))
-                .size(
-                    width = Dimension.Pixels(LocalDensity.current.run { 130.dp.roundToPx() }),
-                    height = Dimension.Undefined
-                )
-                .build(),
-            contentScale = ContentScale.Crop,
-            fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
-            onSuccess = {
-                onRatioAvailable(it.widthToHeightRatio())
-                ComposeColorUtils.calculatePalette(
-                    entry.id?.valueId.orEmpty(),
-                    it,
-                    colorCalculationState,
-                )
-            },
-            contentDescription = stringResource(R.string.anime_media_cover_image_content_description),
-            modifier = Modifier
-                .background(MaterialTheme.colorScheme.surfaceVariant)
-                .fillMaxHeight()
-                .heightIn(min = 180.dp)
-                .width(130.dp)
-                .placeholder(
-                    visible = entry == Entry.Loading,
-                    highlight = PlaceholderHighlight.shimmer(),
-                )
-                .combinedClickable(
-                    onClick = { onClick(entry) },
-                    onLongClick = { onLongPressImage(entry) },
-                    onLongClickLabel = stringResource(
-                        R.string.anime_media_cover_image_long_press_preview
-                    ),
-                )
-        )
+        SharedElement(
+            key = "${entry.id?.scopedId}_image",
+            screenKey = screenKey,
+        ) {
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(entry.image)
+                    .crossfade(true)
+                    .allowHardware(colorCalculationState.hasColor(entry.id?.valueId.orEmpty()))
+                    .size(
+                        width = Dimension.Pixels(LocalDensity.current.run { 130.dp.roundToPx() }),
+                        height = Dimension.Undefined
+                    )
+                    .build(),
+                contentScale = ContentScale.Crop,
+                fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
+                onSuccess = {
+                    onRatioAvailable(it.widthToHeightRatio())
+                    ComposeColorUtils.calculatePalette(
+                        entry.id?.valueId.orEmpty(),
+                        it,
+                        colorCalculationState,
+                    )
+                },
+                contentDescription = stringResource(R.string.anime_media_cover_image_content_description),
+                modifier = Modifier
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                    .fillMaxHeight()
+                    .heightIn(min = 180.dp)
+                    .width(130.dp)
+                    .placeholder(
+                        visible = entry == Entry.Loading,
+                        highlight = PlaceholderHighlight.shimmer(),
+                    )
+                    .combinedClickable(
+                        onClick = { onClick(entry) },
+                        onLongClick = { onLongPressImage(entry) },
+                        onLongClickLabel = stringResource(
+                            R.string.anime_media_cover_image_long_press_preview
+                        ),
+                    )
+                    // Clip to match card so that shared element animation keeps rounded corner
+                    .clip(RoundedCornerShape(topStart = 12.dp, bottomStart = 12.dp))
+            )
+        }
     }
 
     @Composable
@@ -414,7 +427,7 @@ object AnimeMediaListRow {
         val media: MediaType,
         ignored: Boolean = false
     ) : Entry {
-        override val id = EntryId("item", media.id.toString())
+        override val id = EntryId("anime_media", media.id.toString())
         override val image = media.coverImage?.extraLarge
         override val imageBanner = media.bannerImage
         override val color = media.coverImage?.color?.let(ComposeColorUtils::hexToColor)
@@ -439,7 +452,7 @@ object AnimeMediaListRow {
 @Preview
 @Composable
 private fun Preview() {
-    AnimeMediaListRow(object : AnimeMediaListRow.Entry {
+    AnimeMediaListRow(screenKey = "Preview", object : AnimeMediaListRow.Entry {
         override val image = null
         override val title =
             "Tsundere Akuyaku Reijou Liselotte to Jikkyou no Endou-kun to Kaisetsu no Kobayashi-san"

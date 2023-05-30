@@ -53,6 +53,7 @@ import com.anilist.fragment.UserFavoriteMediaNode
 import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
 import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
 import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.charactersSection
@@ -129,6 +130,7 @@ object UserOverviewScreen {
             )
 
             charactersSection(
+                screenKey = AnimeNavDestinations.USER.id,
                 titleRes = R.string.anime_user_favorite_characters_label,
                 characters = entry.characters,
                 onCharacterClick = navigationCallback::onCharacterClick,
@@ -138,6 +140,7 @@ object UserOverviewScreen {
             )
 
             staffSection(
+                screenKey = AnimeNavDestinations.USER.id,
                 titleRes = R.string.anime_user_favorite_staff_label,
                 staff = entry.staff,
                 onStaffClick = navigationCallback::onStaffClick,

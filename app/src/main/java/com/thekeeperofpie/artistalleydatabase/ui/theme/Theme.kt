@@ -21,11 +21,13 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.UriHandler
 import androidx.core.view.WindowCompat
+import androidx.navigation.NavHostController
 import com.thekeeperofpie.artistalleydatabase.CustomApplication
 import com.thekeeperofpie.artistalleydatabase.R
 
 @Composable
 fun ArtistAlleyDatabaseTheme(
+    navHostController: NavHostController,
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {
@@ -51,7 +53,12 @@ fun ArtistAlleyDatabaseTheme(
     val uriHandler = object : UriHandler {
         override fun openUri(uri: String) {
             try {
-                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(uri)))
+                val deepLinkUri = Uri.parse(uri)
+                if (navHostController.graph.hasDeepLink(deepLinkUri)) {
+                    navHostController.navigate(deepLinkUri)
+                } else {
+                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(uri)))
+                }
             } catch (e: Exception) {
                 Log.d(CustomApplication.TAG, "Error launching URI $uri", e)
                 Toast.makeText(context, R.string.error_launching_generic_uri, Toast.LENGTH_LONG)

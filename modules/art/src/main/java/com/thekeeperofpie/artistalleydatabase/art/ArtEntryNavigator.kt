@@ -12,25 +12,71 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.art.browse.selection.ArtBrowseSelectionScreen
 import com.thekeeperofpie.artistalleydatabase.art.browse.selection.ArtBrowseSelectionViewModel
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryColumn
+import com.thekeeperofpie.artistalleydatabase.art.search.ArtSearchViewModel
 import com.thekeeperofpie.artistalleydatabase.art.utils.ArtEntryUtils
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseEntryModel
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseSelectionNavigator
 import com.thekeeperofpie.artistalleydatabase.compose.AddBackPressInvokeFirst
 import com.thekeeperofpie.artistalleydatabase.compose.BackPressStageHandler
+import com.thekeeperofpie.artistalleydatabase.compose.LazyStaggeredGrid
 import com.thekeeperofpie.artistalleydatabase.entry.EntryDetailsScreen
+import com.thekeeperofpie.artistalleydatabase.entry.EntryHomeScreen
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
-import com.thekeeperofpie.artistalleydatabase.entry.EntryNavigator
 import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils.entryDetailsComposable
 import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils.navToEntryDetails
 
-class ArtEntryNavigator : EntryNavigator, BrowseSelectionNavigator {
+class ArtEntryNavigator : BrowseSelectionNavigator {
 
-    override fun initialize(
+    fun initialize(
+        onClickNav: () -> Unit,
         navHostController: NavHostController,
-        navGraphBuilder: NavGraphBuilder
+        navGraphBuilder: NavGraphBuilder,
     ) {
+        navGraphBuilder.composable(ArtNavDestinations.HOME.id) {
+            val viewModel = hiltViewModel<ArtSearchViewModel>()
+            val lazyStaggeredGridState =
+                LazyStaggeredGrid.rememberLazyStaggeredGridState(columnCount = 2)
+            EntryHomeScreen(
+                screenKey = ArtNavDestinations.HOME.id,
+                onClickNav = onClickNav,
+                query = { viewModel.query?.query.orEmpty() },
+                entriesSize = { viewModel.entriesSize },
+                onQueryChange = viewModel::onQuery,
+                options = { viewModel.options },
+                onOptionChange = { viewModel.refreshQuery() },
+                entries = { viewModel.results.collectAsLazyPagingItems() },
+                selectedItems = { viewModel.selectedEntries.keys },
+                onClickAddFab = {
+                    navHostController.navToEntryDetails(
+                        route = ArtNavDestinations.ENTRY_DETAILS.id,
+                        emptyList(),
+                    )
+                },
+                onClickEntry = { index, entry ->
+                    if (viewModel.selectedEntries.isNotEmpty()) {
+                        viewModel.selectEntry(index, entry)
+                    } else {
+                        navHostController.navToEntryDetails(
+                            route = ArtNavDestinations.ENTRY_DETAILS.id,
+                            listOf(entry.id.valueId)
+                        )
+                    }
+                },
+                onLongClickEntry = viewModel::selectEntry,
+                onClickClear = viewModel::clearSelected,
+                onClickEdit = {
+                    navHostController.navToEntryDetails(
+                        ArtNavDestinations.ENTRY_DETAILS.id,
+                        viewModel.selectedEntries.values.map { it.id.valueId }
+                    )
+                },
+                onConfirmDelete = viewModel::deleteSelected,
+                lazyStaggeredGridState = lazyStaggeredGridState,
+            )
+        }
+
         navGraphBuilder.composable(
-            "artEntrySelection" +
+            ArtNavDestinations.BROWSE_SELECTION.id +
                     "?queryType={queryType}" +
                     "&title={title}" +
                     "&queryId={queryId}" +
@@ -75,7 +121,7 @@ class ArtEntryNavigator : EntryNavigator, BrowseSelectionNavigator {
                         viewModel.selectEntry(index, entry)
                     } else {
                         navHostController.navToEntryDetails(
-                            "artEntryDetails",
+                            ArtNavDestinations.ENTRY_DETAILS.id,
                             listOf(entry.id.valueId)
                         )
                     }
@@ -84,7 +130,7 @@ class ArtEntryNavigator : EntryNavigator, BrowseSelectionNavigator {
                 onClickClear = viewModel::clearSelected,
                 onClickEdit = {
                     navHostController.navToEntryDetails(
-                        "artEntryDetails",
+                        ArtNavDestinations.ENTRY_DETAILS.id,
                         viewModel.selectedEntries.values.map { it.id.valueId }
                     )
                 },
@@ -92,7 +138,7 @@ class ArtEntryNavigator : EntryNavigator, BrowseSelectionNavigator {
             )
         }
 
-        navGraphBuilder.entryDetailsComposable(route = "artEntryDetails") { entryIds ->
+        navGraphBuilder.entryDetailsComposable(route = ArtNavDestinations.ENTRY_DETAILS.id) { entryIds ->
             val viewModel = hiltViewModel<ArtEntryDetailsViewModel>()
                 .apply { initialize(entryIds.map { EntryId(ArtEntryUtils.SCOPED_ID_TYPE, it) }) }
 
@@ -105,6 +151,7 @@ class ArtEntryNavigator : EntryNavigator, BrowseSelectionNavigator {
                     ?.onBackPressedDispatcher
 
                 EntryDetailsScreen(
+                    screenKey = ArtNavDestinations.ENTRY_DETAILS.id,
                     onClickBack = { navHostController.popBackStack() },
                     imageState = { viewModel.entryImageController.imageState },
                     onImageClickOpen = {
@@ -136,7 +183,7 @@ class ArtEntryNavigator : EntryNavigator, BrowseSelectionNavigator {
             "&queryString=${query.rightOrNull()}"
         }
         navHostController.navigate(
-            "artEntrySelection" +
+            ArtNavDestinations.BROWSE_SELECTION.id +
                     "?queryType=${entry.queryType}" +
                     "&title=${entry.text}" +
                     queryParam

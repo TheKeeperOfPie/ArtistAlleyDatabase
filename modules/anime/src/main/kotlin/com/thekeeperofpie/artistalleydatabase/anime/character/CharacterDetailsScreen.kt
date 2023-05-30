@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.anilist.CharacterDetailsQuery.Data.Character
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
@@ -64,6 +65,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
 import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.fadingEdgeBottom
 import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
+import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 
 @OptIn(ExperimentalMaterial3Api::class)
 object CharacterDetailsScreen {
@@ -150,6 +152,8 @@ object CharacterDetailsScreen {
         colorCalculationState: ColorCalculationState,
     ) {
         CoverAndBannerHeader(
+            screenKey = AnimeNavDestinations.CHARACTER_DETAILS.id,
+            entryId = EntryId("anime_character", characterId),
             pinnedHeight = 180.dp,
             progress = progress,
             color = color,
@@ -226,6 +230,7 @@ object CharacterDetailsScreen {
         )
 
         staffSection(
+            screenKey = AnimeNavDestinations.CHARACTER_DETAILS.id,
             titleRes = R.string.anime_character_details_voice_actors_label,
             staff = entry.voiceActors,
             onStaffClick = navigationCallback::onStaffClick,
@@ -412,6 +417,7 @@ object CharacterDetailsScreen {
         onTagLongClick: (String) -> Unit,
     ) {
         mediaListSection(
+            screenKey = AnimeNavDestinations.CHARACTER_DETAILS.id,
             titleRes = R.string.anime_character_details_media_label,
             values = entry.media,
             valueToEntry = { it },

@@ -90,4 +90,6 @@ open class ArtSearchViewModel @Inject constructor(
                     ArtEntryGridModel.buildFromEntry(application, appJson, it)
                 }
             }
+
+    override fun entriesSize() = artEntryDao.getEntriesSizeFlow()
 }

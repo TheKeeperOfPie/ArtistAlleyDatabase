@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.charactersSection
@@ -45,6 +46,7 @@ object StaffOverviewScreen {
 
             // TODO: Use full width UI that scrolls vertically?
             charactersSection(
+                screenKey = AnimeNavDestinations.STAFF_DETAILS.id,
                 titleRes = R.string.anime_staff_details_characters_label,
                 characters = entry.characters,
                 onCharacterClick = navigationCallback::onCharacterClick,

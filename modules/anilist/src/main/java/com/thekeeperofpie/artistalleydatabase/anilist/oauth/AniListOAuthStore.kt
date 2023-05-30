@@ -1,8 +1,8 @@
 package com.thekeeperofpie.artistalleydatabase.anilist.oauth
 
-import android.app.Activity
 import android.app.Application
 import android.content.ComponentName
+import android.content.Context
 import android.content.pm.PackageManager
 import android.net.Uri
 import androidx.browser.customtabs.CustomTabsIntent
@@ -68,11 +68,11 @@ class AniListOAuthStore(
         }
     }
 
-    fun launchAuthRequest(activity: Activity) {
+    fun launchAuthRequest(context: Context) {
         setShareTargetEnabled(application, true)
         CustomTabsIntent.Builder()
             .build()
-            .launchUrl(activity, Uri.parse(ANILIST_OAUTH_URL))
+            .launchUrl(context, Uri.parse(ANILIST_OAUTH_URL))
     }
 
     suspend fun storeAuthTokenResult(token: String) {

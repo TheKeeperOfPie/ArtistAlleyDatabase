@@ -30,6 +30,7 @@ import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
@@ -56,7 +57,8 @@ object AnimeIgnoreScreen {
         AnimeMediaFilterOptionsBottomPanel(
             topBar = {
                 EnterAlwaysTopAppBar(scrollBehavior = scrollBehavior) {
-                    BackHandler(viewModel.query.isNotEmpty() && !WindowInsets.isImeVisible) {
+                    val isNotEmpty by remember { derivedStateOf { viewModel.query.isNotEmpty() } }
+                    BackHandler(isNotEmpty && !WindowInsets.isImeVisible) {
                         viewModel.query = ""
                     }
                     StaticSearchBar(
@@ -127,6 +129,7 @@ object AnimeIgnoreScreen {
                                 ) { index ->
                                     when (val item = content[index]) {
                                         is AnimeMediaListRow.MediaEntry<*> -> AnimeMediaListRow(
+                                            screenKey = AnimeNavDestinations.IGNORED.id,
                                             entry = item,
                                             onLongClick = viewModel::onMediaLongClick,
                                             onTagLongClick = viewModel::onTagLongClick,
@@ -134,7 +137,10 @@ object AnimeIgnoreScreen {
                                             colorCalculationState = colorCalculationState,
                                             navigationCallback = navigationCallback,
                                         )
-                                        null -> AnimeMediaListRow(AnimeMediaListRow.Entry.Loading)
+                                        null -> AnimeMediaListRow(
+                                            screenKey = AnimeNavDestinations.IGNORED.id,
+                                            AnimeMediaListRow.Entry.Loading,
+                                        )
                                     }
                                 }
 

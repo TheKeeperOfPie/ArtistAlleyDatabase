@@ -58,6 +58,7 @@ import coil.compose.AsyncImage
 import coil.compose.AsyncImagePainter
 import coil.request.ImageRequest
 import coil.size.Dimension
+import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.android_utils.AnimationUtils
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.compose.AccelerateEasing
@@ -66,10 +67,13 @@ import com.thekeeperofpie.artistalleydatabase.compose.VerticalDivider
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.compose.fadingEdgeBottom
 import com.thekeeperofpie.artistalleydatabase.compose.optionalClickable
+import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 import de.charlex.compose.HtmlText
 
 @Composable
 internal fun CoverAndBannerHeader(
+    screenKey: String,
+    entryId: EntryId?,
     coverImage: @Composable () -> String?,
     bannerImage: @Composable () -> String? = { null },
     pinnedHeight: Dp,
@@ -138,42 +142,47 @@ internal fun CoverAndBannerHeader(
                     .padding(start = 16.dp, top = lerp(100.dp, 10.dp, progress), bottom = 10.dp)
                     .height(lerp(coverSize, coverSize - 76.dp, progress))
             ) {
-                ElevatedCard {
-                    var success by remember { mutableStateOf(false) }
-                    AsyncImage(
-                        model = ImageRequest.Builder(LocalContext.current)
-                            .data(coverImage())
-                            .crossfade(true)
-                            .size(
-                                width = Dimension.Undefined,
-                                height = Dimension.Pixels(
-                                    LocalDensity.current.run { coverSize.roundToPx() }
-                                ),
-                            )
-                            .build(),
-                        contentScale = ContentScale.FillHeight,
-                        error = rememberVectorPainter(Icons.Filled.ImageNotSupported),
-                        fallback = null,
-                        onSuccess = {
-                            success = true
-                            coverImageOnSuccess(it)
-                        },
-                        contentDescription = stringResource(R.string.anime_media_cover_image_content_description),
-                        modifier = Modifier
-                            .conditionally(
-                                coverImageWidthToHeightRatio == 1f,
-                                Modifier::animateContentSize
-                            )
-                            .height(coverSize)
-                            .run {
-                                if (success) {
-                                    wrapContentWidth()
-                                } else if (coverImageWidthToHeightRatio != 1f) {
-                                    width(coverSize * coverImageWidthToHeightRatio)
-                                } else this
-                            }
-                            .widthIn(max = coverSize)
-                    )
+                SharedElement(
+                    key = "${entryId?.scopedId}_image",
+                    screenKey = screenKey,
+                ) {
+                    ElevatedCard {
+                        var success by remember { mutableStateOf(false) }
+                        AsyncImage(
+                            model = ImageRequest.Builder(LocalContext.current)
+                                .data(coverImage())
+                                .crossfade(true)
+                                .size(
+                                    width = Dimension.Undefined,
+                                    height = Dimension.Pixels(
+                                        LocalDensity.current.run { coverSize.roundToPx() }
+                                    ),
+                                )
+                                .build(),
+                            contentScale = ContentScale.FillHeight,
+                            error = rememberVectorPainter(Icons.Filled.ImageNotSupported),
+                            fallback = null,
+                            onSuccess = {
+                                success = true
+                                coverImageOnSuccess(it)
+                            },
+                            contentDescription = stringResource(R.string.anime_media_cover_image_content_description),
+                            modifier = Modifier
+                                .conditionally(
+                                    coverImageWidthToHeightRatio == 1f,
+                                    Modifier::animateContentSize
+                                )
+                                .height(coverSize)
+                                .run {
+                                    if (success) {
+                                        wrapContentWidth()
+                                    } else if (coverImageWidthToHeightRatio != 1f) {
+                                        width(coverSize * coverImageWidthToHeightRatio)
+                                    } else this
+                                }
+                                .widthIn(max = coverSize)
+                        )
+                    }
                 }
 
                 Column(

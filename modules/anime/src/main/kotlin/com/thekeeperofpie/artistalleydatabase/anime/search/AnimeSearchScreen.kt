@@ -41,6 +41,7 @@ import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
 import com.anilist.MediaAdvancedSearchQuery.Data.Page.Medium
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterListRow
@@ -79,7 +80,8 @@ object AnimeSearchScreen {
             topBar = {
                 if (isRoot) {
                     EnterAlwaysTopAppBar(scrollBehavior = scrollBehavior) {
-                        BackHandler(viewModel.query.isNotEmpty() && !WindowInsets.isImeVisible) {
+                        val isNotEmpty by remember { derivedStateOf { viewModel.query.isNotEmpty() } }
+                        BackHandler(isNotEmpty && !WindowInsets.isImeVisible) {
                             viewModel.query = ""
                         }
                         Column {
@@ -216,6 +218,7 @@ object AnimeSearchScreen {
                                 ) { index ->
                                     when (val item = content[index]) {
                                         is AnimeSearchEntry.Media<*> -> AnimeMediaListRow(
+                                            screenKey = AnimeNavDestinations.SEARCH.id,
                                             entry = item,
                                             onLongClick = viewModel::onMediaLongClick,
                                             onTagLongClick = viewModel::onTagLongClick,
@@ -243,7 +246,10 @@ object AnimeSearchScreen {
                                         )
 
                                         // TODO: Separated placeholder types
-                                        null -> AnimeMediaListRow(AnimeMediaListRow.Entry.Loading)
+                                        null -> AnimeMediaListRow(
+                                            screenKey = AnimeNavDestinations.SEARCH.id,
+                                            AnimeMediaListRow.Entry.Loading,
+                                        )
                                     }
                                 }
 

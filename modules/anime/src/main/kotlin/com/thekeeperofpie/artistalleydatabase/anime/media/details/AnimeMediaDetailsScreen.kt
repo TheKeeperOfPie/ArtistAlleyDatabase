@@ -122,6 +122,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
 import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils
@@ -272,6 +273,7 @@ object AnimeMediaDetailsScreen {
                     scrollBehavior = scrollBehavior,
                 ) {
                     Header(
+                        mediaId = viewModel.mediaId,
                         entry = entry,
                         progress = it,
                         color = color,
@@ -493,6 +495,7 @@ object AnimeMediaDetailsScreen {
         )
 
         charactersSection(
+            screenKey = AnimeNavDestinations.MEDIA_DETAILS.id + "_characters",
             titleRes = R.string.anime_media_details_characters_label,
             characters = entry.characters,
             onCharacterClick = navigationCallback::onCharacterClick,
@@ -521,6 +524,7 @@ object AnimeMediaDetailsScreen {
         cdsSection(viewModel.cdEntries)
 
         staffSection(
+            screenKey = AnimeNavDestinations.MEDIA_DETAILS.id + "_staff",
             titleRes = R.string.anime_media_details_staff_label,
             staff = entry.staff,
             onStaffClick = navigationCallback::onStaffClick,
@@ -574,6 +578,7 @@ object AnimeMediaDetailsScreen {
 
     @Composable
     private fun Header(
+        mediaId: String,
         entry: @Composable () -> Entry?,
         progress: Float,
         color: () -> Color?,
@@ -589,6 +594,8 @@ object AnimeMediaDetailsScreen {
         val entry = entry()
         var preferredTitle by remember { mutableStateOf<Int?>(null) }
         CoverAndBannerHeader(
+            screenKey = AnimeNavDestinations.MEDIA_DETAILS.id,
+            entryId = EntryId("anime_media", mediaId),
             pinnedHeight = 180.dp,
             progress = progress,
             color = color,
@@ -704,6 +711,7 @@ object AnimeMediaDetailsScreen {
         navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
         mediaListSection(
+            screenKey = AnimeNavDestinations.MEDIA_DETAILS.id + "_relations",
             titleRes = R.string.anime_media_details_relations_label,
             values = entry.relations,
             valueToEntry = { it.entry },
@@ -1211,7 +1219,7 @@ object AnimeMediaDetailsScreen {
                 itemsIndexed(cdEntries) { index, cdEntry ->
                     ElevatedCard {
                         EntryGrid.Entry(
-                            imageScreenKey = "anime_details",
+                            imageScreenKey = AnimeNavDestinations.MEDIA_DETAILS.id  + "_cds",
                             expectedWidth = width,
                             index = index,
                             entry = cdEntry,
@@ -1231,6 +1239,7 @@ object AnimeMediaDetailsScreen {
         onTagLongClick: (String) -> Unit,
     ) {
         mediaListSection(
+            screenKey = AnimeNavDestinations.MEDIA_DETAILS.id + "_recommendations",
             titleRes = R.string.anime_media_details_recommendations_label,
             values = entry.recommendations,
             valueToEntry = { it.entry },

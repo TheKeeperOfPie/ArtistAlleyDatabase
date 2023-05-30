@@ -14,23 +14,69 @@ import com.thekeeperofpie.artistalleydatabase.browse.BrowseSelectionNavigator
 import com.thekeeperofpie.artistalleydatabase.cds.browse.selection.CdBrowseSelectionScreen
 import com.thekeeperofpie.artistalleydatabase.cds.browse.selection.CdBrowseSelectionViewModel
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryColumn
+import com.thekeeperofpie.artistalleydatabase.cds.search.CdSearchViewModel
 import com.thekeeperofpie.artistalleydatabase.cds.utils.CdEntryUtils
 import com.thekeeperofpie.artistalleydatabase.compose.AddBackPressInvokeFirst
 import com.thekeeperofpie.artistalleydatabase.compose.BackPressStageHandler
+import com.thekeeperofpie.artistalleydatabase.compose.LazyStaggeredGrid
 import com.thekeeperofpie.artistalleydatabase.entry.EntryDetailsScreen
+import com.thekeeperofpie.artistalleydatabase.entry.EntryHomeScreen
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
-import com.thekeeperofpie.artistalleydatabase.entry.EntryNavigator
 import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils.entryDetailsComposable
 import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils.navToEntryDetails
 
-class CdEntryNavigator : EntryNavigator, BrowseSelectionNavigator {
+class CdEntryNavigator : BrowseSelectionNavigator {
 
-    override fun initialize(
+    fun initialize(
+        onClickNav: () -> Unit,
         navHostController: NavHostController,
         navGraphBuilder: NavGraphBuilder
     ) {
+        navGraphBuilder.composable(CdNavDestinations.HOME.id) {
+            val viewModel = hiltViewModel<CdSearchViewModel>()
+            val lazyStaggeredGridState =
+                LazyStaggeredGrid.rememberLazyStaggeredGridState(columnCount = 2)
+            EntryHomeScreen(
+                screenKey = CdNavDestinations.HOME.id,
+                onClickNav = onClickNav,
+                query = { viewModel.query?.query.orEmpty() },
+                entriesSize = { viewModel.entriesSize },
+                onQueryChange = viewModel::onQuery,
+                options = { viewModel.options },
+                onOptionChange = { viewModel.refreshQuery() },
+                entries = { viewModel.results.collectAsLazyPagingItems() },
+                selectedItems = { viewModel.selectedEntries.keys },
+                onClickAddFab = {
+                    navHostController.navToEntryDetails(
+                        route = CdNavDestinations.ENTRY_DETAILS.id,
+                        emptyList(),
+                    )
+                },
+                onClickEntry = { index, entry ->
+                    if (viewModel.selectedEntries.isNotEmpty()) {
+                        viewModel.selectEntry(index, entry)
+                    } else {
+                        navHostController.navToEntryDetails(
+                            route = CdNavDestinations.ENTRY_DETAILS.id,
+                            listOf(entry.id.valueId)
+                        )
+                    }
+                },
+                onLongClickEntry = viewModel::selectEntry,
+                onClickClear = viewModel::clearSelected,
+                onClickEdit = {
+                    navHostController.navToEntryDetails(
+                        CdNavDestinations.ENTRY_DETAILS.id,
+                        viewModel.selectedEntries.values.map { it.id.valueId }
+                    )
+                },
+                onConfirmDelete = viewModel::deleteSelected,
+                lazyStaggeredGridState = lazyStaggeredGridState,
+            )
+        }
+
         navGraphBuilder.composable(
-            "cdEntrySelection" +
+            CdNavDestinations.BROWSE_SELECTION.id +
                     "?queryType={queryType}" +
                     "&title={title}" +
                     "&queryId={queryId}" +
@@ -75,7 +121,7 @@ class CdEntryNavigator : EntryNavigator, BrowseSelectionNavigator {
                         viewModel.selectEntry(index, entry)
                     } else {
                         navHostController.navToEntryDetails(
-                            "cdEntryDetails",
+                            CdNavDestinations.ENTRY_DETAILS.id,
                             listOf(entry.id.valueId)
                         )
                     }
@@ -84,7 +130,7 @@ class CdEntryNavigator : EntryNavigator, BrowseSelectionNavigator {
                 onClickClear = viewModel::clearSelected,
                 onClickEdit = {
                     navHostController.navToEntryDetails(
-                        "cdEntryDetails",
+                        CdNavDestinations.ENTRY_DETAILS.id,
                         viewModel.selectedEntries.values.map { it.id.valueId }
                     )
                 },
@@ -92,7 +138,7 @@ class CdEntryNavigator : EntryNavigator, BrowseSelectionNavigator {
             )
         }
 
-        navGraphBuilder.entryDetailsComposable("cdEntryDetails") { entryIds ->
+        navGraphBuilder.entryDetailsComposable(CdNavDestinations.ENTRY_DETAILS.id) { entryIds ->
             val viewModel = hiltViewModel<CdEntryDetailsViewModel>()
                 .apply { initialize(entryIds.map { EntryId(CdEntryUtils.SCOPED_ID_TYPE, it) }) }
 
@@ -105,6 +151,7 @@ class CdEntryNavigator : EntryNavigator, BrowseSelectionNavigator {
                     ?.onBackPressedDispatcher
 
                 EntryDetailsScreen(
+                    screenKey = CdNavDestinations.ENTRY_DETAILS.id,
                     onClickBack = { navHostController.popBackStack() },
                     imageState = { viewModel.entryImageController.imageState },
                     onImageClickOpen = {
@@ -135,7 +182,7 @@ class CdEntryNavigator : EntryNavigator, BrowseSelectionNavigator {
             "&queryString=${query.rightOrNull()}"
         }
         navHostController.navigate(
-            "cdEntrySelection" +
+            CdNavDestinations.BROWSE_SELECTION.id +
                     "?queryType=${entry.queryType}" +
                     "&title=${entry.text}" +
                     queryParam

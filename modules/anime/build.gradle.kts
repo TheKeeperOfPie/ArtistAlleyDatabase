@@ -33,7 +33,6 @@ dependencies {
     implementation(libs.coil.compose)
     implementation(libs.material.icons.extended)
     implementation(libs.accompanist.placeholder.material)
-    implementation(libs.accompanist.navigation.animation)
 
     implementation(libs.hilt.navigation.compose)
 
@@ -48,4 +47,6 @@ dependencies {
     implementation(libs.media3.exoplayer.rtsp)
     implementation(libs.media3.ui)
     implementation(libs.androidyoutubeplayer)
+
+    implementation(group = "", name = "shared-elements-0.1.0-20221204.093513-11", ext = "aar")
 }

@@ -24,12 +24,14 @@ import androidx.compose.ui.unit.dp
 import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
 import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
 import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterCard
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
+import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 
 @OptIn(ExperimentalMaterial3Api::class)
 object StaffStaffScreen {
@@ -67,7 +69,8 @@ object StaffStaffScreen {
                             var imageWidthToHeightRatio by remember { MutableSingle(1f) }
                             var innerImageWidthToHeightRatio by remember { MutableSingle(1f) }
                             CharacterCard(
-                                id = it.id,
+                                screenKey = AnimeNavDestinations.STAFF_DETAILS.id,
+                                id = EntryId("anime_media", it.id),
                                 image = it.media.coverImage?.extraLarge,
                                 colorCalculationState = colorCalculationState,
                                 innerImage = it.character?.image?.large,

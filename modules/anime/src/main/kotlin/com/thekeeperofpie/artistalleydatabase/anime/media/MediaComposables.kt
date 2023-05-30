@@ -11,6 +11,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.listSection
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 
 fun <T> LazyListScope.mediaListSection(
+    screenKey: String,
     @StringRes titleRes: Int,
     values: Collection<T>,
     valueToEntry: (T) -> AnimeMediaListRow.Entry,
@@ -30,6 +31,7 @@ fun <T> LazyListScope.mediaListSection(
 ) { item, paddingBottom ->
     val entry = valueToEntry(item)
     AnimeMediaListRow(
+        screenKey = screenKey,
         entry = entry,
         label = if (label == null) null else {
             { label(item) }

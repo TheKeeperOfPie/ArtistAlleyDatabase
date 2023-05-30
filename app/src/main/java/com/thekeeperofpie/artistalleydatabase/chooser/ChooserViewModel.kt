@@ -56,6 +56,8 @@ class ChooserViewModel @Inject constructor(
         }
     }
 
+    override fun entriesSize() = artEntryDao.getEntriesSizeFlow()
+
     private fun getImageUriAndType(
         appPackageName: String,
         entry: ArtEntryGridModel

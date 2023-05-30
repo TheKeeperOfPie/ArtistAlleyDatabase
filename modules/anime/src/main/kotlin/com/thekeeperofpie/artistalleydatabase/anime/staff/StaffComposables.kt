@@ -23,8 +23,10 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
+import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 
 fun LazyListScope.staffSection(
+    screenKey: String,
     @StringRes titleRes: Int,
     staff: List<DetailsStaff>,
     onStaffClick: (StaffNavigationData, imageWidthToHeightRatio: Float) -> Unit,
@@ -42,7 +44,8 @@ fun LazyListScope.staffSection(
             items(staff, { it.id }) {
                 var imageWidthToHeightRatio by remember { MutableSingle(1f) }
                 CharacterCard(
-                    id = it.id,
+                    screenKey = screenKey,
+                    id = EntryId("anime_staff", it.id),
                     image = it.image,
                     colorCalculationState = colorCalculationState,
                     onClick = { onStaffClick(it.staff, imageWidthToHeightRatio) },
