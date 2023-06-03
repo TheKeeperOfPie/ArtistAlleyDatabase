@@ -46,11 +46,6 @@ Instructions assume Windows 11 environment using the latest Android Studio Canar
 2. Get a copy of any local dependencies and place it into `libs`:
    - SNAPSHOT version, so can't use stable version code for dependency verification.  
    ```https://s01.oss.sonatype.org/content/repositories/snapshots/com/mxalbert/sharedelements/shared-elements/0.1.0-SNAPSHOT/shared-elements-0.1.0-20221204.093513-11.aar```
-   - Cronet and android-youtube-player, somehow fails dependency verification with an infinite loop
-   - during Studio Gradle sync, just use AARs instead.   
-   ```https://maven.google.com/web/index.html#org.chromium.net:cronet-embedded:108.5359.79```  
-   ```https://maven.google.com/web/index.html#org.chromium.net:cronet-common:108.5359.79```  
-   ```https://github.com/PierfrancescoSoffritti/android-youtube-player/releases/tag/12.0.0```  
 3. Generate an AniList API client by following the API instructions [here](https://anilist.gitbook.io/anilist-apiv2-docs/overview/oauth/getting-started#using-oauth)
 4. Create `/modules/anilist/local.properties` and insert the client ID/secret as properties:
     ```

@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 repositories {
     mavenCentral()
     google()
@@ -106,6 +108,15 @@ configurations.all {
         all {
             // Choose the real runtime variant (testImplementation from explanation above)
             select(candidates.find { it.variantName == "_testFixtures" } ?: candidates.first())
+        }
+    }
+}
+
+// The KSP jvmTarget isn't set correctly, so fix it up here
+afterEvaluate {
+    tasks.withType(KotlinCompile::class).forEach {
+        it.kotlinOptions {
+            jvmTarget = "18"
         }
     }
 }

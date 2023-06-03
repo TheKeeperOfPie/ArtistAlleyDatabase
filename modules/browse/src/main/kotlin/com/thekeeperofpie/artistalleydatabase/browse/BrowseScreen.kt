@@ -32,7 +32,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.paging.compose.LazyPagingItems
-import androidx.paging.compose.items
+import androidx.paging.compose.itemContentType
+import androidx.paging.compose.itemKey
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.compose.AppBar
 import com.thekeeperofpie.artistalleydatabase.entry.EntryImage
@@ -105,12 +106,17 @@ object BrowseScreen {
                             )
                         }
                     } else if (content is Either.Right) {
-                        items(content.value) {
+                        items(
+                            count = content.value.itemCount,
+                            key = content.value.itemKey { it.queryIdOrString },
+                            contentType = content.value.itemContentType { "BrowseEntryModel" },
+                        ) { index ->
+                            val item = content.value[index]
                             EntryRow(
-                                image = { it?.image },
-                                link = { it?.link },
-                                text = { it?.text ?: "" },
-                                onClick = { it?.let { onClick(tab, it) } }
+                                image = { item?.image },
+                                link = { item?.link },
+                                text = { item?.text ?: "" },
+                                onClick = { item?.let { onClick(tab, it) } },
                             )
                         }
                     }

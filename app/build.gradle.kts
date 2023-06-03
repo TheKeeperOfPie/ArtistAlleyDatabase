@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
     id("com.android.application")
     kotlin("android")
@@ -90,7 +92,7 @@ android {
         buildConfig = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.4.7"
+        kotlinCompilerExtensionVersion = "1.4.7-dev-k1.9.0-Beta-bb7dc8b44eb"
     }
     packaging {
         resources {
@@ -231,4 +233,12 @@ dependencies {
 
     implementation(libs.commons.compress)
     implementation(libs.coil.compose)
+}
+
+afterEvaluate {
+    tasks.withType(KotlinCompile::class).forEach {
+        it.kotlinOptions {
+            jvmTarget = "18"
+        }
+    }
 }

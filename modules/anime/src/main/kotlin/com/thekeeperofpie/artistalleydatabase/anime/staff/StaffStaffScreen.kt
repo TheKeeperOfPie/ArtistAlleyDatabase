@@ -116,7 +116,7 @@ object StaffStaffScreen {
                                     )
                                 }
 
-                                it.media?.title?.userPreferred?.let {
+                                it.media.title?.userPreferred?.let {
                                     AutoHeightText(
                                         text = it,
                                         color = textColor,
