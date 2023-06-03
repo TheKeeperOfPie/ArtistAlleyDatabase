@@ -365,7 +365,9 @@ object AnimeMediaDetailsScreen {
                                         listEntry?.status.toStatusText(
                                             mediaType = media.type,
                                             progress = progress,
-                                            progressMax = progressMax
+                                            progressMax = progressMax,
+                                            score = media.mediaListEntry?.score,
+                                            viewModel.scoreFormat.collectAsState().value,
                                         )
                                     )
                                 },
@@ -1319,7 +1321,11 @@ object AnimeMediaDetailsScreen {
                         sliceToColor = { it.status.toColor() },
                         sliceToText = { slice ->
                             when (slice.status) {
-                                MediaListStatus.CURRENT -> R.string.anime_media_details_status_distribution_current
+                                MediaListStatus.CURRENT -> if (entry.media.type == MediaType.ANIME) {
+                                    R.string.anime_media_details_status_distribution_current_anime
+                                } else {
+                                    R.string.anime_media_details_status_distribution_current_manga
+                                }
                                 MediaListStatus.PLANNING -> R.string.anime_media_details_status_distribution_planning
                                 MediaListStatus.COMPLETED -> R.string.anime_media_details_status_distribution_completed
                                 MediaListStatus.DROPPED -> R.string.anime_media_details_status_distribution_dropped

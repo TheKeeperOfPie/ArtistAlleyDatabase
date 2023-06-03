@@ -28,6 +28,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.focusable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
@@ -54,7 +55,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ImageSearch
+import androidx.compose.material.icons.filled.AddPhotoAlternate
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.LockOpen
 import androidx.compose.material.icons.filled.LockReset
@@ -108,6 +109,7 @@ import coil.request.ImageRequest
 import com.thekeeperofpie.artistalleydatabase.compose.AddBackPressInvokeTogether
 import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIcon
 import com.thekeeperofpie.artistalleydatabase.compose.bottomBorder
+import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.compose.dropdown.DropdownMenu
 import com.thekeeperofpie.artistalleydatabase.compose.dropdown.DropdownMenuItem
 import kotlinx.coroutines.delay
@@ -443,7 +445,6 @@ private fun LongTextSection(section: EntrySection.LongText) {
     )
 }
 
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun PrefilledSectionField(
     index: Int,
@@ -518,8 +519,8 @@ private fun PrefilledSectionField(
                         .fillMaxHeight()
                         .heightIn(min = 72.dp)
                         .width(56.dp)
-                        .run {
-                            if (index == 0) clip(RoundedCornerShape(topStart = 4.dp)) else this
+                        .conditionally(index == 0) {
+                            clip(RoundedCornerShape(topStart = 4.dp))
                         }
                 )
 
@@ -558,6 +559,9 @@ private fun PrefilledSectionField(
                             .fillMaxHeight()
                             .heightIn(min = 72.dp)
                             .width(56.dp)
+                            .conditionally(index == 0) {
+                                clip(RoundedCornerShape(topEnd = 4.dp))
+                            }
                     )
                 }
 
@@ -837,7 +841,7 @@ fun MultiImageSelectBox(
 ) {
     val imageSelectMultipleLauncher = rememberLauncherForActivityResult(
         GetMultipleContentsChooser,
-        imageState().onMultipleSelected,
+        imageState().onAdded,
     )
     val imageSelectSingleLauncher = rememberLauncherForActivityResult(
         imageState().imageContentWithIndexChooser,
@@ -984,7 +988,7 @@ private fun AddImagePagerPage(onAddClick: () -> Unit, modifier: Modifier = Modif
             .fillMaxWidth()
     ) {
         Icon(
-            imageVector = Icons.Default.ImageSearch,
+            imageVector = Icons.Default.AddPhotoAlternate,
             contentDescription = stringResource(
                 R.string.entry_add_image_content_description
             ),
@@ -1023,13 +1027,28 @@ fun ImageSelectBoxInner(
             exit = fadeOut(),
             modifier = Modifier.align(Alignment.BottomCenter)
         ) {
-            IconButton(onClick = { setExpanded(!expanded()) }, modifier = Modifier.size(60.dp)) {
-                TrailingDropdownIcon(
-                    expanded = expanded(),
-                    contentDescription = stringResource(
-                        R.string.entry_image_expand_content_description
-                    ),
-                )
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null,
+                        onClick = { setExpanded(!expanded()) },
+                    )
+            ) {
+                IconButton(
+                    onClick = { setExpanded(!expanded()) },
+                    modifier = Modifier.size(60.dp)
+                ) {
+                    TrailingDropdownIcon(
+                        expanded = expanded(),
+                        contentDescription = stringResource(
+                            R.string.entry_image_expand_content_description
+                        ),
+                    )
+                }
             }
         }
     }
@@ -1040,7 +1059,7 @@ data class ImageState(
     val onSelected: (index: Int, Uri?) -> Unit = { _, _ -> },
     val onSelectError: (Exception?) -> Unit,
     val addAllowed: () -> Boolean = { false },
-    val onMultipleSelected: (List<Uri>) -> Unit,
+    val onAdded: (List<Uri>) -> Unit,
     val onSizeResult: (width: Int, height: Int) -> Unit = { _, _ -> },
 ) {
     val imageContentWithIndexChooser: ActivityResultContract<Int, Pair<Int, Uri?>> =

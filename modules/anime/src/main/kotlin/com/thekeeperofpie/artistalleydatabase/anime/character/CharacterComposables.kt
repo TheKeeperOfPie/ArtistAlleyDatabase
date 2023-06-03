@@ -41,6 +41,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.lerp
 import androidx.core.graphics.ColorUtils
 import coil.compose.AsyncImage
 import coil.compose.AsyncImagePainter
@@ -118,9 +119,19 @@ fun CharacterCard(
     ) {
         Box {
             val density = LocalDensity.current
+            var transitionDone by remember { mutableStateOf(true) }
+            var transitionProgress by remember { mutableStateOf(0f) }
             SharedElement(
                 key = "${id.scopedId}_image",
                 screenKey = screenKey,
+                onFractionChanged = {
+                    transitionProgress = it
+                    if (it == 1f) {
+                        transitionDone = false
+                    } else if (it == 0f) {
+                        transitionDone = true
+                    }
+                },
             ) {
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
@@ -150,16 +161,25 @@ fun CharacterCard(
                             selectMaxPopulation = true,
                         )
                     },
-                    modifier = Modifier.size(width = width, height = width * 1.5f)
+                    modifier = Modifier
+                        .size(width = width, height = width * 1.5f)
+                        .clip(
+                            RoundedCornerShape(
+                                topStart = 12.dp,
+                                topEnd = 12.dp,
+                                bottomStart = lerp(12.dp, 0.dp, 1f - transitionProgress),
+                                bottomEnd = lerp(12.dp, 0.dp, 1f - transitionProgress),
+                            )
+                        )
                 )
             }
 
             if (innerImage != null) {
                 var showInnerImage by remember { mutableStateOf(true) }
-                if (showInnerImage) {
-                    var showBorder by remember(id) { mutableStateOf(false) }
+                if (transitionDone && showInnerImage) {
+                    var show by remember(id) { mutableStateOf(false) }
                     val alpha by animateFloatAsState(
-                        if (showBorder) 1f else 0f,
+                        if (show) 1f else 0f,
                         label = "Character card inner image fade",
                     )
                     val clipShape = RoundedCornerShape(topStart = 8.dp)
@@ -171,7 +191,7 @@ fun CharacterCard(
                             .listener(onError = { _, _ ->
                                 showInnerImage = false
                             }, onSuccess = { _, _ ->
-                                showBorder = true
+                                show = true
                             })
                             .size(width = size, height = size)
                             .build(),

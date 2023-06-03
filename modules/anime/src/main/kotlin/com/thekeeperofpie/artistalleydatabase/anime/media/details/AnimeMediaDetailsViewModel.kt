@@ -158,16 +158,9 @@ class AnimeMediaDetailsViewModel @Inject constructor(
                 .collectLatest { (listEntry, format) ->
                     initializeListEntry(listEntry)
 
-                    editData.score = listEntry?.score?.toInt()?.let {
-                        when (format) {
-                            ScoreFormat.POINT_10_DECIMAL -> String.format("%.1f", it / 10f)
-                            ScoreFormat.POINT_10 -> (it / 10).toString()
-                            ScoreFormat.POINT_100,
-                            ScoreFormat.POINT_5,
-                            ScoreFormat.POINT_3,
-                            ScoreFormat.UNKNOWN__ -> it.toString()
-                        }
-                    }.orEmpty()
+                    editData.score = listEntry?.score
+                        ?.let {MediaUtils.scoreFormatToText(it, format) }
+                        .orEmpty()
                 }
         }
 

@@ -54,7 +54,7 @@ class EntryImageController(
             onError(UtilsStringR.error_fail_to_load_image to it)
         },
         addAllowed = { entryIds.size <= 1 },
-        onMultipleSelected = {
+        onAdded = {
             @OptIn(ExperimentalCoroutinesApi::class)
             scopeProvider().launch(Dispatchers.IO.limitedParallelism(8)) {
                 val newImages = it.map {
@@ -70,7 +70,6 @@ class EntryImageController(
                     }
                 }.awaitAll()
                 withContext(Dispatchers.Main) {
-                    images.clear()
                     images += newImages
                 }
             }
@@ -149,14 +148,7 @@ class EntryImageController(
 
     private fun onImageSelected(index: Int, uri: Uri?) {
         if (uri == null) {
-            images[index] = images[index].copy(
-                uri = null,
-                width = 1,
-                height = 1,
-                croppedUri = null,
-                croppedWidth = null,
-                croppedHeight = null,
-            )
+            // TODO: Better image menu options
             return
         }
 
@@ -311,7 +303,8 @@ class EntryImageController(
      * @return List of files written.
      */
     @OptIn(ExperimentalCoroutinesApi::class)
-    suspend fun saveImages(): Map<EntryId, SaveResult>? {
+    suspend fun saveImages(): Map<EntryId, List<SaveResult>>? {
+        Log.d("ImageDebug", "saveImages() called with images = $images")
         val results = withContext(Dispatchers.IO.limitedParallelism(4)) {
             images.mapIndexed { index, entryImage ->
                 async {
@@ -356,7 +349,9 @@ class EntryImageController(
                         originalFile = originalFile.takeIf { originalError == null },
                         croppedFile = croppedFile.takeIf { croppedError == null },
                         error = croppedError ?: originalError,
-                    )
+                    ).also {
+                        Log.d("ImageDebug", "saveImages() called index $index original = $originalFile, cropped = $croppedFile, result = $it")
+                    }
                 }
             }
                 .awaitAll()
@@ -370,18 +365,19 @@ class EntryImageController(
             return null
         }
 
-        return results.associateBy { it.entryId }
+        return results.groupBy { it.entryId }
     }
 
     fun cleanUpImages(
         entryIds: List<EntryId>,
-        saveImagesResult: Map<EntryId, SaveResult>
+        saveImagesResult: Map<EntryId, List<SaveResult>>,
     ) {
         entryIds.forEach {
             val entryFolder = EntryUtils.getEntryImageFolder(application, it)
             if (entryFolder.exists() && entryFolder.isDirectory) {
-                val result = saveImagesResult[it]
-                val writtenFiles = listOfNotNull(result?.originalFile, result?.croppedFile)
+                val writtenFiles = saveImagesResult[it]?.flatMap {
+                    listOfNotNull(it.originalFile, it.croppedFile)
+                }.orEmpty()
                 entryFolder.walkTopDown()
                     .filter(File::isFile)
                     .filterNot(writtenFiles::contains)

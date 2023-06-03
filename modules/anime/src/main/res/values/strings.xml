@@ -292,7 +292,8 @@
     <string name="anime_media_details_ranking_popular_season_year">#%1$d most popular %2$s %3$s</string>
 
     <string name="anime_media_details_status_distribution_label">Status distribution</string>
-    <string name="anime_media_details_status_distribution_current">Watching - %1$d</string>
+    <string name="anime_media_details_status_distribution_current_anime">Watching - %1$d</string>
+    <string name="anime_media_details_status_distribution_current_manga">Reading - %1$d</string>
     <string name="anime_media_details_status_distribution_planning">Planning - %1$d</string>
     <string name="anime_media_details_status_distribution_completed">Completed - %1$d</string>
     <string name="anime_media_details_status_distribution_dropped">Dropped - %1$d</string>
@@ -314,6 +315,7 @@
     <string name="anime_media_details_fab_user_status_current_not_anime">Reading %1$d/%2$d</string>
     <string name="anime_media_details_fab_user_status_planning">Planning</string>
     <string name="anime_media_details_fab_user_status_completed">Completed</string>
+    <string name="anime_media_details_fab_user_status_completed_with_score">Completed - %1$s</string>
     <string name="anime_media_details_fab_user_status_dropped">Dropped %1$d/%2$d</string>
     <string name="anime_media_details_fab_user_status_paused">On hold</string>
     <string name="anime_media_details_fab_user_status_repeating">Repeating</string>

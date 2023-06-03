@@ -342,7 +342,7 @@ class CdEntryDetailsViewModel @Inject constructor(
     }
 
     override suspend fun saveSingleEntry(
-        saveImagesResult: Map<EntryId, EntryImageController.SaveResult>,
+        saveImagesResult: Map<EntryId, List<EntryImageController.SaveResult>>,
         skipIgnoreableErrors: Boolean
     ): Boolean {
         val baseEntry = makeBaseEntry()
@@ -405,7 +405,7 @@ class CdEntryDetailsViewModel @Inject constructor(
     }
 
     override suspend fun saveMultiEditEntry(
-        saveImagesResult: Map<EntryId, EntryImageController.SaveResult>,
+        saveImagesResult: Map<EntryId, List<EntryImageController.SaveResult>>,
         skipIgnoreableErrors: Boolean
     ): Boolean {
         TODO("Not yet implemented")

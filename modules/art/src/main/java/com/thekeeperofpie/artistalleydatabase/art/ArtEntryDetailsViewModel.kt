@@ -37,7 +37,6 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.decodeFromString
 import java.time.Instant
 import java.util.Date
 import javax.inject.Inject
@@ -330,7 +329,7 @@ open class ArtEntryDetailsViewModel @Inject constructor(
     }
 
     override suspend fun saveSingleEntry(
-        saveImagesResult: Map<EntryId, EntryImageController.SaveResult>,
+        saveImagesResult: Map<EntryId, List<EntryImageController.SaveResult>>,
         skipIgnoreableErrors: Boolean
     ): Boolean {
         val baseEntry = makeBaseEntry()
@@ -370,7 +369,7 @@ open class ArtEntryDetailsViewModel @Inject constructor(
     }
 
     override suspend fun saveMultiEditEntry(
-        saveImagesResult: Map<EntryId, EntryImageController.SaveResult>,
+        saveImagesResult: Map<EntryId, List<EntryImageController.SaveResult>>,
         skipIgnoreableErrors: Boolean
     ): Boolean {
         val series = seriesSection.finalContents()

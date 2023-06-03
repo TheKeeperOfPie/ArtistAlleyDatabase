@@ -132,10 +132,9 @@ fun Exec.launchActivity(
     )
 }
 
-tasks.register<Exec>("launchRelease") {
+tasks.register("launchRelease") {
     dependsOn("installRelease")
-    launchActivity("com.thekeeperofpie.artistalleydatabase")
-    finalizedBy("installDebug")
+    finalizedBy("compileAndLaunchRelease", "installDebug")
     outputs.upToDateWhen { false }
 }
 
@@ -143,6 +142,22 @@ tasks.register<Exec>("launchDebug") {
     dependsOn("installDebug")
     launchActivity("com.thekeeperofpie.artistalleydatabase.debug")
     finalizedBy("installRelease")
+    outputs.upToDateWhen { false }
+}
+
+tasks.register<Exec>("compileAndLaunchRelease") {
+    commandLine(
+        "adb", "shell", "pm", "compile", "-f",
+        "-m", "everything",
+        "--check-prof", "false",
+        "com.thekeeperofpie.artistalleydatabase",
+    )
+    finalizedBy("launchReleaseMainActivity")
+    outputs.upToDateWhen { false }
+}
+
+tasks.register<Exec>("launchReleaseMainActivity") {
+    launchActivity("com.thekeeperofpie.artistalleydatabase")
     outputs.upToDateWhen { false }
 }
 

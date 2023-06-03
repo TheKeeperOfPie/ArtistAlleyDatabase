@@ -187,12 +187,12 @@ abstract class EntryDetailsViewModel<Entry, Model>(
     }
 
     abstract suspend fun saveSingleEntry(
-        saveImagesResult: Map<EntryId, EntryImageController.SaveResult>,
+        saveImagesResult: Map<EntryId, List<EntryImageController.SaveResult>>,
         skipIgnoreableErrors: Boolean = false
     ): Boolean
 
     abstract suspend fun saveMultiEditEntry(
-        saveImagesResult: Map<EntryId, EntryImageController.SaveResult>,
+        saveImagesResult: Map<EntryId, List<EntryImageController.SaveResult>>,
         skipIgnoreableErrors: Boolean = false
     ): Boolean
 

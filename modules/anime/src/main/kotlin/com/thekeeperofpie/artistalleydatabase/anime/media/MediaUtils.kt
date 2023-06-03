@@ -27,11 +27,13 @@ import com.anilist.type.MediaSeason
 import com.anilist.type.MediaSource
 import com.anilist.type.MediaStatus
 import com.anilist.type.MediaType
+import com.anilist.type.ScoreFormat
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import java.time.LocalDate
 import java.time.Month
 import java.time.ZoneOffset
 import kotlin.math.absoluteValue
+import kotlin.math.roundToInt
 
 object MediaUtils {
 
@@ -105,11 +107,22 @@ object MediaUtils {
         null -> R.string.anime_media_list_status_none
     }
 
+    fun scoreFormatToText(score: Double, format: ScoreFormat) = when (format) {
+        ScoreFormat.POINT_10_DECIMAL -> String.format("%.1f", score / 10f)
+        ScoreFormat.POINT_10 -> (score.roundToInt() / 10).toString()
+        ScoreFormat.POINT_100,
+        ScoreFormat.POINT_5,
+        ScoreFormat.POINT_3,
+        ScoreFormat.UNKNOWN__ -> score.roundToInt().toString()
+    }
+
     @Composable
     fun MediaListStatus?.toStatusText(
         mediaType: MediaType?,
         progress: Int,
         progressMax: Int,
+        score: Double?,
+        scoreFormat: ScoreFormat?,
     ) = when (this) {
         MediaListStatus.CURRENT -> {
             if (mediaType == MediaType.ANIME) {
@@ -129,10 +142,15 @@ object MediaUtils {
         MediaListStatus.PLANNING -> stringResource(
             R.string.anime_media_details_fab_user_status_planning
         )
-        MediaListStatus.COMPLETED -> stringResource(
-            // TODO: Include rating in completed text
-            R.string.anime_media_details_fab_user_status_completed
-        )
+        MediaListStatus.COMPLETED -> if (score == null || scoreFormat == null) {
+            stringResource(R.string.anime_media_details_fab_user_status_completed)
+        } else {
+            // TODO: Show smileys instead for that score format
+            stringResource(
+                R.string.anime_media_details_fab_user_status_completed_with_score,
+                scoreFormatToText(score, scoreFormat),
+            )
+        }
         MediaListStatus.DROPPED -> stringResource(
             R.string.anime_media_details_fab_user_status_dropped,
             progress,

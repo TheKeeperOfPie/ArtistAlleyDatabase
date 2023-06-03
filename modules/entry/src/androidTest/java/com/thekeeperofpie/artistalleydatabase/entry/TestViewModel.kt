@@ -28,7 +28,7 @@ internal class TestViewModel(
         TestModel(null, cropUri?.toString())
 
     override suspend fun saveSingleEntry(
-        saveImagesResult: Map<EntryId, EntryImageController.SaveResult>,
+        saveImagesResult: Map<EntryId, List<EntryImageController.SaveResult>>,
         skipIgnoreableErrors: Boolean
     ) = if (hasError && !skipIgnoreableErrors) false else {
         if (entryIds.isEmpty()) {
@@ -52,7 +52,7 @@ internal class TestViewModel(
     override suspend fun buildMultiEditModel() = throw AssertionError("Should not be called")
 
     override suspend fun saveMultiEditEntry(
-        saveImagesResult: Map<EntryId, EntryImageController.SaveResult>,
+        saveImagesResult: Map<EntryId, List<EntryImageController.SaveResult>>,
         skipIgnoreableErrors: Boolean
     ) = throw AssertionError("Should not be called")
 

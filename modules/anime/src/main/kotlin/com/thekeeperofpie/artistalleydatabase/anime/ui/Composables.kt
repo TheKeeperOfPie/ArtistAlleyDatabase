@@ -3,7 +3,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.ui
 
 import androidx.annotation.StringRes
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Arrangement
@@ -39,6 +38,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.compose.optionalClickable
 import java.time.LocalDate
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
@@ -233,10 +233,13 @@ fun <T> LazyListScope.listSection(
     itemContent: @Composable (T, paddingBottom: Dp) -> Unit,
 ) {
     if (values.isNotEmpty()) {
+        val hasMore = values.size > aboveFold
         item {
             DetailsSectionHeader(
                 text = stringResource(titleRes),
-                modifier = Modifier.clickable { onExpandedChange(!expanded()) }
+                modifier = Modifier.optionalClickable(
+                    { onExpandedChange(!expanded()) }.takeIf { hasMore }
+                )
             )
         }
 
@@ -246,8 +249,6 @@ fun <T> LazyListScope.listSection(
             }
             return
         }
-
-        val hasMore = values.size > aboveFold
 
         itemsIndexed(values.take(aboveFold)) { index, item ->
             val paddingBottom = if (index == values.size
