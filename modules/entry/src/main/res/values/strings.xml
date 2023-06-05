@@ -29,7 +29,8 @@
     <string name="entry_image_expand_content_description">Expand image</string>
     <string name="entry_image_crop_title">Image crop</string>
     <string name="entry_image_crop_text">Crop requires a shared read-writable file, located at
-        /sdcard/Download/%1$s. Select this in the following screen.
+        /sdcard/Download/%1$s. It will be used to open the image in Google Photos. Select this
+        in the following screen.
     </string>
     <string name="entry_select_image_content_description">Click to select image</string>
     <string name="entry_add_image_content_description">Click to add image</string>
@@ -42,4 +43,8 @@
     <string name="entry_search_options_collapse">Collapse search options</string>
     <string name="entry_search_options_expand">Expand search options</string>
     <string name="entry_search_add_entry">Add new entry</string>
+
+    <string name="entry_image_menu_option_open">Open</string>
+    <string name="entry_image_menu_option_edit">Edit</string>
+    <string name="entry_image_menu_option_crop">Crop</string>
 </resources>

@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
@@ -34,7 +35,6 @@ import com.thekeeperofpie.artistalleydatabase.anilist.AniListStringR
 import com.thekeeperofpie.artistalleydatabase.compose.AppBar
 import com.thekeeperofpie.artistalleydatabase.compose.ItemDropdown
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
-import com.thekeeperofpie.artistalleydatabase.compose.dropdown.DropdownMenuItem
 import com.thekeeperofpie.artistalleydatabase.entry.EntryStringR
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistsStringR
 import com.thekeeperofpie.artistalleydatabase.network_utils.NetworkSettings

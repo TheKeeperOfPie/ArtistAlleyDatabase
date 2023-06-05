@@ -16,8 +16,8 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -64,7 +64,7 @@ object BrowseScreen {
                         colors = colors,
                         onClickNav = onClickNav
                     )
-                    TabRow(
+                    ScrollableTabRow(
                         selectedTabIndex = selectedTabIndex,
                         containerColor = MaterialTheme.colorScheme.surface,
                     ) {
@@ -108,7 +108,7 @@ object BrowseScreen {
                     } else if (content is Either.Right) {
                         items(
                             count = content.value.itemCount,
-                            key = content.value.itemKey { it.queryIdOrString },
+                            key = content.value.itemKey { it.queryIdOrString.eitherValueUnchecked()!! },
                             contentType = content.value.itemContentType { "BrowseEntryModel" },
                         ) { index ->
                             val item = content.value[index]

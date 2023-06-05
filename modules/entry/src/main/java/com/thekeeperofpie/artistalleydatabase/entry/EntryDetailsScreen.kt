@@ -27,10 +27,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ImageNotSupported
-import androidx.compose.material.icons.filled.OpenInNew
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -323,6 +321,7 @@ object EntryDetailsScreen {
                 imageState = imageState,
                 cropState = cropState,
                 loading = loading,
+                onClickOpenImage = onImageClickOpen,
             ) {
                 val uri = it.croppedUri ?: it.uri
                 if (uri != null) {
@@ -342,7 +341,13 @@ object EntryDetailsScreen {
                             ImageRequest.Builder(LocalContext.current)
                                 .data(uri)
                                 .crossfade(false)
-                                .placeholderMemoryCacheKey(EntryUtils.getImageCacheKey(it))
+                                .placeholderMemoryCacheKey(
+                                    EntryUtils.getImageCacheKey(
+                                        it,
+                                        it.croppedWidth ?: it.width,
+                                        it.croppedHeight ?: it.height,
+                                    )
+                                )
                                 .listener { _, result ->
                                     imageState().onSizeResult(
                                         result.drawable.intrinsicWidth,
@@ -374,28 +379,6 @@ object EntryDetailsScreen {
                         Modifier
                             .size(48.dp)
                             .align(Alignment.Center)
-                    )
-                }
-            }
-
-            AnimatedVisibility(
-                visible = !loading() && imageState().images().isNotEmpty(),
-                enter = fadeIn(),
-                exit = fadeOut(),
-                modifier = Modifier
-                    .graphicsLayer { alpha = alphaAnimation.value }
-                    .align(Alignment.BottomEnd)
-            ) {
-                FloatingActionButton(
-                    onClick = { onImageClickOpen(pagerState.currentPage) },
-                    modifier = Modifier
-                        .padding(16.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.OpenInNew,
-                        contentDescription = stringResource(
-                            R.string.entry_open_full_image_content_description
-                        ),
                     )
                 }
             }

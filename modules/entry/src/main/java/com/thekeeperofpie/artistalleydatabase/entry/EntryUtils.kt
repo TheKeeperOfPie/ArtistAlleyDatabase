@@ -218,9 +218,9 @@ object EntryUtils {
         file.renameTo(file.resolveSibling("0-${width ?: 1}-${height ?: 1}"))
     }
 
-    // TODO: The cache keys don't account for crop state or image changes in general, so
-    //  the wrong image is loaded whenever a crop/image change is saved
-    fun getImageCacheKey(it: EntryImage) = "coil_memory_entry_image_home_${it.entryId?.scopedId}"
+    fun getImageCacheKey(it: EntryImage, width: Int, height: Int) =
+        "coil_memory_entry_image_home_${it.entryId?.scopedId}_${width}_$height"
 
-    fun getImageCacheKey(it: EntryGridModel) = "coil_memory_entry_image_home_${it.id.scopedId}"
+    fun getImageCacheKey(it: EntryGridModel, width: Int, height: Int) =
+        "coil_memory_entry_image_home_${it.id.scopedId}_${width}_$height"
 }

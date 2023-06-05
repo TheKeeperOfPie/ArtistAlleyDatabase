@@ -1,3 +1,5 @@
+@file:Suppress("NAME_SHADOWING")
+
 package com.thekeeperofpie.artistalleydatabase.entry
 
 import android.app.Activity
@@ -6,6 +8,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Environment
 import android.provider.DocumentsContract
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
@@ -28,7 +31,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.focusable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
@@ -37,6 +39,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -44,7 +47,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.relocation.BringIntoViewRequester
@@ -61,6 +63,10 @@ import androidx.compose.material.icons.filled.LockOpen
 import androidx.compose.material.icons.filled.LockReset
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Divider
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
@@ -86,6 +92,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
@@ -110,8 +117,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.AddBackPressInvokeTogether
 import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIcon
 import com.thekeeperofpie.artistalleydatabase.compose.bottomBorder
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
-import com.thekeeperofpie.artistalleydatabase.compose.dropdown.DropdownMenu
-import com.thekeeperofpie.artistalleydatabase.compose.dropdown.DropdownMenuItem
+import com.thekeeperofpie.artistalleydatabase.compose.optionalClickable
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
@@ -243,7 +249,7 @@ private fun MultiTextSection(section: EntrySection.MultiText) {
                     .align(Alignment.BottomEnd)
                     .padding(end = 16.dp)
             ) {
-                androidx.compose.material3.DropdownMenu(
+                DropdownMenu(
                     expanded = showOverflow,
                     onDismissRequest = { showOverflow = false },
                 ) {
@@ -308,22 +314,19 @@ private fun MultiTextSection(section: EntrySection.MultiText) {
                 && section.pendingValue.isNotBlank()
                 && section.predictions.isNotEmpty()
             ) {
-                val listState = rememberLazyListState()
                 DropdownMenu(
-                    expanded = focused,
+                    expanded = focused && section.predictions.isNotEmpty(),
                     onDismissRequest = { focusRequester.freeFocus() },
                     properties = PopupProperties(focusable = false),
-                    listState = listState,
                     modifier = Modifier
                         .fillMaxWidth()
                         .heightIn(max = 240.dp)
                 ) {
-                    items(section.predictions.size, key = { section.predictions[it].id }) {
-                        val entry = section.predictions[it]
+                    section.predictions.forEachIndexed { index, entry ->
                         DropdownMenuItem(
                             onClick = {
                                 focusRequester.requestFocus()
-                                section.onPredictionChosen(it)
+                                section.onPredictionChosen(index)
                                 coroutineScope.launch {
                                     delay(500)
                                     bringIntoViewRequester.bringIntoView()
@@ -415,11 +418,6 @@ private fun MultiTextSection(section: EntrySection.MultiText) {
                             contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp)
                         )
                     }
-                }
-
-                // Scroll to the top each time the predictions change to show highest priority
-                LaunchedEffect(section.predictions) {
-                    listState.scrollToItem(0)
                 }
             }
         }
@@ -672,8 +670,8 @@ fun EntryImage(
     val uriHandler = LocalUriHandler.current
     Box(
         modifier
-            .clickable(
-                onClick = { link()?.let { uriHandler.openUri(it) } },
+            .optionalClickable(
+                onClick = link()?.let { { uriHandler.openUri(it) } },
                 onClickLabel = stringResource(R.string.label_open_entry_link),
                 role = Role.Image,
             )
@@ -837,6 +835,7 @@ fun MultiImageSelectBox(
     imageState: () -> ImageState,
     cropState: () -> CropUtils.CropState,
     loading: () -> Boolean,
+    onClickOpenImage: (index: Int) -> Unit,
     imageContent: @Composable (image: EntryImage) -> Unit,
 ) {
     val imageSelectMultipleLauncher = rememberLauncherForActivityResult(
@@ -924,6 +923,7 @@ fun MultiImageSelectBox(
         ((startingHeight - targetHeight) * heightAnimation.value + targetHeight).toDp()
     }
 
+    var showMenu by remember { mutableStateOf(false) }
     ImageSelectBoxInner(
         loading = loading,
         expanded = { expanded },
@@ -953,21 +953,17 @@ fun MultiImageSelectBox(
                         Modifier
                             .wrapContentHeight()
                             .verticalScroll(rememberScrollState())
-                            .combinedClickable(onClick = {
-                                try {
-                                    imageSelectSingleLauncher.launch(index)
-                                } catch (e: Exception) {
-                                    imageState().onSelectError(e)
+                            .combinedClickable(
+                                onClick = { showMenu = true },
+                                onLongClick = {
+                                    val cropState = cropState()
+                                    if (cropState.cropReadyIndex() == index) {
+                                        imageCropLauncher.launch(index)
+                                    } else {
+                                        cropState.onImageRequestCrop(index)
+                                    }
                                 }
-                            }, onLongClick = {
-                                @Suppress("NAME_SHADOWING")
-                                val cropState = cropState()
-                                if (cropState.cropReadyIndex() == index) {
-                                    imageCropLauncher.launch(index)
-                                } else {
-                                    cropState.onImageRequestCrop(index)
-                                }
-                            })
+                            )
                     ) {
                         imageContent(image)
                     }
@@ -976,6 +972,62 @@ fun MultiImageSelectBox(
         }
 
         // TODO: Pager indicator? Might need to migrate back to Accompanist
+    }
+
+    AnimatedVisibility(visible = showMenu, enter = fadeIn(), exit = fadeOut()) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .fillMaxSize()
+                .height(animatedHeight)
+                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.4f))
+                .clickable { showMenu = false }
+        ) {
+            ElevatedCard(
+                modifier = Modifier
+                    .width(IntrinsicSize.Min)
+                    .padding(24.dp)
+            ) {
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.entry_image_menu_option_open)) },
+                    onClick = {
+                        showMenu = false
+                        onClickOpenImage(pagerState.currentPage)
+                    },
+                )
+
+                Divider()
+
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.entry_image_menu_option_edit)) },
+                    onClick = {
+                        showMenu = false
+                        try {
+                            imageSelectSingleLauncher.launch(pagerState.currentPage)
+                        } catch (e: Exception) {
+                            imageState().onSelectError(e)
+                        }
+                    },
+                )
+
+                Divider()
+
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.entry_image_menu_option_crop)) },
+                    onClick = {
+                        showMenu = false
+                        val currentPage = pagerState.currentPage
+                        val cropState = cropState()
+                        if (cropState.cropReadyIndex() == currentPage) {
+                            imageCropLauncher.launch(currentPage)
+                        } else {
+                            cropState.onImageRequestCrop(currentPage)
+                        }
+                    },
+                )
+            }
+        }
+        BackHandler(showMenu) { showMenu = false }
     }
 }
 
@@ -1030,25 +1082,19 @@ fun ImageSelectBoxInner(
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-                    .clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null,
-                        onClick = { setExpanded(!expanded()) },
+                    .background(
+                        Color.DarkGray.copy(alpha = 0.33f),
+                        RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp),
                     )
+                    .clickable { setExpanded(!expanded()) }
+                    .padding(12.dp)
             ) {
-                IconButton(
-                    onClick = { setExpanded(!expanded()) },
-                    modifier = Modifier.size(60.dp)
-                ) {
-                    TrailingDropdownIcon(
-                        expanded = expanded(),
-                        contentDescription = stringResource(
-                            R.string.entry_image_expand_content_description
-                        ),
-                    )
-                }
+                TrailingDropdownIcon(
+                    expanded = expanded(),
+                    contentDescription = stringResource(
+                        R.string.entry_image_expand_content_description
+                    ),
+                )
             }
         }
     }

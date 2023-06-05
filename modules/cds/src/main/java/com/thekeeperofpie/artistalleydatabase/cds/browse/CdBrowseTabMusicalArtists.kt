@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.cds.browse
 
+import android.util.Log
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
@@ -56,6 +57,7 @@ class CdBrowseTabMusicalArtists @Inject constructor(
                 .cachedIn(viewModelScope)
                 .map {
                     it.map(Dispatchers.IO.asExecutor()) {
+                        Log.d("BrowseDebug", "artist")
                         when (it.type) {
                             MusicalArtist.Type.CUSTOM -> BrowseEntryModel(
                                 image = it.image,

@@ -247,7 +247,13 @@ object EntryGrid {
                                 .data(entry.imageUri)
                                 .size(expectedWidth, Dimension.Undefined)
                                 .crossfade(true)
-                                .memoryCacheKey(EntryUtils.getImageCacheKey(entry))
+                                .memoryCacheKey(
+                                    EntryUtils.getImageCacheKey(
+                                        entry,
+                                        entry.imageWidth ?: -1,
+                                        entry.imageHeight ?: -1,
+                                    )
+                                )
                                 .build(),
                             contentDescription = stringResource(
                                 R.string.entry_image_content_description

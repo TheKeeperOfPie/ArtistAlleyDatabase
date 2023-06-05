@@ -142,7 +142,7 @@ class SourceDropdown(locked: LockState? = null) : EntrySection.Dropdown(
         @Composable
         override fun Content(lockState: LockState?) {
             val showSecondRow = lockState != LockState.LOCKED ||
-                    (hall.isNotEmpty() && booth.isNotEmpty())
+                    (hall.isNotEmpty() || booth.isNotEmpty())
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier

@@ -11,6 +11,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
@@ -61,8 +62,17 @@ fun Modifier.fadingEdgeBottom(show: Boolean = false, firstStop: Float = 0.8f) =
             }
         }
 
-fun Modifier.optionalClickable(onClick: (() -> Unit)?, enabled: Boolean = true) =
-    if (onClick == null) this else clickable(enabled = enabled, onClick = onClick)
+fun Modifier.optionalClickable(
+    onClick: (() -> Unit)?,
+    enabled: Boolean = true,
+    onClickLabel: String? = null,
+    role: Role? = null
+) = if (onClick == null) this else clickable(
+    enabled = enabled,
+    onClick = onClick,
+    onClickLabel = onClickLabel,
+    role = role,
+)
 
 fun Modifier.conditionally(apply: Boolean, block: Modifier.() -> Modifier) =
     if (apply) block() else this
