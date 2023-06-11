@@ -133,6 +133,7 @@ fun CharacterCard(
                     }
                 },
             ) {
+                val transitionCornerDp = lerp(12.dp, 0.dp, 1f - transitionProgress)
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
                         .data(image)
@@ -167,8 +168,8 @@ fun CharacterCard(
                             RoundedCornerShape(
                                 topStart = 12.dp,
                                 topEnd = 12.dp,
-                                bottomStart = lerp(12.dp, 0.dp, 1f - transitionProgress),
-                                bottomEnd = lerp(12.dp, 0.dp, 1f - transitionProgress),
+                                bottomStart = transitionCornerDp,
+                                bottomEnd = transitionCornerDp,
                             )
                         )
                 )

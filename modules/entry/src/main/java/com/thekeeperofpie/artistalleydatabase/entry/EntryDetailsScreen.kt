@@ -43,6 +43,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
@@ -50,7 +51,9 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.lerp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.mxalbert.sharedelements.FadeMode
@@ -62,10 +65,12 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.compose.AddBackPressInvokeTogether
 import com.thekeeperofpie.artistalleydatabase.compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
+import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.compose.pullRefresh
 import com.thekeeperofpie.artistalleydatabase.compose.rememberPullRefreshState
 import com.thekeeperofpie.artistalleydatabase.compose.topBorder
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGrid
+import de.charlex.compose.HtmlText
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -75,29 +80,23 @@ object EntryDetailsScreen {
     @Composable
     operator fun invoke(
         screenKey: String,
+        viewModel: EntryDetailsViewModel<*, *>,
         onClickBack: () -> Unit,
-        imageState: () -> ImageState,
+        imageCornerDp: Dp? = null,
         onImageClickOpen: (index: Int) -> Unit = {},
-        areSectionsLoading: () -> Boolean = { false },
-        sections: () -> List<EntrySection> = { emptyList() },
-        saving: () -> Boolean = { false },
         onClickSave: () -> Unit = {},
         onLongClickSave: () -> Unit = {},
-        errorRes: () -> Pair<Int, Exception?>? = { null },
-        onErrorDismiss: () -> Unit = {},
         onConfirmDelete: () -> Unit = {},
         onClickSaveTemplate: (() -> Unit)? = null,
-        cropState: CropUtils.CropState,
-        showExitPrompt: Boolean = false,
         onExitConfirm: () -> Unit = {},
-        onExitDismiss: () -> Unit = {},
     ) {
         Scaffold(
             snackbarHost = {
+                val errorRes = viewModel.errorResource
                 SnackbarErrorText(
-                    errorRes()?.first,
-                    errorRes()?.second,
-                    onErrorDismiss = onErrorDismiss
+                    errorRes?.first,
+                    errorRes?.second,
+                    onErrorDismiss = { viewModel.errorResource = null },
                 )
             },
             modifier = Modifier.imePadding()
@@ -139,10 +138,12 @@ object EntryDetailsScreen {
                     ) {
                         HeaderImage(
                             screenKey = screenKey,
-                            imageState = imageState,
-                            loading = areSectionsLoading,
+                            imageState = { viewModel.entryImageController.imageState },
+                            imageCornerDp = imageCornerDp,
+                            loading = { viewModel.sectionsLoading },
                             onImageClickOpen = onImageClickOpen,
                             cropState = {
+                                val cropState = viewModel.entryImageController.cropState
                                 cropState.copy(onImageRequestCrop = { index ->
                                     if (cropState.imageCropNeedsDocument()) {
                                         showCropDialogIndex = index
@@ -159,12 +160,15 @@ object EntryDetailsScreen {
                             exit = fadeOut(),
                             modifier = Modifier.graphicsLayer { alpha = alphaAnimation.value }
                         ) {
-                            EntryForm(areSectionsLoading, sections)
+                            EntryForm(
+                                areSectionsLoading = { viewModel.sectionsLoading },
+                                sections = { viewModel.sections },
+                            )
                         }
                     }
 
                     AnimatedVisibility(
-                        visible = !areSectionsLoading(),
+                        visible = !viewModel.sectionsLoading,
                         enter = fadeIn(),
                         exit = fadeOut(),
                     ) {
@@ -211,7 +215,7 @@ object EntryDetailsScreen {
                                 )
                             ) {
                                 Crossfade(
-                                    targetState = saving(),
+                                    targetState = viewModel.saving,
                                     label = "Entry details save indicator crossfade"
                                 ) {
                                     if (it) {
@@ -265,10 +269,17 @@ object EntryDetailsScreen {
             } else if (showCropDialogIndex != -1) {
                 CropUtils.InstructionsDialog(
                     onDismiss = { showCropDialogIndex = -1 },
-                    onConfirm = { cropState.onCropConfirmed(showCropDialogIndex) },
+                    onConfirm = {
+                        viewModel.entryImageController.cropState
+                            .onCropConfirmed(showCropDialogIndex)
+                    },
                 )
-            } else if (showExitPrompt) {
-                ConfirmExitDialog(onDismiss = onExitDismiss, onConfirmExit = onExitConfirm)
+            } else if (viewModel.showExitPrompt) {
+                ConfirmExitDialog(
+                    onDismiss = viewModel::onExitDismiss,
+                    onConfirmExit = onExitConfirm,
+                    diffText = viewModel::entrySerializedFormDiff,
+                )
             }
         }
     }
@@ -276,18 +287,45 @@ object EntryDetailsScreen {
     @Composable
     fun ConfirmExitDialog(
         onDismiss: () -> Unit,
-        onConfirmExit: () -> Unit
+        onConfirmExit: () -> Unit,
+        diffText: () -> Pair<String, String>,
     ) {
         AlertDialog(
             onDismissRequest = onDismiss,
             title = { Text(stringResource(R.string.entry_confirm_exit_title)) },
-            text = { Text(stringResource(R.string.entry_confirm_exit_description)) },
+            text = {
+                Column {
+                    Text(stringResource(R.string.entry_confirm_exit_description))
+
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.padding(top = 12.dp)
+                    ) {
+                        val (oldText, newText) = diffText()
+                        Column(
+                            modifier = Modifier
+                                .weight(1f)
+                                .verticalScroll(rememberScrollState())
+                        ) {
+                            HtmlText(text = oldText, color = MaterialTheme.colorScheme.onSurface)
+                        }
+
+                        Column(
+                            modifier = Modifier
+                                .weight(1f)
+                                .verticalScroll(rememberScrollState())
+                        ) {
+                            HtmlText(text = newText, color = MaterialTheme.colorScheme.onSurface)
+                        }
+                    }
+                }
+            },
             confirmButton = {
                 TextButton(onClick = {
                     onDismiss()
                     onConfirmExit()
                 }) {
-                    Text(stringResource(UtilsStringR.confirm))
+                    Text(stringResource(UtilsStringR.exit))
                 }
             },
             dismissButton = {
@@ -303,6 +341,7 @@ object EntryDetailsScreen {
     private fun HeaderImage(
         screenKey: String,
         imageState: () -> ImageState,
+        imageCornerDp: Dp?,
         loading: () -> Boolean = { false },
         onImageClickOpen: (index: Int) -> Unit = {},
         cropState: () -> CropUtils.CropState,
@@ -325,6 +364,8 @@ object EntryDetailsScreen {
             ) {
                 val uri = it.croppedUri ?: it.uri
                 if (uri != null) {
+                    var transitionProgress by remember { mutableStateOf(1f) }
+                    val cornerDp = imageCornerDp?.let { lerp(it, 0.dp, transitionProgress) }
                     SharedElement(
                         key = "${it.entryId?.scopedId}_image",
                         screenKey = screenKey,
@@ -332,7 +373,8 @@ object EntryDetailsScreen {
                         transitionSpec = SharedElementsTransitionSpec(
                             fadeMode = FadeMode.In,
                             fadeProgressThresholds = ProgressThresholds(0f, 0f),
-                        )
+                        ),
+                        onFractionChanged = { transitionProgress = it },
                     ) {
                         val configuration = LocalConfiguration.current
                         val screenWidth = configuration.screenWidthDp.dp
@@ -362,6 +404,9 @@ object EntryDetailsScreen {
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .heightIn(min = minimumHeight)
+                                .conditionally(imageCornerDp != null) {
+                                    clip(RoundedCornerShape(cornerDp ?: 0.dp))
+                                }
                         )
                     }
                 } else {

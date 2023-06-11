@@ -211,31 +211,7 @@ class AniListAutocompleter @Inject constructor(
                         query.flatMapLatest { queryCharacters(it, queryEntryCharactersLocal) }
                             .startWith(item = emptyList<Entry>() to emptyList())
                     ) { query, series, (charactersFirst, charactersSecond) ->
-                        val (seriesFirst, seriesSecond) = series.toMutableList().apply {
-                            removeAll { seriesCharacter ->
-                                charactersFirst
-                                    .any { character ->
-                                        val seriesCharacterEntry =
-                                            seriesCharacter as? Entry.Prefilled<*>
-                                        if (seriesCharacterEntry != null) {
-                                            AniListUtils.characterId(seriesCharacterEntry) ==
-                                                    AniListUtils.characterId(character)
-                                        } else {
-                                            false
-                                        }
-                                    } || charactersSecond
-                                    .any { character ->
-                                        val seriesCharacterEntry =
-                                            seriesCharacter as? Entry.Prefilled<*>
-                                        if (seriesCharacterEntry != null) {
-                                            AniListUtils.characterId(seriesCharacterEntry) ==
-                                                    AniListUtils.characterId(character)
-                                        } else {
-                                            false
-                                        }
-                                    }
-                            }
-                        }
+                        val (seriesFirst, seriesSecond) = series.toMutableList()
                             .split { it.text.contains(query, ignoreCase = true) }
                         (seriesFirst + charactersFirst + seriesSecond + charactersSecond).distinctBy { it.id }
                     }

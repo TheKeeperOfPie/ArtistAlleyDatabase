@@ -159,7 +159,8 @@ class MainActivity : ComponentActivity() {
                             val navigationCallback =
                                 AnimeNavigator.NavigationCallback(
                                     navController,
-                                    uriHandler::openUri
+                                    cdEntryNavigator,
+                                    uriHandler::openUri,
                                 )
                             Box(
                                 modifier = Modifier.weight(1f)

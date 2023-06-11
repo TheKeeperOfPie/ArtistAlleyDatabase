@@ -78,10 +78,12 @@ class CdEntryDetailsViewModel @Inject constructor(
     private val dataConverter: DataConverter,
     entrySettings: EntrySettings,
 ) : EntryDetailsViewModel<CdEntry, CdEntryModel>(
+    CdEntry::class,
     application,
     CdEntryUtils.SCOPED_ID_TYPE,
     R.string.cd_entry_image_content_description,
-    entrySettings
+    entrySettings,
+    appJson,
 ) {
     companion object {
         private const val TAG = "CdEntryDetailsViewModel"
@@ -145,7 +147,7 @@ class CdEntryDetailsViewModel @Inject constructor(
         lockState = EntrySection.LockState.UNLOCKED
     )
 
-    val sections = listOf(
+    override val sections = listOf(
         catalogIdSection,
         titleSection,
         performerSection,
@@ -327,8 +329,8 @@ class CdEntryDetailsViewModel @Inject constructor(
         TODO("Not yet implemented")
     }
 
-    override fun entryHashCode() = when (type) {
-        Type.ADD -> 1
+    override fun entry() = when (type) {
+        Type.ADD -> null
         Type.SINGLE_EDIT -> makeBaseEntry().copy(
             // Searchable values are ignored because they rely on network and aren't restored
             // TODO: Fix this and actually track searchable values alongside serialized values
@@ -337,8 +339,8 @@ class CdEntryDetailsViewModel @Inject constructor(
             seriesSearchable = emptyList(),
             charactersSearchable = emptyList(),
             lastEditTime = null
-        ).hashCode()
-        Type.MULTI_EDIT -> 0 // TODO: Doesn't handle multi-edit unsaved change detection
+        )
+        Type.MULTI_EDIT -> null // TODO: Doesn't handle multi-edit unsaved change detection
     }
 
     override suspend fun saveSingleEntry(

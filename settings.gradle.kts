@@ -96,6 +96,7 @@ dependencyResolutionManagement {
             library("de.charlex.compose:html-text:1.4.1")
             library("io.coil-kt:coil-compose:2.4.0")
             library("io.github.hoc081098:FlowExt:0.6.1")
+            library("io.github.java-diff-utils:java-diff-utils:4.12")
             library("it.skrape:skrapeit:1.3.0-alpha.1")
             library("junit:junit:4.13.2")
             library("org.apache.commons:commons-compress:1.23.0")

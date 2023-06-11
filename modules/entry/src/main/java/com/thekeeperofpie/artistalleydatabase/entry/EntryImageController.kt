@@ -304,7 +304,6 @@ class EntryImageController(
      */
     @OptIn(ExperimentalCoroutinesApi::class)
     suspend fun saveImages(): Map<EntryId, List<SaveResult>>? {
-        Log.d("ImageDebug", "saveImages() called with images = $images")
         val results = withContext(Dispatchers.IO.limitedParallelism(4)) {
             images.mapIndexed { index, entryImage ->
                 async {
@@ -349,9 +348,7 @@ class EntryImageController(
                         originalFile = originalFile.takeIf { originalError == null },
                         croppedFile = croppedFile.takeIf { croppedError == null },
                         error = croppedError ?: originalError,
-                    ).also {
-                        Log.d("ImageDebug", "saveImages() called index $index original = $originalFile, cropped = $croppedFile, result = $it")
-                    }
+                    )
                 }
             }
                 .awaitAll()

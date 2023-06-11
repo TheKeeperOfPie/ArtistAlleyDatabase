@@ -24,6 +24,7 @@ import androidx.core.view.WindowCompat
 import androidx.navigation.NavHostController
 import com.thekeeperofpie.artistalleydatabase.CustomApplication
 import com.thekeeperofpie.artistalleydatabase.R
+import com.thekeeperofpie.artistalleydatabase.android_utils.UriUtils
 
 @Composable
 fun ArtistAlleyDatabaseTheme(
@@ -54,7 +55,9 @@ fun ArtistAlleyDatabaseTheme(
         override fun openUri(uri: String) {
             try {
                 val deepLinkUri = Uri.parse(uri)
-                if (navHostController.graph.hasDeepLink(deepLinkUri)) {
+                if (deepLinkUri.getQueryParameter(UriUtils.FORCE_EXTERNAL_URI_PARAM) != "true"
+                    && navHostController.graph.hasDeepLink(deepLinkUri)
+                ) {
                     navHostController.navigate(deepLinkUri)
                 } else {
                     context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(uri)))

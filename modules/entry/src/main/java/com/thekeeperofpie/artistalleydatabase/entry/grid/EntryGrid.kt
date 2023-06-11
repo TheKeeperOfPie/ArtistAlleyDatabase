@@ -189,6 +189,7 @@ object EntryGrid {
         selectedItems: () -> Collection<Int> = { emptyList() },
         onClickEntry: (index: Int, entry: T) -> Unit = { _, _ -> },
         onLongClickEntry: (index: Int, entry: T) -> Unit = { _, _ -> },
+        onSharedElementFractionChanged: ((fraction: Float) -> Unit)? = null,
     ) {
         val entryModifier = Modifier.fillMaxWidth()
         if (entry == null) {
@@ -240,7 +241,8 @@ object EntryGrid {
                         transitionSpec = SharedElementsTransitionSpec(
                             fadeMode = FadeMode.In,
                             fadeProgressThresholds = ProgressThresholds(0f, 0f),
-                        )
+                        ),
+                        onFractionChanged = onSharedElementFractionChanged,
                     ) {
                         AsyncImage(
                             model = ImageRequest.Builder(LocalContext.current)

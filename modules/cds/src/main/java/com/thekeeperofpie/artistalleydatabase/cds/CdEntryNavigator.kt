@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.cds
 
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
+import androidx.compose.ui.unit.Dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
@@ -23,7 +24,7 @@ import com.thekeeperofpie.artistalleydatabase.entry.EntryDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.entry.EntryHomeScreen
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils.entryDetailsComposable
-import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils.navToEntryDetails
+import kotlin.math.roundToInt
 
 class CdEntryNavigator : BrowseSelectionNavigator {
 
@@ -46,28 +47,20 @@ class CdEntryNavigator : BrowseSelectionNavigator {
                 onOptionChange = { viewModel.refreshQuery() },
                 entries = { viewModel.results.collectAsLazyPagingItems() },
                 selectedItems = { viewModel.selectedEntries.keys },
-                onClickAddFab = {
-                    navHostController.navToEntryDetails(
-                        route = CdNavDestinations.ENTRY_DETAILS.id,
-                        emptyList(),
-                    )
-                },
+                onClickAddFab = { onCdEntryClick(navHostController, emptyList()) },
                 onClickEntry = { index, entry ->
                     if (viewModel.selectedEntries.isNotEmpty()) {
                         viewModel.selectEntry(index, entry)
                     } else {
-                        navHostController.navToEntryDetails(
-                            route = CdNavDestinations.ENTRY_DETAILS.id,
-                            listOf(entry.id.valueId)
-                        )
+                        onCdEntryClick(navHostController, listOf(entry.id.valueId))
                     }
                 },
                 onLongClickEntry = viewModel::selectEntry,
                 onClickClear = viewModel::clearSelected,
                 onClickEdit = {
-                    navHostController.navToEntryDetails(
-                        CdNavDestinations.ENTRY_DETAILS.id,
-                        viewModel.selectedEntries.values.map { it.id.valueId }
+                    onCdEntryClick(
+                        navHostController,
+                        viewModel.selectedEntries.values.map { it.id.valueId },
                     )
                 },
                 onConfirmDelete = viewModel::deleteSelected,
@@ -120,25 +113,24 @@ class CdEntryNavigator : BrowseSelectionNavigator {
                     if (viewModel.selectedEntries.isNotEmpty()) {
                         viewModel.selectEntry(index, entry)
                     } else {
-                        navHostController.navToEntryDetails(
-                            CdNavDestinations.ENTRY_DETAILS.id,
-                            listOf(entry.id.valueId)
-                        )
+                        onCdEntryClick(navHostController, listOf(entry.id.valueId))
                     }
                 },
                 onLongClickEntry = viewModel::selectEntry,
                 onClickClear = viewModel::clearSelected,
                 onClickEdit = {
-                    navHostController.navToEntryDetails(
-                        CdNavDestinations.ENTRY_DETAILS.id,
-                        viewModel.selectedEntries.values.map { it.id.valueId }
+                    onCdEntryClick(
+                        navHostController,
+                        viewModel.selectedEntries.values.map { it.id.valueId },
                     )
                 },
                 onConfirmDelete = viewModel::onDeleteSelected,
             )
         }
 
-        navGraphBuilder.entryDetailsComposable(CdNavDestinations.ENTRY_DETAILS.id) { entryIds ->
+        navGraphBuilder.entryDetailsComposable(
+            CdNavDestinations.ENTRY_DETAILS.id
+        ) { entryIds, imageCornerDp ->
             val viewModel = hiltViewModel<CdEntryDetailsViewModel>()
                 .apply { initialize(entryIds.map { EntryId(CdEntryUtils.SCOPED_ID_TYPE, it) }) }
 
@@ -152,23 +144,16 @@ class CdEntryNavigator : BrowseSelectionNavigator {
 
                 EntryDetailsScreen(
                     screenKey = CdNavDestinations.ENTRY_DETAILS.id,
+                    viewModel = viewModel,
                     onClickBack = { navHostController.popBackStack() },
-                    imageState = { viewModel.entryImageController.imageState },
+                    imageCornerDp = imageCornerDp,
                     onImageClickOpen = {
                         viewModel.entryImageController.onImageClickOpen(navHostController, it)
                     },
-                    areSectionsLoading = { viewModel.sectionsLoading },
-                    sections = { viewModel.sections },
-                    saving = { viewModel.saving },
                     onClickSave = { viewModel.onClickSave(navHostController) },
                     onLongClickSave = { viewModel.onLongClickSave(navHostController) },
-                    errorRes = { viewModel.errorResource },
-                    onErrorDismiss = { viewModel.errorResource = null },
                     onConfirmDelete = { viewModel.onConfirmDelete(navHostController) },
-                    cropState = viewModel.entryImageController.cropState,
-                    showExitPrompt = viewModel.showExitPrompt,
                     onExitConfirm = { backPressedDispatcher?.let(viewModel::onExitConfirm) },
-                    onExitDismiss = viewModel::onExitDismiss,
                 )
             }
         }
@@ -187,5 +172,22 @@ class CdEntryNavigator : BrowseSelectionNavigator {
                     "&title=${entry.text}" +
                     queryParam
         )
+    }
+
+    fun onCdEntryClick(
+        navHostController: NavHostController,
+        entryIds: List<String>,
+        imageCornerDp: Dp? = null,
+    ) {
+        var path = CdNavDestinations.ENTRY_DETAILS.id
+        val queryParams = listOfNotNull(
+            entryIds.takeIf { it.isNotEmpty() }
+                ?.let { "entry_ids=${it.joinToString(separator = "&entry_ids=")}" },
+            imageCornerDp?.let { "image_corner_dp=${it.value.roundToInt()}" },
+        )
+        if (queryParams.isNotEmpty()) {
+            path += "?" + queryParams.joinToString(separator = "&")
+        }
+        navHostController.navigate(path)
     }
 }

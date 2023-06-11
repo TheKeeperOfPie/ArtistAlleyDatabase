@@ -104,6 +104,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.ImeAction
@@ -314,6 +315,8 @@ private fun MultiTextSection(section: EntrySection.MultiText) {
                 && section.pendingValue.isNotBlank()
                 && section.predictions.isNotEmpty()
             ) {
+                // DropdownMenu overrides the LocalUriHandler, so save it here and pass it down
+                val uriHandler = LocalUriHandler.current
                 DropdownMenu(
                     expanded = focused && section.predictions.isNotEmpty(),
                     onDismissRequest = { focusRequester.freeFocus() },
@@ -363,6 +366,7 @@ private fun MultiTextSection(section: EntrySection.MultiText) {
                                     EntryImage(
                                         image = image,
                                         link = imageLink,
+                                        uriHandler = uriHandler,
                                         modifier = Modifier
                                             .fillMaxHeight()
                                             .heightIn(min = 54.dp)
@@ -407,6 +411,7 @@ private fun MultiTextSection(section: EntrySection.MultiText) {
                                         EntryImage(
                                             image = secondaryImage,
                                             link = secondaryImageLink,
+                                            uriHandler = uriHandler,
                                             modifier = Modifier
                                                 .fillMaxHeight()
                                                 .heightIn(min = 54.dp)
@@ -666,8 +671,8 @@ fun EntryImage(
     modifier: Modifier = Modifier,
     link: () -> String?,
     contentScale: ContentScale = ContentScale.FillWidth,
+    uriHandler: UriHandler = LocalUriHandler.current,
 ) {
-    val uriHandler = LocalUriHandler.current
     Box(
         modifier
             .optionalClickable(

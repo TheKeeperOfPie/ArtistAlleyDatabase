@@ -12,6 +12,7 @@ internal class TestViewModel(
     val entries: MutableMap<String, TestEntry> = mutableMapOf(),
     private val testDirectory: File,
 ) : EntryDetailsViewModel<TestEntry, TestModel>(
+    TestEntry::class,
     mockStrict {
         whenever(filesDir) {
             testDirectory.resolve(UUID.randomUUID().toString()).apply { mkdirs() }
@@ -19,8 +20,11 @@ internal class TestViewModel(
     },
     "test",
     -1,
-    TestSettings(cropUri)
+    TestSettings(cropUri),
+    mockStrict { },
 ) {
+
+    override val sections = emptyList<EntrySection>()
 
     private var model: TestModel? = null
 
@@ -65,5 +69,9 @@ internal class TestViewModel(
     }
 
     // TODO: Add tests for unsaved changes prompt
-    override fun entryHashCode() = 0
+    override fun entry() = when (type) {
+        Type.ADD -> null
+        Type.SINGLE_EDIT -> TestEntry("", model!!.data, false)
+        Type.MULTI_EDIT -> null
+    }
 }

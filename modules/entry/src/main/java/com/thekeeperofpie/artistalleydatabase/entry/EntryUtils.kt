@@ -7,6 +7,8 @@ import androidx.annotation.MainThread
 import androidx.annotation.StringRes
 import androidx.annotation.WorkerThread
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import androidx.navigation.NavGraphBuilder
@@ -156,17 +158,23 @@ object EntryUtils {
 
     fun NavGraphBuilder.entryDetailsComposable(
         route: String,
-        block: @Composable (entryIds: List<String>) -> Unit
+        block: @Composable (entryIds: List<String>, imageCornerDp: Dp?) -> Unit
     ) = composable(
-        "$route?entry_ids={entry_ids}",
+        "$route?entry_ids={entry_ids}&image_corner_dp={image_corner_dp}",
         arguments = listOf(
             navArgument("entry_ids") {
                 type = NavType.StringArrayType
                 nullable = true
             },
+            navArgument("image_corner_dp") {
+                type = NavType.StringType
+                nullable = true
+            },
         )
     ) {
-        block(it.arguments?.getStringArray("entry_ids")?.toList() ?: emptyList())
+        val entryIds = it.arguments?.getStringArray("entry_ids")?.toList() ?: emptyList()
+        val imageCornerDp = it.arguments?.getString("image_corner_dp")?.toIntOrNull()
+        block(entryIds, imageCornerDp?.dp)
     }
 
     fun NavHostController.navToEntryDetails(route: String, entryIds: List<String>) {

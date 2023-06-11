@@ -138,7 +138,9 @@ class ArtEntryNavigator : BrowseSelectionNavigator {
             )
         }
 
-        navGraphBuilder.entryDetailsComposable(route = ArtNavDestinations.ENTRY_DETAILS.id) { entryIds ->
+        navGraphBuilder.entryDetailsComposable(
+            route = ArtNavDestinations.ENTRY_DETAILS.id
+        ) { entryIds, imageCornerDp ->
             val viewModel = hiltViewModel<ArtEntryDetailsViewModel>()
                 .apply { initialize(entryIds.map { EntryId(ArtEntryUtils.SCOPED_ID_TYPE, it) }) }
 
@@ -152,24 +154,17 @@ class ArtEntryNavigator : BrowseSelectionNavigator {
 
                 EntryDetailsScreen(
                     screenKey = ArtNavDestinations.ENTRY_DETAILS.id,
+                    viewModel = viewModel,
                     onClickBack = { navHostController.popBackStack() },
-                    imageState = { viewModel.entryImageController.imageState },
+                    imageCornerDp = imageCornerDp,
                     onImageClickOpen = {
                         viewModel.entryImageController.onImageClickOpen(navHostController, it)
                     },
-                    areSectionsLoading = { viewModel.sectionsLoading },
-                    sections = { viewModel.sections },
-                    saving = { viewModel.saving },
                     onClickSave = { viewModel.onClickSave(navHostController) },
                     onLongClickSave = { viewModel.onLongClickSave(navHostController) },
-                    errorRes = { viewModel.errorResource },
-                    onErrorDismiss = { viewModel.errorResource = null },
                     onConfirmDelete = { viewModel.onConfirmDelete(navHostController) },
                     onClickSaveTemplate = { viewModel.onClickSaveTemplate() },
-                    cropState = viewModel.entryImageController.cropState,
-                    showExitPrompt = viewModel.showExitPrompt,
                     onExitConfirm = { backPressedDispatcher?.let(viewModel::onExitConfirm) },
-                    onExitDismiss = viewModel::onExitDismiss,
                 )
             }
         }

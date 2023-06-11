@@ -8,6 +8,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
@@ -42,6 +43,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserScreen
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserViewModel
+import com.thekeeperofpie.artistalleydatabase.cds.CdEntryNavigator
+import com.thekeeperofpie.artistalleydatabase.cds.grid.CdEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
@@ -603,6 +606,7 @@ object AnimeNavigator {
     class NavigationCallback(
         // Null to make previews easier
         private val navHostController: NavHostController? = null,
+        private val cdEntryNavigator: CdEntryNavigator? = null,
         private val onOpenUri: (String) -> Unit = {},
     ) {
         fun onMediaClick(media: UserFavoriteMediaNode, imageWidthToHeightRatio: Float) {
@@ -662,6 +666,12 @@ object AnimeNavigator {
 
         fun onIgnoreListOpen(mediaType: MediaType?) {
             navHostController?.navigate(AnimeNavDestinations.IGNORED.id + "?mediaType=${mediaType?.rawValue}")
+        }
+
+        fun onCdEntryClick(model: CdEntryGridModel, imageCornerDp: Dp?) {
+            navHostController?.let {
+                cdEntryNavigator?.onCdEntryClick(it, listOf(model.id.valueId), imageCornerDp)
+            }
         }
     }
 }

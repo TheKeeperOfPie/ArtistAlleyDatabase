@@ -96,6 +96,7 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.media3.common.util.RepeatModeUtil
@@ -118,6 +119,7 @@ import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.Abs
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.YouTubePlayerCallback
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
 import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
+import com.thekeeperofpie.artistalleydatabase.android_utils.UriUtils
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
 import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
@@ -523,7 +525,10 @@ object AnimeMediaDetailsScreen {
             onSongsExpandedChange = { expandedState.songs = it },
         )
 
-        cdsSection(viewModel.cdEntries)
+        cdsSection(
+            cdEntries = viewModel.cdEntries,
+            onEntryClick = { navigationCallback.onCdEntryClick(model = it, imageCornerDp = 12.dp) },
+        )
 
         staffSection(
             screenKey = AnimeNavDestinations.MEDIA_DETAILS.id + "_staff",
@@ -1205,6 +1210,7 @@ object AnimeMediaDetailsScreen {
 
     private fun LazyListScope.cdsSection(
         cdEntries: List<CdEntryGridModel>,
+        onEntryClick: (CdEntryGridModel) -> Unit,
     ) {
         if (cdEntries.isEmpty()) return
 
@@ -1219,12 +1225,18 @@ object AnimeMediaDetailsScreen {
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 itemsIndexed(cdEntries) { index, cdEntry ->
-                    ElevatedCard {
+                    var transitionProgress by remember { mutableStateOf(0f) }
+                    val cornerDp = lerp(12.dp, 0.dp, transitionProgress)
+                    ElevatedCard(
+                        shape = RoundedCornerShape(cornerDp),
+                    ) {
                         EntryGrid.Entry(
-                            imageScreenKey = AnimeNavDestinations.MEDIA_DETAILS.id  + "_cds",
+                            imageScreenKey = AnimeNavDestinations.MEDIA_DETAILS.id + "_cds",
                             expectedWidth = width,
                             index = index,
                             entry = cdEntry,
+                            onClickEntry = { _, entry -> onEntryClick(entry) },
+                            onSharedElementFractionChanged = { transitionProgress = it }
                         )
                     }
                 }
@@ -1860,7 +1872,8 @@ object AnimeMediaDetailsScreen {
                 Link(
                     id = "AniList",
                     type = ExternalLinkType.INFO,
-                    url = AniListUtils.mediaUrl(it, mediaId),
+                    url = AniListUtils.mediaUrl(it, mediaId) +
+                            "?${UriUtils.FORCE_EXTERNAL_URI_PARAM}=true",
                     site = "AniList",
                 )
             }

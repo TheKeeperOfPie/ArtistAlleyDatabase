@@ -54,10 +54,12 @@ open class ArtEntryDetailsViewModel @Inject constructor(
     private val artSettings: ArtSettings,
     entrySettings: EntrySettings,
 ) : EntryDetailsViewModel<ArtEntry, ArtEntryModel>(
+    ArtEntry::class,
     application,
     ArtEntryUtils.SCOPED_ID_TYPE,
     R.string.art_entry_image_content_description,
     entrySettings,
+    appJson,
 ) {
 
     protected val seriesSection = EntrySection.MultiText(
@@ -97,11 +99,11 @@ open class ArtEntryDetailsViewModel @Inject constructor(
         lockState = EntrySection.LockState.UNLOCKED
     )
 
-    val sections = listOf(
+    override val sections = listOf(
         seriesSection,
         characterSection,
-        sourceSection,
         artistSection,
+        sourceSection,
         tagSection,
         printSizeSection,
         notesSection,
@@ -316,16 +318,16 @@ open class ArtEntryDetailsViewModel @Inject constructor(
         )
     }
 
-    override fun entryHashCode() = when (type) {
-        Type.ADD -> 1
+    override fun entry() = when (type) {
+        Type.ADD -> null
         Type.SINGLE_EDIT -> makeBaseEntry().copy(
             // Searchable values are ignored because they rely on network and aren't restored
             // TODO: Fix this and actually track searchable values alongside serialized values
             seriesSearchable = emptyList(),
             charactersSearchable = emptyList(),
             lastEditTime = null
-        ).hashCode()
-        Type.MULTI_EDIT -> 0 // TODO: Doesn't handle multi-edit unsaved change detection
+        )
+        Type.MULTI_EDIT -> null // TODO: Doesn't handle multi-edit unsaved change detection
     }
 
     override suspend fun saveSingleEntry(

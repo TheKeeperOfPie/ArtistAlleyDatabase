@@ -8,6 +8,7 @@
     <string name="close">Close</string>
     <string name="app_name">Artist Alley Database</string>
     <string name="confirm">Confirm</string>
+    <string name="exit">Exit</string>
     <string name="cancel">Cancel</string>
     <string name="load">Load</string>
     <string name="save">Save</string>
