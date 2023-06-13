@@ -53,8 +53,14 @@ dependencyAnalysis {
             }
             onUnusedDependencies {
                 exclude(
+                    "androidx.compose.animation:animation",
+                    "androidx.compose.material:material-icons-core",
+                    "androidx.compose.material:material-icons-extended",
+                    "androidx.compose.material:material",
                     "androidx.compose.material3:material3",
+                    "androidx.compose.ui:ui",
                     "androidx.compose.ui:ui-tooling-preview",
+                    "androidx.constraintlayout:constraintlayout-compose",
                     "androidx.media3:media3-exoplayer-dash",
                     "androidx.media3:media3-exoplayer-hls",
                     "androidx.media3:media3-exoplayer-rtsp",

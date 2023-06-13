@@ -208,7 +208,7 @@ dependencies {
     implementation(libs.material3)
     implementation(libs.androidx.security.crypto)
 
-    runtimeOnly(libs.paging.runtime)
+    runtimeOnly(libs.paging.runtime.ktx)
     runtimeOnly(libs.paging.compose)
 
     runtimeOnly(libs.room.runtime)
