@@ -1,11 +1,11 @@
 package com.thekeeperofpie.artistalleydatabase.anilist.oauth
 
+import android.app.Activity
 import android.app.Application
 import android.content.ComponentName
-import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
-import android.net.Uri
-import androidx.browser.customtabs.CustomTabsIntent
+import androidx.core.app.ActivityOptionsCompat
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
@@ -16,9 +16,12 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+
 
 class AniListOAuthStore(
-    private val application: Application,
+    application: Application,
     masterKey: MasterKey,
 ) : NetworkAuthProvider {
 
@@ -56,6 +59,7 @@ class AniListOAuthStore(
     )
 
     val authToken = MutableStateFlow<String?>(null)
+    private val authTokenMutex = Mutex()
 
     override val authHeader get() = authToken.value?.let { "Bearer $it" }
 
@@ -64,15 +68,17 @@ class AniListOAuthStore(
     init {
         @OptIn(DelicateCoroutinesApi::class)
         GlobalScope.launch(CustomDispatchers.IO) {
-            authToken.tryEmit(sharedPreferences.getString(KEY_AUTH_TOKEN, null))
+            authTokenMutex.withLock {
+                authToken.tryEmit(sharedPreferences.getString(KEY_AUTH_TOKEN, null))
+            }
         }
     }
 
-    fun launchAuthRequest(context: Context) {
-        setShareTargetEnabled(application, true)
-        CustomTabsIntent.Builder()
-            .build()
-            .launchUrl(context, Uri.parse(ANILIST_OAUTH_URL))
+    fun launchAuthRequest(activity: Activity) {
+        activity.startActivity(
+            Intent(activity, AniListOAuthTrampolineActivity::class.java),
+            ActivityOptionsCompat.makeCustomAnimation(activity, 0, 0).toBundle(),
+        )
     }
 
     suspend fun storeAuthTokenResult(token: String) {
@@ -81,7 +87,9 @@ class AniListOAuthStore(
             .putString(KEY_AUTH_TOKEN, token)
             .commit()
 
-        authToken.emit(token)
+        authTokenMutex.withLock {
+            authToken.emit(token)
+        }
     }
 
     suspend fun clearAuthToken() {
@@ -90,6 +98,8 @@ class AniListOAuthStore(
             .remove(KEY_AUTH_TOKEN)
             .commit()
 
-        authToken.emit(null)
+        authTokenMutex.withLock {
+            authToken.emit(null)
+        }
     }
 }

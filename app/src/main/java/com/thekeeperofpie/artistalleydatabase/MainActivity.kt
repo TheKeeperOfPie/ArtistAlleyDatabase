@@ -26,7 +26,7 @@ import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -48,6 +48,7 @@ import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.OutOfQuotaPolicy
 import com.mxalbert.sharedelements.SharedElementsRoot
+import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListOAuthStore
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryNavigator
@@ -90,6 +91,9 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var settings: SettingsProvider
 
+    @Inject
+    lateinit var aniListOAuthStore: AniListOAuthStore
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -119,7 +123,7 @@ class MainActivity : ComponentActivity() {
                         drawerContent = {
                             // TODO: This is not a good way to to infer the selected root
                             var selectedRouteIndex by rememberSaveable {
-                                mutableStateOf(
+                                mutableIntStateOf(
                                     NavDrawerItems.values()
                                         .indexOfFirst { it.id == startDestination })
                             }
@@ -174,6 +178,11 @@ class MainActivity : ComponentActivity() {
                                             navController,
                                             this,
                                             ::onClickNav,
+                                            {
+                                                aniListOAuthStore.launchAuthRequest(
+                                                    this@MainActivity
+                                                )
+                                            },
                                             navigationCallback,
                                         )
 

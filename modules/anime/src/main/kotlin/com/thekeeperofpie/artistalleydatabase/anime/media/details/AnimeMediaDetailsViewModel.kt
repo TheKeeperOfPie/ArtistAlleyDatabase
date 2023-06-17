@@ -21,6 +21,7 @@ import com.anilist.type.ScoreFormat
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
+import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListOAuthStore
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AppMediaPlayer
 import com.thekeeperofpie.artistalleydatabase.anime.R
@@ -53,6 +54,7 @@ class AnimeMediaDetailsViewModel @Inject constructor(
     private val appJson: AppJson,
     private val animeThemesApi: AnimeThemesApi,
     val mediaPlayer: AppMediaPlayer,
+    oAuthStore: AniListOAuthStore,
 ) : ViewModel(), DefaultLifecycleObserver {
 
     companion object {
@@ -62,6 +64,8 @@ class AnimeMediaDetailsViewModel @Inject constructor(
     val colorMap = mutableStateMapOf<String, Pair<Color, Color>>()
 
     lateinit var mediaId: String
+
+    val hasAuth = oAuthStore.hasAuth
 
     var loading by mutableStateOf(true)
     var entry by mutableStateOf<AnimeMediaDetailsScreen.Entry?>(null)

@@ -75,6 +75,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -338,7 +339,8 @@ object AnimeMediaDetailsScreen {
                         }
 
                         val showFloatingActionButton =
-                            lazyListState.showFloatingActionButtonOnVerticalScroll()
+                            viewModel.hasAuth.collectAsState(initial = false).value &&
+                                    lazyListState.showFloatingActionButtonOnVerticalScroll()
                         AnimatedVisibility(
                             visible = showFloatingActionButton,
                             enter = fadeIn(),
@@ -1225,7 +1227,7 @@ object AnimeMediaDetailsScreen {
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 itemsIndexed(cdEntries) { index, cdEntry ->
-                    var transitionProgress by remember { mutableStateOf(0f) }
+                    var transitionProgress by remember { mutableFloatStateOf(0f) }
                     val cornerDp = lerp(12.dp, 0.dp, transitionProgress)
                     ElevatedCard(
                         shape = RoundedCornerShape(cornerDp),

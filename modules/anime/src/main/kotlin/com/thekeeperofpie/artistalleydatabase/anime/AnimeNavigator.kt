@@ -5,7 +5,6 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
@@ -55,6 +54,7 @@ object AnimeNavigator {
         navHostController: NavHostController,
         navGraphBuilder: NavGraphBuilder,
         onClickNav: () -> Unit,
+        onClickAuth: () -> Unit,
         navigationCallback: NavigationCallback,
     ) {
         navGraphBuilder.composable(
@@ -62,11 +62,10 @@ object AnimeNavigator {
             deepLinks = listOf(navDeepLink { uriPattern = "${AniListUtils.ANILIST_BASE_URL}/" }),
         ) {
             val viewModel = hiltViewModel<AnimeHomeViewModel>()
-            val context = LocalContext.current
             AnimeHomeScreen(
                 onClickNav = onClickNav,
-                needAuth = { viewModel.needAuth },
-                onClickAuth = { viewModel.onClickAuth(context) },
+                needAuth = { viewModel.needsAuth.collectAsState(true).value },
+                onClickAuth = onClickAuth,
                 onSubmitAuthToken = viewModel::onSubmitAuthToken,
                 navigationCallback = navigationCallback,
             )

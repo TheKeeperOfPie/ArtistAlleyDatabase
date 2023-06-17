@@ -18,12 +18,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -45,7 +45,7 @@ class AniListOAuthShareTargetActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val text = intent.getStringExtra(Intent.EXTRA_TEXT)
+        val text = intent.getStringExtra(Intent.EXTRA_TEXT) ?: intent.dataString
         setContent {
             Theme {
                 Surface(
@@ -64,25 +64,30 @@ class AniListOAuthShareTargetActivity : ComponentActivity() {
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .wrapContentHeight()
-                                .padding(it),
+                                .padding(it)
+                                .padding(16.dp),
                         ) {
-                            if (text.isNullOrBlank()) {
-                                ErrorText()
-                            } else {
-                                val viewModel = hiltViewModel<AniListOAuthViewModel>()
-                                    .apply { initialize(text) }
-                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                    if (viewModel.loading) {
+                            val viewModel = hiltViewModel<AniListOAuthViewModel>()
+                                .apply { initialize(text) }
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                val state = viewModel.state
+                                when (state) {
+                                    // TODO: Can this just be hidden into a translucent Activity
+                                    //  without showing the user anything?
+                                    AniListOAuthViewModel.State.Done,
+                                    AniListOAuthViewModel.State.Loading -> {
                                         CircularProgressIndicator()
                                         Text(
                                             stringResource(R.string.aniList_oAuth_loading),
                                             Modifier.padding(10.dp)
                                         )
-                                    } else {
-                                        Text(stringResource(R.string.aniList_oAuth_done))
-                                        TextButton(::finish) {
-                                            Text(stringResource(UtilsStringR.close))
-                                        }
+                                    }
+                                    is AniListOAuthViewModel.State.Error -> Error(state)
+                                }
+
+                                LaunchedEffect(state) {
+                                    if (state == AniListOAuthViewModel.State.Done) {
+                                        closeAndFinish()
                                     }
                                 }
                             }
@@ -124,7 +129,34 @@ class AniListOAuthShareTargetActivity : ComponentActivity() {
     }
 
     @Composable
-    private fun ErrorText() {
-        Text(stringResource(R.string.aniList_oAuth_error))
+    private fun Error(state: AniListOAuthViewModel.State.Error) {
+        Text(
+            text = stringResource(state.textRes),
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier.padding(
+                horizontal = 16.dp,
+                vertical = 10.dp,
+            ),
+        )
+
+        if (state.exception != null) {
+            Text(
+                text = state.exception.stackTraceToString(),
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.padding(
+                    horizontal = 16.dp,
+                    vertical = 10.dp,
+                ),
+            )
+        }
+    }
+
+    private fun closeAndFinish() {
+        startActivity(
+            Intent(this, AniListOAuthTrampolineActivity::class.java)
+                .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                .addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+        )
+        finish()
     }
 }

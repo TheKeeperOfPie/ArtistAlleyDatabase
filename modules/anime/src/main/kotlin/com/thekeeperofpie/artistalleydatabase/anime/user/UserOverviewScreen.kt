@@ -4,7 +4,6 @@ import androidx.annotation.StringRes
 import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
@@ -19,7 +18,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -32,7 +30,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
@@ -67,21 +64,19 @@ import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
 
-@Suppress("NAME_SHADOWING")
 @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 object UserOverviewScreen {
 
     @Composable
     operator fun invoke(
-        entry: () -> AniListUserScreen.Entry?,
+        entry: AniListUserScreen.Entry,
         viewer: AuthedUserQuery.Data.Viewer?,
         colorMap: MutableMap<String, Pair<Color, Color>>,
         navigationCallback: AnimeNavigator.NavigationCallback,
         modifier: Modifier = Modifier,
         bottomNavigationState: BottomNavigationState? = null,
     ) {
-        val entry = entry()
-        val user = entry?.user
+        val user = entry.user
         var descriptionExpanded by remember { mutableStateOf(false) }
         val colorCalculationState = rememberColorCalculationState(colorMap)
         LazyColumn(
@@ -90,19 +85,6 @@ object UserOverviewScreen {
             ),
             modifier = modifier.fillMaxSize()
         ) {
-            if (user == null) {
-                item {
-                    Box(modifier = Modifier.fillMaxSize()) {
-                        CircularProgressIndicator(
-                            modifier = Modifier
-                                .align(Alignment.Center)
-                                .padding(32.dp)
-                        )
-                    }
-                }
-                return@LazyColumn
-            }
-
             followingSection(
                 user = user,
                 viewer = viewer,

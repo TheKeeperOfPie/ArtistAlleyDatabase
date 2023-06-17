@@ -22,11 +22,13 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
@@ -53,17 +55,30 @@ class AniListUserViewModel @Inject constructor(
         this.userId = userId
 
         viewModelScope.launch(CustomDispatchers.IO) {
-            refreshUptimeMillis.collectLatest {
-                try {
-                    entry =
-                        aniListApi.user((userId ?: aniListApi.authedUser.value?.id?.toString())!!)
-                            ?.let(AniListUserScreen::Entry)
-                } catch (e: Exception) {
-                    errorResource = R.string.anime_media_list_error_loading to e
+            combine(refreshUptimeMillis, aniListApi.authedUser, ::Pair)
+                .collectLatest { (_, viewer) ->
+                    try {
+                        val userOrViewerId = userId ?: viewer?.id?.toString()
+                        if (userOrViewerId == null) {
+                            withContext(CustomDispatchers.Main) {
+                                errorResource = R.string.anime_media_list_error_loading to null
+                            }
+                        } else {
+                            entry = aniListApi.user(userOrViewerId)
+                                ?.let(AniListUserScreen::Entry)
+                        }
+                    } catch (e: Exception) {
+                        withContext(CustomDispatchers.Main) {
+                            errorResource = R.string.anime_media_list_error_loading to e
+                        }
+                    }
                 }
-            }
         }
     }
+
+    fun refresh() = refreshUptimeMillis.tryEmit(System.currentTimeMillis())
+
+    fun logOut() = aniListApi.logOut()
 
     sealed class States(
         private val viewModelScope: CoroutineScope,

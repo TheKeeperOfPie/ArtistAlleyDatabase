@@ -64,7 +64,9 @@ dependencyResolutionManagement {
             library("androidx.media3:media3-exoplayer-hls:1.1.0-beta01")
             library("androidx.media3:media3-exoplayer-rtsp:1.1.0-beta01")
             library("androidx.media3:media3-ui:1.1.0-beta01")
-            library("androidx.navigation:navigation-compose:2.7.0-beta01")
+
+            // Upgrading past 2.6.0 will break shared element transitions
+            library("androidx.navigation:navigation-compose:2.6.0")
             library("androidx.paging:paging-compose:3.2.0-beta01")
             library("androidx.paging:paging-runtime-ktx:3.2.0-beta01")
             library("androidx.palette:palette-ktx:1.0.0")

@@ -43,14 +43,23 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
+import okhttp3.Call
+import okhttp3.Callback
 import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
+import okhttp3.Response
+import java.io.IOException
 import java.time.LocalDate
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 
 class AuthedAniListApi(
-    scopedApplication: ScopedApplication,
-    oAuthStore: AniListOAuthStore,
+    private val scopedApplication: ScopedApplication,
+    private val oAuthStore: AniListOAuthStore,
     networkSettings: NetworkSettings,
-    okHttpClient: OkHttpClient,
+    private val okHttpClient: OkHttpClient,
 ) {
     companion object {
         private const val TAG = "AuthedAniListApi"
@@ -316,6 +325,49 @@ class AuthedAniListApi(
     }
 
     suspend fun user(id: String) = query(UserByIdQuery(id.toInt())).user
+
+    fun logOut() {
+        scopedApplication.scope.launch(CustomDispatchers.IO) {
+            try {
+                // TODO: This doesn't actually work right now, API doesn't support revoking
+                // TODO: Notify user that to really log out, they need to go to website
+                val result = executeLogout()?.body?.string()
+                Log.d(TAG, "Logging out response: $result")
+            } catch (e: Exception) {
+                Log.d(TAG, "Error logging out", e)
+            }
+
+            oAuthStore.clearAuthToken()
+        }
+    }
+
+    private suspend fun executeLogout() = suspendCancellableCoroutine {
+        val authHeader = oAuthStore.authHeader
+        if (authHeader == null || oAuthStore.authToken.value == null) {
+            it.resume(null)
+            return@suspendCancellableCoroutine
+        }
+        val call = okHttpClient.newCall(
+            Request.Builder()
+                .url(AniListUtils.GRAPHQL_API_URL)
+                .addHeader("Authorization", authHeader)
+                .post("""{"query":"mutation{Logout}","variables":{}}""".toRequestBody())
+                .build()
+        )
+        call.enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                it.resumeWithException(e)
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                it.resume(response)
+            }
+        })
+
+        it.invokeOnCancellation {
+            call.cancel()
+        }
+    }
 
     private suspend fun <D : Query.Data> query(query: Query<D>) =
         apolloClient.query(query).execute().dataOrThrow()

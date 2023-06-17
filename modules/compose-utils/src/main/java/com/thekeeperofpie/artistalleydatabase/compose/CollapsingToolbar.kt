@@ -30,7 +30,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -55,7 +55,7 @@ fun CollapsingToolbar(
     maxHeight: Dp,
     pinnedHeight: Dp,
     scrollBehavior: TopAppBarScrollBehavior,
-    content: @Composable (progress: Float) -> Unit,
+    content: @Composable BoxScope.(progress: Float) -> Unit,
 ) {
     val pinnedHeightPx: Float
     val maxHeightPx: Float
@@ -86,7 +86,7 @@ fun EnterAlwaysTopAppBar(
     windowInsets: WindowInsets = TopAppBarDefaults.windowInsets,
     content: @Composable BoxScope.() -> Unit,
 ) {
-    var heightOffsetLimit by remember { mutableStateOf(0f) }
+    var heightOffsetLimit by remember { mutableFloatStateOf(0f) }
     LaunchedEffect(heightOffsetLimit) {
         scrollBehavior.state.heightOffsetLimit = heightOffsetLimit
     }
@@ -128,7 +128,7 @@ fun EnterAlwaysNavigationBar(
     modifier: Modifier = Modifier,
     content: @Composable RowScope.() -> Unit,
 ) {
-    var heightOffsetLimit by remember { mutableStateOf(0f) }
+    var heightOffsetLimit by remember { mutableFloatStateOf(0f) }
     LaunchedEffect(heightOffsetLimit) {
         scrollBehavior.state.heightOffsetLimit = heightOffsetLimit
     }
