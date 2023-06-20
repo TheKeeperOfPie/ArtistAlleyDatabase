@@ -4,8 +4,8 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyRow
@@ -27,7 +26,6 @@ import androidx.compose.material.icons.filled.ImageNotSupported
 import androidx.compose.material.icons.filled.PeopleAlt
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PersonOutline
-import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.outlined.PeopleAlt
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
@@ -43,6 +41,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
@@ -52,20 +51,16 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import coil.size.Dimension
 import com.anilist.fragment.AniListListRowMedia
-import com.anilist.type.MediaSeason
+import com.anilist.fragment.MediaPreviewWithDescription
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.material.placeholder
 import com.google.accompanist.placeholder.material.shimmer
 import com.mxalbert.sharedelements.SharedElement
-import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
-import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
-import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
@@ -73,11 +68,11 @@ import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.fadingEdgeEnd
-import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
+import de.charlex.compose.HtmlText
 
 @OptIn(ExperimentalFoundationApi::class)
-object AnimeMediaListRow {
+object AnimeMediaLargeCard {
 
     @Composable
     operator fun invoke(
@@ -92,30 +87,36 @@ object AnimeMediaListRow {
         navigationCallback: AnimeNavigator.NavigationCallback =
             AnimeNavigator.NavigationCallback(null),
     ) {
-        var imageWidthToHeightRatio by remember { MutableSingle(1f) }
         ElevatedCard(
             modifier = modifier
                 .fillMaxWidth()
-                .heightIn(min = 180.dp)
+                .heightIn(min = 240.dp)
                 .combinedClickable(
                     enabled = entry != Entry.Loading,
-                    onClick = { navigationCallback.onMediaClick(entry, imageWidthToHeightRatio) },
+                    onClick = {
+                        navigationCallback.onMediaClick(entry.media!!)
+                    },
                     onLongClick = { onLongClick(entry) }
                 )
                 .alpha(if (entry.ignored) 0.38f else 1f)
         ) {
-            Row(modifier = Modifier.height(IntrinsicSize.Min)) {
-                CoverImage(
+            Box {
+                BannerImage(
                     screenKey = screenKey,
                     entry = entry,
-                    onClick = { navigationCallback.onMediaClick(entry, imageWidthToHeightRatio) },
+                    onClick = {
+                        navigationCallback.onMediaClick(entry.media!!)
+                    },
                     onLongPressImage = onLongPressImage,
                     colorCalculationState = colorCalculationState,
-                    onRatioAvailable = { imageWidthToHeightRatio = it }
                 )
 
-                Column(modifier = Modifier.heightIn(min = 180.dp)) {
-                    Row(Modifier.fillMaxWidth()) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .heightIn(min = 240.dp)
+                ) {
+                    Row(modifier = Modifier.fillMaxWidth()) {
                         Column(Modifier.weight(1f)) {
                             label?.invoke()
                             TitleText(entry)
@@ -125,13 +126,26 @@ object AnimeMediaListRow {
                         RatingSection(entry, modifier = Modifier.wrapContentWidth())
                     }
 
-                    Spacer(Modifier.weight(1f))
+                    val description = entry.media?.description
+                    if (description == null) {
+                        Spacer(Modifier.weight(1f))
+                    } else {
+                        HtmlText(
+                            text = description,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxWidth()
+                                .padding(16.dp)
+                        )
+                    }
 
                     entry.nextAiringEpisode?.let {
                         NextAiringSection(it, entry == Entry.Loading)
                     }
                     val (containerColor, textColor) =
-                        colorCalculationState.getColors(entry.id?.valueId)
+                        colorCalculationState.getColors(entry.id.valueId)
                     TagRow(
                         tags = entry.tags,
                         onTagClick = navigationCallback::onTagClick,
@@ -145,53 +159,53 @@ object AnimeMediaListRow {
     }
 
     @Composable
-    private fun CoverImage(
+    private fun BannerImage(
         screenKey: String,
         entry: Entry,
         onClick: (Entry) -> Unit = {},
         onLongPressImage: (entry: Entry) -> Unit,
         colorCalculationState: ColorCalculationState,
-        onRatioAvailable: (Float) -> Unit,
     ) {
         SharedElement(
-            key = "${entry.id?.scopedId}_image",
+            key = "${entry.id.scopedId}_banner_image",
             screenKey = screenKey,
         ) {
+            val foregroundColor = MaterialTheme.colorScheme.surface
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
-                    .data(entry.image)
+                    .data(entry.imageBanner ?: entry.image)
                     .crossfade(true)
-                    .allowHardware(colorCalculationState.hasColor(entry.id?.valueId.orEmpty()))
+                    .allowHardware(colorCalculationState.hasColor(entry.id.valueId))
                     .size(
-                        width = Dimension.Pixels(LocalDensity.current.run { 130.dp.roundToPx() }),
-                        height = Dimension.Undefined
+                        width = Dimension.Undefined,
+                        height = Dimension.Pixels(LocalDensity.current.run { 240.dp.roundToPx() }),
                     )
                     .build(),
                 contentScale = ContentScale.Crop,
                 fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
                 onSuccess = {
-                    onRatioAvailable(it.widthToHeightRatio())
                     ComposeColorUtils.calculatePalette(
-                        entry.id?.valueId.orEmpty(),
+                        entry.id.valueId,
                         it,
                         colorCalculationState,
                     )
                 },
-                contentDescription = stringResource(R.string.anime_media_cover_image_content_description),
+                contentDescription = stringResource(
+                    R.string.anime_media_banner_image_content_description
+                ),
                 modifier = Modifier
                     .background(MaterialTheme.colorScheme.surfaceVariant)
-                    .fillMaxHeight()
-                    .heightIn(min = 180.dp)
-                    .width(130.dp)
-                    .placeholder(
-                        visible = entry == Entry.Loading,
-                        highlight = PlaceholderHighlight.shimmer(),
-                    )
+                    .fillMaxWidth()
+                    .height(240.dp)
+                    .drawWithContent {
+                        drawContent()
+                        drawRect(foregroundColor, alpha = 0.5f)
+                    }
                     .combinedClickable(
                         onClick = { onClick(entry) },
                         onLongClick = { onLongPressImage(entry) },
                         onLongClickLabel = stringResource(
-                            R.string.anime_media_cover_image_long_press_preview
+                            R.string.anime_media_banner_image_long_press_preview
                         ),
                     )
                     // Clip to match card so that shared element animation keeps rounded corner
@@ -204,7 +218,7 @@ object AnimeMediaListRow {
     private fun TitleText(entry: Entry) {
         Text(
             text = entry.title ?: "Loading...",
-            style = MaterialTheme.typography.titleMedium,
+            style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Black,
             modifier = Modifier
                 .fillMaxWidth()
@@ -229,8 +243,8 @@ object AnimeMediaListRow {
                     withSeparator = true
                 ),
             ).joinToString(separator = " - "),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.typography.bodySmall.color
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.typography.bodyMedium.color
                 .takeOrElse { LocalContentColor.current }
                 .copy(alpha = 0.8f),
             modifier = Modifier
@@ -393,88 +407,30 @@ object AnimeMediaListRow {
         }
     }
 
-    interface Entry {
-        object Loading : Entry {
-            override val id = null
-            override val image = null
-            override val title = ""
-            override val tags = emptyList<AnimeMediaTagEntry>()
-            override var ignored = false
-        }
+    open class Entry(
+        val media: MediaPreviewWithDescription?,
+        ignored: Boolean = false,
+    ) {
+        object Loading : Entry(null)
 
-        val id: EntryId? get() = null
-        val image: String? get() = null
-        val imageExtraLarge: String? get() = image
-        val imageBanner: String? get() = null
-        val color: Color? get() = null
-        val title: String?
+        val id = EntryId("anime_media", media?.id.toString())
+        val image = media?.coverImage?.extraLarge
+        val imageBanner = media?.bannerImage
+        val color = media?.coverImage?.color?.let(ComposeColorUtils::hexToColor)
+        val title = media?.title?.userPreferred
 
-        val subtitleFormatRes: Int get() = R.string.anime_media_format_tv
-        val subtitleStatusRes: Int get() = R.string.anime_media_status_finished
-        val subtitleSeason: MediaSeason? get() = null
-        val subtitleSeasonYear: Int? get() = 2023
+        val subtitleFormatRes = media?.format.toTextRes()
+        val subtitleStatusRes = media?.status.toTextRes()
+        val subtitleSeason = media?.season
+        val subtitleSeasonYear = media?.seasonYear
 
-        val rating: Int? get() = 99
-        val popularity: Int? get() = 12345
+        val rating = media?.averageScore
+        val popularity = media?.popularity
 
-        val nextAiringEpisode: AniListListRowMedia.NextAiringEpisode? get() = null
+        val nextAiringEpisode = media?.nextAiringEpisode
 
-        val tags: List<AnimeMediaTagEntry> get() = emptyList()
+        val tags = media?.tags?.filterNotNull()?.map(::AnimeMediaTagEntry).orEmpty()
 
-        var ignored: Boolean
+        var ignored by mutableStateOf(ignored)
     }
-
-    open class MediaEntry<MediaType : AniListListRowMedia>(
-        val media: MediaType,
-        ignored: Boolean = false
-    ) : Entry {
-        override val id = EntryId("anime_media", media.id.toString())
-        override val image = media.coverImage?.extraLarge
-        override val imageBanner = media.bannerImage
-        override val color = media.coverImage?.color?.let(ComposeColorUtils::hexToColor)
-        override val title = media.title?.userPreferred
-
-        override val subtitleFormatRes = media.format.toTextRes()
-        override val subtitleStatusRes = media.status.toTextRes()
-        override val subtitleSeason = media.season
-        override val subtitleSeasonYear = media.seasonYear
-
-        override val rating = media.averageScore
-        override val popularity = media.popularity
-
-        override val nextAiringEpisode = media.nextAiringEpisode
-
-        override val tags = media.tags?.filterNotNull()?.map(::AnimeMediaTagEntry).orEmpty()
-
-        override var ignored by mutableStateOf(ignored)
-    }
-}
-
-@Preview
-@Composable
-private fun Preview() {
-    AnimeMediaListRow(screenKey = "Preview", object : AnimeMediaListRow.Entry {
-        override val image = null
-        override val title =
-            "Tsundere Akuyaku Reijou Liselotte to Jikkyou no Endou-kun to Kaisetsu no Kobayashi-san"
-        override val tags: List<AnimeMediaTagEntry> = listOf(
-            AnimeMediaTagEntry(
-                id = "857",
-                name = "Villainess",
-            ),
-            AnimeMediaTagEntry(
-                id = "164",
-                name = "Tsundere",
-            ),
-            AnimeMediaTagEntry(
-                id = "85",
-                shouldHide = true,
-                leadingIconVector = Icons.Filled.Warning,
-                leadingIconContentDescription = R.string.anime_media_tag_is_spoiler,
-                name = "Tragedy",
-                textHiddenRes = R.string.anime_media_tag_spoiler,
-            ),
-        )
-        override var ignored = false
-    })
 }

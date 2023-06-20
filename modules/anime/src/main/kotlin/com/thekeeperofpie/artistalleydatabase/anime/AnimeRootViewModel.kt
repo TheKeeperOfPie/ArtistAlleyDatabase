@@ -11,7 +11,7 @@ import javax.inject.Inject
 
 
 @HiltViewModel
-class AnimeHomeViewModel @Inject constructor(
+class AnimeRootViewModel @Inject constructor(
     private val oAuthStore: AniListOAuthStore,
 ) : ViewModel() {
 

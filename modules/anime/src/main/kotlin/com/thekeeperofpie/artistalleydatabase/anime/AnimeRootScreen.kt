@@ -7,6 +7,7 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.LibraryBooks
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
@@ -26,6 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import com.anilist.type.MediaType
+import com.thekeeperofpie.artistalleydatabase.anime.home.AnimeHomeScreen
 import com.thekeeperofpie.artistalleydatabase.anime.user.viewer.AniListViewerProfileScreen
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysNavigationBar
@@ -34,7 +36,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
 import com.thekeeperofpie.artistalleydatabase.compose.navigationBarEnterAlwaysScrollBehavior
 
-object AnimeHomeScreen {
+object AnimeRootScreen {
 
     @Composable
     operator fun invoke(
@@ -49,10 +51,10 @@ object AnimeHomeScreen {
         var selectedScreen by rememberSaveable(stateSaver = object :
             Saver<NavDestinations, String> {
             override fun restore(value: String) =
-                NavDestinations.values().find { it.id == value } ?: NavDestinations.SEARCH
+                NavDestinations.values().find { it.id == value } ?: NavDestinations.HOME
 
             override fun SaverScope.save(value: NavDestinations) = value.id
-        }) { mutableStateOf(NavDestinations.SEARCH) }
+        }) { mutableStateOf(NavDestinations.HOME) }
 
         val scrollBehavior = navigationBarEnterAlwaysScrollBehavior()
         val bottomNavigationState = BottomNavigationState(scrollBehavior)
@@ -108,6 +110,14 @@ object AnimeHomeScreen {
                     label = "Anime home destination transition",
                 ) {
                     when (it) {
+                        NavDestinations.HOME -> AnimeHomeScreen(
+                            navigationCallback = navigationCallback,
+                            scrollStateSaver = ScrollStateSaver.fromMap(
+                                NavDestinations.HOME.id,
+                                scrollPositions
+                            ),
+                            bottomNavigationState = bottomNavigationState,
+                        )
                         NavDestinations.ANIME -> AnimeNavigator.UserListScreen(
                             userId = null,
                             mediaType = MediaType.ANIME,
@@ -162,6 +172,11 @@ object AnimeHomeScreen {
         @StringRes val textRes: Int,
         val needsAuth: Boolean = false,
     ) {
+        HOME(
+            "home",
+            Icons.Filled.Home,
+            R.string.anime_screen_home,
+        ),
         ANIME(
             "anime_list",
             Icons.Filled.VideoLibrary,

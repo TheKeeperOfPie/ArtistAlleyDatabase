@@ -1,7 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anime.user
 
-import androidx.annotation.StringRes
-import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -12,12 +10,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -32,37 +27,21 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.constraintlayout.compose.ConstraintLayout
-import androidx.constraintlayout.compose.Dimension
-import androidx.core.graphics.ColorUtils
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
 import com.anilist.AuthedUserQuery
 import com.anilist.UserByIdQuery
-import com.anilist.fragment.UserFavoriteMediaNode
-import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
-import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
-import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.charactersSection
+import com.thekeeperofpie.artistalleydatabase.anime.media.mediaHorizontalRow
 import com.thekeeperofpie.artistalleydatabase.anime.staff.staffSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.anime.ui.descriptionSection
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
-import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
-import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
-import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
 
 @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 object UserOverviewScreen {
@@ -97,14 +76,16 @@ object UserOverviewScreen {
                 onExpandedChange = { descriptionExpanded = it },
             )
 
-            favoriteMediaSection(
+            mediaHorizontalRow(
+                screenKey = AnimeNavDestinations.USER.id,
                 titleRes = R.string.anime_user_favorite_anime_label,
                 entries = entry.anime,
                 onClickEntry = navigationCallback::onMediaClick,
                 colorCalculationState = colorCalculationState,
             )
 
-            favoriteMediaSection(
+            mediaHorizontalRow(
+                screenKey = AnimeNavDestinations.USER.id,
                 titleRes = R.string.anime_user_favorite_manga_label,
                 entries = entry.manga,
                 onClickEntry = navigationCallback::onMediaClick,
@@ -196,107 +177,6 @@ object UserOverviewScreen {
                     },
                     label = { AutoHeightText(stringResource(R.string.anime_user_following)) },
                 )
-            }
-        }
-    }
-
-    private fun LazyListScope.favoriteMediaSection(
-        @StringRes titleRes: Int,
-        entries: List<UserFavoriteMediaNode>,
-        onClickEntry: (UserFavoriteMediaNode, imageWidthToHeightRatio: Float) -> Unit,
-        colorCalculationState: ColorCalculationState,
-    ) {
-        if (entries.isEmpty()) return
-        item {
-            DetailsSectionHeader(stringResource(titleRes))
-        }
-
-        item {
-            LazyRow(
-                contentPadding = PaddingValues(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-            ) {
-                items(entries, { it.id }) {
-                    val id = it.id.toString()
-                    val colors = colorCalculationState.colorMap[id]
-                    val animationProgress by animateIntAsState(
-                        if (colors == null) 0 else 255,
-                        label = "Media card color fade in",
-                    )
-
-                    val containerColor = when {
-                        colors == null || animationProgress == 0 ->
-                            MaterialTheme.colorScheme.surface
-                        animationProgress == 255 -> colors.first
-                        else -> Color(
-                            ColorUtils.compositeColors(
-                                ColorUtils.setAlphaComponent(
-                                    colors.first.toArgb(),
-                                    animationProgress
-                                ),
-                                MaterialTheme.colorScheme.surface.toArgb()
-                            )
-                        )
-                    }
-
-                    var widthToHeightRatio by remember { MutableSingle(1f) }
-                    ElevatedCard(
-                        onClick = { onClickEntry(it, widthToHeightRatio) },
-                        colors = CardDefaults.elevatedCardColors(containerColor = containerColor),
-                    ) {
-                        ConstraintLayout {
-                            val (image, title) = createRefs()
-                            AsyncImage(
-                                model = ImageRequest.Builder(LocalContext.current)
-                                    .data(it.coverImage?.extraLarge)
-                                    .crossfade(true)
-                                    .allowHardware(colorCalculationState.hasColor(id))
-                                    .size(
-                                        width = coil.size.Dimension.Undefined,
-                                        height = coil.size.Dimension.Pixels(
-                                            LocalDensity.current.run { 180.dp.roundToPx() }
-                                        ),
-                                    )
-                                    .build(),
-                                contentScale = ContentScale.FillHeight,
-                                contentDescription = stringResource(R.string.anime_media_cover_image_content_description),
-                                onSuccess = {
-                                    widthToHeightRatio = it.widthToHeightRatio()
-                                    ComposeColorUtils.calculatePalette(
-                                        id = id,
-                                        success = it,
-                                        colorCalculationState = colorCalculationState,
-                                        heightStartThreshold = 3 / 4f,
-                                        selectMaxPopulation = true,
-                                    )
-                                },
-                                modifier = Modifier
-                                    .constrainAs(image) {
-                                        height = Dimension.value(180.dp)
-                                        width = Dimension.wrapContent
-                                        linkTo(start = parent.start, end = parent.end)
-                                        top.linkTo(parent.top)
-                                    }
-                            )
-
-                            AutoHeightText(
-                                text = it.title?.userPreferred.orEmpty(),
-                                color = ComposeColorUtils.bestTextColor(containerColor)
-                                    ?: Color.Unspecified,
-                                maxLines = 2,
-                                minLines = 2,
-                                overflow = TextOverflow.Ellipsis,
-                                modifier = Modifier
-                                    .padding(horizontal = 8.dp, vertical = 8.dp)
-                                    .constrainAs(title) {
-                                        linkTo(start = image.start, end = image.end)
-                                        top.linkTo(image.bottom)
-                                        width = Dimension.fillToConstraints
-                                    }
-                            )
-                        }
-                    }
-                }
             }
         }
     }

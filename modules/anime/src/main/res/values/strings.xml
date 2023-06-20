@@ -14,6 +14,7 @@
     <string name="anime_user_list_search">Search user list…</string>
     <string name="anime_media_banner_image">Media banner image</string>
     <string name="anime_media_cover_image_content_description">Media cover image</string>
+    <string name="anime_media_banner_image_content_description">Media banner image</string>
     <string name="anime_character_image_content_description">Character image</string>
     <string name="anime_staff_image_content_description">Staff image</string>
     <string name="anime_media_artist_image">Artist image</string>
@@ -23,6 +24,7 @@
     <string name="anime_character_error_loading">Error loading character</string>
     <string name="anime_staff_error_loading">Error loading staff</string>
     <string name="anime_media_list_no_results">No results</string>
+    <string name="anime_screen_home">Home</string>
     <string name="anime_screen_anime">Anime</string>
     <string name="anime_screen_manga">Manga</string>
     <string name="anime_screen_search">Search</string>
@@ -211,6 +213,7 @@
 
     <string name="anime_media_filter_expand_all_content_description">Expand/collapse all sections</string>
     <string name="anime_media_cover_image_long_press_preview">Preview cover image</string>
+    <string name="anime_media_banner_image_long_press_preview">Preview banner image</string>
     <string name="anime_media_tag_long_click_content_description">Preview tag</string>
     <string name="anime_media_tag_no_description_error">No tag description</string>
 
@@ -495,4 +498,14 @@
     <string name="anime_staff_image">Staff image</string>
     <string name="anime_staff_image_long_press_preview">Preview staff image</string>
     <string name="anime_staff_favorites_icon_content_description">Favorites</string>
+
+    <string name="anime_home_tab_anime">Anime</string>
+    <string name="anime_home_tab_manga">Manga</string>
+    <string name="anime_home_trending">TRENDING</string>
+    <string name="anime_home_popular_this_season">THIS SEASON</string>
+    <string name="anime_home_popular_next_season">NEXT SEASON</string>
+    <string name="anime_home_popular">POPULAR</string>
+    <string name="anime_home_top">TOP ALL TIME</string>
+    <string name="anime_home_error_loading_anime">Error loading anime</string>
+    <string name="anime_home_error_loading_manga">Error loading manga</string>
 </resources>

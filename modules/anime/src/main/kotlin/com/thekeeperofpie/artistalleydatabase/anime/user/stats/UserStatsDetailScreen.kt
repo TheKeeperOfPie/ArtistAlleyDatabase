@@ -32,6 +32,7 @@ import coil.request.ImageRequest
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.material.placeholder
 import com.google.accompanist.placeholder.material.shimmer
+import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
 import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
 import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
@@ -50,6 +51,7 @@ object UserStatsDetailScreen {
 
     @Composable
     operator fun <Value> invoke(
+        screenKey: String,
         statistics: @Composable () -> AniListUserScreen.Entry.Statistics?,
         navigationCallback: AnimeNavigator.NavigationCallback,
         state: AniListUserViewModel.States.State<Value>,
@@ -64,7 +66,8 @@ object UserStatsDetailScreen {
         valueToMeanScore: (Value) -> Double,
         valueToMediaIds: (Value) -> List<Int>,
         onValueClick: (Value, imageWidthToHeightRatio: Float) -> Unit,
-        initialItemImage: ((Value) -> String?)? = null
+        initialItemId: ((Value) -> String)? = null,
+        initialItemImage: ((Value) -> String?)? = null,
     ) {
         val statistics = statistics()
         LazyColumn(
@@ -92,6 +95,7 @@ object UserStatsDetailScreen {
             if (values.isNotEmpty()) {
                 items(values, key = valueToKey) {
                     StatsDetailCard(
+                        screenKey = screenKey,
                         value = it,
                         valueToText = valueToText,
                         valueToCount = valueToCount,
@@ -100,6 +104,7 @@ object UserStatsDetailScreen {
                         valueToMeanScore = valueToMeanScore,
                         valueToMediaIds = valueToMediaIds,
                         onValueClick = onValueClick,
+                        initialItemId = initialItemId,
                         initialItemImage = initialItemImage,
                         state = state,
                         isAnime = isAnime,
@@ -112,6 +117,7 @@ object UserStatsDetailScreen {
 
     @Composable
     private fun <Value> StatsDetailCard(
+        screenKey: String,
         value: Value,
         valueToText: (Value) -> String,
         valueToCount: (Value) -> Int,
@@ -120,6 +126,7 @@ object UserStatsDetailScreen {
         valueToMeanScore: (Value) -> Double,
         valueToMediaIds: (Value) -> List<Int>,
         onValueClick: (Value, imageWidthToHeightRatio: Float) -> Unit,
+        initialItemId: ((Value) -> String)?,
         initialItemImage: ((Value) -> String?)?,
         state: AniListUserViewModel.States.State<Value>,
         isAnime: Boolean,
@@ -168,6 +175,8 @@ object UserStatsDetailScreen {
                         if (initialItemImage != null) {
                             item {
                                 InnerCard(
+                                    screenKey = screenKey,
+                                    id = initialItemId!!.invoke(value),
                                     image = initialItemImage,
                                     loading = false,
                                     onClick = {
@@ -183,6 +192,8 @@ object UserStatsDetailScreen {
                         items(mediaIds, key = { it }) {
                             val media = medias.getOrNull()?.get(it)
                             InnerCard(
+                                screenKey = screenKey,
+                                id = media?.id.toString(),
                                 image = media?.coverImage?.extraLarge,
                                 loading = media == null,
                                 onClick = { ratio ->
@@ -206,6 +217,8 @@ object UserStatsDetailScreen {
 
     @Composable
     private fun InnerCard(
+        screenKey: String,
+        id: String,
         image: String?,
         loading: Boolean,
         onClick: () -> Unit,
@@ -213,37 +226,46 @@ object UserStatsDetailScreen {
     ) {
         Card(onClick = onClick) {
             val density = LocalDensity.current
-            AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(image)
-                    .crossfade(true)
-                    .size(
-                        width = density.run { 130.dp.roundToPx() },
-                        height = density.run { 180.dp.roundToPx() },
-                    )
-                    .build(),
-                contentScale = ContentScale.Crop,
-                onSuccess = { onImageRatioCalculated(it.widthToHeightRatio()) },
-                contentDescription = stringResource(R.string.anime_media_cover_image_content_description),
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .size(width = 130.dp, height = 180.dp)
-                    .placeholder(
-                        visible = loading,
-                        highlight = PlaceholderHighlight.shimmer(),
-                    )
-            )
+            SharedElement(
+                key = "anime_media_${id}_image",
+                screenKey = screenKey,
+            ) {
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(image)
+                        .crossfade(true)
+                        .size(
+                            width = density.run { 130.dp.roundToPx() },
+                            height = density.run { 180.dp.roundToPx() },
+                        )
+                        .build(),
+                    contentScale = ContentScale.Crop,
+                    onSuccess = { onImageRatioCalculated(it.widthToHeightRatio()) },
+                    contentDescription = stringResource(R.string.anime_media_cover_image_content_description),
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .size(width = 130.dp, height = 180.dp)
+                        .placeholder(
+                            visible = loading,
+                            highlight = PlaceholderHighlight.shimmer(),
+                        )
+                )
+            }
         }
     }
 
     @Composable
     private fun InnerCard(
+        screenKey: String,
+        id: String,
         image: String?,
         loading: Boolean,
         onClick: (widthToHeightRatio: Float) -> Unit,
     ) {
         var widthToHeightRatio by remember { MutableSingle(1f) }
         InnerCard(
+            screenKey = screenKey,
+            id = id,
             image = image,
             loading = loading,
             onClick = { onClick(widthToHeightRatio) },

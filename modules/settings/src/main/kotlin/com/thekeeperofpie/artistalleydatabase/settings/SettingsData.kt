@@ -20,4 +20,5 @@ data class SettingsData(
     val showIgnored: Boolean = false,
     val ignoredAniListMediaIds: Set<Int> = emptySet(),
     val navDrawerStartDestination: String? = null,
+    val hideStatusBar: Boolean = false,
 )

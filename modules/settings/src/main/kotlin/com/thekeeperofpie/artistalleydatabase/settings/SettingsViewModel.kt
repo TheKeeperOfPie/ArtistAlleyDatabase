@@ -45,6 +45,9 @@ class SettingsViewModel @Inject constructor(
     val networkLoggingLevel: StateFlow<NetworkSettings.NetworkLoggingLevel>
         get() = settingsProvider.networkLoggingLevel
 
+    val hideStatusBar: StateFlow<Boolean>
+        get() = settingsProvider.hideStatusBar
+
     private var onClickDatabaseFetch: (WorkManager) -> Unit = {}
 
     fun initialize(onClickDatabaseFetch: (WorkManager) -> Unit) {
@@ -153,6 +156,10 @@ class SettingsViewModel @Inject constructor(
 
     fun onChangeNetworkLoggingLevel(level: NetworkSettings.NetworkLoggingLevel) {
         settingsProvider.networkLoggingLevel.value = level
+    }
+
+    fun onHideStatusBarChanged(hide: Boolean) {
+        settingsProvider.hideStatusBar.value = hide
     }
 
     fun checkMismatchedCdEntryData() {

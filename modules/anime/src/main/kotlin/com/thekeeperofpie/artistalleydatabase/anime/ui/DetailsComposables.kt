@@ -5,6 +5,7 @@ package com.thekeeperofpie.artistalleydatabase.anime.ui
 
 import androidx.annotation.StringRes
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -130,8 +131,13 @@ internal fun CoverAndBannerHeader(
                     }
                     .run {
                         val color = color()
-                        if (color?.isSpecified == true) {
-                            background(color)
+                        val hasColor = color?.isSpecified == true
+                        val alpha by animateFloatAsState(
+                            if (hasColor) 1f else 0f,
+                            label = "Banner image background alpha fade",
+                        )
+                        if (hasColor && alpha > 0f) {
+                            background(color!!.copy(alpha = alpha))
                         } else this
                     }
             )

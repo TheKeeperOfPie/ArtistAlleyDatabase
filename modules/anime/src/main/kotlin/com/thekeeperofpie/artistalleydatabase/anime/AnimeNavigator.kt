@@ -17,6 +17,7 @@ import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
 import com.anilist.fragment.CharacterNavigationData
 import com.anilist.fragment.MediaNavigationData
+import com.anilist.fragment.MediaPreviewWithDescription
 import com.anilist.fragment.StaffNavigationData
 import com.anilist.fragment.UserFavoriteMediaNode
 import com.anilist.fragment.UserNavigationData
@@ -61,8 +62,8 @@ object AnimeNavigator {
             route = AnimeNavDestinations.HOME.id,
             deepLinks = listOf(navDeepLink { uriPattern = "${AniListUtils.ANILIST_BASE_URL}/" }),
         ) {
-            val viewModel = hiltViewModel<AnimeHomeViewModel>()
-            AnimeHomeScreen(
+            val viewModel = hiltViewModel<AnimeRootViewModel>()
+            AnimeRootScreen(
                 onClickNav = onClickNav,
                 needAuth = { viewModel.needsAuth.collectAsState(true).value },
                 onClickAuth = onClickAuth,
@@ -468,13 +469,13 @@ object AnimeNavigator {
     fun onMediaClick(
         navHostController: NavHostController,
         media: MediaNavigationData,
-        imageWidthToHeightRatio: Float,
+        imageWidthToHeightRatio: Float?,
     ) = navHostController.navigate(
         AnimeNavDestinations.MEDIA_DETAILS.id +
                 "?mediaId=${media.id}" +
                 "&title=${media.title?.userPreferred}" +
                 "&coverImage=${media.coverImage?.extraLarge}" +
-                "&coverImageWidthToHeightRatio=$imageWidthToHeightRatio"
+                imageWidthToHeightRatio?.let { "&coverImageWidthToHeightRatio=$it" }.orEmpty()
     )
 
     fun onMediaClick(
@@ -613,6 +614,13 @@ object AnimeNavigator {
         }
 
         fun onMediaClick(media: AnimeMediaListRow.Entry, imageWidthToHeightRatio: Float) {
+            navHostController?.let { onMediaClick(it, media, imageWidthToHeightRatio) }
+        }
+
+        fun onMediaClick(
+            media: MediaPreviewWithDescription,
+            imageWidthToHeightRatio: Float? = null,
+        ) {
             navHostController?.let { onMediaClick(it, media, imageWidthToHeightRatio) }
         }
 

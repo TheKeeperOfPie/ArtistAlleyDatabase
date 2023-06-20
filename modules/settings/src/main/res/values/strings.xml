@@ -12,4 +12,5 @@
     <string name="settings_database_type">Database</string>
     <string name="settings_network_logging_level_label">Network logging level</string>
     <string name="settings_network_logging_level_label_dropdown_content_description">Network logging level dropdown</string>
+    <string name="settings_hide_status_bar">Hide status bar</string>
 </resources>

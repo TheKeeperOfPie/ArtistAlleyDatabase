@@ -17,6 +17,7 @@ fragment AniListMedia on Media {
 }
 
 fragment AniListListRowMedia on Media {
+    ...MediaNavigationData
     id
     bannerImage
     coverImage {
@@ -334,3 +335,78 @@ query MediaWithCharacters($mediaId: Int, $page: Int, $perPage: Int) {
         }
     }
 }
+
+fragment MediaPreviewWithDescription on Media {
+    ...AniListListRowMedia
+    description(asHtml: true)
+}
+
+query HomeAnime(
+    $currentSeason: MediaSeason!,
+    $currentYear: Int!,
+    $nextSeason: MediaSeason!,
+    $nextYear: Int!,
+    $perPage: Int!,
+) {
+    trending: Page(perPage: $perPage) {
+        media(sort: TRENDING_DESC, type: ANIME, isAdult: false) {
+            ...MediaPreviewWithDescription
+        }
+    }
+
+    popularThisSeason: Page(perPage: $perPage) {
+        media(
+            season: $currentSeason,
+            seasonYear: $currentYear,
+            sort: POPULARITY_DESC,
+            type: ANIME,
+            isAdult: false,
+        ) {
+            ...MediaPreviewWithDescription
+        }
+    }
+
+    popularNextSeason: Page(perPage: $perPage) {
+        media(season: $nextSeason,
+            seasonYear: $nextYear,
+            sort: POPULARITY_DESC,
+            type: ANIME,
+            isAdult: false,
+        ) {
+            ...MediaPreviewWithDescription
+        }
+    }
+
+    popular: Page(perPage: $perPage) {
+        media(sort: POPULARITY_DESC, type: ANIME, isAdult: false) {
+            ...MediaPreviewWithDescription
+        }
+    }
+
+    top: Page(perPage: $perPage) {
+        media(sort: SCORE_DESC, type: ANIME, isAdult: false) {
+            ...MediaPreviewWithDescription
+        }
+    }
+}
+
+query HomeManga($perPage: Int!) {
+    trending: Page(perPage: $perPage) {
+        media(sort: TRENDING_DESC, type: MANGA, isAdult: false) {
+            ...MediaPreviewWithDescription
+        }
+    }
+
+    popular: Page(perPage: $perPage) {
+        media(sort: POPULARITY_DESC, type: MANGA, isAdult: false) {
+            ...MediaPreviewWithDescription
+        }
+    }
+
+    top: Page(perPage: $perPage) {
+        media(sort: SCORE_DESC, type: MANGA, isAdult: false) {
+            ...MediaPreviewWithDescription
+        }
+    }
+}
+

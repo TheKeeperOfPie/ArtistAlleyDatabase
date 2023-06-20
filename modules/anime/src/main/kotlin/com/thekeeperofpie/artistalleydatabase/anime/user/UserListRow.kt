@@ -36,6 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
@@ -196,7 +197,7 @@ object UserListRow {
             modifier = Modifier
                 // SubcomposeLayout doesn't support fill max width, so use a really large number.
                 // The parent will clamp the actual width so all content still fits on screen.
-                .size(width = 39393.dp, height = 96.dp)
+                .size(width = LocalConfiguration.current.screenWidthDp.dp, height = 96.dp)
         ) {
             items(media, key = { it.id }) {
                 var imageWidthToHeightRatio by remember { mutableStateOf<Float?>(null) }

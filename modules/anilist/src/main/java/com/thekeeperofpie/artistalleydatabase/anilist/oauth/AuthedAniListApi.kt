@@ -6,6 +6,8 @@ import com.anilist.CharacterAdvancedSearchQuery
 import com.anilist.CharacterDetailsQuery
 import com.anilist.DeleteMediaEntryMutation
 import com.anilist.GenresQuery
+import com.anilist.HomeAnimeQuery
+import com.anilist.HomeMangaQuery
 import com.anilist.MediaAdvancedSearchQuery
 import com.anilist.MediaByIdsQuery
 import com.anilist.MediaDetailsQuery
@@ -368,6 +370,26 @@ class AuthedAniListApi(
             call.cancel()
         }
     }
+
+    suspend fun homeAnime(
+        currentSeason: MediaSeason,
+        currentYear: Int,
+        nextSeason: MediaSeason,
+        nextYear: Int,
+        perPage: Int = 10,
+    ) = query(
+        HomeAnimeQuery(
+            currentSeason = currentSeason,
+            currentYear = currentYear,
+            nextSeason = nextSeason,
+            nextYear = nextYear,
+            perPage = perPage,
+        )
+    )
+
+    suspend fun homeManga(perPage: Int = 10) = query(
+        HomeMangaQuery(perPage = perPage)
+    )
 
     private suspend fun <D : Query.Data> query(query: Query<D>) =
         apolloClient.query(query).execute().dataOrThrow()

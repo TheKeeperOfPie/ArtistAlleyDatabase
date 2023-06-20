@@ -97,7 +97,8 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        if (BuildConfig.DEBUG) {
+        val hideStatusBar = settings.hideStatusBar.value
+        if (BuildConfig.DEBUG && hideStatusBar) {
             // TODO: On release, the lack of this prevents WindowInsets.isImeVisible from working
             WindowCompat.setDecorFitsSystemWindows(window, false)
         }
@@ -349,7 +350,9 @@ class MainActivity : ComponentActivity() {
                                                 onClickCropClear = viewModel::onClickCropClear,
                                                 onClickClearAniListOAuth = viewModel::onClickClearAniListOAuth,
                                                 networkLoggingLevel = { viewModel.networkLoggingLevel.collectAsState().value },
-                                                onChangeNetworkLoggingLevel = viewModel::onChangeNetworkLoggingLevel
+                                                onChangeNetworkLoggingLevel = viewModel::onChangeNetworkLoggingLevel,
+                                                hideStatusBar = { viewModel.hideStatusBar.collectAsState().value },
+                                                onHideStatusBarChanged = viewModel::onHideStatusBarChanged,
                                             )
                                         }
                                     }
@@ -375,7 +378,7 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-        if (BuildConfig.DEBUG && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+        if (BuildConfig.DEBUG && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && hideStatusBar) {
             window.insetsController?.run {
                 hide(WindowInsets.Type.statusBars())
                 systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE

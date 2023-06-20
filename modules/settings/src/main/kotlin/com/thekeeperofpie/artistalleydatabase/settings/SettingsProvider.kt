@@ -60,6 +60,7 @@ class SettingsProvider(
 
     var searchQuery = MutableStateFlow<ArtEntry?>(deserialize("searchQuery"))
     var navDrawerStartDestination = MutableStateFlow<String?>(deserialize("navDrawerStartDestination"))
+    var hideStatusBar = MutableStateFlow(deserialize("hideStatusBar") ?: false)
 
     private fun deserializeAnimeFilters(): Map<String, FilterData> {
         val stringValue = sharedPreferences.getString("savedAnimeFilters", "")
@@ -79,6 +80,7 @@ class SettingsProvider(
             showIgnored = showIgnored.value,
             ignoredAniListMediaIds = ignoredAniListMediaIds.value,
             navDrawerStartDestination = navDrawerStartDestination.value,
+            hideStatusBar = hideStatusBar.value,
         )
 
     // Initialization separated into its own method so that tests can cancel the StateFlow job
@@ -91,6 +93,7 @@ class SettingsProvider(
         subscribeProperty(scope, ::showAdult)
         subscribeProperty(scope, ::showIgnored)
         subscribeProperty(scope, ::navDrawerStartDestination)
+        subscribeProperty(scope, ::hideStatusBar)
         scope.launch(CustomDispatchers.IO) {
             ignoredAniListMediaIds.drop(1).collectLatest {
                 val stringValue = appJson.json.run {
@@ -133,6 +136,7 @@ class SettingsProvider(
         showIgnored.emit(data.showIgnored)
         ignoredAniListMediaIds.emit(data.ignoredAniListMediaIds)
         navDrawerStartDestination.emit(data.navDrawerStartDestination)
+        hideStatusBar.emit(data.hideStatusBar)
     }
 
     private inline fun <reified T> deserialize(name: String): T? {

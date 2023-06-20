@@ -8,7 +8,7 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -22,6 +22,8 @@ import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 
 object UserMediaScreen {
 
+    private const val SCREEN_KEY = "anime_user_media"
+
     @Composable
     operator fun invoke(
         user: () -> UserByIdQuery.Data.User?,
@@ -32,7 +34,7 @@ object UserMediaScreen {
     ) {
         val isAnime = state is AniListUserViewModel.States.Anime
         Column {
-            var selectedTabIndex by rememberSaveable { mutableStateOf(0) }
+            var selectedTabIndex by rememberSaveable { mutableIntStateOf(0) }
             val values = UserStatsTab.values()
                 .filter { !it.isAnimeOnly || isAnime }
             ScrollableTabRow(
@@ -61,6 +63,7 @@ object UserMediaScreen {
                     bottomNavigationState = bottomNavigationState,
                 )
                 UserStatsTab.GENRES -> UserStatsDetailScreen(
+                    screenKey = SCREEN_KEY,
                     statistics = statistics,
                     values = { it.statistics.genres?.filterNotNull().orEmpty() },
                     state = state.genresState,
@@ -76,6 +79,7 @@ object UserMediaScreen {
                     onValueClick = { value, _ -> navigationCallback.onGenreClick(value.genre!!) },
                 )
                 UserStatsTab.TAGS -> UserStatsDetailScreen(
+                    screenKey = SCREEN_KEY,
                     statistics = statistics,
                     values = { it.statistics.tags?.filterNotNull().orEmpty() },
                     state = state.tagsState,
@@ -96,6 +100,7 @@ object UserMediaScreen {
                     },
                 )
                 UserStatsTab.VOICE_ACTORS -> UserStatsDetailScreen(
+                    screenKey = SCREEN_KEY,
                     statistics = statistics,
                     values = { it.statistics.voiceActors?.filterNotNull().orEmpty() },
                     state = (state as AniListUserViewModel.States.Anime).voiceActorsState,
@@ -111,9 +116,11 @@ object UserMediaScreen {
                     onValueClick = { value, imageWidthToHeightRatio ->
                         navigationCallback.onStaffClick(value.voiceActor!!, imageWidthToHeightRatio)
                     },
+                    initialItemId = { it.voiceActor?.id.toString() },
                     initialItemImage = { it.voiceActor?.image?.large },
                 )
                 UserStatsTab.STUDIOS -> UserStatsDetailScreen(
+                    screenKey = SCREEN_KEY,
                     statistics = statistics,
                     values = { it.statistics.studios?.filterNotNull().orEmpty() },
                     state = (state as AniListUserViewModel.States.Anime).studiosState,
@@ -131,6 +138,7 @@ object UserMediaScreen {
                     },
                 )
                 UserStatsTab.STAFF -> UserStatsDetailScreen(
+                    screenKey = SCREEN_KEY,
                     statistics = statistics,
                     values = { it.statistics.staff?.filterNotNull().orEmpty() },
                     state = state.staffState,
@@ -146,6 +154,7 @@ object UserMediaScreen {
                     onValueClick = { value, imageWidthToHeightRatio ->
                         navigationCallback.onStaffClick(value.staff!!, imageWidthToHeightRatio)
                     },
+                    initialItemId = { it.staff?.id.toString() },
                     initialItemImage = { it.staff?.image?.large },
                 )
             }

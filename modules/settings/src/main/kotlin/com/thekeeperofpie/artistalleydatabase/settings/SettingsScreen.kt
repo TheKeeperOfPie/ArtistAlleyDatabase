@@ -18,10 +18,12 @@ import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -59,6 +61,8 @@ object SettingsScreen {
             NetworkSettings.NetworkLoggingLevel.BASIC
         },
         onChangeNetworkLoggingLevel: (NetworkSettings.NetworkLoggingLevel) -> Unit = {},
+        hideStatusBar: @Composable () -> Boolean = { false },
+        onHideStatusBarChanged: (Boolean) -> Unit = {},
     ) {
         Scaffold(
             topBar = {
@@ -138,6 +142,32 @@ object SettingsScreen {
                         bottom = 10.dp
                     ),
                 )
+
+                Divider()
+
+                ItemDropdown(
+                    label = R.string.settings_network_logging_level_label,
+                    value = networkLoggingLevel().name,
+                    iconContentDescription = R.string.settings_network_logging_level_label_dropdown_content_description,
+                    values = { NetworkSettings.NetworkLoggingLevel.values().toList() },
+                    textForValue = { it.name },
+                    onSelectItem = onChangeNetworkLoggingLevel,
+                    modifier = Modifier.padding(
+                        start = 16.dp,
+                        end = 16.dp,
+                        top = 10.dp,
+                        bottom = 10.dp
+                    ),
+                )
+
+                if (BuildConfig.DEBUG) {
+                    Divider()
+                    SwitchRow(
+                        titleRes = R.string.settings_hide_status_bar,
+                        checked = hideStatusBar,
+                        onCheckedChange = onHideStatusBarChanged,
+                    )
+                }
             }
         }
     }
@@ -157,6 +187,25 @@ object SettingsScreen {
         }
     }
 
+    @Composable
+    private fun SwitchRow(
+        @StringRes titleRes: Int,
+        checked: @Composable () -> Boolean,
+        onCheckedChange: (Boolean) -> Unit,
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 10.dp, bottom = 10.dp)
+        ) {
+            Text(
+                text = stringResource(titleRes),
+                Modifier
+                    .weight(1f)
+            )
+            Switch(checked = checked(), onCheckedChange = onCheckedChange)
+        }
+    }
+
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     private fun DatabaseDropdown(
@@ -164,7 +213,7 @@ object SettingsScreen {
         onSelectDatabase: (DatabaseType) -> Unit,
     ) {
         var expanded by remember { mutableStateOf(false) }
-        var selectedDatabaseTypeIndex by rememberSaveable { mutableStateOf(0) }
+        var selectedDatabaseTypeIndex by rememberSaveable { mutableIntStateOf(0) }
         ExposedDropdownMenuBox(
             expanded = expanded,
             onExpandedChange = { expanded = !expanded },
