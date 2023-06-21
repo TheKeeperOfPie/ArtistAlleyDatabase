@@ -47,11 +47,11 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_18
-        targetCompatibility = JavaVersion.VERSION_18
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
     kotlinOptions {
-        jvmTarget = "18"
+        jvmTarget = "11"
     }
     packaging {
         resources {
@@ -116,7 +116,7 @@ configurations.all {
 afterEvaluate {
     tasks.withType(KotlinCompile::class).forEach {
         it.kotlinOptions {
-            jvmTarget = "18"
+            jvmTarget = "11"
         }
     }
 }

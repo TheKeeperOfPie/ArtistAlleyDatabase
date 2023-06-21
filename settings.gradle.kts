@@ -42,7 +42,7 @@ dependencyResolutionManagement {
             plugin("com.autonomousapps.dependency-analysis").version("1.20.0")
             plugin("com.github.ben-manes.versions").version("0.47.0")
             plugin("com.google.dagger.hilt.android").version("2.46.1")
-            plugin("com.jaredsburrows.license").version("0.9.0")
+            plugin("com.jaredsburrows.license").version("0.9.3")
             plugin("org.barfuin.gradle.taskinfo").version("2.1.0")
             plugin("org.jetbrains.kotlin.plugin.serialization").version("1.9.0-Beta")
 
@@ -85,7 +85,7 @@ dependencyResolutionManagement {
             library("com.google.accompanist:accompanist-navigation-animation:0.31.3-beta")
             library("com.google.dagger:hilt-android:2.46.1")
             library("com.google.net.cronet:cronet-okhttp:0.1.0")
-            library("com.google.truth:truth:1.1.4")
+            library("com.google.truth:truth:1.1.5")
             library("com.linkedin.dexmaker:dexmaker-mockito-inline:2.28.3")
             library("com.neovisionaries:nv-i18n:1.29")
             library(
@@ -111,8 +111,8 @@ dependencyResolutionManagement {
             library("org.junit.jupiter:junit-jupiter-api:5.10.0-M1")
             library("org.junit.jupiter:junit-jupiter-engine:5.10.0-M1")
             library("org.mockito.kotlin:mockito-kotlin:5.0.0")
-            library("org.mockito:mockito-android:5.3.1")
-            library("org.mockito:mockito-core:5.3.1")
+            library("org.mockito:mockito-android:5.4.0")
+            library("org.mockito:mockito-core:5.4.0")
 
             prefix("androidx") {
                 library("androidx.browser:browser:1.6.0-alpha02")
