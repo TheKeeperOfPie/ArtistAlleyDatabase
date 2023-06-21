@@ -3,6 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.anime.home
 import android.annotation.SuppressLint
 import androidx.annotation.StringRes
 import androidx.compose.animation.core.animateIntAsState
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.gestures.snapping.SnapLayoutInfoProvider
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
@@ -249,6 +250,9 @@ object AnimeHomeScreen {
             val listState = rememberLazyListState()
             val snapLayoutInfoProvider =
                 remember(listState) { SnapLayoutInfoProvider(listState) { _, _, _ -> 0 } }
+            val colorPrimary = MaterialTheme.colorScheme.primary
+            val cardOutlineBorder = remember { BorderStroke(1.dp, colorPrimary) }
+
             LazyRow(
                 state = listState,
                 contentPadding = PaddingValues(
@@ -294,6 +298,7 @@ object AnimeHomeScreen {
                                     colors = CardDefaults.outlinedCardColors(
                                         containerColor = containerColor,
                                     ),
+                                    border = cardOutlineBorder,
                                     content = it,
                                 )
                             }
@@ -309,12 +314,11 @@ object AnimeHomeScreen {
                             }
                         }
 
-
-                    card {
-                        SharedElement(
-                            key = "anime_media_${item.id}_image",
-                            screenKey = SCREEN_KEY,
-                        ) {
+                    SharedElement(
+                        key = "anime_media_${item.id}_image",
+                        screenKey = SCREEN_KEY,
+                    ) {
+                        card {
                             AsyncImage(
                                 model = ImageRequest.Builder(LocalContext.current)
                                     .data(item.coverImage?.extraLarge)

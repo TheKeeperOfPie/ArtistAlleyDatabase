@@ -25,7 +25,6 @@ dependencies {
     implementation(libs.navigation.compose)
     implementation(libs.paging.compose)
     implementation(libs.coil.compose)
-    implementation(libs.html.text)
 
     implementation(libs.kotlinx.serialization.json)
 

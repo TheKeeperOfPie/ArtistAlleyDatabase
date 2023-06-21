@@ -494,7 +494,6 @@ object AnimeMediaDetailsScreen {
         )
 
         descriptionSection(
-            titleTextRes = R.string.anime_media_details_description_label,
             htmlText = entry.media.description,
             expanded = expandedState::description,
             onExpandedChange = { expandedState.description = it },
@@ -640,33 +639,41 @@ object AnimeMediaDetailsScreen {
                 )
             }
 
-            subtitleText()?.let {
-                Text(
-                    text = it,
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier
-                        .wrapContentHeight()
-                        .padding(horizontal = 16.dp, vertical = 4.dp)
-                        .fillMaxWidth()
-                        .wrapContentHeight(Alignment.Bottom)
-                )
+            val subtitleText = subtitleText()
+            AnimatedVisibility(subtitleText != null, label = "Media details subtitle text") {
+                if (subtitleText != null) {
+                    Text(
+                        text = subtitleText,
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier
+                            .wrapContentHeight()
+                            .padding(horizontal = 16.dp, vertical = 4.dp)
+                            .fillMaxWidth()
+                            .wrapContentHeight(Alignment.Bottom)
+                    )
+                }
             }
 
-            nextEpisodeAiringAt()?.let { airingAtTime ->
-                nextEpisode()?.let {
+            val nextEpisodeAiringAt = nextEpisodeAiringAt()
+            val nextEpisode = nextEpisode()
+            AnimatedVisibility(
+                nextEpisodeAiringAt != null && nextEpisode != null,
+                label = "Media details nextEpisodeAiringAt text"
+            ) {
+                if (nextEpisodeAiringAt != null && nextEpisode != null) {
                     val context = LocalContext.current
                     val airingAt = remember {
-                        MediaUtils.formatAiringAt(context, airingAtTime * 1000L)
+                        MediaUtils.formatAiringAt(context, nextEpisodeAiringAt * 1000L)
                     }
 
                     val remainingTime = remember {
-                        MediaUtils.formatRemainingTime(airingAtTime * 1000L)
+                        MediaUtils.formatRemainingTime(nextEpisodeAiringAt * 1000L)
                     }
 
                     Text(
                         text = stringResource(
                             R.string.anime_media_next_airing_episode,
-                            it,
+                            nextEpisode,
                             airingAt,
                             remainingTime,
                         ),

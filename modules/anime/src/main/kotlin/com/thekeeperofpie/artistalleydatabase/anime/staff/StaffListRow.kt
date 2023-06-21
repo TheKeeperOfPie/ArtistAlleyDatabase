@@ -60,6 +60,7 @@ import com.anilist.StaffSearchQuery.Data.Page.Staff
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.material.placeholder
 import com.google.accompanist.placeholder.material.shimmer
+import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
 import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
 import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
@@ -75,6 +76,7 @@ object StaffListRow {
 
     @Composable
     operator fun invoke(
+        screenKey: String,
         entry: Entry,
         onLongPressImage: (Entry) -> Unit = {},
         colorCalculationState: ColorCalculationState = ColorCalculationState(),
@@ -98,6 +100,7 @@ object StaffListRow {
         ) {
             Row(modifier = Modifier.height(IntrinsicSize.Min)) {
                 StaffImage(
+                    screenKey = screenKey,
                     entry = entry,
                     onClick = {
                         navigationCallback.onStaffClick(
@@ -137,50 +140,53 @@ object StaffListRow {
 
     @Composable
     private fun StaffImage(
+        screenKey: String,
         entry: Entry,
         onClick: () -> Unit = {},
         onLongPressImage: () -> Unit,
         colorCalculationState: ColorCalculationState,
         onRatioAvailable: (Float) -> Unit,
     ) {
-        AsyncImage(
-            model = ImageRequest.Builder(LocalContext.current)
-                .data(entry.staff.image?.large)
-                .crossfade(true)
-                .allowHardware(colorCalculationState.hasColor(entry.staff.id.toString()))
-                .size(
-                    width = Dimension.Pixels(LocalDensity.current.run { 130.dp.roundToPx() }),
-                    height = Dimension.Undefined,
-                )
-                .build(),
-            contentScale = ContentScale.Crop,
-            fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
-            onSuccess = {
-                onRatioAvailable(it.widthToHeightRatio())
-                ComposeColorUtils.calculatePalette(
-                    entry.staff.id.toString(),
-                    it,
-                    colorCalculationState,
-                )
-            },
-            contentDescription = stringResource(R.string.anime_staff_image),
-            modifier = Modifier
-                .background(MaterialTheme.colorScheme.surfaceVariant)
-                .fillMaxHeight()
-                .heightIn(min = 180.dp)
-                .width(130.dp)
-                .placeholder(
-                    visible = false, // TODO: placeholder,
-                    highlight = PlaceholderHighlight.shimmer(),
-                )
-                .combinedClickable(
-                    onClick = onClick,
-                    onLongClick = onLongPressImage,
-                    onLongClickLabel = stringResource(
-                        R.string.anime_staff_image_long_press_preview
-                    ),
-                )
-        )
+        SharedElement(key = "anime_staff_${entry.staff.id}_image", screenKey = screenKey) {
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(entry.staff.image?.large)
+                    .crossfade(true)
+                    .allowHardware(colorCalculationState.hasColor(entry.staff.id.toString()))
+                    .size(
+                        width = Dimension.Pixels(LocalDensity.current.run { 130.dp.roundToPx() }),
+                        height = Dimension.Undefined,
+                    )
+                    .build(),
+                contentScale = ContentScale.Crop,
+                fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
+                onSuccess = {
+                    onRatioAvailable(it.widthToHeightRatio())
+                    ComposeColorUtils.calculatePalette(
+                        entry.staff.id.toString(),
+                        it,
+                        colorCalculationState,
+                    )
+                },
+                contentDescription = stringResource(R.string.anime_staff_image),
+                modifier = Modifier
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                    .fillMaxHeight()
+                    .heightIn(min = 180.dp)
+                    .width(130.dp)
+                    .placeholder(
+                        visible = false, // TODO: placeholder,
+                        highlight = PlaceholderHighlight.shimmer(),
+                    )
+                    .combinedClickable(
+                        onClick = onClick,
+                        onLongClick = onLongPressImage,
+                        onLongClickLabel = stringResource(
+                            R.string.anime_staff_image_long_press_preview
+                        ),
+                    )
+            )
+        }
     }
 
     @Composable

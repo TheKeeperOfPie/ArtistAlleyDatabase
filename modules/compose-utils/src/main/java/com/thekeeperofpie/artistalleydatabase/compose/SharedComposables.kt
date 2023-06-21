@@ -2,6 +2,7 @@
 
 package com.thekeeperofpie.artistalleydatabase.compose
 
+import android.text.Html
 import android.util.Log
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
@@ -10,6 +11,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,6 +24,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
@@ -69,8 +72,19 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.drawscope.ContentDrawScope
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.debugInspectorInfo
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.CustomAccessibilityAction
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.customActions
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
@@ -85,6 +99,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.takeOrElse
 import com.thekeeperofpie.compose_proxy.R
+import de.charlex.compose.toAnnotatedString
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -762,3 +777,148 @@ fun StaticSearchBar(
             .padding(horizontal = 16.dp)
     )
 }
+
+@Composable
+fun CustomHtmlText(
+    modifier: Modifier = Modifier,
+    text: String,
+    urlSpanStyle: SpanStyle = SpanStyle(
+        color = MaterialTheme.colorScheme.secondary,
+        textDecoration = TextDecoration.Underline
+    ),
+    colorMapping: Map<Color, Color> = emptyMap(),
+    color: Color = Color.Unspecified,
+    fontSize: TextUnit = TextUnit.Unspecified,
+    fontStyle: FontStyle? = null,
+    fontWeight: FontWeight? = null,
+    fontFamily: FontFamily? = null,
+    letterSpacing: TextUnit = TextUnit.Unspecified,
+    textDecoration: TextDecoration? = null,
+    textAlign: TextAlign? = null,
+    lineHeight: TextUnit = TextUnit.Unspecified,
+    overflow: TextOverflow = TextOverflow.Clip,
+    softWrap: Boolean = true,
+    maxLines: Int = Int.MAX_VALUE,
+    inlineContent: Map<String, InlineTextContent> = mapOf(),
+    onTextLayout: (TextLayoutResult) -> Unit = {},
+    style: TextStyle = LocalTextStyle.current,
+    onFallbackClick: () -> Unit = {},
+) {
+    val annotatedString = Html.fromHtml(text.trim(), Html.FROM_HTML_MODE_LEGACY)
+        .trim()
+        .toAnnotatedString(urlSpanStyle, colorMapping)
+
+    HtmlText(
+        modifier = modifier,
+        annotatedString = annotatedString,
+        color = color,
+        fontSize = fontSize,
+        fontStyle = fontStyle,
+        fontWeight = fontWeight,
+        fontFamily = fontFamily,
+        letterSpacing = letterSpacing,
+        textDecoration = textDecoration,
+        textAlign = textAlign,
+        lineHeight = lineHeight,
+        overflow = overflow,
+        softWrap = softWrap,
+        maxLines = maxLines,
+        inlineContent = inlineContent,
+        onTextLayout = onTextLayout,
+        style = style,
+        onFallbackClick = onFallbackClick,
+    )
+}
+
+@Composable
+private fun HtmlText(
+    modifier: Modifier = Modifier,
+    annotatedString: AnnotatedString,
+    color: Color = Color.Unspecified,
+    fontSize: TextUnit = TextUnit.Unspecified,
+    fontStyle: FontStyle? = null,
+    fontWeight: FontWeight? = null,
+    fontFamily: FontFamily? = null,
+    letterSpacing: TextUnit = TextUnit.Unspecified,
+    textDecoration: TextDecoration? = null,
+    textAlign: TextAlign? = null,
+    lineHeight: TextUnit = TextUnit.Unspecified,
+    overflow: TextOverflow = TextOverflow.Clip,
+    softWrap: Boolean = true,
+    maxLines: Int = Int.MAX_VALUE,
+    inlineContent: Map<String, InlineTextContent> = mapOf(),
+    onTextLayout: (TextLayoutResult) -> Unit = {},
+    style: TextStyle = LocalTextStyle.current,
+    onFallbackClick: () -> Unit,
+) {
+    val uriHandler = LocalUriHandler.current
+    val layoutResult = remember { mutableStateOf<TextLayoutResult?>(null) }
+
+    val urls = remember(layoutResult, annotatedString) {
+        annotatedString.getStringAnnotations("url", 0, annotatedString.lastIndex)
+    }
+
+    Text(
+        modifier = modifier.then(
+            Modifier
+                .pointerInput(Unit) {
+                    detectTapGestures(onTap = { pos ->
+                        layoutResult.value?.let { layoutResult ->
+                            val position = layoutResult.getOffsetForPosition(pos)
+                            val annotated = annotatedString
+                                .getStringAnnotations(position, position)
+                                .firstOrNull()
+                            if (annotated?.tag == "url") {
+                                uriHandler.openUri(annotated.item)
+                            } else {
+                                onFallbackClick()
+                            }
+                        }
+                    })
+                }
+                .semantics {
+                    if (urls.size == 1) {
+                        role = Role.Button
+                        onClick("Link (${annotatedString.substring(urls[0].start, urls[0].end)}") {
+                            uriHandler.openUri(urls[0].item)
+                            true
+                        }
+                    } else {
+                        customActions = urls.map {
+                            CustomAccessibilityAction(
+                                "Link (${
+                                    annotatedString.substring(
+                                        it.start,
+                                        it.end
+                                    )
+                                })"
+                            ) {
+                                uriHandler.openUri(it.item)
+                                true
+                            }
+                        }
+                    }
+                }
+        ),
+        text = annotatedString,
+        color = color,
+        fontSize = fontSize,
+        fontStyle = fontStyle,
+        fontWeight = fontWeight,
+        fontFamily = fontFamily,
+        letterSpacing = letterSpacing,
+        textDecoration = textDecoration,
+        textAlign = textAlign,
+        lineHeight = lineHeight,
+        overflow = overflow,
+        softWrap = softWrap,
+        maxLines = maxLines,
+        inlineContent = inlineContent,
+        onTextLayout = {
+            layoutResult.value = it
+            onTextLayout(it)
+        },
+        style = style
+    )
+}
+

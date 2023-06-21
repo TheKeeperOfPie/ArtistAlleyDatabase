@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.character
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -67,6 +68,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.fadingEdgeBottom
 import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 
+@Suppress("NAME_SHADOWING")
 @OptIn(ExperimentalMaterial3Api::class)
 object CharacterDetailsScreen {
 
@@ -178,16 +180,19 @@ object CharacterDetailsScreen {
                 )
             }
 
-            subtitleText()?.let {
-                Text(
-                    text = it,
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier
-                        .wrapContentHeight()
-                        .padding(horizontal = 16.dp, vertical = 4.dp)
-                        .fillMaxWidth()
-                        .wrapContentHeight(Alignment.Bottom)
-                )
+            val subtitleText = subtitleText()
+            AnimatedVisibility(subtitleText != null, label = "Character details subtitle text") {
+                if (subtitleText != null) {
+                    Text(
+                        text = subtitleText,
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier
+                            .wrapContentHeight()
+                            .padding(horizontal = 16.dp, vertical = 4.dp)
+                            .fillMaxWidth()
+                            .wrapContentHeight(Alignment.Bottom)
+                    )
+                }
             }
         }
     }
@@ -223,7 +228,6 @@ object CharacterDetailsScreen {
         }
 
         descriptionSection(
-            titleTextRes = R.string.anime_character_details_description_label,
             htmlText = entry.character.description,
             expanded = expandedState::description,
             onExpandedChange = { expandedState.description = it },
@@ -290,7 +294,8 @@ object CharacterDetailsScreen {
                 }
 
                 val alternativeNames = entry.character.name?.alternative?.filterNotNull().orEmpty()
-                val alternativeNamesSpoiler = entry.character.name?.alternativeSpoiler?.filterNotNull().orEmpty()
+                val alternativeNamesSpoiler =
+                    entry.character.name?.alternativeSpoiler?.filterNotNull().orEmpty()
                 if (alternativeNames.isNotEmpty() || alternativeNamesSpoiler.isNotEmpty()) {
                     var expanded by remember { mutableStateOf(false) }
                     var hidden by remember { mutableStateOf(true) }
@@ -317,7 +322,8 @@ object CharacterDetailsScreen {
                                 }
 
                                 val bottomPadding = if (index == alternativeNames.size - 1
-                                    && alternativeNamesSpoiler.isEmpty()) {
+                                    && alternativeNamesSpoiler.isEmpty()
+                                ) {
                                     12.dp
                                 } else {
                                     8.dp

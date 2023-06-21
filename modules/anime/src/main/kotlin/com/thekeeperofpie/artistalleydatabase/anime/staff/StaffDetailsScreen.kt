@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.staff
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -49,6 +50,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationSt
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 import kotlinx.coroutines.launch
 
+@Suppress("NAME_SHADOWING")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 object StaffDetailsScreen {
 
@@ -213,16 +215,19 @@ object StaffDetailsScreen {
                 )
             }
 
-            subtitleText()?.let {
-                Text(
-                    text = it,
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier
-                        .wrapContentHeight()
-                        .padding(horizontal = 16.dp, vertical = 4.dp)
-                        .fillMaxWidth()
-                        .wrapContentHeight(Alignment.Bottom)
-                )
+            val subtitleText = subtitleText()
+            AnimatedVisibility(subtitleText != null, label = "Staff details subtitle text") {
+                if (subtitleText != null) {
+                    Text(
+                        text = subtitleText,
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier
+                            .wrapContentHeight()
+                            .padding(horizontal = 16.dp, vertical = 4.dp)
+                            .fillMaxWidth()
+                            .wrapContentHeight(Alignment.Bottom)
+                    )
+                }
             }
         }
     }

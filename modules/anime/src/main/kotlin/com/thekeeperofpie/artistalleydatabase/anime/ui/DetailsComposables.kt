@@ -52,6 +52,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
@@ -63,13 +64,13 @@ import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.android_utils.AnimationUtils
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.compose.AccelerateEasing
+import com.thekeeperofpie.artistalleydatabase.compose.CustomHtmlText
 import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.VerticalDivider
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.compose.fadingEdgeBottom
 import com.thekeeperofpie.artistalleydatabase.compose.optionalClickable
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
-import de.charlex.compose.HtmlText
 
 @Composable
 internal fun CoverAndBannerHeader(
@@ -228,38 +229,32 @@ internal fun DetailsSubsectionHeader(text: String, modifier: Modifier = Modifier
 }
 
 internal fun LazyListScope.descriptionSection(
-    @StringRes titleTextRes: Int,
     htmlText: String?,
     expanded: () -> Boolean,
     onExpandedChange: (Boolean) -> Unit,
 ) {
     htmlText?.takeUnless(String::isEmpty) ?: return
     item {
-        DetailsSectionHeader(
-            stringResource(titleTextRes),
-            modifier = Modifier.clickable { onExpandedChange(!expanded()) }
-        )
-    }
-    item {
         ElevatedCard(
             onClick = { onExpandedChange(!expanded()) },
             modifier = Modifier
-                .padding(horizontal = 16.dp)
+                .padding(start = 16.dp, end = 16.dp, top = 16.dp)
                 .fillMaxWidth()
                 .animateContentSize(),
         ) {
             val style = MaterialTheme.typography.bodyMedium
             val expanded = expanded()
 
-            HtmlText(
+            CustomHtmlText(
                 text = htmlText.replaceSpoilers(),
+                maxLines = if (expanded) Int.MAX_VALUE else 4,
                 style = style,
                 color = style.color.takeOrElse { LocalContentColor.current },
+                overflow = TextOverflow.Ellipsis,
+                onFallbackClick = { onExpandedChange(!expanded()) },
                 modifier = Modifier
                     .padding(horizontal = 16.dp, vertical = 10.dp)
                     .wrapContentHeight()
-                    .heightIn(max = if (expanded) Dp.Unspecified else 80.dp)
-                    .fadingEdgeBottom(show = !expanded)
             )
         }
     }

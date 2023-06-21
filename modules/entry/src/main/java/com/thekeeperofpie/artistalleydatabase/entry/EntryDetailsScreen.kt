@@ -64,13 +64,13 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.AnimationUtils
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.compose.AddBackPressInvokeTogether
 import com.thekeeperofpie.artistalleydatabase.compose.ArrowBackIconButton
+import com.thekeeperofpie.artistalleydatabase.compose.CustomHtmlText
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.compose.pullRefresh
 import com.thekeeperofpie.artistalleydatabase.compose.rememberPullRefreshState
 import com.thekeeperofpie.artistalleydatabase.compose.topBorder
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGrid
-import de.charlex.compose.HtmlText
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -307,7 +307,7 @@ object EntryDetailsScreen {
                                 .weight(1f)
                                 .verticalScroll(rememberScrollState())
                         ) {
-                            HtmlText(text = oldText, color = MaterialTheme.colorScheme.onSurface)
+                            CustomHtmlText(text = oldText)
                         }
 
                         Column(
@@ -315,7 +315,7 @@ object EntryDetailsScreen {
                                 .weight(1f)
                                 .verticalScroll(rememberScrollState())
                         ) {
-                            HtmlText(text = newText, color = MaterialTheme.colorScheme.onSurface)
+                            CustomHtmlText(text = newText)
                         }
                     }
                 }

@@ -38,7 +38,6 @@ object StaffOverviewScreen {
             modifier = Modifier.fillMaxSize()
         ) {
             descriptionSection(
-                titleTextRes = R.string.anime_staff_details_description_label,
                 htmlText = entry.staff.description,
                 expanded = expandedState::description,
                 onExpandedChange = { expandedState.description = it },

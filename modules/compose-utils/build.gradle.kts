@@ -20,4 +20,5 @@ dependencies {
     api(libs.paging.compose)
     api(libs.coil.compose)
     implementation(libs.palette.ktx)
+    implementation(libs.html.text)
 }

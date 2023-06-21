@@ -67,9 +67,9 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
+import com.thekeeperofpie.artistalleydatabase.compose.CustomHtmlText
 import com.thekeeperofpie.artistalleydatabase.compose.fadingEdgeEnd
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
-import de.charlex.compose.HtmlText
 
 @OptIn(ExperimentalFoundationApi::class)
 object AnimeMediaLargeCard {
@@ -130,10 +130,9 @@ object AnimeMediaLargeCard {
                     if (description == null) {
                         Spacer(Modifier.weight(1f))
                     } else {
-                        HtmlText(
+                        CustomHtmlText(
                             text = description,
                             style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier
                                 .weight(1f)
                                 .fillMaxWidth()

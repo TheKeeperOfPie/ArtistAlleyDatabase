@@ -70,7 +70,6 @@ object UserOverviewScreen {
             )
 
             descriptionSection(
-                titleTextRes = R.string.anime_user_about_label,
                 htmlText = user.about?.trim(),
                 expanded = { descriptionExpanded },
                 onExpandedChange = { descriptionExpanded = it },

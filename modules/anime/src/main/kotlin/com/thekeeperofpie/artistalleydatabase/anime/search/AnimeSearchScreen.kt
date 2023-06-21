@@ -227,12 +227,14 @@ object AnimeSearchScreen {
                                             navigationCallback = navigationCallback,
                                         )
                                         is AnimeSearchEntry.Character -> CharacterListRow(
+                                            screenKey = AnimeNavDestinations.SEARCH.id,
                                             entry = item,
                                             onLongPressImage = { /* TODO */ },
                                             colorCalculationState = colorCalculationState,
                                             navigationCallback = navigationCallback,
                                         )
                                         is AnimeSearchEntry.Staff -> StaffListRow(
+                                            screenKey = AnimeNavDestinations.SEARCH.id,
                                             entry = item,
                                             onLongPressImage = { /* TODO */ },
                                             colorCalculationState = colorCalculationState,

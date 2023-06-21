@@ -36,7 +36,6 @@ dependencies {
 
     implementation(libs.hilt.navigation.compose)
 
-    implementation(libs.html.text)
     implementation(libs.nv.i18n)
     implementation(libs.constraintlayout.compose)
 
