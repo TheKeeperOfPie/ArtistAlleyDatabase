@@ -394,41 +394,4 @@ object MediaUtils {
             LocalDate.of(year, month, dayOfMonth)
         } else null
     }
-
-    fun getCurrentSeasonYear(): Pair<MediaSeason, Int> {
-        val timeInJapan = ZonedDateTime.now(ZoneId.of("Asia/Tokyo"))
-        val year = timeInJapan.year
-        val month = timeInJapan.month
-        val season = when (month) {
-            Month.DECEMBER, Month.JANUARY, Month.FEBRUARY -> MediaSeason.WINTER
-            Month.MARCH, Month.APRIL, Month.MAY -> MediaSeason.SPRING
-            Month.JUNE, Month.JULY, Month.AUGUST -> MediaSeason.SUMMER
-            Month.SEPTEMBER, Month.OCTOBER, Month.NOVEMBER -> MediaSeason.FALL
-            null -> MediaSeason.WINTER
-        }
-
-        // If it's Jan/Feb, the current season is Winter of the previous year
-        return if (month == Month.JANUARY || month == Month.FEBRUARY) {
-            season to (year - 1)
-        } else {
-            season to year
-        }
-    }
-
-    fun getNextSeasonYear(currentSeasonYear: Pair<MediaSeason, Int> = getCurrentSeasonYear()): Pair<MediaSeason, Int> {
-        val (thisSeason, year) = currentSeasonYear
-        val nextSeason = when (thisSeason) {
-            MediaSeason.WINTER -> MediaSeason.SPRING
-            MediaSeason.SPRING -> MediaSeason.SUMMER
-            MediaSeason.SUMMER -> MediaSeason.FALL
-            MediaSeason.FALL,
-            MediaSeason.UNKNOWN__ -> MediaSeason.WINTER
-        }
-
-        return if (thisSeason == MediaSeason.WINTER) {
-            nextSeason to (year + 1)
-        } else {
-            nextSeason to year
-        }
-    }
 }

@@ -9,7 +9,6 @@ import com.anilist.HomeAnimeQuery
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.R
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
@@ -31,17 +30,8 @@ class AnimeHomeAnimeViewModel @Inject constructor(
 
     init {
         viewModelScope.launch(CustomDispatchers.IO) {
-            val currentSeasonYear = MediaUtils.getCurrentSeasonYear()
-            val nextSeasonYear = MediaUtils.getNextSeasonYear(currentSeasonYear)
             refreshUptimeMillis
-                .map {
-                    aniListApi.homeAnime(
-                        currentSeason = currentSeasonYear.first,
-                        currentYear = currentSeasonYear.second,
-                        nextSeason = nextSeasonYear.first,
-                        nextYear = nextSeasonYear.second,
-                    )
-                }
+                .map {aniListApi.homeAnime() }
                 .map { Entry(it) }
                 .map(Result.Companion::success)
                 .catch { emit(Result.failure(it)) }
@@ -62,6 +52,7 @@ class AnimeHomeAnimeViewModel @Inject constructor(
     ) {
         val trending = data.trending?.media?.filterNotNull().orEmpty()
         val popularThisSeason = data.popularThisSeason?.media?.filterNotNull().orEmpty()
+        val popularLastSeason = data.popularLastSeason?.media?.filterNotNull().orEmpty()
         val popularNextSeason = data.popularNextSeason?.media?.filterNotNull().orEmpty()
         val popular = data.popular?.media?.filterNotNull().orEmpty()
         val top = data.top?.media?.filterNotNull().orEmpty()

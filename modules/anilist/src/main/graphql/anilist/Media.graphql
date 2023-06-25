@@ -344,6 +344,8 @@ fragment MediaPreviewWithDescription on Media {
 query HomeAnime(
     $currentSeason: MediaSeason!,
     $currentYear: Int!,
+    $lastSeason: MediaSeason!,
+    $lastYear: Int!,
     $nextSeason: MediaSeason!,
     $nextYear: Int!,
     $perPage: Int!,
@@ -366,8 +368,21 @@ query HomeAnime(
         }
     }
 
+    popularLastSeason: Page(perPage: $perPage) {
+        media(
+            season: $lastSeason,
+            seasonYear: $lastYear,
+            sort: POPULARITY_DESC,
+            type: ANIME,
+            isAdult: false,
+        ) {
+            ...MediaPreviewWithDescription
+        }
+    }
+
     popularNextSeason: Page(perPage: $perPage) {
-        media(season: $nextSeason,
+        media(
+            season: $nextSeason,
             seasonYear: $nextYear,
             sort: POPULARITY_DESC,
             type: ANIME,

@@ -73,6 +73,7 @@ object UserOverviewScreen {
                 htmlText = user.about?.trim(),
                 expanded = { descriptionExpanded },
                 onExpandedChange = { descriptionExpanded = it },
+                imagesSupported = true,
             )
 
             mediaHorizontalRow(

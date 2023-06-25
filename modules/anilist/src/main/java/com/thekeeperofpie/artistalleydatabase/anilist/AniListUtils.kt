@@ -3,6 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.anilist
 import android.util.Log
 import com.anilist.fragment.AniListCharacter
 import com.anilist.fragment.AniListMedia
+import com.anilist.type.MediaSeason
 import com.anilist.type.MediaType
 import com.apollographql.apollo3.ApolloClient
 import com.apollographql.apollo3.network.http.LoggingInterceptor
@@ -12,12 +13,17 @@ import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaColumnEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaEntry
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection.MultiText.Entry
 import com.thekeeperofpie.artistalleydatabase.network_utils.NetworkSettings
+import java.time.Month
+import java.time.ZoneId
+import java.time.ZonedDateTime
 
 object AniListUtils {
 
     const val GRAPHQL_API_HOST = "graphql.anilist.co"
     const val GRAPHQL_API_URL = "https://$GRAPHQL_API_HOST/"
     const val ANILIST_BASE_URL = "https://anilist.co"
+
+    const val COVER_IMAGE_WIDTH_TO_HEIGHT_RATIO = 0.707f
 
     fun characterUrl(id: String) = "$ANILIST_BASE_URL/character/$id"
 
@@ -54,6 +60,60 @@ object AniListUtils {
         is CharacterEntry -> value.id
         is CharacterColumnEntry -> value.id
         else -> null
+    }
+
+    fun getCurrentSeasonYear(): Pair<MediaSeason, Int> {
+        val timeInJapan = ZonedDateTime.now(ZoneId.of("Asia/Tokyo"))
+        val year = timeInJapan.year
+        val month = timeInJapan.month
+        val season = when (month) {
+            Month.DECEMBER, Month.JANUARY, Month.FEBRUARY -> MediaSeason.WINTER
+            Month.MARCH, Month.APRIL, Month.MAY -> MediaSeason.SPRING
+            Month.JUNE, Month.JULY, Month.AUGUST -> MediaSeason.SUMMER
+            Month.SEPTEMBER, Month.OCTOBER, Month.NOVEMBER -> MediaSeason.FALL
+            null -> MediaSeason.WINTER
+        }
+
+        // If it's December, the current season is Winter of the next year
+        return if (month == Month.DECEMBER) {
+            season to (year + 1)
+        } else {
+            season to year
+        }
+    }
+
+    fun getNextSeasonYear(currentSeasonYear: Pair<MediaSeason, Int> = getCurrentSeasonYear()): Pair<MediaSeason, Int> {
+        val (thisSeason, year) = currentSeasonYear
+        val nextSeason = when (thisSeason) {
+            MediaSeason.WINTER -> MediaSeason.SPRING
+            MediaSeason.SPRING -> MediaSeason.SUMMER
+            MediaSeason.SUMMER -> MediaSeason.FALL
+            MediaSeason.FALL,
+            MediaSeason.UNKNOWN__ -> MediaSeason.WINTER
+        }
+
+        return if (thisSeason == MediaSeason.FALL) {
+            nextSeason to (year + 1)
+        } else {
+            nextSeason to year
+        }
+    }
+
+    fun getLastSeasonYear(currentSeasonYear: Pair<MediaSeason, Int> = getCurrentSeasonYear()): Pair<MediaSeason, Int> {
+        val (thisSeason, year) = currentSeasonYear
+        val lastSeason = when (thisSeason) {
+            MediaSeason.WINTER -> MediaSeason.FALL
+            MediaSeason.SPRING -> MediaSeason.WINTER
+            MediaSeason.SUMMER -> MediaSeason.SPRING
+            MediaSeason.FALL,
+            MediaSeason.UNKNOWN__ -> MediaSeason.SUMMER
+        }
+
+        return if (thisSeason == MediaSeason.WINTER) {
+            lastSeason to (year - 1)
+        } else {
+            lastSeason to year
+        }
     }
 }
 

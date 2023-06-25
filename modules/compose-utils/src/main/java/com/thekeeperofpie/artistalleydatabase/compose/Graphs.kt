@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
@@ -36,6 +37,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -49,10 +51,12 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.isSpecified
 import androidx.compose.ui.unit.times
@@ -125,14 +129,14 @@ fun <Key, Value> PieChart(
                 .aspectRatio(1f)
         )
 
-        var height by remember { mutableStateOf(-1) }
+        var height by remember { mutableIntStateOf(-1) }
         val showFadingEdge = pieMaxHeight.isSpecified &&
                 LocalDensity.current.run { height.toDp() } >= pieMaxHeight
 
         Column(
             verticalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier
-                .padding(start = 16.dp, top = 16.dp, bottom = 16.dp)
+                .padding(start = 16.dp, top = 8.dp, bottom = 12.dp)
                 .heightIn(max = pieMaxHeight)
                 .weight(0.5f, fill = false)
                 .fillMaxWidth()
@@ -163,19 +167,32 @@ fun <Key, Value> PieChart(
                 ) {
                     val sliceColor = sliceToColor(slice)
                     Box(
-                        contentAlignment = Alignment.Center,
                         modifier = Modifier
+                            .wrapContentSize()
                             .background(color = sliceColor)
-                            .aspectRatio(1f)
-                            .padding(4.dp)
+                            .layout { measurable, constraints ->
+                                // Enforce square 1:1 aspect ratio
+                                val placeable = measurable.measure(constraints)
+                                val boxWidth = placeable.width
+                                    .coerceAtLeast(48.dp.toPx().toInt())
+                                layout(boxWidth, boxWidth) {
+                                    val position = Alignment.Center.align(
+                                        IntSize(placeable.width, placeable.height),
+                                        IntSize(boxWidth, boxWidth),
+                                        layoutDirection
+                                    )
+                                    placeable.place(position)
+                                }
+                            }
                     ) {
+
                         if (total != 0f) {
                             Box(
                                 contentAlignment = Alignment.Center,
                                 modifier = Modifier.matchParentSize()
                             ) {
                                 val amount = sliceToAmount(slice).takeIf { visible } ?: 0
-                                AutoHeightText(
+                                Text(
                                     text = format.format(amount / total),
                                     color = ComposeColorUtils.bestTextColor(sliceColor)
                                         ?: Color.Unspecified,
@@ -185,9 +202,9 @@ fun <Key, Value> PieChart(
                         }
 
                         // Determines the size of the box regardless of the value shown
-                        // TODO: Find a better way to maintain box size
+                        // TODO: Find a better way to maintain box size?
                         Text(
-                            text = "100%",
+                            text = "99%",
                             style = MaterialTheme.typography.labelMedium,
                             modifier = Modifier.alpha(0f),
                         )
@@ -198,7 +215,7 @@ fun <Key, Value> PieChart(
                         style = MaterialTheme.typography.labelLarge,
                         modifier = Modifier
                             .alpha(if (visible) 1f else 0.38f)
-                            .padding(horizontal = 16.dp, vertical = 10.dp),
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
                     )
                 }
             }

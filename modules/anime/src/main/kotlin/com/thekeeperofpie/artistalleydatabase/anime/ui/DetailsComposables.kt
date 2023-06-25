@@ -1,4 +1,7 @@
-@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class)
+@file:OptIn(
+    ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class,
+    ExperimentalFoundationApi::class, ExperimentalFoundationApi::class
+)
 @file:Suppress("NAME_SHADOWING")
 
 package com.thekeeperofpie.artistalleydatabase.anime.ui
@@ -6,6 +9,7 @@ package com.thekeeperofpie.artistalleydatabase.anime.ui
 import androidx.annotation.StringRes
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -15,7 +19,6 @@ import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
@@ -25,6 +28,7 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ImageNotSupported
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -49,11 +53,13 @@ import androidx.compose.ui.graphics.isSpecified
 import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.coerceAtMost
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
 import coil.compose.AsyncImage
@@ -63,8 +69,10 @@ import coil.size.Dimension
 import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.android_utils.AnimationUtils
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.compose.AccelerateEasing
 import com.thekeeperofpie.artistalleydatabase.compose.CustomHtmlText
+import com.thekeeperofpie.artistalleydatabase.compose.ImageHtmlText
 import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.VerticalDivider
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
@@ -187,7 +195,11 @@ internal fun CoverAndBannerHeader(
                                         width(coverSize * coverImageWidthToHeightRatio)
                                     } else this
                                 }
-                                .widthIn(max = coverSize)
+                                .widthIn(
+                                    max = coverSize.coerceAtMost(
+                                        LocalConfiguration.current.screenWidthDp.dp * 0.4f
+                                    )
+                                )
                         )
                     }
                 }
@@ -201,6 +213,36 @@ internal fun CoverAndBannerHeader(
                     content()
                 }
             }
+        }
+    }
+}
+
+internal fun LazyListScope.detailsLoadingOrError(
+    loading: Boolean,
+    errorResource: @Composable () -> Pair<Int, Exception?>?,
+) {
+    if (loading) {
+        item("loading") {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .animateItemPlacement()
+            ) {
+                CircularProgressIndicator(
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .padding(32.dp)
+                )
+            }
+        }
+    } else {
+        item("error") {
+            val errorResource = errorResource()
+            AnimeMediaListScreen.Error(
+                errorTextRes = errorResource?.first,
+                exception = errorResource?.second,
+                modifier = Modifier.animateItemPlacement()
+            )
         }
     }
 }
@@ -220,7 +262,7 @@ internal fun DetailsSectionHeader(text: String, modifier: Modifier = Modifier) {
 internal fun DetailsSubsectionHeader(text: String, modifier: Modifier = Modifier) {
     Text(
         text = text,
-        style = MaterialTheme.typography.labelLarge,
+        style = MaterialTheme.typography.labelMedium,
         color = MaterialTheme.colorScheme.surfaceTint,
         modifier = modifier
             .fillMaxWidth()
@@ -232,30 +274,42 @@ internal fun LazyListScope.descriptionSection(
     htmlText: String?,
     expanded: () -> Boolean,
     onExpandedChange: (Boolean) -> Unit,
+    imagesSupported: Boolean = false,
 ) {
     htmlText?.takeUnless(String::isEmpty) ?: return
-    item {
+    item("descriptionSection") {
         ElevatedCard(
             onClick = { onExpandedChange(!expanded()) },
             modifier = Modifier
-                .padding(start = 16.dp, end = 16.dp, top = 16.dp)
+                .padding(start = 16.dp, end = 16.dp, top = 10.dp)
                 .fillMaxWidth()
                 .animateContentSize(),
         ) {
             val style = MaterialTheme.typography.bodyMedium
             val expanded = expanded()
 
-            CustomHtmlText(
-                text = htmlText.replaceSpoilers(),
-                maxLines = if (expanded) Int.MAX_VALUE else 4,
-                style = style,
-                color = style.color.takeOrElse { LocalContentColor.current },
-                overflow = TextOverflow.Ellipsis,
-                onFallbackClick = { onExpandedChange(!expanded()) },
-                modifier = Modifier
-                    .padding(horizontal = 16.dp, vertical = 10.dp)
-                    .wrapContentHeight()
-            )
+            if (imagesSupported) {
+                ImageHtmlText(
+                    text = htmlText.replaceSpoilers(),
+                    maxLines = if (expanded) Int.MAX_VALUE else 4,
+                    color = style.color.takeOrElse { LocalContentColor.current },
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp, vertical = 10.dp)
+                        .wrapContentHeight()
+                )
+            } else {
+                CustomHtmlText(
+                    text = htmlText.replaceSpoilers(),
+                    maxLines = if (expanded) Int.MAX_VALUE else 4,
+                    style = style,
+                    color = style.color.takeOrElse { LocalContentColor.current },
+                    overflow = TextOverflow.Ellipsis,
+                    onFallbackClick = { onExpandedChange(!expanded()) },
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp, vertical = 10.dp)
+                        .wrapContentHeight()
+                )
+            }
         }
     }
 }
@@ -319,7 +373,7 @@ internal fun twoColumnInfoText(
 internal fun ColumnScope.InfoText(
     label: String,
     body: String,
-    showDividerAbove: Boolean = true
+    showDividerAbove: Boolean = true,
 ) {
     if (showDividerAbove) {
         Divider()
@@ -329,10 +383,10 @@ internal fun ColumnScope.InfoText(
 
     Text(
         text = body,
-        style = MaterialTheme.typography.bodyLarge,
+        style = MaterialTheme.typography.bodyMedium,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 10.dp)
+            .padding(start = 16.dp, end = 16.dp, bottom = 10.dp)
     )
 }
 
@@ -349,15 +403,16 @@ internal fun <T> ExpandableListInfoText(
     if (values.isEmpty()) return
 
     var expanded by remember { mutableStateOf(!allowExpand) }
+    val showExpand = allowExpand && values.size > 3
 
     Box {
         Column(
             modifier = Modifier
                 .wrapContentHeight()
-                .conditionally(allowExpand) {
-                    heightIn(max = if (expanded) Dp.Unspecified else 120.dp)
-                        .clickable { expanded = !expanded }
+                .conditionally(showExpand) {
+                    clickable { expanded = !expanded }
                         .fadingEdgeBottom(show = !expanded)
+                        .animateContentSize()
                 }
         ) {
             if (showDividerAbove) {
@@ -366,7 +421,7 @@ internal fun <T> ExpandableListInfoText(
 
             DetailsSubsectionHeader(stringResource(labelTextRes))
 
-            values.forEachIndexed { index, value ->
+            values.take(if (expanded) Int.MAX_VALUE else 3).forEachIndexed { index, value ->
                 if (index != 0) {
                     Divider(modifier = Modifier.padding(start = 16.dp))
                 }
@@ -379,7 +434,7 @@ internal fun <T> ExpandableListInfoText(
 
                 Text(
                     text = valueToText(value),
-                    style = MaterialTheme.typography.bodyLarge,
+                    style = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier
                         .fillMaxWidth()
                         .optionalClickable(
@@ -397,7 +452,7 @@ internal fun <T> ExpandableListInfoText(
             }
         }
 
-        if (allowExpand) {
+        if (showExpand) {
             TrailingDropdownIconButton(
                 expanded = expanded,
                 contentDescription = stringResource(contentDescriptionTextRes),

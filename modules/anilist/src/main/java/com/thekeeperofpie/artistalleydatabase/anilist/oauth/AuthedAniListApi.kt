@@ -372,20 +372,23 @@ class AuthedAniListApi(
     }
 
     suspend fun homeAnime(
-        currentSeason: MediaSeason,
-        currentYear: Int,
-        nextSeason: MediaSeason,
-        nextYear: Int,
         perPage: Int = 10,
-    ) = query(
-        HomeAnimeQuery(
-            currentSeason = currentSeason,
-            currentYear = currentYear,
-            nextSeason = nextSeason,
-            nextYear = nextYear,
-            perPage = perPage,
+    ): HomeAnimeQuery.Data {
+        val currentSeasonYear = AniListUtils.getCurrentSeasonYear()
+        val nextSeasonYear = AniListUtils.getNextSeasonYear(currentSeasonYear)
+        val lastSeasonYear = AniListUtils.getLastSeasonYear(currentSeasonYear)
+        return query(
+            HomeAnimeQuery(
+                currentSeason = currentSeasonYear.first,
+                currentYear = currentSeasonYear.second,
+                lastSeason = lastSeasonYear.first,
+                lastYear = lastSeasonYear.second,
+                nextSeason = nextSeasonYear.first,
+                nextYear = nextSeasonYear.second,
+                perPage = perPage,
+            )
         )
-    )
+    }
 
     suspend fun homeManga(perPage: Int = 10) = query(
         HomeMangaQuery(perPage = perPage)

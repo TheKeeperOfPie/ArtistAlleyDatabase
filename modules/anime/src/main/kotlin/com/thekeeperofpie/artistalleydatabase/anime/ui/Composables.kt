@@ -1,8 +1,9 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
+@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 
 package com.thekeeperofpie.artistalleydatabase.anime.ui
 
 import androidx.annotation.StringRes
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Arrangement
@@ -11,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarToday
@@ -225,16 +225,17 @@ fun StartEndDateDialog(
 fun <T> LazyListScope.listSection(
     @StringRes titleRes: Int,
     values: Collection<T>,
+    valueToId: (T) -> String?,
     aboveFold: Int,
     expanded: () -> Boolean,
     onExpandedChange: (Boolean) -> Unit,
     hidden: () -> Boolean = { false },
     hiddenContent: @Composable () -> Unit = {},
-    itemContent: @Composable (T, paddingBottom: Dp) -> Unit,
+    itemContent: @Composable LazyListScope.(T, paddingBottom: Dp, modifier: Modifier) -> Unit,
 ) {
     if (values.isNotEmpty()) {
         val hasMore = values.size > aboveFold
-        item {
+        item("$titleRes-header") {
             DetailsSectionHeader(
                 text = stringResource(titleRes),
                 modifier = Modifier.optionalClickable(
@@ -244,13 +245,16 @@ fun <T> LazyListScope.listSection(
         }
 
         if (hidden()) {
-            item {
+            item("$titleRes-hidden") {
                 hiddenContent()
             }
             return
         }
 
-        itemsIndexed(values.take(aboveFold)) { index, item ->
+        itemsIndexed(
+            values.take(aboveFold),
+            { index, item -> "$titleRes-${valueToId(item) ?: index}" },
+        ) { index, item ->
             val paddingBottom = if (index == values.size
                     .coerceAtMost(aboveFold) - 1
             ) {
@@ -258,23 +262,27 @@ fun <T> LazyListScope.listSection(
             } else {
                 16.dp
             }
-            itemContent(item, paddingBottom)
+            this@listSection.itemContent(item, paddingBottom, Modifier.animateItemPlacement())
         }
 
         if (hasMore) {
             if (expanded()) {
-                items(values.drop(aboveFold)) {
-                    itemContent(it, 16.dp)
+                itemsIndexed(
+                    values.drop(aboveFold),
+                    { index, item -> "$titleRes-${valueToId(item) ?: (index + aboveFold)}" },
+                ) { _, item ->
+                    this@listSection.itemContent(item, 16.dp, Modifier.animateItemPlacement())
                 }
             }
 
-            item {
+            item("$titleRes-showMore") {
                 @Suppress("NAME_SHADOWING") val expanded = expanded()
                 ElevatedCard(
                     onClick = { onExpandedChange(!expanded) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp)
+                        .animateItemPlacement()
                 ) {
                     Text(
                         text = stringResource(

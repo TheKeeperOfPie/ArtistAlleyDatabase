@@ -2,19 +2,24 @@ package com.thekeeperofpie.artistalleydatabase.anime.home
 
 import android.annotation.SuppressLint
 import androidx.annotation.StringRes
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.snapping.SnapLayoutInfoProvider
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
@@ -35,20 +40,24 @@ import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -61,15 +70,14 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.anilist.fragment.MediaPreviewWithDescription
 import com.mxalbert.sharedelements.SharedElement
-import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
-import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
-import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaLargeCard
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
+import com.thekeeperofpie.artistalleydatabase.compose.NavMenuIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
@@ -79,13 +87,15 @@ import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
 object AnimeHomeScreen {
 
     private const val SCREEN_KEY = "anime_home"
+    private val MEDIA_ROW_HEIGHT = 180.dp
 
     @Composable
     operator fun invoke(
         viewModel: AnimeHomeViewModel = hiltViewModel<AnimeHomeViewModel>(),
+        onClickNav: () -> Unit = {},
         navigationCallback: AnimeNavigator.NavigationCallback,
         scrollStateSaver: ScrollStateSaver,
-        bottomNavigationState: BottomNavigationState? = null,
+        bottomNavigationState: BottomNavigationState,
     ) {
         var selectedTabIndex by rememberSaveable { mutableIntStateOf(0) }
         val colorCalculationState = rememberColorCalculationState(viewModel.colorMap)
@@ -95,18 +105,20 @@ object AnimeHomeScreen {
         LazyColumn(
             state = scrollStateSaver.lazyListState(),
             contentPadding = PaddingValues(
-                bottom = 16.dp + (bottomNavigationState?.bottomNavBarPadding() ?: 0.dp)
+                bottom = 16.dp + bottomNavigationState.bottomNavBarPadding()
             ),
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier
+                .fillMaxSize()
+                .nestedScroll(bottomNavigationState.nestedScrollConnection)
         ) {
-
             item {
-                Header()
+                Header(onClickNav = onClickNav)
             }
 
             item {
                 TabRow(selectedTabIndex = selectedTabIndex) {
-                    Tab(selected = selectedTabIndex == 0, onClick = { selectedTabIndex = 0 },
+                    Tab(selected = selectedTabIndex == 0,
+                        onClick = { selectedTabIndex = 0 },
                         text = {
                             Text(
                                 text = stringResource(R.string.anime_home_tab_anime),
@@ -115,7 +127,8 @@ object AnimeHomeScreen {
                         }
                     )
                     Tab(
-                        selected = selectedTabIndex == 1, onClick = { selectedTabIndex = 1 },
+                        selected = selectedTabIndex == 1,
+                        onClick = { selectedTabIndex = 1 },
                         text = {
                             Text(
                                 text = stringResource(R.string.anime_home_tab_manga),
@@ -132,18 +145,31 @@ object AnimeHomeScreen {
                         entry = animeViewModel.entry,
                         data = {
                             listOf(
-                                Triple("anime_trending", R.string.anime_home_trending, it.trending),
+                                Triple(
+                                    "anime_trending",
+                                    R.string.anime_home_trending,
+                                    it.trending
+                                ),
                                 Triple(
                                     "anime_popular_this_season",
                                     R.string.anime_home_popular_this_season,
                                     it.popularThisSeason
                                 ),
                                 Triple(
+                                    "anime_popular_last_season",
+                                    R.string.anime_home_popular_last_season,
+                                    it.popularLastSeason
+                                ),
+                                Triple(
                                     "anime_popular_next_season",
                                     R.string.anime_home_popular_next_season,
                                     it.popularNextSeason
                                 ),
-                                Triple("anime_popular", R.string.anime_home_popular, it.popular),
+                                Triple(
+                                    "anime_popular",
+                                    R.string.anime_home_popular,
+                                    it.popular
+                                ),
                                 Triple("anime_top", R.string.anime_home_top, it.top),
                             )
                         },
@@ -157,8 +183,16 @@ object AnimeHomeScreen {
                         entry = mangaViewModel.entry,
                         data = {
                             listOf(
-                                Triple("manga_trending", R.string.anime_home_trending, it.trending),
-                                Triple("manga_popular", R.string.anime_home_popular, it.popular),
+                                Triple(
+                                    "manga_trending",
+                                    R.string.anime_home_trending,
+                                    it.trending
+                                ),
+                                Triple(
+                                    "manga_popular",
+                                    R.string.anime_home_popular,
+                                    it.popular
+                                ),
                                 Triple("manga_top", R.string.anime_home_top, it.top),
                             )
                         },
@@ -172,8 +206,11 @@ object AnimeHomeScreen {
     }
 
     @Composable
-    private fun Header() {
-
+    private fun Header(onClickNav: () -> Unit) {
+        TopAppBar(
+            title = {},
+            navigationIcon = { NavMenuIconButton(onClickNav) },
+        )
     }
 
     private fun <Entry> LazyListScope.list(
@@ -251,7 +288,7 @@ object AnimeHomeScreen {
             val snapLayoutInfoProvider =
                 remember(listState) { SnapLayoutInfoProvider(listState) { _, _, _ -> 0 } }
             val colorPrimary = MaterialTheme.colorScheme.primary
-            val cardOutlineBorder = remember { BorderStroke(1.dp, colorPrimary) }
+            val cardOutlineBorder = remember { BorderStroke(1.5.dp, colorPrimary) }
 
             LazyRow(
                 state = listState,
@@ -270,9 +307,10 @@ object AnimeHomeScreen {
                         label = "Media card color fade in",
                     )
 
+                    val surfaceColor = item.coverImage?.color?.let(ComposeColorUtils::hexToColor)
+                        ?: MaterialTheme.colorScheme.surface
                     val containerColor = when {
-                        colors == null || animationProgress == 0 ->
-                            MaterialTheme.colorScheme.surface
+                        colors == null || animationProgress == 0 -> surfaceColor
                         animationProgress == 255 -> colors.first
                         else -> Color(
                             ColorUtils.compositeColors(
@@ -280,12 +318,12 @@ object AnimeHomeScreen {
                                     colors.first.toArgb(),
                                     animationProgress
                                 ),
-                                MaterialTheme.colorScheme.surface.toArgb()
+                                surfaceColor.toArgb()
                             )
                         )
                     }
 
-                    var widthToHeightRatio by remember { MutableSingle<Float?>(null) }
+                    var widthToHeightRatio by remember(id) { mutableStateOf<Float?>(null) }
                     val onClick = {
                         navigationCallback.onMediaClick(item, widthToHeightRatio)
                     }
@@ -300,6 +338,7 @@ object AnimeHomeScreen {
                                     ),
                                     border = cardOutlineBorder,
                                     content = it,
+                                    modifier = Modifier.animateItemPlacement()
                                 )
                             }
                         } else {
@@ -310,6 +349,7 @@ object AnimeHomeScreen {
                                         containerColor = containerColor,
                                     ),
                                     content = it,
+                                    modifier = Modifier.animateItemPlacement()
                                 )
                             }
                         }
@@ -319,15 +359,19 @@ object AnimeHomeScreen {
                         screenKey = SCREEN_KEY,
                     ) {
                         card {
+                            val alpha by animateFloatAsState(
+                                if (widthToHeightRatio == null) 0f else 1f,
+                                label = "Cover image alpha",
+                            )
                             AsyncImage(
                                 model = ImageRequest.Builder(LocalContext.current)
                                     .data(item.coverImage?.extraLarge)
-                                    .crossfade(true)
+                                    .crossfade(false)
                                     .allowHardware(colorCalculationState.hasColor(id))
                                     .size(
                                         width = coil.size.Dimension.Undefined,
                                         height = coil.size.Dimension.Pixels(
-                                            LocalDensity.current.run { 200.dp.roundToPx() }
+                                            LocalDensity.current.run { MEDIA_ROW_HEIGHT.roundToPx() }
                                         ),
                                     )
                                     .build(),
@@ -345,11 +389,18 @@ object AnimeHomeScreen {
                                 },
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(12.dp))
-                                    .height(200.dp)
-                                    .conditionally(widthToHeightRatio != null) {
-                                        widthIn(max = 200.dp)
+                                    .alpha(alpha)
+                                    .height(MEDIA_ROW_HEIGHT)
+                                    .conditionally(widthToHeightRatio == null) {
+                                        widthIn(
+                                            min = MEDIA_ROW_HEIGHT *
+                                                    AniListUtils.COVER_IMAGE_WIDTH_TO_HEIGHT_RATIO
+                                        )
                                     }
-
+                                    .conditionally(widthToHeightRatio != null) {
+                                        widthIn(max = MEDIA_ROW_HEIGHT)
+                                    }
+                                    .animateContentSize()
                             )
                         }
                     }

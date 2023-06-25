@@ -2,8 +2,15 @@
 
 package com.thekeeperofpie.artistalleydatabase.compose
 
+import android.content.Context
+import android.graphics.Canvas
+import android.graphics.drawable.Drawable
+import android.graphics.drawable.DrawableWrapper
+import android.os.SystemClock
 import android.text.Html
+import android.text.TextUtils
 import android.util.Log
+import android.widget.TextView
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
@@ -56,7 +63,9 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -71,8 +80,10 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.drawscope.ContentDrawScope
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.debugInspectorInfo
 import androidx.compose.ui.res.stringResource
@@ -98,6 +109,10 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.takeOrElse
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.text.HtmlCompat
+import coil.Coil
+import coil.request.ImageRequest
 import com.thekeeperofpie.compose_proxy.R
 import de.charlex.compose.toAnnotatedString
 
@@ -922,3 +937,99 @@ private fun HtmlText(
     )
 }
 
+private class CoilImageGetter(
+    private val context: Context,
+    private val onUpdate: () -> Unit,
+) : Html.ImageGetter {
+    private val loader = Coil.imageLoader(context)
+
+    private val sourceToDrawable = mutableMapOf<String, Drawable>()
+
+    private val brokenDrawable = context.getDrawable(R.drawable.baseline_broken_image_24)
+
+    override fun getDrawable(source: String?): Drawable? {
+        if (source == null) return CustomDrawableWrapper.EMPTY
+        val drawable = sourceToDrawable[source]
+        if (drawable != null) {
+            return drawable
+        }
+
+        loader.enqueue(
+            ImageRequest.Builder(context)
+                .data(source)
+                .listener(onSuccess = { _, result ->
+                    sourceToDrawable[source] = result.drawable.apply {
+                        setBounds(0, 0, intrinsicWidth, intrinsicHeight)
+                    }
+                    onUpdate()
+                })
+                .build()
+        )
+
+        return brokenDrawable
+    }
+}
+
+private class CustomDrawableWrapper : DrawableWrapper(null) {
+
+    companion object {
+        val EMPTY = CustomDrawableWrapper()
+    }
+
+    var delegate: Drawable? = null
+        set(value) {
+            field = value ?: return
+            val width = value.intrinsicWidth
+            val height = value.intrinsicHeight
+            value.setBounds(0, 0, width, height)
+            setBounds(0, 0, width, height)
+        }
+
+    override fun draw(canvas: Canvas) {
+        delegate?.draw(canvas)
+    }
+}
+
+private class ImageGetterWrapper(var delegate: Html.ImageGetter? = null) : Html.ImageGetter {
+    override fun getDrawable(source: String?) =
+        source?.let { delegate?.getDrawable(source) } ?: CustomDrawableWrapper.EMPTY
+}
+
+/**
+ * [Text] doesn't support images, so instead use a [TextView].
+ */
+@Composable
+fun ImageHtmlText(
+    modifier: Modifier = Modifier,
+    text: String,
+    maxLines: Int,
+    color: Color,
+
+) {
+    val context = LocalContext.current
+    var updateMillis by remember { mutableLongStateOf(-1L) }
+    val imageGetter = remember {
+        ImageGetterWrapper(CoilImageGetter(context) {
+            updateMillis = SystemClock.uptimeMillis()
+        })
+    }
+    DisposableEffect(context) {
+        onDispose { imageGetter.delegate = null }
+    }
+
+    val htmlText = remember(text, updateMillis) {
+        HtmlCompat.fromHtml(text.trim(), 0, imageGetter, null)
+            .trim()
+    }
+
+    AndroidView(
+        modifier = modifier,
+        factory = ::TextView,
+        update = {
+            it.text = htmlText
+            it.maxLines = maxLines
+            it.setTextColor(color.toArgb())
+            it.ellipsize = TextUtils.TruncateAt.END
+        }
+    )
+}

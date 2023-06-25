@@ -8,6 +8,7 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -52,7 +53,6 @@ import androidx.compose.material.icons.outlined.PeopleAlt
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.BottomSheetScaffold
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -106,14 +106,12 @@ import androidx.media3.ui.PlayerView
 import coil.compose.AsyncImage
 import coil.size.Dimension
 import com.anilist.MediaDetailsQuery.Data.Media
-import com.anilist.fragment.MediaDetailsListEntry
 import com.anilist.fragment.UserNavigationData
 import com.anilist.type.ExternalLinkType
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaRankType
 import com.anilist.type.MediaRelation
 import com.anilist.type.MediaType
-import com.anilist.type.ScoreFormat
 import com.neovisionaries.i18n.CountryCode
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
@@ -131,7 +129,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils
 import com.thekeeperofpie.artistalleydatabase.anime.character.charactersSection
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
-import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaTagEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toColor
@@ -148,6 +145,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.DetailsSubsectionHeader
 import com.thekeeperofpie.artistalleydatabase.anime.ui.ExpandableListInfoText
 import com.thekeeperofpie.artistalleydatabase.anime.ui.InfoText
 import com.thekeeperofpie.artistalleydatabase.anime.ui.descriptionSection
+import com.thekeeperofpie.artistalleydatabase.anime.ui.detailsLoadingOrError
 import com.thekeeperofpie.artistalleydatabase.anime.ui.listSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.twoColumnInfoText
 import com.thekeeperofpie.artistalleydatabase.animethemes.models.AnimeTheme
@@ -175,7 +173,10 @@ import java.util.concurrent.atomic.AtomicReference
 import kotlin.math.roundToInt
 
 @Suppress("NAME_SHADOWING")
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@OptIn(
+    ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class,
+    ExperimentalFoundationApi::class
+)
 object AnimeMediaDetailsScreen {
 
     private const val RELATIONS_ABOVE_FOLD = 3
@@ -219,10 +220,6 @@ object AnimeMediaDetailsScreen {
         onStaffLongClick: (String) -> Unit = {},
         onTagLongClick: (String) -> Unit = {},
         navigationCallback: AnimeNavigator.NavigationCallback,
-        listEntry: @Composable () -> MediaDetailsListEntry?,
-        scoreFormat: @Composable () -> ScoreFormat,
-        errorRes: @Composable () -> Pair<Int, Exception?>? = { null },
-        onErrorDismiss: () -> Unit = {},
     ) {
         val bottomSheetScaffoldState = rememberBottomSheetScaffoldState(
             bottomSheetState = rememberStandardBottomSheetState(
@@ -266,6 +263,8 @@ object AnimeMediaDetailsScreen {
         val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
         val lazyListState = rememberLazyListState()
         val colorCalculationState = rememberColorCalculationState(viewModel.colorMap)
+        val listEntry by viewModel.listEntry.collectAsState()
+        val scoreFormat by viewModel.scoreFormat.collectAsState()
         BottomSheetScaffold(
             scaffoldState = bottomSheetScaffoldState,
             sheetPeekHeight = 0.dp,
@@ -292,34 +291,25 @@ object AnimeMediaDetailsScreen {
                 }
             },
             snackbarHost = {
-                val errorRes = errorRes()
-                if (errorRes != null) {
+                val editData = viewModel.editData
+                if (editData.errorRes != null) {
                     SnackbarErrorText(
-                        errorRes.first,
-                        errorRes.second,
-                        onErrorDismiss = onErrorDismiss
+                        editData.errorRes?.first,
+                        editData.errorRes?.second,
+                        onErrorDismiss = { editData.errorRes = null },
                     )
                 } else {
-                    val editData = viewModel.editData
-                    if (editData.errorRes != null) {
-                        SnackbarErrorText(
-                            editData.errorRes?.first,
-                            editData.errorRes?.second,
-                            onErrorDismiss = { editData.errorRes = null },
-                        )
-                    } else {
-                        // Bottom sheet requires at least one measurable component
-                        Spacer(modifier = Modifier.size(0.dp))
-                    }
+                    // Bottom sheet requires at least one measurable component
+                    Spacer(modifier = Modifier.size(0.dp))
                 }
             },
             sheetContent = {
                 AnimeMediaEditBottomSheet(
                     editData = viewModel.editData,
-                    id = { listEntry()?.id?.toString() },
+                    id = { listEntry?.id?.toString() },
                     type = { entry()?.media?.type },
                     progressMax = { entry()?.media?.run { episodes ?: volumes } ?: 0 },
-                    scoreFormat = scoreFormat,
+                    scoreFormat = { scoreFormat },
                     onDateChange = viewModel::onDateChange,
                     onStatusChange = viewModel::onStatusChange,
                     onClickDelete = viewModel::onClickDelete,
@@ -332,8 +322,6 @@ object AnimeMediaDetailsScreen {
                     val entry = entry()
                     if (entry != null) {
                         val media = entry.media
-                        val listEntry = listEntry()
-
                         val expanded by remember {
                             derivedStateOf { scrollBehavior.state.collapsedFraction == 0f }
                         }
@@ -412,7 +400,6 @@ object AnimeMediaDetailsScreen {
                     content(
                         viewModel = viewModel,
                         entry = entry,
-                        errorRes = errorRes,
                         onGenreLongClick = onGenreLongClick,
                         onCharacterLongClick = onCharacterLongClick,
                         onStaffLongClick = onStaffLongClick,
@@ -456,7 +443,6 @@ object AnimeMediaDetailsScreen {
     private fun LazyListScope.content(
         viewModel: AnimeMediaDetailsViewModel,
         entry: Entry?,
-        errorRes: @Composable () -> Pair<Int, Exception?>? = { null },
         onGenreLongClick: (String) -> Unit,
         onCharacterLongClick: (String) -> Unit,
         onStaffLongClick: (String) -> Unit,
@@ -466,27 +452,13 @@ object AnimeMediaDetailsScreen {
         colorCalculationState: ColorCalculationState,
     ) {
         if (entry == null) {
-            if (viewModel.loading) {
-                item {
-                    Box(modifier = Modifier.fillMaxSize()) {
-                        CircularProgressIndicator(
-                            modifier = Modifier
-                                .align(Alignment.Center)
-                                .padding(32.dp)
-                        )
-                    }
-                }
-            } else {
-                item {
-                    val errorRes = errorRes()
-                    AnimeMediaListScreen.Error(
-                        errorTextRes = errorRes?.first,
-                        exception = errorRes?.second,
-                    )
-                }
-            }
+            detailsLoadingOrError(
+                loading = viewModel.loading,
+                errorResource = { viewModel.errorResource },
+            )
             return
         }
+
         genreSection(
             entry = entry,
             onGenreClick = navigationCallback::onGenreClick,
@@ -542,7 +514,7 @@ object AnimeMediaDetailsScreen {
 
         statsSection(entry)
 
-        tagSection(
+        tagsSection(
             entry = entry,
             onTagClick = navigationCallback::onTagClick,
             onTagLongClick = onTagLongClick,
@@ -694,13 +666,14 @@ object AnimeMediaDetailsScreen {
         onGenreLongClick: (String) -> Unit
     ) {
         if (entry.genres.isNotEmpty()) {
-            item {
+            item("genreSection") {
                 FlowRow(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(start = 16.dp, end = 16.dp, top = 10.dp)
-                        .animateContentSize(),
+                        .padding(start = 16.dp, end = 16.dp, top = 8.dp)
+                        .animateContentSize()
+                        .animateItemPlacement()
                 ) {
                     entry.genres.forEach {
                         AssistChip(
@@ -742,14 +715,18 @@ object AnimeMediaDetailsScreen {
     }
 
     private fun LazyListScope.infoSection(entry: Entry) {
-        item {
-            DetailsSectionHeader(stringResource(R.string.anime_media_details_information_label))
+        item("infoHeader") {
+            DetailsSectionHeader(
+                stringResource(R.string.anime_media_details_information_label),
+                modifier = Modifier.animateItemPlacement()
+            )
         }
-        item {
+        item("infoSection") {
             ElevatedCard(
                 modifier = Modifier
                     .padding(horizontal = 16.dp)
-                    .animateContentSize(),
+                    .animateContentSize()
+                    .animateItemPlacement(),
             ) {
                 val media = entry.media
                 twoColumnInfoText(
@@ -877,14 +854,15 @@ object AnimeMediaDetailsScreen {
         listSection(
             titleRes = R.string.anime_media_details_songs_label,
             values = animeSongs.entries,
+            valueToId = { it.id },
             aboveFold = SONGS_ABOVE_FOLD,
             expanded = songsExpanded,
             onExpandedChange = onSongsExpandedChange,
-        ) { item, paddingBottom ->
+        ) { item, paddingBottom, modifier ->
             AnimeThemeRow(
                 viewModel = viewModel,
                 entry = item,
-                modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = paddingBottom)
+                modifier = modifier.padding(start = 16.dp, end = 16.dp, bottom = paddingBottom)
             )
         }
     }
@@ -1223,15 +1201,19 @@ object AnimeMediaDetailsScreen {
     ) {
         if (cdEntries.isEmpty()) return
 
-        item {
-            DetailsSectionHeader(stringResource(R.string.anime_media_details_cds_label))
+        item("cdsHeader") {
+            DetailsSectionHeader(
+                stringResource(R.string.anime_media_details_cds_label),
+                modifier = Modifier.animateItemPlacement()
+            )
         }
 
-        item {
+        item("cdsSection") {
             val width = LocalDensity.current.run { Dimension.Pixels(200.dp.toPx().roundToInt()) }
             LazyRow(
                 contentPadding = PaddingValues(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
+                modifier = Modifier.animateItemPlacement(),
             ) {
                 itemsIndexed(cdEntries) { index, cdEntry ->
                     var transitionProgress by remember { mutableFloatStateOf(0f) }
@@ -1279,7 +1261,7 @@ object AnimeMediaDetailsScreen {
     fun RelationLabel(relation: MediaRelation) {
         Text(
             text = stringResource(relation.toTextRes()),
-            style = MaterialTheme.typography.titleMedium,
+            style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.surfaceTint,
             modifier = Modifier
                 .wrapContentHeight()
@@ -1292,12 +1274,19 @@ object AnimeMediaDetailsScreen {
     }
 
     private fun LazyListScope.statsSection(entry: Entry) {
-        item {
-            DetailsSectionHeader(stringResource(R.string.anime_media_details_stats_label))
+        item("statsHeader") {
+            DetailsSectionHeader(
+                stringResource(R.string.anime_media_details_stats_label),
+                modifier = Modifier.animateItemPlacement()
+            )
         }
 
-        item {
-            ElevatedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
+        item("statsSection") {
+            ElevatedCard(
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+                    .animateItemPlacement()
+            ) {
                 ExpandableListInfoText(
                     labelTextRes = R.string.anime_media_details_rankings_label,
                     contentDescriptionTextRes = R.string.anime_media_details_rankings_expand_content_description,
@@ -1390,21 +1379,26 @@ object AnimeMediaDetailsScreen {
         }
     }
 
-    private fun LazyListScope.tagSection(
+    private fun LazyListScope.tagsSection(
         entry: Entry,
         onTagClick: (tagId: String, tagName: String) -> Unit = { _, _ -> },
         onTagLongClick: (tagId: String) -> Unit = {},
         colorCalculationState: ColorCalculationState,
     ) {
         if (entry.tags.isNotEmpty()) {
-            item {
-                DetailsSectionHeader(stringResource(R.string.anime_media_details_tags_label))
+            item("tagsHeader") {
+                DetailsSectionHeader(
+                    stringResource(R.string.anime_media_details_tags_label),
+                    modifier = Modifier.animateItemPlacement()
+                )
             }
 
-            item {
+            item("tagsSection") {
                 FlowRow(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.padding(horizontal = 16.dp)
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .animateItemPlacement()
                 ) {
                     entry.tags.forEach {
                         val (containerColor, textColor) =
@@ -1443,15 +1437,20 @@ object AnimeMediaDetailsScreen {
 
         val videoId = trailer.id ?: return
 
-        item {
-            DetailsSectionHeader(stringResource(R.string.anime_media_details_trailer_label))
+        item("trailerHeader") {
+            DetailsSectionHeader(
+                stringResource(R.string.anime_media_details_trailer_label),
+                modifier = Modifier.animateItemPlacement()
+            )
         }
 
         if (trailer.site == "youtube") {
-            item {
+            item("trailerSection") {
                 val lifecycleOwner = LocalLifecycleOwner.current
                 ElevatedCard(
-                    modifier = Modifier.padding(horizontal = 16.dp)
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .animateItemPlacement()
                 ) {
                     val player = remember { AtomicReference<YouTubePlayer>(null) }
                     AndroidView(
@@ -1489,11 +1488,13 @@ object AnimeMediaDetailsScreen {
                 }
             }
         } else {
-            item {
+            item("trailerSection") {
                 val uriHandler = LocalUriHandler.current
                 ElevatedCard(
                     onClick = { uriHandler.openUri(MediaUtils.dailymotionUrl(videoId)) },
-                    modifier = Modifier.padding(horizontal = 16.dp)
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .animateItemPlacement()
                 ) {
                     AsyncImage(
                         model = trailer.thumbnail,
@@ -1521,6 +1522,7 @@ object AnimeMediaDetailsScreen {
         listSection(
             titleRes = R.string.anime_media_details_streaming_episodes_label,
             values = streamingEpisodes,
+            valueToId = { it.url },
             aboveFold = STREAMING_EPISODES_ABOVE_FOLD,
             expanded = expanded,
             onExpandedChange = onExpandedChange,
@@ -1552,10 +1554,10 @@ object AnimeMediaDetailsScreen {
                     }
                 }
             }
-        ) { item, paddingBottom ->
+        ) { item, paddingBottom, modifier ->
             val uriHandler = LocalUriHandler.current
             ElevatedCard(
-                modifier = Modifier
+                modifier = modifier
                     .padding(start = 16.dp, end = 16.dp, bottom = paddingBottom)
                     .optionalClickable(onClick = item.url?.let { { uriHandler.openUri(it) } }),
             ) {
@@ -1610,15 +1612,20 @@ object AnimeMediaDetailsScreen {
     private fun LazyListScope.linksSection(@StringRes headerRes: Int, links: List<Entry.Link>) {
         if (links.isEmpty()) return
 
-        item {
-            DetailsSectionHeader(stringResource(headerRes))
+        item("linksHeader-$headerRes") {
+            DetailsSectionHeader(
+                stringResource(headerRes),
+                modifier = Modifier.animateItemPlacement()
+            )
         }
 
-        item {
+        item("linksSection-$headerRes") {
             val uriHandler = LocalUriHandler.current
             FlowRow(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.padding(horizontal = 16.dp)
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+                    .animateItemPlacement()
             ) {
                 links.forEach {
                     androidx.compose.material3.AssistChip(
@@ -1660,13 +1667,14 @@ object AnimeMediaDetailsScreen {
         listSection(
             titleRes = R.string.anime_media_details_reviews_label,
             values = reviews,
+            valueToId = { it.id.toString() },
             aboveFold = REVIEWS_ABOVE_FOLD,
             expanded = expanded,
             onExpandedChange = onExpandedChange,
-        ) { item, paddingBottom ->
+        ) { item, paddingBottom, modifier ->
             val uriHandler = LocalUriHandler.current
             ElevatedCard(
-                modifier = Modifier
+                modifier = modifier
                     .padding(start = 16.dp, end = 16.dp, bottom = paddingBottom)
                     .clickable { uriHandler.openUri(AniListUtils.reviewUrl(item.id.toString())) },
             ) {

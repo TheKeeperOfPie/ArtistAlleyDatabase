@@ -273,9 +273,6 @@ object AnimeNavigator {
                 onStaffLongClick = { /*TODO*/ },
                 onTagLongClick = { /*TODO*/ },
                 navigationCallback = navigationCallback,
-                listEntry = { viewModel.listEntry.collectAsState().value },
-                scoreFormat = { viewModel.scoreFormat.collectAsState().value },
-                errorRes = { viewModel.errorResource },
             )
         }
 

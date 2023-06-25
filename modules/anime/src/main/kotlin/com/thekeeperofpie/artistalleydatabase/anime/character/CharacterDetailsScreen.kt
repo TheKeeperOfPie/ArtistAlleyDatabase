@@ -17,7 +17,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -47,7 +46,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
-import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.mediaListSection
 import com.thekeeperofpie.artistalleydatabase.anime.staff.DetailsStaff
@@ -57,12 +55,12 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.anime.ui.DetailsSubsectionHeader
 import com.thekeeperofpie.artistalleydatabase.anime.ui.InfoText
 import com.thekeeperofpie.artistalleydatabase.anime.ui.descriptionSection
+import com.thekeeperofpie.artistalleydatabase.anime.ui.detailsLoadingOrError
 import com.thekeeperofpie.artistalleydatabase.anime.ui.twoColumnInfoText
 import com.thekeeperofpie.artistalleydatabase.compose.AutoResizeHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.CollapsingToolbar
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
-import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
 import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.fadingEdgeBottom
 import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
@@ -110,16 +108,6 @@ object CharacterDetailsScreen {
                             }
                         },
                         colorCalculationState = colorCalculationState,
-                    )
-                }
-            },
-            snackbarHost = {
-                val errorRes = viewModel.errorResource
-                if (errorRes != null) {
-                    SnackbarErrorText(
-                        errorRes.first,
-                        errorRes.second,
-                        onErrorDismiss = { viewModel.errorResource = null },
                     )
                 }
             },
@@ -205,25 +193,10 @@ object CharacterDetailsScreen {
     ) {
         val entry = viewModel.entry
         if (entry == null) {
-            if (viewModel.loading) {
-                item {
-                    Box(modifier = Modifier.fillMaxSize()) {
-                        CircularProgressIndicator(
-                            modifier = Modifier
-                                .align(Alignment.Center)
-                                .padding(32.dp)
-                        )
-                    }
-                }
-            } else {
-                item {
-                    val errorRes = viewModel.errorResource
-                    AnimeMediaListScreen.Error(
-                        errorTextRes = errorRes?.first,
-                        exception = errorRes?.second,
-                    )
-                }
-            }
+            detailsLoadingOrError(
+                loading = viewModel.loading,
+                errorResource = { viewModel.errorResource },
+            )
             return
         }
 

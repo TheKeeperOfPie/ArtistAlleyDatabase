@@ -144,7 +144,7 @@
     <string name="anime_media_tag_is_spoiler">Spoiler warning</string>
     <string name="anime_media_tag_spoiler">Spoiler</string>
 
-    <string name="anime_media_next_airing_episode">Ep. %1$s airing on %2$s (%3$s)</string>
+    <string name="anime_media_next_airing_episode">Ep. %1$s: %2$s (%3$s)</string>
     <string name="anime_media_rating_icon_content_description">Rating</string>
     <string name="anime_media_rating_population_icon_content_description">Users</string>
 
@@ -499,6 +499,7 @@
     <string name="anime_home_tab_manga">Manga</string>
     <string name="anime_home_trending">TRENDING</string>
     <string name="anime_home_popular_this_season">THIS SEASON</string>
+    <string name="anime_home_popular_last_season">LAST SEASON</string>
     <string name="anime_home_popular_next_season">NEXT SEASON</string>
     <string name="anime_home_popular">POPULAR</string>
     <string name="anime_home_top">TOP ALL TIME</string>

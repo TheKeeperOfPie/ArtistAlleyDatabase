@@ -1,12 +1,11 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media
 
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -14,21 +13,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.ImageNotSupported
-import androidx.compose.material.icons.filled.PeopleAlt
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.PersonOutline
-import androidx.compose.material.icons.outlined.PeopleAlt
 import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -42,20 +32,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import coil.size.Dimension
-import com.anilist.fragment.AniListListRowMedia
 import com.anilist.fragment.MediaPreviewWithDescription
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.material.placeholder
@@ -64,15 +52,15 @@ import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
-import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.CustomHtmlText
-import com.thekeeperofpie.artistalleydatabase.compose.fadingEdgeEnd
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 
 @OptIn(ExperimentalFoundationApi::class)
 object AnimeMediaLargeCard {
+
+    private val HEIGHT = 200.dp
 
     @Composable
     operator fun invoke(
@@ -90,7 +78,7 @@ object AnimeMediaLargeCard {
         ElevatedCard(
             modifier = modifier
                 .fillMaxWidth()
-                .heightIn(min = 240.dp)
+                .heightIn(min = HEIGHT)
                 .combinedClickable(
                     enabled = entry != Entry.Loading,
                     onClick = {
@@ -114,7 +102,7 @@ object AnimeMediaLargeCard {
                 Column(
                     modifier = Modifier
                         .fillMaxHeight()
-                        .heightIn(min = 240.dp)
+                        .heightIn(min = HEIGHT)
                 ) {
                     Row(modifier = Modifier.fillMaxWidth()) {
                         Column(Modifier.weight(1f)) {
@@ -123,7 +111,12 @@ object AnimeMediaLargeCard {
                             SubtitleText(entry)
                         }
 
-                        RatingSection(entry, modifier = Modifier.wrapContentWidth())
+                        MediaRatingIconsSection(
+                            rating = entry.rating,
+                            popularity = entry.popularity,
+                            loading = entry == Entry.Loading,
+                            modifier = Modifier.wrapContentWidth()
+                        )
                     }
 
                     val description = entry.media?.description
@@ -133,19 +126,21 @@ object AnimeMediaLargeCard {
                         CustomHtmlText(
                             text = description,
                             style = MaterialTheme.typography.bodySmall,
+                            overflow = TextOverflow.Ellipsis,
+                            onFallbackClick = { navigationCallback.onMediaClick(entry.media) },
                             modifier = Modifier
                                 .weight(1f)
                                 .fillMaxWidth()
-                                .padding(16.dp)
+                                .padding(10.dp)
                         )
                     }
 
                     entry.nextAiringEpisode?.let {
-                        NextAiringSection(it, entry == Entry.Loading)
+                        MediaNextAiringSection(it, entry == Entry.Loading)
                     }
                     val (containerColor, textColor) =
                         colorCalculationState.getColors(entry.id.valueId)
-                    TagRow(
+                    MediaTagRow(
                         tags = entry.tags,
                         onTagClick = navigationCallback::onTagClick,
                         onTagLongClick = onTagLongClick,
@@ -170,6 +165,11 @@ object AnimeMediaLargeCard {
             screenKey = screenKey,
         ) {
             val foregroundColor = MaterialTheme.colorScheme.surface
+            var loaded by remember(entry.id.valueId) { mutableStateOf(false) }
+            val alpha by animateFloatAsState(
+                if (loaded) 1f else 0f,
+                label = "AnimeMediaLargeCard banner image alpha",
+            )
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
                     .data(entry.imageBanner ?: entry.image)
@@ -177,12 +177,13 @@ object AnimeMediaLargeCard {
                     .allowHardware(colorCalculationState.hasColor(entry.id.valueId))
                     .size(
                         width = Dimension.Undefined,
-                        height = Dimension.Pixels(LocalDensity.current.run { 240.dp.roundToPx() }),
+                        height = Dimension.Pixels(LocalDensity.current.run { HEIGHT.roundToPx() }),
                     )
                     .build(),
                 contentScale = ContentScale.Crop,
                 fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
                 onSuccess = {
+                    loaded = true
                     ComposeColorUtils.calculatePalette(
                         entry.id.valueId,
                         it,
@@ -193,9 +194,9 @@ object AnimeMediaLargeCard {
                     R.string.anime_media_banner_image_content_description
                 ),
                 modifier = Modifier
-                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                    .background(entry.color ?: MaterialTheme.colorScheme.surfaceVariant)
                     .fillMaxWidth()
-                    .height(240.dp)
+                    .height(HEIGHT)
                     .drawWithContent {
                         drawContent()
                         drawRect(foregroundColor, alpha = 0.5f)
@@ -209,6 +210,7 @@ object AnimeMediaLargeCard {
                     )
                     // Clip to match card so that shared element animation keeps rounded corner
                     .clip(RoundedCornerShape(topStart = 12.dp, bottomStart = 12.dp))
+                    .alpha(alpha)
             )
         }
     }
@@ -217,7 +219,7 @@ object AnimeMediaLargeCard {
     private fun TitleText(entry: Entry) {
         Text(
             text = entry.title ?: "Loading...",
-            style = MaterialTheme.typography.titleLarge,
+            style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Black,
             modifier = Modifier
                 .fillMaxWidth()
@@ -242,8 +244,8 @@ object AnimeMediaLargeCard {
                     withSeparator = true
                 ),
             ).joinToString(separator = " - "),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.typography.bodyMedium.color
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.typography.bodySmall.color
                 .takeOrElse { LocalContentColor.current }
                 .copy(alpha = 0.8f),
             modifier = Modifier
@@ -254,156 +256,6 @@ object AnimeMediaLargeCard {
                     highlight = PlaceholderHighlight.shimmer(),
                 )
         )
-    }
-
-    @Composable
-    private fun RatingSection(entry: Entry, modifier: Modifier = Modifier) {
-        val rating = entry.rating
-        val popularity = entry.popularity
-        val loading = entry == Entry.Loading
-        if (rating == null && popularity == null) return
-        Column(
-            verticalArrangement = Arrangement.spacedBy(4.dp),
-            horizontalAlignment = Alignment.End,
-            modifier = modifier.padding(horizontal = 8.dp, vertical = 8.dp),
-        ) {
-            if (rating != null) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .height(24.dp)
-                        .placeholder(
-                            visible = loading,
-                            highlight = PlaceholderHighlight.shimmer(),
-                        ),
-                ) {
-                    AutoHeightText(
-                        text = rating.toString(),
-                        style = MaterialTheme.typography.labelLarge,
-                    )
-
-                    val iconTint = remember(rating) {
-                        when {
-                            rating > 80 -> Color.Green
-                            rating > 70 -> Color.Yellow
-                            rating > 50 -> Color(0xFFFF9000) // Orange
-                            else -> Color.Red
-                        }
-                    }
-                    Icon(
-                        imageVector = Icons.Filled.BarChart,
-                        contentDescription = stringResource(
-                            R.string.anime_media_rating_icon_content_description
-                        ),
-                        tint = iconTint,
-                    )
-                }
-            }
-
-            if (popularity != null) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .height(16.dp)
-                        .padding(end = 4.dp)
-                        .placeholder(
-                            visible = loading,
-                            highlight = PlaceholderHighlight.shimmer(),
-                        ),
-                ) {
-                    AutoHeightText(
-                        text = popularity.toString(),
-                        style = MaterialTheme.typography.labelLarge,
-                    )
-
-                    Icon(
-                        imageVector = when {
-                            popularity > 100000 -> Icons.Filled.PeopleAlt
-                            popularity > 50000 -> Icons.Outlined.PeopleAlt
-                            popularity > 10000 -> Icons.Filled.Person
-                            else -> Icons.Filled.PersonOutline
-                        },
-                        contentDescription = stringResource(
-                            R.string.anime_media_rating_population_icon_content_description
-                        ),
-                    )
-                }
-            }
-        }
-    }
-
-    @Composable
-    private fun NextAiringSection(
-        nextAiringEpisode: AniListListRowMedia.NextAiringEpisode,
-        loading: Boolean
-    ) {
-        val context = LocalContext.current
-        val airingAt = remember(nextAiringEpisode.id) {
-            MediaUtils.formatAiringAt(context, nextAiringEpisode.airingAt * 1000L)
-        }
-
-        // TODO: De-dupe airingAt and remainingTime if both show a specific date
-        //  (airing > 7 days away)
-        val remainingTime = remember(nextAiringEpisode.id) {
-            MediaUtils.formatRemainingTime(nextAiringEpisode.airingAt * 1000L)
-        }
-
-        Text(
-            text = stringResource(
-                R.string.anime_media_next_airing_episode,
-                nextAiringEpisode.episode,
-                airingAt,
-                remainingTime,
-            ),
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.typography.labelSmall.color
-                .takeOrElse { LocalContentColor.current }
-                .copy(alpha = 0.8f),
-            modifier = Modifier
-                .wrapContentHeight(Alignment.Bottom)
-                .padding(start = 12.dp, top = 4.dp, end = 16.dp, bottom = 4.dp)
-                .placeholder(
-                    visible = loading,
-                    highlight = PlaceholderHighlight.shimmer(),
-                )
-        )
-    }
-
-    @Composable
-    private fun TagRow(
-        tags: List<AnimeMediaTagEntry>,
-        onTagClick: (tagId: String, tagName: String) -> Unit,
-        onTagLongClick: (tagId: String) -> Unit,
-        tagContainerColor: Color,
-        tagTextColor: Color,
-    ) {
-        LazyRow(
-            contentPadding = PaddingValues(start = 12.dp, end = 32.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier
-                .padding(top = 4.dp, bottom = 10.dp)
-                .fillMaxWidth()
-                // SubcomposeLayout doesn't support fill max width, so use a really large number.
-                // The parent will clamp the actual width so all content still fits on screen.
-                .size(width = LocalConfiguration.current.screenWidthDp.dp, height = 24.dp)
-                .fadingEdgeEnd(
-                    endOpaque = 32.dp,
-                    endTransparent = 16.dp,
-                )
-        ) {
-            items(tags, { it.id }) {
-                AnimeMediaTagEntry.Chip(
-                    tag = it,
-                    onTagClick = onTagClick,
-                    onTagLongClick = onTagLongClick,
-                    containerColor = tagContainerColor,
-                    textColor = tagTextColor,
-                    modifier = Modifier.height(24.dp),
-                )
-            }
-        }
     }
 
     open class Entry(

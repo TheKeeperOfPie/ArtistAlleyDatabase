@@ -231,11 +231,11 @@ fun LazyListScope.charactersSection(
     colorCalculationState: ColorCalculationState,
 ) {
     if (characters.isEmpty()) return
-    item {
+    item("charactersHeader-$titleRes") {
         DetailsSectionHeader(stringResource(titleRes))
     }
 
-    item {
+    item("charactersSection-$titleRes") {
         LazyRow(
             contentPadding = PaddingValues(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp),

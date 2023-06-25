@@ -6,6 +6,7 @@ import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.LibraryBooks
@@ -13,8 +14,8 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -25,13 +26,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anime.home.AnimeHomeScreen
 import com.thekeeperofpie.artistalleydatabase.anime.user.viewer.AniListViewerProfileScreen
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysNavigationBar
-import com.thekeeperofpie.artistalleydatabase.compose.NavigationBarItem
 import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
 import com.thekeeperofpie.artistalleydatabase.compose.navigationBarEnterAlwaysScrollBehavior
@@ -70,22 +70,26 @@ object AnimeRootScreen {
             },
             bottomBar = {
                 val needsAuth = needAuth()
-                EnterAlwaysNavigationBar(scrollBehavior = scrollBehavior) {
+                EnterAlwaysNavigationBar(
+                    scrollBehavior = scrollBehavior,
+                    modifier = Modifier.height(48.dp)
+                ) {
                     NavDestinations.values().filter { !it.needsAuth || !needsAuth }
                         .forEach { destination ->
-                            val onLongClick = if (destination == NavDestinations.ANIME) {
-                                {
-                                    navigationCallback.onIgnoreListOpen(MediaType.ANIME)
-                                }
-                                // TODO: Support manga only lists, need to store ignored IDs in
-                                //  separate settings field
-                            } else null
                             NavigationBarItem(
                                 icon = { Icon(destination.icon, contentDescription = null) },
-                                label = { Text(stringResource(destination.textRes)) },
                                 selected = selectedScreen == destination,
-                                onClick = { selectedScreen = destination },
-                                onLongClick = onLongClick,
+                                onClick = {
+                                    if (selectedScreen == destination &&
+                                        destination == NavDestinations.ANIME
+                                    ) {
+                                        // TODO: Support manga only lists, need to store ignored IDs
+                                        //  in separate settings field
+                                        navigationCallback.onIgnoreListOpen(MediaType.ANIME)
+                                    } else {
+                                        selectedScreen = destination
+                                    }
+                                },
                             )
                         }
                 }
@@ -111,6 +115,7 @@ object AnimeRootScreen {
                 ) {
                     when (it) {
                         NavDestinations.HOME -> AnimeHomeScreen(
+                            onClickNav = onClickNav,
                             navigationCallback = navigationCallback,
                             scrollStateSaver = ScrollStateSaver.fromMap(
                                 NavDestinations.HOME.id,
