@@ -37,6 +37,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeMediaFilterController
+import com.thekeeperofpie.artistalleydatabase.anime.schedule.AiringScheduleScreen
 import com.thekeeperofpie.artistalleydatabase.anime.search.AnimeSearchScreen
 import com.thekeeperofpie.artistalleydatabase.anime.search.AnimeSearchViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffDetailsScreen
@@ -420,6 +421,13 @@ object AnimeNavigator {
                 navigationCallback = navigationCallback,
             )
         }
+
+        navGraphBuilder.composable(route = AnimeNavDestinations.AIRING_SCHEDULE.id) {
+            AiringScheduleScreen(
+                onClickBack = { navHostController.popBackStack() },
+                navigationCallback = navigationCallback,
+            )
+        }
     }
 
     fun onTagClick(navHostController: NavHostController, tagId: String, tagName: String) {
@@ -433,22 +441,21 @@ object AnimeNavigator {
         navHostController: NavHostController,
         entry: AnimeMediaListRow.Entry,
         imageWidthToHeightRatio: Float,
-    ) =
-        navHostController.navigate(
-            AnimeNavDestinations.MEDIA_DETAILS.id +
-                    "?mediaId=${entry.id!!.valueId}" +
-                    "&title=${entry.title}" +
-                    "&subtitleFormatRes=${entry.subtitleFormatRes}" +
-                    "&subtitleStatusRes=${entry.subtitleStatusRes}" +
-                    "&subtitleSeason=${entry.subtitleSeason}" +
-                    "&subtitleSeasonYear=${entry.subtitleSeasonYear}" +
-                    "&nextEpisode=${entry.nextAiringEpisode?.episode}" +
-                    "&nextEpisodeAiringAt=${entry.nextAiringEpisode?.airingAt}" +
-                    "&bannerImage=${entry.imageBanner}" +
-                    "&coverImage=${entry.imageExtraLarge}" +
-                    "&coverImageWidthToHeightRatio=$imageWidthToHeightRatio" +
-                    "&color=${entry.color?.toArgb()}"
-        )
+    ) = navHostController.navigate(
+        AnimeNavDestinations.MEDIA_DETAILS.id +
+                "?mediaId=${entry.id!!.valueId}" +
+                "&title=${entry.title}" +
+                "&subtitleFormatRes=${entry.subtitleFormatRes}" +
+                "&subtitleStatusRes=${entry.subtitleStatusRes}" +
+                "&subtitleSeason=${entry.subtitleSeason}" +
+                "&subtitleSeasonYear=${entry.subtitleSeasonYear}" +
+                "&nextEpisode=${entry.nextAiringEpisode?.episode}" +
+                "&nextEpisodeAiringAt=${entry.nextAiringEpisode?.airingAt}" +
+                "&bannerImage=${entry.imageBanner}" +
+                "&coverImage=${entry.imageExtraLarge}" +
+                "&coverImageWidthToHeightRatio=$imageWidthToHeightRatio" +
+                "&color=${entry.color?.toArgb()}"
+    )
 
     fun onMediaClick(
         navHostController: NavHostController,
@@ -676,6 +683,10 @@ object AnimeNavigator {
             navHostController?.let {
                 cdEntryNavigator?.onCdEntryClick(it, listOf(model.id.valueId), imageCornerDp)
             }
+        }
+
+        fun onAiringScheduleClick() {
+            navHostController?.navigate(AnimeNavDestinations.AIRING_SCHEDULE.id)
         }
     }
 }

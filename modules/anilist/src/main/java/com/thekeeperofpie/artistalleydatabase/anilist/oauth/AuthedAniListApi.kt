@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.anilist.oauth
 
 import android.util.Log
+import com.anilist.AiringScheduleQuery
 import com.anilist.AuthedUserQuery
 import com.anilist.CharacterAdvancedSearchQuery
 import com.anilist.CharacterDetailsQuery
@@ -21,6 +22,7 @@ import com.anilist.StaffSearchQuery
 import com.anilist.UserByIdQuery
 import com.anilist.UserMediaListQuery
 import com.anilist.UserSearchQuery
+import com.anilist.type.AiringSort
 import com.anilist.type.CharacterSort
 import com.anilist.type.FuzzyDateInput
 import com.anilist.type.MediaFormat
@@ -54,6 +56,7 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import java.io.IOException
 import java.time.LocalDate
+import java.time.ZoneOffset
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
@@ -393,6 +396,25 @@ class AuthedAniListApi(
     suspend fun homeManga(perPage: Int = 10) = query(
         HomeMangaQuery(perPage = perPage)
     )
+
+    suspend fun airingSchedule(
+        date: LocalDate,
+        sort: AiringSort,
+        perPage: Int,
+        page: Int,
+    ): AiringScheduleQuery.Data {
+        val startTime = date.atStartOfDay().toInstant(ZoneOffset.UTC).epochSecond - 1
+        val endTime = date.plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC).epochSecond
+        return query(
+            AiringScheduleQuery(
+                startTime = startTime.toInt(),
+                endTime = endTime.toInt(),
+                perPage = perPage,
+                page = page,
+                sort = listOf(sort),
+            )
+        )
+    }
 
     private suspend fun <D : Query.Data> query(query: Query<D>) =
         apolloClient.query(query).execute().dataOrThrow()

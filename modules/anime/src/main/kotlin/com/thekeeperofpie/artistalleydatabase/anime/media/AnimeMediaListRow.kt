@@ -75,6 +75,7 @@ object AnimeMediaListRow {
         onLongClick: (Entry) -> Unit = {},
         onTagLongClick: (tagId: String) -> Unit = {},
         onLongPressImage: (entry: Entry) -> Unit = {},
+        nextAiringEpisode: AniListListRowMedia.NextAiringEpisode? = entry.nextAiringEpisode,
         colorCalculationState: ColorCalculationState = ColorCalculationState(),
         navigationCallback: AnimeNavigator.NavigationCallback =
             AnimeNavigator.NavigationCallback(null),
@@ -119,7 +120,7 @@ object AnimeMediaListRow {
 
                     Spacer(Modifier.weight(1f))
 
-                    entry.nextAiringEpisode?.let {
+                    nextAiringEpisode?.let {
                         MediaNextAiringSection(it, entry == Entry.Loading)
                     }
                     val (containerColor, textColor) =
@@ -171,6 +172,8 @@ object AnimeMediaListRow {
                 },
                 contentDescription = stringResource(R.string.anime_media_cover_image_content_description),
                 modifier = Modifier
+                    // Clip to match card so that shared element animation keeps rounded corner
+                    .clip(RoundedCornerShape(topStart = 12.dp, bottomStart = 12.dp))
                     .background(MaterialTheme.colorScheme.surfaceVariant)
                     .fillMaxHeight()
                     .heightIn(min = 180.dp)
@@ -186,8 +189,6 @@ object AnimeMediaListRow {
                             R.string.anime_media_cover_image_long_press_preview
                         ),
                     )
-                    // Clip to match card so that shared element animation keeps rounded corner
-                    .clip(RoundedCornerShape(topStart = 12.dp, bottomStart = 12.dp))
             )
         }
     }

@@ -505,4 +505,12 @@
     <string name="anime_home_top">TOP ALL TIME</string>
     <string name="anime_home_error_loading_anime">Error loading anime</string>
     <string name="anime_home_error_loading_manga">Error loading manga</string>
+    <string name="anime_airing_schedule_label">Airing schedule</string>
+    <string name="anime_airing_schedule_icon_content_description">Airing schedule</string>
+    <string name="anime_airing_schedule_sort_popularity">Popularity</string>
+    <string name="anime_airing_schedule_sort_id">ID</string>
+    <string name="anime_airing_schedule_sort_time">Time</string>
+    <string name="anime_airing_schedule_sort_content_description">Sort options</string>
+    <string name="anime_airing_schedule_today">Today</string>
+    <string name="anime_airing_schedule_tomorrow">Tomorrow</string>
 </resources>

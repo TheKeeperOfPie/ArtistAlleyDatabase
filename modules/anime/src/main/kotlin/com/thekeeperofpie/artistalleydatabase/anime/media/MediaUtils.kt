@@ -29,11 +29,10 @@ import com.anilist.type.MediaStatus
 import com.anilist.type.MediaType
 import com.anilist.type.ScoreFormat
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import java.time.Instant
 import java.time.LocalDate
 import java.time.Month
-import java.time.ZoneId
 import java.time.ZoneOffset
-import java.time.ZonedDateTime
 import kotlin.math.absoluteValue
 import kotlin.math.roundToInt
 
@@ -42,7 +41,7 @@ object MediaUtils {
     // No better alternative to FORMAT_UTC
     // TODO: Find an alternative
     @Suppress("DEPRECATION")
-    const val BASE_DATE_FORMAT_FLAGS = DateUtils.FORMAT_ABBREV_ALL or DateUtils.FORMAT_UTC
+    const val BASE_DATE_FORMAT_FLAGS = DateUtils.FORMAT_ABBREV_ALL
 
     val scoreDistributionColors = listOf(
         Color(210, 72, 45),
@@ -348,10 +347,28 @@ object MediaUtils {
 
     fun formatRemainingTime(timeInMillis: Long): CharSequence = DateUtils.getRelativeTimeSpanString(
         timeInMillis,
-        System.currentTimeMillis(),
+        Instant.now().atOffset(ZoneOffset.UTC).toEpochSecond() * 1000,
         0,
         BASE_DATE_FORMAT_FLAGS,
     )
+
+    fun formatShortDay(context: Context, localDate: LocalDate) =
+        DateUtils.formatDateTime(
+            context,
+            localDate.atStartOfDay()
+                .toInstant(ZoneOffset.UTC)
+                .toEpochMilli(),
+            BASE_DATE_FORMAT_FLAGS or DateUtils.FORMAT_SHOW_DATE
+        )!!
+
+    fun formatShortWeekday(context: Context, localDate: LocalDate) =
+        DateUtils.formatDateTime(
+            context,
+            localDate.atStartOfDay()
+                .toInstant(ZoneOffset.UTC)
+                .toEpochMilli(),
+            BASE_DATE_FORMAT_FLAGS or DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_WEEKDAY
+        )!!
 
     fun twitterHashtagsLink(hashtags: List<String>) =
         "https://twitter.com/search?q=${hashtags.joinToString(separator = "+OR ")}&src=typd"

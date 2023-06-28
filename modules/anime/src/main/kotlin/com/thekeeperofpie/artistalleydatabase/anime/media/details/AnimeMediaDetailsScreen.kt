@@ -117,6 +117,7 @@ import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.YouTubePlayerCallback
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
+import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
 import com.thekeeperofpie.artistalleydatabase.android_utils.UriUtils
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
@@ -142,10 +143,10 @@ import com.thekeeperofpie.artistalleydatabase.anime.staff.staffSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.CoverAndBannerHeader
 import com.thekeeperofpie.artistalleydatabase.anime.ui.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.anime.ui.DetailsSubsectionHeader
-import com.thekeeperofpie.artistalleydatabase.anime.ui.ExpandableListInfoText
 import com.thekeeperofpie.artistalleydatabase.anime.ui.InfoText
 import com.thekeeperofpie.artistalleydatabase.anime.ui.descriptionSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.detailsLoadingOrError
+import com.thekeeperofpie.artistalleydatabase.anime.ui.expandableListInfoText
 import com.thekeeperofpie.artistalleydatabase.anime.ui.listSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.twoColumnInfoText
 import com.thekeeperofpie.artistalleydatabase.animethemes.models.AnimeTheme
@@ -721,14 +722,16 @@ object AnimeMediaDetailsScreen {
                 modifier = Modifier.animateItemPlacement()
             )
         }
-        item("infoSection") {
+
+        val media = entry.media
+
+        item("infoSectionOne") {
             ElevatedCard(
                 modifier = Modifier
                     .padding(horizontal = 16.dp)
                     .animateContentSize()
                     .animateItemPlacement(),
             ) {
-                val media = entry.media
                 twoColumnInfoText(
                     labelOne = stringResource(R.string.anime_media_details_format_label),
                     bodyOne = stringResource(entry.formatTextRes),
@@ -775,36 +778,64 @@ object AnimeMediaDetailsScreen {
                     labelTwo = stringResource(R.string.anime_media_details_end_date_label),
                     bodyTwo = endDateFormatted,
                 )
+            }
+        }
 
-                twoColumnInfoText(
+        item("infoSectionTwo") {
+            ElevatedCard(
+                modifier = Modifier
+                    .padding(start = 16.dp, end = 16.dp, top = 16.dp)
+                    .animateContentSize()
+                    .animateItemPlacement(),
+            ) {
+                var shown = twoColumnInfoText(
                     labelOne = stringResource(R.string.anime_media_details_average_score_label),
                     bodyOne = media.averageScore?.toString(),
                     labelTwo = stringResource(R.string.anime_media_details_mean_score_label),
                     bodyTwo = media.meanScore?.toString(),
+                    showDividerAbove = false,
                 )
 
-                twoColumnInfoText(
+                shown = twoColumnInfoText(
                     labelOne = stringResource(R.string.anime_media_details_popularity_label),
                     bodyOne = media.popularity?.toString(),
                     labelTwo = stringResource(R.string.anime_media_details_favorites_label),
                     bodyTwo = media.favourites?.toString(),
-                )
+                    showDividerAbove = shown,
+                ) || shown
 
-                val uriHandler = LocalUriHandler.current
                 twoColumnInfoText(
                     labelOne = stringResource(R.string.anime_media_details_trending_label),
                     bodyOne = media.trending?.toString(),
                     labelTwo = "",
                     bodyTwo = null,
+                    showDividerAbove = shown,
                 )
+            }
+        }
 
-                twoColumnInfoText(
+        item("infoSectionThree") {
+            val showTopPadding = media.averageScore != null
+                    || media.meanScore != null
+                    || media.popularity != null
+                    || media.favourites != null
+                    || media.trending != null
+
+            ElevatedCard(
+                modifier = Modifier
+                    .padding(start = 16.dp, end = 16.dp, top = if (showTopPadding) 16.dp else 0.dp)
+                    .animateContentSize()
+                    .animateItemPlacement(),
+            ) {
+                var shown = twoColumnInfoText(
                     labelOne = stringResource(R.string.anime_media_details_licensed_label),
                     bodyOne = entry.licensedTextRes?.let { stringResource(it) },
                     labelTwo = stringResource(R.string.anime_media_details_country_label),
                     bodyTwo = entry.country,
+                    showDividerAbove = false,
                 )
 
+                val uriHandler = LocalUriHandler.current
                 if (media.hashtag != null) {
                     Column(modifier = Modifier
                         .optionalClickable(
@@ -820,27 +851,69 @@ object AnimeMediaDetailsScreen {
                         InfoText(
                             label = stringResource(R.string.anime_media_details_hashtags_label),
                             body = media.hashtag!!,
-                            showDividerAbove = true
+                            showDividerAbove = shown,
                         )
                     }
+
+                    shown = true
                 }
 
                 // TODO: isFavorite, isAdult, airingSchedule, reviews, trends
 
-                ExpandableListInfoText(
+                shown = expandableListInfoText(
                     labelTextRes = R.string.anime_media_details_studios_label,
                     contentDescriptionTextRes = R.string.anime_media_details_studios_expand_content_description,
                     values = entry.studios,
                     valueToText = { it.name },
                     onClick = { uriHandler.openUri(AniListUtils.studioUrl(it.id)) },
-                )
+                    showDividerAbove = shown,
+                ) || shown
 
-                ExpandableListInfoText(
+                expandableListInfoText(
                     labelTextRes = R.string.anime_media_details_synonyms_label,
                     contentDescriptionTextRes = R.string.anime_media_details_synonyms_expand_content_description,
                     values = entry.allSynonyms,
                     valueToText = { it },
+                    showDividerAbove = shown,
                 )
+            }
+        }
+    }
+
+    private fun LazyListScope.infoSectionCard(
+        key: String,
+        data: List<Pair<Int, Either<Int, String?>>>,
+    ) {
+        if (data.none { it.second is Either.Left || it.second.rightOrNull() != null }) return
+        item("infoSection-$key") {
+            ElevatedCard(
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+                    .animateContentSize()
+                    .animateItemPlacement(),
+            ) {
+                data.chunked(2)
+                    .forEachIndexed { index, chunk ->
+                        val one = chunk[0]
+                        val two = chunk.getOrNull(1)
+                        twoColumnInfoText(
+                            labelOne = stringResource(one.first),
+                            bodyOne = if (one.second is Either.Left) {
+                                stringResource(one.second.leftOrNull()!!)
+                            } else {
+                                one.second.rightOrNull()
+                            },
+                            labelTwo = two?.first?.let { stringResource(it) }.orEmpty(),
+                            bodyTwo = two?.let {
+                                if (two.second is Either.Left) {
+                                    stringResource(two.second.leftOrNull()!!)
+                                } else {
+                                    two.second.rightOrNull()
+                                }
+                            },
+                            showDividerAbove = index != 0,
+                        )
+                    }
             }
         }
     }
@@ -1287,7 +1360,7 @@ object AnimeMediaDetailsScreen {
                     .padding(horizontal = 16.dp)
                     .animateItemPlacement()
             ) {
-                ExpandableListInfoText(
+                expandableListInfoText(
                     labelTextRes = R.string.anime_media_details_rankings_label,
                     contentDescriptionTextRes = R.string.anime_media_details_rankings_expand_content_description,
                     values = entry.rankings,

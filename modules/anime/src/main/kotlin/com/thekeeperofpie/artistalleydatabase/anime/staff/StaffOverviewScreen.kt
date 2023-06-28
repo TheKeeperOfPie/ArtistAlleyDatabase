@@ -18,7 +18,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.charactersSection
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.ui.DetailsSectionHeader
-import com.thekeeperofpie.artistalleydatabase.anime.ui.ExpandableListInfoText
+import com.thekeeperofpie.artistalleydatabase.anime.ui.expandableListInfoText
 import com.thekeeperofpie.artistalleydatabase.anime.ui.InfoText
 import com.thekeeperofpie.artistalleydatabase.anime.ui.descriptionSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.twoColumnInfoText
@@ -112,7 +112,7 @@ object StaffOverviewScreen {
                     contentShown = true
                 }
 
-                ExpandableListInfoText(
+                expandableListInfoText(
                     labelTextRes = R.string.anime_staff_details_primary_occupations_label,
                     contentDescriptionTextRes = R.string.anime_staff_details_primary_occupations_expand_content_description,
                     values = entry.staff.primaryOccupations?.filterNotNull().orEmpty(),

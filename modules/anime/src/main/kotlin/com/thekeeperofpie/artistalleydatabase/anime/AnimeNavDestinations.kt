@@ -10,4 +10,5 @@ enum class AnimeNavDestinations(val id: String) {
     CHARACTER_DETAILS("anime_character_details"),
     STAFF_DETAILS("anime_staff_details"),
     IGNORED("anime_ignored"),
+    AIRING_SCHEDULE("anime_airing_schedule"),
 }

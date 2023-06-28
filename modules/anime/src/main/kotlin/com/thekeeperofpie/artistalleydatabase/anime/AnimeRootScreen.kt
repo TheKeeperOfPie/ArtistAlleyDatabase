@@ -72,7 +72,7 @@ object AnimeRootScreen {
                 val needsAuth = needAuth()
                 EnterAlwaysNavigationBar(
                     scrollBehavior = scrollBehavior,
-                    modifier = Modifier.height(48.dp)
+                    modifier = Modifier.height(56.dp)
                 ) {
                     NavDestinations.values().filter { !it.needsAuth || !needsAuth }
                         .forEach { destination ->

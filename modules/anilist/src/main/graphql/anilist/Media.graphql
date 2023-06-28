@@ -425,3 +425,30 @@ query HomeManga($perPage: Int!) {
     }
 }
 
+query AiringSchedule(
+    $startTime: Int!,
+    $endTime: Int!,
+    $perPage: Int!,
+    $page: Int!,
+    $sort: [AiringSort!]!,
+) {
+    Page(perPage: $perPage, page: $page) {
+        pageInfo {
+            total
+            currentPage
+            hasNextPage
+        }
+        airingSchedules(
+            airingAt_greater: $startTime,
+            airingAt_lesser: $endTime,
+            sort: $sort,
+        ) {
+            id
+            airingAt
+            episode
+            media {
+                ...AniListListRowMedia
+            }
+        }
+    }
+}

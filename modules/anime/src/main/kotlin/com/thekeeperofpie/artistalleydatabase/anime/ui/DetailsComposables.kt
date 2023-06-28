@@ -390,8 +390,11 @@ internal fun ColumnScope.InfoText(
     )
 }
 
+/**
+ * @return True if anything shown
+ */
 @Composable
-internal fun <T> ExpandableListInfoText(
+internal fun <T> expandableListInfoText(
     @StringRes labelTextRes: Int,
     @StringRes contentDescriptionTextRes: Int,
     values: List<T>,
@@ -399,8 +402,8 @@ internal fun <T> ExpandableListInfoText(
     onClick: ((T) -> Unit)? = null,
     showDividerAbove: Boolean = true,
     allowExpand: Boolean = values.size > 3
-) {
-    if (values.isEmpty()) return
+): Boolean {
+    if (values.isEmpty()) return false
 
     var expanded by remember { mutableStateOf(!allowExpand) }
     val showExpand = allowExpand && values.size > 3
@@ -461,4 +464,6 @@ internal fun <T> ExpandableListInfoText(
             )
         }
     }
+
+    return true
 }
