@@ -112,7 +112,12 @@ object AnimeMediaFilterOptionsBottomPanel {
         val scaffoldState = if (expandedForPreview) {
             rememberBottomSheetScaffoldState(rememberStandardBottomSheetState(SheetValue.Expanded))
         } else {
-            rememberBottomSheetScaffoldState()
+            rememberBottomSheetScaffoldState(
+                rememberStandardBottomSheetState(
+                    confirmValueChange = { it != SheetValue.Hidden },
+                    skipHiddenState = true,
+                )
+            )
         }
 
         val scope = rememberCoroutineScope()

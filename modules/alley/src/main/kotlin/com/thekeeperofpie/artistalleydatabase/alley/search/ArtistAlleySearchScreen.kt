@@ -86,6 +86,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortAndFilterComposables.SortSection
 import com.thekeeperofpie.artistalleydatabase.compose.optionalClickable
 import com.thekeeperofpie.artistalleydatabase.compose.rememberBottomSheetScaffoldState
+import com.thekeeperofpie.artistalleydatabase.compose.rememberStandardBottomSheetState
 import com.thekeeperofpie.artistalleydatabase.entry.EntryStringR
 import kotlinx.coroutines.launch
 
@@ -101,7 +102,12 @@ object ArtistAlleySearchScreen {
         viewModel: ArtistAlleySearchViewModel = hiltViewModel<ArtistAlleySearchViewModel>(),
         onEntryClick: (ArtistEntryGridModel) -> Unit,
     ) {
-        val scaffoldState = rememberBottomSheetScaffoldState()
+        val scaffoldState = rememberBottomSheetScaffoldState(
+            rememberStandardBottomSheetState(
+                confirmValueChange = { it != SheetValue.Hidden },
+                skipHiddenState = true,
+            )
+        )
 
         val scope = rememberCoroutineScope()
         BackHandler(enabled = scaffoldState.bottomSheetState.currentValue == SheetValue.Expanded) {
