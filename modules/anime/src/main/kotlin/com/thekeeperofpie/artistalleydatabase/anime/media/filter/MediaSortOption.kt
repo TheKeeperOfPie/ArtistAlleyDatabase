@@ -3,9 +3,9 @@ package com.thekeeperofpie.artistalleydatabase.anime.media.filter
 import androidx.annotation.StringRes
 import com.anilist.type.MediaSort
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.compose.filter.SortOption
 
-enum class MediaSortOption(@StringRes override val textRes: Int) :
-    AnimeMediaFilterController.Data.SortOption {
+enum class MediaSortOption(@StringRes override val textRes: Int) : SortOption {
 
     // TODO: CHAPTERS/VOLUMES for manga
     // Omissions: SEARCH_MATCH is used as a default

@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
+@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 
 package com.thekeeperofpie.artistalleydatabase.compose
 
@@ -14,19 +14,28 @@ import android.widget.TextView
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.rememberTransformableState
+import androidx.compose.foundation.gestures.transformable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
@@ -39,6 +48,7 @@ import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.outlined.CheckCircle
+import androidx.compose.material3.Divider
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -65,6 +75,7 @@ import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
@@ -80,10 +91,13 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.drawscope.ContentDrawScope
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.debugInspectorInfo
 import androidx.compose.ui.res.stringResource
@@ -1005,7 +1019,7 @@ fun ImageHtmlText(
     maxLines: Int,
     color: Color,
 
-) {
+    ) {
     val context = LocalContext.current
     var updateMillis by remember { mutableLongStateOf(-1L) }
     val imageGetter = remember {
@@ -1031,5 +1045,228 @@ fun ImageHtmlText(
             it.setTextColor(color.toArgb())
             it.ellipsize = TextUtils.TruncateAt.END
         }
+    )
+}
+
+@Composable
+fun DetailsSectionHeader(text: String, modifier: Modifier = Modifier) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.titleMedium,
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 10.dp),
+    )
+}
+
+@Composable
+fun DetailsSubsectionHeader(text: String, modifier: Modifier = Modifier) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.labelMedium,
+        color = MaterialTheme.colorScheme.surfaceTint,
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(start = 16.dp, end = 16.dp, top = 10.dp, bottom = 4.dp)
+    )
+}
+
+/**
+ * @return True if anything shown
+ */
+@Composable
+fun twoColumnInfoText(
+    labelOne: String, bodyOne: String?, onClickOne: (() -> Unit)? = null,
+    labelTwo: String, bodyTwo: String?, onClickTwo: (() -> Unit)? = null,
+    showDividerAbove: Boolean = true
+): Boolean {
+    if (!bodyOne.isNullOrBlank() && !bodyTwo.isNullOrBlank()) {
+        if (showDividerAbove) {
+            Divider()
+        }
+        Row(modifier = Modifier.height(IntrinsicSize.Min)) {
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .optionalClickable(onClickOne)
+            ) {
+                InfoText(label = labelOne, body = bodyOne, showDividerAbove = false)
+            }
+
+            VerticalDivider()
+
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .optionalClickable(onClickTwo)
+            ) {
+                InfoText(label = labelTwo, body = bodyTwo, showDividerAbove = false)
+            }
+        }
+    } else if (!bodyOne.isNullOrBlank()) {
+        Column(modifier = Modifier.optionalClickable(onClickOne)) {
+            InfoText(label = labelOne, body = bodyOne, showDividerAbove = showDividerAbove)
+        }
+    } else if (!bodyTwo.isNullOrBlank()) {
+        Column(modifier = Modifier.optionalClickable(onClickTwo)) {
+            InfoText(label = labelTwo, body = bodyTwo, showDividerAbove = showDividerAbove)
+        }
+    } else {
+        return false
+    }
+
+    return true
+}
+
+@Suppress("UnusedReceiverParameter")
+@Composable
+fun ColumnScope.InfoText(
+    label: String,
+    body: String,
+    showDividerAbove: Boolean = true,
+) {
+    if (showDividerAbove) {
+        Divider()
+    }
+
+    DetailsSubsectionHeader(label)
+
+    Text(
+        text = body,
+        style = MaterialTheme.typography.bodyMedium,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 16.dp, end = 16.dp, bottom = 10.dp)
+    )
+}
+
+/**
+ * @return True if anything shown
+ */
+@Composable
+fun <T> expandableListInfoText(
+    @StringRes labelTextRes: Int,
+    @StringRes contentDescriptionTextRes: Int,
+    values: List<T>,
+    valueToText: @Composable (T) -> String,
+    onClick: ((T) -> Unit)? = null,
+    showDividerAbove: Boolean = true,
+    allowExpand: Boolean = values.size > 3
+): Boolean {
+    if (values.isEmpty()) return false
+
+    var expanded by remember { mutableStateOf(!allowExpand) }
+    val showExpand = allowExpand && values.size > 3
+
+    Box {
+        Column(
+            modifier = Modifier
+                .wrapContentHeight()
+                .conditionally(showExpand) {
+                    clickable { expanded = !expanded }
+                        .fadingEdgeBottom(show = !expanded)
+                        .animateContentSize()
+                }
+        ) {
+            if (showDividerAbove) {
+                Divider()
+            }
+
+            DetailsSubsectionHeader(stringResource(labelTextRes))
+
+            values.take(if (expanded) Int.MAX_VALUE else 3).forEachIndexed { index, value ->
+                if (index != 0) {
+                    Divider(modifier = Modifier.padding(start = 16.dp))
+                }
+
+                val bottomPadding = if (index == values.size - 1) {
+                    12.dp
+                } else {
+                    8.dp
+                }
+
+                Text(
+                    text = valueToText(value),
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .optionalClickable(
+                            onClick = onClick
+                                ?.takeIf { expanded }
+                                ?.let { { onClick(value) } }
+                        )
+                        .padding(
+                            start = 16.dp,
+                            end = 16.dp,
+                            top = 8.dp,
+                            bottom = bottomPadding,
+                        )
+                )
+            }
+        }
+
+        if (showExpand) {
+            TrailingDropdownIconButton(
+                expanded = expanded,
+                contentDescription = stringResource(contentDescriptionTextRes),
+                onClick = { expanded = !expanded },
+                modifier = Modifier.align(Alignment.TopEnd),
+            )
+        }
+    }
+
+    return true
+}
+
+@Composable
+fun ZoomPanBox(
+    onClick: () -> Unit = {},
+    content: @Composable BoxScope.() -> Unit,
+) {
+    var imageTranslation by remember { mutableStateOf(Offset.Zero) }
+    var imageScale by remember { mutableFloatStateOf(1f) }
+
+    val density = LocalDensity.current
+    var maxTranslationX by remember(density) { mutableFloatStateOf(0f) }
+    var maxTranslationY by remember(density) { mutableFloatStateOf(0f) }
+    val transformableState =
+        rememberTransformableState { zoomChange, panChange, _ ->
+            val translation = imageTranslation + panChange
+            imageTranslation = translation.copy(
+                x = translation.x.coerceIn(
+                    -maxTranslationX * (imageScale - 1f),
+                    maxTranslationX * (imageScale - 1f)
+                ),
+                y = translation.y.coerceIn(
+                    -maxTranslationY * (imageScale - 1f),
+                    maxTranslationY * (imageScale - 1f)
+                ),
+            )
+            imageScale = (imageScale * zoomChange).coerceIn(1f, 5f)
+        }
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .onSizeChanged {
+                maxTranslationX = it.width / 2f
+                maxTranslationY = it.height / 2f
+            }
+            .transformable(
+                state = transformableState,
+                canPan = { imageScale > 1.1f },
+                lockRotationOnZoomPan = true
+            )
+            .graphicsLayer(
+                translationX = imageTranslation.x,
+                translationY = imageTranslation.y,
+                scaleX = imageScale,
+                scaleY = imageScale,
+            )
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = onClick,
+            ),
+        content = content,
     )
 }

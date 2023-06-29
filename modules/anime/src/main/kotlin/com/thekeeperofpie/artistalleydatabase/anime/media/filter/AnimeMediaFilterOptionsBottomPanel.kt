@@ -15,22 +15,17 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircleOutline
-import androidx.compose.material.icons.filled.ArrowDownward
-import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
@@ -76,7 +71,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.ui.StartEndDateDialog
 import com.thekeeperofpie.artistalleydatabase.anime.ui.StartEndDateRow
-import com.thekeeperofpie.artistalleydatabase.anime.utils.IncludeExcludeState
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.compose.BottomSheetScaffoldNoAppBarOffset
@@ -85,6 +79,11 @@ import com.thekeeperofpie.artistalleydatabase.compose.CustomOutlinedTextField
 import com.thekeeperofpie.artistalleydatabase.compose.ItemDropdown
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
 import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
+import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterEntry
+import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
+import com.thekeeperofpie.artistalleydatabase.compose.filter.SortAndFilterComposables.SortFilterHeaderText
+import com.thekeeperofpie.artistalleydatabase.compose.filter.SortAndFilterComposables.SortSection
+import com.thekeeperofpie.artistalleydatabase.compose.filter.SortOption
 import com.thekeeperofpie.artistalleydatabase.compose.rememberBottomSheetScaffoldState
 import com.thekeeperofpie.artistalleydatabase.compose.rememberStandardBottomSheetState
 import kotlinx.coroutines.launch
@@ -97,10 +96,10 @@ import kotlin.math.roundToInt
 object AnimeMediaFilterOptionsBottomPanel {
 
     @Composable
-    operator fun <SortOption : AnimeMediaFilterController.Data.SortOption> invoke(
+    operator fun <SortType : SortOption> invoke(
         modifier: Modifier = Modifier,
         topBar: (@Composable () -> Unit)? = null,
-        filterData: () -> AnimeMediaFilterController.Data<SortOption>,
+        filterData: () -> AnimeMediaFilterController.Data<SortType>,
         onTagLongClick: (String) -> Unit = {},
         errorRes: () -> Int? = { null },
         exception: () -> Exception? = { null },
@@ -196,8 +195,8 @@ object AnimeMediaFilterOptionsBottomPanel {
     }
 
     @Composable
-    private fun <SortOption : AnimeMediaFilterController.Data.SortOption> OptionsPanel(
-        filterData: () -> AnimeMediaFilterController.Data<SortOption>,
+    private fun <SortType : SortOption> OptionsPanel(
+        filterData: () -> AnimeMediaFilterController.Data<SortType>,
         onTagLongClick: (String) -> Unit,
         showLoadSave: Boolean,
         showIgnoredFilter: Boolean,
@@ -215,11 +214,15 @@ object AnimeMediaFilterOptionsBottomPanel {
             Divider()
 
             SortSection(
+                headerTextRes = R.string.anime_media_filter_sort_label,
                 expanded = { data.expanded(AnimeMediaFilterController.Section.SORT) },
                 onExpandedChange = {
                     data.setExpanded(AnimeMediaFilterController.Section.SORT, it)
                 },
-                data = filterData,
+                sortOptions = { filterData().sortOptions() },
+                onSortClick = { filterData().onSortClick(it) },
+                sortAscending = { filterData().sortAscending() },
+                onSortAscendingChange = { filterData().onSortAscendingChange(it) }
             )
 
             FilterSection(
@@ -386,15 +389,6 @@ object AnimeMediaFilterOptionsBottomPanel {
     }
 
     @Composable
-    private fun ascendingText(ascending: Boolean) = stringResource(
-        if (ascending) {
-            R.string.anime_media_filter_sort_ascending
-        } else {
-            R.string.anime_media_filter_sort_descending
-        }
-    )
-
-    @Composable
     private fun Section(
         expanded: Boolean,
         onExpandedChange: (Boolean) -> Unit,
@@ -418,7 +412,7 @@ object AnimeMediaFilterOptionsBottomPanel {
                     .padding(start = 16.dp)
                     .animateContentSize()
             ) {
-                SectionHeaderText(expanded, titleRes)
+                SortFilterHeaderText(expanded, titleRes)
 
                 if (!expanded) {
                     summaryText?.invoke()?.let {
@@ -447,32 +441,7 @@ object AnimeMediaFilterOptionsBottomPanel {
     }
 
     @Composable
-    private fun RowScope.SectionHeaderText(
-        expanded: Boolean,
-        @StringRes titleRes: Int,
-    ) {
-        Text(
-            // Use a zero width space to invalidate the Composable, or otherwise the width
-            // will not change in response to expanded. This might be a bug in Compose.
-            text = stringResource(titleRes) + "\u200B".takeIf { expanded }.orEmpty(),
-            style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier
-                .run {
-                    if (expanded) {
-                        fillMaxWidth()
-                    } else {
-                        wrapContentWidth()
-                    }
-                }
-                .padding(top = 8.dp, bottom = 8.dp, end = 8.dp)
-                .heightIn(min = 32.dp)
-                .wrapContentHeight(Alignment.CenterVertically)
-                .align(Alignment.CenterVertically)
-        )
-    }
-
-    @Composable
-    private fun <Entry : MediaFilterEntry<*>> FilterSection(
+    private fun <Entry : FilterEntry<*>> FilterSection(
         expanded: () -> Boolean,
         onExpandedChange: (Boolean) -> Unit,
         entries: @Composable () -> List<Entry>,
@@ -498,12 +467,12 @@ object AnimeMediaFilterOptionsBottomPanel {
                     .padding(start = 16.dp)
                     .animateContentSize()
             ) {
-                SectionHeaderText(expanded, titleRes)
+                SortFilterHeaderText(expanded, titleRes)
 
                 entries().forEach {
-                    if (!expanded && it.state == IncludeExcludeState.DEFAULT) return@forEach
+                    if (!expanded && it.state == FilterIncludeExcludeState.DEFAULT) return@forEach
                     FilterChip(
-                        selected = it.state != IncludeExcludeState.DEFAULT,
+                        selected = it.state != FilterIncludeExcludeState.DEFAULT,
                         onClick = { onEntryClick(it) },
                         label = { Text(valueToText(it)) },
                         leadingIcon = if (!showIcons) null else {
@@ -524,130 +493,6 @@ object AnimeMediaFilterOptionsBottomPanel {
                 onClick = { onExpandedChange(!expanded) },
                 modifier = Modifier.align(Alignment.Top),
             )
-        }
-
-        Divider()
-    }
-
-    @Composable
-    private fun <SortOption : AnimeMediaFilterController.Data.SortOption> SortSection(
-        expanded: () -> Boolean,
-        onExpandedChange: (Boolean) -> Unit,
-        data: () -> AnimeMediaFilterController.Data<SortOption>,
-    ) {
-        @Suppress("NAME_SHADOWING")
-        val data = data()
-
-        @Suppress("NAME_SHADOWING")
-        val expanded = expanded()
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { onExpandedChange(!expanded) }
-        ) {
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(start = 16.dp)
-                    .animateContentSize()
-            ) {
-                SectionHeaderText(expanded, R.string.anime_media_filter_sort_label)
-
-                data.sortOptions().forEach {
-                    if (!expanded && it.state == IncludeExcludeState.DEFAULT) return@forEach
-                    FilterChip(
-                        selected = it.state != IncludeExcludeState.DEFAULT,
-                        onClick = { data.onSortClick(it.value) },
-                        label = { Text(stringResource(it.value.textRes)) },
-                        modifier = Modifier.animateContentSize()
-                    )
-                }
-
-                if (!expanded && data.sortOptions()
-                        .any { it.state != IncludeExcludeState.DEFAULT }
-                ) {
-                    val sortAscending = data.sortAscending()
-                    FilterChip(
-                        selected = true,
-                        onClick = { data.onSortAscendingChange(!sortAscending) },
-                        leadingIcon = {
-                            Icon(
-                                imageVector = if (sortAscending) {
-                                    Icons.Filled.ArrowUpward
-                                } else {
-                                    Icons.Filled.ArrowDownward
-                                },
-                                contentDescription = stringResource(
-                                    if (sortAscending) {
-                                        R.string.anime_media_filter_sort_direction_ascending_content_description
-                                    } else {
-                                        R.string.anime_media_filter_sort_direction_descending_content_description
-                                    }
-                                ),
-                            )
-                        },
-                        label = { Text(ascendingText(sortAscending)) }
-                    )
-                }
-            }
-
-            TrailingDropdownIconButton(
-                expanded = expanded,
-                contentDescription = stringResource(R.string.anime_media_filter_sort_content_description),
-                onClick = { onExpandedChange(!expanded) },
-                modifier = Modifier.align(Alignment.Top),
-            )
-        }
-
-        if (expanded && data.sortOptions().any { it.state != IncludeExcludeState.DEFAULT }) {
-            val sortAscending = data.sortAscending()
-            Text(
-                text = stringResource(R.string.anime_media_filter_sort_direction_label),
-                style = MaterialTheme.typography.titleSmall,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 16.dp, top = 10.dp, end = 16.dp, bottom = 8.dp)
-            )
-
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 16.dp, end = 16.dp)
-                    .animateContentSize()
-            ) {
-                FilterChip(
-                    selected = sortAscending,
-                    onClick = { data.onSortAscendingChange(true) },
-                    label = { Text(ascendingText(true)) },
-                    leadingIcon = {
-                        Icon(
-                            imageVector = Icons.Filled.ArrowUpward,
-                            contentDescription = stringResource(
-                                R.string.anime_media_filter_sort_direction_ascending_content_description,
-                            ),
-                        )
-                    },
-                    modifier = Modifier.animateContentSize()
-                )
-
-                FilterChip(
-                    selected = !sortAscending,
-                    onClick = { data.onSortAscendingChange(false) },
-                    label = { Text(ascendingText(false)) },
-                    leadingIcon = {
-                        Icon(
-                            imageVector = Icons.Filled.ArrowDownward,
-                            contentDescription = stringResource(
-                                R.string.anime_media_filter_sort_direction_descending_content_description,
-                            ),
-                        )
-                    },
-                    modifier = Modifier.animateContentSize()
-                )
-            }
         }
 
         Divider()
@@ -699,7 +544,7 @@ object AnimeMediaFilterOptionsBottomPanel {
                     tags.values
                 } else {
                     tags.values.mapNotNull {
-                        it.filter { it.state != IncludeExcludeState.DEFAULT }
+                        it.filter { it.state != FilterIncludeExcludeState.DEFAULT }
                     }
                 }.filterIsInstance<AnimeMediaFilterController.TagSection.Category>()
 
@@ -807,7 +652,7 @@ object AnimeMediaFilterOptionsBottomPanel {
         val tagsToShow = if (expanded) {
             tags
         } else {
-            tags.filter { it.state != IncludeExcludeState.DEFAULT }
+            tags.filter { it.state != FilterIncludeExcludeState.DEFAULT }
         }
 
         val subcategories =
@@ -816,7 +661,7 @@ object AnimeMediaFilterOptionsBottomPanel {
             subcategories
         } else {
             subcategories.mapNotNull {
-                it.filter { it.state != IncludeExcludeState.DEFAULT }
+                it.filter { it.state != FilterIncludeExcludeState.DEFAULT }
                         as? AnimeMediaFilterController.TagSection.Category
             }
         }
@@ -872,9 +717,9 @@ object AnimeMediaFilterOptionsBottomPanel {
                 .animateContentSize(),
         ) {
             tags.forEach {
-                if (!parentExpanded && it.state == IncludeExcludeState.DEFAULT) return@forEach
+                if (!parentExpanded && it.state == FilterIncludeExcludeState.DEFAULT) return@forEach
                 com.thekeeperofpie.artistalleydatabase.compose.FilterChip(
-                    selected = it.state != IncludeExcludeState.DEFAULT,
+                    selected = it.state != FilterIncludeExcludeState.DEFAULT,
                     onClick = { onTagClick(it.id) },
                     onLongClickLabel = stringResource(
                         R.string.anime_media_tag_long_click_content_description
@@ -1303,10 +1148,10 @@ object AnimeMediaFilterOptionsBottomPanel {
 
     @Composable
     private fun IncludeExcludeIcon(
-        entry: MediaFilterEntry<*>,
+        entry: FilterEntry<*>,
         @StringRes contentDescriptionRes: Int
     ) {
-        if (entry.state == IncludeExcludeState.DEFAULT) {
+        if (entry.state == FilterIncludeExcludeState.DEFAULT) {
             if (entry.leadingIconVector != null) {
                 Icon(
                     imageVector = entry.leadingIconVector!!,
@@ -1318,9 +1163,9 @@ object AnimeMediaFilterOptionsBottomPanel {
             }
         } else {
             when (entry.state) {
-                IncludeExcludeState.DEFAULT -> null
-                IncludeExcludeState.INCLUDE -> Icons.Filled.Check
-                IncludeExcludeState.EXCLUDE -> Icons.Filled.Close
+                FilterIncludeExcludeState.DEFAULT -> null
+                FilterIncludeExcludeState.INCLUDE -> Icons.Filled.Check
+                FilterIncludeExcludeState.EXCLUDE -> Icons.Filled.Close
             }?.let {
                 Icon(
                     imageVector = it,

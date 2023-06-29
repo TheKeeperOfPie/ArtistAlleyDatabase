@@ -2,8 +2,6 @@ package com.thekeeperofpie.artistalleydatabase.anime.media
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.rememberTransformableState
-import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -33,12 +31,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -47,6 +41,7 @@ import coil.compose.AsyncImage
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeMediaFilterController
+import com.thekeeperofpie.artistalleydatabase.compose.ZoomPanBox
 
 @OptIn(ExperimentalMaterialApi::class)
 object AnimeMediaListScreen {
@@ -185,58 +180,7 @@ object AnimeMediaListScreen {
     @Composable
     private fun EntryImagePreview(entry: AnimeMediaListRow.Entry, onDismiss: () -> Unit) {
         Dialog(onDismissRequest = onDismiss) {
-            var imageTranslation by remember { mutableStateOf(Offset.Zero) }
-            var imageScale by remember { mutableStateOf(1f) }
-            var imageRotation by remember { mutableStateOf(1f) }
-
-            var imageIntrinsicWidth by remember { mutableStateOf(0) }
-            var imageIntrinsicHeight by remember { mutableStateOf(0) }
-
-            val configuration = LocalConfiguration.current
-            val density = LocalDensity.current
-            val maxTranslationX = remember(imageIntrinsicWidth, density) {
-                density.run { configuration.screenWidthDp.dp.toPx() }
-                    .coerceAtLeast(imageIntrinsicWidth.toFloat())
-                    .times(0.9f)
-            }
-            val maxTranslationY = remember(imageIntrinsicHeight, density) {
-                density.run { configuration.screenHeightDp.dp.toPx() }
-                    .coerceAtLeast(imageIntrinsicHeight.toFloat())
-                    .times(0.9f)
-            }
-            val transformableState =
-                rememberTransformableState { zoomChange, panChange, rotationChange ->
-                    val translation = imageTranslation + panChange
-                    imageTranslation = translation.copy(
-                        x = translation.x.coerceIn(
-                            -maxTranslationX,
-                            maxTranslationX
-                        ),
-                        y = translation.y.coerceIn(
-                            -maxTranslationY,
-                            maxTranslationY
-                        ),
-                    )
-                    imageScale = (imageScale * zoomChange).coerceIn(0.25f, 5f)
-                    imageRotation += rotationChange
-                }
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .transformable(state = transformableState, lockRotationOnZoomPan = true)
-                    .graphicsLayer(
-                        translationX = imageTranslation.x,
-                        translationY = imageTranslation.y,
-                        scaleX = imageScale,
-                        scaleY = imageScale,
-                        rotationZ = imageRotation,
-                    )
-                    .clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null,
-                        onClick = onDismiss,
-                    ),
-            ) {
+            ZoomPanBox(onClick = onDismiss) {
                 Column(
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -261,10 +205,6 @@ object AnimeMediaListScreen {
                         contentScale = ContentScale.FillWidth,
                         fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
                         contentDescription = stringResource(R.string.anime_media_cover_image_content_description),
-                        onSuccess = {
-                            imageIntrinsicWidth = it.result.drawable.intrinsicWidth
-                            imageIntrinsicHeight = it.result.drawable.intrinsicHeight
-                        },
                         modifier = Modifier
                             .fillMaxWidth()
                             .widthIn(min = 240.dp),

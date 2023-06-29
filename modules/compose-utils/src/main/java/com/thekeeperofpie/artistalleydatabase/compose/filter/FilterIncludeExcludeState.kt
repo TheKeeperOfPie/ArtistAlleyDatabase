@@ -1,6 +1,6 @@
-package com.thekeeperofpie.artistalleydatabase.anime.utils
+package com.thekeeperofpie.artistalleydatabase.compose.filter
 
-enum class IncludeExcludeState {
+enum class FilterIncludeExcludeState {
     DEFAULT, INCLUDE, EXCLUDE;
 
     companion object {
@@ -14,7 +14,7 @@ enum class IncludeExcludeState {
         fun <Base, StateHolder, Comparison> applyFiltering(
             filters: List<StateHolder>,
             list: List<Base>,
-            state: (StateHolder) -> IncludeExcludeState,
+            state: (StateHolder) -> FilterIncludeExcludeState,
             key: (StateHolder) -> Comparison,
             transform: (Base) -> List<Comparison>,
             transformIncludes: ((Base) -> List<Comparison>)? = null,
@@ -34,7 +34,7 @@ enum class IncludeExcludeState {
         }
     }
 
-    fun next(): IncludeExcludeState {
+    fun next(): FilterIncludeExcludeState {
         val values = values()
         return values[(values.indexOf(this) + 1) % values.size]
     }

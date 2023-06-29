@@ -19,7 +19,8 @@ import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeMediaFilterController
-import com.thekeeperofpie.artistalleydatabase.anime.utils.IncludeExcludeState
+import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
+import com.thekeeperofpie.artistalleydatabase.compose.filter.SortEntry
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -113,12 +114,12 @@ open class AnimeUserListViewModel @Inject constructor(
                         ).map {
                             val (query, filterParams, sortOptions, sortAscending) = it
                             val sortOption =
-                                sortOptions.find { it.state == IncludeExcludeState.INCLUDE }?.value
+                                sortOptions.find { it.state == FilterIncludeExcludeState.INCLUDE }?.value
                             baseResponse?.lists
                                 ?.filterNotNull()
                                 ?.filter {
                                     val listStatuses = filterParams.listStatuses
-                                        .filter { it.state == IncludeExcludeState.INCLUDE }
+                                        .filter { it.state == FilterIncludeExcludeState.INCLUDE }
                                         .map { it.value }
                                     if (listStatuses.isEmpty()) {
                                         true
@@ -253,7 +254,7 @@ open class AnimeUserListViewModel @Inject constructor(
     private data class FilterParams(
         val query: String,
         val filterParams: AnimeMediaFilterController.FilterParams,
-        val sortOptions: List<AnimeMediaFilterController.SortEntry<MediaListSortOption>>,
+        val sortOptions: List<SortEntry<MediaListSortOption>>,
         val sortAscending: Boolean,
     )
 }

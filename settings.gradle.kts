@@ -102,6 +102,7 @@ dependencyResolutionManagement {
             library("it.skrape:skrapeit:1.3.0-alpha.1")
             library("junit:junit:4.13.2")
             library("org.apache.commons:commons-compress:1.23.0")
+            library("org.apache.commons:commons-csv:1.10.0")
             library("org.awaitility:awaitility:4.2.0")
             library("org.chromium.net:cronet-embedded:113.5672.61")
             library("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.1")
@@ -137,6 +138,8 @@ dependencyResolutionManagement {
 rootProject.name = "Artist Alley Database"
 include(
     ":app",
+    ":modules:alley",
+    ":modules:alley-app",
     ":modules:android-utils",
     ":modules:anilist",
     ":modules:anime",

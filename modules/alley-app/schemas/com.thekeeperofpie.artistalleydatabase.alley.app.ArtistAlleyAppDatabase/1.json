@@ -1,0 +1,191 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 1,
+    "identityHash": "92c34135007150879da6fcca3611e816",
+    "entities": [
+      {
+        "tableName": "artist_entries",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `booth` TEXT NOT NULL COLLATE NOCASE, `tableName` TEXT COLLATE NOCASE, `artistNames` TEXT NOT NULL COLLATE NOCASE, `region` TEXT, `description` TEXT, `contactLink` TEXT, `links` TEXT NOT NULL, `catalogLink` TEXT NOT NULL, `favorite` INTEGER NOT NULL, `notes` TEXT, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "booth",
+            "columnName": "booth",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tableName",
+            "columnName": "tableName",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "artistNames",
+            "columnName": "artistNames",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "region",
+            "columnName": "region",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "description",
+            "columnName": "description",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "contactLink",
+            "columnName": "contactLink",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "links",
+            "columnName": "links",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "catalogLink",
+            "columnName": "catalogLink",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "favorite",
+            "columnName": "favorite",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "notes",
+            "columnName": "notes",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "ftsVersion": "FTS4",
+        "ftsOptions": {
+          "tokenizer": "simple",
+          "tokenizerArgs": [],
+          "contentTable": "artist_entries",
+          "languageIdColumnName": "",
+          "matchInfo": "FTS4",
+          "notIndexedColumns": [],
+          "prefixSizes": [],
+          "preferredOrder": "ASC"
+        },
+        "contentSyncTriggers": [
+          "CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_artist_entries_fts_BEFORE_UPDATE BEFORE UPDATE ON `artist_entries` BEGIN DELETE FROM `artist_entries_fts` WHERE `docid`=OLD.`rowid`; END",
+          "CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_artist_entries_fts_BEFORE_DELETE BEFORE DELETE ON `artist_entries` BEGIN DELETE FROM `artist_entries_fts` WHERE `docid`=OLD.`rowid`; END",
+          "CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_artist_entries_fts_AFTER_UPDATE AFTER UPDATE ON `artist_entries` BEGIN INSERT INTO `artist_entries_fts`(`docid`, `id`, `booth`, `tableName`, `artistNames`, `region`, `description`, `contactLink`, `links`, `catalogLink`, `favorite`, `notes`) VALUES (NEW.`rowid`, NEW.`id`, NEW.`booth`, NEW.`tableName`, NEW.`artistNames`, NEW.`region`, NEW.`description`, NEW.`contactLink`, NEW.`links`, NEW.`catalogLink`, NEW.`favorite`, NEW.`notes`); END",
+          "CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_artist_entries_fts_AFTER_INSERT AFTER INSERT ON `artist_entries` BEGIN INSERT INTO `artist_entries_fts`(`docid`, `id`, `booth`, `tableName`, `artistNames`, `region`, `description`, `contactLink`, `links`, `catalogLink`, `favorite`, `notes`) VALUES (NEW.`rowid`, NEW.`id`, NEW.`booth`, NEW.`tableName`, NEW.`artistNames`, NEW.`region`, NEW.`description`, NEW.`contactLink`, NEW.`links`, NEW.`catalogLink`, NEW.`favorite`, NEW.`notes`); END"
+        ],
+        "tableName": "artist_entries_fts",
+        "createSql": "CREATE VIRTUAL TABLE IF NOT EXISTS `${TABLE_NAME}` USING FTS4(`id` TEXT NOT NULL, `booth` TEXT NOT NULL, `tableName` TEXT NOT NULL, `artistNames` TEXT NOT NULL, `region` TEXT, `description` TEXT NOT NULL, `contactLink` TEXT NOT NULL, `links` TEXT NOT NULL, `catalogLink` TEXT NOT NULL, `favorite` INTEGER NOT NULL, `notes` TEXT, content=`artist_entries`)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "booth",
+            "columnName": "booth",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tableName",
+            "columnName": "tableName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "artistNames",
+            "columnName": "artistNames",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "region",
+            "columnName": "region",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "description",
+            "columnName": "description",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "contactLink",
+            "columnName": "contactLink",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "links",
+            "columnName": "links",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "catalogLink",
+            "columnName": "catalogLink",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "favorite",
+            "columnName": "favorite",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "notes",
+            "columnName": "notes",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "rowid"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      }
+    ],
+    "views": [],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '92c34135007150879da6fcca3611e816')"
+    ]
+  }
+}

@@ -27,7 +27,10 @@ import com.thekeeperofpie.artistalleydatabase.anime.list.MediaListSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
-import com.thekeeperofpie.artistalleydatabase.anime.utils.IncludeExcludeState
+import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterEntry
+import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
+import com.thekeeperofpie.artistalleydatabase.compose.filter.SortEntry
+import com.thekeeperofpie.artistalleydatabase.compose.filter.SortOption
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -52,14 +55,14 @@ class AnimeMediaFilterController<T>(
     private val settings: AnimeSettings,
     private val ignoreList: AnimeMediaIgnoreList,
     defaultEnabled: List<T> = emptyList(),
-) where T : AnimeMediaFilterController.Data.SortOption, T : Enum<*> {
+) where T : SortOption, T : Enum<*> {
 
     companion object {
         private const val TAG = "AnimeMediaFilterController"
     }
 
     val sortOptions = MutableStateFlow(SortEntry.options(sortEnumClass).map {
-        if (defaultEnabled.contains(it.value)) it.copy(state = IncludeExcludeState.INCLUDE) else it
+        if (defaultEnabled.contains(it.value)) it.copy(state = FilterIncludeExcludeState.INCLUDE) else it
     })
     val sortAscending = MutableStateFlow(false)
 
@@ -70,7 +73,7 @@ class AnimeMediaFilterController<T>(
                 genres
             } else {
                 // Keep if previously selected (not DEFAULT)
-                genres.filterNot { it.state == IncludeExcludeState.DEFAULT && it.isAdult }
+                genres.filterNot { it.state == FilterIncludeExcludeState.DEFAULT && it.isAdult }
             }
         }
     }
@@ -81,7 +84,7 @@ class AnimeMediaFilterController<T>(
             if (showAdult) return@map tags
             tags.values.mapNotNull {
                 // Keep if previously selected (not DEFAULT)
-                it.filter { it.state != IncludeExcludeState.DEFAULT || it.isAdult != true }
+                it.filter { it.state != FilterIncludeExcludeState.DEFAULT || it.isAdult != true }
             }
                 .associateBy { it.name }
                 .toSortedMap(String.CASE_INSENSITIVE_ORDER)
@@ -184,12 +187,12 @@ class AnimeMediaFilterController<T>(
                                             section.replace {
                                                 if (it.id == initialParams.tagId) {
                                                     it.copy(
-                                                        state = IncludeExcludeState.INCLUDE,
+                                                        state = FilterIncludeExcludeState.INCLUDE,
                                                         clickable = false
                                                     )
                                                 } else {
                                                     it.copy(
-                                                        state = IncludeExcludeState.toState(
+                                                        state = FilterIncludeExcludeState.toState(
                                                             it.id,
                                                             included = tagsIncluded,
                                                             excluded = tagsExcluded
@@ -224,14 +227,14 @@ class AnimeMediaFilterController<T>(
             sortOptions.value = sortOptions.value.toMutableList().apply {
                 replaceAll {
                     it.takeUnless { it.value == filterData.sortOption }
-                        ?: it.copy(state = IncludeExcludeState.INCLUDE)
+                        ?: it.copy(state = FilterIncludeExcludeState.INCLUDE)
                 }
             }
         } else if (filterData.sortListOption != null) {
             sortOptions.value = sortOptions.value.toMutableList().apply {
                 replaceAll {
                     it.takeUnless { it.value == filterData.sortListOption }
-                        ?: it.copy(state = IncludeExcludeState.INCLUDE)
+                        ?: it.copy(state = FilterIncludeExcludeState.INCLUDE)
                 }
             }
         }
@@ -291,9 +294,9 @@ class AnimeMediaFilterController<T>(
 
     private fun toFilterData(): FilterData {
         val onListOptions = onListOptions.value
-        val containsOnList = onListOptions.find { it.value }?.state == IncludeExcludeState.INCLUDE
+        val containsOnList = onListOptions.find { it.value }?.state == FilterIncludeExcludeState.INCLUDE
         val containsNotOnList =
-            onListOptions.find { !it.value }?.state == IncludeExcludeState.INCLUDE
+            onListOptions.find { !it.value }?.state == FilterIncludeExcludeState.INCLUDE
         val onList = when {
             !containsOnList && !containsNotOnList -> null
             containsOnList && containsNotOnList -> null
@@ -301,10 +304,10 @@ class AnimeMediaFilterController<T>(
         }
         return FilterData(
             sortOption = sortOptions.value
-                .firstOrNull { it.state == IncludeExcludeState.INCLUDE }
+                .firstOrNull { it.state == FilterIncludeExcludeState.INCLUDE }
                 ?.value as? MediaSortOption,
             sortListOption = sortOptions.value
-                .firstOrNull { it.state == IncludeExcludeState.INCLUDE }
+                .firstOrNull { it.state == FilterIncludeExcludeState.INCLUDE }
                 ?.value as? MediaListSortOption,
             sortAscending = sortAscending.value,
             tagRank = tagRank.value.toIntOrNull(),
@@ -314,21 +317,21 @@ class AnimeMediaFilterController<T>(
             averageScoreMax = averageScoreRange.value.endInt,
             episodesMin = episodesRange.value.startInt,
             episodesMax = episodesRange.value.startInt,
-            sourcesIncluded = sources.value.filter { it.state == IncludeExcludeState.INCLUDE }
+            sourcesIncluded = sources.value.filter { it.state == FilterIncludeExcludeState.INCLUDE }
                 .map { it.value },
-            sourcesExcluded = sources.value.filter { it.state == IncludeExcludeState.EXCLUDE }
+            sourcesExcluded = sources.value.filter { it.state == FilterIncludeExcludeState.EXCLUDE }
                 .map { it.value },
-            statusesIncluded = statuses.value.filter { it.state == IncludeExcludeState.INCLUDE }
+            statusesIncluded = statuses.value.filter { it.state == FilterIncludeExcludeState.INCLUDE }
                 .map { it.value },
-            statusesExcluded = statuses.value.filter { it.state == IncludeExcludeState.EXCLUDE }
+            statusesExcluded = statuses.value.filter { it.state == FilterIncludeExcludeState.EXCLUDE }
                 .map { it.value },
-            listStatusesIncluded = listStatuses.value.filter { it.state == IncludeExcludeState.INCLUDE }
+            listStatusesIncluded = listStatuses.value.filter { it.state == FilterIncludeExcludeState.INCLUDE }
                 .map { it.value },
-            listStatusesExcluded = listStatuses.value.filter { it.state == IncludeExcludeState.EXCLUDE }
+            listStatusesExcluded = listStatuses.value.filter { it.state == FilterIncludeExcludeState.EXCLUDE }
                 .map { it.value },
-            formatsIncluded = formats.value.filter { it.state == IncludeExcludeState.INCLUDE }
+            formatsIncluded = formats.value.filter { it.state == FilterIncludeExcludeState.INCLUDE }
                 .map { it.value },
-            formatsExcluded = formats.value.filter { it.state == IncludeExcludeState.EXCLUDE }
+            formatsExcluded = formats.value.filter { it.state == FilterIncludeExcludeState.EXCLUDE }
                 .map { it.value },
             airingDateIsAdvanced = airingDateIsAdvanced.value,
             airingDateSeason = airingDate.value.first.season,
@@ -339,9 +342,9 @@ class AnimeMediaFilterController<T>(
             airingDateEndYear = airingDate.value.second.endDate?.year,
             airingDateEndMonth = airingDate.value.second.endDate?.monthValue,
             airingDateEndDayOfMonth = airingDate.value.second.endDate?.dayOfMonth,
-            genresIncluded = genres.value.filter { it.state == IncludeExcludeState.INCLUDE }
+            genresIncluded = genres.value.filter { it.state == FilterIncludeExcludeState.INCLUDE }
                 .map { it.value },
-            genresExcluded = genres.value.filter { it.state == IncludeExcludeState.EXCLUDE }
+            genresExcluded = genres.value.filter { it.state == FilterIncludeExcludeState.EXCLUDE }
                 .map { it.value },
             tagsIncluded = tagsByCategory.value.let {
                 it.values
@@ -351,7 +354,7 @@ class AnimeMediaFilterController<T>(
                             is TagSection.Tag -> listOf(it)
                         }
                     }
-                    .filter { it.state == IncludeExcludeState.INCLUDE }
+                    .filter { it.state == FilterIncludeExcludeState.INCLUDE }
                     .map { it.id }
             },
             tagsExcluded = tagsByCategory.value.let {
@@ -362,7 +365,7 @@ class AnimeMediaFilterController<T>(
                             is TagSection.Tag -> listOf(it)
                         }
                     }
-                    .filter { it.state == IncludeExcludeState.EXCLUDE }
+                    .filter { it.state == FilterIncludeExcludeState.EXCLUDE }
                     .map { it.id }
             },
         )
@@ -375,7 +378,7 @@ class AnimeMediaFilterController<T>(
     ) = map.toMutableList().apply {
         replaceAll {
             it.copy(
-                state = IncludeExcludeState.toState(
+                state = FilterIncludeExcludeState.toState(
                     it.value,
                     included = included,
                     excluded = excluded,
@@ -393,12 +396,12 @@ class AnimeMediaFilterController<T>(
             section.replace {
                 if (it.id == initialParams.tagId) {
                     it.copy(
-                        state = IncludeExcludeState.INCLUDE,
+                        state = FilterIncludeExcludeState.INCLUDE,
                         clickable = false
                     )
                 } else {
                     it.copy(
-                        state = IncludeExcludeState.toState(
+                        state = FilterIncludeExcludeState.toState(
                             it.id,
                             included = included,
                             excluded = excluded,
@@ -493,13 +496,13 @@ class AnimeMediaFilterController<T>(
             .apply {
                 replaceAll {
                     if (it.value == option) {
-                        val newState = if (it.state != IncludeExcludeState.INCLUDE) {
-                            IncludeExcludeState.INCLUDE
+                        val newState = if (it.state != FilterIncludeExcludeState.INCLUDE) {
+                            FilterIncludeExcludeState.INCLUDE
                         } else {
-                            IncludeExcludeState.DEFAULT
+                            FilterIncludeExcludeState.DEFAULT
                         }
                         it.copy(state = newState)
-                    } else it.copy(state = IncludeExcludeState.DEFAULT)
+                    } else it.copy(state = FilterIncludeExcludeState.DEFAULT)
                 }
             }
     }
@@ -547,10 +550,10 @@ class AnimeMediaFilterController<T>(
                         if (initialParams.showListStatusExcludes) {
                             it.copy(state = it.state.next())
                         } else {
-                            val newState = if (it.state != IncludeExcludeState.INCLUDE) {
-                                IncludeExcludeState.INCLUDE
+                            val newState = if (it.state != FilterIncludeExcludeState.INCLUDE) {
+                                FilterIncludeExcludeState.INCLUDE
                             } else {
-                                IncludeExcludeState.DEFAULT
+                                FilterIncludeExcludeState.DEFAULT
                             }
                             it.copy(state = newState)
                         }
@@ -603,13 +606,13 @@ class AnimeMediaFilterController<T>(
             .apply {
                 replaceAll {
                     if (it.value == option.value) {
-                        val newState = if (it.state != IncludeExcludeState.INCLUDE) {
-                            IncludeExcludeState.INCLUDE
+                        val newState = if (it.state != FilterIncludeExcludeState.INCLUDE) {
+                            FilterIncludeExcludeState.INCLUDE
                         } else {
-                            IncludeExcludeState.DEFAULT
+                            FilterIncludeExcludeState.DEFAULT
                         }
                         it.copy(state = newState)
-                    } else it.copy(state = IncludeExcludeState.DEFAULT)
+                    } else it.copy(state = FilterIncludeExcludeState.DEFAULT)
                 }
             }
     }
@@ -630,10 +633,10 @@ class AnimeMediaFilterController<T>(
             .apply {
                 replaceAll {
                     if (it.value == source) {
-                        val newState = if (it.state != IncludeExcludeState.INCLUDE) {
-                            IncludeExcludeState.INCLUDE
+                        val newState = if (it.state != FilterIncludeExcludeState.INCLUDE) {
+                            FilterIncludeExcludeState.INCLUDE
                         } else {
-                            IncludeExcludeState.DEFAULT
+                            FilterIncludeExcludeState.DEFAULT
                         }
                         it.copy(state = newState)
                     } else it
@@ -650,8 +653,8 @@ class AnimeMediaFilterController<T>(
         setFilterData(FilterData())
         sortOptions.value = sortOptions.value.toMutableList().apply {
             replaceAll {
-                it.takeIf { it.state == IncludeExcludeState.DEFAULT }
-                    ?: it.copy(state = IncludeExcludeState.DEFAULT)
+                it.takeIf { it.state == FilterIncludeExcludeState.DEFAULT }
+                    ?: it.copy(state = FilterIncludeExcludeState.DEFAULT)
             }
         }
     }
@@ -740,7 +743,7 @@ class AnimeMediaFilterController<T>(
     ): List<MediaEntryType> {
         var filteredEntries = entries
 
-        filteredEntries = IncludeExcludeState.applyFiltering(
+        filteredEntries = FilterIncludeExcludeState.applyFiltering(
             filterParams.statuses,
             filteredEntries,
             state = { it.state },
@@ -748,7 +751,7 @@ class AnimeMediaFilterController<T>(
             transform = { listOfNotNull(it.media.status) }
         )
 
-        filteredEntries = IncludeExcludeState.applyFiltering(
+        filteredEntries = FilterIncludeExcludeState.applyFiltering(
             filterParams.formats,
             filteredEntries,
             state = { it.state },
@@ -756,7 +759,7 @@ class AnimeMediaFilterController<T>(
             transform = { listOfNotNull(it.media.format) }
         )
 
-        filteredEntries = IncludeExcludeState.applyFiltering(
+        filteredEntries = FilterIncludeExcludeState.applyFiltering(
             filterParams.genres,
             filteredEntries,
             state = { it.state },
@@ -776,7 +779,7 @@ class AnimeMediaFilterController<T>(
                 }
             }
 
-        filteredEntries = IncludeExcludeState.applyFiltering(
+        filteredEntries = FilterIncludeExcludeState.applyFiltering(
             filterParams.tagsByCategory.values.flatMap {
                 when (it) {
                     is TagSection.Category -> it.flatten()
@@ -922,7 +925,7 @@ class AnimeMediaFilterController<T>(
             }
         }
 
-        filteredEntries = IncludeExcludeState.applyFiltering(
+        filteredEntries = FilterIncludeExcludeState.applyFiltering(
             filterParams.sources,
             filteredEntries,
             state = { it.state },
@@ -942,11 +945,11 @@ class AnimeMediaFilterController<T>(
         val showListStatusExcludes: Boolean = false,
     )
 
-    class Data<SortOption : Data.SortOption>(
+    class Data<SortType : SortOption>(
         val expanded: (Section) -> Boolean = { false },
         val setExpanded: (Section, Boolean) -> Unit = { _, _ -> },
-        val sortOptions: @Composable () -> List<SortEntry<SortOption>>,
-        val onSortClick: (SortOption) -> Unit = {},
+        val sortOptions: @Composable () -> List<SortEntry<SortType>>,
+        val onSortClick: (SortType) -> Unit = {},
         val sortAscending: @Composable () -> Boolean = { false },
         val onSortAscendingChange: (Boolean) -> Unit = {},
         val statuses: @Composable () -> List<StatusEntry> = { emptyList() },
@@ -1036,11 +1039,6 @@ class AnimeMediaFilterController<T>(
                 )
             }
         }
-
-        interface SortOption {
-            @get:StringRes
-            val textRes: Int
-        }
     }
 
     enum class Section {
@@ -1057,20 +1055,10 @@ class AnimeMediaFilterController<T>(
         SOURCE,
     }
 
-    data class SortEntry<T : Data.SortOption>(
-        override val value: T,
-        override val state: IncludeExcludeState = IncludeExcludeState.DEFAULT,
-    ) : MediaFilterEntry<T> {
-        companion object {
-            fun <T : Data.SortOption> options(enumClass: KClass<T>) =
-                enumClass.java.enumConstants!!.map(::SortEntry)
-        }
-    }
-
     data class StatusEntry(
         override val value: MediaStatus,
-        override val state: IncludeExcludeState = IncludeExcludeState.DEFAULT,
-    ) : MediaFilterEntry<MediaStatus> {
+        override val state: FilterIncludeExcludeState = FilterIncludeExcludeState.DEFAULT,
+    ) : FilterEntry<MediaStatus> {
         companion object {
             fun statuses(
                 included: List<MediaStatus> = emptyList(),
@@ -1083,7 +1071,7 @@ class AnimeMediaFilterController<T>(
                 MediaStatus.HIATUS,
             ).map {
                 StatusEntry(
-                    it, IncludeExcludeState.toState(
+                    it, FilterIncludeExcludeState.toState(
                         value = it,
                         included = included,
                         excluded = excluded
@@ -1097,9 +1085,9 @@ class AnimeMediaFilterController<T>(
 
     data class ListStatusEntry(
         override val value: MediaListStatus,
-        override val state: IncludeExcludeState = IncludeExcludeState.DEFAULT,
+        override val state: FilterIncludeExcludeState = FilterIncludeExcludeState.DEFAULT,
         val isAnime: Boolean,
-    ) : MediaFilterEntry<MediaListStatus> {
+    ) : FilterEntry<MediaListStatus> {
         companion object {
             fun statuses(
                 isAnime: Boolean,
@@ -1115,7 +1103,7 @@ class AnimeMediaFilterController<T>(
             ).map {
                 ListStatusEntry(
                     it,
-                    IncludeExcludeState.toState(
+                    FilterIncludeExcludeState.toState(
                         value = it,
                         included = included,
                         excluded = excluded
@@ -1130,8 +1118,8 @@ class AnimeMediaFilterController<T>(
 
     data class FormatEntry(
         override val value: MediaFormat,
-        override val state: IncludeExcludeState = IncludeExcludeState.DEFAULT,
-    ) : MediaFilterEntry<MediaFormat> {
+        override val state: FilterIncludeExcludeState = FilterIncludeExcludeState.DEFAULT,
+    ) : FilterEntry<MediaFormat> {
         companion object {
             fun formats(
                 included: List<MediaFormat> = emptyList(),
@@ -1147,7 +1135,7 @@ class AnimeMediaFilterController<T>(
                 // MANGA, NOVEL, and ONE_SHOT excluded since not anime
             ).map {
                 FormatEntry(
-                    it, IncludeExcludeState.toState(
+                    it, FilterIncludeExcludeState.toState(
                         value = it,
                         included = included,
                         excluded = excluded
@@ -1161,8 +1149,8 @@ class AnimeMediaFilterController<T>(
 
     data class GenreEntry(
         override val value: String,
-        override val state: IncludeExcludeState = IncludeExcludeState.DEFAULT
-    ) : MediaFilterEntry<String> {
+        override val state: FilterIncludeExcludeState = FilterIncludeExcludeState.DEFAULT
+    ) : FilterEntry<String> {
         val isAdult = value == "Hentai"
 
         override val leadingIconVector = MediaUtils.tagLeadingIcon(isAdult = isAdult)
@@ -1262,9 +1250,9 @@ class AnimeMediaFilterController<T>(
             val description: String?,
             val isAdult: Boolean?,
             override val value: MediaTagsQuery.Data.MediaTagCollection,
-            override val state: IncludeExcludeState = IncludeExcludeState.DEFAULT,
+            override val state: FilterIncludeExcludeState = FilterIncludeExcludeState.DEFAULT,
             val clickable: Boolean = true,
-        ) : MediaFilterEntry<MediaTagsQuery.Data.MediaTagCollection>, TagSection {
+        ) : FilterEntry<MediaTagsQuery.Data.MediaTagCollection>, TagSection {
             override val leadingIconVector = MediaUtils.tagLeadingIcon(
                 isAdult = isAdult,
                 isGeneralSpoiler = value.isGeneralSpoiler,
@@ -1288,16 +1276,16 @@ class AnimeMediaFilterController<T>(
 
     data class OnListOption(
         override val value: Boolean,
-        override val state: IncludeExcludeState = IncludeExcludeState.DEFAULT,
-    ) : MediaFilterEntry<Boolean?> {
+        override val state: FilterIncludeExcludeState = FilterIncludeExcludeState.DEFAULT,
+    ) : FilterEntry<Boolean?> {
         companion object {
             fun options(default: Boolean? = null) = listOf(true, false).map {
                 OnListOption(
                     it,
                     state = if (it == default) {
-                        IncludeExcludeState.INCLUDE
+                        FilterIncludeExcludeState.INCLUDE
                     } else {
-                        IncludeExcludeState.DEFAULT
+                        FilterIncludeExcludeState.DEFAULT
                     }
                 )
             }
@@ -1367,8 +1355,8 @@ class AnimeMediaFilterController<T>(
 
     data class SourceEntry(
         override val value: MediaSource,
-        override val state: IncludeExcludeState = IncludeExcludeState.DEFAULT,
-    ) : MediaFilterEntry<MediaSource> {
+        override val state: FilterIncludeExcludeState = FilterIncludeExcludeState.DEFAULT,
+    ) : FilterEntry<MediaSource> {
         companion object {
             fun sources(
                 included: List<MediaSource> = emptyList(),
@@ -1391,7 +1379,7 @@ class AnimeMediaFilterController<T>(
                 MediaSource.WEB_NOVEL,
             ).map {
                 SourceEntry(
-                    it, IncludeExcludeState.toState(
+                    it, FilterIncludeExcludeState.toState(
                         value = it,
                         included = included,
                         excluded = excluded
@@ -1405,7 +1393,7 @@ class AnimeMediaFilterController<T>(
     }
 
     data class FilterParams(
-        val genres: List<MediaFilterEntry<String>>,
+        val genres: List<FilterEntry<String>>,
         val tagsByCategory: Map<String, TagSection>,
         val tagRank: Int?,
         val statuses: List<StatusEntry>,

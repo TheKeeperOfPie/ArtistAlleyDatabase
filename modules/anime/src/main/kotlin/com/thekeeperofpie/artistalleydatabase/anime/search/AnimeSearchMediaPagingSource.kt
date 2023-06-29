@@ -8,7 +8,8 @@ import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeMediaFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortOption
-import com.thekeeperofpie.artistalleydatabase.anime.utils.IncludeExcludeState
+import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
+import com.thekeeperofpie.artistalleydatabase.compose.filter.SortEntry
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 
@@ -41,9 +42,9 @@ class AnimeSearchMediaPagingSource(
         val page = params.key ?: 1
 
         val onListOptions = filterParams.onListOptions
-        val containsOnList = onListOptions.find { it.value }?.state == IncludeExcludeState.INCLUDE
+        val containsOnList = onListOptions.find { it.value }?.state == FilterIncludeExcludeState.INCLUDE
         val containsNotOnList =
-            onListOptions.find { !it.value }?.state == IncludeExcludeState.INCLUDE
+            onListOptions.find { !it.value }?.state == FilterIncludeExcludeState.INCLUDE
         val onList = when {
             !containsOnList && !containsNotOnList -> null
             containsOnList && containsNotOnList -> null
@@ -57,28 +58,28 @@ class AnimeSearchMediaPagingSource(
             perPage = 10,
             sort = refreshParams.sortApiValue(),
             genreIn = filterParams.genres
-                .filter { it.state == IncludeExcludeState.INCLUDE }
+                .filter { it.state == FilterIncludeExcludeState.INCLUDE }
                 .map { it.value },
             genreNotIn = filterParams.genres
-                .filter { it.state == IncludeExcludeState.EXCLUDE }
+                .filter { it.state == FilterIncludeExcludeState.EXCLUDE }
                 .map { it.value },
             tagIn = flattenedTags
-                .filter { it.state == IncludeExcludeState.INCLUDE }
+                .filter { it.state == FilterIncludeExcludeState.INCLUDE }
                 .map { it.value.name },
             tagNotIn = flattenedTags
-                .filter { it.state == IncludeExcludeState.EXCLUDE }
+                .filter { it.state == FilterIncludeExcludeState.EXCLUDE }
                 .map { it.value.name },
             statusIn = filterParams.statuses
-                .filter { it.state == IncludeExcludeState.INCLUDE }
+                .filter { it.state == FilterIncludeExcludeState.INCLUDE }
                 .map { it.value },
             statusNotIn = filterParams.statuses
-                .filter { it.state == IncludeExcludeState.EXCLUDE }
+                .filter { it.state == FilterIncludeExcludeState.EXCLUDE }
                 .map { it.value },
             formatIn = filterParams.formats
-                .filter { it.state == IncludeExcludeState.INCLUDE }
+                .filter { it.state == FilterIncludeExcludeState.INCLUDE }
                 .map { it.value },
             formatNotIn = filterParams.formats
-                .filter { it.state == IncludeExcludeState.EXCLUDE }
+                .filter { it.state == FilterIncludeExcludeState.EXCLUDE }
                 .map { it.value },
             showAdult = filterParams.showAdult,
             onList = onList,
@@ -101,7 +102,7 @@ class AnimeSearchMediaPagingSource(
             episodesGreater = filterParams.episodesRange.apiStart?.let { it.coerceAtLeast(1) - 1 },
             episodesLesser = filterParams.episodesRange.apiEnd,
             sourcesIn = filterParams.sources
-                .filter { it.state == IncludeExcludeState.INCLUDE }
+                .filter { it.state == FilterIncludeExcludeState.INCLUDE }
                 .map { it.value },
             minimumTagRank = filterParams.tagRank,
         )
@@ -131,11 +132,11 @@ class AnimeSearchMediaPagingSource(
     data class RefreshParams(
         val query: String,
         val requestMillis: Long,
-        val sortOptions: List<AnimeMediaFilterController.SortEntry<MediaSortOption>>,
+        val sortOptions: List<SortEntry<MediaSortOption>>,
         val sortAscending: Boolean,
         val filterParams: AnimeMediaFilterController.FilterParams,
     ) {
-        fun sortApiValue() = sortOptions.filter { it.state == IncludeExcludeState.INCLUDE }
+        fun sortApiValue() = sortOptions.filter { it.state == FilterIncludeExcludeState.INCLUDE }
             .map { it.value.toApiValue(sortAscending) }
             .ifEmpty { listOf(MediaSort.SEARCH_MATCH) }
     }

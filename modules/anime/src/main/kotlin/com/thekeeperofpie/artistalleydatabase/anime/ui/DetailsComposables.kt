@@ -6,16 +6,13 @@
 
 package com.thekeeperofpie.artistalleydatabase.anime.ui
 
-import androidx.annotation.StringRes
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -29,13 +26,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ImageNotSupported
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -73,10 +68,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.compose.AccelerateEasing
 import com.thekeeperofpie.artistalleydatabase.compose.CustomHtmlText
 import com.thekeeperofpie.artistalleydatabase.compose.ImageHtmlText
-import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
-import com.thekeeperofpie.artistalleydatabase.compose.VerticalDivider
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
-import com.thekeeperofpie.artistalleydatabase.compose.fadingEdgeBottom
 import com.thekeeperofpie.artistalleydatabase.compose.optionalClickable
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 
@@ -247,29 +239,6 @@ internal fun LazyListScope.detailsLoadingOrError(
     }
 }
 
-@Composable
-internal fun DetailsSectionHeader(text: String, modifier: Modifier = Modifier) {
-    Text(
-        text = text,
-        style = MaterialTheme.typography.titleMedium,
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 10.dp),
-    )
-}
-
-@Composable
-internal fun DetailsSubsectionHeader(text: String, modifier: Modifier = Modifier) {
-    Text(
-        text = text,
-        style = MaterialTheme.typography.labelMedium,
-        color = MaterialTheme.colorScheme.surfaceTint,
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(start = 16.dp, end = 16.dp, top = 10.dp, bottom = 4.dp)
-    )
-}
-
 internal fun LazyListScope.descriptionSection(
     htmlText: String?,
     expanded: () -> Boolean,
@@ -319,151 +288,4 @@ internal fun LazyListScope.descriptionSection(
 private fun String.replaceSpoilers(): String {
     val spoilerRegex = Regex("(?<=<span class='markdown_spoiler'><span>).+?(?=</span></span>)")
     return replace(spoilerRegex, stringResource(R.string.anime_description_spoiler))
-}
-
-/**
- * @return True if anything shown
- */
-@Composable
-internal fun twoColumnInfoText(
-    labelOne: String, bodyOne: String?, onClickOne: (() -> Unit)? = null,
-    labelTwo: String, bodyTwo: String?, onClickTwo: (() -> Unit)? = null,
-    showDividerAbove: Boolean = true
-): Boolean {
-    if (bodyOne != null && bodyTwo != null) {
-        if (showDividerAbove) {
-            Divider()
-        }
-        Row(modifier = Modifier.height(IntrinsicSize.Min)) {
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .optionalClickable(onClickOne)
-            ) {
-                InfoText(label = labelOne, body = bodyOne, showDividerAbove = false)
-            }
-
-            VerticalDivider()
-
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .optionalClickable(onClickTwo)
-            ) {
-                InfoText(label = labelTwo, body = bodyTwo, showDividerAbove = false)
-            }
-        }
-    } else if (bodyOne != null) {
-        Column(modifier = Modifier.optionalClickable(onClickOne)) {
-            InfoText(label = labelOne, body = bodyOne, showDividerAbove = showDividerAbove)
-        }
-    } else if (bodyTwo != null) {
-        Column(modifier = Modifier.optionalClickable(onClickTwo)) {
-            InfoText(label = labelTwo, body = bodyTwo, showDividerAbove = showDividerAbove)
-        }
-    } else {
-        return false
-    }
-
-    return true
-}
-
-@Suppress("UnusedReceiverParameter")
-@Composable
-internal fun ColumnScope.InfoText(
-    label: String,
-    body: String,
-    showDividerAbove: Boolean = true,
-) {
-    if (showDividerAbove) {
-        Divider()
-    }
-
-    DetailsSubsectionHeader(label)
-
-    Text(
-        text = body,
-        style = MaterialTheme.typography.bodyMedium,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = 16.dp, end = 16.dp, bottom = 10.dp)
-    )
-}
-
-/**
- * @return True if anything shown
- */
-@Composable
-internal fun <T> expandableListInfoText(
-    @StringRes labelTextRes: Int,
-    @StringRes contentDescriptionTextRes: Int,
-    values: List<T>,
-    valueToText: @Composable (T) -> String,
-    onClick: ((T) -> Unit)? = null,
-    showDividerAbove: Boolean = true,
-    allowExpand: Boolean = values.size > 3
-): Boolean {
-    if (values.isEmpty()) return false
-
-    var expanded by remember { mutableStateOf(!allowExpand) }
-    val showExpand = allowExpand && values.size > 3
-
-    Box {
-        Column(
-            modifier = Modifier
-                .wrapContentHeight()
-                .conditionally(showExpand) {
-                    clickable { expanded = !expanded }
-                        .fadingEdgeBottom(show = !expanded)
-                        .animateContentSize()
-                }
-        ) {
-            if (showDividerAbove) {
-                Divider()
-            }
-
-            DetailsSubsectionHeader(stringResource(labelTextRes))
-
-            values.take(if (expanded) Int.MAX_VALUE else 3).forEachIndexed { index, value ->
-                if (index != 0) {
-                    Divider(modifier = Modifier.padding(start = 16.dp))
-                }
-
-                val bottomPadding = if (index == values.size - 1) {
-                    12.dp
-                } else {
-                    8.dp
-                }
-
-                Text(
-                    text = valueToText(value),
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .optionalClickable(
-                            onClick = onClick
-                                ?.takeIf { expanded }
-                                ?.let { { onClick(value) } }
-                        )
-                        .padding(
-                            start = 16.dp,
-                            end = 16.dp,
-                            top = 8.dp,
-                            bottom = bottomPadding,
-                        )
-                )
-            }
-        }
-
-        if (showExpand) {
-            TrailingDropdownIconButton(
-                expanded = expanded,
-                contentDescription = stringResource(contentDescriptionTextRes),
-                onClick = { expanded = !expanded },
-                modifier = Modifier.align(Alignment.TopEnd),
-            )
-        }
-    }
-
-    return true
 }

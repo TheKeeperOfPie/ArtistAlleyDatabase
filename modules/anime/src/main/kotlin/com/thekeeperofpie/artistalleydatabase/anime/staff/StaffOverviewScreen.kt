@@ -17,12 +17,12 @@ import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.charactersSection
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
-import com.thekeeperofpie.artistalleydatabase.anime.ui.DetailsSectionHeader
-import com.thekeeperofpie.artistalleydatabase.anime.ui.expandableListInfoText
-import com.thekeeperofpie.artistalleydatabase.anime.ui.InfoText
 import com.thekeeperofpie.artistalleydatabase.anime.ui.descriptionSection
-import com.thekeeperofpie.artistalleydatabase.anime.ui.twoColumnInfoText
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
+import com.thekeeperofpie.artistalleydatabase.compose.DetailsSectionHeader
+import com.thekeeperofpie.artistalleydatabase.compose.InfoText
+import com.thekeeperofpie.artistalleydatabase.compose.expandableListInfoText
+import com.thekeeperofpie.artistalleydatabase.compose.twoColumnInfoText
 
 object StaffOverviewScreen {
 

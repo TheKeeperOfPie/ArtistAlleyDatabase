@@ -117,7 +117,6 @@ import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.YouTubePlayerCallback
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
-import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
 import com.thekeeperofpie.artistalleydatabase.android_utils.UriUtils
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
@@ -141,14 +140,9 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.mediaListSection
 import com.thekeeperofpie.artistalleydatabase.anime.staff.DetailsStaff
 import com.thekeeperofpie.artistalleydatabase.anime.staff.staffSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.CoverAndBannerHeader
-import com.thekeeperofpie.artistalleydatabase.anime.ui.DetailsSectionHeader
-import com.thekeeperofpie.artistalleydatabase.anime.ui.DetailsSubsectionHeader
-import com.thekeeperofpie.artistalleydatabase.anime.ui.InfoText
 import com.thekeeperofpie.artistalleydatabase.anime.ui.descriptionSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.detailsLoadingOrError
-import com.thekeeperofpie.artistalleydatabase.anime.ui.expandableListInfoText
 import com.thekeeperofpie.artistalleydatabase.anime.ui.listSection
-import com.thekeeperofpie.artistalleydatabase.anime.ui.twoColumnInfoText
 import com.thekeeperofpie.artistalleydatabase.animethemes.models.AnimeTheme
 import com.thekeeperofpie.artistalleydatabase.cds.grid.CdEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.compose.AssistChip
@@ -158,14 +152,19 @@ import com.thekeeperofpie.artistalleydatabase.compose.BarChart
 import com.thekeeperofpie.artistalleydatabase.compose.CollapsingToolbar
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
+import com.thekeeperofpie.artistalleydatabase.compose.DetailsSectionHeader
+import com.thekeeperofpie.artistalleydatabase.compose.DetailsSubsectionHeader
+import com.thekeeperofpie.artistalleydatabase.compose.InfoText
 import com.thekeeperofpie.artistalleydatabase.compose.PieChart
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
 import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.assistChipColors
+import com.thekeeperofpie.artistalleydatabase.compose.expandableListInfoText
 import com.thekeeperofpie.artistalleydatabase.compose.multiplyCoerceSaturation
 import com.thekeeperofpie.artistalleydatabase.compose.optionalClickable
 import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.showFloatingActionButtonOnVerticalScroll
+import com.thekeeperofpie.artistalleydatabase.compose.twoColumnInfoText
 import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGrid
@@ -876,44 +875,6 @@ object AnimeMediaDetailsScreen {
                     valueToText = { it },
                     showDividerAbove = shown,
                 )
-            }
-        }
-    }
-
-    private fun LazyListScope.infoSectionCard(
-        key: String,
-        data: List<Pair<Int, Either<Int, String?>>>,
-    ) {
-        if (data.none { it.second is Either.Left || it.second.rightOrNull() != null }) return
-        item("infoSection-$key") {
-            ElevatedCard(
-                modifier = Modifier
-                    .padding(horizontal = 16.dp)
-                    .animateContentSize()
-                    .animateItemPlacement(),
-            ) {
-                data.chunked(2)
-                    .forEachIndexed { index, chunk ->
-                        val one = chunk[0]
-                        val two = chunk.getOrNull(1)
-                        twoColumnInfoText(
-                            labelOne = stringResource(one.first),
-                            bodyOne = if (one.second is Either.Left) {
-                                stringResource(one.second.leftOrNull()!!)
-                            } else {
-                                one.second.rightOrNull()
-                            },
-                            labelTwo = two?.first?.let { stringResource(it) }.orEmpty(),
-                            bodyTwo = two?.let {
-                                if (two.second is Either.Left) {
-                                    stringResource(two.second.leftOrNull()!!)
-                                } else {
-                                    two.second.rightOrNull()
-                                }
-                            },
-                            showDividerAbove = index != 0,
-                        )
-                    }
             }
         }
     }

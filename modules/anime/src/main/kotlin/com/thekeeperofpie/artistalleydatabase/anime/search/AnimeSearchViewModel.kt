@@ -29,7 +29,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeMediaFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortOption
-import com.thekeeperofpie.artistalleydatabase.anime.utils.IncludeExcludeState
+import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -239,10 +239,10 @@ class AnimeSearchViewModel @Inject constructor(
             filterController.listStatuses
         ) { pagingData, showIgnored, listStatuses ->
             val includes = listStatuses
-                .filter { it.state == IncludeExcludeState.INCLUDE }
+                .filter { it.state == FilterIncludeExcludeState.INCLUDE }
                 .map { it.value }
             val excludes = listStatuses
-                .filter { it.state == IncludeExcludeState.EXCLUDE }
+                .filter { it.state == FilterIncludeExcludeState.EXCLUDE }
                 .map { it.value }
             pagingData.filter {
                 val listStatus = it.media.mediaListEntry?.status

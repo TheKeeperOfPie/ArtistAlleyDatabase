@@ -51,6 +51,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.NavMenuIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.NestedScrollSplitter
 import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
 import com.thekeeperofpie.artistalleydatabase.compose.StaticSearchBar
+import com.thekeeperofpie.artistalleydatabase.compose.filter.SortOption
 import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 
@@ -58,10 +59,10 @@ import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 object AnimeUserListScreen {
 
     @Composable
-    operator fun <SortOption : AnimeMediaFilterController.Data.SortOption> invoke(
+    operator fun <SortType : SortOption> invoke(
         onClickNav: () -> Unit = {},
         showDrawerHandle: Boolean = true,
-        viewModel: ViewModel<SortOption>,
+        viewModel: ViewModel<SortType>,
         navigationCallback: AnimeNavigator.NavigationCallback =
             AnimeNavigator.NavigationCallback(null),
         scrollStateSaver: ScrollStateSaver = ScrollStateSaver.STUB,
@@ -223,13 +224,13 @@ object AnimeUserListScreen {
         ) : ContentState
     }
 
-    interface ViewModel<SortOption : AnimeMediaFilterController.Data.SortOption> {
+    interface ViewModel<SortType : SortOption> {
         var query: String
         val content: ContentState
         var tagShown: AnimeMediaFilterController.TagSection.Tag?
         val colorMap: MutableMap<String, Pair<Color, Color>>
 
-        fun filterData(): AnimeMediaFilterController.Data<SortOption>
+        fun filterData(): AnimeMediaFilterController.Data<SortType>
         fun onRefresh()
         fun onTagLongClick(tagId: String)
     }

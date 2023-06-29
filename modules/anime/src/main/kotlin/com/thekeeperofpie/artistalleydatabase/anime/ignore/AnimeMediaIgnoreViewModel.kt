@@ -22,7 +22,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeMediaFilterController
-import com.thekeeperofpie.artistalleydatabase.anime.utils.IncludeExcludeState
+import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -91,10 +91,10 @@ class AnimeMediaIgnoreViewModel @Inject constructor(
                 }
                 .map { (pagingData, query, filterParams) ->
                     val includes = filterParams.listStatuses
-                        .filter { it.state == IncludeExcludeState.INCLUDE }
+                        .filter { it.state == FilterIncludeExcludeState.INCLUDE }
                         .map { it.value }
                     val excludes = filterParams.listStatuses
-                        .filter { it.state == IncludeExcludeState.EXCLUDE }
+                        .filter { it.state == FilterIncludeExcludeState.EXCLUDE }
                         .map { it.value }
                     pagingData.map { AnimeMediaListRow.MediaEntry(it, ignored = false) }
                         .filter {

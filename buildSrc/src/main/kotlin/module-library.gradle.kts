@@ -14,7 +14,7 @@ android {
     compileSdkPreview = "UpsideDownCake"
 
     defaultConfig {
-        minSdk = 29
+        minSdk = 26
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         project.file("consumer-rules.pro")

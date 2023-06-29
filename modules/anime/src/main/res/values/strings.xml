@@ -65,15 +65,9 @@
 
     <string name="anime_media_filter_fab_content_description">Media list filter options</string>
     <string name="anime_media_filter_sort_label">Sort</string>
-    <string name="anime_media_filter_sort_content_description">Sort filter expand</string>
     <string name="anime_media_filter_sort_order_chip_state_content_description">Sort order chip state</string>
     <string name="anime_media_filter_sort_order_label">Order</string>
     <string name="anime_media_filter_sort_order_dropdown_content_description">Sort order dropdown</string>
-    <string name="anime_media_filter_sort_direction_label">Direction</string>
-    <string name="anime_media_filter_sort_direction_ascending_content_description">Sort direction ascending</string>
-    <string name="anime_media_filter_sort_direction_descending_content_description">Sort direction descending</string>
-    <string name="anime_media_filter_sort_ascending">Ascending</string>
-    <string name="anime_media_filter_sort_descending">Descending</string>
 
     <string name="anime_search_anime">Search anime…</string>
     <string name="anime_search_manga">Search manga…</string>

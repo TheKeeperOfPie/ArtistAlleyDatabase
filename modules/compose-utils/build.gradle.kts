@@ -16,6 +16,7 @@ dependencies {
     api(libs.compose.ui)
     api(libs.compose.ui.tooling.preview)
     implementation(libs.activity.compose)
+    implementation(libs.material.icons.extended)
 
     api(libs.paging.compose)
     api(libs.coil.compose)

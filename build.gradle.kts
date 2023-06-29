@@ -64,6 +64,7 @@ dependencyAnalysis {
                     "androidx.media3:media3-exoplayer-dash",
                     "androidx.media3:media3-exoplayer-hls",
                     "androidx.media3:media3-exoplayer-rtsp",
+                    "androidx.navigation:navigation-compose",
                     "androidx.test.ext:junit",
                     "androidx.test:runner",
                     "com.google.dagger:hilt-android",
@@ -80,6 +81,8 @@ dependencyAnalysis {
 
                     // Exclude the list of modules as the plugin doesn't
                     // play well with the Kotlin testFixtures hack
+                    ":modules:alley",
+                    ":modules:alley-app",
                     ":modules:android-utils",
                     ":modules:anilist",
                     ":modules:anime",

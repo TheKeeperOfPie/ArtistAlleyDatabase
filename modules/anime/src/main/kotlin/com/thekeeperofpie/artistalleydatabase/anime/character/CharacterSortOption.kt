@@ -3,11 +3,9 @@ package com.thekeeperofpie.artistalleydatabase.anime.character
 import androidx.annotation.StringRes
 import com.anilist.type.CharacterSort
 import com.thekeeperofpie.artistalleydatabase.anime.R
-import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeMediaFilterController
+import com.thekeeperofpie.artistalleydatabase.compose.filter.SortOption
 
-enum class CharacterSortOption(
-    @StringRes override val textRes: Int
-) : AnimeMediaFilterController.Data.SortOption {
+enum class CharacterSortOption(@StringRes override val textRes: Int) : SortOption {
 
     // Omissions: SEARCH_MATCH is used as a default
     ID(R.string.anime_character_sort_id),

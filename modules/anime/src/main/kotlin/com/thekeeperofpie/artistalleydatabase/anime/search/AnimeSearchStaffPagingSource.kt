@@ -7,7 +7,8 @@ import com.anilist.type.StaffSort
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeMediaFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffSortOption
-import com.thekeeperofpie.artistalleydatabase.anime.utils.IncludeExcludeState
+import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
+import com.thekeeperofpie.artistalleydatabase.compose.filter.SortEntry
 
 class AnimeSearchStaffPagingSource(
     private val aniListApi: AuthedAniListApi,
@@ -50,11 +51,11 @@ class AnimeSearchStaffPagingSource(
     data class RefreshParams(
         val query: String,
         val requestMillis: Long,
-        val sortOptions: List<AnimeMediaFilterController.SortEntry<StaffSortOption>>,
+        val sortOptions: List<SortEntry<StaffSortOption>>,
         val sortAscending: Boolean,
 //        val filterParams: AnimeMediaFilterController.FilterParams,
     ) {
-        fun sortApiValue() = sortOptions.filter { it.state == IncludeExcludeState.INCLUDE }
+        fun sortApiValue() = sortOptions.filter { it.state == FilterIncludeExcludeState.INCLUDE }
             .map { it.value.toApiValue(sortAscending) }
             .ifEmpty { listOf(StaffSort.SEARCH_MATCH) }
     }
