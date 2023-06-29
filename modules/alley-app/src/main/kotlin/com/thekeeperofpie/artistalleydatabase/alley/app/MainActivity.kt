@@ -7,18 +7,28 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavType
@@ -27,6 +37,7 @@ import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.mxalbert.sharedelements.SharedElementsRoot
+import com.thekeeperofpie.artistalley.BuildConfig
 import com.thekeeperofpie.artistalleydatabase.alley.details.ArtistDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.alley.details.ArtistDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.alley.search.ArtistAlleySearchScreen
@@ -46,43 +57,64 @@ class MainActivity : ComponentActivity() {
             Theme {
                 Surface {
                     val navController = rememberAnimatedNavController()
-                    SharedElementsRoot {
-                        AnimatedNavHost(navController, Destinations.HOME.name) {
-                            composable(Destinations.HOME.name) {
-                                ArtistAlleySearchScreen(
-                                    onEntryClick = {
-                                        navController.navigate("${Destinations.ARTIST_DETAILS.name}/" + it.id.valueId)
+                    Column(modifier = Modifier.fillMaxSize()) {
+                        Box(
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            SharedElementsRoot {
+                                AnimatedNavHost(navController, Destinations.HOME.name) {
+                                    composable(Destinations.HOME.name) {
+                                        ArtistAlleySearchScreen(
+                                            onEntryClick = {
+                                                navController.navigate("${Destinations.ARTIST_DETAILS.name}/" + it.id.valueId)
+                                            }
+                                        )
                                     }
-                                )
-                            }
 
-                            composable(
-                                route = "${Destinations.ARTIST_DETAILS.name}/{id}",
-                                arguments = listOf(
-                                    navArgument("id") {
-                                        type = NavType.StringType
-                                        nullable = false
-                                    },
-                                ),
-                                enterTransition = {
-                                    slideIntoContainer(
-                                        AnimatedContentTransitionScope.SlideDirection.Up
-                                    )
-                                },
-                                exitTransition = {
-                                    slideOutOfContainer(
-                                        AnimatedContentTransitionScope.SlideDirection.Down
-                                    )
-                                },
-                            ) {
-                                val arguments = it.arguments!!
-                                val id = arguments.getString("id")!!
-                                val viewModel = hiltViewModel<ArtistDetailsViewModel>().apply {
-                                    initialize(id)
+                                    composable(
+                                        route = "${Destinations.ARTIST_DETAILS.name}/{id}",
+                                        arguments = listOf(
+                                            navArgument("id") {
+                                                type = NavType.StringType
+                                                nullable = false
+                                            },
+                                        ),
+                                        enterTransition = {
+                                            slideIntoContainer(
+                                                AnimatedContentTransitionScope.SlideDirection.Up
+                                            )
+                                        },
+                                        exitTransition = {
+                                            slideOutOfContainer(
+                                                AnimatedContentTransitionScope.SlideDirection.Down
+                                            )
+                                        },
+                                    ) {
+                                        val arguments = it.arguments!!
+                                        val id = arguments.getString("id")!!
+                                        val viewModel =
+                                            hiltViewModel<ArtistDetailsViewModel>().apply {
+                                                initialize(id)
+                                            }
+                                        ArtistDetailsScreen(
+                                            viewModel,
+                                            onClickBack = { navController.popBackStack() },
+                                        )
+                                    }
                                 }
-                                ArtistDetailsScreen(
-                                    viewModel,
-                                    onClickBack = { navController.popBackStack() },
+                            }
+                        }
+
+                        if (BuildConfig.DEBUG) {
+                            Box(
+                                modifier = Modifier
+                                    .background(MaterialTheme.colorScheme.primary)
+                                    .fillMaxWidth()
+                                    .height(48.dp)
+                            ) {
+                                Text(
+                                    text = "DEBUG",
+                                    modifier = Modifier.align(Alignment.Center)
                                 )
                             }
                         }

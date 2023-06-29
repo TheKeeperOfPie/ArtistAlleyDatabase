@@ -26,4 +26,6 @@
     <string name="alley_sort_artist">Artist name</string>
     <string name="alley_filter_favorites">Show only favorites</string>
     <string name="alley_filter_only_catalogs">Show only with catalog</string>
+    <string name="alley_update_notice">New app version may be available</string>
+    <string name="alley_open_update">Open</string>
 </resources>

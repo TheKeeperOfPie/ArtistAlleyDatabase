@@ -46,6 +46,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SheetValue
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -67,6 +68,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -115,6 +117,23 @@ object ArtistAlleySearchScreen {
                 listState.animateScrollToItem(0, 0)
             } else {
                 seen = true
+            }
+        }
+
+        val updateNotice = stringResource(R.string.alley_update_notice)
+        val updateOpenUpdate = stringResource(R.string.alley_open_update)
+        val uriHandler = LocalUriHandler.current
+        val updateAppUrl = viewModel.updateAppUrl
+        LaunchedEffect(updateAppUrl) {
+            if (updateAppUrl != null) {
+                val result = scaffoldState.snackbarHostState.showSnackbar(
+                    message = updateNotice,
+                    withDismissAction = true,
+                    actionLabel = updateOpenUpdate,
+                )
+                if (result == SnackbarResult.ActionPerformed) {
+                    uriHandler.openUri(updateAppUrl)
+                }
             }
         }
 

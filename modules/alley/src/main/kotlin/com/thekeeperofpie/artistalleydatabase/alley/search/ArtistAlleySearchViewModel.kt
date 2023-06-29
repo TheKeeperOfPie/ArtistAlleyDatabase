@@ -33,7 +33,9 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.apache.commons.csv.CSVFormat
+import java.net.URL
 import javax.inject.Inject
 
 
@@ -79,6 +81,8 @@ class ArtistAlleySearchViewModel @Inject constructor(
 
     var showOnlyFavorites by mutableStateOf(false)
     var showOnlyWithCatalog by mutableStateOf(false)
+
+    var updateAppUrl by mutableStateOf<String?>(null)
 
     private val favoriteUpdates = MutableSharedFlow<ArtistEntry>(5, 5)
 
@@ -154,6 +158,27 @@ class ArtistAlleySearchViewModel @Inject constructor(
         viewModelScope.launch(CustomDispatchers.IO) {
             favoriteUpdates.collectLatest {
                 artistEntryDao.insertEntries(it)
+            }
+        }
+
+        viewModelScope.launch(CustomDispatchers.IO) {
+            try {
+                val updateUrl = application.assets.open("update-url.txt")
+                    .use { it.reader().readText() }
+                val latestVersion =
+                    URL(updateUrl).openStream().use { it.reader().readText() }.trim()
+                val currentVersion =
+                    application.assets.open("version.txt").use { it.reader().readText() }.trim()
+                if (latestVersion != currentVersion) {
+                    val appUrl = application.assets.open("app-url.txt")
+                        .use { it.reader().readText() }
+                    if (appUrl.isNotBlank()) {
+                        withContext(CustomDispatchers.Main) {
+                            updateAppUrl = appUrl
+                        }
+                    }
+                }
+            } catch (ignored: Throwable) {
             }
         }
     }
