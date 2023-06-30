@@ -53,6 +53,7 @@ interface ArtistEntryDao {
         sortAscending: Boolean,
         showOnlyFavorites: Boolean,
         showOnlyWithCatalog: Boolean,
+        randomSeed: Int,
     ): PagingSource<Int, ArtistEntry> {
         val includeAll = query.includeAll
         val options = query.query.split(Regex("\\s+"))
@@ -63,8 +64,8 @@ interface ArtistEntryDao {
                     if (includeAll || query.includeBooth) this += "booth:$queryValue"
                     if (includeAll || query.includeTableName) this += "tableName:$queryValue"
                     if (includeAll || query.includeArtistNames) this += "artistNames:$queryValue"
+                    if (includeAll || query.includeRegion) this += "region:$queryValue"
                     if (includeAll || query.includeDescription) this += "description:$queryValue"
-                    if (includeAll || query.includeNotes) this += "notes:$queryValue"
                 }
             }
 
@@ -73,13 +74,16 @@ interface ArtistEntryDao {
             if (showOnlyWithCatalog) this += "catalogLink:*drive*"
         }
 
-        val orderBy = when (sort) {
-            ArtistAlleySearchSortOption.BOOTH -> "booth"
-            ArtistAlleySearchSortOption.TABLE -> "tableName"
-            ArtistAlleySearchSortOption.ARTIST -> "artistNames"
-        }
         val ascending = if (sortAscending) "ASC" else "DESC"
-        val sortSuffix = "\nORDER BY artist_entries_fts.$orderBy COLLATE NOCASE $ascending"
+        val basicSortSuffix = "\nORDER BY artist_entries_fts.FIELD COLLATE NOCASE $ascending"
+        val sortSuffix = when (sort) {
+            ArtistAlleySearchSortOption.BOOTH -> basicSortSuffix.replace("FIELD", "booth")
+            ArtistAlleySearchSortOption.TABLE -> basicSortSuffix.replace("FIELD", "tableName")
+            ArtistAlleySearchSortOption.ARTIST -> basicSortSuffix.replace("FIELD", "artistNames")
+            ArtistAlleySearchSortOption.RANDOM -> {
+                "\nORDER BY substr(artist_entries.rowid * 0.$randomSeed, length(artist_entries.rowid) + 2) $ascending"
+            }
+        }
         if (options.isEmpty() && booleanOptions.isEmpty()) {
             val statement = """
                 SELECT *

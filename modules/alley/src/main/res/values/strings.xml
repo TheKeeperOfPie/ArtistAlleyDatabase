@@ -3,8 +3,8 @@
     <string name="alley_search_option_booth">Booth</string>
     <string name="alley_search_option_table_name">Table name</string>
     <string name="alley_search_option_artist_names">Artist names</string>
+    <string name="alley_search_option_region">Region</string>
     <string name="alley_search_option_description">Description</string>
-    <string name="alley_search_option_notes">Notes</string>
     <string name="alley_artist_favorite_icon_content_description">Mark artist as favorite</string>
     <string name="alley_artist_catalog_image">Artist catalog image</string>
     <string name="alley_display_type_icon_content_description">Change display type</string>
@@ -24,8 +24,10 @@
     <string name="alley_sort_booth">Booth</string>
     <string name="alley_sort_table">Table name</string>
     <string name="alley_sort_artist">Artist name</string>
+    <string name="alley_sort_random">Random</string>
     <string name="alley_filter_favorites">Show only favorites</string>
     <string name="alley_filter_only_catalogs">Show only with catalog</string>
+    <string name="alley_filter_show_region">Show region</string>
     <string name="alley_update_notice">New app version may be available</string>
     <string name="alley_open_update">Open</string>
 </resources>

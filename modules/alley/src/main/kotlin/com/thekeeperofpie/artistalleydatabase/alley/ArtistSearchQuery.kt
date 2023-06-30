@@ -7,9 +7,9 @@ data class ArtistSearchQuery(
     val includeBooth: Boolean = false,
     val includeTableName: Boolean = false,
     val includeArtistNames: Boolean = false,
+    val includeRegion: Boolean = false,
     val includeDescription: Boolean = false,
-    val includeNotes: Boolean = false,
 ) : EntrySearchQuery {
     val includeAll = !includeBooth && !includeTableName && !includeArtistNames
-            && !includeDescription && !includeNotes
+            && !includeRegion && !includeDescription
 }

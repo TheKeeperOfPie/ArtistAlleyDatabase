@@ -13,9 +13,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.padding
@@ -37,6 +39,7 @@ import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.ImageNotSupported
 import androidx.compose.material.icons.filled.ViewAgenda
 import androidx.compose.material.icons.filled.ViewList
+import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DockedSearchBar
@@ -145,6 +148,10 @@ object ArtistAlleySearchScreen {
 
         BottomSheetScaffoldNoAppBarOffset(
             scaffoldState = scaffoldState,
+            sheetPeekHeight = 72.dp,
+            sheetDragHandle = {
+                BottomSheetDefaults.DragHandle(color = MaterialTheme.colorScheme.primary)
+            },
             sheetContent = {
                 Column(
                     Modifier
@@ -209,6 +216,30 @@ object ArtistAlleySearchScreen {
                     }
 
                     Divider()
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                    ) {
+                        Text(
+                            text = stringResource(R.string.alley_filter_show_region),
+                            style = MaterialTheme.typography.titleMedium,
+                            modifier = Modifier
+                                .padding(horizontal = 16.dp, vertical = 10.dp)
+                                .weight(1f)
+                        )
+
+                        Switch(
+                            checked = viewModel.showRegion,
+                            onCheckedChange = { viewModel.showRegion = it },
+                            modifier = Modifier.padding(end = 16.dp),
+                        )
+                    }
+
+                    Divider()
+
+                    Spacer(Modifier.height(80.dp))
                 }
             },
             topBar = {
@@ -357,6 +388,7 @@ object ArtistAlleySearchScreen {
                 val entries = viewModel.results.collectAsLazyPagingItems()
                 val coroutineScope = rememberCoroutineScope()
                 val displayType = viewModel.displayType
+                val showRegion = viewModel.showRegion
                 LazyColumn(
                     state = listState,
                     contentPadding = PaddingValues(top = 8.dp + topBarPadding, bottom = 80.dp),
@@ -381,6 +413,7 @@ object ArtistAlleySearchScreen {
                             DisplayType.LIST -> {
                                 ArtistListRow(
                                     entry,
+                                    showRegion = showRegion,
                                     onFavoriteToggle = onFavoriteToggle,
                                     onClick = { onEntryClick(it, 0) },
                                 )
@@ -389,6 +422,7 @@ object ArtistAlleySearchScreen {
                             }
                             DisplayType.CARD -> ArtistCard(
                                 entry,
+                                showRegion = showRegion,
                                 onFavoriteToggle = onFavoriteToggle,
                                 onClick = onEntryClick,
                             )
@@ -439,6 +473,7 @@ object ArtistAlleySearchScreen {
     @Composable
     private fun ArtistListRow(
         entry: ArtistEntryGridModel,
+        showRegion: Boolean,
         onFavoriteToggle: (Boolean) -> Unit,
         onClick: ((ArtistEntryGridModel) -> Unit)? = null,
     ) {
@@ -473,6 +508,14 @@ object ArtistAlleySearchScreen {
                         style = MaterialTheme.typography.bodyMedium,
                     )
                 }
+
+                if (showRegion && !artist.region.isNullOrBlank()) {
+                    Text(
+                        text = artist.region,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
             }
 
             val favorite = entry.favorite
@@ -494,6 +537,7 @@ object ArtistAlleySearchScreen {
     @Composable
     private fun ArtistCard(
         entry: ArtistEntryGridModel,
+        showRegion: Boolean,
         onFavoriteToggle: (Boolean) -> Unit,
         onClick: (ArtistEntryGridModel, Int) -> Unit,
     ) {
@@ -532,6 +576,7 @@ object ArtistAlleySearchScreen {
 
             ArtistListRow(
                 entry = entry,
+                showRegion = showRegion,
                 onFavoriteToggle = onFavoriteToggle,
             )
         }

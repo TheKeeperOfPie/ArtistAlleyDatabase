@@ -16,15 +16,19 @@ object ArtistAlleyUtils {
                     try {
                         val subFolder = it
                         application.assets.list("catalogs/$boothFolder/$subFolder")?.map {
-                            Uri.parse("file:///android_asset/catalogs/$boothFolder/$subFolder/$it")
+                            "$subFolder/$it"
                         }.orEmpty()
                     } catch (ignored: Throwable) {
                         emptyList()
                     }
                 } else {
-                    listOf(Uri.parse("file:///android_asset/catalogs/$boothFolder/$it"))
+                    listOf(it)
                 }
             }
             .orEmpty()
+            .sortedBy { it.substringAfter("/") }
+            .map {
+                Uri.parse("file:///android_asset/catalogs/$boothFolder/$it")
+            }
     }
 }

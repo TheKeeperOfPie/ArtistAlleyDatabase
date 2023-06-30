@@ -37,6 +37,8 @@ import kotlinx.coroutines.withContext
 import org.apache.commons.csv.CSVFormat
 import java.net.URL
 import javax.inject.Inject
+import kotlin.math.absoluteValue
+import kotlin.random.Random
 
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -54,22 +56,22 @@ class ArtistAlleySearchViewModel @Inject constructor(
     private val boothOption = EntrySearchOption(R.string.alley_search_option_booth)
     private val tableNameOption = EntrySearchOption(R.string.alley_search_option_table_name)
     private val artistNamesOption = EntrySearchOption(R.string.alley_search_option_artist_names)
+    private val regionOption = EntrySearchOption(R.string.alley_search_option_region)
     private val descriptionOption = EntrySearchOption(R.string.alley_search_option_description)
-    private val notesOption = EntrySearchOption(R.string.alley_search_option_notes)
 
     override val options = listOf(
         boothOption,
         tableNameOption,
         artistNamesOption,
+        regionOption,
         descriptionOption,
-        notesOption,
     )
 
     var sortOptions by mutableStateOf(ArtistAlleySearchSortOption.values()
         .map {
             SortEntry(
                 it,
-                state = if (it == ArtistAlleySearchSortOption.BOOTH) {
+                state = if (it == ArtistAlleySearchSortOption.RANDOM) {
                     FilterIncludeExcludeState.INCLUDE
                 } else {
                     FilterIncludeExcludeState.DEFAULT
@@ -81,9 +83,11 @@ class ArtistAlleySearchViewModel @Inject constructor(
 
     var showOnlyFavorites by mutableStateOf(false)
     var showOnlyWithCatalog by mutableStateOf(false)
+    var showRegion by mutableStateOf(false)
 
     var updateAppUrl by mutableStateOf<String?>(null)
 
+    private val randomSeed = Random.nextInt().absoluteValue
     private val favoriteUpdates = MutableSharedFlow<ArtistEntry>(5, 5)
 
     var displayType by mutableStateOf(
@@ -189,8 +193,8 @@ class ArtistAlleySearchViewModel @Inject constructor(
         includeBooth = boothOption.enabled,
         includeTableName = tableNameOption.enabled,
         includeArtistNames = artistNamesOption.enabled,
+        includeRegion = regionOption.enabled,
         includeDescription = descriptionOption.enabled,
-        includeNotes = notesOption.enabled,
     )
 
     override fun mapQuery(query: ArtistSearchQuery?): Flow<PagingData<ArtistEntryGridModel>> =
@@ -215,6 +219,7 @@ class ArtistAlleySearchViewModel @Inject constructor(
                             sortAscending = filterParams.sortAscending,
                             showOnlyFavorites = showOnlyFavorites,
                             showOnlyWithCatalog = showOnlyWithCatalog,
+                            randomSeed = randomSeed,
                         )
                     }
                 }.flow.flowOn(CustomDispatchers.IO)

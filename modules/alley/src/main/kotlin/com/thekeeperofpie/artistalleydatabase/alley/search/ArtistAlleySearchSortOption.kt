@@ -9,4 +9,5 @@ enum class ArtistAlleySearchSortOption(@StringRes override val textRes: Int) : S
     BOOTH(R.string.alley_sort_booth),
     TABLE(R.string.alley_sort_table),
     ARTIST(R.string.alley_sort_artist),
+    RANDOM(R.string.alley_sort_random),
 }
