@@ -66,7 +66,11 @@ object ArtistDetailsScreen {
     private val IMAGE_HEIGHT = 320.dp
 
     @Composable
-    operator fun invoke(viewModel: ArtistDetailsViewModel, onClickBack: () -> Unit) {
+    operator fun invoke(
+        viewModel: ArtistDetailsViewModel,
+        onClickBack: () -> Unit,
+        initialImageIndex: Int,
+    ) {
         val entry = viewModel.entry
         if (entry == null) {
             Column(
@@ -123,7 +127,7 @@ object ArtistDetailsScreen {
                     .verticalScroll(rememberScrollState())
             ) {
                 val images = viewModel.images
-                if (viewModel.images.isEmpty()) {
+                if (images.isEmpty()) {
                     Box(
                         contentAlignment = Alignment.Center,
                         modifier = Modifier
@@ -139,7 +143,10 @@ object ArtistDetailsScreen {
                         )
                     }
                 } else {
-                    val pagerState = rememberPagerState(pageCount = { images.size })
+                    val pagerState = rememberPagerState(
+                        initialPage = initialImageIndex.coerceAtMost(images.size - 1),
+                        pageCount = { images.size },
+                    )
                     val context = LocalContext.current
                     val targetHeight =
                         LocalDensity.current.run {
@@ -274,14 +281,18 @@ object ArtistDetailsScreen {
             }
         }
 
-        if (showFullImagesIndex != null) {
+        val imageIndex = showFullImagesIndex
+        if (imageIndex != null) {
             BackHandler { showFullImagesIndex = null }
             Surface(
                 color = MaterialTheme.colorScheme.surfaceColorAtElevation(16.dp)
                     .copy(alpha = 0.4f)
             ) {
                 val images = viewModel.images
-                val pagerState = rememberPagerState(pageCount = { images.size })
+                val pagerState = rememberPagerState(
+                    initialPage = imageIndex,
+                    pageCount = { images.size },
+                )
                 HorizontalPager(
                     state = pagerState,
                     pageSpacing = 16.dp,

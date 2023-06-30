@@ -65,18 +65,27 @@ class MainActivity : ComponentActivity() {
                                 AnimatedNavHost(navController, Destinations.HOME.name) {
                                     composable(Destinations.HOME.name) {
                                         ArtistAlleySearchScreen(
-                                            onEntryClick = {
-                                                navController.navigate("${Destinations.ARTIST_DETAILS.name}/" + it.id.valueId)
+                                            onEntryClick = { entry, imageIndex ->
+                                                navController.navigate(
+                                                    "${Destinations.ARTIST_DETAILS.name}/"
+                                                            + entry.id.valueId
+                                                            + "?imageIndex=${imageIndex}"
+                                                )
                                             }
                                         )
                                     }
 
                                     composable(
-                                        route = "${Destinations.ARTIST_DETAILS.name}/{id}",
+                                        route = "${Destinations.ARTIST_DETAILS.name}/{id}"
+                                                + "?imageIndex={imageIndex}",
                                         arguments = listOf(
                                             navArgument("id") {
                                                 type = NavType.StringType
                                                 nullable = false
+                                            },
+                                            navArgument("imageIndex") {
+                                                type = NavType.StringType
+                                                nullable = true
                                             },
                                         ),
                                         enterTransition = {
@@ -92,6 +101,8 @@ class MainActivity : ComponentActivity() {
                                     ) {
                                         val arguments = it.arguments!!
                                         val id = arguments.getString("id")!!
+                                        val imageIndex = arguments.getString("imageIndex", null)
+                                            .toIntOrNull() ?: 0
                                         val viewModel =
                                             hiltViewModel<ArtistDetailsViewModel>().apply {
                                                 initialize(id)
@@ -99,6 +110,7 @@ class MainActivity : ComponentActivity() {
                                         ArtistDetailsScreen(
                                             viewModel,
                                             onClickBack = { navController.popBackStack() },
+                                            initialImageIndex = imageIndex,
                                         )
                                     }
                                 }

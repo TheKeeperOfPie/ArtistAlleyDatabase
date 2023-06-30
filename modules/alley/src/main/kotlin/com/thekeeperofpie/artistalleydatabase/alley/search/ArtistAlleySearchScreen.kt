@@ -100,7 +100,7 @@ object ArtistAlleySearchScreen {
     @Composable
     operator fun invoke(
         viewModel: ArtistAlleySearchViewModel = hiltViewModel<ArtistAlleySearchViewModel>(),
-        onEntryClick: (ArtistEntryGridModel) -> Unit,
+        onEntryClick: (ArtistEntryGridModel, Int) -> Unit,
     ) {
         val scaffoldState = rememberBottomSheetScaffoldState(
             rememberStandardBottomSheetState(
@@ -382,7 +382,7 @@ object ArtistAlleySearchScreen {
                                 ArtistListRow(
                                     entry,
                                     onFavoriteToggle = onFavoriteToggle,
-                                    onClick = onEntryClick,
+                                    onClick = { onEntryClick(it, 0) },
                                 )
 
                                 Divider()
@@ -495,14 +495,14 @@ object ArtistAlleySearchScreen {
     private fun ArtistCard(
         entry: ArtistEntryGridModel,
         onFavoriteToggle: (Boolean) -> Unit,
-        onClick: (ArtistEntryGridModel) -> Unit,
+        onClick: (ArtistEntryGridModel, Int) -> Unit,
     ) {
+        val images = entry.images
+        val pagerState = rememberPagerState(pageCount = { images.size })
         ElevatedCard(
-            onClick = { onClick(entry) },
+            onClick = { onClick(entry, pagerState.settledPage) },
             modifier = Modifier.padding(horizontal = 16.dp)
         ) {
-            val images = entry.images
-            val pagerState = rememberPagerState(pageCount = { images.size })
             var minHeight by remember { mutableIntStateOf(0) }
             HorizontalPager(
                 state = pagerState,
@@ -525,7 +525,7 @@ object ArtistAlleySearchScreen {
                         contentDescription = stringResource(R.string.alley_artist_catalog_image),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { onClick(entry) }
+                            .clickable { onClick(entry, pagerState.settledPage) }
                     )
                 }
             }
