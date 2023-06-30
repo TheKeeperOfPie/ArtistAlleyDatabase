@@ -11,7 +11,9 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
+import androidx.paging.filter
 import androidx.paging.map
+import com.hoc081098.flowext.combine
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleySettings
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntryDao
@@ -19,6 +21,7 @@ import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistSearchQuery
 import com.thekeeperofpie.artistalleydatabase.alley.R
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.combine
 import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortEntry
 import com.thekeeperofpie.artistalleydatabase.entry.search.EntrySearchOption
@@ -58,6 +61,7 @@ class ArtistAlleySearchViewModel @Inject constructor(
     private val artistNamesOption = EntrySearchOption(R.string.alley_search_option_artist_names)
     private val regionOption = EntrySearchOption(R.string.alley_search_option_region)
     private val descriptionOption = EntrySearchOption(R.string.alley_search_option_description)
+    private val ignoredOption = EntrySearchOption(R.string.alley_search_option_ignored)
 
     override val options = listOf(
         boothOption,
@@ -65,30 +69,42 @@ class ArtistAlleySearchViewModel @Inject constructor(
         artistNamesOption,
         regionOption,
         descriptionOption,
+        ignoredOption,
     )
 
-    var sortOptions by mutableStateOf(ArtistAlleySearchSortOption.values()
-        .map {
+    var sortOptions by mutableStateOf(run {
+        val values = ArtistAlleySearchSortOption.values()
+        val option = settings.artistsSortOption.let { artistsSortOption ->
+            values.find { it.name == artistsSortOption } ?: ArtistAlleySearchSortOption.RANDOM
+        }
+        values.map {
             SortEntry(
                 value = it,
-                state = if (it == ArtistAlleySearchSortOption.RANDOM) {
+                state = if (it == option) {
                     FilterIncludeExcludeState.INCLUDE
                 } else {
                     FilterIncludeExcludeState.DEFAULT
                 }
             )
-        })
+        }
+    })
+        private set
 
-    var sortAscending by mutableStateOf(true)
+    var sortAscending by mutableStateOf(settings.artistsSortAscending)
+        private set
 
     var showOnlyFavorites by mutableStateOf(false)
     var showOnlyWithCatalog by mutableStateOf(false)
-    var showRegion by mutableStateOf(false)
+    var showRegion by mutableStateOf(settings.showRegion)
+        private set
+    var showGridByDefault by mutableStateOf(settings.showGridByDefault)
+        private set
+    var showIgnored by mutableStateOf(true)
 
     var updateAppUrl by mutableStateOf<String?>(null)
 
     private val randomSeed = Random.nextInt().absoluteValue
-    private val favoriteUpdates = MutableSharedFlow<ArtistEntry>(5, 5)
+    private val mutationUpdates = MutableSharedFlow<ArtistEntry>(5, 5)
 
     var displayType by mutableStateOf(
         settings.displayType.let { displayType ->
@@ -147,8 +163,10 @@ class ArtistAlleySearchViewModel @Inject constructor(
                             .chunked(20)
                             .forEach {
                                 artistEntryDao.insertEntries(it.map {
+                                    val existingEntry = artistEntryDao.getEntry(it.id)
                                     it.copy(
-                                        favorite = artistEntryDao.getEntry(it.id)?.favorite ?: false
+                                        favorite = existingEntry?.favorite ?: false,
+                                        ignored = existingEntry?.ignored ?: false,
                                     )
                                 })
                             }
@@ -160,7 +178,7 @@ class ArtistAlleySearchViewModel @Inject constructor(
         }
 
         viewModelScope.launch(CustomDispatchers.IO) {
-            favoriteUpdates.collectLatest {
+            mutationUpdates.collectLatest {
                 artistEntryDao.insertEntries(it)
             }
         }
@@ -203,6 +221,8 @@ class ArtistAlleySearchViewModel @Inject constructor(
             snapshotFlow { sortAscending },
             snapshotFlow { showOnlyFavorites },
             snapshotFlow { showOnlyWithCatalog },
+            snapshotFlow { showIgnored },
+            snapshotFlow { ignoredOption.enabled },
             ::FilterParams
         )
             .flowOn(CustomDispatchers.Main)
@@ -223,6 +243,10 @@ class ArtistAlleySearchViewModel @Inject constructor(
                         )
                     }
                 }.flow.flowOn(CustomDispatchers.IO)
+                    .map {
+                        it.filter { !it.ignored || filterParams.showIgnored }
+                            .filter { it.ignored || !filterParams.showOnlyIgnored }
+                    }
             }
             .map { it.map { ArtistEntryGridModel.buildFromEntry(application, it) } }
             .cachedIn(viewModelScope)
@@ -230,7 +254,11 @@ class ArtistAlleySearchViewModel @Inject constructor(
     override fun entriesSize() = artistEntryDao.getEntriesSizeFlow()
 
     fun onFavoriteToggle(entry: ArtistEntryGridModel, favorite: Boolean) {
-        favoriteUpdates.tryEmit(entry.value.copy(favorite = favorite))
+        mutationUpdates.tryEmit(entry.value.copy(favorite = favorite))
+    }
+
+    fun onIgnoredToggle(entry: ArtistEntryGridModel, ignored: Boolean) {
+        mutationUpdates.tryEmit(entry.value.copy(ignored = ignored))
     }
 
     fun onDisplayTypeToggle(displayType: ArtistAlleySearchScreen.DisplayType) {
@@ -247,6 +275,7 @@ class ArtistAlleySearchViewModel @Inject constructor(
             newOption = values[(values.indexOf(option) + 1) % values.size]
         }
 
+        settings.artistsSortOption = newOption.name
         sortOptions = values.map {
             SortEntry(
                 value = it,
@@ -259,10 +288,27 @@ class ArtistAlleySearchViewModel @Inject constructor(
         }
     }
 
+    fun onSortAscendingToggle(ascending: Boolean) {
+        sortAscending = ascending
+        settings.artistsSortAscending = ascending
+    }
+
+    fun onShowRegionToggle(show: Boolean) {
+        showRegion = show
+        settings.showRegion = show
+    }
+
+    fun onShowGridByDefaultToggle(show: Boolean) {
+        showGridByDefault = show
+        settings.showGridByDefault = show
+    }
+
     private data class FilterParams(
         val sortOptions: List<SortEntry<ArtistAlleySearchSortOption>>,
         val sortAscending: Boolean,
         val showOnlyFavorites: Boolean,
         val showOnlyWithCatalog: Boolean,
+        val showIgnored: Boolean,
+        val showOnlyIgnored: Boolean,
     )
 }

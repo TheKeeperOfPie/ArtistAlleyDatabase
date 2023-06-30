@@ -1,11 +1,11 @@
 package com.thekeeperofpie.artistalleydatabase.alley.details
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,6 +22,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BrokenImage
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.GridOn
 import androidx.compose.material.icons.filled.ImageNotSupported
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
@@ -37,12 +38,13 @@ import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -53,11 +55,14 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import coil.size.Dimension
+import com.thekeeperofpie.artistalleydatabase.alley.ImageGrid
 import com.thekeeperofpie.artistalleydatabase.alley.R
 import com.thekeeperofpie.artistalleydatabase.compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.InfoText
 import com.thekeeperofpie.artistalleydatabase.compose.ZoomPanBox
 import com.thekeeperofpie.artistalleydatabase.compose.expandableListInfoText
+import com.thekeeperofpie.artistalleydatabase.compose.rememberZoomPanState
+import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
@@ -145,7 +150,15 @@ object ArtistDetailsScreen {
                 } else {
                     val pagerState = rememberPagerState(
                         initialPage = initialImageIndex.coerceAtMost(images.size - 1),
-                        pageCount = { images.size },
+                        pageCount = {
+                            if (images.isEmpty()) {
+                                0
+                            } else if (images.size == 1) {
+                                1
+                            } else {
+                                images.size + 1
+                            }
+                        },
                     )
                     val context = LocalContext.current
                     val targetHeight =
@@ -154,29 +167,76 @@ object ArtistDetailsScreen {
                                 IMAGE_HEIGHT.toPx().roundToInt()
                             )
                         }
-                    HorizontalPager(
-                        state = pagerState,
-                        modifier = Modifier
-                            .height(IMAGE_HEIGHT)
-                            .fillMaxWidth()
-                            .background(MaterialTheme.colorScheme.surfaceVariant)
-                    ) {
-                        ZoomPanBox(onClick = { showFullImagesIndex = null }) {
-                            Box(
-                                contentAlignment = Alignment.Center,
-                                modifier = Modifier
-                                    .height(IMAGE_HEIGHT)
-                                    .fillMaxWidth()
-                                    .clickable { showFullImagesIndex = it }
-                            ) {
-                                AsyncImage(
-                                    model = ImageRequest.Builder(context)
-                                        .data(images[it])
-                                        .size(width = Dimension.Undefined, targetHeight)
-                                        .build(),
-                                    contentScale = ContentScale.Fit,
-                                    contentDescription = stringResource(R.string.alley_artist_catalog_image),
-                                    modifier = Modifier.height(IMAGE_HEIGHT),
+                    val zoomPanState = rememberZoomPanState()
+                    val coroutineScope = rememberCoroutineScope()
+                    Box {
+                        HorizontalPager(
+                            state = pagerState,
+                            userScrollEnabled = zoomPanState.canPanExternal(),
+                            modifier = Modifier
+                                .height(IMAGE_HEIGHT)
+                                .fillMaxWidth()
+                                .background(MaterialTheme.colorScheme.surfaceVariant)
+                        ) { page ->
+                            if (page == 0 && images.size > 1) {
+                                ImageGrid(
+                                    targetHeight = 0,
+                                    images = images,
+                                    onImageClick = { index, _ ->
+                                        coroutineScope.launch {
+                                            pagerState.animateScrollToPage(index + 1)
+                                        }
+                                    }
+                                )
+                            } else {
+                                ZoomPanBox(
+                                    state = zoomPanState,
+                                    onClick = { showFullImagesIndex = null },
+                                ) {
+                                    Box(
+                                        contentAlignment = Alignment.Center,
+                                        modifier = Modifier
+                                            .height(IMAGE_HEIGHT)
+                                            .fillMaxWidth()
+                                            .pointerInput(zoomPanState, page) {
+                                                detectTapGestures(
+                                                    onTap = {
+                                                        showFullImagesIndex = page
+                                                    },
+                                                    onDoubleTap = {
+                                                        zoomPanState.toggleZoom(it, size)
+                                                    }
+                                                )
+                                            }
+                                    ) {
+                                        AsyncImage(
+                                            model = ImageRequest.Builder(context)
+                                                .data(images[(page - 1).coerceAtLeast(0)].uri)
+                                                .size(width = Dimension.Undefined, targetHeight)
+                                                .build(),
+                                            contentScale = ContentScale.Fit,
+                                            contentDescription = stringResource(R.string.alley_artist_catalog_image),
+                                            modifier = Modifier.height(IMAGE_HEIGHT),
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                        androidx.compose.animation.AnimatedVisibility(
+                            pagerState.currentPage != 0 && zoomPanState.canPanExternal(),
+                            modifier = Modifier.align(Alignment.BottomEnd)
+                        ) {
+                            IconButton(onClick = {
+                                coroutineScope.launch {
+                                    pagerState.animateScrollToPage(0)
+                                }
+                            }) {
+                                Icon(
+                                    imageVector = Icons.Filled.GridOn,
+                                    contentDescription = stringResource(
+                                        R.string.alley_show_catalog_grid_content_description
+                                    )
                                 )
                             }
                         }
@@ -291,28 +351,78 @@ object ArtistDetailsScreen {
                 val images = viewModel.images
                 val pagerState = rememberPagerState(
                     initialPage = imageIndex,
-                    pageCount = { images.size },
+                    pageCount = {
+                        if (images.isEmpty()) {
+                            0
+                        } else if (images.size == 1) {
+                            1
+                        } else {
+                            images.size + 1
+                        }
+                    },
                 )
-                HorizontalPager(
-                    state = pagerState,
-                    pageSpacing = 16.dp,
-                    modifier = Modifier.fillMaxSize(),
-                ) {
-                    ZoomPanBox(onClick = { showFullImagesIndex = null }) {
-                        AsyncImage(
-                            model = images[it],
-                            contentScale = ContentScale.Fit,
-                            fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
-                            contentDescription = stringResource(R.string.alley_artist_catalog_image),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .align(Alignment.Center)
-                                .clickable(
-                                    // Consume click events so that tapping image doesn't dismiss
-                                    interactionSource = remember { MutableInteractionSource() },
-                                    indication = null,
-                                ) {}
-                        )
+                val zoomPanState = rememberZoomPanState()
+                val coroutineScope = rememberCoroutineScope()
+                Box {
+                    HorizontalPager(
+                        state = pagerState,
+                        pageSpacing = 16.dp,
+                        userScrollEnabled = zoomPanState.canPanExternal(),
+                        modifier = Modifier.fillMaxSize(),
+                    ) {
+                        if (it == 0 && images.size > 1) {
+                            ImageGrid(
+                                targetHeight = null,
+                                images = images,
+                                onImageClick = { index, _ ->
+                                    coroutineScope.launch {
+                                        pagerState.animateScrollToPage(index + 1)
+                                    }
+                                }
+                            )
+                        } else {
+                            ZoomPanBox(
+                                state = zoomPanState,
+                                onClick = { showFullImagesIndex = null },
+                            ) {
+                                AsyncImage(
+                                    model = images[(it - 1).coerceAtLeast(0)].uri,
+                                    contentScale = ContentScale.Fit,
+                                    fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
+                                    contentDescription = stringResource(R.string.alley_artist_catalog_image),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .align(Alignment.Center)
+                                        .pointerInput(zoomPanState) {
+                                            detectTapGestures(
+                                                // Consume click events so that tapping image doesn't dismiss
+                                                onTap = {},
+                                                onDoubleTap = {
+                                                    zoomPanState.toggleZoom(it, size)
+                                                }
+                                            )
+                                        }
+                                )
+                            }
+                        }
+                    }
+
+                    AnimatedVisibility(
+                        pagerState.currentPage != 0 && zoomPanState.canPanExternal(),
+                        modifier = Modifier.align(Alignment.BottomEnd)
+                    ) {
+                        IconButton(onClick = {
+                            coroutineScope.launch {
+                                pagerState.animateScrollToPage(0)
+                            }
+                        }) {
+                            Icon(
+                                imageVector = Icons.Filled.GridOn,
+                                contentDescription = stringResource(
+                                    R.string.alley_show_catalog_grid_content_description
+                                )
+                            )
+                        }
                     }
                 }
             }

@@ -25,6 +25,8 @@ data class ArtistEntry(
     val links: List<String> = emptyList(),
     val catalogLink: List<String> = emptyList(),
     val favorite: Boolean = false,
+    @ColumnInfo(defaultValue = "0")
+    val ignored: Boolean = false,
     val notes: String? = null,
 )
 

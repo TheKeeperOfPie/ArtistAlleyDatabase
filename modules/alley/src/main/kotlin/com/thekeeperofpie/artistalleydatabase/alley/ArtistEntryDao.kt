@@ -81,7 +81,7 @@ interface ArtistEntryDao {
             ArtistAlleySearchSortOption.TABLE -> basicSortSuffix.replace("FIELD", "tableName")
             ArtistAlleySearchSortOption.ARTIST -> basicSortSuffix.replace("FIELD", "artistNames")
             ArtistAlleySearchSortOption.RANDOM -> {
-                "\nORDER BY substr(artist_entries.rowid * 0.$randomSeed, length(artist_entries.rowid) + 2) $ascending"
+                "\nORDER BY substr(hex(artist_entries.id) * 0.$randomSeed, length(hex(artist_entries.id)) + 2) $ascending"
             }
         }
         if (options.isEmpty() && booleanOptions.isEmpty()) {

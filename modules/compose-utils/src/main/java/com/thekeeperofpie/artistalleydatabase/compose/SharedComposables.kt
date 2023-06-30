@@ -80,6 +80,9 @@ import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.listSaver
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -1219,30 +1222,78 @@ fun <T> expandableListInfoText(
 }
 
 @Composable
+fun rememberZoomPanState() = rememberSaveable(LocalDensity.current, saver = ZoomPanState.Saver) {
+    ZoomPanState()
+}
+
+class ZoomPanState(
+    initialTranslationX: Float = 0f,
+    initialTranslationY: Float = 0f,
+    initialScale: Float = 1f,
+) {
+    companion object {
+        val Saver: Saver<ZoomPanState, *> = listSaver(
+            save = { listOf(it.translation.x, it.translation.y, it.scale) },
+            restore = {
+                ZoomPanState(
+                    initialTranslationX = it[0],
+                    initialTranslationY = it[1],
+                    initialScale = it[2],
+                )
+            }
+        )
+    }
+
+    var translation by mutableStateOf(Offset(initialTranslationX, initialTranslationY))
+    var scale by mutableFloatStateOf(initialScale)
+
+    fun canPanExternal(): Boolean {
+        return scale < 1.1f
+    }
+
+    fun toggleZoom(offset: Offset, size: IntSize) {
+        if (scale < 1.1f) {
+            scale = 2.5f
+            translation = calculateZoomOffset(offset, size)
+        } else {
+            scale = 1f
+            translation = Offset.Zero
+        }
+    }
+
+    private fun calculateZoomOffset(tapOffset: Offset, size: IntSize): Offset {
+        val offsetX = (-(tapOffset.x - (size.width / 2f)) * 2f)
+            .coerceIn(-size.width / 2f, size.width / 2f)
+        val offsetY = (-(tapOffset.y - (size.height / 2f)) * 2f)
+            .coerceIn(-size.height / 2f, size.height / 2f)
+        return Offset(offsetX, offsetY)
+    }
+}
+
+@Composable
 fun ZoomPanBox(
+    state: ZoomPanState = rememberZoomPanState(),
     onClick: () -> Unit = {},
     content: @Composable BoxScope.() -> Unit,
 ) {
-    var imageTranslation by remember { mutableStateOf(Offset.Zero) }
-    var imageScale by remember { mutableFloatStateOf(1f) }
-
     val density = LocalDensity.current
     var maxTranslationX by remember(density) { mutableFloatStateOf(0f) }
     var maxTranslationY by remember(density) { mutableFloatStateOf(0f) }
     val transformableState =
         rememberTransformableState { zoomChange, panChange, _ ->
-            val translation = imageTranslation + panChange
-            imageTranslation = translation.copy(
+            val translation = state.translation + panChange
+            val scale = state.scale
+            state.translation = translation.copy(
                 x = translation.x.coerceIn(
-                    -maxTranslationX * (imageScale - 1f),
-                    maxTranslationX * (imageScale - 1f)
+                    -maxTranslationX * (scale - 1f),
+                    maxTranslationX * (scale - 1f)
                 ),
                 y = translation.y.coerceIn(
-                    -maxTranslationY * (imageScale - 1f),
-                    maxTranslationY * (imageScale - 1f)
+                    -maxTranslationY * (scale - 1f),
+                    maxTranslationY * (scale - 1f)
                 ),
             )
-            imageScale = (imageScale * zoomChange).coerceIn(1f, 5f)
+            state.scale = (scale * zoomChange).coerceIn(1f, 5f)
         }
     Box(
         modifier = Modifier
@@ -1253,14 +1304,14 @@ fun ZoomPanBox(
             }
             .transformable(
                 state = transformableState,
-                canPan = { imageScale > 1.1f },
+                canPan = { state.scale > 1.1f },
                 lockRotationOnZoomPan = true
             )
             .graphicsLayer(
-                translationX = imageTranslation.x,
-                translationY = imageTranslation.y,
-                scaleX = imageScale,
-                scaleY = imageScale,
+                translationX = state.translation.x,
+                translationY = state.translation.y,
+                scaleX = state.scale,
+                scaleY = state.scale,
             )
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },

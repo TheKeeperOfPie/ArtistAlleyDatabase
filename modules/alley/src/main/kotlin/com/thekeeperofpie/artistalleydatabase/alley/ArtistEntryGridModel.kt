@@ -11,7 +11,7 @@ import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGridModel
 
 class ArtistEntryGridModel(
     val value: ArtistEntry,
-    val images: List<Uri>,
+    val images: List<CatalogImage>,
     override val placeholderText: String,
 ) : EntryGridModel {
 
@@ -22,6 +22,7 @@ class ArtistEntryGridModel(
     override val imageWidthToHeightRatio get() = 1f
 
     var favorite by mutableStateOf(value.favorite)
+    var ignored by mutableStateOf(value.ignored)
 
     private val artistNames = value.artistNames.map { it.split("\n").first() }
 

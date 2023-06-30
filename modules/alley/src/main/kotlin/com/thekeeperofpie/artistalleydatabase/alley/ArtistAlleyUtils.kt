@@ -2,10 +2,13 @@ package com.thekeeperofpie.artistalleydatabase.alley
 
 import android.app.Application
 import android.net.Uri
+import androidx.annotation.WorkerThread
+import com.thekeeperofpie.artistalleydatabase.android_utils.ImageUtils
 
 object ArtistAlleyUtils {
 
-    fun getImages(application: Application, booth: String): List<Uri> {
+    @WorkerThread
+    fun getImages(application: Application, booth: String): List<CatalogImage> {
         val assetManager = application.assets
         val boothFolder = assetManager.list("catalogs")?.find { it.startsWith(booth) }
         return assetManager.list("catalogs/$boothFolder")
@@ -29,6 +32,14 @@ object ArtistAlleyUtils {
             .sortedBy { it.substringAfter("/") }
             .map {
                 Uri.parse("file:///android_asset/catalogs/$boothFolder/$it")
+            }
+            .map {
+                val (width, height) = ImageUtils.getImageWidthHeight(application, it)
+                CatalogImage(
+                    uri = it,
+                    width = width,
+                    height = height,
+                )
             }
     }
 }

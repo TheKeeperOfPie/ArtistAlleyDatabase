@@ -24,4 +24,36 @@ class ArtistAlleyAppSettings(application: Application) : ArtistAlleySettings {
                 .putString("displayType", value)
                 .apply()
         }
+
+    override var artistsSortOption: String
+        get() = sharedPrefs.getString("artistsSortOption", null).orEmpty()
+        set(value) {
+            sharedPrefs.edit()
+                .putString("artistsSortOption", value)
+                .apply()
+        }
+
+    override var artistsSortAscending: Boolean
+        get() = sharedPrefs.getBoolean("artistsSortAscending", true)
+        set(value) {
+            sharedPrefs.edit()
+                .putBoolean("artistsSortAscending", value)
+                .apply()
+        }
+
+    override var showRegion: Boolean
+        get() = sharedPrefs.getBoolean("showRegion", false)
+        set(value) {
+            sharedPrefs.edit()
+                .putBoolean("showRegion", value)
+                .apply()
+        }
+
+    override var showGridByDefault: Boolean
+        get() = sharedPrefs.getBoolean("showGridByDefault", false)
+        set(value) {
+            sharedPrefs.edit()
+                .putBoolean("showGridByDefault", value)
+                .apply()
+        }
 }

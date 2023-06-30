@@ -10,6 +10,7 @@ import androidx.lifecycle.viewModelScope
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistAlleyUtils
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntry
 import com.thekeeperofpie.artistalleydatabase.alley.ArtistEntryDao
+import com.thekeeperofpie.artistalleydatabase.alley.CatalogImage
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -25,7 +26,7 @@ class ArtistDetailsViewModel @Inject constructor(
 ) : ViewModel() {
 
     var entry by mutableStateOf<Entry?>(null)
-    var images by mutableStateOf<List<Uri>>(emptyList())
+    var images by mutableStateOf<List<CatalogImage>>(emptyList())
 
     private val favoriteUpdates = MutableSharedFlow<ArtistEntry>(1, 1)
 
