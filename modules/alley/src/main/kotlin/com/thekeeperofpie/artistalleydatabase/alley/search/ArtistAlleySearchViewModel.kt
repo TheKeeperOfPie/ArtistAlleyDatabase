@@ -70,7 +70,7 @@ class ArtistAlleySearchViewModel @Inject constructor(
     var sortOptions by mutableStateOf(ArtistAlleySearchSortOption.values()
         .map {
             SortEntry(
-                it,
+                value = it,
                 state = if (it == ArtistAlleySearchSortOption.RANDOM) {
                     FilterIncludeExcludeState.INCLUDE
                 } else {
@@ -239,24 +239,24 @@ class ArtistAlleySearchViewModel @Inject constructor(
     }
 
     fun onSortClick(option: ArtistAlleySearchSortOption) {
+        var newOption = option
+        val values = ArtistAlleySearchSortOption.values()
         val existingOptions = sortOptions
         if (existingOptions.first { it.state == FilterIncludeExcludeState.INCLUDE }
                 .value == option) {
-            return
+            newOption = values[(values.indexOf(option) + 1) % values.size]
         }
-        sortOptions = existingOptions.toMutableList()
-            .apply {
-                replaceAll {
-                    if (it.value == option) {
-                        val newState = if (it.state != FilterIncludeExcludeState.INCLUDE) {
-                            FilterIncludeExcludeState.INCLUDE
-                        } else {
-                            FilterIncludeExcludeState.DEFAULT
-                        }
-                        it.copy(state = newState)
-                    } else it.copy(state = FilterIncludeExcludeState.DEFAULT)
+
+        sortOptions = values.map {
+            SortEntry(
+                value = it,
+                state = if (it == newOption) {
+                    FilterIncludeExcludeState.INCLUDE
+                } else {
+                    FilterIncludeExcludeState.DEFAULT
                 }
-            }
+            )
+        }
     }
 
     private data class FilterParams(
