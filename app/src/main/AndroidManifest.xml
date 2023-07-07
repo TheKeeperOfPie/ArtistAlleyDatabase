@@ -19,7 +19,6 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:launchMode="singleTop"
             android:theme="@style/Theme.ArtistAlleyDatabase"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
@@ -46,6 +45,11 @@
                 <data android:pathAdvancedPattern="/staff/[0-9]+/.*"/>
                 <data android:pathAdvancedPattern="/user/[0-9]+"/>
                 <data android:pathAdvancedPattern="/user/[0-9]+/.*"/>
+            </intent-filter>
+
+            <intent-filter>
+                <action android:name="${applicationId}.INTERNAL"/>
+                <data android:scheme="${applicationId}"/>
             </intent-filter>
         </activity>
 

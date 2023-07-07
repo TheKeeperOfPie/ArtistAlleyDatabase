@@ -38,6 +38,8 @@
     <string name="notification_channel_import_description">Ongoing data import operations</string>
     <string name="notification_channel_sync_name">Sync</string>
     <string name="notification_channel_sync_description">Ongoing data sync operations</string>
+    <string name="notification_channel_info_name">Info</string>
+    <string name="notification_channel_info_description">General app information</string>
     <string name="notification_export_ongoing_title">Exporting</string>
     <string name="notification_export_finished_title">Export finished</string>
     <string name="notification_export_failed_title">Export failed</string>
@@ -47,4 +49,8 @@
     <string name="notification_sync_ongoing_title">Syncing</string>
     <string name="notification_sync_finished_title">Sync finished</string>
     <string name="notification_sync_failed_title">Sync failed</string>
+
+    <string name="crash_title">App crash</string>
+    <string name="crash_share_chooser_title">Share app crash</string>
+    <string name="crash_share_icon_content_description">Share crash</string>
 </resources>

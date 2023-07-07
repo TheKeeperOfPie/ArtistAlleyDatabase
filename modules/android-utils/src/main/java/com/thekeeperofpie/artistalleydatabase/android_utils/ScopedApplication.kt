@@ -6,4 +6,7 @@ import kotlinx.coroutines.CoroutineScope
 interface ScopedApplication {
     val scope: CoroutineScope
     val app: Application
+
+    val mainActivityInternalAction: String
+        get() = "${app.packageName}.INTERNAL"
 }

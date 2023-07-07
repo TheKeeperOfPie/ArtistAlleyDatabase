@@ -10,6 +10,8 @@ object NotificationIds {
 
     val SYNC_ONGOING = NotificationId(3001)
     val SYNC_FINISHED = NotificationId(3002)
+
+    val INFO_CRASH = NotificationId(4001)
 }
 
 @JvmInline

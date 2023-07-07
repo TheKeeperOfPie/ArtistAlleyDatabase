@@ -507,4 +507,5 @@
     <string name="anime_airing_schedule_sort_content_description">Sort options</string>
     <string name="anime_airing_schedule_today">Today</string>
     <string name="anime_airing_schedule_tomorrow">Tomorrow</string>
+    <string name="anime_settings_content_description">View settings</string>
 </resources>

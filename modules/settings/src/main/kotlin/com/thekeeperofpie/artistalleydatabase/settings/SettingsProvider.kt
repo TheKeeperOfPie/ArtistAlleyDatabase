@@ -1,12 +1,22 @@
 package com.thekeeperofpie.artistalleydatabase.settings
 
 import android.app.Application
+import android.app.PendingIntent
+import android.content.SharedPreferences
+import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Looper
 import androidx.annotation.VisibleForTesting
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
+import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.android_utils.notification.NotificationChannels
+import com.thekeeperofpie.artistalleydatabase.android_utils.notification.NotificationIds
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.FilterData
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntry
@@ -28,6 +38,7 @@ class SettingsProvider(
     masterKey: MasterKey,
     private val appJson: AppJson,
     sharedPreferencesFileName: String = PREFERENCES_NAME,
+    private val crashNotificationContentIntent: PendingIntent?,
 ) : ArtSettings, EntrySettings, NetworkSettings, AnimeSettings {
 
     companion object {
@@ -59,8 +70,61 @@ class SettingsProvider(
         MutableStateFlow(deserialize("ignoredAniListMediaIds") ?: emptySet<Int>())
 
     var searchQuery = MutableStateFlow<ArtEntry?>(deserialize("searchQuery"))
-    var navDrawerStartDestination = MutableStateFlow<String?>(deserialize("navDrawerStartDestination"))
+    var navDrawerStartDestination =
+        MutableStateFlow<String?>(deserialize("navDrawerStartDestination"))
     var hideStatusBar = MutableStateFlow(deserialize("hideStatusBar") ?: false)
+
+    // Not exported
+    var lastCrash = MutableStateFlow(deserialize("lastCrash") ?: "")
+    var lastCrashShown = MutableStateFlow(deserialize("lastCrashShown") ?: false)
+
+    init {
+        val mainThreadId = Looper.getMainLooper().thread.id
+        val existingExceptionHandler = Thread.getDefaultUncaughtExceptionHandler()
+        Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
+            if (thread.id == mainThreadId) {
+                val stackString = throwable.stackTraceToString()
+                lastCrash.value = stackString
+                lastCrashShown.value = false
+                serializeWithoutApply("lastCrash", stackString).commit()
+                serializeWithoutApply("lastCrashShown", false).commit()
+            }
+            existingExceptionHandler?.uncaughtException(thread, throwable)
+        }
+
+        val lastCrashText = lastCrash.value
+        if (crashNotificationContentIntent != null
+            && lastCrashText.isNotBlank()
+            && !lastCrashShown.value) {
+            NotificationManagerCompat.from(application).apply {
+                // TODO: Prompt user for POST_NOTIFICATIONS permission
+                if (ContextCompat.checkSelfPermission(
+                        application,
+                        android.Manifest.permission.POST_NOTIFICATIONS
+                    ) != PackageManager.PERMISSION_GRANTED
+                ) {
+                    return@apply
+                }
+
+                // TODO: This should live somewhere else
+                notify(
+                    NotificationIds.INFO_CRASH.id,
+                    NotificationCompat.Builder(application, NotificationChannels.INFO.channel)
+                        .setAutoCancel(true)
+                        .setContentTitle(
+                            application.getString(
+                                R.string.settings_notification_info_crash_title,
+                                application.getString(UtilsStringR.app_name)
+                            )
+                        )
+                        .setSmallIcon(R.drawable.baseline_error_outline_24)
+                        .setContentText(lastCrashText)
+                        .setContentIntent(crashNotificationContentIntent)
+                        .build()
+                )
+            }
+        }
+    }
 
     private fun deserializeAnimeFilters(): Map<String, FilterData> {
         val stringValue = sharedPreferences.getString("savedAnimeFilters", "")
@@ -94,6 +158,9 @@ class SettingsProvider(
         subscribeProperty(scope, ::showIgnored)
         subscribeProperty(scope, ::navDrawerStartDestination)
         subscribeProperty(scope, ::hideStatusBar)
+        subscribeProperty(scope, ::lastCrash)
+        subscribeProperty(scope, ::lastCrashShown)
+
         scope.launch(CustomDispatchers.IO) {
             ignoredAniListMediaIds.drop(1).collectLatest {
                 val stringValue = appJson.json.run {
@@ -148,7 +215,13 @@ class SettingsProvider(
         }
     }
 
-    private inline fun <reified T> serialize(name: String, value: T) {
+    private inline fun <reified T> serialize(name: String, value: T) =
+        serializeWithoutApply(name, value).apply()
+
+    private inline fun <reified T> serializeWithoutApply(
+        name: String,
+        value: T,
+    ): SharedPreferences.Editor {
         val stringValue = appJson.json.run {
             encodeToString(
                 // Create type as nullable to encapsulate both null and non-null
@@ -156,8 +229,7 @@ class SettingsProvider(
                 value
             )
         }
-        sharedPreferences.edit()
+        return sharedPreferences.edit()
             .putString(name, stringValue)
-            .apply()
     }
 }

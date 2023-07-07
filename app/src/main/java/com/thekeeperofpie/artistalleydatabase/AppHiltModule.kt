@@ -1,6 +1,9 @@
 package com.thekeeperofpie.artistalleydatabase
 
 import android.app.Application
+import android.app.PendingIntent
+import android.content.Intent
+import android.net.Uri
 import androidx.room.Room
 import androidx.security.crypto.MasterKey
 import androidx.work.WorkManager
@@ -18,6 +21,7 @@ import com.thekeeperofpie.artistalleydatabase.json.AppMoshi
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistDatabase
 import com.thekeeperofpie.artistalleydatabase.network_utils.NetworkSettings
 import com.thekeeperofpie.artistalleydatabase.settings.SettingsProvider
+import com.thekeeperofpie.artistalleydatabase.utils.PendingIntentRequestCodes
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbDatabase
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbJson
 import dagger.Module
@@ -92,7 +96,24 @@ class AppHiltModule {
         scopedApplication: ScopedApplication,
         masterKey: MasterKey,
         appJson: AppJson
-    ) = SettingsProvider(scopedApplication.app, masterKey, appJson).apply {
+    ) = SettingsProvider(
+        application = scopedApplication.app,
+        masterKey = masterKey,
+        appJson = appJson,
+        crashNotificationContentIntent = PendingIntent.getActivity(
+            scopedApplication.app,
+            PendingIntentRequestCodes.INFO_CRASH_MAIN_ACTIVITY_OPEN.code,
+            Intent(scopedApplication.mainActivityInternalAction).apply {
+                data = Uri.parse("${scopedApplication.app.packageName}:///${AppNavDestinations.CRASH.id}")
+                setClass(scopedApplication.app, MainActivity::class.java)
+                putExtra(
+                    MainActivity.STARTING_NAV_DESTINATION,
+                    AppNavDestinations.CRASH.id,
+                )
+            },
+            PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+    ).apply {
         initialize(scopedApplication.scope)
     }
 

@@ -57,6 +57,7 @@ object AnimeNavigator {
         navGraphBuilder: NavGraphBuilder,
         onClickNav: () -> Unit,
         onClickAuth: () -> Unit,
+        onClickSettings: () -> Unit,
         navigationCallback: NavigationCallback,
     ) {
         navGraphBuilder.composable(
@@ -70,6 +71,7 @@ object AnimeNavigator {
                 onClickAuth = onClickAuth,
                 onSubmitAuthToken = viewModel::onSubmitAuthToken,
                 navigationCallback = navigationCallback,
+                onClickSettings = onClickSettings,
             )
         }
 

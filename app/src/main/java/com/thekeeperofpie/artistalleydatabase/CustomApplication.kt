@@ -46,6 +46,7 @@ class CustomApplication : Application(), Configuration.Provider, ScopedApplicati
 
     override fun onCreate() {
         super.onCreate()
+
         filesDir.resolve("art_entry_images").mkdirs()
         filesDir.resolve("cd_entry_images").mkdirs()
 
@@ -81,6 +82,14 @@ class CustomApplication : Application(), Configuration.Provider, ScopedApplicati
                         .setName(getString(R.string.notification_channel_sync_name))
                         .setDescription(getString(R.string.notification_channel_sync_description))
                         .setShowBadge(false)
+                        .build(),
+                    NotificationChannelCompat.Builder(
+                        NotificationChannels.INFO.channel,
+                        NotificationManagerCompat.IMPORTANCE_DEFAULT
+                    )
+                        .setName(getString(R.string.notification_channel_info_name))
+                        .setDescription(getString(R.string.notification_channel_info_description))
+                        .setShowBadge(true)
                         .build(),
                 )
             )

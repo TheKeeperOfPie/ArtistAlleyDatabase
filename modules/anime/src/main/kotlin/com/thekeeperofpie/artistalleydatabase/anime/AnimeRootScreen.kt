@@ -47,6 +47,7 @@ object AnimeRootScreen {
         navigationCallback: AnimeNavigator.NavigationCallback,
         errorRes: () -> Pair<Int, Exception?>? = { null },
         onErrorDismiss: () -> Unit = { },
+        onClickSettings: () -> Unit,
     ) {
         var selectedScreen by rememberSaveable(stateSaver = object :
             Saver<NavDestinations, String> {
@@ -162,6 +163,7 @@ object AnimeRootScreen {
                             needAuth = needAuth,
                             onClickAuth = onClickAuth,
                             onSubmitAuthToken = onSubmitAuthToken,
+                            onClickSettings = onClickSettings,
                             navigationCallback = navigationCallback,
                             bottomNavigationState = bottomNavigationState,
                         )

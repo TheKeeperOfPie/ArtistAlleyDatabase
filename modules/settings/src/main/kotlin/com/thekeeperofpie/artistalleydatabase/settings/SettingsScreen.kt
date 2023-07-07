@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -33,6 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListStringR
 import com.thekeeperofpie.artistalleydatabase.compose.AppBar
 import com.thekeeperofpie.artistalleydatabase.compose.ItemDropdown
@@ -63,6 +66,7 @@ object SettingsScreen {
         onChangeNetworkLoggingLevel: (NetworkSettings.NetworkLoggingLevel) -> Unit = {},
         hideStatusBar: @Composable () -> Boolean = { false },
         onHideStatusBarChanged: (Boolean) -> Unit = {},
+        onClickShowLastCrash: () -> Unit = {},
     ) {
         Scaffold(
             topBar = {
@@ -79,26 +83,30 @@ object SettingsScreen {
                 )
             },
         ) {
-            Column(Modifier.padding(it)) {
+            Column(
+                modifier = Modifier
+                    .padding(it)
+                    .verticalScroll(rememberScrollState())
+            ) {
                 ButtonRow(
-                    title = R.string.settings_clear_aniList_cache,
-                    buttonText = R.string.settings_clear,
+                    titleRes = R.string.settings_clear_aniList_cache,
+                    buttonTextRes = R.string.settings_clear,
                     onClick = onClickAniListClear
                 )
 
                 Divider()
 
                 ButtonRow(
-                    title = R.string.settings_clear_vgmdb_cache,
-                    buttonText = R.string.settings_clear,
+                    titleRes = R.string.settings_clear_vgmdb_cache,
+                    buttonTextRes = R.string.settings_clear,
                     onClick = onClickVgmdbClear
                 )
 
                 Divider()
 
                 ButtonRow(
-                    title = R.string.settings_database_fetch,
-                    buttonText = R.string.settings_fetch,
+                    titleRes = R.string.settings_database_fetch,
+                    buttonTextRes = R.string.settings_fetch,
                     onClick = onClickDatabaseFetch
                 )
 
@@ -113,16 +121,16 @@ object SettingsScreen {
                 Divider()
 
                 ButtonRow(
-                    title = R.string.settings_crop_clear,
-                    buttonText = R.string.settings_clear,
+                    titleRes = R.string.settings_crop_clear,
+                    buttonTextRes = R.string.settings_clear,
                     onClick = onClickCropClear
                 )
 
                 Divider()
 
                 ButtonRow(
-                    title = R.string.settings_clear_aniList_oAuth,
-                    buttonText = R.string.settings_clear,
+                    titleRes = R.string.settings_clear_aniList_oAuth,
+                    buttonTextRes = R.string.settings_clear,
                     onClick = onClickClearAniListOAuth
                 )
 
@@ -160,6 +168,12 @@ object SettingsScreen {
                     ),
                 )
 
+                ButtonRow(
+                    titleRes = R.string.settings_show_last_crash,
+                    buttonTextRes = UtilsStringR.open,
+                    onClick = onClickShowLastCrash,
+                )
+
                 if (BuildConfig.DEBUG) {
                     Divider()
                     SwitchRow(
@@ -173,17 +187,21 @@ object SettingsScreen {
     }
 
     @Composable
-    private fun ButtonRow(@StringRes title: Int, @StringRes buttonText: Int, onClick: () -> Unit) {
+    private fun ButtonRow(
+        @StringRes titleRes: Int,
+        @StringRes buttonTextRes: Int,
+        onClick: () -> Unit
+    ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 10.dp, bottom = 10.dp)
         ) {
             Text(
-                text = stringResource(title),
+                text = stringResource(titleRes),
                 Modifier
                     .weight(1f)
             )
-            FilledTonalButton(onClick = onClick) { Text(text = stringResource(buttonText)) }
+            FilledTonalButton(onClick = onClick) { Text(text = stringResource(buttonTextRes)) }
         }
     }
 

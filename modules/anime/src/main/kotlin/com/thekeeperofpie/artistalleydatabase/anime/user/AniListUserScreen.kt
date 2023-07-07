@@ -3,6 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.anime.user
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -11,6 +12,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
@@ -42,6 +44,7 @@ import com.anilist.UserByIdQuery.Data.User
 import com.anilist.fragment.UserMediaStatistics
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
+import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.staff.DetailsStaff
@@ -52,7 +55,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.compose.CollapsingToolbar
 import com.thekeeperofpie.artistalleydatabase.compose.NestedScrollSplitter
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
-import com.thekeeperofpie.artistalleydatabase.entry.R
+import com.thekeeperofpie.artistalleydatabase.entry.EntryStringR
 import kotlinx.coroutines.launch
 
 @OptIn(
@@ -67,6 +70,7 @@ object AniListUserScreen {
         navigationCallback: AnimeNavigator.NavigationCallback,
         bottomNavigationState: BottomNavigationState? = null,
         showLogOut: Boolean = false,
+        onClickSettings: (() -> Unit)? = null,
     ) {
         val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
         Scaffold(
@@ -108,33 +112,46 @@ object AniListUserScreen {
                         }
                     }
 
-                    if (showLogOut || viewModel.viewer.collectAsState().value
-                            .let { it != null && it.id == viewModel.entry?.user?.id }
-                    ) {
-                        Box(
-                            modifier = Modifier.align(Alignment.TopEnd),
-                        ) {
-                            var menuExpanded by remember { mutableStateOf(false) }
-                            IconButton(onClick = { menuExpanded = true }) {
-                                Icon(
-                                    imageVector = Icons.Default.MoreVert,
-                                    contentDescription = stringResource(
-                                        R.string.more_actions_content_description
-                                    ),
-                                )
+                    val actuallyShowLogOut = showLogOut || viewModel.viewer.collectAsState().value
+                        .let { it != null && it.id == viewModel.entry?.user?.id }
+                    if (onClickSettings != null || actuallyShowLogOut) {
+                        Row(modifier = Modifier.align(Alignment.TopEnd)) {
+                            if (onClickSettings != null) {
+                                IconButton(onClick = onClickSettings) {
+                                    Icon(
+                                        imageVector = Icons.Default.Settings,
+                                        contentDescription = stringResource(
+                                            R.string.anime_settings_content_description
+                                        ),
+                                    )
+                                }
                             }
 
-                            DropdownMenu(
-                                expanded = menuExpanded,
-                                onDismissRequest = { menuExpanded = false },
-                            ) {
-                                DropdownMenuItem(
-                                    text = { Text(stringResource(R.string.log_out)) },
-                                    onClick = {
-                                        viewModel.logOut()
-                                        menuExpanded = false
+                            if (actuallyShowLogOut) {
+                                Box {
+                                    var menuExpanded by remember { mutableStateOf(false) }
+                                    IconButton(onClick = { menuExpanded = true }) {
+                                        Icon(
+                                            imageVector = Icons.Default.MoreVert,
+                                            contentDescription = stringResource(
+                                                EntryStringR.more_actions_content_description
+                                            ),
+                                        )
                                     }
-                                )
+
+                                    DropdownMenu(
+                                        expanded = menuExpanded,
+                                        onDismissRequest = { menuExpanded = false },
+                                    ) {
+                                        DropdownMenuItem(
+                                            text = { Text(stringResource(EntryStringR.log_out)) },
+                                            onClick = {
+                                                viewModel.logOut()
+                                                menuExpanded = false
+                                            }
+                                        )
+                                    }
+                                }
                             }
                         }
                     }

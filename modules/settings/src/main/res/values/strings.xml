@@ -13,4 +13,6 @@
     <string name="settings_network_logging_level_label">Network logging level</string>
     <string name="settings_network_logging_level_label_dropdown_content_description">Network logging level dropdown</string>
     <string name="settings_hide_status_bar">Hide status bar</string>
+    <string name="settings_notification_info_crash_title">%1$s crash</string>
+    <string name="settings_show_last_crash">Show last crash</string>
 </resources>

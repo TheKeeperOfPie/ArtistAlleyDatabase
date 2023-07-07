@@ -29,6 +29,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -48,11 +49,13 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import androidx.navigation.navDeepLink
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.OutOfQuotaPolicy
 import com.mxalbert.sharedelements.SharedElementsRoot
+import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListOAuthStore
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
@@ -86,6 +89,9 @@ class MainActivity : ComponentActivity() {
     companion object {
         const val STARTING_NAV_DESTINATION = "starting_nav_destination"
     }
+
+    @Inject
+    lateinit var scopedApplication: ScopedApplication
 
     @Inject
     lateinit var artEntryNavigator: ArtEntryNavigator
@@ -181,15 +187,18 @@ class MainActivity : ComponentActivity() {
                                         startDestination = startDestination,
                                     ) {
                                         AnimeNavigator.initialize(
-                                            navController,
-                                            this,
-                                            ::onClickNav,
-                                            {
+                                            navHostController = navController,
+                                            navGraphBuilder = this,
+                                            onClickNav = ::onClickNav,
+                                            onClickAuth = {
                                                 aniListOAuthStore.launchAuthRequest(
                                                     this@MainActivity
                                                 )
                                             },
-                                            navigationCallback,
+                                            onClickSettings = {
+                                                navController.navigate(AppNavDestinations.SETTINGS.id)
+                                            },
+                                            navigationCallback = navigationCallback,
                                         )
 
                                         artEntryNavigator.initialize(
@@ -358,6 +367,27 @@ class MainActivity : ComponentActivity() {
                                                 onChangeNetworkLoggingLevel = viewModel::onChangeNetworkLoggingLevel,
                                                 hideStatusBar = { viewModel.hideStatusBar.collectAsState().value },
                                                 onHideStatusBarChanged = viewModel::onHideStatusBarChanged,
+                                                onClickShowLastCrash = {
+                                                    navController.navigate(AppNavDestinations.CRASH.id)
+                                                }
+                                            )
+                                        }
+
+                                        composable(
+                                            route = AppNavDestinations.CRASH.id,
+                                            deepLinks = listOf(
+                                                navDeepLink {
+                                                    action =
+                                                        scopedApplication.mainActivityInternalAction
+                                                    uriPattern =
+                                                        "${scopedApplication.app.packageName}:///${AppNavDestinations.CRASH.id}"
+                                                }
+                                            )
+                                        ) {
+                                            SideEffect { settings.lastCrashShown.value = true }
+                                            CrashScreen(
+                                                settings = settings,
+                                                onClickBack = { navController.popBackStack() },
                                             )
                                         }
                                     }

@@ -63,7 +63,8 @@ class SettingsDataSerializationTest {
             application,
             CryptoUtils.masterKey(application),
             appJson,
-            sharedPreferencesFileName = "${SettingsProvider.PREFERENCES_NAME}-test"
+            sharedPreferencesFileName = "${SettingsProvider.PREFERENCES_NAME}-test",
+            crashNotificationContentIntent = null,
         )
 
         // In case any old test state remains, clear it

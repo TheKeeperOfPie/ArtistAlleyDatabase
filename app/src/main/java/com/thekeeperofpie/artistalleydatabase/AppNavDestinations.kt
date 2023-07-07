@@ -7,4 +7,5 @@ enum class AppNavDestinations(val id: String) {
     EXPORT("export"),
     SETTINGS("settings"),
     SEARCH_RESULTS("search_results"),
+    CRASH("crash"),
 }
