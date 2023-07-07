@@ -3,11 +3,11 @@ package com.thekeeperofpie.artistalleydatabase.alley
 import android.net.Uri
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.itemsIndexed
@@ -17,6 +17,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.times
 import coil.compose.AsyncImage
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 
@@ -43,17 +44,19 @@ internal fun ImageGrid(
         }
     ) {
         itemsIndexed(images) { index, image ->
-            AsyncImage(
-                model = image.uri,
-                contentScale = ContentScale.FillWidth,
-                contentDescription = stringResource(R.string.alley_artist_catalog_image),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .conditionally(image.width != null && image.height != null) {
-                        density.run { size(image.width!!.toDp(), image.height!!.toDp()) }
-                    }
-                    .clickable { onImageClick(index, image.uri) }
-            )
+            BoxWithConstraints {
+                AsyncImage(
+                    model = image.uri,
+                    contentScale = ContentScale.FillWidth,
+                    contentDescription = stringResource(R.string.alley_artist_catalog_image),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .conditionally(image.width != null && image.height != null) {
+                            heightIn(min = (image.height!! / image.width!!.toFloat()) * maxWidth)
+                        }
+                        .clickable { onImageClick(index, image.uri) }
+                )
+            }
         }
     }
 }

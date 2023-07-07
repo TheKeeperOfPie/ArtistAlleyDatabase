@@ -83,6 +83,7 @@ dependencyResolutionManagement {
             library("com.google.accompanist:accompanist-flowlayout:0.31.3-beta")
             library("com.google.accompanist:accompanist-placeholder-material:0.31.3-beta")
             library("com.google.accompanist:accompanist-navigation-animation:0.31.3-beta")
+            library("com.google.accompanist:accompanist-pager-indicators:0.31.3-beta")
             library("com.google.dagger:hilt-android:2.46.1")
             library("com.google.net.cronet:cronet-okhttp:0.1.0")
             library("com.google.truth:truth:1.1.5")

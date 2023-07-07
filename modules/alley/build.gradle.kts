@@ -38,4 +38,5 @@ dependencies {
     implementation(libs.room.paging)
 
     implementation(libs.commons.csv)
+    implementation(libs.accompanist.pager.indicators)
 }

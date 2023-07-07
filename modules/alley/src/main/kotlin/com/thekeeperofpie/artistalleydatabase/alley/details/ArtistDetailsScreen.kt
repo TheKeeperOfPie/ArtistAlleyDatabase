@@ -3,6 +3,8 @@ package com.thekeeperofpie.artistalleydatabase.alley.details
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -55,6 +57,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import coil.size.Dimension
+import com.google.accompanist.pager.HorizontalPagerIndicator
 import com.thekeeperofpie.artistalleydatabase.alley.ImageGrid
 import com.thekeeperofpie.artistalleydatabase.alley.R
 import com.thekeeperofpie.artistalleydatabase.compose.ArrowBackIconButton
@@ -172,7 +175,7 @@ object ArtistDetailsScreen {
                     Box {
                         HorizontalPager(
                             state = pagerState,
-                            userScrollEnabled = zoomPanState.canPanExternal(),
+                            userScrollEnabled = images.size > 1 && zoomPanState.canPanExternal(),
                             modifier = Modifier
                                 .height(IMAGE_HEIGHT)
                                 .fillMaxWidth()
@@ -224,7 +227,23 @@ object ArtistDetailsScreen {
                         }
 
                         androidx.compose.animation.AnimatedVisibility(
-                            pagerState.currentPage != 0 && zoomPanState.canPanExternal(),
+                            visible = zoomPanState.canPanExternal(),
+                            enter = fadeIn(),
+                            exit = fadeOut(),
+                            modifier = Modifier.align(Alignment.BottomCenter)
+                        ) {
+                            HorizontalPagerIndicator(
+                                pagerState = pagerState,
+                                pageCount = pagerState.pageCount,
+                                modifier = Modifier
+                                    .padding(8.dp)
+                            )
+                        }
+
+                        androidx.compose.animation.AnimatedVisibility(
+                            visible = pagerState.currentPage != 0 && zoomPanState.canPanExternal(),
+                            enter = fadeIn(),
+                            exit = fadeOut(),
                             modifier = Modifier.align(Alignment.BottomEnd)
                         ) {
                             IconButton(onClick = {
@@ -367,7 +386,7 @@ object ArtistDetailsScreen {
                     HorizontalPager(
                         state = pagerState,
                         pageSpacing = 16.dp,
-                        userScrollEnabled = zoomPanState.canPanExternal(),
+                        userScrollEnabled = images.size > 1 && zoomPanState.canPanExternal(),
                         modifier = Modifier.fillMaxSize(),
                     ) {
                         if (it == 0 && images.size > 1) {
@@ -408,7 +427,23 @@ object ArtistDetailsScreen {
                     }
 
                     AnimatedVisibility(
-                        pagerState.currentPage != 0 && zoomPanState.canPanExternal(),
+                        visible = zoomPanState.canPanExternal(),
+                        enter = fadeIn(),
+                        exit = fadeOut(),
+                        modifier = Modifier.align(Alignment.BottomCenter)
+                    ) {
+                        HorizontalPagerIndicator(
+                            pagerState = pagerState,
+                            pageCount = pagerState.pageCount,
+                            modifier = Modifier
+                                .padding(8.dp)
+                        )
+                    }
+
+                    AnimatedVisibility(
+                        visible = pagerState.currentPage != 0 && zoomPanState.canPanExternal(),
+                        enter = fadeIn(),
+                        exit = fadeOut(),
                         modifier = Modifier.align(Alignment.BottomEnd)
                     ) {
                         IconButton(onClick = {

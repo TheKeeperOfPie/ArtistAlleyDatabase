@@ -20,14 +20,19 @@ object ImageUtils {
             this.inJustDecodeBounds = true
         }
         try {
-            when (uri.scheme) {
-                "http", "https" -> URL(uri.toString()).openStream()
+            when {
+                uri.scheme == "http" || uri.scheme == "https" -> URL(uri.toString()).openStream()
+                uri.scheme == "file"
+                        && uri.authority?.isEmpty() == true
+                        && uri.path?.startsWith("/android_asset") == true ->
+                    context.assets.open(uri.path!!.removePrefix("/android_asset/"))
                 else -> context.contentResolver.openInputStream(uri)
             }.use {
                 BitmapFactory.decodeStream(it, null, options)
             }
         } catch (e: Exception) {
-            Log.d(TAG, "Error loading image size for $uri", e)
+            Log.d(TAG, "Error loading image size for scheme = ${uri.scheme}, " +
+                    "authority = ${uri.authority}, path = ${uri.path}, uri = $uri", e)
             return null to null
         }
 
