@@ -39,10 +39,11 @@ class CustomApplication : Application(), Configuration.Provider, ScopedApplicati
 
     private lateinit var audioManager: AudioManager
 
-    override fun getWorkManagerConfiguration() =
+    override val workManagerConfiguration by lazy {
         Configuration.Builder()
             .setWorkerFactory(workerFactory)
             .build()
+    }
 
     override fun onCreate() {
         super.onCreate()
