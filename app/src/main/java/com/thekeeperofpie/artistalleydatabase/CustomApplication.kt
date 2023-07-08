@@ -114,13 +114,14 @@ class CustomApplication : Application(), Configuration.Provider, ScopedApplicati
     override fun getSystemService(name: String): Any? {
         val service = super.getSystemService(name)
         if (service is AudioManager) {
-            try {
-                if (!::audioManager.isInitialized) {
-                    audioManager = AudioManagerIgnoreFocus(service)
+            if (!::audioManager.isInitialized) {
+                audioManager = try {
+                    AudioManagerIgnoreFocus(service)
+                } catch (ignored: Throwable) {
+                    service
                 }
-                return audioManager
-            } catch (ignored: Exception) {
             }
+            return audioManager
         }
         return service
     }
