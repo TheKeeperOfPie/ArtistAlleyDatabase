@@ -17,6 +17,7 @@ import com.thekeeperofpie.artistalleydatabase.art.grid.ArtEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.compose.AppBar
 import com.thekeeperofpie.artistalleydatabase.compose.LazyStaggeredGrid
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
+import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGrid
 
 object SearchResultsScreen {
@@ -24,7 +25,7 @@ object SearchResultsScreen {
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     operator fun invoke(
-        onClickBack: (() -> Unit)? = null,
+        upIconOption: UpIconOption?,
         loading: () -> Boolean,
         errorRes: () -> Pair<Int, Exception?>? = { null },
         onErrorDismiss: () -> Unit = {},
@@ -40,7 +41,7 @@ object SearchResultsScreen {
             topBar = {
                 AppBar(
                     text = stringResource(R.string.search_results),
-                    onClickBack = onClickBack
+                    upIconOption = upIconOption,
                 )
             },
             snackbarHost = {

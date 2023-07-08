@@ -15,10 +15,13 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.filter
+import androidx.paging.map
 import com.anilist.AiringScheduleQuery
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
+import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
+import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -35,6 +38,7 @@ import javax.inject.Inject
 class AiringScheduleViewModel @Inject constructor(
     private val aniListApi: AuthedAniListApi,
     private val settings: AnimeSettings,
+    private val ignoreList: AnimeMediaIgnoreList,
 ) : ViewModel() {
 
     var sort by mutableStateOf(AiringScheduleSort.POPULARITY)
@@ -47,7 +51,7 @@ class AiringScheduleViewModel @Inject constructor(
 
     // Spans last week, current week, next week
     private val dayFlows = Array(21) {
-        MutableStateFlow(PagingData.empty<AiringScheduleQuery.Data.Page.AiringSchedule>())
+        MutableStateFlow(PagingData.empty<Entry>())
     }
 
     init {
@@ -56,8 +60,9 @@ class AiringScheduleViewModel @Inject constructor(
                 combine(
                     snapshotFlow { sort },
                     settings.showAdult,
-                    ::Pair
-                ).flatMapLatest { (sort, showAdult) ->
+                    settings.showIgnored,
+                    ::Triple
+                ).flatMapLatest { (sort, showAdult, showIgnored) ->
                     Pager(PagingConfig(10)) {
                         AiringSchedulePagingSource(
                             aniListApi, AiringSchedulePagingSource.RefreshParams(
@@ -67,7 +72,18 @@ class AiringScheduleViewModel @Inject constructor(
                             )
                         )
                     }
-                        .flow.map { it.filter { showAdult || it.media?.isAdult == false } }
+                        .flow.map {
+                            it.filter { showAdult || it.media?.isAdult == false }
+                                .filter {
+                                    showIgnored || !(it.media?.id?.let(ignoreList::get) ?: false)
+                                }
+                                .map {
+                                    Entry(
+                                        data = it,
+                                        ignored = it.media?.id?.let(ignoreList::get) ?: false
+                                    )
+                                }
+                        }
                 }
                     .cachedIn(viewModelScope)
                     .collectLatest(dayFlows[it]::emit)
@@ -77,4 +93,18 @@ class AiringScheduleViewModel @Inject constructor(
 
     @Composable
     fun items(index: Int) = dayFlows[index].collectAsLazyPagingItems()
+
+    fun onLongClickEntry(entry: AnimeMediaListRow.Entry) {
+        val mediaId = entry.id?.valueId ?: return
+        val ignored = !entry.ignored
+        ignoreList.set(mediaId, ignored)
+        entry.ignored = ignored
+    }
+
+    class Entry(
+        val data: AiringScheduleQuery.Data.Page.AiringSchedule,
+        ignored: Boolean,
+    ) {
+        var ignored by mutableStateOf(ignored)
+    }
 }

@@ -85,14 +85,21 @@ object AnimeMediaListRow {
             modifier = modifier
                 .fillMaxWidth()
                 .heightIn(min = 180.dp)
-                .combinedClickable(
-                    enabled = entry != Entry.Loading,
-                    onClick = { navigationCallback.onMediaClick(entry, imageWidthToHeightRatio) },
-                    onLongClick = { onLongClick(entry) }
-                )
                 .alpha(if (entry.ignored) 0.38f else 1f)
         ) {
-            Row(modifier = Modifier.height(IntrinsicSize.Min)) {
+            Row(modifier = Modifier
+                .height(IntrinsicSize.Min)
+                .combinedClickable(
+                    enabled = entry != Entry.Loading,
+                    onClick = {
+                        navigationCallback.onMediaClick(
+                            entry,
+                            imageWidthToHeightRatio
+                        )
+                    },
+                    onLongClick = { onLongClick(entry) }
+                )
+            ) {
                 CoverImage(
                     screenKey = screenKey,
                     entry = entry,

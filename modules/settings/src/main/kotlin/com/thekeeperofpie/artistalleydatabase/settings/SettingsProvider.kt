@@ -78,6 +78,8 @@ class SettingsProvider(
     var lastCrash = MutableStateFlow(deserialize("lastCrash") ?: "")
     var lastCrashShown = MutableStateFlow(deserialize("lastCrashShown") ?: false)
 
+    var unlockAllFeatures = MutableStateFlow(deserialize("unlockAllFeatures") ?: false)
+
     init {
         val mainThreadId = Looper.getMainLooper().thread.id
         val existingExceptionHandler = Thread.getDefaultUncaughtExceptionHandler()
@@ -160,6 +162,7 @@ class SettingsProvider(
         subscribeProperty(scope, ::hideStatusBar)
         subscribeProperty(scope, ::lastCrash)
         subscribeProperty(scope, ::lastCrashShown)
+        subscribeProperty(scope, ::unlockAllFeatures)
 
         scope.launch(CustomDispatchers.IO) {
             ignoredAniListMediaIds.drop(1).collectLatest {

@@ -20,6 +20,7 @@ dependencies {
     runtimeOnly(libs.kotlinx.coroutines.android)
 
     implementation(libs.hilt.android)
+    implementation(libs.hilt.navigation.compose)
     kapt(kaptProcessors.dagger.hilt.compiler)
     kapt(kaptProcessors.androidx.hilt.compiler)
 

@@ -24,6 +24,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -35,11 +36,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListStringR
 import com.thekeeperofpie.artistalleydatabase.compose.AppBar
 import com.thekeeperofpie.artistalleydatabase.compose.ItemDropdown
-import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
+import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.entry.EntryStringR
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistsStringR
 import com.thekeeperofpie.artistalleydatabase.network_utils.NetworkSettings
@@ -50,36 +52,15 @@ object SettingsScreen {
 
     @Composable
     operator fun invoke(
-        onClickNav: () -> Unit = {},
-        errorRes: () -> Pair<Int, Exception?>? = { null },
-        onErrorDismiss: () -> Unit = {},
-        onClickAniListClear: () -> Unit = {},
-        onClickVgmdbClear: () -> Unit = {},
-        onClickDatabaseFetch: () -> Unit = {},
-        onClickClearDatabaseById: (DatabaseType, String) -> Unit = { _, _ -> },
-        onClickRebuildDatabase: (DatabaseType) -> Unit = {},
-        onClickCropClear: () -> Unit = {},
-        onClickClearAniListOAuth: () -> Unit = {},
-        networkLoggingLevel: @Composable () -> NetworkSettings.NetworkLoggingLevel = {
-            NetworkSettings.NetworkLoggingLevel.BASIC
-        },
-        onChangeNetworkLoggingLevel: (NetworkSettings.NetworkLoggingLevel) -> Unit = {},
-        hideStatusBar: @Composable () -> Boolean = { false },
-        onHideStatusBarChanged: (Boolean) -> Unit = {},
+        viewModel: SettingsViewModel = hiltViewModel<SettingsViewModel>(),
+        upIconOption: UpIconOption? = UpIconOption.Back {},
         onClickShowLastCrash: () -> Unit = {},
     ) {
         Scaffold(
             topBar = {
                 AppBar(
                     text = stringResource(R.string.settings_nav_drawer),
-                    onClickNav = onClickNav
-                )
-            },
-            snackbarHost = {
-                SnackbarErrorText(
-                    errorRes()?.first,
-                    errorRes()?.second,
-                    onErrorDismiss = onErrorDismiss
+                    upIconOption = upIconOption,
                 )
             },
         ) {
@@ -91,7 +72,7 @@ object SettingsScreen {
                 ButtonRow(
                     titleRes = R.string.settings_clear_aniList_cache,
                     buttonTextRes = R.string.settings_clear,
-                    onClick = onClickAniListClear
+                    onClick = viewModel::clearAniListCache,
                 )
 
                 Divider()
@@ -99,7 +80,7 @@ object SettingsScreen {
                 ButtonRow(
                     titleRes = R.string.settings_clear_vgmdb_cache,
                     buttonTextRes = R.string.settings_clear,
-                    onClick = onClickVgmdbClear
+                    onClick = viewModel::clearVgmdbCache,
                 )
 
                 Divider()
@@ -107,23 +88,23 @@ object SettingsScreen {
                 ButtonRow(
                     titleRes = R.string.settings_database_fetch,
                     buttonTextRes = R.string.settings_fetch,
-                    onClick = onClickDatabaseFetch
+                    onClick = viewModel::onClickDatabaseFetch,
                 )
 
                 Divider()
 
-                ClearDatabaseByIdRow(onClickClearDatabaseById)
+                ClearDatabaseByIdRow(viewModel::onClickClearDatabaseById)
 
                 Divider()
 
-                RebuildDatabaseRow(onClickRebuildDatabase)
+                RebuildDatabaseRow(viewModel::onClickRebuildDatabase)
 
                 Divider()
 
                 ButtonRow(
                     titleRes = R.string.settings_crop_clear,
                     buttonTextRes = R.string.settings_clear,
-                    onClick = onClickCropClear
+                    onClick = viewModel::onClickCropClear,
                 )
 
                 Divider()
@@ -131,18 +112,19 @@ object SettingsScreen {
                 ButtonRow(
                     titleRes = R.string.settings_clear_aniList_oAuth,
                     buttonTextRes = R.string.settings_clear,
-                    onClick = onClickClearAniListOAuth
+                    onClick = viewModel::onClickClearAniListOAuth,
                 )
 
                 Divider()
 
+                val networkLoggingLevel = viewModel.networkLoggingLevel.collectAsState().value
                 ItemDropdown(
                     label = R.string.settings_network_logging_level_label,
-                    value = networkLoggingLevel().name,
+                    value = networkLoggingLevel.name,
                     iconContentDescription = R.string.settings_network_logging_level_label_dropdown_content_description,
                     values = { NetworkSettings.NetworkLoggingLevel.values().toList() },
                     textForValue = { it.name },
-                    onSelectItem = onChangeNetworkLoggingLevel,
+                    onSelectItem = viewModel::onChangeNetworkLoggingLevel,
                     modifier = Modifier.padding(
                         start = 16.dp,
                         end = 16.dp,
@@ -152,21 +134,6 @@ object SettingsScreen {
                 )
 
                 Divider()
-
-                ItemDropdown(
-                    label = R.string.settings_network_logging_level_label,
-                    value = networkLoggingLevel().name,
-                    iconContentDescription = R.string.settings_network_logging_level_label_dropdown_content_description,
-                    values = { NetworkSettings.NetworkLoggingLevel.values().toList() },
-                    textForValue = { it.name },
-                    onSelectItem = onChangeNetworkLoggingLevel,
-                    modifier = Modifier.padding(
-                        start = 16.dp,
-                        end = 16.dp,
-                        top = 10.dp,
-                        bottom = 10.dp
-                    ),
-                )
 
                 ButtonRow(
                     titleRes = R.string.settings_show_last_crash,
@@ -174,13 +141,26 @@ object SettingsScreen {
                     onClick = onClickShowLastCrash,
                 )
 
+                Divider()
+
+                val unlockAllFeatures by viewModel.unlockAllFeatures.collectAsState()
+                SwitchRow(
+                    titleRes = R.string.settings_unlock_all_features,
+                    checked = { unlockAllFeatures },
+                    onCheckedChange = viewModel::onUnlockAllFeaturesChanged,
+                )
+
+                Divider()
+
                 if (BuildConfig.DEBUG) {
-                    Divider()
+                    val hideStatusBar by viewModel.hideStatusBar.collectAsState()
                     SwitchRow(
                         titleRes = R.string.settings_hide_status_bar,
-                        checked = hideStatusBar,
-                        onCheckedChange = onHideStatusBarChanged,
+                        checked = { hideStatusBar },
+                        onCheckedChange = viewModel::onHideStatusBarChanged,
                     )
+
+                    Divider()
                 }
             }
         }

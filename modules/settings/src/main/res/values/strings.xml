@@ -15,4 +15,5 @@
     <string name="settings_hide_status_bar">Hide status bar</string>
     <string name="settings_notification_info_crash_title">%1$s crash</string>
     <string name="settings_show_last_crash">Show last crash</string>
+    <string name="settings_unlock_all_features">Unlock all features</string>
 </resources>

@@ -44,13 +44,13 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeMediaFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeMediaFilterOptionsBottomPanel
-import com.thekeeperofpie.artistalleydatabase.compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBar
-import com.thekeeperofpie.artistalleydatabase.compose.NavMenuIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.NestedScrollSplitter
 import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
 import com.thekeeperofpie.artistalleydatabase.compose.StaticSearchBar
+import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
+import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortOption
 import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
@@ -60,8 +60,7 @@ object AnimeUserListScreen {
 
     @Composable
     operator fun <SortType : SortOption> invoke(
-        onClickNav: () -> Unit = {},
-        showDrawerHandle: Boolean = true,
+        upIconOption: UpIconOption? = null,
         viewModel: ViewModel<SortType>,
         navigationCallback: AnimeNavigator.NavigationCallback =
             AnimeNavigator.NavigationCallback(null),
@@ -80,13 +79,9 @@ object AnimeUserListScreen {
                     StaticSearchBar(
                         query = viewModel.query,
                         onQueryChange = { viewModel.query = it },
-                        leadingIcon = {
-                            if (showDrawerHandle) {
-                                NavMenuIconButton(onClickNav)
-                            } else {
-                                ArrowBackIconButton(onClickNav)
-                            }
-                        },
+                        leadingIcon = if (upIconOption != null) {
+                            { UpIconButton(upIconOption) }
+                        } else null,
                         placeholder = { Text(stringResource(R.string.anime_user_list_search)) },
                         trailingIcon = {
                             IconButton(onClick = { viewModel.query = "" }) {

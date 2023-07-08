@@ -22,13 +22,14 @@ import com.thekeeperofpie.artistalleydatabase.compose.ButtonFooter
 import com.thekeeperofpie.artistalleydatabase.compose.ChooseUriRow
 import com.thekeeperofpie.artistalleydatabase.compose.LinearProgressWithIndicator
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
+import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 
 object ExportScreen {
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     operator fun invoke(
-        onClickNav: () -> Unit = {},
+        upIconOption: UpIconOption? = UpIconOption.Back {},
         uriString: () -> String = { "" },
         onUriStringEdit: (String) -> Unit = {},
         onContentUriSelected: (Uri?) -> Unit = {},
@@ -41,7 +42,7 @@ object ExportScreen {
             topBar = {
                 AppBar(
                     text = stringResource(R.string.nav_drawer_export),
-                    onClickNav = onClickNav
+                    upIconOption = upIconOption,
                 )
             },
             snackbarHost = {

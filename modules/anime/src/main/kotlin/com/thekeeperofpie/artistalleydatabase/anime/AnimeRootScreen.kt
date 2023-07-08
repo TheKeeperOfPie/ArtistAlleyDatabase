@@ -34,13 +34,14 @@ import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysNavigationBar
 import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
+import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.navigationBarEnterAlwaysScrollBehavior
 
 object AnimeRootScreen {
 
     @Composable
     operator fun invoke(
-        onClickNav: () -> Unit,
+        upIconOption: UpIconOption?,
         needAuth: @Composable () -> Boolean,
         onClickAuth: () -> Unit,
         onSubmitAuthToken: (String) -> Unit,
@@ -116,7 +117,7 @@ object AnimeRootScreen {
                 ) {
                     when (it) {
                         NavDestinations.HOME -> AnimeHomeScreen(
-                            onClickNav = onClickNav,
+                            upIconOption = upIconOption,
                             navigationCallback = navigationCallback,
                             scrollStateSaver = ScrollStateSaver.fromMap(
                                 NavDestinations.HOME.id,
@@ -127,8 +128,7 @@ object AnimeRootScreen {
                         NavDestinations.ANIME -> AnimeNavigator.UserListScreen(
                             userId = null,
                             mediaType = MediaType.ANIME,
-                            onClickNav = onClickNav,
-                            showDrawerHandle = true,
+                            upIconOption = upIconOption,
                             navigationCallback = navigationCallback,
                             scrollStateSaver = ScrollStateSaver.fromMap(
                                 NavDestinations.ANIME.id,
@@ -139,8 +139,7 @@ object AnimeRootScreen {
                         NavDestinations.MANGA -> AnimeNavigator.UserListScreen(
                             userId = null,
                             mediaType = MediaType.MANGA,
-                            onClickNav = onClickNav,
-                            showDrawerHandle = true,
+                            upIconOption = upIconOption,
                             navigationCallback = navigationCallback,
                             scrollStateSaver = ScrollStateSaver.fromMap(
                                 NavDestinations.MANGA.id,
@@ -151,7 +150,7 @@ object AnimeRootScreen {
                         NavDestinations.SEARCH -> AnimeNavigator.SearchScreen(
                             title = null,
                             tagId = null,
-                            onClickNav = onClickNav,
+                            upIconOption = upIconOption,
                             navigationCallback = navigationCallback,
                             scrollStateSaver = ScrollStateSaver.fromMap(
                                 NavDestinations.SEARCH.id,

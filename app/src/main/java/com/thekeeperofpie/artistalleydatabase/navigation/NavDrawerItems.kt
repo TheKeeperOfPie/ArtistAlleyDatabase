@@ -22,6 +22,7 @@ enum class NavDrawerItems(
     val id: String,
     @StringRes val titleRes: Int,
     val icon: ImageVector,
+    val route: String = id,
 ) {
 
     ANIME(AnimeNavDestinations.HOME.id, R.string.nav_drawer_anime, Icons.Default.VideoLibrary),
@@ -31,5 +32,11 @@ enum class NavDrawerItems(
     SEARCH(AppNavDestinations.SEARCH.id, R.string.nav_drawer_search, Icons.Default.Search),
     IMPORT(AppNavDestinations.IMPORT.id, R.string.nav_drawer_import, Icons.Default.Create),
     EXPORT(AppNavDestinations.EXPORT.id, R.string.nav_drawer_export, Icons.Default.Build),
-    SETTINGS(AppNavDestinations.SETTINGS.id, SettingsStringR.settings_nav_drawer, Icons.Default.Settings);
+    SETTINGS(
+        AppNavDestinations.SETTINGS.id,
+        SettingsStringR.settings_nav_drawer,
+        Icons.Default.Settings,
+        route = "settings?root=true"
+    ),
+    ;
 }

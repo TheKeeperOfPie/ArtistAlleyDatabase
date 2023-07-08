@@ -70,7 +70,6 @@ object AnimeMediaLargeCard {
         label: (@Composable () -> Unit)? = null,
         onLongClick: (Entry) -> Unit = {},
         onTagLongClick: (tagId: String) -> Unit = {},
-        onLongPressImage: (entry: Entry) -> Unit = {},
         colorCalculationState: ColorCalculationState = ColorCalculationState(),
         navigationCallback: AnimeNavigator.NavigationCallback =
             AnimeNavigator.NavigationCallback(null),
@@ -79,23 +78,20 @@ object AnimeMediaLargeCard {
             modifier = modifier
                 .fillMaxWidth()
                 .heightIn(min = HEIGHT)
-                .combinedClickable(
+                .alpha(if (entry.ignored) 0.38f else 1f)
+        ) {
+            Box(
+                modifier = Modifier.combinedClickable(
                     enabled = entry != Entry.Loading,
                     onClick = {
                         navigationCallback.onMediaClick(entry.media!!)
                     },
                     onLongClick = { onLongClick(entry) }
                 )
-                .alpha(if (entry.ignored) 0.38f else 1f)
-        ) {
-            Box {
+            ) {
                 BannerImage(
                     screenKey = screenKey,
                     entry = entry,
-                    onClick = {
-                        navigationCallback.onMediaClick(entry.media!!)
-                    },
-                    onLongPressImage = onLongPressImage,
                     colorCalculationState = colorCalculationState,
                 )
 
@@ -127,7 +123,7 @@ object AnimeMediaLargeCard {
                             text = description,
                             style = MaterialTheme.typography.bodySmall,
                             overflow = TextOverflow.Ellipsis,
-                            onFallbackClick = { navigationCallback.onMediaClick(entry.media) },
+                            detectTaps = false,
                             modifier = Modifier
                                 .weight(1f)
                                 .fillMaxWidth()
@@ -156,8 +152,6 @@ object AnimeMediaLargeCard {
     private fun BannerImage(
         screenKey: String,
         entry: Entry,
-        onClick: (Entry) -> Unit = {},
-        onLongPressImage: (entry: Entry) -> Unit,
         colorCalculationState: ColorCalculationState,
     ) {
         SharedElement(
@@ -201,13 +195,6 @@ object AnimeMediaLargeCard {
                         drawContent()
                         drawRect(foregroundColor, alpha = 0.5f)
                     }
-                    .combinedClickable(
-                        onClick = { onClick(entry) },
-                        onLongClick = { onLongPressImage(entry) },
-                        onLongClickLabel = stringResource(
-                            R.string.anime_media_banner_image_long_press_preview
-                        ),
-                    )
                     // Clip to match card so that shared element animation keeps rounded corner
                     .clip(RoundedCornerShape(topStart = 12.dp, bottomStart = 12.dp))
                     .alpha(alpha)

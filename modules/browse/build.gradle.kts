@@ -10,7 +10,7 @@ android {
 
 dependencies {
     api(project(":modules:android-utils"))
-    implementation(project(":modules:compose-utils"))
+    api(project(":modules:compose-utils"))
     implementation(project(":modules:entry"))
 
     api(libs.navigation.compose)

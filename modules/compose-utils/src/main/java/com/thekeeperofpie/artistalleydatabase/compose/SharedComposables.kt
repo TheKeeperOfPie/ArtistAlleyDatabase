@@ -137,16 +137,16 @@ import de.charlex.compose.toAnnotatedString
 @Composable
 fun AppBar(
     text: String,
+    upIconOption: UpIconOption? = null,
     scrollBehavior: TopAppBarScrollBehavior? = null,
     colors: TopAppBarColors = TopAppBarDefaults.topAppBarColors(),
-    onClickNav: (() -> Unit)? = null,
-    onClickBack: (() -> Unit)? = null,
 ) {
     TopAppBar(
         title = { Text(text = text, maxLines = 1) },
         navigationIcon = {
-            onClickNav?.let { NavMenuIconButton(it) }
-                ?: onClickBack?.let { ArrowBackIconButton(it) }
+            if (upIconOption != null) {
+                UpIconButton(option = upIconOption)
+            }
         },
         scrollBehavior = scrollBehavior,
         colors = colors,
@@ -835,6 +835,8 @@ fun CustomHtmlText(
     onTextLayout: (TextLayoutResult) -> Unit = {},
     style: TextStyle = LocalTextStyle.current,
     onFallbackClick: () -> Unit = {},
+    onLongClick: (() -> Unit)? = null,
+    detectTaps: Boolean = true,
 ) {
     val annotatedString = Html.fromHtml(text.trim(), Html.FROM_HTML_MODE_LEGACY)
         .trim()
@@ -859,6 +861,7 @@ fun CustomHtmlText(
         onTextLayout = onTextLayout,
         style = style,
         onFallbackClick = onFallbackClick,
+        onLongClick = onLongClick,
     )
 }
 
@@ -882,6 +885,8 @@ private fun HtmlText(
     onTextLayout: (TextLayoutResult) -> Unit = {},
     style: TextStyle = LocalTextStyle.current,
     onFallbackClick: () -> Unit,
+    onLongClick: (() -> Unit)? = null,
+    detectTaps: Boolean = true,
 ) {
     val uriHandler = LocalUriHandler.current
     val layoutResult = remember { mutableStateOf<TextLayoutResult?>(null) }
@@ -893,43 +898,57 @@ private fun HtmlText(
     Text(
         modifier = modifier.then(
             Modifier
-                .pointerInput(Unit) {
-                    detectTapGestures(onTap = { pos ->
-                        layoutResult.value?.let { layoutResult ->
-                            val position = layoutResult.getOffsetForPosition(pos)
-                            val annotated = annotatedString
-                                .getStringAnnotations(position, position)
-                                .firstOrNull()
-                            if (annotated?.tag == "url") {
-                                uriHandler.openUri(annotated.item)
-                            } else {
-                                onFallbackClick()
-                            }
-                        }
-                    })
-                }
-                .semantics {
-                    if (urls.size == 1) {
-                        role = Role.Button
-                        onClick("Link (${annotatedString.substring(urls[0].start, urls[0].end)}") {
-                            uriHandler.openUri(urls[0].item)
-                            true
-                        }
-                    } else {
-                        customActions = urls.map {
-                            CustomAccessibilityAction(
-                                "Link (${
-                                    annotatedString.substring(
-                                        it.start,
-                                        it.end
-                                    )
-                                })"
-                            ) {
-                                uriHandler.openUri(it.item)
-                                true
-                            }
-                        }
+                .conditionally(detectTaps) {
+                    pointerInput(Unit) {
+                        detectTapGestures(
+                            onTap = { pos ->
+                                layoutResult.value?.let { layoutResult ->
+                                    val position = layoutResult.getOffsetForPosition(pos)
+                                    val annotated = annotatedString
+                                        .getStringAnnotations(position, position)
+                                        .firstOrNull()
+                                    if (annotated?.tag == "url") {
+                                        uriHandler.openUri(annotated.item)
+                                    } else {
+                                        onFallbackClick()
+                                    }
+                                }
+                            },
+                            onLongPress = if (onLongClick != null) {
+                                { onLongClick() }
+                            } else null,
+                        )
                     }
+                        .semantics {
+                            if (urls.size == 1) {
+                                role = Role.Button
+                                onClick(
+                                    "Link (${
+                                        annotatedString.substring(
+                                            urls[0].start,
+                                            urls[0].end
+                                        )
+                                    }"
+                                ) {
+                                    uriHandler.openUri(urls[0].item)
+                                    true
+                                }
+                            } else {
+                                customActions = urls.map {
+                                    CustomAccessibilityAction(
+                                        "Link (${
+                                            annotatedString.substring(
+                                                it.start,
+                                                it.end
+                                            )
+                                        })"
+                                    ) {
+                                        uriHandler.openUri(it.item)
+                                        true
+                                    }
+                                }
+                            }
+                        }
                 }
         ),
         text = annotatedString,

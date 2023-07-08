@@ -36,8 +36,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeMediaFilterOptionsBottomPanel
+import com.thekeeperofpie.artistalleydatabase.compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBar
-import com.thekeeperofpie.artistalleydatabase.compose.NavMenuIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.StaticSearchBar
 import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
 
@@ -46,7 +46,7 @@ object AnimeIgnoreScreen {
 
     @Composable
     operator fun invoke(
-        onClickNav: () -> Unit = {},
+        onClickBack: () -> Unit = {},
         @StringRes titleRes: Int,
         viewModel: AnimeMediaIgnoreViewModel = hiltViewModel(),
         navigationCallback: AnimeNavigator.NavigationCallback =
@@ -64,7 +64,7 @@ object AnimeIgnoreScreen {
                     StaticSearchBar(
                         query = viewModel.query,
                         onQueryChange = { viewModel.query = it },
-                        leadingIcon = { NavMenuIconButton(onClickNav) },
+                        leadingIcon = { ArrowBackIconButton(onClickBack) },
                         placeholder = { Text(stringResource(titleRes)) },
                         trailingIcon = {
                             IconButton(onClick = { viewModel.query = "" }) {

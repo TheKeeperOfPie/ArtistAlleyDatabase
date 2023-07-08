@@ -7,6 +7,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.snapping.SnapLayoutInfoProvider
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.Arrangement
@@ -69,7 +70,6 @@ import androidx.core.graphics.ColorUtils
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.anilist.fragment.MediaPreviewWithDescription
 import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
@@ -78,8 +78,9 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaLargeCard
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
-import com.thekeeperofpie.artistalleydatabase.compose.NavMenuIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
+import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
+import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
@@ -93,15 +94,15 @@ object AnimeHomeScreen {
     @Composable
     operator fun invoke(
         viewModel: AnimeHomeViewModel = hiltViewModel<AnimeHomeViewModel>(),
-        onClickNav: () -> Unit = {},
+        upIconOption: UpIconOption?,
         navigationCallback: AnimeNavigator.NavigationCallback,
         scrollStateSaver: ScrollStateSaver,
         bottomNavigationState: BottomNavigationState,
     ) {
         var selectedTabIndex by rememberSaveable { mutableIntStateOf(0) }
         val colorCalculationState = rememberColorCalculationState(viewModel.colorMap)
-        val animeViewModel = hiltViewModel<AnimeHomeAnimeViewModel>()
-        val mangaViewModel = hiltViewModel<AnimeHomeMangaViewModel>()
+        val animeViewModel = hiltViewModel<AnimeHomeMediaViewModel.Anime>()
+        val mangaViewModel = hiltViewModel<AnimeHomeMediaViewModel.Manga>()
         val selectedItemTracker = remember { SelectedItemTracker() }
         LazyColumn(
             state = scrollStateSaver.lazyListState(),
@@ -113,7 +114,7 @@ object AnimeHomeScreen {
                 .nestedScroll(bottomNavigationState.nestedScrollConnection)
         ) {
             item {
-                Header(onClickNav = onClickNav, navigationCallback = navigationCallback)
+                Header(upIconOption = upIconOption, navigationCallback = navigationCallback)
             }
 
             item {
@@ -144,36 +145,8 @@ object AnimeHomeScreen {
                 0 -> {
                     list(
                         entry = animeViewModel.entry,
-                        data = {
-                            listOf(
-                                Triple(
-                                    "anime_trending",
-                                    R.string.anime_home_trending,
-                                    it.trending
-                                ),
-                                Triple(
-                                    "anime_popular_this_season",
-                                    R.string.anime_home_popular_this_season,
-                                    it.popularThisSeason
-                                ),
-                                Triple(
-                                    "anime_popular_last_season",
-                                    R.string.anime_home_popular_last_season,
-                                    it.popularLastSeason
-                                ),
-                                Triple(
-                                    "anime_popular_next_season",
-                                    R.string.anime_home_popular_next_season,
-                                    it.popularNextSeason
-                                ),
-                                Triple(
-                                    "anime_popular",
-                                    R.string.anime_home_popular,
-                                    it.popular
-                                ),
-                                Triple("anime_top", R.string.anime_home_top, it.top),
-                            )
-                        },
+                        data = { it.data },
+                        onLongClickEntry = animeViewModel::onLongClickEntry,
                         selectedItemTracker = selectedItemTracker,
                         colorCalculationState = colorCalculationState,
                         navigationCallback = navigationCallback,
@@ -182,21 +155,8 @@ object AnimeHomeScreen {
                 1 -> {
                     list(
                         entry = mangaViewModel.entry,
-                        data = {
-                            listOf(
-                                Triple(
-                                    "manga_trending",
-                                    R.string.anime_home_trending,
-                                    it.trending
-                                ),
-                                Triple(
-                                    "manga_popular",
-                                    R.string.anime_home_popular,
-                                    it.popular
-                                ),
-                                Triple("manga_top", R.string.anime_home_top, it.top),
-                            )
-                        },
+                        data = { it.data },
+                        onLongClickEntry = mangaViewModel::onLongClickEntry,
                         selectedItemTracker = selectedItemTracker,
                         colorCalculationState = colorCalculationState,
                         navigationCallback = navigationCallback,
@@ -208,12 +168,16 @@ object AnimeHomeScreen {
 
     @Composable
     private fun Header(
-        onClickNav: () -> Unit,
+        upIconOption: UpIconOption?,
         navigationCallback: AnimeNavigator.NavigationCallback
     ) {
         TopAppBar(
-            title = {},
-            navigationIcon = { NavMenuIconButton(onClickNav) },
+            title = { Text(text = stringResource(R.string.anime_home_label)) },
+            navigationIcon = {
+                if (upIconOption != null) {
+                    UpIconButton(upIconOption)
+                }
+            },
             actions = {
                 IconButton(onClick = navigationCallback::onAiringScheduleClick) {
                     Icon(
@@ -229,7 +193,8 @@ object AnimeHomeScreen {
 
     private fun <Entry> LazyListScope.list(
         entry: Entry?,
-        data: (Entry) -> List<Triple<String, Int, List<MediaPreviewWithDescription>>>,
+        data: (Entry) -> List<Triple<String, Int, List<AnimeHomeDataEntry.MediaEntry>>>,
+        onLongClickEntry: (AnimeHomeDataEntry.MediaEntry) -> Unit,
         selectedItemTracker: SelectedItemTracker,
         colorCalculationState: ColorCalculationState,
         navigationCallback: AnimeNavigator.NavigationCallback,
@@ -252,6 +217,7 @@ object AnimeHomeScreen {
                 key = key,
                 titleRes = titleRes,
                 entries = entries,
+                onLongClickEntry = onLongClickEntry,
                 selectedItemTracker = selectedItemTracker,
                 navigationCallback = navigationCallback,
                 colorCalculationState = colorCalculationState,
@@ -262,7 +228,8 @@ object AnimeHomeScreen {
     private fun LazyListScope.mediaRow(
         key: String,
         @StringRes titleRes: Int,
-        entries: List<MediaPreviewWithDescription>,
+        entries: List<AnimeHomeDataEntry.MediaEntry>,
+        onLongClickEntry: (AnimeHomeDataEntry.MediaEntry) -> Unit,
         selectedItemTracker: SelectedItemTracker,
         colorCalculationState: ColorCalculationState,
         navigationCallback: AnimeNavigator.NavigationCallback,
@@ -285,10 +252,12 @@ object AnimeHomeScreen {
                 contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 12.dp),
                 pageSpacing = 16.dp,
             ) {
+                val entry = entries[it]
                 AnimeMediaLargeCard(
                     screenKey = SCREEN_KEY,
                     // TODO: Move entry wrapping elsewhere and abstract
-                    entry = AnimeMediaLargeCard.Entry(entries[it]),
+                    entry = AnimeMediaLargeCard.Entry(entry.media, entry.ignored),
+                    onLongClick = { onLongClickEntry(entry) },
                     colorCalculationState = colorCalculationState,
                     navigationCallback = navigationCallback,
                 )
@@ -313,15 +282,16 @@ object AnimeHomeScreen {
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 flingBehavior = rememberSnapFlingBehavior(snapLayoutInfoProvider)
             ) {
-                itemsIndexed(entries, { _, item -> item.id }) { index, item ->
-                    val id = item.id.toString()
+                itemsIndexed(entries, { _, item -> item.media.id }) { index, item ->
+                    val media = item.media
+                    val id = media.id.toString()
                     val colors = colorCalculationState.colorMap[id]
                     val animationProgress by animateIntAsState(
                         if (colors == null) 0 else 255,
                         label = "Media card color fade in",
                     )
 
-                    val surfaceColor = item.coverImage?.color?.let(ComposeColorUtils::hexToColor)
+                    val surfaceColor = media.coverImage?.color?.let(ComposeColorUtils::hexToColor)
                         ?: MaterialTheme.colorScheme.surface
                     val containerColor = when {
                         colors == null || animationProgress == 0 -> surfaceColor
@@ -339,37 +309,43 @@ object AnimeHomeScreen {
 
                     var widthToHeightRatio by remember(id) { mutableStateOf<Float?>(null) }
                     val onClick = {
-                        navigationCallback.onMediaClick(item, widthToHeightRatio)
+                        navigationCallback.onMediaClick(media, widthToHeightRatio)
                     }
+
+                    val baseModifier = Modifier.animateItemPlacement()
+                        .clip(RoundedCornerShape(12.dp))
+                        .combinedClickable(
+                            onClick = onClick,
+                            onLongClick = { onLongClickEntry(item) },
+                        )
+                        .alpha(if (item.ignored) 0.38f else 1f)
 
                     val card: @Composable (@Composable ColumnScope.() -> Unit) -> Unit =
                         if (selectedItemTracker.keyToPosition[key]?.second == index) {
                             {
                                 OutlinedCard(
-                                    onClick = onClick,
                                     colors = CardDefaults.outlinedCardColors(
                                         containerColor = containerColor,
                                     ),
                                     border = cardOutlineBorder,
                                     content = it,
-                                    modifier = Modifier.animateItemPlacement()
+                                    modifier = baseModifier
                                 )
                             }
                         } else {
                             {
                                 ElevatedCard(
-                                    onClick = onClick,
                                     colors = CardDefaults.elevatedCardColors(
                                         containerColor = containerColor,
                                     ),
                                     content = it,
-                                    modifier = Modifier.animateItemPlacement()
+                                    modifier = baseModifier
                                 )
                             }
                         }
 
                     SharedElement(
-                        key = "anime_media_${item.id}_image",
+                        key = "anime_media_${media.id}_image",
                         screenKey = SCREEN_KEY,
                     ) {
                         card {
@@ -379,7 +355,7 @@ object AnimeHomeScreen {
                             )
                             AsyncImage(
                                 model = ImageRequest.Builder(LocalContext.current)
-                                    .data(item.coverImage?.extraLarge)
+                                    .data(media.coverImage?.extraLarge)
                                     .crossfade(false)
                                     .allowHardware(colorCalculationState.hasColor(id))
                                     .size(

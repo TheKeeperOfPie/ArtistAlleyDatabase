@@ -36,6 +36,7 @@ import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.compose.AppBar
+import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.entry.EntryImage
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -45,7 +46,7 @@ object BrowseScreen {
     @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
     @Composable
     operator fun invoke(
-        onClickNav: () -> Unit = {},
+        upIconOption: UpIconOption?,
         tabs: List<TabContent>,
         onClick: (tabContent: TabContent, value: BrowseEntryModel) -> Unit = { _, _ -> },
         onPageRequested: (page: Int) -> Unit = {},
@@ -62,7 +63,7 @@ object BrowseScreen {
                     AppBar(
                         text = stringResource(R.string.browse),
                         colors = colors,
-                        onClickNav = onClickNav
+                        upIconOption = upIconOption,
                     )
                     ScrollableTabRow(
                         selectedTabIndex = selectedTabIndex,

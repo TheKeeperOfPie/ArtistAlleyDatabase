@@ -49,13 +49,14 @@ import com.thekeeperofpie.artistalleydatabase.cds.grid.CdEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
+import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 
 object AnimeNavigator {
 
     fun initialize(
         navHostController: NavHostController,
         navGraphBuilder: NavGraphBuilder,
-        onClickNav: () -> Unit,
+        upIconOption: UpIconOption?,
         onClickAuth: () -> Unit,
         onClickSettings: () -> Unit,
         navigationCallback: NavigationCallback,
@@ -66,7 +67,7 @@ object AnimeNavigator {
         ) {
             val viewModel = hiltViewModel<AnimeRootViewModel>()
             AnimeRootScreen(
-                onClickNav = onClickNav,
+                upIconOption = upIconOption,
                 needAuth = { viewModel.needsAuth.collectAsState(true).value },
                 onClickAuth = onClickAuth,
                 onSubmitAuthToken = viewModel::onSubmitAuthToken,
@@ -94,13 +95,7 @@ object AnimeNavigator {
             SearchScreen(
                 title = title,
                 tagId = it.arguments?.getString("tagId"),
-                onClickNav = {
-                    if (title == null) {
-                        onClickNav()
-                    } else {
-                        navHostController.popBackStack()
-                    }
-                },
+                upIconOption = UpIconOption.Back(navHostController),
                 navigationCallback = navigationCallback,
                 scrollStateSaver = ScrollStateSaver(),
             )
@@ -129,8 +124,7 @@ object AnimeNavigator {
             UserListScreen(
                 userId = userId,
                 mediaType = mediaType,
-                onClickNav = { navHostController.popBackStack() },
-                showDrawerHandle = false,
+                upIconOption = UpIconOption.Back(navHostController),
                 navigationCallback = navigationCallback,
                 scrollStateSaver = ScrollStateSaver.fromMap(
                     AnimeNavDestinations.USER_LIST.id,
@@ -413,7 +407,7 @@ object AnimeNavigator {
             val viewModel = hiltViewModel<AnimeMediaIgnoreViewModel>()
                 .apply { initialize(mediaType) }
             AnimeIgnoreScreen(
-                onClickNav = { navHostController.popBackStack() },
+                onClickBack = { navHostController.popBackStack() },
                 titleRes = if (mediaType == MediaType.ANIME) {
                     R.string.anime_media_ignore_title_anime
                 } else {
@@ -547,7 +541,7 @@ object AnimeNavigator {
     fun SearchScreen(
         title: String?,
         tagId: String?,
-        onClickNav: () -> Unit,
+        upIconOption: UpIconOption?,
         navigationCallback: NavigationCallback,
         scrollStateSaver: ScrollStateSaver,
         bottomNavigationState: BottomNavigationState? = null,
@@ -562,7 +556,7 @@ object AnimeNavigator {
             )
         }
         AnimeSearchScreen(
-            onClickNav = onClickNav,
+            upIconOption = upIconOption,
             isRoot = title == null,
             title = title?.let { Either.Right(it) },
             viewModel = viewModel,
@@ -591,8 +585,7 @@ object AnimeNavigator {
     fun UserListScreen(
         userId: String?,
         mediaType: MediaType,
-        onClickNav: () -> Unit,
-        showDrawerHandle: Boolean,
+        upIconOption: UpIconOption?,
         navigationCallback: NavigationCallback,
         scrollStateSaver: ScrollStateSaver,
         bottomNavigationState: BottomNavigationState? = null,
@@ -600,8 +593,7 @@ object AnimeNavigator {
         val viewModel = hiltViewModel<AnimeUserListViewModel>(key = mediaType.rawValue)
             .apply { initialize(userId, mediaType) }
         AnimeUserListScreen(
-            onClickNav = onClickNav,
-            showDrawerHandle = showDrawerHandle,
+            upIconOption = upIconOption,
             viewModel = viewModel,
             navigationCallback = navigationCallback,
             scrollStateSaver = scrollStateSaver,

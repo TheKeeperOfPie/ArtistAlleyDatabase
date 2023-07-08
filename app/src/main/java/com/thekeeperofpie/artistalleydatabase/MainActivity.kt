@@ -64,6 +64,7 @@ import com.thekeeperofpie.artistalleydatabase.art.ArtNavDestinations
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseScreen
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseViewModel
 import com.thekeeperofpie.artistalleydatabase.cds.CdEntryNavigator
+import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils.navToEntryDetails
 import com.thekeeperofpie.artistalleydatabase.export.ExportScreen
 import com.thekeeperofpie.artistalleydatabase.export.ExportViewModel
@@ -129,6 +130,9 @@ class MainActivity : ComponentActivity() {
                     val navDrawerItems = NavDrawerItems.values()
 
                     fun onClickNav() = scope.launch { drawerState.open() }
+                    val navDrawerUpIconOption = UpIconOption.NavDrawer(::onClickNav).takeIf {
+                        settings.unlockAllFeatures.collectAsState().value
+                    }
 
                     ModalNavigationDrawer(
                         drawerState = drawerState,
@@ -148,8 +152,8 @@ class MainActivity : ComponentActivity() {
                                         scope.launch { drawerState.close() }
                                     } else {
                                         selectedRouteIndex = it
-                                        val newId = navDrawerItems[it].id
-                                        navController.navigate(newId) {
+                                        val navDrawerItem = navDrawerItems[it]
+                                        navController.navigate(navDrawerItem.route) {
                                             launchSingleTop = true
                                             restoreState = true
                                             val rootRoute = navController.currentBackStackEntry
@@ -162,7 +166,8 @@ class MainActivity : ComponentActivity() {
                                             }
                                         }
                                         if (startDestinationFromIntent == null) {
-                                            settings.navDrawerStartDestination.value = newId
+                                            settings.navDrawerStartDestination.value =
+                                                navDrawerItem.id
                                         }
                                     }
                                 },
@@ -189,7 +194,7 @@ class MainActivity : ComponentActivity() {
                                         AnimeNavigator.initialize(
                                             navHostController = navController,
                                             navGraphBuilder = this,
-                                            onClickNav = ::onClickNav,
+                                            upIconOption = navDrawerUpIconOption,
                                             onClickAuth = {
                                                 aniListOAuthStore.launchAuthRequest(
                                                     this@MainActivity
@@ -215,7 +220,7 @@ class MainActivity : ComponentActivity() {
                                         composable(AppNavDestinations.BROWSE.id) {
                                             val viewModel = hiltViewModel<BrowseViewModel>()
                                             BrowseScreen(
-                                                onClickNav = ::onClickNav,
+                                                upIconOption = navDrawerUpIconOption,
                                                 tabs = viewModel.tabs,
                                                 onClick = { tabContent, entry ->
                                                     viewModel.onSelectEntry(
@@ -231,7 +236,7 @@ class MainActivity : ComponentActivity() {
                                         composable(AppNavDestinations.SEARCH.id) {
                                             val viewModel = hiltViewModel<AdvancedSearchViewModel>()
                                             AdvancedSearchScreen(
-                                                onClickNav = ::onClickNav,
+                                                upIconOption = navDrawerUpIconOption,
                                                 loading = { false },
                                                 sections = { viewModel.sections },
                                                 onClickClear = viewModel::onClickClear,
@@ -248,7 +253,7 @@ class MainActivity : ComponentActivity() {
                                         composable(AppNavDestinations.IMPORT.id) {
                                             val viewModel = hiltViewModel<ImportViewModel>()
                                             ImportScreen(
-                                                onClickNav = ::onClickNav,
+                                                upIconOption = navDrawerUpIconOption,
                                                 uriString = viewModel.importUriString.orEmpty(),
                                                 onUriStringEdit = {
                                                     viewModel.importUriString = it
@@ -278,7 +283,7 @@ class MainActivity : ComponentActivity() {
                                         composable(AppNavDestinations.EXPORT.id) {
                                             val viewModel = hiltViewModel<ExportViewModel>()
                                             ExportScreen(
-                                                onClickNav = ::onClickNav,
+                                                upIconOption = navDrawerUpIconOption,
                                                 uriString = { viewModel.exportUriString.orEmpty() },
                                                 onUriStringEdit = {
                                                     viewModel.exportUriString = it
@@ -308,9 +313,8 @@ class MainActivity : ComponentActivity() {
                                             val viewModel = hiltViewModel<SearchResultsViewModel>()
                                             viewModel.initialize(queryId)
                                             SearchResultsScreen(
-                                                onClickBack = it.destination.parent?.let {
-                                                    { navController.popBackStack() }
-                                                },
+                                                upIconOption = it.destination.parent
+                                                    ?.let { UpIconOption.Back(navController) },
                                                 loading = { viewModel.loading },
                                                 entries = { viewModel.entries.collectAsLazyPagingItems() },
                                                 selectedItems = { viewModel.selectedEntries.keys },
@@ -329,14 +333,23 @@ class MainActivity : ComponentActivity() {
                                                 onClickEdit = {
                                                     navController.navToEntryDetails(
                                                         ArtNavDestinations.ENTRY_DETAILS.id,
-                                                        viewModel.selectedEntries.values.map { it.id.valueId }
+                                                        viewModel.selectedEntries.values
+                                                            .map { it.id.valueId }
                                                     )
                                                 },
                                                 onConfirmDelete = viewModel::onDeleteSelected,
                                             )
                                         }
 
-                                        composable(AppNavDestinations.SETTINGS.id) {
+                                        composable(
+                                            route = AppNavDestinations.SETTINGS.id,
+                                            arguments = listOf(
+                                                navArgument("root") {
+                                                    type = NavType.StringType
+                                                    nullable = true
+                                                },
+                                            )
+                                        ) {
                                             val viewModel =
                                                 hiltViewModel<SettingsViewModel>().apply {
                                                     initialize(
@@ -354,22 +367,15 @@ class MainActivity : ComponentActivity() {
                                                         }
                                                     )
                                                 }
+                                            val root = it.arguments?.getString("root")
+                                                ?.toBooleanStrictOrNull() == true
                                             SettingsScreen(
-                                                onClickNav = ::onClickNav,
-                                                onClickAniListClear = viewModel::clearAniListCache,
-                                                onClickVgmdbClear = viewModel::clearVgmdbCache,
-                                                onClickDatabaseFetch = viewModel::onClickDatabaseFetch,
-                                                onClickClearDatabaseById = viewModel::onClickClearDatabaseById,
-                                                onClickRebuildDatabase = viewModel::onClickRebuildDatabase,
-                                                onClickCropClear = viewModel::onClickCropClear,
-                                                onClickClearAniListOAuth = viewModel::onClickClearAniListOAuth,
-                                                networkLoggingLevel = { viewModel.networkLoggingLevel.collectAsState().value },
-                                                onChangeNetworkLoggingLevel = viewModel::onChangeNetworkLoggingLevel,
-                                                hideStatusBar = { viewModel.hideStatusBar.collectAsState().value },
-                                                onHideStatusBarChanged = viewModel::onHideStatusBarChanged,
+                                                viewModel = viewModel,
+                                                upIconOption = navDrawerUpIconOption.takeIf { root }
+                                                    ?: UpIconOption.Back(navController),
                                                 onClickShowLastCrash = {
                                                     navController.navigate(AppNavDestinations.CRASH.id)
-                                                }
+                                                },
                                             )
                                         }
 

@@ -17,6 +17,7 @@ import androidx.compose.ui.res.stringResource
 import com.thekeeperofpie.artistalleydatabase.R
 import com.thekeeperofpie.artistalleydatabase.compose.AppBar
 import com.thekeeperofpie.artistalleydatabase.compose.ButtonFooter
+import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.entry.EntryForm
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
 
@@ -25,7 +26,7 @@ object AdvancedSearchScreen {
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     operator fun invoke(
-        onClickNav: () -> Unit = {},
+        upIconOption: UpIconOption?,
         loading: () -> Boolean = { false },
         sections: () -> List<EntrySection>,
         onClickClear: () -> Unit,
@@ -36,7 +37,7 @@ object AdvancedSearchScreen {
                 Column {
                     AppBar(
                         text = stringResource(R.string.nav_drawer_search),
-                        onClickNav = onClickNav
+                        upIconOption = upIconOption,
                     )
                 }
             },

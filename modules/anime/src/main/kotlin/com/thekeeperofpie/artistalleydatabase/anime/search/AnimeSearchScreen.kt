@@ -53,10 +53,11 @@ import com.thekeeperofpie.artistalleydatabase.anime.user.UserListRow
 import com.thekeeperofpie.artistalleydatabase.compose.AppBar
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBar
-import com.thekeeperofpie.artistalleydatabase.compose.NavMenuIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.NestedScrollSplitter
 import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
 import com.thekeeperofpie.artistalleydatabase.compose.StaticSearchBar
+import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
+import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -64,7 +65,7 @@ object AnimeSearchScreen {
 
     @Composable
     operator fun invoke(
-        onClickNav: () -> Unit = {},
+        upIconOption: UpIconOption? = null,
         isRoot: Boolean = true,
         title: Either<Int, String>? = null,
         viewModel: AnimeSearchViewModel = hiltViewModel(),
@@ -88,7 +89,9 @@ object AnimeSearchScreen {
                             StaticSearchBar(
                                 query = viewModel.query,
                                 onQueryChange = { viewModel.query = it },
-                                leadingIcon = { NavMenuIconButton(onClickNav) },
+                                leadingIcon = if (upIconOption != null) {
+                                    { UpIconButton(upIconOption) }
+                                } else null,
                                 placeholder = {
                                     Text(
                                         stringResource(
@@ -155,7 +158,7 @@ object AnimeSearchScreen {
                     }
                     AppBar(
                         text = text,
-                        onClickBack = onClickNav,
+                        upIconOption = upIconOption,
                         scrollBehavior = scrollBehavior,
                     )
                 }

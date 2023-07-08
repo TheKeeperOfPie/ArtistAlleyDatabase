@@ -168,18 +168,19 @@ object AiringScheduleScreen {
                 ) {
                     items(
                         count = data.itemCount,
-                        key = data.itemKey { it.id },
+                        key = data.itemKey { it.data.id },
                         contentType = data.itemContentType { "airingSchedule" },
                     ) { index ->
-                        val schedule = data[index]
-                        val media = schedule?.media ?: return@items
+                        val schedule =  data[index]
+                        val media = schedule?.data?.media ?: return@items
                         AnimeMediaListRow(
                             screenKey = SCREEN_KEY,
-                            entry = AnimeMediaListRow.MediaEntry(media),
+                            entry = AnimeMediaListRow.MediaEntry(media, schedule.ignored),
+                            onLongClick = viewModel::onLongClickEntry,
                             nextAiringEpisode = NextAiringEpisode(
-                                id = schedule.id,
-                                episode = schedule.episode,
-                                airingAt = schedule.airingAt,
+                                id = schedule.data.id,
+                                episode = schedule.data.episode,
+                                airingAt = schedule.data.airingAt,
                             ),
                             colorCalculationState = colorCalculationState,
                             navigationCallback = navigationCallback,

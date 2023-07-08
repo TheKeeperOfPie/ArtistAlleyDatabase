@@ -48,6 +48,9 @@ class SettingsViewModel @Inject constructor(
     val hideStatusBar: StateFlow<Boolean>
         get() = settingsProvider.hideStatusBar
 
+    val unlockAllFeatures: StateFlow<Boolean>
+        get() = settingsProvider.unlockAllFeatures
+
     private var onClickDatabaseFetch: (WorkManager) -> Unit = {}
 
     fun initialize(onClickDatabaseFetch: (WorkManager) -> Unit) {
@@ -160,6 +163,10 @@ class SettingsViewModel @Inject constructor(
 
     fun onHideStatusBarChanged(hide: Boolean) {
         settingsProvider.hideStatusBar.value = hide
+    }
+
+    fun onUnlockAllFeaturesChanged(hide: Boolean) {
+        settingsProvider.unlockAllFeatures.value = hide
     }
 
     fun checkMismatchedCdEntryData() {

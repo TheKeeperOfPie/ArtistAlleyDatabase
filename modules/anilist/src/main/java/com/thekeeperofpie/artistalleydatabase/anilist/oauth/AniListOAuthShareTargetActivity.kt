@@ -39,6 +39,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.R
 import com.thekeeperofpie.artistalleydatabase.compose.AppBar
 import dagger.hilt.android.AndroidEntryPoint
 
+@OptIn(ExperimentalMaterial3Api::class)
 @AndroidEntryPoint
 class AniListOAuthShareTargetActivity : ComponentActivity() {
 
@@ -55,7 +56,6 @@ class AniListOAuthShareTargetActivity : ComponentActivity() {
                 ) {
                     Scaffold(
                         topBar = {
-                            @OptIn(ExperimentalMaterial3Api::class)
                             AppBar(text = stringResource(UtilsStringR.app_name))
                         },
                     ) {
