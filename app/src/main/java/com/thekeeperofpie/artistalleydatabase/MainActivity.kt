@@ -44,6 +44,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -117,316 +118,80 @@ class MainActivity : ComponentActivity() {
 
         val startDestinationFromIntent = intent.getStringExtra(STARTING_NAV_DESTINATION)
         val startDestinationFromSettings = settings.navDrawerStartDestination.value
+            .takeUnless { it == NavDrawerItems.SETTINGS.id }
         val startDestination = (startDestinationFromIntent
             ?: startDestinationFromSettings)
             ?.let { startId -> NavDrawerItems.values().find { it.id == startId }?.id }
             ?: AnimeNavDestinations.HOME.id
         setContent {
-            val navController = rememberNavController()
-            ArtistAlleyDatabaseTheme(navController) {
+            val navHostController = rememberNavController()
+            ArtistAlleyDatabaseTheme(navHostController) {
                 Surface {
                     val drawerState = rememberDrawerState(DrawerValue.Closed)
                     val scope = rememberCoroutineScope()
                     val navDrawerItems = NavDrawerItems.values()
 
                     fun onClickNav() = scope.launch { drawerState.open() }
-                    val navDrawerUpIconOption = UpIconOption.NavDrawer(::onClickNav).takeIf {
-                        settings.unlockAllFeatures.collectAsState().value
-                    }
+                    val unlockAllFeatures = settings.unlockAllFeatures.collectAsState().value
 
-                    ModalNavigationDrawer(
-                        drawerState = drawerState,
-                        drawerContent = {
-                            // TODO: This is not a good way to to infer the selected root
-                            var selectedRouteIndex by rememberSaveable {
-                                mutableIntStateOf(
-                                    NavDrawerItems.values()
-                                        .indexOfFirst { it.id == startDestination })
-                            }
+                    if (unlockAllFeatures) {
+                        ModalNavigationDrawer(
+                            drawerState = drawerState,
+                            drawerContent = {
+                                // TODO: This is not a good way to to infer the selected root
+                                var selectedRouteIndex by rememberSaveable {
+                                    mutableIntStateOf(
+                                        NavDrawerItems.values()
+                                            .indexOfFirst { it.id == startDestination })
+                                }
 
-                            StartDrawer(
-                                navDrawerItems = { navDrawerItems },
-                                selectedIndex = { selectedRouteIndex },
-                                onSelectIndex = {
-                                    if (selectedRouteIndex == it) {
-                                        scope.launch { drawerState.close() }
-                                    } else {
-                                        selectedRouteIndex = it
-                                        val navDrawerItem = navDrawerItems[it]
-                                        navController.navigate(navDrawerItem.route) {
-                                            launchSingleTop = true
-                                            restoreState = true
-                                            val rootRoute = navController.currentBackStackEntry
-                                                ?.destination?.route
-                                            if (rootRoute != null) {
-                                                popUpTo(rootRoute) {
-                                                    inclusive = true
-                                                    saveState = true
+                                StartDrawer(
+                                    navDrawerItems = { navDrawerItems },
+                                    selectedIndex = { selectedRouteIndex },
+                                    onSelectIndex = {
+                                        if (selectedRouteIndex == it) {
+                                            scope.launch { drawerState.close() }
+                                        } else {
+                                            selectedRouteIndex = it
+                                            val navDrawerItem = navDrawerItems[it]
+                                            navHostController.navigate(navDrawerItem.route) {
+                                                launchSingleTop = true
+                                                restoreState = true
+                                                val rootRoute =
+                                                    navHostController.currentBackStackEntry
+                                                        ?.destination?.route
+                                                if (rootRoute != null) {
+                                                    popUpTo(rootRoute) {
+                                                        inclusive = true
+                                                        saveState = true
+                                                    }
                                                 }
                                             }
+                                            if (startDestinationFromIntent == null
+                                                && navDrawerItem != NavDrawerItems.SETTINGS) {
+                                                settings.navDrawerStartDestination.value =
+                                                    navDrawerItem.id
+                                            }
                                         }
-                                        if (startDestinationFromIntent == null) {
-                                            settings.navDrawerStartDestination.value =
-                                                navDrawerItem.id
-                                        }
-                                    }
-                                },
-                                onCloseDrawer = { scope.launch { drawerState.close() } },
+                                    },
+                                    onCloseDrawer = { scope.launch { drawerState.close() } },
+                                )
+                            }
+                        ) {
+                            Content(
+                                navHostController = navHostController,
+                                unlockAllFeatures = true,
+                                onClickNav = ::onClickNav,
+                                startDestination = startDestination,
                             )
                         }
-                    ) {
-                        Column(modifier = Modifier.fillMaxSize()) {
-                            val uriHandler = LocalUriHandler.current
-                            val navigationCallback =
-                                AnimeNavigator.NavigationCallback(
-                                    navController,
-                                    cdEntryNavigator,
-                                    uriHandler::openUri,
-                                )
-                            Box(
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                SharedElementsRoot {
-                                    NavHost(
-                                        navController = navController,
-                                        startDestination = startDestination,
-                                    ) {
-                                        AnimeNavigator.initialize(
-                                            navHostController = navController,
-                                            navGraphBuilder = this,
-                                            upIconOption = navDrawerUpIconOption,
-                                            onClickAuth = {
-                                                aniListOAuthStore.launchAuthRequest(
-                                                    this@MainActivity
-                                                )
-                                            },
-                                            onClickSettings = {
-                                                navController.navigate(AppNavDestinations.SETTINGS.id)
-                                            },
-                                            navigationCallback = navigationCallback,
-                                        )
-
-                                        artEntryNavigator.initialize(
-                                            ::onClickNav,
-                                            navController,
-                                            this
-                                        )
-                                        cdEntryNavigator.initialize(
-                                            ::onClickNav,
-                                            navController,
-                                            this
-                                        )
-
-                                        composable(AppNavDestinations.BROWSE.id) {
-                                            val viewModel = hiltViewModel<BrowseViewModel>()
-                                            BrowseScreen(
-                                                upIconOption = navDrawerUpIconOption,
-                                                tabs = viewModel.tabs,
-                                                onClick = { tabContent, entry ->
-                                                    viewModel.onSelectEntry(
-                                                        navController,
-                                                        tabContent,
-                                                        entry
-                                                    )
-                                                },
-                                                onPageRequested = viewModel::onPageRequested,
-                                            )
-                                        }
-
-                                        composable(AppNavDestinations.SEARCH.id) {
-                                            val viewModel = hiltViewModel<AdvancedSearchViewModel>()
-                                            AdvancedSearchScreen(
-                                                upIconOption = navDrawerUpIconOption,
-                                                loading = { false },
-                                                sections = { viewModel.sections },
-                                                onClickClear = viewModel::onClickClear,
-                                                onClickSearch = {
-                                                    val queryId = viewModel.onClickSearch()
-                                                    navController.navigate(
-                                                        AppNavDestinations.SEARCH_RESULTS.id +
-                                                                "?queryId=$queryId"
-                                                    )
-                                                },
-                                            )
-                                        }
-
-                                        composable(AppNavDestinations.IMPORT.id) {
-                                            val viewModel = hiltViewModel<ImportViewModel>()
-                                            ImportScreen(
-                                                upIconOption = navDrawerUpIconOption,
-                                                uriString = viewModel.importUriString.orEmpty(),
-                                                onUriStringEdit = {
-                                                    viewModel.importUriString = it
-                                                },
-                                                onContentUriSelected = {
-                                                    viewModel.importUriString = it?.toString()
-                                                },
-                                                dryRun = { viewModel.dryRun },
-                                                onToggleDryRun = {
-                                                    viewModel.dryRun = !viewModel.dryRun
-                                                },
-                                                replaceAll = { viewModel.replaceAll },
-                                                onToggleReplaceAll = {
-                                                    viewModel.replaceAll = !viewModel.replaceAll
-                                                },
-                                                syncAfter = { viewModel.syncAfter },
-                                                onToggleSyncAfter = {
-                                                    viewModel.syncAfter = !viewModel.syncAfter
-                                                },
-                                                onClickImport = viewModel::onClickImport,
-                                                importProgress = { viewModel.importProgress },
-                                                errorRes = { viewModel.errorResource },
-                                                onErrorDismiss = { viewModel.errorResource = null }
-                                            )
-                                        }
-
-                                        composable(AppNavDestinations.EXPORT.id) {
-                                            val viewModel = hiltViewModel<ExportViewModel>()
-                                            ExportScreen(
-                                                upIconOption = navDrawerUpIconOption,
-                                                uriString = { viewModel.exportUriString.orEmpty() },
-                                                onUriStringEdit = {
-                                                    viewModel.exportUriString = it
-                                                },
-                                                onContentUriSelected = {
-                                                    viewModel.exportUriString = it?.toString()
-                                                },
-                                                onClickExport = viewModel::onClickExport,
-                                                exportProgress = { viewModel.exportProgress },
-                                                errorRes = { viewModel.errorResource },
-                                                onErrorDismiss = { viewModel.errorResource = null }
-                                            )
-                                        }
-
-                                        composable(
-                                            route = AppNavDestinations.SEARCH_RESULTS.id +
-                                                    "?queryId={queryId}",
-                                            arguments = listOf(
-                                                navArgument("queryId") {
-                                                    type = NavType.StringType
-                                                    nullable = false
-                                                },
-                                            )
-                                        ) {
-                                            val arguments = it.arguments!!
-                                            val queryId = arguments.getString("queryId")!!
-                                            val viewModel = hiltViewModel<SearchResultsViewModel>()
-                                            viewModel.initialize(queryId)
-                                            SearchResultsScreen(
-                                                upIconOption = it.destination.parent
-                                                    ?.let { UpIconOption.Back(navController) },
-                                                loading = { viewModel.loading },
-                                                entries = { viewModel.entries.collectAsLazyPagingItems() },
-                                                selectedItems = { viewModel.selectedEntries.keys },
-                                                onClickEntry = { index, entry ->
-                                                    if (viewModel.selectedEntries.isNotEmpty()) {
-                                                        viewModel.selectEntry(index, entry)
-                                                    } else {
-                                                        navController.navToEntryDetails(
-                                                            route = ArtNavDestinations.ENTRY_DETAILS.id,
-                                                            listOf(entry.id.valueId)
-                                                        )
-                                                    }
-                                                },
-                                                onLongClickEntry = viewModel::selectEntry,
-                                                onClickClear = viewModel::clearSelected,
-                                                onClickEdit = {
-                                                    navController.navToEntryDetails(
-                                                        ArtNavDestinations.ENTRY_DETAILS.id,
-                                                        viewModel.selectedEntries.values
-                                                            .map { it.id.valueId }
-                                                    )
-                                                },
-                                                onConfirmDelete = viewModel::onDeleteSelected,
-                                            )
-                                        }
-
-                                        composable(
-                                            route = AppNavDestinations.SETTINGS.id,
-                                            arguments = listOf(
-                                                navArgument("root") {
-                                                    type = NavType.StringType
-                                                    nullable = true
-                                                },
-                                            )
-                                        ) {
-                                            val viewModel =
-                                                hiltViewModel<SettingsViewModel>().apply {
-                                                    initialize(
-                                                        onClickDatabaseFetch = {
-                                                            val request =
-                                                                OneTimeWorkRequestBuilder<DatabaseSyncWorker>()
-                                                                    .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
-                                                                    .build()
-
-                                                            it.enqueueUniqueWork(
-                                                                DatabaseSyncWorker.UNIQUE_WORK_NAME,
-                                                                ExistingWorkPolicy.REPLACE,
-                                                                request
-                                                            )
-                                                        }
-                                                    )
-                                                }
-                                            val root = it.arguments?.getString("root")
-                                                ?.toBooleanStrictOrNull() == true
-                                            SettingsScreen(
-                                                viewModel = viewModel,
-                                                upIconOption = navDrawerUpIconOption.takeIf { root }
-                                                    ?: UpIconOption.Back(navController),
-                                                onClickShowLastCrash = {
-                                                    navController.navigate(AppNavDestinations.CRASH.id)
-                                                },
-                                            )
-                                        }
-
-                                        composable(
-                                            route = AppNavDestinations.CRASH.id,
-                                            deepLinks = listOf(
-                                                navDeepLink {
-                                                    action =
-                                                        scopedApplication.mainActivityInternalAction
-                                                    uriPattern =
-                                                        "${scopedApplication.app.packageName}:///${AppNavDestinations.CRASH.id}"
-                                                }
-                                            )
-                                        ) {
-                                            SideEffect { settings.lastCrashShown.value = true }
-                                            CrashScreen(
-                                                settings = settings,
-                                                onClickBack = { navController.popBackStack() },
-                                            )
-                                        }
-                                    }
-                                }
-
-                                // Ignore touch events to allow drawer swipe to work
-                                Box(
-                                    Modifier
-                                        .fillMaxHeight()
-                                        .width(16.dp)
-                                        .align(Alignment.CenterStart)
-                                        .clickable(
-                                            interactionSource = remember { MutableInteractionSource() },
-                                            indication = null,
-                                            onClick = {},
-                                        )
-                                )
-                            }
-
-                            if (BuildConfig.DEBUG) {
-                                Box(
-                                    modifier = Modifier
-                                        .background(MaterialTheme.colorScheme.primary)
-                                        .fillMaxWidth()
-                                        .height(48.dp)
-                                ) {
-                                    Text(
-                                        text = stringResource(R.string.debug_variant),
-                                        modifier = Modifier.align(Alignment.Center)
-                                    )
-                                }
-                            }
-                        }
+                    } else {
+                        Content(
+                            navHostController = navHostController,
+                            unlockAllFeatures = false,
+                            onClickNav = ::onClickNav,
+                            startDestination = startDestination,
+                        )
                     }
                 }
             }
@@ -461,6 +226,276 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier
                         .padding(NavigationDrawerItemDefaults.ItemPadding)
                 )
+            }
+        }
+    }
+
+    @Composable
+    private fun Content(
+        navHostController: NavHostController,
+        unlockAllFeatures: Boolean,
+        onClickNav: () -> Unit,
+        startDestination: String,
+    ) {
+        val navDrawerUpIconOption = UpIconOption.NavDrawer(onClickNav).takeIf { unlockAllFeatures }
+        Column(modifier = Modifier.fillMaxSize()) {
+            val uriHandler = LocalUriHandler.current
+            val navigationCallback =
+                AnimeNavigator.NavigationCallback(
+                    navHostController,
+                    cdEntryNavigator,
+                    uriHandler::openUri,
+                )
+            Box(
+                modifier = Modifier.weight(1f)
+            ) {
+                SharedElementsRoot {
+                    NavHost(
+                        navController = navHostController,
+                        startDestination = startDestination,
+                    ) {
+                        AnimeNavigator.initialize(
+                            navHostController = navHostController,
+                            navGraphBuilder = this,
+                            upIconOption = navDrawerUpIconOption,
+                            onClickAuth = {
+                                aniListOAuthStore.launchAuthRequest(
+                                    this@MainActivity
+                                )
+                            },
+                            onClickSettings = {
+                                navHostController.navigate(AppNavDestinations.SETTINGS.id)
+                            },
+                            navigationCallback = navigationCallback,
+                        )
+
+                        artEntryNavigator.initialize(
+                            onClickNav = onClickNav,
+                            navHostController = navHostController,
+                            navGraphBuilder = this
+                        )
+                        cdEntryNavigator.initialize(
+                            onClickNav = onClickNav,
+                            navHostController = navHostController,
+                            navGraphBuilder = this
+                        )
+
+                        composable(AppNavDestinations.BROWSE.id) {
+                            val viewModel = hiltViewModel<BrowseViewModel>()
+                            BrowseScreen(
+                                upIconOption = navDrawerUpIconOption,
+                                tabs = viewModel.tabs,
+                                onClick = { tabContent, entry ->
+                                    viewModel.onSelectEntry(
+                                        navHostController,
+                                        tabContent,
+                                        entry
+                                    )
+                                },
+                                onPageRequested = viewModel::onPageRequested,
+                            )
+                        }
+
+                        composable(AppNavDestinations.SEARCH.id) {
+                            val viewModel =
+                                hiltViewModel<AdvancedSearchViewModel>()
+                            AdvancedSearchScreen(
+                                upIconOption = navDrawerUpIconOption,
+                                loading = { false },
+                                sections = { viewModel.sections },
+                                onClickClear = viewModel::onClickClear,
+                                onClickSearch = {
+                                    val queryId = viewModel.onClickSearch()
+                                    navHostController.navigate(
+                                        AppNavDestinations.SEARCH_RESULTS.id +
+                                                "?queryId=$queryId"
+                                    )
+                                },
+                            )
+                        }
+
+                        composable(AppNavDestinations.IMPORT.id) {
+                            val viewModel = hiltViewModel<ImportViewModel>()
+                            ImportScreen(
+                                upIconOption = navDrawerUpIconOption,
+                                uriString = viewModel.importUriString.orEmpty(),
+                                onUriStringEdit = {
+                                    viewModel.importUriString = it
+                                },
+                                onContentUriSelected = {
+                                    viewModel.importUriString = it?.toString()
+                                },
+                                dryRun = { viewModel.dryRun },
+                                onToggleDryRun = {
+                                    viewModel.dryRun = !viewModel.dryRun
+                                },
+                                replaceAll = { viewModel.replaceAll },
+                                onToggleReplaceAll = {
+                                    viewModel.replaceAll = !viewModel.replaceAll
+                                },
+                                syncAfter = { viewModel.syncAfter },
+                                onToggleSyncAfter = {
+                                    viewModel.syncAfter = !viewModel.syncAfter
+                                },
+                                onClickImport = viewModel::onClickImport,
+                                importProgress = { viewModel.importProgress },
+                                errorRes = { viewModel.errorResource },
+                                onErrorDismiss = {
+                                    viewModel.errorResource = null
+                                }
+                            )
+                        }
+
+                        composable(AppNavDestinations.EXPORT.id) {
+                            val viewModel = hiltViewModel<ExportViewModel>()
+                            ExportScreen(
+                                upIconOption = navDrawerUpIconOption,
+                                uriString = { viewModel.exportUriString.orEmpty() },
+                                onUriStringEdit = {
+                                    viewModel.exportUriString = it
+                                },
+                                onContentUriSelected = {
+                                    viewModel.exportUriString = it?.toString()
+                                },
+                                onClickExport = viewModel::onClickExport,
+                                exportProgress = { viewModel.exportProgress },
+                                errorRes = { viewModel.errorResource },
+                                onErrorDismiss = {
+                                    viewModel.errorResource = null
+                                }
+                            )
+                        }
+
+                        composable(
+                            route = AppNavDestinations.SEARCH_RESULTS.id +
+                                    "?queryId={queryId}",
+                            arguments = listOf(
+                                navArgument("queryId") {
+                                    type = NavType.StringType
+                                    nullable = false
+                                },
+                            )
+                        ) {
+                            val arguments = it.arguments!!
+                            val queryId = arguments.getString("queryId")!!
+                            val viewModel =
+                                hiltViewModel<SearchResultsViewModel>()
+                            viewModel.initialize(queryId)
+                            SearchResultsScreen(
+                                upIconOption = it.destination.parent
+                                    ?.let { UpIconOption.Back(navHostController) },
+                                loading = { viewModel.loading },
+                                entries = { viewModel.entries.collectAsLazyPagingItems() },
+                                selectedItems = { viewModel.selectedEntries.keys },
+                                onClickEntry = { index, entry ->
+                                    if (viewModel.selectedEntries.isNotEmpty()) {
+                                        viewModel.selectEntry(index, entry)
+                                    } else {
+                                        navHostController.navToEntryDetails(
+                                            route = ArtNavDestinations.ENTRY_DETAILS.id,
+                                            listOf(entry.id.valueId)
+                                        )
+                                    }
+                                },
+                                onLongClickEntry = viewModel::selectEntry,
+                                onClickClear = viewModel::clearSelected,
+                                onClickEdit = {
+                                    navHostController.navToEntryDetails(
+                                        ArtNavDestinations.ENTRY_DETAILS.id,
+                                        viewModel.selectedEntries.values
+                                            .map { it.id.valueId }
+                                    )
+                                },
+                                onConfirmDelete = viewModel::onDeleteSelected,
+                            )
+                        }
+
+                        composable(
+                            route = AppNavDestinations.SETTINGS.id,
+                            arguments = listOf(
+                                navArgument("root") {
+                                    type = NavType.StringType
+                                    nullable = true
+                                },
+                            )
+                        ) {
+                            val viewModel =
+                                hiltViewModel<SettingsViewModel>().apply {
+                                    initialize(
+                                        onClickDatabaseFetch = {
+                                            val request =
+                                                OneTimeWorkRequestBuilder<DatabaseSyncWorker>()
+                                                    .setExpedited(
+                                                        OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST
+                                                    )
+                                                    .build()
+
+                                            it.enqueueUniqueWork(
+                                                DatabaseSyncWorker.UNIQUE_WORK_NAME,
+                                                ExistingWorkPolicy.REPLACE,
+                                                request
+                                            )
+                                        }
+                                    )
+                                }
+                            val root = it.arguments?.getString("root")
+                                ?.toBooleanStrictOrNull() == true
+                            SettingsScreen(
+                                viewModel = viewModel,
+                                upIconOption = navDrawerUpIconOption.takeIf { root }
+                                    ?: UpIconOption.Back(navHostController),
+                                onClickShowLastCrash = {
+                                    navHostController.navigate(AppNavDestinations.CRASH.id)
+                                },
+                            )
+                        }
+
+                        composable(
+                            route = AppNavDestinations.CRASH.id,
+                            deepLinks = listOf(
+                                navDeepLink {
+                                    action =
+                                        scopedApplication.mainActivityInternalAction
+                                    uriPattern =
+                                        "${scopedApplication.app.packageName}:///${AppNavDestinations.CRASH.id}"
+                                }
+                            )
+                        ) {
+                            SideEffect { settings.lastCrashShown.value = true }
+                            CrashScreen(
+                                settings = settings,
+                                onClickBack = { navHostController.popBackStack() },
+                            )
+                        }
+                    }
+                }
+
+                // Ignore touch events to allow drawer swipe to work
+                Box(
+                    Modifier
+                        .fillMaxHeight()
+                        .width(16.dp)
+                        .align(Alignment.CenterStart)
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null,
+                            onClick = {},
+                        )
+                )
+            }
+
+            if (BuildConfig.DEBUG) {
+                Box(
+                    modifier = Modifier
+                        .background(MaterialTheme.colorScheme.primary)
+                        .fillMaxWidth()
+                        .height(48.dp)
+                ) {
+                    Text(
+                        text = stringResource(R.string.debug_variant),
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                }
             }
         }
     }
