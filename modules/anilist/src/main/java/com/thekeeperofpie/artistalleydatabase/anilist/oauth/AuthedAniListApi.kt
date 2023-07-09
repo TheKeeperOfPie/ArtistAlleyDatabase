@@ -379,7 +379,7 @@ class AuthedAniListApi(
     ): HomeAnimeQuery.Data {
         val currentSeasonYear = AniListUtils.getCurrentSeasonYear()
         val nextSeasonYear = AniListUtils.getNextSeasonYear(currentSeasonYear)
-        val lastSeasonYear = AniListUtils.getLastSeasonYear(currentSeasonYear)
+        val lastSeasonYear = AniListUtils.getPreviousSeasonYear(currentSeasonYear)
         return query(
             HomeAnimeQuery(
                 currentSeason = currentSeasonYear.first,

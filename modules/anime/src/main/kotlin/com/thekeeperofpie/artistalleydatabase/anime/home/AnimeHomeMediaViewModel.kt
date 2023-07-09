@@ -8,9 +8,11 @@ import androidx.lifecycle.viewModelScope
 import com.anilist.fragment.MediaPreviewWithDescription
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
+import com.thekeeperofpie.artistalleydatabase.anime.seasonal.SeasonalViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
@@ -62,7 +64,7 @@ abstract class AnimeHomeMediaViewModel(
         }
     }
 
-    abstract suspend fun media(): List<Triple<String, Int, List<MediaPreviewWithDescription?>?>>
+    abstract suspend fun media(): List<RowInput>
 
     fun onLongClickEntry(entry: AnimeHomeDataEntry.MediaEntry) {
         val mediaId = entry.media.id.toString()
@@ -77,35 +79,38 @@ abstract class AnimeHomeMediaViewModel(
         settings: AnimeSettings,
         ignoreList: AnimeMediaIgnoreList,
     ) : AnimeHomeMediaViewModel(aniListApi, settings, ignoreList) {
-        override suspend fun media(): List<Triple<String, Int, List<MediaPreviewWithDescription?>?>> {
+        override suspend fun media(): List<RowInput> {
             val lists = aniListApi.homeAnime()
             return listOf(
-                Triple(
+                RowInput(
                     "anime_trending",
                     R.string.anime_home_trending,
                     lists.trending?.media,
                 ),
-                Triple(
+                RowInput(
                     "anime_popular_this_season",
                     R.string.anime_home_popular_this_season,
                     lists.popularThisSeason?.media,
+                    viewAllRoute = "${AnimeNavDestinations.SEASONAL.id}?type=${SeasonalViewModel.Type.THIS.name}"
                 ),
-                Triple(
+                RowInput(
                     "anime_popular_last_season",
                     R.string.anime_home_popular_last_season,
                     lists.popularLastSeason?.media,
+                    viewAllRoute = "${AnimeNavDestinations.SEASONAL.id}?type=${SeasonalViewModel.Type.LAST.name}"
                 ),
-                Triple(
+                RowInput(
                     "anime_popular_next_season",
                     R.string.anime_home_popular_next_season,
                     lists.popularNextSeason?.media,
+                    viewAllRoute = "${AnimeNavDestinations.SEASONAL.id}?type=${SeasonalViewModel.Type.NEXT.name}"
                 ),
-                Triple(
+                RowInput(
                     "anime_popular",
                     R.string.anime_home_popular,
                     lists.popular?.media,
                 ),
-                Triple("anime_top", R.string.anime_home_top, lists.top?.media),
+                RowInput("anime_top", R.string.anime_home_top, lists.top?.media),
             )
         }
     }
@@ -116,21 +121,28 @@ abstract class AnimeHomeMediaViewModel(
         settings: AnimeSettings,
         ignoreList: AnimeMediaIgnoreList,
     ) : AnimeHomeMediaViewModel(aniListApi, settings, ignoreList) {
-        override suspend fun media(): List<Triple<String, Int, List<MediaPreviewWithDescription?>?>> {
+        override suspend fun media(): List<RowInput> {
             val lists = aniListApi.homeManga()
             return listOf(
-                Triple(
+                RowInput(
                     "manga_trending",
                     R.string.anime_home_trending,
                     lists.trending?.media
                 ),
-                Triple(
+                RowInput(
                     "manga_popular",
                     R.string.anime_home_popular,
                     lists.popular?.media
                 ),
-                Triple("manga_top", R.string.anime_home_top, lists.top?.media),
+                RowInput("manga_top", R.string.anime_home_top, lists.top?.media),
             )
         }
     }
+
+    data class RowInput(
+        val id: String,
+        val titleRes: Int,
+        val list: List<MediaPreviewWithDescription?>?,
+        val viewAllRoute: String? = null,
+    )
 }

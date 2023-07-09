@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.anime.ignore
 
 import androidx.collection.ArraySet
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
+import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
 
 class AnimeMediaIgnoreList(private val settings: AnimeSettings) {
 
@@ -21,5 +22,12 @@ class AnimeMediaIgnoreList(private val settings: AnimeSettings) {
                 remove(mediaIdAsInt)
             }
         }
+    }
+
+    fun toggle(entry: AnimeMediaListRow.Entry) {
+        val mediaId = entry.id?.valueId ?: return
+        val ignored = !entry.ignored
+        set(mediaId, ignored)
+        entry.ignored = ignored
     }
 }

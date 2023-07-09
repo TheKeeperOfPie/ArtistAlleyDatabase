@@ -8,6 +8,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -244,15 +245,15 @@ fun MediaRatingIconsSection(rating: Int?, popularity: Int?, loading: Boolean, mo
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
-                    .height(24.dp)
+                    .height(IntrinsicSize.Min)
                     .placeholder(
                         visible = loading,
                         highlight = PlaceholderHighlight.shimmer(),
                     ),
             ) {
-                AutoHeightText(
+                Text(
                     text = rating.toString(),
-                    style = MaterialTheme.typography.labelLarge,
+                    style = MaterialTheme.typography.labelMedium,
                 )
 
                 val iconTint = remember(rating) {
@@ -278,16 +279,16 @@ fun MediaRatingIconsSection(rating: Int?, popularity: Int?, loading: Boolean, mo
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
-                    .height(16.dp)
+                    .height(IntrinsicSize.Min)
                     .padding(end = 4.dp)
                     .placeholder(
                         visible = loading,
                         highlight = PlaceholderHighlight.shimmer(),
                     ),
             ) {
-                AutoHeightText(
+                Text(
                     text = popularity.toString(),
-                    style = MaterialTheme.typography.labelLarge,
+                    style = MaterialTheme.typography.labelSmall,
                 )
 
                 Icon(
@@ -300,6 +301,7 @@ fun MediaRatingIconsSection(rating: Int?, popularity: Int?, loading: Boolean, mo
                     contentDescription = stringResource(
                         R.string.anime_media_rating_population_icon_content_description
                     ),
+                    modifier = Modifier.size(16.dp)
                 )
             }
         }

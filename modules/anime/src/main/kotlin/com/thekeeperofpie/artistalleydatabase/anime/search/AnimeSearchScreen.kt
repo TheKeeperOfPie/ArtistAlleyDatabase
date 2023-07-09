@@ -69,7 +69,6 @@ object AnimeSearchScreen {
         isRoot: Boolean = true,
         title: Either<Int, String>? = null,
         viewModel: AnimeSearchViewModel = hiltViewModel(),
-        showIgnoredFilter: Boolean = true,
         navigationCallback: AnimeNavigator.NavigationCallback =
             AnimeNavigator.NavigationCallback(null),
         scrollStateSaver: ScrollStateSaver = ScrollStateSaver.STUB,
@@ -166,7 +165,6 @@ object AnimeSearchScreen {
             filterData = viewModel::filterData,
             onTagLongClick = viewModel::onTagLongClick,
             showLoadSave = true,
-            showIgnoredFilter = showIgnoredFilter,
             bottomNavigationState = bottomNavigationState,
         ) { scaffoldPadding ->
             val content = viewModel.content.collectAsLazyPagingItems()
@@ -223,7 +221,7 @@ object AnimeSearchScreen {
                                         is AnimeSearchEntry.Media<*> -> AnimeMediaListRow(
                                             screenKey = AnimeNavDestinations.SEARCH.id,
                                             entry = item,
-                                            onLongClick = viewModel::onMediaLongClick,
+                                            onLongClick = { viewModel.ignoreList.toggle(item) },
                                             onTagLongClick = viewModel::onTagLongClick,
                                             onLongPressImage = onLongPressImage,
                                             colorCalculationState = colorCalculationState,

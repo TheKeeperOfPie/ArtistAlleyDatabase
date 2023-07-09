@@ -40,6 +40,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeMediaFilte
 import com.thekeeperofpie.artistalleydatabase.anime.schedule.AiringScheduleScreen
 import com.thekeeperofpie.artistalleydatabase.anime.search.AnimeSearchScreen
 import com.thekeeperofpie.artistalleydatabase.anime.search.AnimeSearchViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.seasonal.SeasonalScreen
+import com.thekeeperofpie.artistalleydatabase.anime.seasonal.SeasonalViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserScreen
@@ -424,6 +426,31 @@ object AnimeNavigator {
                 navigationCallback = navigationCallback,
             )
         }
+
+        navGraphBuilder.composable(
+            route = "${AnimeNavDestinations.SEASONAL.id}?type={type}",
+            arguments = listOf(
+                navArgument("type") {
+                    type = NavType.StringType
+                    nullable = true
+                }
+            )
+        ) {
+            val type = it.arguments?.getString("type")?.let {
+                try {
+                    SeasonalViewModel.Type.valueOf(it)
+                } catch (ignored: Throwable) {
+                    null
+                }
+            } ?: SeasonalViewModel.Type.THIS
+            val viewModel = hiltViewModel<SeasonalViewModel>()
+                .apply { initialize(type) }
+            SeasonalScreen(
+                viewModel = viewModel,
+                upIconOption = UpIconOption.Back(navHostController),
+                navigationCallback = navigationCallback,
+            )
+        }
     }
 
     fun onTagClick(navHostController: NavHostController, tagId: String, tagName: String) {
@@ -682,5 +709,7 @@ object AnimeNavigator {
         fun onAiringScheduleClick() {
             navHostController?.navigate(AnimeNavDestinations.AIRING_SCHEDULE.id)
         }
+
+        fun navigate(route: String) = navHostController?.navigate(route)
     }
 }

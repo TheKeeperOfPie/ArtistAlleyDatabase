@@ -175,10 +175,9 @@ internal fun CoverAndBannerHeader(
                             },
                             contentDescription = stringResource(R.string.anime_media_cover_image_content_description),
                             modifier = Modifier
-                                .conditionally(
-                                    coverImageWidthToHeightRatio == 1f,
-                                    Modifier::animateContentSize
-                                )
+                                .conditionally(coverImageWidthToHeightRatio == 1f) {
+                                    animateContentSize()
+                                }
                                 .height(coverSize)
                                 .run {
                                     if (success) {

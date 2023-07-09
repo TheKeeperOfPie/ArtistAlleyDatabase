@@ -509,4 +509,9 @@
     <string name="anime_airing_schedule_tomorrow">Tomorrow</string>
     <string name="anime_settings_content_description">View settings</string>
     <string name="anime_home_label">Home</string>
+    <string name="anime_home_row_view_all_content_description">View all</string>
+    <string name="anime_seasonal_title">Seasonal</string>
+    <string name="anime_seasonal_previous_season_content_description">Previous season</string>
+    <string name="anime_seasonal_next_season_content_description">Next season</string>
+    <string name="anime_seasonal_season_year">%1$s %2$s</string>
 </resources>

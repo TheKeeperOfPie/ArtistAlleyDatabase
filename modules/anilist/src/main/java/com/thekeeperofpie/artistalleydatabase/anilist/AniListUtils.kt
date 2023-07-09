@@ -16,6 +16,7 @@ import com.thekeeperofpie.artistalleydatabase.network_utils.NetworkSettings
 import java.time.Month
 import java.time.ZoneId
 import java.time.ZonedDateTime
+import kotlin.math.absoluteValue
 
 object AniListUtils {
 
@@ -99,9 +100,9 @@ object AniListUtils {
         }
     }
 
-    fun getLastSeasonYear(currentSeasonYear: Pair<MediaSeason, Int> = getCurrentSeasonYear()): Pair<MediaSeason, Int> {
+    fun getPreviousSeasonYear(currentSeasonYear: Pair<MediaSeason, Int> = getCurrentSeasonYear()): Pair<MediaSeason, Int> {
         val (thisSeason, year) = currentSeasonYear
-        val lastSeason = when (thisSeason) {
+        val previousSeason = when (thisSeason) {
             MediaSeason.WINTER -> MediaSeason.FALL
             MediaSeason.SPRING -> MediaSeason.WINTER
             MediaSeason.SUMMER -> MediaSeason.SPRING
@@ -110,10 +111,28 @@ object AniListUtils {
         }
 
         return if (thisSeason == MediaSeason.WINTER) {
-            lastSeason to (year - 1)
+            previousSeason to (year - 1)
         } else {
-            lastSeason to year
+            previousSeason to year
         }
+    }
+
+    fun calculateSeasonYearWithOffset(
+        seasonYear: Pair<MediaSeason, Int>,
+        offset: Int,
+    ): Pair<MediaSeason, Int> {
+        val (season, year) = seasonYear
+        val newYear = year - offset / 4
+        var newSeasonYear = season to newYear
+        val remainder = offset % 4
+        repeat(remainder.absoluteValue) {
+            newSeasonYear = if (remainder < 0) {
+                getNextSeasonYear(newSeasonYear)
+            } else {
+                getPreviousSeasonYear(newSeasonYear)
+            }
+        }
+        return newSeasonYear
     }
 }
 

@@ -8,9 +8,9 @@ import com.anilist.fragment.MediaPreviewWithDescription
 data class AnimeHomeDataEntry(
     private val ignoredIds: Set<Int>,
     private val showIgnored: Boolean,
-    private val lists: List<Triple<String, Int, List<MediaPreviewWithDescription?>?>>,
+    private val lists: List<AnimeHomeMediaViewModel.RowInput>,
 ) {
-    val data = lists.map { Triple(it.first, it.second, it.third.filterIgnored()) }
+    val data = lists.map { RowData(it.id, it.titleRes, it.list.filterIgnored(), it.viewAllRoute) }
 
     private fun List<MediaPreviewWithDescription?>?.filterIgnored() =
         this?.filterNotNull()
@@ -26,4 +26,11 @@ data class AnimeHomeDataEntry(
     ) {
         var ignored by mutableStateOf(ignored)
     }
+
+    data class RowData(
+        val id: String,
+        val titleRes: Int,
+        val entries: List<MediaEntry>,
+        val viewAllRoute: String?,
+    )
 }

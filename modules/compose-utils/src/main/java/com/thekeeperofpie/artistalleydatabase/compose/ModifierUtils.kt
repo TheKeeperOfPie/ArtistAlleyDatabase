@@ -1,6 +1,8 @@
 package com.thekeeperofpie.artistalleydatabase.compose
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.clickable
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
@@ -74,5 +76,6 @@ fun Modifier.optionalClickable(
     role = role,
 )
 
-fun Modifier.conditionally(apply: Boolean, block: Modifier.() -> Modifier) =
-    if (apply) block() else this
+@SuppressLint("UnnecessaryComposedModifier")
+fun Modifier.conditionally(apply: Boolean, block: @Composable Modifier.() -> Modifier) =
+    composed { if (apply) block() else this }

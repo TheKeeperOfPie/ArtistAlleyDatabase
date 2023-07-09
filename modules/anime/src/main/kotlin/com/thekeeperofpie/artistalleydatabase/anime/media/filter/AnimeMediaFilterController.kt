@@ -9,6 +9,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.paging.PagingData
+import androidx.paging.filter
+import com.anilist.AuthedUserQuery
 import com.anilist.MediaTagsQuery
 import com.anilist.fragment.AniListListRowMedia
 import com.anilist.type.MediaFormat
@@ -37,6 +40,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.update
@@ -294,7 +298,8 @@ class AnimeMediaFilterController<T>(
 
     private fun toFilterData(): FilterData {
         val onListOptions = onListOptions.value
-        val containsOnList = onListOptions.find { it.value }?.state == FilterIncludeExcludeState.INCLUDE
+        val containsOnList =
+            onListOptions.find { it.value }?.state == FilterIncludeExcludeState.INCLUDE
         val containsNotOnList =
             onListOptions.find { !it.value }?.state == FilterIncludeExcludeState.INCLUDE
         val onList = when {
@@ -670,6 +675,7 @@ class AnimeMediaFilterController<T>(
     }
 
     fun data() = Data(
+        viewer = { aniListApi.authedUser.collectAsState().value },
         expanded = ::getExpanded,
         setExpanded = ::setExpanded,
         sortOptions = { sortOptions.collectAsState().value },
@@ -698,6 +704,7 @@ class AnimeMediaFilterController<T>(
         onSeasonChange = ::onSeasonChange,
         onSeasonYearChange = ::onSeasonYearChange,
         onListEnabled = { initialParams.onListEnabled },
+        airingDateEnabled = { initialParams.airingDateEnabled },
         onListOptions = { onListOptions.collectAsState().value },
         onOnListClick = ::onOnListClick,
         averageScoreRange = { averageScoreRange.collectAsState().value },
@@ -936,9 +943,57 @@ class AnimeMediaFilterController<T>(
         return filteredEntries
     }
 
+    fun <Entry : Any> filterMedia(
+        result: PagingData<Entry>,
+        transform: (Entry) -> AniListListRowMedia,
+    ) =
+        combine(
+            flowOf(result),
+            showIgnored,
+            listStatuses
+        ) { pagingData, showIgnored, listStatuses ->
+            val includes = listStatuses
+                .filter { it.state == FilterIncludeExcludeState.INCLUDE }
+                .map { it.value }
+            val excludes = listStatuses
+                .filter { it.state == FilterIncludeExcludeState.EXCLUDE }
+                .map { it.value }
+            pagingData.filter {
+                val media = transform(it)
+                val listStatus = media.mediaListEntry?.status
+                if (excludes.isNotEmpty() && excludes.contains(listStatus)) {
+                    return@filter false
+                }
+
+                if (includes.isNotEmpty() && !includes.contains(listStatus)) {
+                    return@filter false
+                }
+
+                if (showIgnored) true else !ignoreList.get(media.id)
+            }
+        }
+
+    fun updateSeason(
+        newSeason: (Pair<MediaSeason, Int>) -> Pair<MediaSeason, Int>,
+    ) {
+        if (airingDateIsAdvanced.value) return
+        val existingValue = airingDate.value
+        val (season, seasonYear) = airingDate.value.first
+        season ?: return
+        val seasonYearInt = seasonYear.toIntOrNull() ?: return
+        val (newSeason, newSeasonYear) = newSeason(season to seasonYearInt)
+        airingDate.value = existingValue.copy(
+            first = existingValue.first.copy(
+                season = newSeason,
+                seasonYear = newSeasonYear.toString()
+            )
+        )
+    }
+
     data class InitialParams(
         val isAnime: Boolean,
         val onListEnabled: Boolean = true,
+        val airingDateEnabled: Boolean = true,
         // TODO: Handle tags split by media type
         val tagId: String? = null,
         val filterData: FilterData? = null,
@@ -946,6 +1001,7 @@ class AnimeMediaFilterController<T>(
     )
 
     class Data<SortType : SortOption>(
+        val viewer: @Composable () -> AuthedUserQuery.Data.Viewer? = { null },
         val expanded: (Section) -> Boolean = { false },
         val setExpanded: (Section, Boolean) -> Unit = { _, _ -> },
         val sortOptions: @Composable () -> List<SortEntry<SortType>>,
@@ -970,6 +1026,7 @@ class AnimeMediaFilterController<T>(
         val onAiringDateIsAdvancedToggle: (Boolean) -> Unit = {},
         val onAiringDateChange: (start: Boolean, selectedMillis: Long?) -> Unit = { _, _ -> },
         val onListEnabled: () -> Boolean = { true },
+        val airingDateEnabled: () -> Boolean = { true },
         val onListOptions: @Composable () -> List<OnListOption> = { OnListOption.options() },
         val onOnListClick: (OnListOption) -> Unit = {},
         val averageScoreRange: @Composable () -> RangeData = { RangeData(100) },

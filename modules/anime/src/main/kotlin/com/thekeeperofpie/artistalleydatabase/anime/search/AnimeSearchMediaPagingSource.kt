@@ -3,6 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.anime.search
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.anilist.MediaAdvancedSearchQuery
+import com.anilist.type.MediaSeason
 import com.anilist.type.MediaSort
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
@@ -42,7 +43,8 @@ class AnimeSearchMediaPagingSource(
         val page = params.key ?: 1
 
         val onListOptions = filterParams.onListOptions
-        val containsOnList = onListOptions.find { it.value }?.state == FilterIncludeExcludeState.INCLUDE
+        val containsOnList =
+            onListOptions.find { it.value }?.state == FilterIncludeExcludeState.INCLUDE
         val containsNotOnList =
             onListOptions.find { !it.value }?.state == FilterIncludeExcludeState.INCLUDE
         val onList = when {
@@ -50,6 +52,14 @@ class AnimeSearchMediaPagingSource(
             containsOnList && containsNotOnList -> null
             else -> containsOnList
         }
+
+        val season = refreshParams.seasonYearOverride?.first
+            ?: (filterParams.airingDate as? AnimeMediaFilterController.AiringDate.Basic)?.season
+
+        val seasonYear = refreshParams.seasonYearOverride?.second
+            ?: (filterParams.airingDate as? AnimeMediaFilterController.AiringDate.Basic)
+                ?.seasonYear
+                ?.toIntOrNull()
 
         val result = aniListApi.searchMedia(
             query = refreshParams.query,
@@ -83,11 +93,8 @@ class AnimeSearchMediaPagingSource(
                 .map { it.value },
             showAdult = filterParams.showAdult,
             onList = onList,
-            season = (filterParams.airingDate as? AnimeMediaFilterController.AiringDate.Basic)
-                ?.season,
-            seasonYear = (filterParams.airingDate as? AnimeMediaFilterController.AiringDate.Basic)
-                ?.seasonYear
-                ?.toIntOrNull(),
+            season = season,
+            seasonYear = seasonYear,
             startDateGreater = (filterParams.airingDate as? AnimeMediaFilterController.AiringDate.Advanced)
                 ?.startDate
                 ?.minus(1, ChronoUnit.DAYS)
@@ -135,6 +142,7 @@ class AnimeSearchMediaPagingSource(
         val sortOptions: List<SortEntry<MediaSortOption>>,
         val sortAscending: Boolean,
         val filterParams: AnimeMediaFilterController.FilterParams,
+        val seasonYearOverride: Pair<MediaSeason, Int>? = null,
     ) {
         fun sortApiValue() = sortOptions.filter { it.state == FilterIncludeExcludeState.INCLUDE }
             .map { it.value.toApiValue(sortAscending) }

@@ -365,9 +365,9 @@ fun Modifier.bottomBorder(color: Color, width: Dp = Dp.Hairline): Modifier = bor
     width,
     color,
     startOffsetX = { 0f },
-    startOffsetY = { size.height - (width.value * density) },
+    startOffsetY = { size.height - (width.value / 2 * density) },
     endOffsetX = { size.width },
-    endOffsetY = { size.height }
+    endOffsetY = { size.height - (width.value / 2 * density) }
 )
 
 @Suppress("UnnecessaryComposedModifier")
@@ -455,6 +455,7 @@ fun <T> ItemDropdown(
     textForValue: @Composable (T) -> String = { "" },
     onSelectItem: (T) -> Unit = {},
     wrapWidth: Boolean = false,
+    maxLines: Int = Int.MAX_VALUE,
 ) {
     var expanded by remember { mutableStateOf(false) }
     fun Modifier.wrapWidthIfRequested() = if (wrapWidth) wrapContentWidth() else fillMaxWidth()
@@ -468,6 +469,7 @@ fun <T> ItemDropdown(
             value = value,
             onValueChange = {},
             readOnly = true,
+            maxLines = maxLines,
             label = label?.let { { Text(stringResource(it)) } },
             trailingIcon = {
                 TrailingDropdownIcon(
@@ -862,6 +864,7 @@ fun CustomHtmlText(
         style = style,
         onFallbackClick = onFallbackClick,
         onLongClick = onLongClick,
+        detectTaps = detectTaps,
     )
 }
 

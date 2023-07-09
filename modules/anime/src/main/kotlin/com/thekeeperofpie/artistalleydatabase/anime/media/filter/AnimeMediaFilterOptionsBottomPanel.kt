@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -34,6 +35,7 @@ import androidx.compose.material.icons.filled.RemoveCircleOutline
 import androidx.compose.material.icons.filled.UnfoldLess
 import androidx.compose.material.icons.filled.UnfoldMore
 import androidx.compose.material3.BottomSheetDefaults
+import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -104,7 +106,53 @@ object AnimeMediaFilterOptionsBottomPanel {
         errorRes: () -> Int? = { null },
         exception: () -> Exception? = { null },
         expandedForPreview: Boolean = false,
-        showLoadSave: Boolean = false,
+        showLoadSave: Boolean = true,
+        showIgnoredFilter: Boolean = true,
+        bottomNavigationState: BottomNavigationState? = null,
+        ignoreAppBarOffset: Boolean = true,
+        content: @Composable (PaddingValues) -> Unit,
+    ) {
+        if (ignoreAppBarOffset) {
+            PanelIgnoreAppBarOffset(
+                modifier = modifier,
+                topBar = topBar,
+                filterData = filterData,
+                onTagLongClick = onTagLongClick,
+                errorRes = errorRes,
+                exception = exception,
+                expandedForPreview = expandedForPreview,
+                showLoadSave = showLoadSave,
+                showIgnoredFilter = showIgnoredFilter,
+                bottomNavigationState = bottomNavigationState,
+                content = content
+            )
+        } else {
+            Panel(
+                modifier = modifier,
+                topBar = topBar,
+                filterData = filterData,
+                onTagLongClick = onTagLongClick,
+                errorRes = errorRes,
+                exception = exception,
+                expandedForPreview = expandedForPreview,
+                showLoadSave = showLoadSave,
+                showIgnoredFilter = showIgnoredFilter,
+                bottomNavigationState = bottomNavigationState,
+                content = content
+            )
+        }
+    }
+
+    @Composable
+    private fun <SortType : SortOption> PanelIgnoreAppBarOffset(
+        modifier: Modifier = Modifier,
+        topBar: (@Composable () -> Unit)? = null,
+        filterData: () -> AnimeMediaFilterController.Data<SortType>,
+        onTagLongClick: (String) -> Unit = {},
+        errorRes: () -> Int? = { null },
+        exception: () -> Exception? = { null },
+        expandedForPreview: Boolean = false,
+        showLoadSave: Boolean = true,
         showIgnoredFilter: Boolean = true,
         bottomNavigationState: BottomNavigationState? = null,
         content: @Composable (PaddingValues) -> Unit,
@@ -128,6 +176,114 @@ object AnimeMediaFilterOptionsBottomPanel {
         }
 
         BottomSheetScaffoldNoAppBarOffset(
+            scaffoldState = scaffoldState,
+            sheetPeekHeight = 48.dp +
+                    (bottomNavigationState?.run { bottomNavBarPadding() + bottomOffset() } ?: 0.dp),
+            sheetDragHandle = {
+                Box(Modifier.fillMaxWidth()) {
+                    BottomSheetDefaults.DragHandle(modifier = Modifier.align(Alignment.Center))
+
+                    val targetValue = scaffoldState.bottomSheetState.targetValue
+                    val expandAllAlpha by animateFloatAsState(
+                        targetValue = if (targetValue == SheetValue.Expanded) 1f else 0f,
+                        label = "Anime filter expand all alpha",
+                    )
+
+                    val collapseOnClose = filterData().collapseOnClose()
+                    LaunchedEffect(targetValue) {
+                        if (targetValue != SheetValue.Expanded) {
+                            if (collapseOnClose) {
+                                filterData().onClickExpandAll(false)
+                            }
+                        }
+                    }
+
+                    IconButton(
+                        onClick = { filterData().run { onClickExpandAll(showExpandAll()) } },
+                        modifier = Modifier
+                            .align(Alignment.CenterEnd)
+                            .alpha(expandAllAlpha)
+                    ) {
+                        Icon(
+                            imageVector = if (filterData().showExpandAll()) {
+                                Icons.Filled.UnfoldMore
+                            } else {
+                                Icons.Filled.UnfoldLess
+                            },
+                            contentDescription = stringResource(
+                                R.string.anime_media_filter_expand_all_content_description
+                            ),
+                        )
+                    }
+                }
+            },
+            sheetContent = {
+                OptionsPanel(
+                    filterData = filterData,
+                    onTagLongClick = onTagLongClick,
+                    showLoadSave = showLoadSave,
+                    showIgnoredFilter = showIgnoredFilter,
+                    modifier = Modifier.padding(
+                        bottom = bottomNavigationState
+                            ?.run { bottomNavBarPadding() + bottomOffset() } ?: 0.dp
+                    )
+                )
+            },
+            sheetTonalElevation = 4.dp,
+            sheetShadowElevation = 4.dp,
+            topBar = topBar,
+            snackbarHost = {
+                @Suppress("NAME_SHADOWING")
+                val errorRes = errorRes()
+                if (errorRes != null) {
+                    SnackbarErrorText(errorRes, exception())
+                } else {
+                    // Bottom sheet requires at least one measurable component
+                    Spacer(modifier = Modifier.size(0.dp))
+                }
+            },
+            modifier = modifier,
+            content = content
+        )
+    }
+
+    @Composable
+    private fun <SortType : SortOption> Panel(
+        modifier: Modifier = Modifier,
+        topBar: (@Composable () -> Unit)? = null,
+        filterData: () -> AnimeMediaFilterController.Data<SortType>,
+        onTagLongClick: (String) -> Unit = {},
+        errorRes: () -> Int? = { null },
+        exception: () -> Exception? = { null },
+        expandedForPreview: Boolean = false,
+        showLoadSave: Boolean = true,
+        showIgnoredFilter: Boolean = true,
+        bottomNavigationState: BottomNavigationState? = null,
+        content: @Composable (PaddingValues) -> Unit,
+    ) {
+        val scaffoldState = if (expandedForPreview) {
+            androidx.compose.material3.rememberBottomSheetScaffoldState(
+                androidx.compose.material3.rememberStandardBottomSheetState(
+                    SheetValue.Expanded
+                )
+            )
+        } else {
+            androidx.compose.material3.rememberBottomSheetScaffoldState(
+                androidx.compose.material3.rememberStandardBottomSheetState(
+                    confirmValueChange = { it != SheetValue.Hidden },
+                    skipHiddenState = true,
+                )
+            )
+        }
+
+        val scope = rememberCoroutineScope()
+        BackHandler(enabled = scaffoldState.bottomSheetState.currentValue == SheetValue.Expanded) {
+            scope.launch {
+                scaffoldState.bottomSheetState.partialExpand()
+            }
+        }
+
+        BottomSheetScaffold(
             scaffoldState = scaffoldState,
             sheetPeekHeight = 48.dp +
                     (bottomNavigationState?.run { bottomNavBarPadding() + bottomOffset() } ?: 0.dp),
@@ -243,18 +399,21 @@ object AnimeMediaFilterOptionsBottomPanel {
                 includeExcludeIconContentDescriptionRes = R.string.anime_media_filter_status_chip_state_content_description,
             )
 
-            FilterSection(
-                expanded = { data.expanded(AnimeMediaFilterController.Section.LIST_STATUS) },
-                onExpandedChange = {
-                    data.setExpanded(AnimeMediaFilterController.Section.LIST_STATUS, it)
-                },
-                entries = { data.listStatuses() },
-                onEntryClick = { data.onListStatusClick(it.value) },
-                titleRes = R.string.anime_media_filter_list_status_label,
-                titleDropdownContentDescriptionRes = R.string.anime_media_filter_list_status_content_description,
-                valueToText = { stringResource(it.textRes) },
-                includeExcludeIconContentDescriptionRes = R.string.anime_media_filter_list_status_chip_state_content_description,
-            )
+            val viewer = data.viewer()
+            if (viewer != null) {
+                FilterSection(
+                    expanded = { data.expanded(AnimeMediaFilterController.Section.LIST_STATUS) },
+                    onExpandedChange = {
+                        data.setExpanded(AnimeMediaFilterController.Section.LIST_STATUS, it)
+                    },
+                    entries = { data.listStatuses() },
+                    onEntryClick = { data.onListStatusClick(it.value) },
+                    titleRes = R.string.anime_media_filter_list_status_label,
+                    titleDropdownContentDescriptionRes = R.string.anime_media_filter_list_status_content_description,
+                    valueToText = { stringResource(it.textRes) },
+                    includeExcludeIconContentDescriptionRes = R.string.anime_media_filter_list_status_chip_state_content_description,
+                )
+            }
 
             FilterSection(
                 expanded = { data.expanded(AnimeMediaFilterController.Section.FORMAT) },
@@ -294,20 +453,22 @@ object AnimeMediaFilterOptionsBottomPanel {
                 onTagRankChange = data.onTagRankChange,
             )
 
-            AiringDateSection(
-                expanded = { data.expanded(AnimeMediaFilterController.Section.AIRING_DATE) },
-                onExpandedChange = {
-                    data.setExpanded(AnimeMediaFilterController.Section.AIRING_DATE, it)
-                },
-                data = { data.airingDate() },
-                onSeasonChange = data.onSeasonChange,
-                onSeasonYearChange = data.onSeasonYearChange,
-                onIsAdvancedToggle = data.onAiringDateIsAdvancedToggle,
-                onRequestDatePicker = { airingDateShown = it },
-                onDateChange = data.onAiringDateChange,
-            )
+            if (data.airingDateEnabled()) {
+                AiringDateSection(
+                    expanded = { data.expanded(AnimeMediaFilterController.Section.AIRING_DATE) },
+                    onExpandedChange = {
+                        data.setExpanded(AnimeMediaFilterController.Section.AIRING_DATE, it)
+                    },
+                    data = { data.airingDate() },
+                    onSeasonChange = data.onSeasonChange,
+                    onSeasonYearChange = data.onSeasonYearChange,
+                    onIsAdvancedToggle = data.onAiringDateIsAdvancedToggle,
+                    onRequestDatePicker = { airingDateShown = it },
+                    onDateChange = data.onAiringDateChange,
+                )
+            }
 
-            if (data.onListEnabled()) {
+            if (viewer != null && data.onListEnabled()) {
                 FilterSection(
                     expanded = { data.expanded(AnimeMediaFilterController.Section.ON_LIST) },
                     onExpandedChange = {
@@ -882,6 +1043,7 @@ object AnimeMediaFilterOptionsBottomPanel {
                 },
                 textForValue = { it?.toTextRes()?.let { stringResource(it) }.orEmpty() },
                 onSelectItem = onSeasonChange,
+                maxLines = 1,
                 modifier = Modifier.weight(1f),
             )
 
@@ -950,7 +1112,7 @@ object AnimeMediaFilterOptionsBottomPanel {
                         }
                     }
                 },
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.width(IntrinsicSize.Min),
             )
         }
     }

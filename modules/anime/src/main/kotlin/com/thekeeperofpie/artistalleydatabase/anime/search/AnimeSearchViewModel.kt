@@ -26,10 +26,8 @@ import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
-import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeMediaFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortOption
-import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -41,7 +39,6 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
@@ -54,7 +51,7 @@ import kotlin.time.Duration.Companion.milliseconds
 class AnimeSearchViewModel @Inject constructor(
     aniListApi: AuthedAniListApi,
     settings: AnimeSettings,
-    private val ignoreList: AnimeMediaIgnoreList,
+    val ignoreList: AnimeMediaIgnoreList,
 ) : ViewModel() {
 
     var query by mutableStateOf("")
@@ -112,7 +109,7 @@ class AnimeSearchViewModel @Inject constructor(
             pagingSource = { AnimeSearchMediaPagingSource(aniListApi, it, MediaType.ANIME) },
             id = { it.id },
             entry = { AnimeSearchEntry.Media(it, ignored = ignoreList.get(it.id)) },
-            filter = ::filterMedia,
+            filter = { filterController.filterMedia(it) { it.media } },
         )
 
         collectSearch(
@@ -130,7 +127,7 @@ class AnimeSearchViewModel @Inject constructor(
             pagingSource = { AnimeSearchMediaPagingSource(aniListApi, it, MediaType.MANGA) },
             id = { it.id },
             entry = { AnimeSearchEntry.Media(it, ignored = ignoreList.get(it.id)) },
-            filter = ::filterMedia,
+            filter = { filterController.filterMedia(it) { it.media } },
         )
 
         collectSearch(
@@ -232,32 +229,6 @@ class AnimeSearchViewModel @Inject constructor(
         }
     }
 
-    private fun filterMedia(result: PagingData<AnimeSearchEntry.Media<Medium>>) =
-        combine(
-            flowOf(result),
-            filterController.showIgnored,
-            filterController.listStatuses
-        ) { pagingData, showIgnored, listStatuses ->
-            val includes = listStatuses
-                .filter { it.state == FilterIncludeExcludeState.INCLUDE }
-                .map { it.value }
-            val excludes = listStatuses
-                .filter { it.state == FilterIncludeExcludeState.EXCLUDE }
-                .map { it.value }
-            pagingData.filter {
-                val listStatus = it.media.mediaListEntry?.status
-                if (excludes.isNotEmpty() && excludes.contains(listStatus)) {
-                    return@filter false
-                }
-
-                if (includes.isNotEmpty() && !includes.contains(listStatus)) {
-                    return@filter false
-                }
-
-                if (showIgnored) true else !ignoreList.get(it.id.valueId)
-            }
-        }
-
     fun initialize(filterParams: AnimeMediaFilterController.InitialParams) {
         if (initialized) return
         initialized = true
@@ -273,13 +244,6 @@ class AnimeSearchViewModel @Inject constructor(
             .asSequence()
             .mapNotNull { it.findTag(tagId) }
             .firstOrNull()
-    }
-
-    fun onMediaLongClick(entry: AnimeMediaListRow.Entry) {
-        val mediaId = entry.id?.valueId ?: return
-        val ignored = !entry.ignored
-        ignoreList.set(mediaId, ignored)
-        entry.ignored = ignored
     }
 
     enum class SearchType(@StringRes val textRes: Int) {

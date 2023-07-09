@@ -1,12 +1,12 @@
 package com.thekeeperofpie.artistalleydatabase.anime.home
 
 import android.annotation.SuppressLint
-import androidx.annotation.StringRes
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.snapping.SnapLayoutInfoProvider
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
@@ -14,8 +14,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
@@ -31,6 +31,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.ViewList
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
@@ -193,7 +194,7 @@ object AnimeHomeScreen {
 
     private fun <Entry> LazyListScope.list(
         entry: Entry?,
-        data: (Entry) -> List<Triple<String, Int, List<AnimeHomeDataEntry.MediaEntry>>>,
+        data: (Entry) -> List<AnimeHomeDataEntry.RowData>,
         onLongClickEntry: (AnimeHomeDataEntry.MediaEntry) -> Unit,
         selectedItemTracker: SelectedItemTracker,
         colorCalculationState: ColorCalculationState,
@@ -212,11 +213,9 @@ object AnimeHomeScreen {
             return
         }
 
-        data(entry).forEach { (key, titleRes, entries) ->
+        data(entry).forEach {
             mediaRow(
-                key = key,
-                titleRes = titleRes,
-                entries = entries,
+                data = it,
                 onLongClickEntry = onLongClickEntry,
                 selectedItemTracker = selectedItemTracker,
                 navigationCallback = navigationCallback,
@@ -226,23 +225,38 @@ object AnimeHomeScreen {
     }
 
     private fun LazyListScope.mediaRow(
-        key: String,
-        @StringRes titleRes: Int,
-        entries: List<AnimeHomeDataEntry.MediaEntry>,
+        data: AnimeHomeDataEntry.RowData,
         onLongClickEntry: (AnimeHomeDataEntry.MediaEntry) -> Unit,
         selectedItemTracker: SelectedItemTracker,
         colorCalculationState: ColorCalculationState,
         navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
+        val (rowKey, titleRes, entries, viewAllRoute) = data
         if (entries.isEmpty()) return
         item {
-            Text(
-                text = stringResource(titleRes),
-                style = MaterialTheme.typography.titleMedium.copy(),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 10.dp),
-            )
+            Row(
+                modifier = Modifier.clickable(enabled = viewAllRoute != null) {
+                    navigationCallback.navigate(viewAllRoute!!)
+                }
+            ) {
+                Text(
+                    text = stringResource(titleRes),
+                    style = MaterialTheme.typography.titleMedium.copy(),
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 10.dp),
+                )
+                if (viewAllRoute != null) {
+                    IconButton(onClick = { navigationCallback.navigate(viewAllRoute) }) {
+                        Icon(
+                            imageVector = Icons.Filled.ViewList,
+                            contentDescription = stringResource(
+                                R.string.anime_home_row_view_all_content_description
+                            ),
+                        )
+                    }
+                }
+            }
         }
 
         item {
@@ -263,7 +277,7 @@ object AnimeHomeScreen {
                 )
             }
 
-            selectedItemTracker.attachPager(key = key, pagerState = pagerState)
+            selectedItemTracker.attachPager(key = rowKey, pagerState = pagerState)
         }
 
         item {
@@ -312,7 +326,8 @@ object AnimeHomeScreen {
                         navigationCallback.onMediaClick(media, widthToHeightRatio)
                     }
 
-                    val baseModifier = Modifier.animateItemPlacement()
+                    val baseModifier = Modifier
+                        .animateItemPlacement()
                         .clip(RoundedCornerShape(12.dp))
                         .combinedClickable(
                             onClick = onClick,
@@ -321,7 +336,7 @@ object AnimeHomeScreen {
                         .alpha(if (item.ignored) 0.38f else 1f)
 
                     val card: @Composable (@Composable ColumnScope.() -> Unit) -> Unit =
-                        if (selectedItemTracker.keyToPosition[key]?.second == index) {
+                        if (selectedItemTracker.keyToPosition[rowKey]?.second == index) {
                             {
                                 OutlinedCard(
                                     colors = CardDefaults.outlinedCardColors(
@@ -397,7 +412,7 @@ object AnimeHomeScreen {
                 }
             }
 
-            selectedItemTracker.attachLazyList(key = key, listState = listState)
+            selectedItemTracker.attachLazyList(key = rowKey, listState = listState)
         }
     }
 
