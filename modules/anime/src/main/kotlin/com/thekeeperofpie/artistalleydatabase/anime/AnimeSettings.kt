@@ -12,4 +12,6 @@ interface AnimeSettings {
 
     // TODO: Better database to store ignored IDs
     val ignoredAniListMediaIds: MutableStateFlow<Set<Int>>
+
+    val animeNewsNetworkRegion: MutableStateFlow<String>
 }

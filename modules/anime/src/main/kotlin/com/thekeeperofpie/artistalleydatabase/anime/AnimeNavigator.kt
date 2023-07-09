@@ -621,6 +621,7 @@ object AnimeNavigator {
             .apply { initialize(userId, mediaType) }
         AnimeUserListScreen(
             upIconOption = upIconOption,
+            mediaType = mediaType,
             viewModel = viewModel,
             navigationCallback = navigationCallback,
             scrollStateSaver = scrollStateSaver,

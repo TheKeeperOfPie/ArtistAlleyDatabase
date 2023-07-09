@@ -114,6 +114,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -832,6 +833,7 @@ fun CustomHtmlText(
     lineHeight: TextUnit = TextUnit.Unspecified,
     overflow: TextOverflow = TextOverflow.Clip,
     softWrap: Boolean = true,
+    minLines: Int = 1,
     maxLines: Int = Int.MAX_VALUE,
     inlineContent: Map<String, InlineTextContent> = mapOf(),
     onTextLayout: (TextLayoutResult) -> Unit = {},
@@ -843,6 +845,16 @@ fun CustomHtmlText(
     val annotatedString = Html.fromHtml(text.trim(), Html.FROM_HTML_MODE_LEGACY)
         .trim()
         .toAnnotatedString(urlSpanStyle, colorMapping)
+        .let {
+            if (minLines > 1 && maxLines < Int.MAX_VALUE) {
+                buildAnnotatedString {
+                    append(it)
+                    repeat(minLines - 1) {
+                        append("\n")
+                    }
+                }
+            } else it
+        }
 
     HtmlText(
         modifier = modifier,
@@ -858,6 +870,7 @@ fun CustomHtmlText(
         lineHeight = lineHeight,
         overflow = overflow,
         softWrap = softWrap,
+        minLines = minLines,
         maxLines = maxLines,
         inlineContent = inlineContent,
         onTextLayout = onTextLayout,
@@ -883,6 +896,7 @@ private fun HtmlText(
     lineHeight: TextUnit = TextUnit.Unspecified,
     overflow: TextOverflow = TextOverflow.Clip,
     softWrap: Boolean = true,
+    minLines: Int = 1,
     maxLines: Int = Int.MAX_VALUE,
     inlineContent: Map<String, InlineTextContent> = mapOf(),
     onTextLayout: (TextLayoutResult) -> Unit = {},
@@ -966,6 +980,7 @@ private fun HtmlText(
         lineHeight = lineHeight,
         overflow = overflow,
         softWrap = softWrap,
+        minLines = minLines,
         maxLines = maxLines,
         inlineContent = inlineContent,
         onTextLayout = {

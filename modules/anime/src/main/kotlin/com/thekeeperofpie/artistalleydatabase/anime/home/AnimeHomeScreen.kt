@@ -1,24 +1,32 @@
 package com.thekeeperofpie.artistalleydatabase.anime.home
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.snapping.SnapLayoutInfoProvider
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyListState
@@ -26,6 +34,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PageSize
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -65,8 +74,12 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.graphics.ColorUtils
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
@@ -79,6 +92,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaLargeCard
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
+import com.thekeeperofpie.artistalleydatabase.compose.CustomHtmlText
 import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
@@ -143,26 +157,18 @@ object AnimeHomeScreen {
             }
 
             when (selectedTabIndex) {
-                0 -> {
-                    list(
-                        entry = animeViewModel.entry,
-                        data = { it.data },
-                        onLongClickEntry = animeViewModel::onLongClickEntry,
-                        selectedItemTracker = selectedItemTracker,
-                        colorCalculationState = colorCalculationState,
-                        navigationCallback = navigationCallback,
-                    )
-                }
-                1 -> {
-                    list(
-                        entry = mangaViewModel.entry,
-                        data = { it.data },
-                        onLongClickEntry = mangaViewModel::onLongClickEntry,
-                        selectedItemTracker = selectedItemTracker,
-                        colorCalculationState = colorCalculationState,
-                        navigationCallback = navigationCallback,
-                    )
-                }
+                0 -> animeList(
+                    viewModel = animeViewModel,
+                    selectedItemTracker = selectedItemTracker,
+                    navigationCallback = navigationCallback,
+                    colorCalculationState = colorCalculationState,
+                )
+                1 -> mangaList(
+                    viewModel = mangaViewModel,
+                    selectedItemTracker = selectedItemTracker,
+                    navigationCallback = navigationCallback,
+                    colorCalculationState = colorCalculationState,
+                )
             }
         }
     }
@@ -192,35 +198,189 @@ object AnimeHomeScreen {
         )
     }
 
-    private fun <Entry> LazyListScope.list(
-        entry: Entry?,
-        data: (Entry) -> List<AnimeHomeDataEntry.RowData>,
-        onLongClickEntry: (AnimeHomeDataEntry.MediaEntry) -> Unit,
+    private fun LazyListScope.loading() {
+        item {
+            Box(modifier = Modifier.fillMaxSize()) {
+                CircularProgressIndicator(
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .padding(32.dp)
+                )
+            }
+        }
+    }
+
+    private fun LazyListScope.animeList(
+        viewModel: AnimeHomeMediaViewModel.Anime,
         selectedItemTracker: SelectedItemTracker,
         colorCalculationState: ColorCalculationState,
         navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
+        val entry = viewModel.entry
         if (entry == null) {
-            item {
-                Box(modifier = Modifier.fillMaxSize()) {
-                    CircularProgressIndicator(
-                        modifier = Modifier
-                            .align(Alignment.Center)
-                            .padding(32.dp)
-                    )
-                }
+            loading()
+        } else {
+            newsRow(viewModel.news)
+
+            entry.data.forEach {
+                mediaRow(
+                    data = it,
+                    onLongClickEntry = viewModel::onLongClickEntry,
+                    selectedItemTracker = selectedItemTracker,
+                    navigationCallback = navigationCallback,
+                    colorCalculationState = colorCalculationState,
+                )
             }
-            return
+        }
+    }
+
+    private fun LazyListScope.mangaList(
+        viewModel: AnimeHomeMediaViewModel.Manga,
+        selectedItemTracker: SelectedItemTracker,
+        colorCalculationState: ColorCalculationState,
+        navigationCallback: AnimeNavigator.NavigationCallback,
+    ) {
+        val entry = viewModel.entry
+        if (entry == null) {
+            loading()
+        } else {
+            entry.data.forEach {
+                mediaRow(
+                    data = it,
+                    onLongClickEntry = viewModel::onLongClickEntry,
+                    selectedItemTracker = selectedItemTracker,
+                    navigationCallback = navigationCallback,
+                    colorCalculationState = colorCalculationState,
+                )
+            }
+        }
+    }
+
+    private fun LazyListScope.newsRow(
+        data: List<AnimeHomeMediaViewModel.Anime.NewsArticleEntry>,
+    ) {
+        if (data.isEmpty()) return
+        item {
+            Text(
+                text = stringResource(R.string.anime_news_title),
+                style = MaterialTheme.typography.titleMedium.copy(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 10.dp),
+            )
         }
 
-        data(entry).forEach {
-            mediaRow(
-                data = it,
-                onLongClickEntry = onLongClickEntry,
-                selectedItemTracker = selectedItemTracker,
-                navigationCallback = navigationCallback,
-                colorCalculationState = colorCalculationState,
-            )
+        item {
+            val pagerState = rememberPagerState(pageCount = { data.size })
+            val uriHandler = LocalUriHandler.current
+            HorizontalPager(
+                state = pagerState,
+                contentPadding = PaddingValues(start = 16.dp, end = 16.dp),
+                pageSpacing = 16.dp,
+                pageSize = PageSize.Fixed(350.dp),
+                verticalAlignment = Alignment.Top,
+            ) {
+                NewsCard(
+                    entry = data[it],
+                    uriHandler = uriHandler,
+                )
+            }
+        }
+    }
+
+    @Composable
+    private fun NewsCard(
+        entry: AnimeHomeMediaViewModel.Anime.NewsArticleEntry,
+        uriHandler: UriHandler,
+    ) {
+        val onClick = entry.link?.let { { uriHandler.openUri(it) } }
+        val content: @Composable ColumnScope.() -> Unit = {
+            Row(
+                modifier = Modifier
+                    .conditionally(entry.image != null) {
+                        height(IntrinsicSize.Min)
+                    }
+            ) {
+                entry.image?.let {
+                    Box {
+                        AsyncImage(
+                            model = it,
+                            contentDescription = stringResource(
+                                R.string.anime_news_article_image_content_description
+                            ),
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .background(MaterialTheme.colorScheme.onSurfaceVariant)
+                                .width(80.dp)
+                                .fillMaxHeight()
+                        )
+
+                        entry.icon?.let {
+                            AsyncImage(
+                                model = it,
+                                contentDescription = stringResource(
+                                    R.string.anime_news_site_logo_content_description
+                                ),
+                                contentScale = ContentScale.FillWidth,
+                                modifier = Modifier
+                                    .width(80.dp)
+                                    .align(Alignment.BottomCenter)
+                            )
+                        }
+                    }
+                }
+
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier
+                        .padding(
+                            start = 8.dp,
+                            end = 8.dp,
+                            top = 8.dp,
+                            bottom = if (entry.copyright == null) 8.dp else 4.dp,
+                        )
+                        .weight(1f)
+                        .wrapContentHeight()
+                ) {
+                    entry.title?.let {
+                        Text(
+                            text = it,
+                            style = MaterialTheme.typography.labelMedium,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            color = MaterialTheme.colorScheme.primary,
+                        )
+                    }
+
+                    entry.description?.let {
+                        CustomHtmlText(
+                            text = it,
+                            style = MaterialTheme.typography.bodySmall,
+                            minLines = 3,
+                            maxLines = 3,
+                            overflow = TextOverflow.Clip,
+                            detectTaps = false,
+                        )
+                    }
+
+                    entry.copyright?.let {
+                        Text(
+                            text = it,
+                            style = MaterialTheme.typography.labelSmall,
+                            fontSize = 8.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
+                }
+            }
+        }
+
+        if (onClick != null) {
+            ElevatedCard(onClick = onClick, content = content)
+        } else {
+            ElevatedCard(content = content)
         }
     }
 

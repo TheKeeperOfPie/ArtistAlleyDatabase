@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.anilist.UserMediaListQuery.Data.MediaListCollection.List.Entry.Media
 import com.anilist.type.MediaListStatus
+import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
@@ -62,6 +63,7 @@ object AnimeUserListScreen {
     operator fun <SortType : SortOption> invoke(
         upIconOption: UpIconOption? = null,
         viewModel: ViewModel<SortType>,
+        mediaType: MediaType = MediaType.ANIME,
         navigationCallback: AnimeNavigator.NavigationCallback =
             AnimeNavigator.NavigationCallback(null),
         scrollStateSaver: ScrollStateSaver = ScrollStateSaver.STUB,
@@ -82,7 +84,17 @@ object AnimeUserListScreen {
                         leadingIcon = if (upIconOption != null) {
                             { UpIconButton(upIconOption) }
                         } else null,
-                        placeholder = { Text(stringResource(R.string.anime_user_list_search)) },
+                        placeholder = {
+                            Text(
+                                stringResource(
+                                    when (mediaType) {
+                                        MediaType.ANIME,
+                                        MediaType.UNKNOWN__ -> R.string.anime_user_list_anime_search
+                                        MediaType.MANGA -> R.string.anime_user_list_manga_search
+                                    }
+                                )
+                            )
+                        },
                         trailingIcon = {
                             IconButton(onClick = { viewModel.query = "" }) {
                                 Icon(

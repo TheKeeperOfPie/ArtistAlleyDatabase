@@ -93,6 +93,7 @@ dependencyResolutionManagement {
                 "com.pierfrancescosoffritti.androidyoutubeplayer:core:12.0.0",
                 alias = "androidyoutubeplayer"
             )
+            library("com.rometools:rome:2.1.0")
             library("com.squareup.moshi:moshi-kotlin:1.15.0")
             library("com.squareup.okhttp3:okhttp:5.0.0-alpha.11")
             library("com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.11", prefix = "okhttp3")

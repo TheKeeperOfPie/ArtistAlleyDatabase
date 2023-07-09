@@ -36,6 +36,8 @@
 # For AndroidX Compose, seems to be a library config error
 -keep class org.xml.sax.helpers.AttributesImpl
 
+# Please add these rules to your existing keep rules in order to suppress warnings.
+# This is generated automatically by the Android Gradle plugin.
 -dontwarn com.github.luben.zstd.BufferPool
 -dontwarn com.github.luben.zstd.ZstdInputStream
 -dontwarn com.github.luben.zstd.ZstdOutputStream
@@ -334,6 +336,20 @@
 -dontwarn org.ietf.jgss.GSSManager
 -dontwarn org.ietf.jgss.GSSName
 -dontwarn org.ietf.jgss.Oid
+-dontwarn org.jaxen.BaseXPath
+-dontwarn org.jaxen.DefaultNavigator
+-dontwarn org.jaxen.FunctionCallException
+-dontwarn org.jaxen.JaxenConstants
+-dontwarn org.jaxen.JaxenException
+-dontwarn org.jaxen.NamespaceContext
+-dontwarn org.jaxen.Navigator
+-dontwarn org.jaxen.SimpleVariableContext
+-dontwarn org.jaxen.UnresolvableException
+-dontwarn org.jaxen.UnsupportedAxisException
+-dontwarn org.jaxen.VariableContext
+-dontwarn org.jaxen.XPath
+-dontwarn org.jaxen.saxpath.SAXPathException
+-dontwarn org.jaxen.util.SingleObjectIterator
 -dontwarn org.joda.time.Instant
 -dontwarn org.objectweb.asm.AnnotationVisitor
 -dontwarn org.objectweb.asm.Attribute

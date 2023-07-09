@@ -9,10 +9,15 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
@@ -84,6 +89,8 @@ object AniListViewerProfileScreen {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.width(IntrinsicSize.Min)
+                    .widthIn(min = 300.dp)
+                    .verticalScroll(rememberScrollState())
             ) {
                 Text(
                     stringResource(R.string.anime_auth_prompt_label),
@@ -133,7 +140,7 @@ object AniListViewerProfileScreen {
                     value = value,
                     onValueChange = { value = it },
                     modifier = Modifier
-                        .sizeIn(minWidth = 200.dp, minHeight = 200.dp)
+                        .size(width = 200.dp, height = 200.dp)
                         .padding(16.dp),
                 )
 
@@ -144,6 +151,8 @@ object AniListViewerProfileScreen {
                 }) {
                     Text(stringResource(UtilsStringR.confirm))
                 }
+
+                Spacer(Modifier.height(88.dp))
             }
 
             if (onClickSettings != null) {

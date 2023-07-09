@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="anime_auth_prompt_label">AniList account required</string>
     <string name="anime_auth_prompt_text">This will open a webpage to log into AniList.co.
         Afterwards, share or open the page in this app.
@@ -11,7 +11,8 @@
     <string name="anime_auth_prompt_paste">Or paste in an auth token</string>
     <string name="anime_auth_button_log_in">Log in</string>
     <string name="anime_auth_button_why">Why?</string>
-    <string name="anime_user_list_search">Search user list…</string>
+    <string name="anime_user_list_anime_search">Search anime list…</string>
+    <string name="anime_user_list_manga_search">Search manga list…</string>
     <string name="anime_media_banner_image">Media banner image</string>
     <string name="anime_media_cover_image_content_description">Media cover image</string>
     <string name="anime_media_banner_image_content_description">Media banner image</string>
@@ -514,4 +515,13 @@
     <string name="anime_seasonal_previous_season_content_description">Previous season</string>
     <string name="anime_seasonal_next_season_content_description">Next season</string>
     <string name="anime_seasonal_season_year">%1$s %2$s</string>
+    <string name="anime_news_network_region_world">World</string>
+    <string name="anime_news_network_region_usa_canada">USA &amp; Canada</string>
+    <string name="anime_news_network_region_australia_new_zealand">Australia &amp; New-Zealand</string>
+    <string name="anime_news_network_region_india">India</string>
+    <string name="anime_news_network_region_southeast_asia">Southeast Asia</string>
+    <string name="anime_news_network_region_francais" tools:locale="Typo">Français</string>
+    <string name="anime_news_title">NEWS</string>
+    <string name="anime_news_site_logo_content_description">News site logo</string>
+    <string name="anime_news_article_image_content_description">News article image</string>
 </resources>

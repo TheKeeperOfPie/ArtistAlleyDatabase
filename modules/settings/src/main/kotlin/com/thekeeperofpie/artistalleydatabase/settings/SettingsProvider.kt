@@ -68,6 +68,8 @@ class SettingsProvider(
     override var showIgnored = MutableStateFlow(deserialize("showIgnored") ?: true)
     override var ignoredAniListMediaIds =
         MutableStateFlow(deserialize("ignoredAniListMediaIds") ?: emptySet<Int>())
+    override val animeNewsNetworkRegion =
+        MutableStateFlow(deserialize("animeNewsNetworkRegion") ?: "")
 
     var searchQuery = MutableStateFlow<ArtEntry?>(deserialize("searchQuery"))
     var navDrawerStartDestination =
@@ -97,7 +99,8 @@ class SettingsProvider(
         val lastCrashText = lastCrash.value
         if (crashNotificationContentIntent != null
             && lastCrashText.isNotBlank()
-            && !lastCrashShown.value) {
+            && !lastCrashShown.value
+        ) {
             NotificationManagerCompat.from(application).apply {
                 // TODO: Prompt user for POST_NOTIFICATIONS permission
                 if (ContextCompat.checkSelfPermission(

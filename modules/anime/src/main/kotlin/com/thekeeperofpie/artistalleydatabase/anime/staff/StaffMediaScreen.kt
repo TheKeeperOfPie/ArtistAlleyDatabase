@@ -71,7 +71,7 @@ object StaffMediaScreen {
                             var innerImageWidthToHeightRatio by remember { MutableSingle(1f) }
                             CharacterCard(
                                 screenKey = AnimeNavDestinations.STAFF_DETAILS.id,
-                                id = EntryId("anime_character", it.id),
+                                id = EntryId("anime_character", it.character.id.toString()),
                                 image = it.character.image?.large,
                                 colorCalculationState = colorCalculationState,
                                 innerImage = it.media?.coverImage?.extraLarge,
