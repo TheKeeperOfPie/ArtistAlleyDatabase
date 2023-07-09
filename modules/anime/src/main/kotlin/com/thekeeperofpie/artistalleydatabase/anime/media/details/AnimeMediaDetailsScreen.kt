@@ -308,7 +308,7 @@ object AnimeMediaDetailsScreen {
                     editData = viewModel.editData,
                     id = { listEntry?.id?.toString() },
                     type = { entry()?.media?.type },
-                    progressMax = { entry()?.media?.run { episodes ?: volumes } ?: 0 },
+                    progressMax = { entry()?.media?.run { episodes ?: volumes } ?: 1 },
                     scoreFormat = { scoreFormat },
                     onDateChange = viewModel::onDateChange,
                     onStatusChange = viewModel::onStatusChange,
@@ -358,8 +358,8 @@ object AnimeMediaDetailsScreen {
                                             mediaType = media.type,
                                             progress = progress,
                                             progressMax = progressMax,
-                                            score = media.mediaListEntry?.score,
-                                            viewModel.scoreFormat.collectAsState().value,
+                                            score = listEntry?.score,
+                                            scoreFormat = viewModel.scoreFormat.collectAsState().value,
                                         )
                                     )
                                 },
