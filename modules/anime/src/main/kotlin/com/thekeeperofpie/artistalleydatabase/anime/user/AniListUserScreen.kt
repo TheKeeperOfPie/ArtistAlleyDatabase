@@ -4,6 +4,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -101,6 +102,7 @@ object AniListUserScreen {
                                 style = MaterialTheme.typography.headlineLarge,
                                 maxLines = 1,
                                 modifier = Modifier
+                                    .fillMaxHeight()
                                     .align(Alignment.CenterStart)
                                     .padding(
                                         start = 16.dp,

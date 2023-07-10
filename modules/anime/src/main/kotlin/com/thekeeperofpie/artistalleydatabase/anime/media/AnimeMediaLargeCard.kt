@@ -111,7 +111,9 @@ object AnimeMediaLargeCard {
                             rating = entry.rating,
                             popularity = entry.popularity,
                             loading = entry == Entry.Loading,
-                            modifier = Modifier.wrapContentWidth()
+                            modifier = Modifier
+                                .padding(horizontal = 8.dp, vertical = 8.dp)
+                                .wrapContentWidth()
                         )
                     }
 

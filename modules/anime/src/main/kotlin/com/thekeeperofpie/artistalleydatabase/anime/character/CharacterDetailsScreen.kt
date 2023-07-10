@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -144,7 +145,6 @@ object CharacterDetailsScreen {
         CoverAndBannerHeader(
             screenKey = AnimeNavDestinations.CHARACTER_DETAILS.id,
             entryId = EntryId("anime_character", characterId),
-            pinnedHeight = 180.dp,
             progress = progress,
             color = color,
             coverImage = coverImage,
@@ -163,6 +163,7 @@ object CharacterDetailsScreen {
                     text = titleText(),
                     style = MaterialTheme.typography.headlineLarge,
                     modifier = Modifier
+                        .fillMaxHeight()
                         .align(Alignment.CenterStart)
                         .padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 4.dp),
                 )

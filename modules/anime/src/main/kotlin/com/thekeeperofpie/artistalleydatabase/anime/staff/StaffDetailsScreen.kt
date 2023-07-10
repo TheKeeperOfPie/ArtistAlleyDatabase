@@ -4,6 +4,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
@@ -190,7 +191,6 @@ object StaffDetailsScreen {
         CoverAndBannerHeader(
             screenKey = AnimeNavDestinations.STAFF_DETAILS.id,
             entryId = EntryId("anime_staff", staffId),
-            pinnedHeight = 180.dp,
             progress = progress,
             color = color,
             coverImage = coverImage,
@@ -209,6 +209,7 @@ object StaffDetailsScreen {
                     text = titleText(),
                     style = MaterialTheme.typography.headlineLarge,
                     modifier = Modifier
+                        .fillMaxHeight()
                         .align(Alignment.CenterStart)
                         .padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 4.dp),
                 )

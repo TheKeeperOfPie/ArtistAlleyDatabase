@@ -6,8 +6,10 @@ import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -130,6 +132,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils
 import com.thekeeperofpie.artistalleydatabase.anime.character.charactersSection
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaTagEntry
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaRatingIconsSection
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toColor
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toStatusIcon
@@ -576,7 +579,6 @@ object AnimeMediaDetailsScreen {
         CoverAndBannerHeader(
             screenKey = AnimeNavDestinations.MEDIA_DETAILS.id,
             entryId = EntryId("anime_media", mediaId),
-            pinnedHeight = 180.dp,
             progress = progress,
             color = color,
             coverImage = coverImage,
@@ -593,67 +595,90 @@ object AnimeMediaDetailsScreen {
                 }
             }
         ) {
-            Box(
-                contentAlignment = Alignment.CenterStart,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-            ) {
-                AutoResizeHeightText(
-                    text = when (val index = preferredTitle) {
-                        null -> null
-                        else -> entry?.titlesUnique?.get(index)
-                    } ?: titleText(),
-                    style = MaterialTheme.typography.headlineLarge,
-                    modifier = Modifier
-                        .align(Alignment.CenterStart)
-                        .padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 4.dp),
-                )
-            }
-
-            val subtitleText = subtitleText()
-            AnimatedVisibility(subtitleText != null, label = "Media details subtitle text") {
-                if (subtitleText != null) {
-                    Text(
-                        text = subtitleText,
-                        style = MaterialTheme.typography.bodyMedium,
+            Row {
+                Column(modifier = Modifier.weight(1f)) {
+                    Box(
+                        contentAlignment = Alignment.CenterStart,
                         modifier = Modifier
-                            .wrapContentHeight()
-                            .padding(horizontal = 16.dp, vertical = 4.dp)
                             .fillMaxWidth()
-                            .wrapContentHeight(Alignment.Bottom)
-                    )
+                            .weight(1f)
+                    ) {
+                        AutoResizeHeightText(
+                            text = when (val index = preferredTitle) {
+                                null -> null
+                                else -> entry?.titlesUnique?.get(index)
+                            } ?: titleText(),
+                            style = MaterialTheme.typography.headlineLarge,
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .align(Alignment.CenterStart)
+                                .padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 4.dp),
+                        )
+                    }
+
+                    val subtitleText = subtitleText()
+                    AnimatedVisibility(
+                        subtitleText != null,
+                        label = "Media details subtitle text"
+                    ) {
+                        if (subtitleText != null) {
+                            Text(
+                                text = subtitleText,
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier
+                                    .wrapContentHeight()
+                                    .padding(horizontal = 16.dp, vertical = 4.dp)
+                                    .fillMaxWidth()
+                                    .wrapContentHeight(Alignment.Bottom)
+                            )
+                        }
+                    }
+
+                    val nextEpisodeAiringAt = nextEpisodeAiringAt()
+                    val nextEpisode = nextEpisode()
+                    AnimatedVisibility(
+                        nextEpisodeAiringAt != null && nextEpisode != null,
+                        label = "Media details nextEpisodeAiringAt text"
+                    ) {
+                        if (nextEpisodeAiringAt != null && nextEpisode != null) {
+                            val context = LocalContext.current
+                            val airingAt = remember {
+                                MediaUtils.formatAiringAt(context, nextEpisodeAiringAt * 1000L)
+                            }
+
+                            val remainingTime = remember {
+                                MediaUtils.formatRemainingTime(nextEpisodeAiringAt * 1000L)
+                            }
+
+                            Text(
+                                text = stringResource(
+                                    R.string.anime_media_next_airing_episode,
+                                    nextEpisode,
+                                    airingAt,
+                                    remainingTime,
+                                ),
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.surfaceTint,
+                                modifier = Modifier
+                                    .wrapContentHeight(Alignment.Bottom)
+                                    .padding(horizontal = 16.dp, vertical = 4.dp)
+                            )
+                        }
+                    }
                 }
-            }
 
-            val nextEpisodeAiringAt = nextEpisodeAiringAt()
-            val nextEpisode = nextEpisode()
-            AnimatedVisibility(
-                nextEpisodeAiringAt != null && nextEpisode != null,
-                label = "Media details nextEpisodeAiringAt text"
-            ) {
-                if (nextEpisodeAiringAt != null && nextEpisode != null) {
-                    val context = LocalContext.current
-                    val airingAt = remember {
-                        MediaUtils.formatAiringAt(context, nextEpisodeAiringAt * 1000L)
-                    }
-
-                    val remainingTime = remember {
-                        MediaUtils.formatRemainingTime(nextEpisodeAiringAt * 1000L)
-                    }
-
-                    Text(
-                        text = stringResource(
-                            R.string.anime_media_next_airing_episode,
-                            nextEpisode,
-                            airingAt,
-                            remainingTime,
-                        ),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.surfaceTint,
+                AnimatedVisibility(
+                    visible = progress > 0.8f,
+                    enter = fadeIn() + expandHorizontally(),
+                    exit = fadeOut() + shrinkHorizontally(),
+                    modifier = Modifier.align(Alignment.Top)
+                ) {
+                    MediaRatingIconsSection(
+                        rating = entry?.media?.averageScore,
+                        popularity = entry?.media?.popularity,
                         modifier = Modifier
-                            .wrapContentHeight(Alignment.Bottom)
-                            .padding(horizontal = 16.dp, vertical = 4.dp)
+                            .alpha(if (progress > 0.8f) 1f - ((1f - progress) / 0.2f) else 0f)
+                            .padding(start = 8.dp, end = 8.dp, top = 4.dp)
                     )
                 }
             }

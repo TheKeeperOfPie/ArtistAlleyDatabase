@@ -7,4 +7,25 @@ interface FilterEntry<T> {
     val state: FilterIncludeExcludeState
     val leadingIconVector: ImageVector? get() = null
     val leadingIconContentDescription: Int? get() = null
+
+    companion object {
+        fun <T : Any> values(
+            values: Array<T>,
+            included: List<T> = emptyList(),
+            excluded: List<T> = emptyList()
+        ) = values.map {
+            FilterEntryImpl(
+                it, FilterIncludeExcludeState.toState(
+                    value = it,
+                    included = included,
+                    excluded = excluded
+                )
+            )
+        }
+    }
+
+    data class FilterEntryImpl<T>(
+        override val value: T,
+        override val state: FilterIncludeExcludeState = FilterIncludeExcludeState.DEFAULT,
+    ) : FilterEntry<T>
 }

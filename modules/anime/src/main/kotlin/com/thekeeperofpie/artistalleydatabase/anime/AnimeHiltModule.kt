@@ -2,10 +2,12 @@ package com.thekeeperofpie.artistalleydatabase.anime
 
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
+import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsController
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import okhttp3.OkHttpClient
 import org.chromium.net.CronetEngine
 import javax.inject.Singleton
 
@@ -22,4 +24,12 @@ object AnimeHiltModule {
     @Provides
     fun provideAnimeMediaIgnoreList(animeSettings: AnimeSettings) =
         AnimeMediaIgnoreList(animeSettings)
+
+    @Singleton
+    @Provides
+    fun provideAnimeNewsController(
+        scopedApplication: ScopedApplication,
+        okHttpClient: OkHttpClient,
+        animeSettings: AnimeSettings,
+    ) = AnimeNewsController(scopedApplication, okHttpClient, animeSettings)
 }

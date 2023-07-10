@@ -1,6 +1,9 @@
 package com.thekeeperofpie.artistalleydatabase.anime
 
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.FilterData
+import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsNetworkCategory
+import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsNetworkRegion
+import com.thekeeperofpie.artistalleydatabase.anime.news.CrunchyrollNewsCategory
 import kotlinx.coroutines.flow.MutableStateFlow
 
 interface AnimeSettings {
@@ -13,5 +16,10 @@ interface AnimeSettings {
     // TODO: Better database to store ignored IDs
     val ignoredAniListMediaIds: MutableStateFlow<Set<Int>>
 
-    val animeNewsNetworkRegion: MutableStateFlow<String>
+    val animeNewsNetworkRegion: MutableStateFlow<AnimeNewsNetworkRegion>
+
+    val animeNewsNetworkCategoriesIncluded: MutableStateFlow<List<AnimeNewsNetworkCategory>>
+    val animeNewsNetworkCategoriesExcluded: MutableStateFlow<List<AnimeNewsNetworkCategory>>
+    val crunchyrollNewsCategoriesIncluded: MutableStateFlow<List<CrunchyrollNewsCategory>>
+    val crunchyrollNewsCategoriesExcluded: MutableStateFlow<List<CrunchyrollNewsCategory>>
 }

@@ -19,6 +19,9 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.notification.Notific
 import com.thekeeperofpie.artistalleydatabase.android_utils.notification.NotificationIds
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.FilterData
+import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsNetworkCategory
+import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsNetworkRegion
+import com.thekeeperofpie.artistalleydatabase.anime.news.CrunchyrollNewsCategory
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntry
 import com.thekeeperofpie.artistalleydatabase.art.persistence.ArtSettings
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySettings
@@ -69,7 +72,21 @@ class SettingsProvider(
     override var ignoredAniListMediaIds =
         MutableStateFlow(deserialize("ignoredAniListMediaIds") ?: emptySet<Int>())
     override val animeNewsNetworkRegion =
-        MutableStateFlow(deserialize("animeNewsNetworkRegion") ?: "")
+        MutableStateFlow(deserialize("animeNewsNetworkRegion") ?: AnimeNewsNetworkRegion.USA_CANADA)
+
+    override val animeNewsNetworkCategoriesIncluded = MutableStateFlow(
+        deserialize("animeNewsNetworkCategoriesIncluded") ?: emptyList<AnimeNewsNetworkCategory>()
+    )
+    override val animeNewsNetworkCategoriesExcluded = MutableStateFlow(
+        deserialize("animeNewsNetworkCategoriesExcluded") ?: emptyList<AnimeNewsNetworkCategory>()
+    )
+
+    override val crunchyrollNewsCategoriesIncluded = MutableStateFlow(
+        deserialize("crunchyrollNewsCategoriesIncluded") ?: emptyList<CrunchyrollNewsCategory>()
+    )
+    override val crunchyrollNewsCategoriesExcluded = MutableStateFlow(
+        deserialize("crunchyrollNewsCategoriesExcluded") ?: emptyList<CrunchyrollNewsCategory>()
+    )
 
     var searchQuery = MutableStateFlow<ArtEntry?>(deserialize("searchQuery"))
     var navDrawerStartDestination =
@@ -148,6 +165,11 @@ class SettingsProvider(
             showAdult = showAdult.value,
             showIgnored = showIgnored.value,
             ignoredAniListMediaIds = ignoredAniListMediaIds.value,
+            animeNewsNetworkRegion = animeNewsNetworkRegion.value,
+            animeNewsNetworkCategoriesIncluded = animeNewsNetworkCategoriesIncluded.value,
+            animeNewsNetworkCategoriesExcluded = animeNewsNetworkCategoriesExcluded.value,
+            crunchyrollNewsCategoriesIncluded = crunchyrollNewsCategoriesIncluded.value,
+            crunchyrollNewsCategoriesExcluded = crunchyrollNewsCategoriesExcluded.value,
             navDrawerStartDestination = navDrawerStartDestination.value,
             hideStatusBar = hideStatusBar.value,
         )
@@ -166,12 +188,11 @@ class SettingsProvider(
         subscribeProperty(scope, ::lastCrash)
         subscribeProperty(scope, ::lastCrashShown)
         subscribeProperty(scope, ::unlockAllFeatures)
+        subscribeProperty(scope, ::animeNewsNetworkRegion)
 
         scope.launch(CustomDispatchers.IO) {
             ignoredAniListMediaIds.drop(1).collectLatest {
-                val stringValue = appJson.json.run {
-                    encodeToString(it)
-                }
+                val stringValue = appJson.json.run { encodeToString(it) }
                 sharedPreferences.edit()
                     .putString("ignoredAniListMediaIds", stringValue)
                     .apply()
@@ -179,11 +200,41 @@ class SettingsProvider(
         }
         scope.launch(CustomDispatchers.IO) {
             savedAnimeFilters.drop(1).collectLatest {
-                val stringValue = appJson.json.run {
-                    encodeToString(it)
-                }
+                val stringValue = appJson.json.run { encodeToString(it) }
                 sharedPreferences.edit()
                     .putString("savedAnimeFilters", stringValue)
+                    .apply()
+            }
+        }
+        scope.launch(CustomDispatchers.IO) {
+            animeNewsNetworkCategoriesIncluded.drop(1).collectLatest {
+                val stringValue = appJson.json.run { encodeToString(it) }
+                sharedPreferences.edit()
+                    .putString("animeNewsNetworkCategoriesIncluded", stringValue)
+                    .apply()
+            }
+        }
+        scope.launch(CustomDispatchers.IO) {
+            animeNewsNetworkCategoriesExcluded.drop(1).collectLatest {
+                val stringValue = appJson.json.run { encodeToString(it) }
+                sharedPreferences.edit()
+                    .putString("animeNewsNetworkCategoriesExcluded", stringValue)
+                    .apply()
+            }
+        }
+        scope.launch(CustomDispatchers.IO) {
+            crunchyrollNewsCategoriesIncluded.drop(1).collectLatest {
+                val stringValue = appJson.json.run { encodeToString(it) }
+                sharedPreferences.edit()
+                    .putString("crunchyrollNewsCategoriesIncluded", stringValue)
+                    .apply()
+            }
+        }
+        scope.launch(CustomDispatchers.IO) {
+            crunchyrollNewsCategoriesExcluded.drop(1).collectLatest {
+                val stringValue = appJson.json.run { encodeToString(it) }
+                sharedPreferences.edit()
+                    .putString("crunchyrollNewsCategoriesExcluded", stringValue)
                     .apply()
             }
         }
@@ -208,6 +259,11 @@ class SettingsProvider(
         showAdult.emit(data.showAdult)
         showIgnored.emit(data.showIgnored)
         ignoredAniListMediaIds.emit(data.ignoredAniListMediaIds)
+        animeNewsNetworkRegion.emit(data.animeNewsNetworkRegion)
+        animeNewsNetworkCategoriesIncluded.emit(data.animeNewsNetworkCategoriesIncluded)
+        animeNewsNetworkCategoriesExcluded.emit(data.animeNewsNetworkCategoriesExcluded)
+        crunchyrollNewsCategoriesIncluded.emit(data.crunchyrollNewsCategoriesIncluded)
+        crunchyrollNewsCategoriesExcluded.emit(data.crunchyrollNewsCategoriesExcluded)
         navDrawerStartDestination.emit(data.navDrawerStartDestination)
         hideStatusBar.emit(data.hideStatusBar)
     }
@@ -216,8 +272,10 @@ class SettingsProvider(
         val stringValue = sharedPreferences.getString(name, "")
         return if (stringValue.isNullOrBlank()) {
             null
-        } else {
+        } else try {
             appJson.json.decodeFromString<T>(stringValue)
+        } catch (ignored: Throwable) {
+            null
         }
     }
 

@@ -1,9 +1,15 @@
+@file:OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
+
 package com.thekeeperofpie.artistalleydatabase.compose.filter
 
 import androidx.annotation.StringRes
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
@@ -11,11 +17,14 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -28,6 +37,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
+import com.thekeeperofpie.artistalleydatabase.compose.filter.SortAndFilterComposables.SortFilterHeaderText
 import com.thekeeperofpie.compose_proxy.R
 
 @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
@@ -70,113 +80,121 @@ object SortAndFilterComposables {
     ) {
         @Suppress("NAME_SHADOWING")
         val expanded = expanded()
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { onExpandedChange(!expanded) }
-        ) {
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
+        Column(modifier = Modifier.clickable { onExpandedChange(!expanded) }) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
-                    .weight(1f)
-                    .padding(start = 16.dp)
-                    .animateContentSize()
+                    .fillMaxWidth()
             ) {
-                SortFilterHeaderText(expanded, headerTextRes)
-
-                sortOptions().forEach {
-                    if (!expanded && it.state == FilterIncludeExcludeState.DEFAULT) return@forEach
-                    FilterChip(
-                        selected = it.state != FilterIncludeExcludeState.DEFAULT,
-                        onClick = { onSortClick(it.value) },
-                        label = { Text(stringResource(it.value.textRes)) },
-                        modifier = Modifier.animateContentSize()
-                    )
-                }
-
-                if (!expanded && sortOptions()
-                        .any { it.state != FilterIncludeExcludeState.DEFAULT }
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(start = 16.dp)
+                        .animateContentSize()
                 ) {
-                    val sortAscending = sortAscending()
-                    FilterChip(
-                        selected = true,
-                        onClick = { onSortAscendingChange(!sortAscending) },
-                        leadingIcon = {
-                            Icon(
-                                imageVector = if (sortAscending) {
-                                    Icons.Filled.ArrowUpward
-                                } else {
-                                    Icons.Filled.ArrowDownward
-                                },
-                                contentDescription = stringResource(
-                                    if (sortAscending) {
-                                        R.string.sort_direction_ascending_content_description
+                    SortFilterHeaderText(expanded, headerTextRes)
+
+                    sortOptions().forEach {
+                        if (!expanded && it.state == FilterIncludeExcludeState.DEFAULT) return@forEach
+                        FilterChip(
+                            selected = it.state != FilterIncludeExcludeState.DEFAULT,
+                            onClick = { onSortClick(it.value) },
+                            label = { Text(stringResource(it.value.textRes)) },
+                            modifier = Modifier.animateContentSize()
+                        )
+                    }
+
+                    if (!expanded && sortOptions()
+                            .any { it.state != FilterIncludeExcludeState.DEFAULT }
+                    ) {
+                        val sortAscending = sortAscending()
+                        FilterChip(
+                            selected = true,
+                            onClick = { onSortAscendingChange(!sortAscending) },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = if (sortAscending) {
+                                        Icons.Filled.ArrowUpward
                                     } else {
-                                        R.string.sort_direction_descending_content_description
-                                    }
-                                ),
-                            )
-                        },
-                        label = { Text(ascendingText(sortAscending)) }
-                    )
+                                        Icons.Filled.ArrowDownward
+                                    },
+                                    contentDescription = stringResource(
+                                        if (sortAscending) {
+                                            R.string.sort_direction_ascending_content_description
+                                        } else {
+                                            R.string.sort_direction_descending_content_description
+                                        }
+                                    ),
+                                )
+                            },
+                            label = { Text(ascendingText(sortAscending)) }
+                        )
+                    }
                 }
+
+                TrailingDropdownIconButton(
+                    expanded = expanded,
+                    contentDescription = stringResource(R.string.sort_expand_content_description),
+                    onClick = { onExpandedChange(!expanded) },
+                    modifier = Modifier.align(Alignment.Top),
+                )
             }
 
-            TrailingDropdownIconButton(
-                expanded = expanded,
-                contentDescription = stringResource(R.string.sort_expand_content_description),
-                onClick = { onExpandedChange(!expanded) },
-                modifier = Modifier.align(Alignment.Top),
-            )
-        }
-
-        if (expanded && sortOptions().any { it.state != FilterIncludeExcludeState.DEFAULT }) {
-            val sortAscending = sortAscending()
-            Text(
-                text = stringResource(R.string.sort_direction_label),
-                style = MaterialTheme.typography.titleSmall,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 16.dp, top = 10.dp, end = 16.dp, bottom = 8.dp)
-            )
-
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 16.dp, end = 16.dp)
-                    .animateContentSize()
+            AnimatedVisibility(
+                visible = expanded && sortOptions()
+                    .any { it.state != FilterIncludeExcludeState.DEFAULT },
+                enter = expandVertically(),
+                exit = shrinkVertically(),
             ) {
-                FilterChip(
-                    selected = sortAscending,
-                    onClick = { onSortAscendingChange(true) },
-                    label = { Text(ascendingText(true)) },
-                    leadingIcon = {
-                        Icon(
-                            imageVector = Icons.Filled.ArrowUpward,
-                            contentDescription = stringResource(
-                                R.string.sort_direction_ascending_content_description,
-                            ),
-                        )
-                    },
-                    modifier = Modifier.animateContentSize()
-                )
+                Column {
+                    val sortAscending = sortAscending()
+                    Text(
+                        text = stringResource(R.string.sort_direction_label),
+                        style = MaterialTheme.typography.titleSmall,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 16.dp, top = 10.dp, end = 16.dp, bottom = 8.dp)
+                    )
 
-                FilterChip(
-                    selected = !sortAscending,
-                    onClick = { onSortAscendingChange(false) },
-                    label = { Text(ascendingText(false)) },
-                    leadingIcon = {
-                        Icon(
-                            imageVector = Icons.Filled.ArrowDownward,
-                            contentDescription = stringResource(
-                                R.string.sort_direction_descending_content_description,
-                            ),
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 16.dp, end = 16.dp)
+                            .animateContentSize()
+                    ) {
+                        FilterChip(
+                            selected = sortAscending,
+                            onClick = { onSortAscendingChange(true) },
+                            label = { Text(ascendingText(true)) },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Filled.ArrowUpward,
+                                    contentDescription = stringResource(
+                                        R.string.sort_direction_ascending_content_description,
+                                    ),
+                                )
+                            },
+                            modifier = Modifier.animateContentSize()
                         )
-                    },
-                    modifier = Modifier.animateContentSize()
-                )
+
+                        FilterChip(
+                            selected = !sortAscending,
+                            onClick = { onSortAscendingChange(false) },
+                            label = { Text(ascendingText(false)) },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Filled.ArrowDownward,
+                                    contentDescription = stringResource(
+                                        R.string.sort_direction_descending_content_description,
+                                    ),
+                                )
+                            },
+                            modifier = Modifier.animateContentSize()
+                        )
+                    }
+                }
             }
         }
 
@@ -191,4 +209,93 @@ object SortAndFilterComposables {
             R.string.sort_descending
         }
     )
+}
+
+
+@Composable
+fun <Entry : FilterEntry<*>> FilterSection(
+    expanded: () -> Boolean,
+    onExpandedChange: (Boolean) -> Unit,
+    entries: @Composable () -> List<Entry>,
+    onEntryClick: (Entry) -> Unit,
+    @StringRes titleRes: Int,
+    @StringRes titleDropdownContentDescriptionRes: Int,
+    valueToText: @Composable (Entry) -> String,
+    @StringRes includeExcludeIconContentDescriptionRes: Int,
+    showIcons: Boolean = true,
+) {
+    @Suppress("NAME_SHADOWING")
+    val expanded = expanded()
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onExpandedChange(!expanded) }
+    ) {
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier
+                .weight(1f)
+                .padding(start = 16.dp)
+                .animateContentSize()
+        ) {
+            SortFilterHeaderText(expanded, titleRes)
+
+            entries().forEach {
+                if (!expanded && it.state == FilterIncludeExcludeState.DEFAULT) return@forEach
+                FilterChip(
+                    selected = it.state != FilterIncludeExcludeState.DEFAULT,
+                    onClick = { onEntryClick(it) },
+                    label = { Text(valueToText(it)) },
+                    leadingIcon = if (!showIcons) null else {
+                        {
+                            IncludeExcludeIcon(it, includeExcludeIconContentDescriptionRes)
+                        }
+                    },
+                    modifier = Modifier
+                        .animateContentSize()
+                        .heightIn(min = 32.dp)
+                )
+            }
+        }
+
+        TrailingDropdownIconButton(
+            expanded = expanded,
+            contentDescription = stringResource(titleDropdownContentDescriptionRes),
+            onClick = { onExpandedChange(!expanded) },
+            modifier = Modifier.align(Alignment.Top),
+        )
+    }
+
+    Divider()
+}
+
+
+@Composable
+fun IncludeExcludeIcon(
+    entry: FilterEntry<*>,
+    @StringRes contentDescriptionRes: Int
+) {
+    if (entry.state == FilterIncludeExcludeState.DEFAULT) {
+        if (entry.leadingIconVector != null) {
+            Icon(
+                imageVector = entry.leadingIconVector!!,
+                contentDescription = stringResource(entry.leadingIconContentDescription!!),
+                modifier = Modifier
+                    .padding(vertical = 6.dp)
+                    .size(20.dp)
+            )
+        }
+    } else {
+        when (entry.state) {
+            FilterIncludeExcludeState.DEFAULT -> null
+            FilterIncludeExcludeState.INCLUDE -> Icons.Filled.Check
+            FilterIncludeExcludeState.EXCLUDE -> Icons.Filled.Close
+        }?.let {
+            Icon(
+                imageVector = it,
+                contentDescription = stringResource(contentDescriptionRes)
+            )
+        }
+    }
 }

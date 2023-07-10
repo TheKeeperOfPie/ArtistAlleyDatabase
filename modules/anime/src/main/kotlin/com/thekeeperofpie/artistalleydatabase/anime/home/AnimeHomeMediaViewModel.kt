@@ -2,39 +2,29 @@
 
 package com.thekeeperofpie.artistalleydatabase.anime.home
 
-import android.app.Application
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.anilist.fragment.MediaPreviewWithDescription
-import com.hoc081098.flowext.startWith
-import com.rometools.rome.io.SyndFeedInput
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
+import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsController
 import com.thekeeperofpie.artistalleydatabase.anime.seasonal.SeasonalViewModel
-import com.thekeeperofpie.artistalleydatabase.anime.utils.AnimeNewsNetworkRegion
-import com.thekeeperofpie.artistalleydatabase.anime.utils.AnimeNewsNetworkUtils
-import com.thekeeperofpie.artistalleydatabase.anime.utils.CrunchyrollUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import java.util.Date
 import javax.inject.Inject
 
 abstract class AnimeHomeMediaViewModel(
@@ -89,88 +79,11 @@ abstract class AnimeHomeMediaViewModel(
 
     @HiltViewModel
     class Anime @Inject constructor(
-        application: Application,
         aniListApi: AuthedAniListApi,
         settings: AnimeSettings,
         ignoreList: AnimeMediaIgnoreList,
-        okHttpClient: OkHttpClient,
+        val newsController: AnimeNewsController,
     ) : AnimeHomeMediaViewModel(aniListApi, settings, ignoreList) {
-
-        var newsRegion = settings.animeNewsNetworkRegion.map {
-            try {
-                AnimeNewsNetworkRegion.valueOf(it)
-            } catch (ignored: Throwable) {
-                AnimeNewsNetworkRegion.USA_CANADA
-            }
-        }
-
-        var news by mutableStateOf<List<NewsArticleEntry>>(emptyList())
-
-        init {
-            viewModelScope.launch(CustomDispatchers.IO) {
-                val animeNewsNetwork = newsRegion
-                    .mapLatest {
-                        fetchFeed(
-                            okHttpClient = okHttpClient,
-                            url = "${AnimeNewsNetworkUtils.NEWS_ATOM_URL_PREFIX}${it.id}"
-                        )
-                    }
-                    .catch {}
-                    .startWith(item = emptyList())
-
-                val crunchyroll = flow {
-                    emit(
-                        fetchFeed(
-                            okHttpClient = okHttpClient,
-                            url = CrunchyrollUtils.NEW_RSS_URL,
-                        )
-                    )
-                }
-                    .catch {}
-                    .startWith(item = emptyList())
-
-                combine(animeNewsNetwork, crunchyroll, List<NewsArticleEntry>::plus)
-                    .map { it.sortedByDescending { it.date } }
-                    .collectLatest {
-                        withContext(CustomDispatchers.Main) {
-                            news = it
-                        }
-                    }
-            }
-        }
-
-        private fun fetchFeed(okHttpClient: OkHttpClient, url: String) = okHttpClient.newCall(
-            Request.Builder()
-                .url(url)
-                .get()
-                .build()
-        ).execute().body.charStream().use {
-            val feed = SyndFeedInput().build(it)
-            val iconUrl = feed.foreignMarkup
-                .find { it.namespacePrefix == "snf" && it.name == "logo" }
-                ?.children
-                ?.find { it.name == "url" }
-                ?.textNormalize
-            feed.entries.map {
-                val imageUrl = it.foreignMarkup
-                    .find { it.namespacePrefix == "media" && it.name == "thumbnail" }
-                    ?.getAttributeValue("url")
-                NewsArticleEntry(
-                    icon = feed.icon?.url ?: iconUrl,
-                    image = imageUrl,
-                    title = it.title,
-                    // Add 3 newlines to force text height measurement to be at least 3 lines tall
-                    description = it.description?.value.orEmpty() + "\n\n\n",
-                    link = it.link,
-                    copyright = feed.copyright,
-                    date = it.publishedDate,
-                )
-            }
-        }
-
-        fun onNewsRegionChanged(region: AnimeNewsNetworkRegion) {
-            settings.animeNewsNetworkRegion.value = region.id
-        }
 
         override suspend fun media(): List<RowInput> {
             val lists = aniListApi.homeAnime()
@@ -206,16 +119,6 @@ abstract class AnimeHomeMediaViewModel(
                 RowInput("anime_top", R.string.anime_home_top, lists.top?.media),
             )
         }
-
-        data class NewsArticleEntry(
-            val icon: String?,
-            val image: String?,
-            val title: String?,
-            val description: String?,
-            val link: String?,
-            val copyright: String?,
-            val date: Date,
-        )
     }
 
     @HiltViewModel

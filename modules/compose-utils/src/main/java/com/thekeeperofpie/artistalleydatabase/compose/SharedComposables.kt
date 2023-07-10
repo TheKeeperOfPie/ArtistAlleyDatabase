@@ -534,7 +534,7 @@ fun AutoResizeHeightText(
     var stillCalculating by remember { mutableStateOf(true) }
     var decreasing by remember { mutableStateOf(true) }
 
-    val cachedFontSizes = remember { mutableStateMapOf<Int, Float>() }
+    val cachedFontSizes = remember { mutableStateMapOf<IntSize, Float>() }
 
     Text(
         text = text,
@@ -552,8 +552,8 @@ fun AutoResizeHeightText(
         maxLines = maxLines,
         minLines = minLines,
         onTextLayout = onTextLayout@{
-            val cachedFontSize = cachedFontSizes[it.size.height]
-            if (stillCalculating && cachedFontSize != null) {
+            val cachedFontSize = cachedFontSizes[it.size]
+            if (cachedFontSize != null) {
                 realFontSize = cachedFontSize
                 realLineHeight = cachedFontSize / initialFontSize * initialLineHeight
                 stillCalculating = false
@@ -568,15 +568,15 @@ fun AutoResizeHeightText(
             } else {
                 val scale = if (it.didOverflowHeight) {
                     if (decreasing) {
-                        0.95f
+                        0.9f
                     } else {
                         // Reset to decreasing if overflowed since
                         // it doesn't make sense to increase from here
                         decreasing = true
-                        1 / 0.95f
+                        1 / 0.9f
                     }
                 } else if (!decreasing) {
-                    (1 / 0.95f)
+                    (1 / 0.9f)
                 } else 1f
 
                 if (scale != 1f) {
@@ -589,7 +589,7 @@ fun AutoResizeHeightText(
                 }
 
                 stillCalculating = false
-                cachedFontSizes[it.size.height] = realFontSize
+                cachedFontSizes.putIfAbsent(it.size, realFontSize)
                 readyToDraw = true
             }
 

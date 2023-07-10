@@ -78,7 +78,7 @@ internal fun CoverAndBannerHeader(
     entryId: EntryId?,
     coverImage: @Composable () -> String?,
     bannerImage: @Composable () -> String? = { null },
-    pinnedHeight: Dp,
+    pinnedHeight: Dp = 120.dp,
     progress: Float = 0f,
     coverSize: Dp = 256.dp,
     coverImageWidthToHeightRatio: Float = 1f,
@@ -108,7 +108,7 @@ internal fun CoverAndBannerHeader(
                         height = Dimension.Pixels(LocalDensity.current.run { 180.dp.roundToPx() }),
                     )
                     .build(),
-                contentScale = ContentScale.FillHeight,
+                contentScale = ContentScale.Crop,
                 contentDescription = stringResource(R.string.anime_media_banner_image),
                 modifier = Modifier
                     .fillMaxWidth()
@@ -147,7 +147,7 @@ internal fun CoverAndBannerHeader(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(start = 16.dp, top = lerp(100.dp, 10.dp, progress), bottom = 10.dp)
-                    .height(lerp(coverSize, coverSize - 76.dp, progress))
+                    .height(lerp(coverSize, pinnedHeight, progress))
             ) {
                 SharedElement(
                     key = "${entryId?.scopedId}_image",

@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.anime.utils
+package com.thekeeperofpie.artistalleydatabase.anime.news
 
 object AnimeNewsNetworkUtils {
 

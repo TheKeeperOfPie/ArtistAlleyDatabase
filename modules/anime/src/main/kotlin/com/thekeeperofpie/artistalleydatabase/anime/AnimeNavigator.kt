@@ -37,6 +37,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeMediaFilterController
+import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.schedule.AiringScheduleScreen
 import com.thekeeperofpie.artistalleydatabase.anime.search.AnimeSearchScreen
 import com.thekeeperofpie.artistalleydatabase.anime.search.AnimeSearchViewModel
@@ -451,6 +452,10 @@ object AnimeNavigator {
                 navigationCallback = navigationCallback,
             )
         }
+
+        navGraphBuilder.composable(AnimeNavDestinations.NEWS.id) {
+            AnimeNewsScreen(navigationCallback = navigationCallback)
+        }
     }
 
     fun onTagClick(navHostController: NavHostController, tagId: String, tagName: String) {
@@ -712,5 +717,7 @@ object AnimeNavigator {
         }
 
         fun navigate(route: String) = navHostController?.navigate(route)
+
+        fun popUp() = navHostController?.popBackStack()
     }
 }

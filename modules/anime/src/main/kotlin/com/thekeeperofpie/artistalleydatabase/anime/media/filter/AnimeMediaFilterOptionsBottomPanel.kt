@@ -28,9 +28,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircleOutline
 import androidx.compose.material.icons.filled.CalendarToday
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.RemoveCircleOutline
 import androidx.compose.material.icons.filled.UnfoldLess
 import androidx.compose.material.icons.filled.UnfoldMore
@@ -81,8 +79,9 @@ import com.thekeeperofpie.artistalleydatabase.compose.CustomOutlinedTextField
 import com.thekeeperofpie.artistalleydatabase.compose.ItemDropdown
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
 import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
-import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterEntry
 import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
+import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterSection
+import com.thekeeperofpie.artistalleydatabase.compose.filter.IncludeExcludeIcon
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortAndFilterComposables.SortFilterHeaderText
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortAndFilterComposables.SortSection
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortOption
@@ -177,7 +176,7 @@ object AnimeMediaFilterOptionsBottomPanel {
 
         BottomSheetScaffoldNoAppBarOffset(
             scaffoldState = scaffoldState,
-            sheetPeekHeight = 48.dp +
+            sheetPeekHeight = 56.dp +
                     (bottomNavigationState?.run { bottomNavBarPadding() + bottomOffset() } ?: 0.dp),
             sheetDragHandle = {
                 Box(Modifier.fillMaxWidth()) {
@@ -285,7 +284,7 @@ object AnimeMediaFilterOptionsBottomPanel {
 
         BottomSheetScaffold(
             scaffoldState = scaffoldState,
-            sheetPeekHeight = 48.dp +
+            sheetPeekHeight = 56.dp +
                     (bottomNavigationState?.run { bottomNavBarPadding() + bottomOffset() } ?: 0.dp),
             sheetDragHandle = {
                 Box(Modifier.fillMaxWidth()) {
@@ -602,64 +601,6 @@ object AnimeMediaFilterOptionsBottomPanel {
         }
 
         content()
-
-        Divider()
-    }
-
-    @Composable
-    private fun <Entry : FilterEntry<*>> FilterSection(
-        expanded: () -> Boolean,
-        onExpandedChange: (Boolean) -> Unit,
-        entries: @Composable () -> List<Entry>,
-        onEntryClick: (Entry) -> Unit,
-        @StringRes titleRes: Int,
-        @StringRes titleDropdownContentDescriptionRes: Int,
-        valueToText: @Composable (Entry) -> String,
-        @StringRes includeExcludeIconContentDescriptionRes: Int,
-        showIcons: Boolean = true,
-    ) {
-        @Suppress("NAME_SHADOWING")
-        val expanded = expanded()
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { onExpandedChange(!expanded) }
-        ) {
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(start = 16.dp)
-                    .animateContentSize()
-            ) {
-                SortFilterHeaderText(expanded, titleRes)
-
-                entries().forEach {
-                    if (!expanded && it.state == FilterIncludeExcludeState.DEFAULT) return@forEach
-                    FilterChip(
-                        selected = it.state != FilterIncludeExcludeState.DEFAULT,
-                        onClick = { onEntryClick(it) },
-                        label = { Text(valueToText(it)) },
-                        leadingIcon = if (!showIcons) null else {
-                            {
-                                IncludeExcludeIcon(it, includeExcludeIconContentDescriptionRes)
-                            }
-                        },
-                        modifier = Modifier
-                            .animateContentSize()
-                            .heightIn(min = 32.dp)
-                    )
-                }
-            }
-
-            TrailingDropdownIconButton(
-                expanded = expanded,
-                contentDescription = stringResource(titleDropdownContentDescriptionRes),
-                onClick = { onExpandedChange(!expanded) },
-                modifier = Modifier.align(Alignment.Top),
-            )
-        }
 
         Divider()
     }
@@ -1310,35 +1251,6 @@ object AnimeMediaFilterOptionsBottomPanel {
             )
         } else {
             ButtonFooter(UtilsStringR.clear to onClearFilter)
-        }
-    }
-
-    @Composable
-    private fun IncludeExcludeIcon(
-        entry: FilterEntry<*>,
-        @StringRes contentDescriptionRes: Int
-    ) {
-        if (entry.state == FilterIncludeExcludeState.DEFAULT) {
-            if (entry.leadingIconVector != null) {
-                Icon(
-                    imageVector = entry.leadingIconVector!!,
-                    contentDescription = stringResource(entry.leadingIconContentDescription!!),
-                    modifier = Modifier
-                        .padding(vertical = 6.dp)
-                        .size(20.dp)
-                )
-            }
-        } else {
-            when (entry.state) {
-                FilterIncludeExcludeState.DEFAULT -> null
-                FilterIncludeExcludeState.INCLUDE -> Icons.Filled.Check
-                FilterIncludeExcludeState.EXCLUDE -> Icons.Filled.Close
-            }?.let {
-                Icon(
-                    imageVector = it,
-                    contentDescription = stringResource(contentDescriptionRes)
-                )
-            }
         }
     }
 }

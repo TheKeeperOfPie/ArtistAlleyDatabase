@@ -1,32 +1,25 @@
 package com.thekeeperofpie.artistalleydatabase.anime.home
 
 import android.annotation.SuppressLint
-import android.util.Log
+import androidx.annotation.StringRes
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.snapping.SnapLayoutInfoProvider
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyListState
@@ -40,7 +33,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarMonth
-import androidx.compose.material.icons.filled.ViewList
+import androidx.compose.material.icons.filled.OpenInNew
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
@@ -75,24 +68,23 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.core.graphics.ColorUtils
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaLargeCard
+import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsArticleEntry
+import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsSmallCard
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
-import com.thekeeperofpie.artistalleydatabase.compose.CustomHtmlText
 import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
@@ -220,7 +212,10 @@ object AnimeHomeScreen {
         if (entry == null) {
             loading()
         } else {
-            newsRow(viewModel.news)
+            newsRow(
+                data = viewModel.newsController.newsDateDescending,
+                navigationCallback = navigationCallback,
+            )
 
             entry.data.forEach {
                 mediaRow(
@@ -257,19 +252,16 @@ object AnimeHomeScreen {
     }
 
     private fun LazyListScope.newsRow(
-        data: List<AnimeHomeMediaViewModel.Anime.NewsArticleEntry>,
+        data: List<AnimeNewsArticleEntry>,
+        navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
-        if (data.isEmpty()) return
-        item {
-            Text(
-                text = stringResource(R.string.anime_news_title),
-                style = MaterialTheme.typography.titleMedium.copy(),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 10.dp),
-            )
-        }
+        rowHeader(
+            titleRes = R.string.anime_news_home_title,
+            navigationCallback = navigationCallback,
+            viewAllRoute = AnimeNavDestinations.NEWS.id
+        )
 
+        if (data.isEmpty()) return
         item {
             val pagerState = rememberPagerState(pageCount = { data.size })
             val uriHandler = LocalUriHandler.current
@@ -280,7 +272,7 @@ object AnimeHomeScreen {
                 pageSize = PageSize.Fixed(350.dp),
                 verticalAlignment = Alignment.Top,
             ) {
-                NewsCard(
+                AnimeNewsSmallCard(
                     entry = data[it],
                     uriHandler = uriHandler,
                 )
@@ -288,111 +280,11 @@ object AnimeHomeScreen {
         }
     }
 
-    @Composable
-    private fun NewsCard(
-        entry: AnimeHomeMediaViewModel.Anime.NewsArticleEntry,
-        uriHandler: UriHandler,
-    ) {
-        val onClick = entry.link?.let { { uriHandler.openUri(it) } }
-        val content: @Composable ColumnScope.() -> Unit = {
-            Row(
-                modifier = Modifier
-                    .conditionally(entry.image != null) {
-                        height(IntrinsicSize.Min)
-                    }
-            ) {
-                entry.image?.let {
-                    Box {
-                        AsyncImage(
-                            model = it,
-                            contentDescription = stringResource(
-                                R.string.anime_news_article_image_content_description
-                            ),
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier
-                                .background(MaterialTheme.colorScheme.onSurfaceVariant)
-                                .width(80.dp)
-                                .fillMaxHeight()
-                        )
-
-                        entry.icon?.let {
-                            AsyncImage(
-                                model = it,
-                                contentDescription = stringResource(
-                                    R.string.anime_news_site_logo_content_description
-                                ),
-                                contentScale = ContentScale.FillWidth,
-                                modifier = Modifier
-                                    .width(80.dp)
-                                    .align(Alignment.BottomCenter)
-                            )
-                        }
-                    }
-                }
-
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier
-                        .padding(
-                            start = 8.dp,
-                            end = 8.dp,
-                            top = 8.dp,
-                            bottom = if (entry.copyright == null) 8.dp else 4.dp,
-                        )
-                        .weight(1f)
-                        .wrapContentHeight()
-                ) {
-                    entry.title?.let {
-                        Text(
-                            text = it,
-                            style = MaterialTheme.typography.labelMedium,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            color = MaterialTheme.colorScheme.primary,
-                        )
-                    }
-
-                    entry.description?.let {
-                        CustomHtmlText(
-                            text = it,
-                            style = MaterialTheme.typography.bodySmall,
-                            minLines = 3,
-                            maxLines = 3,
-                            overflow = TextOverflow.Clip,
-                            detectTaps = false,
-                        )
-                    }
-
-                    entry.copyright?.let {
-                        Text(
-                            text = it,
-                            style = MaterialTheme.typography.labelSmall,
-                            fontSize = 8.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                    }
-                }
-            }
-        }
-
-        if (onClick != null) {
-            ElevatedCard(onClick = onClick, content = content)
-        } else {
-            ElevatedCard(content = content)
-        }
-    }
-
-    private fun LazyListScope.mediaRow(
-        data: AnimeHomeDataEntry.RowData,
-        onLongClickEntry: (AnimeHomeDataEntry.MediaEntry) -> Unit,
-        selectedItemTracker: SelectedItemTracker,
-        colorCalculationState: ColorCalculationState,
+    private fun LazyListScope.rowHeader(
+        @StringRes titleRes: Int,
         navigationCallback: AnimeNavigator.NavigationCallback,
+        viewAllRoute: String?,
     ) {
-        val (rowKey, titleRes, entries, viewAllRoute) = data
-        if (entries.isEmpty()) return
         item {
             Row(
                 modifier = Modifier.clickable(enabled = viewAllRoute != null) {
@@ -407,9 +299,12 @@ object AnimeHomeScreen {
                         .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 10.dp),
                 )
                 if (viewAllRoute != null) {
-                    IconButton(onClick = { navigationCallback.navigate(viewAllRoute) }) {
+                    IconButton(
+                        onClick = { navigationCallback.navigate(viewAllRoute) },
+                        modifier = Modifier.padding(top = 4.dp)
+                    ) {
                         Icon(
-                            imageVector = Icons.Filled.ViewList,
+                            imageVector = Icons.Filled.OpenInNew,
                             contentDescription = stringResource(
                                 R.string.anime_home_row_view_all_content_description
                             ),
@@ -418,6 +313,22 @@ object AnimeHomeScreen {
                 }
             }
         }
+    }
+
+    private fun LazyListScope.mediaRow(
+        data: AnimeHomeDataEntry.RowData,
+        onLongClickEntry: (AnimeHomeDataEntry.MediaEntry) -> Unit,
+        selectedItemTracker: SelectedItemTracker,
+        colorCalculationState: ColorCalculationState,
+        navigationCallback: AnimeNavigator.NavigationCallback,
+    ) {
+        val (rowKey, titleRes, entries, viewAllRoute) = data
+        if (entries.isEmpty()) return
+        rowHeader(
+            titleRes = titleRes,
+            navigationCallback = navigationCallback,
+            viewAllRoute = viewAllRoute
+        )
 
         item {
             val pagerState = rememberPagerState(pageCount = { entries.size })

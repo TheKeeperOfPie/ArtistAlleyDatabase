@@ -199,7 +199,8 @@ fun LazyListScope.mediaHorizontalRow(
                                             selectMaxPopulation = true,
                                         )
                                     },
-                                    modifier = Modifier.height(imageHeight)
+                                    modifier = Modifier
+                                        .height(imageHeight)
                                         .conditionally(widthToHeightRatio != null) {
                                             widthIn(max = imageHeight)
                                         }
@@ -233,12 +234,17 @@ fun LazyListScope.mediaHorizontalRow(
 }
 
 @Composable
-fun MediaRatingIconsSection(rating: Int?, popularity: Int?, loading: Boolean, modifier: Modifier = Modifier) {
+fun MediaRatingIconsSection(
+    rating: Int?,
+    popularity: Int?,
+    modifier: Modifier = Modifier,
+    loading: Boolean = false,
+) {
     if (rating == null && popularity == null) return
     Column(
         verticalArrangement = Arrangement.spacedBy(4.dp),
         horizontalAlignment = Alignment.End,
-        modifier = modifier.padding(horizontal = 8.dp, vertical = 8.dp),
+        modifier = modifier,
     ) {
         if (rating != null) {
             Row(
@@ -254,6 +260,7 @@ fun MediaRatingIconsSection(rating: Int?, popularity: Int?, loading: Boolean, mo
                 Text(
                     text = rating.toString(),
                     style = MaterialTheme.typography.labelMedium,
+                    modifier = Modifier.padding(top = 4.dp)
                 )
 
                 val iconTint = remember(rating) {
@@ -270,6 +277,7 @@ fun MediaRatingIconsSection(rating: Int?, popularity: Int?, loading: Boolean, mo
                         R.string.anime_media_rating_icon_content_description
                     ),
                     tint = iconTint,
+                    modifier = Modifier.size(20.dp)
                 )
             }
         }
@@ -301,7 +309,7 @@ fun MediaRatingIconsSection(rating: Int?, popularity: Int?, loading: Boolean, mo
                     contentDescription = stringResource(
                         R.string.anime_media_rating_population_icon_content_description
                     ),
-                    modifier = Modifier.size(16.dp)
+                    modifier = Modifier.size(12.dp)
                 )
             }
         }
