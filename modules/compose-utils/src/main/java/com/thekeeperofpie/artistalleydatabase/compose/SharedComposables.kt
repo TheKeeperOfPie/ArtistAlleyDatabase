@@ -530,74 +530,84 @@ fun AutoResizeHeightText(
     var realLineHeight by remember { mutableStateOf(initialLineHeight) }
     var readyToDraw by remember { mutableStateOf(false) }
 
-    var lastSize by remember { mutableStateOf<IntSize?>(null) }
     var stillCalculating by remember { mutableStateOf(true) }
     var decreasing by remember { mutableStateOf(true) }
 
     val cachedFontSizes = remember { mutableStateMapOf<IntSize, Float>() }
+    var lastSize by remember { mutableStateOf<IntSize?>(null) }
+    var boxSize by remember { mutableStateOf(IntSize(0, 0)) }
 
-    Text(
-        text = text,
-        color = color,
-        fontSize = realFontSize.sp,
-        fontStyle = fontStyle,
-        fontWeight = fontWeight,
-        fontFamily = fontFamily,
-        letterSpacing = letterSpacing,
-        textDecoration = textDecoration,
-        textAlign = textAlign,
-        lineHeight = realLineHeight.sp,
-        overflow = overflow,
-        softWrap = softWrap,
-        maxLines = maxLines,
-        minLines = minLines,
-        onTextLayout = onTextLayout@{
-            val cachedFontSize = cachedFontSizes[it.size]
-            if (cachedFontSize != null) {
-                realFontSize = cachedFontSize
-                realLineHeight = cachedFontSize / initialFontSize * initialLineHeight
-                stillCalculating = false
-                return@onTextLayout
-            }
-
-            if (!stillCalculating) {
-                if (it.size.height > lastSize!!.height || it.didOverflowHeight) {
-                    stillCalculating = true
-                    decreasing = it.size.height < lastSize!!.height
+    Box(
+        contentAlignment = Alignment.CenterStart,
+        modifier = modifier
+            .onSizeChanged {
+                lastSize = boxSize
+                val cachedFontSize = cachedFontSizes[boxSize]
+                if (cachedFontSize != null) {
+                    realFontSize = cachedFontSize
+                    realLineHeight = cachedFontSize / initialFontSize * initialLineHeight
+                    boxSize = it
+                    stillCalculating = false
+                    return@onSizeChanged
                 }
-            } else {
-                val scale = if (it.didOverflowHeight) {
-                    if (decreasing) {
-                        0.9f
-                    } else {
-                        // Reset to decreasing if overflowed since
-                        // it doesn't make sense to increase from here
-                        decreasing = true
+                decreasing = it.height < boxSize.height || it.width < boxSize.width
+                stillCalculating = true
+                boxSize = it
+            }
+    ) {
+        Text(
+            text = text,
+            color = color,
+            fontSize = realFontSize.sp,
+            fontStyle = fontStyle,
+            fontWeight = fontWeight,
+            fontFamily = fontFamily,
+            letterSpacing = letterSpacing,
+            textDecoration = textDecoration,
+            textAlign = textAlign,
+            lineHeight = realLineHeight.sp,
+            overflow = overflow,
+            softWrap = softWrap,
+            maxLines = maxLines,
+            minLines = minLines,
+            onTextLayout = onTextLayout@{
+                if (stillCalculating) {
+                    val scale = if (it.didOverflowHeight
+                        || (it.lineCount == 1 && it.didOverflowWidth)
+                    ) {
+                        if (decreasing) {
+                            0.9f
+                        } else {
+                            // Reset to decreasing if overflowed since
+                            // it doesn't make sense to increase from here
+                            decreasing = true
+                            0.9f
+                        }
+                    } else if (!decreasing) {
                         1 / 0.9f
-                    }
-                } else if (!decreasing) {
-                    (1 / 0.9f)
-                } else 1f
+                    } else 1f
 
-                if (scale != 1f) {
-                    val nextSize = realFontSize * scale
-                    if (nextSize > minTextSizeSp && nextSize <= initialFontSize) {
-                        realFontSize = nextSize
-                        realLineHeight *= scale
-                        return@onTextLayout
+                    if (scale != 1f) {
+                        val nextSize = realFontSize * scale
+                        if (nextSize > minTextSizeSp && nextSize <= initialFontSize) {
+                            realFontSize = nextSize
+                            realLineHeight *= scale
+                            return@onTextLayout
+                        }
                     }
+
+                    stillCalculating = false
+                    cachedFontSizes.putIfAbsent(boxSize, realFontSize)
+                    readyToDraw = true
                 }
-
-                stillCalculating = false
-                cachedFontSizes.putIfAbsent(it.size, realFontSize)
-                readyToDraw = true
-            }
-
-            lastSize = it.size
-        },
-        style = style,
-        modifier = modifier.drawWithCache { onDrawWithContent { if (readyToDraw) drawContent() } }
-    )
+            },
+            style = style,
+            modifier = Modifier
+                .wrapContentHeight()
+                .fillMaxWidth()
+                .drawWithCache { onDrawWithContent { if (readyToDraw) drawContent() } }
+        )
+    }
 }
 
 @Composable

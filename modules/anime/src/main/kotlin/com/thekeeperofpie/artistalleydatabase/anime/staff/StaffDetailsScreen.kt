@@ -4,7 +4,6 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
@@ -199,21 +198,14 @@ object StaffDetailsScreen {
                 ComposeColorUtils.calculatePalette(staffId, it, colorCalculationState)
             }
         ) {
-            Box(
-                contentAlignment = Alignment.CenterStart,
+            AutoResizeHeightText(
+                text = titleText(),
+                style = MaterialTheme.typography.headlineLarge,
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)
-            ) {
-                AutoResizeHeightText(
-                    text = titleText(),
-                    style = MaterialTheme.typography.headlineLarge,
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .align(Alignment.CenterStart)
-                        .padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 4.dp),
-                )
-            }
+                    .padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 4.dp),
+            )
 
             val subtitleText = subtitleText()
             AnimatedVisibility(subtitleText != null, label = "Staff details subtitle text") {

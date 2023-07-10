@@ -4,7 +4,6 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -91,27 +90,20 @@ object AniListUserScreen {
                         pinnedHeight = 104.dp,
                         coverSize = 180.dp,
                     ) {
-                        Box(
-                            contentAlignment = Alignment.CenterStart,
+                        AutoResizeHeightText(
+                            text = user?.name.orEmpty(),
+                            style = MaterialTheme.typography.headlineLarge,
+                            maxLines = 1,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .weight(1f)
-                        ) {
-                            AutoResizeHeightText(
-                                text = user?.name.orEmpty(),
-                                style = MaterialTheme.typography.headlineLarge,
-                                maxLines = 1,
-                                modifier = Modifier
-                                    .fillMaxHeight()
-                                    .align(Alignment.CenterStart)
-                                    .padding(
-                                        start = 16.dp,
-                                        end = 16.dp,
-                                        top = 10.dp,
-                                        bottom = 10.dp
-                                    ),
-                            )
-                        }
+                                .padding(
+                                    start = 16.dp,
+                                    end = 16.dp,
+                                    top = 10.dp,
+                                    bottom = 10.dp
+                                ),
+                        )
                     }
 
                     val actuallyShowLogOut = showLogOut || viewModel.viewer.collectAsState().value

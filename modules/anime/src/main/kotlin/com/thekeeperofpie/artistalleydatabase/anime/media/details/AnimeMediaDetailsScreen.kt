@@ -597,24 +597,17 @@ object AnimeMediaDetailsScreen {
         ) {
             Row {
                 Column(modifier = Modifier.weight(1f)) {
-                    Box(
-                        contentAlignment = Alignment.CenterStart,
+                    AutoResizeHeightText(
+                        text = when (val index = preferredTitle) {
+                            null -> null
+                            else -> entry?.titlesUnique?.get(index)
+                        } ?: titleText(),
+                        style = MaterialTheme.typography.headlineLarge,
                         modifier = Modifier
                             .fillMaxWidth()
                             .weight(1f)
-                    ) {
-                        AutoResizeHeightText(
-                            text = when (val index = preferredTitle) {
-                                null -> null
-                                else -> entry?.titlesUnique?.get(index)
-                            } ?: titleText(),
-                            style = MaterialTheme.typography.headlineLarge,
-                            modifier = Modifier
-                                .fillMaxHeight()
-                                .align(Alignment.CenterStart)
-                                .padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 4.dp),
-                        )
-                    }
+                            .padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 4.dp),
+                    )
 
                     val subtitleText = subtitleText()
                     AnimatedVisibility(
