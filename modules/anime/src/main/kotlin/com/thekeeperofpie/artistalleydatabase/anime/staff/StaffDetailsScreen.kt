@@ -69,7 +69,7 @@ object StaffDetailsScreen {
             topBar = {
                 CollapsingToolbar(
                     maxHeight = 356.dp,
-                    pinnedHeight = 180.dp,
+                    pinnedHeight = 120.dp,
                     scrollBehavior = scrollBehavior,
                 ) {
                     Header(

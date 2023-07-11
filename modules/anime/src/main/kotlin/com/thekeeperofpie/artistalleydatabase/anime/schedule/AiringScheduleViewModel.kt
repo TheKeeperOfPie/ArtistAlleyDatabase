@@ -94,8 +94,8 @@ class AiringScheduleViewModel @Inject constructor(
     @Composable
     fun items(index: Int) = dayFlows[index].collectAsLazyPagingItems()
 
-    fun onLongClickEntry(entry: AnimeMediaListRow.Entry) {
-        val mediaId = entry.id?.valueId ?: return
+    fun onLongClickEntry(entry: AnimeMediaListRow.Entry<*>) {
+        val mediaId = entry.media.id.toString()
         val ignored = !entry.ignored
         ignoreList.set(mediaId, ignored)
         entry.ignored = ignored

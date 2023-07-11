@@ -75,6 +75,7 @@ object StaffMediaScreen {
                                 image = it.character.image?.large,
                                 colorCalculationState = colorCalculationState,
                                 innerImage = it.media?.coverImage?.extraLarge,
+                                innerImageKey = "anime_media_${it.media?.id}_image",
                                 onImageSuccess = {
                                     imageWidthToHeightRatio = it.widthToHeightRatio()
                                 },

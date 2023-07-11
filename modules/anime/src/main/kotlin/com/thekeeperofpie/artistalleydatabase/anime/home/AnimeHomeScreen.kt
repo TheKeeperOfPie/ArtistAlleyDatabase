@@ -32,9 +32,13 @@ import androidx.compose.foundation.pager.PageSize
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.OpenInNew
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
@@ -43,10 +47,12 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -91,6 +97,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsSmallCard
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
+import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBar
+import com.thekeeperofpie.artistalleydatabase.compose.NestedScrollSplitter
 import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
@@ -98,7 +106,10 @@ import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
+@OptIn(
+    ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class,
+    ExperimentalMaterialApi::class
+)
 object AnimeHomeScreen {
 
     private val SCREEN_KEY = AnimeNavDestinations.HOME.id
@@ -118,94 +129,121 @@ object AnimeHomeScreen {
         val mangaViewModel = hiltViewModel<AnimeHomeMediaViewModel.Manga>()
         val selectedItemTracker = remember { SelectedItemTracker() }
         val activity = viewModel.activity.collectAsLazyPagingItems()
-        LazyColumn(
-            state = scrollStateSaver.lazyListState(),
-            contentPadding = PaddingValues(
-                bottom = 16.dp + bottomNavigationState.bottomNavBarPadding()
-            ),
-            modifier = Modifier
-                .fillMaxSize()
-                .nestedScroll(bottomNavigationState.nestedScrollConnection)
-        ) {
-            item {
-                Header(upIconOption = upIconOption, navigationCallback = navigationCallback)
-            }
 
-            item {
-                TabRow(selectedTabIndex = selectedTabIndex) {
-                    Tab(selected = selectedTabIndex == 0,
-                        onClick = { selectedTabIndex = 0 },
-                        text = {
-                            Text(
-                                text = stringResource(R.string.anime_home_tab_anime),
-                                maxLines = 1,
-                            )
-                        }
-                    )
-                    Tab(
-                        selected = selectedTabIndex == 1,
-                        onClick = { selectedTabIndex = 1 },
-                        text = {
-                            Text(
-                                text = stringResource(R.string.anime_home_tab_manga),
-                                maxLines = 1,
-                            )
-                        }
-                    )
-                }
-            }
-
-            newsRow(
-                data = viewModel.newsController.newsDateDescending(),
-                navigationCallback = navigationCallback,
-            )
-
-            activityRow(
-                data = activity,
-                colorCalculationState = colorCalculationState,
-                navigationCallback = navigationCallback,
-            )
-
-            when (selectedTabIndex) {
-                0 -> mediaList(
-                    mediaViewModel = animeViewModel,
-                    selectedItemTracker = selectedItemTracker,
-                    navigationCallback = navigationCallback,
-                    colorCalculationState = colorCalculationState,
-                )
-                1 -> mediaList(
-                    mediaViewModel = mangaViewModel,
-                    selectedItemTracker = selectedItemTracker,
-                    navigationCallback = navigationCallback,
-                    colorCalculationState = colorCalculationState,
-                )
-            }
-        }
-    }
-
-    @Composable
-    private fun Header(
-        upIconOption: UpIconOption?,
-        navigationCallback: AnimeNavigator.NavigationCallback
-    ) {
-        TopAppBar(
-            title = { Text(text = stringResource(R.string.anime_home_label)) },
-            navigationIcon = {
-                if (upIconOption != null) {
-                    UpIconButton(upIconOption)
-                }
-            },
-            actions = {
-                IconButton(onClick = navigationCallback::onAiringScheduleClick) {
-                    Icon(
-                        imageVector = Icons.Filled.CalendarMonth,
-                        contentDescription = stringResource(
-                            R.string.anime_airing_schedule_icon_content_description
-                        ),
-                    )
+        val pullRefreshState = rememberPullRefreshState(
+            refreshing = viewModel.loading,
+            onRefresh = {
+                viewModel.refresh()
+                when (selectedTabIndex) {
+                    0 -> animeViewModel.refresh()
                 }
             }
         )
+
+        val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+        Scaffold(
+            topBar = {
+                EnterAlwaysTopAppBar(scrollBehavior = scrollBehavior) {
+                    TopAppBar(
+                        title = { Text(text = stringResource(R.string.anime_home_label)) },
+                        navigationIcon = {
+                            if (upIconOption != null) {
+                                UpIconButton(upIconOption)
+                            }
+                        },
+                        actions = {
+                            IconButton(onClick = navigationCallback::onAiringScheduleClick) {
+                                Icon(
+                                    imageVector = Icons.Filled.CalendarMonth,
+                                    contentDescription = stringResource(
+                                        R.string.anime_airing_schedule_icon_content_description
+                                    ),
+                                )
+                            }
+                        },
+                        scrollBehavior = scrollBehavior,
+                    )
+                }
+            },
+            modifier = Modifier.nestedScroll(
+                NestedScrollSplitter(
+                    scrollBehavior.nestedScrollConnection,
+                    bottomNavigationState.nestedScrollConnection,
+                    consumeNone = true,
+                )
+            )
+        ) {
+            Box(
+                modifier = Modifier
+                    .padding(it)
+                    .pullRefresh(pullRefreshState)
+            ) {
+                LazyColumn(
+                    state = scrollStateSaver.lazyListState(),
+                    contentPadding = PaddingValues(
+                        bottom = 16.dp + bottomNavigationState.bottomNavBarPadding()
+                    ),
+                    modifier = Modifier
+                        .fillMaxSize()
+                ) {
+                    item("tabs") {
+                        TabRow(selectedTabIndex = selectedTabIndex) {
+                            Tab(selected = selectedTabIndex == 0,
+                                onClick = { selectedTabIndex = 0 },
+                                text = {
+                                    Text(
+                                        text = stringResource(R.string.anime_home_tab_anime),
+                                        maxLines = 1,
+                                    )
+                                }
+                            )
+                            Tab(
+                                selected = selectedTabIndex == 1,
+                                onClick = { selectedTabIndex = 1 },
+                                text = {
+                                    Text(
+                                        text = stringResource(R.string.anime_home_tab_manga),
+                                        maxLines = 1,
+                                    )
+                                }
+                            )
+                        }
+                    }
+
+                    newsRow(
+                        data = viewModel.newsController.newsDateDescending(),
+                        navigationCallback = navigationCallback,
+                    )
+
+                    activityRow(
+                        data = activity,
+                        colorCalculationState = colorCalculationState,
+                        navigationCallback = navigationCallback,
+                    )
+
+                    when (selectedTabIndex) {
+                        0 -> mediaList(
+                            mediaViewModel = animeViewModel,
+                            selectedItemTracker = selectedItemTracker,
+                            navigationCallback = navigationCallback,
+                            colorCalculationState = colorCalculationState,
+                        )
+                        1 -> mediaList(
+                            mediaViewModel = mangaViewModel,
+                            selectedItemTracker = selectedItemTracker,
+                            navigationCallback = navigationCallback,
+                            colorCalculationState = colorCalculationState,
+                        )
+                    }
+                }
+
+                PullRefreshIndicator(
+                    refreshing = viewModel.loading,
+                    state = pullRefreshState,
+                    modifier = Modifier.align(Alignment.TopCenter)
+                )
+            }
+        }
     }
 
     private fun LazyListScope.loading() {
@@ -253,7 +291,7 @@ object AnimeHomeScreen {
         )
 
         if (data.isEmpty()) return
-        item {
+        item("newsRow") {
             val pagerState = rememberPagerState(pageCount = { data.size })
             val uriHandler = LocalUriHandler.current
             val targetWidth = 350.coerceAtLeast(LocalConfiguration.current.screenWidthDp - 72).dp
@@ -284,7 +322,7 @@ object AnimeHomeScreen {
         )
 
         if (data.itemCount == 0) return
-        item {
+        item("activityRow") {
             val pagerState = rememberPagerState(pageCount = { data.itemCount })
             val targetWidth = 350.coerceAtLeast(LocalConfiguration.current.screenWidthDp - 72).dp
             HorizontalPager(
@@ -324,7 +362,7 @@ object AnimeHomeScreen {
         navigationCallback: AnimeNavigator.NavigationCallback,
         viewAllRoute: String?,
     ) {
-        item {
+        item("header_$titleRes") {
             Row(
                 modifier = Modifier.clickable(enabled = viewAllRoute != null) {
                     navigationCallback.navigate(viewAllRoute!!)

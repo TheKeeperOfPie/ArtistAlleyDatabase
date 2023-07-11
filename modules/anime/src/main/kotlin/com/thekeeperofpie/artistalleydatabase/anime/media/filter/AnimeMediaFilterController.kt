@@ -743,7 +743,7 @@ class AnimeMediaFilterController<T>(
         ::FilterParams
     )
 
-    fun <MediaEntryType : AnimeMediaListRow.MediaEntry<MediaType>, MediaType : AniListListRowMedia> filterEntries(
+    fun <MediaEntryType : AnimeMediaListRow.Entry<MediaType>, MediaType : AniListListRowMedia> filterEntries(
         filterParams: FilterParams,
         entries: List<MediaEntryType>,
         forceShowIgnored: Boolean = false,
@@ -775,7 +775,7 @@ class AnimeMediaFilterController<T>(
         )
 
         val tagRank = filterParams.tagRank
-        val transformIncludes: ((AnimeMediaListRow.MediaEntry<*>) -> List<String>)? =
+        val transformIncludes: ((AnimeMediaListRow.Entry<*>) -> List<String>)? =
             if (tagRank == null) null else {
                 {
                     it.media.tags

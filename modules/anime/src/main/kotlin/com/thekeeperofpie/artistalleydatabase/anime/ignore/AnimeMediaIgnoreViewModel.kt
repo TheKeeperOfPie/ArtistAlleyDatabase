@@ -45,8 +45,7 @@ class AnimeMediaIgnoreViewModel @Inject constructor(
 ) : ViewModel() {
 
     var query by mutableStateOf("")
-    var content =
-        MutableStateFlow(PagingData.empty<AnimeMediaListRow.MediaEntry<Medium>>())
+    var content = MutableStateFlow(PagingData.empty<AnimeMediaListRow.Entry<Medium>>())
     var tagShown by mutableStateOf<AnimeMediaFilterController.TagSection.Tag?>(null)
     val colorMap = mutableStateMapOf<String, Pair<Color, Color>>()
 
@@ -96,7 +95,7 @@ class AnimeMediaIgnoreViewModel @Inject constructor(
                     val excludes = filterParams.listStatuses
                         .filter { it.state == FilterIncludeExcludeState.EXCLUDE }
                         .map { it.value }
-                    pagingData.map { AnimeMediaListRow.MediaEntry(it, ignored = false) }
+                    pagingData.map { AnimeMediaListRow.Entry(it, ignored = false) }
                         .filter {
                             filterController.filterEntries(
                                 filterParams = filterParams,
@@ -136,8 +135,8 @@ class AnimeMediaIgnoreViewModel @Inject constructor(
             .firstOrNull()
     }
 
-    fun onMediaLongClick(entry: AnimeMediaListRow.Entry) {
-        val mediaId = entry.id?.valueId ?: return
+    fun onMediaLongClick(entry: AnimeMediaListRow.Entry<*>) {
+        val mediaId = entry.media.id.toString()
         val ignored = !ignoreList.get(mediaId)
         ignoreList.set(mediaId, ignored)
         entry.ignored = !ignored

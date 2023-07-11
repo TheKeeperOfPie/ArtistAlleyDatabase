@@ -15,7 +15,7 @@ sealed interface AnimeSearchEntry {
     val entryId: EntryId
 
     class Media<MediaType : AniListListRowMedia>(media: MediaType, ignored: Boolean) :
-        AnimeMediaListRow.MediaEntry<MediaType>(media, ignored), AnimeSearchEntry {
+        AnimeMediaListRow.Entry<MediaType>(media, ignored), AnimeSearchEntry {
         override val entryId = EntryId("media", media.id.toString())
     }
 

@@ -26,8 +26,10 @@ import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anime.activity.AnimeActivityScreen
-import com.thekeeperofpie.artistalleydatabase.anime.character.AnimeCharacterDetailsViewModel
-import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterDetailsScreen
+import com.thekeeperofpie.artistalleydatabase.anime.character.CharactersScreen
+import com.thekeeperofpie.artistalleydatabase.anime.character.CharactersViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.character.details.AnimeCharacterDetailsViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.character.details.CharacterDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeIgnoreScreen
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.list.AnimeUserListScreen
@@ -244,14 +246,12 @@ object AnimeNavigator {
                 },
                 subtitle = {
                     viewModel.entry?.media?.let {
-                        listOfNotNull(
-                            stringResource(it.format.toTextRes()),
-                            stringResource(it.status.toTextRes()),
-                            MediaUtils.formatSeasonYear(
-                                it.season,
-                                it.seasonYear
-                            ),
-                        ).joinToString(separator = " - ")
+                        MediaUtils.formatSubtitle(
+                            format = it.format,
+                            status = it.status,
+                            season = it.season,
+                            seasonYear = it.seasonYear,
+                        )
                     } ?: listOfNotNull(
                         subtitleFormatRes?.let { stringResource(it) },
                         subtitleStatusRes?.let { stringResource(it) },
@@ -468,6 +468,118 @@ object AnimeNavigator {
         navGraphBuilder.composable(AnimeNavDestinations.ACTIVITY.id) {
             AnimeActivityScreen(navigationCallback = navigationCallback)
         }
+
+        navGraphBuilder.composable(
+            route = AnimeNavDestinations.MEDIA_CHARACTERS.id
+                    + "?mediaId={mediaId}"
+                    + "&title={title}"
+                    + "&subtitleFormatRes={subtitleFormatRes}"
+                    + "&subtitleStatusRes={subtitleStatusRes}"
+                    + "&subtitleSeason={subtitleSeason}"
+                    + "&subtitleSeasonYear={subtitleSeasonYear}"
+                    + "&nextEpisode={nextEpisode}"
+                    + "&nextEpisodeAiringAt={nextEpisodeAiringAt}"
+                    + "&coverImage={coverImage}"
+                    + "&coverImageWidthToHeightRatio={coverImageWidthToHeightRatio}"
+                    + "&color={color}"
+                    + "&bannerImage={bannerImage}",
+            arguments = listOf(
+                navArgument("mediaId") {
+                    type = NavType.StringType
+                    nullable = false
+                }
+            ) + listOf(
+                "title",
+                "subtitleFormatRes",
+                "subtitleStatusRes",
+                "subtitleSeason",
+                "subtitleSeasonYear",
+                "nextEpisode",
+                "nextEpisodeAiringAt",
+                "coverImage",
+                "coverImageWidthToHeightRatio",
+                "bannerImage",
+                "color",
+            ).map {
+                navArgument(it) {
+                    type = NavType.StringType
+                    nullable = true
+                }
+            },
+        ) {
+            val arguments = it.arguments!!
+            val title = arguments.getString("title")
+            val mediaId = arguments.getString("mediaId")!!
+            val coverImage = arguments.getString("coverImage")
+            val coverImageWidthToHeightRatio = arguments.getString("coverImageWidthToHeightRatio")
+                ?.toFloatOrNull() ?: 1f
+            val bannerImage = arguments.getString("bannerImage")
+            val subtitleFormatRes =
+                arguments.getString("subtitleFormatRes")?.toIntOrNull()
+            val subtitleStatusRes =
+                arguments.getString("subtitleStatusRes")?.toIntOrNull()
+            val subtitleSeason = arguments.getString("subtitleSeason")?.let { season ->
+                MediaSeason.values().find { it.rawValue == season }
+            }
+            val subtitleSeasonYear =
+                arguments.getString("subtitleSeasonYear")?.toIntOrNull()
+            val nextEpisode = arguments.getString("nextEpisode")?.toIntOrNull()
+            val nextEpisodeAiringAt =
+                arguments.getString("nextEpisodeAiringAt")?.toIntOrNull()
+            val color = arguments.getString("color")
+                ?.toIntOrNull()
+                ?.let(::Color)
+
+            val viewModel = hiltViewModel<CharactersViewModel>().apply { initialize(mediaId) }
+
+            CharactersScreen(
+                viewModel = viewModel,
+                color = {
+                    viewModel.entry?.media?.coverImage?.color
+                        ?.let(ComposeColorUtils::hexToColor)
+                        ?: color
+                },
+                coverImage = {
+                    viewModel.entry?.media?.coverImage?.extraLarge ?: coverImage
+                },
+                coverImageWidthToHeightRatio = coverImageWidthToHeightRatio,
+                bannerImage = {
+                    viewModel.entry?.media?.bannerImage ?: bannerImage
+                },
+                titleText = {
+                    viewModel.entry?.media?.title?.userPreferred ?: title ?: ""
+                },
+                subtitleText = {
+                    viewModel.entry?.media?.let {
+                        MediaUtils.formatSubtitle(
+                            format = it.format,
+                            status = it.status,
+                            season = it.season,
+                            seasonYear = it.seasonYear,
+                        )
+                    } ?: listOfNotNull(
+                        subtitleFormatRes?.let { stringResource(it) },
+                        subtitleStatusRes?.let { stringResource(it) },
+                        MediaUtils.formatSeasonYear(
+                            subtitleSeason,
+                            subtitleSeasonYear,
+                            withSeparator = true,
+                        ),
+                    )
+                        .joinToString(separator = " - ")
+                        .ifEmpty { null }
+                },
+                nextEpisode = {
+                    viewModel.entry?.media?.nextAiringEpisode?.episode
+                        ?: nextEpisode
+                },
+                nextEpisodeAiringAt = {
+                    viewModel.entry?.media?.nextAiringEpisode?.airingAt
+                        ?: nextEpisodeAiringAt
+                },
+                navigationCallback = navigationCallback,
+            )
+        }
     }
 
     fun onTagClick(navHostController: NavHostController, tagId: String, tagName: String) {
@@ -479,22 +591,44 @@ object AnimeNavigator {
 
     fun onMediaClick(
         navHostController: NavHostController,
-        entry: AnimeMediaListRow.Entry,
+        entry: AnimeMediaListRow.Entry<*>,
         imageWidthToHeightRatio: Float,
     ) = navHostController.navigate(
         AnimeNavDestinations.MEDIA_DETAILS.id +
-                "?mediaId=${entry.id!!.valueId}" +
-                "&title=${entry.title}" +
-                "&subtitleFormatRes=${entry.subtitleFormatRes}" +
-                "&subtitleStatusRes=${entry.subtitleStatusRes}" +
-                "&subtitleSeason=${entry.subtitleSeason}" +
-                "&subtitleSeasonYear=${entry.subtitleSeasonYear}" +
-                "&nextEpisode=${entry.nextAiringEpisode?.episode}" +
-                "&nextEpisodeAiringAt=${entry.nextAiringEpisode?.airingAt}" +
-                "&bannerImage=${entry.imageBanner}" +
-                "&coverImage=${entry.imageExtraLarge}" +
+                "?mediaId=${entry.media.id}" +
+                "&title=${entry.media.title?.userPreferred}" +
+                "&subtitleFormatRes=${entry.media.format.toTextRes()}" +
+                "&subtitleStatusRes=${entry.media.status.toTextRes()}" +
+                "&subtitleSeason=${entry.media.season}" +
+                "&subtitleSeasonYear=${entry.media.seasonYear}" +
+                "&nextEpisode=${entry.media.nextAiringEpisode?.episode}" +
+                "&nextEpisodeAiringAt=${entry.media.nextAiringEpisode?.airingAt}" +
+                "&bannerImage=${entry.media.bannerImage}" +
+                "&coverImage=${entry.media.coverImage?.extraLarge}" +
                 "&coverImageWidthToHeightRatio=$imageWidthToHeightRatio" +
                 "&color=${entry.color?.toArgb()}"
+    )
+
+    fun onMediaCharactersClick(
+        navHostController: NavHostController,
+        entry: AnimeMediaDetailsScreen.Entry,
+        imageWidthToHeightRatio: Float,
+    ) = navHostController.navigate(
+        AnimeNavDestinations.MEDIA_CHARACTERS.id +
+                "?mediaId=${entry.mediaId}" +
+                "&title=${entry.media.title?.userPreferred}" +
+                "&subtitleFormatRes=${entry.media.format.toTextRes()}" +
+                "&subtitleStatusRes=${entry.media.status.toTextRes()}" +
+                "&subtitleSeason=${entry.media.season}" +
+                "&subtitleSeasonYear=${entry.media.seasonYear}" +
+                "&nextEpisode=${entry.media.nextAiringEpisode?.episode}" +
+                "&nextEpisodeAiringAt=${entry.media.nextAiringEpisode?.airingAt}" +
+                "&bannerImage=${entry.media.bannerImage}" +
+                "&coverImage=${entry.media.coverImage?.extraLarge}" +
+                "&coverImageWidthToHeightRatio=$imageWidthToHeightRatio" +
+                "&color=${
+                    entry.media.coverImage?.color?.let(ComposeColorUtils::hexToColor)?.toArgb()
+                }"
     )
 
     fun onMediaClick(
@@ -659,7 +793,7 @@ object AnimeNavigator {
             navHostController?.let { onMediaClick(it, media, imageWidthToHeightRatio) }
         }
 
-        fun onMediaClick(media: AnimeMediaListRow.Entry, imageWidthToHeightRatio: Float) {
+        fun onMediaClick(media: AnimeMediaListRow.Entry<*>, imageWidthToHeightRatio: Float) {
             navHostController?.let { onMediaClick(it, media, imageWidthToHeightRatio) }
         }
 
@@ -681,6 +815,13 @@ object AnimeNavigator {
             imageWidthToHeightRatio: Float,
         ) {
             navHostController?.let { onMediaClick(it, id, title, image, imageWidthToHeightRatio) }
+        }
+
+        fun onMediaCharactersClick(
+            media: AnimeMediaDetailsScreen.Entry,
+            imageWidthToHeightRatio: Float
+        ) {
+            navHostController?.let { onMediaCharactersClick(it, media, imageWidthToHeightRatio) }
         }
 
         fun onTagClick(id: String, name: String) {

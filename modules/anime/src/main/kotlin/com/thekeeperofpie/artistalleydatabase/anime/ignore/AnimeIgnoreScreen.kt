@@ -30,6 +30,7 @@ import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
+import com.anilist.fragment.AniListListRowMedia
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
@@ -124,11 +125,11 @@ object AnimeIgnoreScreen {
                             ) {
                                 items(
                                     count = content.itemCount,
-                                    key = content.itemKey { it.id.scopedId },
-                                    contentType = content.itemContentType { it.id.type }
+                                    key = content.itemKey { it.media.id },
+                                    contentType = content.itemContentType { "media" },
                                 ) { index ->
                                     when (val item = content[index]) {
-                                        is AnimeMediaListRow.MediaEntry<*> -> AnimeMediaListRow(
+                                        is AnimeMediaListRow.Entry<*> -> AnimeMediaListRow(
                                             screenKey = AnimeNavDestinations.IGNORED.id,
                                             entry = item,
                                             onLongClick = viewModel::onMediaLongClick,
@@ -137,9 +138,9 @@ object AnimeIgnoreScreen {
                                             colorCalculationState = colorCalculationState,
                                             navigationCallback = navigationCallback,
                                         )
-                                        null -> AnimeMediaListRow(
+                                        null -> AnimeMediaListRow<AniListListRowMedia>(
                                             screenKey = AnimeNavDestinations.IGNORED.id,
-                                            AnimeMediaListRow.Entry.Loading,
+                                            entry = null,
                                         )
                                     }
                                 }

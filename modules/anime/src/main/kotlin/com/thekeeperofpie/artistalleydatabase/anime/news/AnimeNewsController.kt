@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.news
 
+import android.os.SystemClock
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -31,6 +32,7 @@ class AnimeNewsController(
     private var job: Job? = null
     private val news = MutableStateFlow<List<AnimeNewsArticleEntry>>(emptyList())
     private var newsDateDescending by mutableStateOf<List<AnimeNewsArticleEntry>>(emptyList())
+    private val refreshUptimeMillis = MutableStateFlow(-1L)
 
     fun news(): MutableStateFlow<List<AnimeNewsArticleEntry>> {
         startJobIfNeeded()
@@ -69,6 +71,7 @@ class AnimeNewsController(
                 .startWith(item = emptyList())
 
             combine(
+                refreshUptimeMillis,
                 animeNewsNetwork,
                 crunchyroll,
                 settings.animeNewsNetworkCategoriesIncluded,
@@ -137,7 +140,12 @@ class AnimeNewsController(
             }
         }
 
+    fun refresh() {
+        refreshUptimeMillis.value = SystemClock.uptimeMillis()
+    }
+
     private data class Params(
+        val refreshMillis: Long,
         val animeNewsNetworkEntries: List<AnimeNewsArticleEntry>,
         val crunchyrollNewsEntries: List<AnimeNewsArticleEntry>,
         val animeNewsNetworkCategoriesIncluded: List<AnimeNewsNetworkCategory>,

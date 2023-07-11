@@ -6,10 +6,8 @@ import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -108,6 +106,7 @@ import androidx.media3.ui.PlayerView
 import coil.compose.AsyncImage
 import coil.size.Dimension
 import com.anilist.MediaDetailsQuery.Data.Media
+import com.anilist.fragment.AniListListRowMedia
 import com.anilist.fragment.UserNavigationData
 import com.anilist.type.ExternalLinkType
 import com.anilist.type.MediaListStatus
@@ -132,7 +131,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils
 import com.thekeeperofpie.artistalleydatabase.anime.character.charactersSection
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaTagEntry
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaRatingIconsSection
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeader
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toColor
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toStatusIcon
@@ -142,7 +141,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.edit.AnimeMediaEditBot
 import com.thekeeperofpie.artistalleydatabase.anime.media.mediaListSection
 import com.thekeeperofpie.artistalleydatabase.anime.staff.DetailsStaff
 import com.thekeeperofpie.artistalleydatabase.anime.staff.staffSection
-import com.thekeeperofpie.artistalleydatabase.anime.ui.CoverAndBannerHeader
 import com.thekeeperofpie.artistalleydatabase.anime.ui.descriptionSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.detailsLoadingOrError
 import com.thekeeperofpie.artistalleydatabase.anime.ui.listSection
@@ -150,7 +148,6 @@ import com.thekeeperofpie.artistalleydatabase.animethemes.models.AnimeTheme
 import com.thekeeperofpie.artistalleydatabase.cds.grid.CdEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.compose.AssistChip
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
-import com.thekeeperofpie.artistalleydatabase.compose.AutoResizeHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.BarChart
 import com.thekeeperofpie.artistalleydatabase.compose.CollapsingToolbar
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
@@ -268,18 +265,27 @@ object AnimeMediaDetailsScreen {
         val colorCalculationState = rememberColorCalculationState(viewModel.colorMap)
         val listEntry by viewModel.listEntry.collectAsState()
         val scoreFormat by viewModel.scoreFormat.collectAsState()
+
+        var coverImageWidthToHeightRatio by remember {
+            mutableFloatStateOf(coverImageWidthToHeightRatio)
+        }
+
         BottomSheetScaffold(
             scaffoldState = bottomSheetScaffoldState,
             sheetPeekHeight = 0.dp,
             topBar = {
                 CollapsingToolbar(
                     maxHeight = 356.dp,
-                    pinnedHeight = 180.dp,
+                    pinnedHeight = 120.dp,
                     scrollBehavior = scrollBehavior,
                 ) {
-                    Header(
+                    val entry = entry()
+                    MediaHeader(
+                        screenKey = AnimeNavDestinations.MEDIA_DETAILS.id,
                         mediaId = viewModel.mediaId,
-                        entry = entry,
+                        titles = entry?.titlesUnique,
+                        averageScore = entry?.media?.averageScore,
+                        popularity = entry?.media?.popularity,
                         progress = it,
                         color = color,
                         coverImage = coverImage,
@@ -290,6 +296,7 @@ object AnimeMediaDetailsScreen {
                         nextEpisode = nextEpisode,
                         nextEpisodeAiringAt = nextEpisodeAiringAt,
                         colorCalculationState = colorCalculationState,
+                        onImageWidthToHeightRatioAvailable = { coverImageWidthToHeightRatio = it },
                     )
                 }
             },
@@ -410,6 +417,7 @@ object AnimeMediaDetailsScreen {
                         navigationCallback = navigationCallback,
                         expandedState = expandedState,
                         colorCalculationState = colorCalculationState,
+                        coverImageWidthToHeightRatio = { coverImageWidthToHeightRatio },
                     )
                 }
             }
@@ -453,6 +461,7 @@ object AnimeMediaDetailsScreen {
         navigationCallback: AnimeNavigator.NavigationCallback,
         expandedState: ExpandedState,
         colorCalculationState: ColorCalculationState,
+        coverImageWidthToHeightRatio: () -> Float,
     ) {
         if (entry == null) {
             detailsLoadingOrError(
@@ -481,6 +490,12 @@ object AnimeMediaDetailsScreen {
             onCharacterClick = navigationCallback::onCharacterClick,
             onCharacterLongClick = onCharacterLongClick,
             onStaffClick = navigationCallback::onStaffClick,
+            onClickViewAll = {
+                viewModel.entry?.let {
+                    navigationCallback.onMediaCharactersClick(it, coverImageWidthToHeightRatio())
+                }
+            },
+            viewAllContentDescriptionTextRes = R.string.anime_home_row_view_all_content_description,
             colorCalculationState = colorCalculationState,
         )
 
@@ -557,125 +572,6 @@ object AnimeMediaDetailsScreen {
             onExpandedChange = { expandedState.reviews = it },
             onUserClick = navigationCallback::onUserClick,
         )
-    }
-
-    @Composable
-    private fun Header(
-        mediaId: String,
-        entry: @Composable () -> Entry?,
-        progress: Float,
-        color: () -> Color?,
-        coverImage: @Composable () -> String?,
-        coverImageWidthToHeightRatio: Float,
-        bannerImage: @Composable () -> String?,
-        titleText: @Composable () -> String,
-        subtitleText: @Composable () -> String?,
-        nextEpisode: @Composable () -> Int?,
-        nextEpisodeAiringAt: @Composable () -> Int?,
-        colorCalculationState: ColorCalculationState,
-    ) {
-        val entry = entry()
-        var preferredTitle by remember { mutableStateOf<Int?>(null) }
-        CoverAndBannerHeader(
-            screenKey = AnimeNavDestinations.MEDIA_DETAILS.id,
-            entryId = EntryId("anime_media", mediaId),
-            progress = progress,
-            color = color,
-            coverImage = coverImage,
-            coverImageWidthToHeightRatio = coverImageWidthToHeightRatio,
-            bannerImage = bannerImage,
-            onClickEnabled = (entry?.titlesUnique?.size ?: 0) > 1,
-            onClick = {
-                preferredTitle =
-                    ((preferredTitle ?: 0) + 1) % (entry?.titlesUnique?.size ?: 1)
-            },
-            coverImageOnSuccess = { success ->
-                entry?.id?.valueId?.let { entryId ->
-                    ComposeColorUtils.calculatePalette(entryId, success, colorCalculationState)
-                }
-            }
-        ) {
-            Row {
-                Column(modifier = Modifier.weight(1f)) {
-                    AutoResizeHeightText(
-                        text = when (val index = preferredTitle) {
-                            null -> null
-                            else -> entry?.titlesUnique?.get(index)
-                        } ?: titleText(),
-                        style = MaterialTheme.typography.headlineLarge,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(1f)
-                            .padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 4.dp),
-                    )
-
-                    val subtitleText = subtitleText()
-                    AnimatedVisibility(
-                        subtitleText != null,
-                        label = "Media details subtitle text"
-                    ) {
-                        if (subtitleText != null) {
-                            Text(
-                                text = subtitleText,
-                                style = MaterialTheme.typography.bodyMedium,
-                                modifier = Modifier
-                                    .wrapContentHeight()
-                                    .padding(horizontal = 16.dp, vertical = 4.dp)
-                                    .fillMaxWidth()
-                                    .wrapContentHeight(Alignment.Bottom)
-                            )
-                        }
-                    }
-
-                    val nextEpisodeAiringAt = nextEpisodeAiringAt()
-                    val nextEpisode = nextEpisode()
-                    AnimatedVisibility(
-                        nextEpisodeAiringAt != null && nextEpisode != null,
-                        label = "Media details nextEpisodeAiringAt text"
-                    ) {
-                        if (nextEpisodeAiringAt != null && nextEpisode != null) {
-                            val context = LocalContext.current
-                            val airingAt = remember {
-                                MediaUtils.formatAiringAt(context, nextEpisodeAiringAt * 1000L)
-                            }
-
-                            val remainingTime = remember {
-                                MediaUtils.formatRemainingTime(nextEpisodeAiringAt * 1000L)
-                            }
-
-                            Text(
-                                text = stringResource(
-                                    R.string.anime_media_next_airing_episode,
-                                    nextEpisode,
-                                    airingAt,
-                                    remainingTime,
-                                ),
-                                style = MaterialTheme.typography.labelMedium,
-                                color = MaterialTheme.colorScheme.surfaceTint,
-                                modifier = Modifier
-                                    .wrapContentHeight(Alignment.Bottom)
-                                    .padding(horizontal = 16.dp, vertical = 4.dp)
-                            )
-                        }
-                    }
-                }
-
-                AnimatedVisibility(
-                    visible = progress > 0.8f,
-                    enter = fadeIn() + expandHorizontally(),
-                    exit = fadeOut() + shrinkHorizontally(),
-                    modifier = Modifier.align(Alignment.Top)
-                ) {
-                    MediaRatingIconsSection(
-                        rating = entry?.media?.averageScore,
-                        popularity = entry?.media?.popularity,
-                        modifier = Modifier
-                            .alpha(if (progress > 0.8f) 1f - ((1f - progress) / 0.2f) else 0f)
-                            .padding(start = 8.dp, end = 8.dp, top = 4.dp)
-                    )
-                }
-            }
-        }
     }
 
     private fun LazyListScope.genreSection(
@@ -1904,7 +1800,7 @@ object AnimeMediaDetailsScreen {
             ?.mapNotNull {
                 val node = it.node ?: return@mapNotNull null
                 val relation = it.relationType ?: return@mapNotNull null
-                Relation(it.id.toString(), relation, AnimeMediaListRow.MediaEntry(node))
+                Relation(it.id.toString(), relation, AnimeMediaListRow.Entry(node))
             }
             .orEmpty()
             .sortedBy { RELATION_SORT_ORDER.indexOf(it.relation) }
@@ -1913,7 +1809,7 @@ object AnimeMediaDetailsScreen {
             ?.mapNotNull {
                 val node = it.node ?: return@mapNotNull null
                 val media = node.mediaRecommendation ?: return@mapNotNull null
-                Recommendation(node.id.toString(), node.rating, AnimeMediaListRow.MediaEntry(media))
+                Recommendation(node.id.toString(), node.rating, AnimeMediaListRow.Entry(media))
             }
             .orEmpty()
 
@@ -1991,14 +1887,14 @@ object AnimeMediaDetailsScreen {
         data class Relation(
             val id: String,
             val relation: MediaRelation,
-            val entry: AnimeMediaListRow.Entry,
+            val entry: AnimeMediaListRow.Entry<AniListListRowMedia>,
         )
 
         data class Recommendation(
             val id: String,
             // TODO: Actually surface rating
             val rating: Int?,
-            val entry: AnimeMediaListRow.Entry,
+            val entry: AnimeMediaListRow.Entry<AniListListRowMedia>,
         )
 
         data class Link(

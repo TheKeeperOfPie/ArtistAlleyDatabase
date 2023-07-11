@@ -411,4 +411,20 @@ object MediaUtils {
             LocalDate.of(year, month, dayOfMonth)
         } else null
     }
+
+    @Composable
+    fun formatSubtitle(
+        format: MediaFormat?,
+        status: MediaStatus?,
+        season: MediaSeason?,
+        seasonYear: Int?,
+    ) = if (format == null && status == null && season == null && seasonYear == null) {
+        ""
+    } else {
+        listOfNotNull(
+            stringResource(format.toTextRes()),
+            stringResource(status.toTextRes()),
+            formatSeasonYear(season, seasonYear, withSeparator = true),
+        ).joinToString(separator = " - ")
+    }
 }

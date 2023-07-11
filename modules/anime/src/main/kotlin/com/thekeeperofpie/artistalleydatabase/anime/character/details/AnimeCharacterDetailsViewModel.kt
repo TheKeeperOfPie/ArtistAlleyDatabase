@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.anime.character
+package com.thekeeperofpie.artistalleydatabase.anime.character.details
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf

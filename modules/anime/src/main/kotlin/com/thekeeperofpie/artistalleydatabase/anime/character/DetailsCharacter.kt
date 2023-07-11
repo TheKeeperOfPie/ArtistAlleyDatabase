@@ -9,6 +9,7 @@ data class DetailsCharacter(
     val image: String?,
     val languageToVoiceActor: Map<String, VoiceActor> = emptyMap(),
     val character: CharacterNavigationData?,
+    val roleTextRes: Int? = null,
 ) {
     data class VoiceActor(
         val id: String,

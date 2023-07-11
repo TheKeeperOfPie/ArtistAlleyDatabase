@@ -3,7 +3,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.character
 
 import androidx.annotation.StringRes
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -26,10 +25,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
@@ -41,7 +40,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.lerp
 import androidx.core.graphics.ColorUtils
 import coil.compose.AsyncImage
 import coil.compose.AsyncImagePainter
@@ -69,6 +67,7 @@ fun CharacterCard(
     colorCalculationState: ColorCalculationState,
     onClick: () -> Unit,
     innerImage: String? = null,
+    innerImageKey: String = "invalid_key",
     onClickInnerImage: (() -> Unit)? = null,
     onImageSuccess: (AsyncImagePainter.State.Success) -> Unit = {},
     onInnerImageSuccess: (AsyncImagePainter.State.Success) -> Unit = {},
@@ -119,21 +118,10 @@ fun CharacterCard(
     ) {
         Box {
             val density = LocalDensity.current
-            var transitionDone by remember { mutableStateOf(true) }
-            var transitionProgress by remember { mutableStateOf(0f) }
             SharedElement(
                 key = "${id.scopedId}_image",
                 screenKey = screenKey,
-                onFractionChanged = {
-                    transitionProgress = it
-                    if (it == 1f) {
-                        transitionDone = false
-                    } else if (it == 0f) {
-                        transitionDone = true
-                    }
-                },
             ) {
-                val transitionCornerDp = lerp(12.dp, 0.dp, 1f - transitionProgress)
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
                         .data(image)
@@ -168,8 +156,6 @@ fun CharacterCard(
                             RoundedCornerShape(
                                 topStart = 12.dp,
                                 topEnd = 12.dp,
-                                bottomStart = transitionCornerDp,
-                                bottomEnd = transitionCornerDp,
                             )
                         )
                 )
@@ -177,42 +163,43 @@ fun CharacterCard(
 
             if (innerImage != null) {
                 var showInnerImage by remember { mutableStateOf(true) }
-                if (transitionDone && showInnerImage) {
-                    var show by remember(id) { mutableStateOf(false) }
-                    val alpha by animateFloatAsState(
-                        if (show) 1f else 0f,
-                        label = "Character card inner image fade",
-                    )
+                if (showInnerImage) {
+                    var show by rememberSaveable(id) { mutableStateOf(false) }
                     val clipShape = RoundedCornerShape(topStart = 8.dp)
                     val size = LocalDensity.current.run { 40.dp.roundToPx() }
-                    AsyncImage(
-                        model = ImageRequest.Builder(LocalContext.current)
-                            .data(innerImage)
-                            .crossfade(false)
-                            .listener(onError = { _, _ ->
-                                showInnerImage = false
-                            }, onSuccess = { _, _ ->
-                                show = true
-                            })
-                            .size(width = size, height = size)
-                            .build(),
-                        contentScale = ContentScale.Crop,
-                        contentDescription = stringResource(
-                            R.string.anime_media_voice_actor_image
-                        ),
-                        onSuccess = onInnerImageSuccess,
-                        modifier = Modifier
-                            .size(width = 40.dp, height = 40.dp)
-                            .alpha(alpha)
-                            .align(Alignment.BottomEnd)
-                            .clip(clipShape)
-                            .optionalClickable(onClickInnerImage)
-                            .border(
-                                width = 1.dp,
-                                color = containerColor,
-                                shape = clipShape
+                    Box(modifier = Modifier.align(Alignment.BottomEnd)) {
+                        SharedElement(
+                            key = innerImageKey,
+                            screenKey = screenKey,
+                        ) {
+                            AsyncImage(
+                                model = ImageRequest.Builder(LocalContext.current)
+                                    .data(innerImage)
+                                    .crossfade(false)
+                                    .listener(onError = { _, _ ->
+                                        showInnerImage = false
+                                    }, onSuccess = { _, _ ->
+                                        show = true
+                                    })
+                                    .size(width = size, height = size)
+                                    .build(),
+                                contentScale = ContentScale.Crop,
+                                contentDescription = stringResource(
+                                    R.string.anime_media_voice_actor_image
+                                ),
+                                onSuccess = onInnerImageSuccess,
+                                modifier = Modifier
+                                    .size(width = 40.dp, height = 40.dp)
+                                    .clip(clipShape)
+                                    .optionalClickable(onClickInnerImage)
+                                    .border(
+                                        width = 1.dp,
+                                        color = containerColor,
+                                        shape = clipShape
+                                    )
                             )
-                    )
+                        }
+                    }
                 }
             }
         }
@@ -228,11 +215,17 @@ fun LazyListScope.charactersSection(
     onCharacterClick: (CharacterNavigationData, imageWidthToHeightRatio: Float) -> Unit,
     onCharacterLongClick: (String) -> Unit,
     onStaffClick: (StaffNavigationData, imageWidthToHeightRatio: Float) -> Unit,
+    onClickViewAll: (() -> Unit)? = null,
+    @StringRes viewAllContentDescriptionTextRes: Int? = null,
     colorCalculationState: ColorCalculationState,
 ) {
     if (characters.isEmpty()) return
     item("charactersHeader-$titleRes") {
-        DetailsSectionHeader(stringResource(titleRes))
+        DetailsSectionHeader(
+            stringResource(titleRes),
+            onClickViewAll = onClickViewAll,
+            viewAllContentDescriptionTextRes = viewAllContentDescriptionTextRes,
+        )
     }
 
     item("charactersSection-$titleRes") {
@@ -256,6 +249,7 @@ fun LazyListScope.charactersSection(
                         }
                     },
                     innerImage = voiceActor?.image,
+                    innerImageKey = "anime_staff_${voiceActor?.id}_image",
                     onClickInnerImage = voiceActor?.image?.let {
                         {
                             onStaffClick(voiceActor.staff, innerImageWidthToHeightRatio)

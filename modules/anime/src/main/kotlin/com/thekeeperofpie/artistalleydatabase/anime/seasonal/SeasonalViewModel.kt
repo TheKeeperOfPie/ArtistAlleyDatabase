@@ -114,7 +114,7 @@ class SeasonalViewModel @Inject constructor(
     class MediaEntry(
         media: MediaAdvancedSearchQuery.Data.Page.Medium,
         ignored: Boolean,
-    ) : AnimeMediaListRow.MediaEntry<MediaAdvancedSearchQuery.Data.Page.Medium>(media, ignored)
+    ) : AnimeMediaListRow.Entry<MediaAdvancedSearchQuery.Data.Page.Medium>(media, ignored)
 
     enum class Type {
         LAST,

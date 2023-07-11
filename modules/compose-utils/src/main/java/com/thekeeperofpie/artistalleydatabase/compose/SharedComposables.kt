@@ -47,6 +47,7 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.OpenInNew
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DividerDefaults
@@ -1099,14 +1100,40 @@ fun ImageHtmlText(
 }
 
 @Composable
-fun DetailsSectionHeader(text: String, modifier: Modifier = Modifier) {
-    Text(
-        text = text,
-        style = MaterialTheme.typography.titleMedium,
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 10.dp),
-    )
+fun DetailsSectionHeader(
+    text: String,
+    modifier: Modifier = Modifier,
+    onClickViewAll: (() -> Unit)? = null,
+    @StringRes viewAllContentDescriptionTextRes: Int? = null,
+) {
+    @Composable
+    fun Text(modifier: Modifier = Modifier) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.titleMedium,
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 10.dp),
+        )
+    }
+    if (onClickViewAll != null) {
+        Row {
+            Text(modifier = modifier.weight(1f))
+            IconButton(
+                onClick = onClickViewAll,
+                modifier = Modifier.padding(top = 4.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.OpenInNew,
+                    contentDescription = viewAllContentDescriptionTextRes?.let {
+                        stringResource(it)
+                    },
+                )
+            }
+        }
+    } else {
+        Text()
+    }
 }
 
 @Composable

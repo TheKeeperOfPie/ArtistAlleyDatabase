@@ -471,6 +471,8 @@
     <string name="anime_character_image_long_press_preview">Preview character image</string>
     <string name="anime_character_favorites_icon_content_description">Favorites</string>
 
+    <string name="anime_characters_error_loading">Error loading characters</string>
+
     <string name="anime_staff_overview_label">Overview</string>
     <string name="anime_staff_media_label">Media</string>
     <string name="anime_staff_staff_label">Staff</string>

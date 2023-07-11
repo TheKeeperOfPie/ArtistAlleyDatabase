@@ -31,6 +31,7 @@ import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
+import com.anilist.fragment.AniListListRowMedia
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
@@ -190,9 +191,9 @@ object SeasonalScreen {
 
                                 val item = content[index]
                                 if (item == null) {
-                                    AnimeMediaListRow(
+                                    AnimeMediaListRow<AniListListRowMedia>(
                                         screenKey = AnimeNavDestinations.SEARCH.id,
-                                        AnimeMediaListRow.Entry.Loading,
+                                        entry = null,
                                     )
                                 } else {
                                     AnimeMediaListRow(

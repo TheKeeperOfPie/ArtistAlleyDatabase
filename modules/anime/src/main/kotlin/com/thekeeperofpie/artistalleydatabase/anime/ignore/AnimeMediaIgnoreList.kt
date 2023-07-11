@@ -24,8 +24,8 @@ class AnimeMediaIgnoreList(private val settings: AnimeSettings) {
         }
     }
 
-    fun toggle(entry: AnimeMediaListRow.Entry) {
-        val mediaId = entry.id?.valueId ?: return
+    fun toggle(entry: AnimeMediaListRow.Entry<*>) {
+        val mediaId = entry.media.id.toString()
         val ignored = !entry.ignored
         set(mediaId, ignored)
         entry.ignored = ignored

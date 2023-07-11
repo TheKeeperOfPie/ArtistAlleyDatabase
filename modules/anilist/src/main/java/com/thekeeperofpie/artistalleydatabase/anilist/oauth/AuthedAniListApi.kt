@@ -10,6 +10,8 @@ import com.anilist.GenresQuery
 import com.anilist.HomeAnimeQuery
 import com.anilist.HomeMangaQuery
 import com.anilist.MediaAdvancedSearchQuery
+import com.anilist.MediaAndCharactersPaginationQuery
+import com.anilist.MediaAndCharactersQuery
 import com.anilist.MediaByIdsQuery
 import com.anilist.MediaDetailsQuery
 import com.anilist.MediaTagsQuery
@@ -448,4 +450,23 @@ class AuthedAniListApi(
 
     private suspend fun <D : Query.Data> query(query: Query<D>) =
         apolloClient.query(query).execute().dataOrThrow()
+
+    suspend fun mediaAndCharacters(mediaId: String, charactersPerPage: Int = 10) = query(
+        MediaAndCharactersQuery(
+            mediaId = mediaId.toInt(),
+            charactersPerPage = charactersPerPage,
+        )
+    )
+
+    suspend fun mediaAndCharactersPage(
+        mediaId: String,
+        page: Int,
+        charactersPerPage: Int = 10,
+    ) = query(
+        MediaAndCharactersPaginationQuery(
+            mediaId = mediaId.toInt(),
+            page = page,
+            charactersPerPage = charactersPerPage,
+        )
+    )
 }

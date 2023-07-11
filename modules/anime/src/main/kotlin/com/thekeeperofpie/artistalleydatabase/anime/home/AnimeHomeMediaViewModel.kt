@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.home
 
+import android.os.SystemClock
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -32,7 +33,7 @@ abstract class AnimeHomeMediaViewModel(
     var entry by mutableStateOf<AnimeHomeDataEntry?>(null)
     var errorResource by mutableStateOf<Pair<Int, Throwable?>?>(null)
 
-    private val refreshUptimeMillis = MutableStateFlow(-1)
+    private val refreshUptimeMillis = MutableStateFlow(-1L)
 
     init {
         viewModelScope.launch(CustomDispatchers.IO) {
@@ -71,6 +72,10 @@ abstract class AnimeHomeMediaViewModel(
         val ignored = !entry.ignored
         ignoreList.set(mediaId, ignored)
         entry.ignored = ignored
+    }
+
+    fun refresh() {
+        refreshUptimeMillis.value = SystemClock.uptimeMillis()
     }
 
     @HiltViewModel

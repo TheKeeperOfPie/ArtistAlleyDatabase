@@ -223,16 +223,14 @@ object AnimeMediaLargeCard {
 
     @Composable
     private fun SubtitleText(entry: Entry) {
+        val media = entry.media
         Text(
-            text = listOfNotNull(
-                stringResource(entry.subtitleFormatRes),
-                stringResource(entry.subtitleStatusRes),
-                MediaUtils.formatSeasonYear(
-                    entry.subtitleSeason,
-                    entry.subtitleSeasonYear,
-                    withSeparator = true
-                ),
-            ).joinToString(separator = " - "),
+            text = MediaUtils.formatSubtitle(
+                format = media?.format,
+                status = media?.status,
+                season = media?.season,
+                seasonYear = media?.seasonYear,
+            ),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.typography.bodySmall.color
                 .takeOrElse { LocalContentColor.current }

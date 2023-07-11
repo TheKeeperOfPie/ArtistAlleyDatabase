@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import coil.compose.AsyncImage
+import com.anilist.fragment.AniListListRowMedia
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeMediaFilterController
@@ -47,14 +48,16 @@ import com.thekeeperofpie.artistalleydatabase.compose.ZoomPanBox
 object AnimeMediaListScreen {
 
     @Composable
-    operator fun invoke(
+    operator fun <MediaType : AniListListRowMedia> invoke(
         refreshing: Boolean,
         onRefresh: () -> Unit,
         modifier: Modifier = Modifier,
         tagShown: () -> AnimeMediaFilterController.TagSection.Tag? = { null },
         onTagDismiss: () -> Unit = {},
         pullRefreshTopPadding: @Composable () -> Dp = { 0.dp },
-        listContent: @Composable (onLongPressImage: (AnimeMediaListRow.Entry) -> Unit) -> Unit,
+        listContent: @Composable (
+            onLongPressImage: (AnimeMediaListRow.Entry<MediaType>) -> Unit
+        ) -> Unit,
     ) {
         val pullRefreshState = rememberPullRefreshState(refreshing, onRefresh)
 
@@ -63,7 +66,9 @@ object AnimeMediaListScreen {
                 .fillMaxSize()
                 .pullRefresh(pullRefreshState)
         ) {
-            var entryToPreview by remember { mutableStateOf<AnimeMediaListRow.Entry?>(null) }
+            var entryToPreview by remember {
+                mutableStateOf<AnimeMediaListRow.Entry<MediaType>?>(null)
+            }
 
             listContent { entryToPreview = it }
 
@@ -93,7 +98,8 @@ object AnimeMediaListScreen {
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = modifier.fillMaxSize()
+            modifier = modifier
+                .fillMaxSize()
                 .verticalScroll(rememberScrollState()),
         ) {
             Text(
@@ -178,7 +184,10 @@ object AnimeMediaListScreen {
     }
 
     @Composable
-    private fun EntryImagePreview(entry: AnimeMediaListRow.Entry, onDismiss: () -> Unit) {
+    private fun <MediaType : AniListListRowMedia> EntryImagePreview(
+        entry: AnimeMediaListRow.Entry<MediaType>,
+        onDismiss: () -> Unit,
+    ) {
         Dialog(onDismissRequest = onDismiss) {
             ZoomPanBox(onClick = onDismiss) {
                 Column(
@@ -192,7 +201,7 @@ object AnimeMediaListScreen {
                             indication = null,
                         ) {}
                 ) {
-                    entry.imageBanner?.let {
+                    entry.media.bannerImage?.let {
                         AsyncImage(
                             model = it,
                             fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
@@ -201,7 +210,7 @@ object AnimeMediaListScreen {
                         )
                     }
                     AsyncImage(
-                        model = entry.imageExtraLarge,
+                        model = entry.media.coverImage?.extraLarge,
                         contentScale = ContentScale.FillWidth,
                         fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
                         contentDescription = stringResource(R.string.anime_media_cover_image_content_description),

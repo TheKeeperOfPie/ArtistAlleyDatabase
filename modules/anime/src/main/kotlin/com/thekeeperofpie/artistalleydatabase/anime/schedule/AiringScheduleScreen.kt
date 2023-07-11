@@ -175,7 +175,7 @@ object AiringScheduleScreen {
                         val media = schedule?.data?.media ?: return@items
                         AnimeMediaListRow(
                             screenKey = SCREEN_KEY,
-                            entry = AnimeMediaListRow.MediaEntry(media, schedule.ignored),
+                            entry = AnimeMediaListRow.Entry(media, schedule.ignored),
                             onLongClick = viewModel::onLongClickEntry,
                             nextAiringEpisode = NextAiringEpisode(
                                 id = schedule.data.id,

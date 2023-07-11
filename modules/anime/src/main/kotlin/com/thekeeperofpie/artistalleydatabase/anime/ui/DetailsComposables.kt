@@ -68,7 +68,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.compose.AccelerateEasing
 import com.thekeeperofpie.artistalleydatabase.compose.CustomHtmlText
 import com.thekeeperofpie.artistalleydatabase.compose.ImageHtmlText
-import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.compose.optionalClickable
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 
@@ -155,6 +154,7 @@ internal fun CoverAndBannerHeader(
                 ) {
                     ElevatedCard {
                         var success by remember { mutableStateOf(false) }
+                        val maxWidth = LocalConfiguration.current.screenWidthDp.dp * 0.4f
                         AsyncImage(
                             model = ImageRequest.Builder(LocalContext.current)
                                 .data(coverImage())
@@ -175,22 +175,18 @@ internal fun CoverAndBannerHeader(
                             },
                             contentDescription = stringResource(R.string.anime_media_cover_image_content_description),
                             modifier = Modifier
-                                .conditionally(coverImageWidthToHeightRatio == 1f) {
-                                    animateContentSize()
-                                }
                                 .height(coverSize)
                                 .run {
-                                    if (success) {
+                                    if (coverImageWidthToHeightRatio != 1f) {
+                                        width(
+                                            (lerp(coverSize, pinnedHeight, progress) * coverImageWidthToHeightRatio)
+                                                .coerceAtMost(maxWidth)
+                                        )
+                                    } else if (success) {
                                         wrapContentWidth()
-                                    } else if (coverImageWidthToHeightRatio != 1f) {
-                                        width(coverSize * coverImageWidthToHeightRatio)
                                     } else this
                                 }
-                                .widthIn(
-                                    max = coverSize.coerceAtMost(
-                                        LocalConfiguration.current.screenWidthDp.dp * 0.4f
-                                    )
-                                )
+                                .widthIn(max = coverSize.coerceAtMost(maxWidth))
                         )
                     }
                 }

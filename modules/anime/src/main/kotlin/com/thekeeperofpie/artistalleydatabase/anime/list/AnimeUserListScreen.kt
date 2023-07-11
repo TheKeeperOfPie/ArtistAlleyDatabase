@@ -223,11 +223,13 @@ object AnimeUserListScreen {
             override val id = EntryId("header", name)
         }
 
-        class Item(media: Media) : Entry, AnimeMediaListRow.MediaEntry<Media>(media)
+        class Item(media: Media) : Entry, AnimeMediaListRow.Entry<Media>(media) {
+            override val id = EntryId("anime_media", media.id.toString())
+        }
     }
 
     sealed interface ContentState {
-        object LoadingEmpty : ContentState
+        data object LoadingEmpty : ContentState
 
         data class Success(
             val entries: List<Entry>,

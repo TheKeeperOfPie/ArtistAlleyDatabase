@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.anime.character
+package com.thekeeperofpie.artistalleydatabase.anime.character.details
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
@@ -86,7 +86,7 @@ object CharacterDetailsScreen {
             topBar = {
                 CollapsingToolbar(
                     maxHeight = 356.dp,
-                    pinnedHeight = 180.dp,
+                    pinnedHeight = 120.dp,
                     scrollBehavior = scrollBehavior,
                 ) {
                     Header(
@@ -421,9 +421,9 @@ object CharacterDetailsScreen {
             .distinctBy { it.id }
 
         val media = character.media?.edges
-            ?.mapNotNull { it?.node?.let { AnimeMediaListRow.MediaEntry(it) } }
+            ?.mapNotNull { it?.node?.let { AnimeMediaListRow.Entry(it) } }
             .orEmpty()
-            .distinctBy { it.id }
+            .distinctBy { it.media.id }
     }
 
     @Composable
