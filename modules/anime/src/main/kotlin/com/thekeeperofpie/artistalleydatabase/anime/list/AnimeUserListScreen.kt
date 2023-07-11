@@ -28,7 +28,6 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
@@ -43,7 +42,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
-import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeMediaFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeMediaFilterOptionsBottomPanel
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBar
@@ -52,7 +50,6 @@ import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
 import com.thekeeperofpie.artistalleydatabase.compose.StaticSearchBar
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
-import com.thekeeperofpie.artistalleydatabase.compose.filter.SortOption
 import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 
@@ -60,9 +57,9 @@ import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 object AnimeUserListScreen {
 
     @Composable
-    operator fun <SortType : SortOption> invoke(
+    operator fun invoke(
         upIconOption: UpIconOption? = null,
-        viewModel: ViewModel<SortType>,
+        viewModel: AnimeUserListViewModel,
         mediaType: MediaType = MediaType.ANIME,
         navigationCallback: AnimeNavigator.NavigationCallback =
             AnimeNavigator.NavigationCallback(null),
@@ -85,14 +82,26 @@ object AnimeUserListScreen {
                             { UpIconButton(upIconOption) }
                         } else null,
                         placeholder = {
+                            val userName = viewModel.userName
                             Text(
-                                stringResource(
-                                    when (mediaType) {
-                                        MediaType.ANIME,
-                                        MediaType.UNKNOWN__ -> R.string.anime_user_list_anime_search
-                                        MediaType.MANGA -> R.string.anime_user_list_manga_search
-                                    }
-                                )
+                                if (userName != null) {
+                                    stringResource(
+                                        when (mediaType) {
+                                            MediaType.ANIME,
+                                            MediaType.UNKNOWN__ -> R.string.anime_user_list_user_name_anime_search
+                                            MediaType.MANGA -> R.string.anime_user_list_user_name_manga_search
+                                        },
+                                        userName
+                                    )
+                                } else {
+                                    stringResource(
+                                        when (mediaType) {
+                                            MediaType.ANIME,
+                                            MediaType.UNKNOWN__ -> R.string.anime_user_list_anime_search
+                                            MediaType.MANGA -> R.string.anime_user_list_manga_search
+                                        }
+                                    )
+                                }
                             )
                         },
                         trailingIcon = {
@@ -229,17 +238,6 @@ object AnimeUserListScreen {
             @StringRes val errorRes: Int? = null,
             val exception: Throwable? = null
         ) : ContentState
-    }
-
-    interface ViewModel<SortType : SortOption> {
-        var query: String
-        val content: ContentState
-        var tagShown: AnimeMediaFilterController.TagSection.Tag?
-        val colorMap: MutableMap<String, Pair<Color, Color>>
-
-        fun filterData(): AnimeMediaFilterController.Data<SortType>
-        fun onRefresh()
-        fun onTagLongClick(tagId: String)
     }
 }
 

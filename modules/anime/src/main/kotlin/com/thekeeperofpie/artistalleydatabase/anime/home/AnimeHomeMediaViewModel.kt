@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalCoroutinesApi::class)
-
 package com.thekeeperofpie.artistalleydatabase.anime.home
 
 import androidx.compose.runtime.getValue
@@ -14,10 +12,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
-import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsController
 import com.thekeeperofpie.artistalleydatabase.anime.seasonal.SeasonalViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
@@ -82,7 +78,6 @@ abstract class AnimeHomeMediaViewModel(
         aniListApi: AuthedAniListApi,
         settings: AnimeSettings,
         ignoreList: AnimeMediaIgnoreList,
-        val newsController: AnimeNewsController,
     ) : AnimeHomeMediaViewModel(aniListApi, settings, ignoreList) {
 
         override suspend fun media(): List<RowInput> {

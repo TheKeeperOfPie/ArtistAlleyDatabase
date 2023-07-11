@@ -227,3 +227,118 @@ query UserSearch($page: Int, $perPage: Int, $search: String, $sort: [UserSort]) 
         }
     }
 }
+
+mutation ToggleFollow($userId: Int!) {
+    ToggleFollow(userId: $userId) {
+        isFollowing
+    }
+}
+
+query UserSocialFollowing($userId: Int!, $perPage: Int!, $page: Int!) {
+    Page(perPage: $perPage, page: $page) {
+        pageInfo @nonnull {
+            ...PaginationInfo
+        }
+        following(userId: $userId) {
+           ...UserNavigationData
+        }
+    }
+}
+
+query UserSocialFollowers($userId: Int!, $perPage: Int!, $page: Int!) {
+    Page(perPage: $perPage, page: $page) {
+        pageInfo @nonnull {
+            ...PaginationInfo
+        }
+        followers(userId: $userId) {
+           ...UserNavigationData
+        }
+    }
+}
+
+fragment ActivityItem on ActivityUnion {
+    ... on TextActivity {
+        id
+        isLiked
+        likeCount
+        replies {
+            id
+            likeCount
+            text
+            user {
+                ...UserNavigationData
+            }
+        }
+        type
+        user {
+            ...UserNavigationData
+        }
+        createdAt
+        text
+    }
+    ... on ListActivity {
+        createdAt
+        id
+        isLiked
+        likeCount
+        media {
+            ...MediaCompactWithTags
+        }
+        progress
+        replyCount
+        replies {
+            id
+            text
+            user {
+                ...UserNavigationData
+            }
+        }
+        status
+        type
+        user {
+            ...UserNavigationData
+        }
+    }
+    ... on MessageActivity {
+        createdAt
+        id
+        isLiked
+        likeCount
+        replies {
+            user {
+                ...UserNavigationData
+            }
+            id
+            isLiked
+            likeCount
+            createdAt
+            activityId
+            text
+        }
+        message
+        messenger {
+            ...UserNavigationData
+        }
+        recipient {
+            ...UserNavigationData
+        }
+        type
+    }
+}
+
+query UserSocialActivity(
+    $isFollowing: Boolean!,
+    $sort: [ActivitySort]!,
+    $perPage: Int!,
+    $page: Int!,
+    $userIdNotIn: [Int],
+) {
+    Page(perPage: $perPage, page: $page) {
+        pageInfo @nonnull {
+            ...PaginationInfo
+        }
+        activities(isFollowing: $isFollowing, sort: $sort, userId_not_in: $userIdNotIn) {
+            ...ActivityItem
+        }
+    }
+}

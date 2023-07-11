@@ -26,7 +26,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.anilist.AuthedUserQuery
@@ -40,8 +39,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.staff.staffSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.descriptionSection
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
+import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.DetailsSectionHeader
-import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
 
 @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 object UserOverviewScreen {
@@ -50,14 +49,15 @@ object UserOverviewScreen {
     operator fun invoke(
         entry: AniListUserScreen.Entry,
         viewer: AuthedUserQuery.Data.Viewer?,
-        colorMap: MutableMap<String, Pair<Color, Color>>,
+        isFollowing: @Composable () -> Boolean,
+        onFollowingClick: () -> Unit,
+        colorCalculationState: ColorCalculationState,
         navigationCallback: AnimeNavigator.NavigationCallback,
         modifier: Modifier = Modifier,
         bottomNavigationState: BottomNavigationState? = null,
     ) {
         val user = entry.user
         var descriptionExpanded by remember { mutableStateOf(false) }
-        val colorCalculationState = rememberColorCalculationState(colorMap)
         LazyColumn(
             contentPadding = PaddingValues(
                 bottom = 16.dp + (bottomNavigationState?.bottomNavBarPadding() ?: 0.dp)
@@ -67,6 +67,8 @@ object UserOverviewScreen {
             followingSection(
                 user = user,
                 viewer = viewer,
+                isFollowing = isFollowing,
+                onFollowingClick = onFollowingClick,
             )
 
             descriptionSection(
@@ -125,6 +127,8 @@ object UserOverviewScreen {
     private fun LazyListScope.followingSection(
         user: UserByIdQuery.Data.User,
         viewer: AuthedUserQuery.Data.Viewer?,
+        isFollowing: @Composable () -> Boolean,
+        onFollowingClick: () -> Unit,
     ) {
         if (user.id == viewer?.id) return
         item {
@@ -156,18 +160,19 @@ object UserOverviewScreen {
                     label = { AutoHeightText(stringResource(R.string.anime_user_following_you)) },
                 )
 
+                val following = isFollowing()
                 FilterChip(
-                    onClick = { /*TODO*/ },
-                    selected = user.isFollowing == true,
+                    onClick = onFollowingClick,
+                    selected = following,
                     leadingIcon = {
                         Icon(
-                            imageVector = if (user.isFollowing == true) {
+                            imageVector = if (following) {
                                 Icons.Filled.Check
                             } else {
                                 Icons.Filled.Close
                             },
                             contentDescription = stringResource(
-                                if (user.isFollowing == true) {
+                                if (following) {
                                     R.string.anime_user_is_following_content_description
                                 } else {
                                     R.string.anime_user_is_not_following_content_description

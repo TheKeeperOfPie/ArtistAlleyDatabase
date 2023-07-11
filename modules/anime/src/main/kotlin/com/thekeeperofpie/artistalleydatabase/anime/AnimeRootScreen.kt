@@ -127,6 +127,7 @@ object AnimeRootScreen {
                         )
                         NavDestinations.ANIME -> AnimeNavigator.UserListScreen(
                             userId = null,
+                            userName = null,
                             mediaType = MediaType.ANIME,
                             upIconOption = upIconOption,
                             navigationCallback = navigationCallback,
@@ -138,6 +139,7 @@ object AnimeRootScreen {
                         )
                         NavDestinations.MANGA -> AnimeNavigator.UserListScreen(
                             userId = null,
+                            userName = null,
                             mediaType = MediaType.MANGA,
                             upIconOption = upIconOption,
                             navigationCallback = navigationCallback,

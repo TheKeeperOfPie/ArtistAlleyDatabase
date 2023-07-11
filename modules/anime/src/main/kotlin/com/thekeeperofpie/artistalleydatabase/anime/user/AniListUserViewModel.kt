@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.user
 
+import android.os.SystemClock
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -10,6 +11,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.anilist.MediaTitlesAndImagesQuery
+import com.anilist.ToggleFollowMutation
 import com.anilist.fragment.UserMediaStatistics
 import com.hoc081098.flowext.startWith
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
@@ -17,6 +19,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -26,18 +29,20 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class AniListUserViewModel @Inject constructor(
     private val aniListApi: AuthedAniListApi,
 ) : ViewModel() {
 
     private var initialized = false
-    private var userId: String? = null
+    var userId: String? = null
 
     var entry by mutableStateOf<AniListUserScreen.Entry?>(null)
     val viewer = aniListApi.authedUser
@@ -46,6 +51,16 @@ class AniListUserViewModel @Inject constructor(
 
     val animeStates = States.Anime(viewModelScope, aniListApi)
     val mangaStates = States.Manga(viewModelScope, aniListApi)
+
+    private var toggleFollowRequestMillis = MutableStateFlow(-1L)
+    private var initialFollowState by mutableStateOf<Boolean?>(null)
+    private var toggleFollowingResult by mutableStateOf<ToggleFollowMutation.Data.ToggleFollow?>(
+        null
+    )
+
+    val isFollowing: Boolean
+        get() = initialFollowState ?: toggleFollowingResult?.isFollowing ?: entry?.user?.isFollowing
+        ?: false
 
     private val refreshUptimeMillis = MutableStateFlow(-1L)
 
@@ -74,11 +89,31 @@ class AniListUserViewModel @Inject constructor(
                     }
                 }
         }
+
+        viewModelScope.launch(CustomDispatchers.IO) {
+            toggleFollowRequestMillis.filter { it > 0 }
+                .mapLatest { aniListApi.toggleFollow(userId!!.toInt()) }
+                .catch {
+                    // TODO: Error message
+                }
+                .collect {
+                    withContext(CustomDispatchers.Main) {
+                        initialFollowState = null
+                        toggleFollowingResult = it
+                    }
+                }
+        }
     }
 
     fun refresh() = refreshUptimeMillis.tryEmit(System.currentTimeMillis())
 
     fun logOut() = aniListApi.logOut()
+
+    fun toggleFollow() {
+        userId ?: return
+        initialFollowState = entry?.user?.isFollowing?.not() ?: true
+        toggleFollowRequestMillis.value = SystemClock.uptimeMillis()
+    }
 
     sealed class States(
         private val viewModelScope: CoroutineScope,

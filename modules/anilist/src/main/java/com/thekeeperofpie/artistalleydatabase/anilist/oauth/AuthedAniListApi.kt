@@ -19,9 +19,14 @@ import com.anilist.StaffDetailsCharacterMediaPaginationQuery
 import com.anilist.StaffDetailsQuery
 import com.anilist.StaffDetailsStaffMediaPaginationQuery
 import com.anilist.StaffSearchQuery
+import com.anilist.ToggleFollowMutation
 import com.anilist.UserByIdQuery
 import com.anilist.UserMediaListQuery
 import com.anilist.UserSearchQuery
+import com.anilist.UserSocialActivityQuery
+import com.anilist.UserSocialFollowersQuery
+import com.anilist.UserSocialFollowingQuery
+import com.anilist.type.ActivitySort
 import com.anilist.type.AiringSort
 import com.anilist.type.CharacterSort
 import com.anilist.type.FuzzyDateInput
@@ -415,6 +420,31 @@ class AuthedAniListApi(
             )
         )
     }
+
+    suspend fun toggleFollow(userId: Int) =
+        apolloClient.mutation(ToggleFollowMutation(userId)).execute().dataOrThrow().toggleFollow
+
+    suspend fun userSocialFollowers(userId: Int, page: Int, perPage: Int = 10) =
+        query(UserSocialFollowersQuery(userId = userId, perPage = perPage, page = page))
+
+    suspend fun userSocialFollowing(userId: Int, page: Int, perPage: Int = 10) =
+        query(UserSocialFollowingQuery(userId = userId, perPage = perPage, page = page))
+
+    suspend fun userSocialActivity(
+        isFollowing: Boolean,
+        page: Int,
+        perPage: Int = 10,
+        sort: List<ActivitySort> = listOf(ActivitySort.PINNED, ActivitySort.ID_DESC),
+        userIdNot: Int? = null,
+    ) = query(
+        UserSocialActivityQuery(
+            isFollowing = isFollowing,
+            sort = sort,
+            perPage = perPage,
+            page = page,
+            userIdNotIn = Optional.presentIfNotNull(userIdNot?.let(::listOf))
+        )
+    )
 
     private suspend fun <D : Query.Data> query(query: Query<D>) =
         apolloClient.query(query).execute().dataOrThrow()

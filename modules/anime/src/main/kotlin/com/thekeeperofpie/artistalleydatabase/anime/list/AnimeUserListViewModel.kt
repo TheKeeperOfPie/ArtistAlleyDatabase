@@ -44,17 +44,20 @@ open class AnimeUserListViewModel @Inject constructor(
     private val aniListApi: AuthedAniListApi,
     settings: AnimeSettings,
     ignoreList: AnimeMediaIgnoreList
-) : ViewModel(), AnimeUserListScreen.ViewModel<MediaListSortOption> {
+) : ViewModel() {
 
-    override var query by mutableStateOf("")
-    override var content by mutableStateOf<AnimeUserListScreen.ContentState>(
+    var query by mutableStateOf("")
+    var content by mutableStateOf<AnimeUserListScreen.ContentState>(
         AnimeUserListScreen.ContentState.LoadingEmpty
     )
-    override var tagShown by mutableStateOf<AnimeMediaFilterController.TagSection.Tag?>(null)
-    override val colorMap = mutableStateMapOf<String, Pair<Color, Color>>()
+    var tagShown by mutableStateOf<AnimeMediaFilterController.TagSection.Tag?>(null)
+    val colorMap = mutableStateMapOf<String, Pair<Color, Color>>()
 
-    private var initialized = false
+    var userName by mutableStateOf<String?>(null)
+        private set
+
     private var userId: String? = null
+    private var initialized = false
     private lateinit var mediaType: MediaType
 
     private val filterController = AnimeMediaFilterController(
@@ -67,11 +70,12 @@ open class AnimeUserListViewModel @Inject constructor(
 
     private val refreshUptimeMillis = MutableStateFlow(-1L)
 
-    fun initialize(userId: String?, mediaType: MediaType) {
+    fun initialize(userId: String?, userName: String?, mediaType: MediaType) {
         if (initialized) return
         initialized = true
         this.userId = userId
         this.mediaType = mediaType
+        this.userName = userName
         filterController.initialize(
             this, refreshUptimeMillis, AnimeMediaFilterController.InitialParams(
                 // Disable "On list" filter, everything in this screen is on the user's list
@@ -79,6 +83,17 @@ open class AnimeUserListViewModel @Inject constructor(
                 isAnime = mediaType == MediaType.ANIME,
             )
         )
+
+        if (userId != null) {
+            viewModelScope.launch(CustomDispatchers.IO) {
+                val name = aniListApi.user(userId)?.name
+                if (name != null) {
+                    withContext(CustomDispatchers.Main) {
+                        this@AnimeUserListViewModel.userName = name
+                    }
+                }
+            }
+        }
 
         viewModelScope.launch(CustomDispatchers.Main) {
             @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
@@ -161,11 +176,11 @@ open class AnimeUserListViewModel @Inject constructor(
         }
     }
 
-    override fun filterData() = filterController.data()
+    fun filterData() = filterController.data()
 
-    override fun onRefresh() = refreshUptimeMillis.update { SystemClock.uptimeMillis() }
+    fun onRefresh() = refreshUptimeMillis.update { SystemClock.uptimeMillis() }
 
-    override fun onTagLongClick(tagId: String) {
+    fun onTagLongClick(tagId: String) {
         tagShown = filterController.tagsByCategory.value.values
             .asSequence()
             .mapNotNull { it.findTag(tagId) }

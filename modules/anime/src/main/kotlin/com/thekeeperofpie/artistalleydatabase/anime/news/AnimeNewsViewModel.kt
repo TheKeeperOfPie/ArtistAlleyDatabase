@@ -47,7 +47,7 @@ class AnimeNewsViewModel @Inject constructor(
             )
                 .flowOn(CustomDispatchers.Main)
                 .flatMapLatest { (sortOption, sortAscending) ->
-                    animeNewsController.news.mapLatest { news ->
+                    animeNewsController.news().mapLatest { news ->
                         if (sortOption != null) {
                             val baseComparator: Comparator<AnimeNewsArticleEntry> =
                                 when (sortOption) {

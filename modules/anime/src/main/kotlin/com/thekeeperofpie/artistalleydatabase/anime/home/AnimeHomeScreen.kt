@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
@@ -72,13 +73,18 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.ColorUtils
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.anilist.UserSocialActivityQuery
 import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.activity.ListActivitySmallCard
+import com.thekeeperofpie.artistalleydatabase.anime.activity.TextActivitySmallCard
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaLargeCard
 import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsArticleEntry
 import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsSmallCard
@@ -95,7 +101,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 object AnimeHomeScreen {
 
-    private const val SCREEN_KEY = "anime_home"
+    private val SCREEN_KEY = AnimeNavDestinations.HOME.id
     private val MEDIA_ROW_HEIGHT = 180.dp
 
     @Composable
@@ -111,6 +117,7 @@ object AnimeHomeScreen {
         val animeViewModel = hiltViewModel<AnimeHomeMediaViewModel.Anime>()
         val mangaViewModel = hiltViewModel<AnimeHomeMediaViewModel.Manga>()
         val selectedItemTracker = remember { SelectedItemTracker() }
+        val activity = viewModel.activity.collectAsLazyPagingItems()
         LazyColumn(
             state = scrollStateSaver.lazyListState(),
             contentPadding = PaddingValues(
@@ -148,15 +155,26 @@ object AnimeHomeScreen {
                 }
             }
 
+            newsRow(
+                data = viewModel.newsController.newsDateDescending(),
+                navigationCallback = navigationCallback,
+            )
+
+            activityRow(
+                data = activity,
+                colorCalculationState = colorCalculationState,
+                navigationCallback = navigationCallback,
+            )
+
             when (selectedTabIndex) {
-                0 -> animeList(
-                    viewModel = animeViewModel,
+                0 -> mediaList(
+                    mediaViewModel = animeViewModel,
                     selectedItemTracker = selectedItemTracker,
                     navigationCallback = navigationCallback,
                     colorCalculationState = colorCalculationState,
                 )
-                1 -> mangaList(
-                    viewModel = mangaViewModel,
+                1 -> mediaList(
+                    mediaViewModel = mangaViewModel,
                     selectedItemTracker = selectedItemTracker,
                     navigationCallback = navigationCallback,
                     colorCalculationState = colorCalculationState,
@@ -202,47 +220,20 @@ object AnimeHomeScreen {
         }
     }
 
-    private fun LazyListScope.animeList(
-        viewModel: AnimeHomeMediaViewModel.Anime,
+    private fun LazyListScope.mediaList(
+        mediaViewModel: AnimeHomeMediaViewModel,
         selectedItemTracker: SelectedItemTracker,
         colorCalculationState: ColorCalculationState,
         navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
-        val entry = viewModel.entry
-        if (entry == null) {
-            loading()
-        } else {
-            newsRow(
-                data = viewModel.newsController.newsDateDescending,
-                navigationCallback = navigationCallback,
-            )
-
-            entry.data.forEach {
-                mediaRow(
-                    data = it,
-                    onLongClickEntry = viewModel::onLongClickEntry,
-                    selectedItemTracker = selectedItemTracker,
-                    navigationCallback = navigationCallback,
-                    colorCalculationState = colorCalculationState,
-                )
-            }
-        }
-    }
-
-    private fun LazyListScope.mangaList(
-        viewModel: AnimeHomeMediaViewModel.Manga,
-        selectedItemTracker: SelectedItemTracker,
-        colorCalculationState: ColorCalculationState,
-        navigationCallback: AnimeNavigator.NavigationCallback,
-    ) {
-        val entry = viewModel.entry
+        val entry = mediaViewModel.entry
         if (entry == null) {
             loading()
         } else {
             entry.data.forEach {
                 mediaRow(
                     data = it,
-                    onLongClickEntry = viewModel::onLongClickEntry,
+                    onLongClickEntry = mediaViewModel::onLongClickEntry,
                     selectedItemTracker = selectedItemTracker,
                     navigationCallback = navigationCallback,
                     colorCalculationState = colorCalculationState,
@@ -265,17 +256,65 @@ object AnimeHomeScreen {
         item {
             val pagerState = rememberPagerState(pageCount = { data.size })
             val uriHandler = LocalUriHandler.current
+            val targetWidth = 350.coerceAtLeast(LocalConfiguration.current.screenWidthDp - 72).dp
             HorizontalPager(
                 state = pagerState,
                 contentPadding = PaddingValues(start = 16.dp, end = 16.dp),
                 pageSpacing = 16.dp,
-                pageSize = PageSize.Fixed(350.dp),
+                pageSize = PageSize.Fixed(targetWidth),
                 verticalAlignment = Alignment.Top,
             ) {
                 AnimeNewsSmallCard(
                     entry = data[it],
                     uriHandler = uriHandler,
                 )
+            }
+        }
+    }
+
+    private fun LazyListScope.activityRow(
+        data: LazyPagingItems<UserSocialActivityQuery.Data.Page.Activity>,
+        colorCalculationState: ColorCalculationState,
+        navigationCallback: AnimeNavigator.NavigationCallback,
+    ) {
+        rowHeader(
+            titleRes = R.string.anime_home_activity_label,
+            navigationCallback = navigationCallback,
+            viewAllRoute = AnimeNavDestinations.ACTIVITY.id
+        )
+
+        if (data.itemCount == 0) return
+        item {
+            val pagerState = rememberPagerState(pageCount = { data.itemCount })
+            val targetWidth = 350.coerceAtLeast(LocalConfiguration.current.screenWidthDp - 72).dp
+            HorizontalPager(
+                state = pagerState,
+                contentPadding = PaddingValues(start = 16.dp, end = 16.dp),
+                pageSpacing = 16.dp,
+                pageSize = PageSize.Fixed(targetWidth),
+                verticalAlignment = Alignment.Top,
+            ) {
+                when (val activity = data[it]) {
+                    is UserSocialActivityQuery.Data.Page.TextActivityActivity ->
+                        TextActivitySmallCard(
+                            activity = activity,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    is UserSocialActivityQuery.Data.Page.ListActivityActivity ->
+                        ListActivitySmallCard(
+                            screenKey = SCREEN_KEY,
+                            activity = activity,
+                            colorCalculationState = colorCalculationState,
+                            navigationCallback = navigationCallback,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    is UserSocialActivityQuery.Data.Page.MessageActivityActivity,
+                    is UserSocialActivityQuery.Data.Page.OtherActivity,
+                    null -> TextActivitySmallCard(
+                        activity = null,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
             }
         }
     }

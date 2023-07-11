@@ -46,6 +46,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -360,7 +361,10 @@ fun MediaTagRow(
     onTagLongClick: (tagId: String) -> Unit,
     tagContainerColor: Color,
     tagTextColor: Color,
+    tagTextStyle: TextStyle? = null,
+    height: Dp = 24.dp,
 ) {
+    if (tags.isEmpty()) return
     LazyRow(
         contentPadding = PaddingValues(start = 12.dp, end = 32.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -369,7 +373,7 @@ fun MediaTagRow(
             .fillMaxWidth()
             // SubcomposeLayout doesn't support fill max width, so use a really large number.
             // The parent will clamp the actual width so all content still fits on screen.
-            .size(width = LocalConfiguration.current.screenWidthDp.dp, height = 24.dp)
+            .size(width = LocalConfiguration.current.screenWidthDp.dp, height = height)
             .fadingEdgeEnd(
                 endOpaque = 32.dp,
                 endTransparent = 16.dp,
@@ -382,7 +386,8 @@ fun MediaTagRow(
                 onTagLongClick = onTagLongClick,
                 containerColor = tagContainerColor,
                 textColor = tagTextColor,
-                modifier = Modifier.height(24.dp),
+                textStyle = tagTextStyle,
+                modifier = Modifier.height(height),
             )
         }
     }

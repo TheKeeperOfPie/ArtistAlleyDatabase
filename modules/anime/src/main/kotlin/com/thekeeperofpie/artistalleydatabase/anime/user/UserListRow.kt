@@ -148,7 +148,7 @@ object UserListRow {
                     colorCalculationState,
                 )
             },
-            contentDescription = stringResource(R.string.anime_character_image),
+            contentDescription = stringResource(R.string.anime_user_image),
             modifier = Modifier
                 .background(MaterialTheme.colorScheme.surfaceVariant)
                 .fillMaxHeight()
@@ -162,7 +162,7 @@ object UserListRow {
                     onClick = onClick,
                     onLongClick = onLongPressImage,
                     onLongClickLabel = stringResource(
-                        R.string.anime_character_image_long_press_preview
+                        R.string.anime_user_image_long_press_preview
                     ),
                 )
         )

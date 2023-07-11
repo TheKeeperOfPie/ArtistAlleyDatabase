@@ -25,6 +25,7 @@ import com.anilist.type.MediaSeason
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
+import com.thekeeperofpie.artistalleydatabase.anime.activity.AnimeActivityScreen
 import com.thekeeperofpie.artistalleydatabase.anime.character.AnimeCharacterDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeIgnoreScreen
@@ -107,9 +108,14 @@ object AnimeNavigator {
         navGraphBuilder.composable(
             route = AnimeNavDestinations.USER_LIST.id +
                     "?userId={userId}" +
+                    "&userName={userName}" +
                     "&mediaType={mediaType}",
             arguments = listOf(
                 navArgument("userId") {
+                    type = NavType.StringType
+                    nullable = true
+                },
+                navArgument("userName") {
                     type = NavType.StringType
                     nullable = true
                 },
@@ -121,11 +127,13 @@ object AnimeNavigator {
         ) {
             val arguments = it.arguments!!
             val userId = arguments.getString("userId")
+            val userName = arguments.getString("userName")
             val mediaType = arguments.getString("mediaType")
                 ?.let { MediaType.safeValueOf(it).takeUnless { it == MediaType.UNKNOWN__ } }
                 ?: MediaType.ANIME
             UserListScreen(
                 userId = userId,
+                userName = userName,
                 mediaType = mediaType,
                 upIconOption = UpIconOption.Back(navHostController),
                 navigationCallback = navigationCallback,
@@ -456,6 +464,10 @@ object AnimeNavigator {
         navGraphBuilder.composable(AnimeNavDestinations.NEWS.id) {
             AnimeNewsScreen(navigationCallback = navigationCallback)
         }
+
+        navGraphBuilder.composable(AnimeNavDestinations.ACTIVITY.id) {
+            AnimeActivityScreen(navigationCallback = navigationCallback)
+        }
     }
 
     fun onTagClick(navHostController: NavHostController, tagId: String, tagName: String) {
@@ -560,11 +572,13 @@ object AnimeNavigator {
     fun onUserListClick(
         navHostController: NavHostController,
         userId: String,
+        userName: String?,
         mediaType: MediaType?
     ) {
         navHostController.navigate(
             AnimeNavDestinations.USER_LIST.id +
                     "?userId=$userId" +
+                    "&userName=$userName" +
                     "&mediaType=${mediaType?.rawValue}"
         )
     }
@@ -616,6 +630,7 @@ object AnimeNavigator {
     @Composable
     fun UserListScreen(
         userId: String?,
+        userName: String?,
         mediaType: MediaType,
         upIconOption: UpIconOption?,
         navigationCallback: NavigationCallback,
@@ -623,7 +638,7 @@ object AnimeNavigator {
         bottomNavigationState: BottomNavigationState? = null,
     ) {
         val viewModel = hiltViewModel<AnimeUserListViewModel>(key = mediaType.rawValue)
-            .apply { initialize(userId, mediaType) }
+            .apply { initialize(userId, userName, mediaType) }
         AnimeUserListScreen(
             upIconOption = upIconOption,
             mediaType = mediaType,
@@ -672,8 +687,8 @@ object AnimeNavigator {
             navHostController?.let { onTagClick(it, id, name) }
         }
 
-        fun onUserListClick(userId: String, mediaType: MediaType?) {
-            navHostController?.let { onUserListClick(it, userId, mediaType) }
+        fun onUserListClick(userId: String, userName: String?, mediaType: MediaType?) {
+            navHostController?.let { onUserListClick(it, userId, userName, mediaType) }
         }
 
         fun onUserClick(userNavigationData: UserNavigationData, imageWidthToHeightRatio: Float) {

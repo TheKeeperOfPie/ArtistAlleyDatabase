@@ -49,11 +49,13 @@ import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.staff.DetailsStaff
 import com.thekeeperofpie.artistalleydatabase.anime.ui.CoverAndBannerHeader
+import com.thekeeperofpie.artistalleydatabase.anime.user.social.UserSocialScreen
 import com.thekeeperofpie.artistalleydatabase.anime.user.stats.UserMediaScreen
 import com.thekeeperofpie.artistalleydatabase.compose.AutoResizeHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.compose.CollapsingToolbar
 import com.thekeeperofpie.artistalleydatabase.compose.NestedScrollSplitter
+import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 import com.thekeeperofpie.artistalleydatabase.entry.EntryStringR
 import kotlinx.coroutines.launch
@@ -73,6 +75,7 @@ object AniListUserScreen {
         onClickSettings: (() -> Unit)? = null,
     ) {
         val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+        val colorCalculationState = rememberColorCalculationState(viewModel.colorMap)
         Scaffold(
             topBar = {
                 CollapsingToolbar(
@@ -214,7 +217,9 @@ object AniListUserScreen {
                             UserTab.OVERVIEW -> UserOverviewScreen(
                                 entry = entry,
                                 viewer = viewModel.viewer.collectAsState(null).value,
-                                colorMap = viewModel.colorMap,
+                                isFollowing = { viewModel.isFollowing },
+                                onFollowingClick = viewModel::toggleFollow,
+                                colorCalculationState = colorCalculationState,
                                 navigationCallback = navigationCallback,
                                 bottomNavigationState = bottomNavigationState,
                             )
@@ -229,6 +234,12 @@ object AniListUserScreen {
                                 user = { user },
                                 statistics = { viewModel.entry?.statisticsManga },
                                 state = viewModel.mangaStates,
+                                navigationCallback = navigationCallback,
+                                bottomNavigationState = bottomNavigationState,
+                            )
+                            UserTab.SOCIAL -> UserSocialScreen(
+                                userId = viewModel.userId,
+                                colorCalculationState = colorCalculationState,
                                 navigationCallback = navigationCallback,
                                 bottomNavigationState = bottomNavigationState,
                             )

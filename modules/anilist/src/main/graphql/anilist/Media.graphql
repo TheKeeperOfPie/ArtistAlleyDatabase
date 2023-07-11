@@ -45,10 +45,7 @@ fragment AniListListRowMedia on Media {
     source
     status
     tags {
-        id
-        name
-        isAdult
-        isGeneralSpoiler
+        ...GeneralMediaTag
         isMediaSpoiler
         rank
     }
@@ -57,6 +54,20 @@ fragment AniListListRowMedia on Media {
         month
         day
     }
+    popularity
+}
+
+fragment MediaCompactWithTags on Media {
+    ...MediaNavigationData
+    coverImage {
+        color
+    }
+    tags {
+        ...GeneralMediaTag
+        isMediaSpoiler
+        rank
+    }
+    averageScore
     popularity
 }
 
@@ -263,10 +274,7 @@ query MediaDetails($mediaId: Int!) {
             site
         }
         tags {
-            id
-            name
-            isAdult
-            isGeneralSpoiler
+            ...GeneralMediaTag
             isMediaSpoiler
             rank
         }

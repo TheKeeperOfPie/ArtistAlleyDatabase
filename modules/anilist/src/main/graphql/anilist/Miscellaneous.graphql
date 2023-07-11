@@ -4,11 +4,20 @@ query Genres {
 
 query MediaTags {
     MediaTagCollection {
-        id
+        ...GeneralMediaTag
         category
-        name
         description
-        isAdult
-        isGeneralSpoiler
     }
+}
+
+fragment GeneralMediaTag on MediaTag {
+    id
+    name
+    isAdult
+    isGeneralSpoiler
+}
+
+fragment PaginationInfo on PageInfo {
+    hasNextPage
+    total
 }

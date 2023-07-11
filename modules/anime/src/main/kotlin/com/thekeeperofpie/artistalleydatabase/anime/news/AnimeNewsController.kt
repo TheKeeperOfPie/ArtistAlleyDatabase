@@ -11,6 +11,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatc
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
@@ -23,17 +24,27 @@ import okhttp3.Request
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class AnimeNewsController(
-    scopedApplication: ScopedApplication,
-    okHttpClient: OkHttpClient,
+    private val scopedApplication: ScopedApplication,
+    private val okHttpClient: OkHttpClient,
     private val settings: AnimeSettings,
 ) {
-    var newsDateDescending by mutableStateOf<List<AnimeNewsArticleEntry>>(emptyList())
-        private set
+    private var job: Job? = null
+    private val news = MutableStateFlow<List<AnimeNewsArticleEntry>>(emptyList())
+    private var newsDateDescending by mutableStateOf<List<AnimeNewsArticleEntry>>(emptyList())
 
-    val news = MutableStateFlow<List<AnimeNewsArticleEntry>>(emptyList())
+    fun news(): MutableStateFlow<List<AnimeNewsArticleEntry>> {
+        startJobIfNeeded()
+        return news
+    }
 
-    init {
-        scopedApplication.scope.launch(CustomDispatchers.IO) {
+    fun newsDateDescending(): List<AnimeNewsArticleEntry> {
+        startJobIfNeeded()
+        return newsDateDescending
+    }
+
+    private fun startJobIfNeeded() {
+        if (job != null) return
+        job = scopedApplication.scope.launch(CustomDispatchers.IO) {
             val animeNewsNetwork = settings.animeNewsNetworkRegion
                 .mapLatest {
                     fetchFeed(

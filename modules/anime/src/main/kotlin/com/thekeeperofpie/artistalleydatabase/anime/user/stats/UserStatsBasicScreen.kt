@@ -247,7 +247,11 @@ object UserStatsBasicScreen {
                     statistics.meanScore
                 ) to R.string.anime_user_statistics_mean_score,
                 onClick = {
-                    navigationCallback.onUserListClick(user.id.toString(), MediaType.ANIME)
+                    navigationCallback.onUserListClick(
+                        userId = user.id.toString(),
+                        userName = user.name,
+                        mediaType = MediaType.ANIME,
+                    )
                 }
             )
         }
@@ -266,7 +270,11 @@ object UserStatsBasicScreen {
                 String.format("%.1f", statistics.meanScore) to
                         R.string.anime_user_statistics_mean_score,
                 onClick = {
-                    navigationCallback.onUserListClick(user.id.toString(), MediaType.MANGA)
+                    navigationCallback.onUserListClick(
+                        userId = user.id.toString(),
+                        userName = user.name,
+                        mediaType = MediaType.MANGA,
+                    )
                 }
             )
         }
