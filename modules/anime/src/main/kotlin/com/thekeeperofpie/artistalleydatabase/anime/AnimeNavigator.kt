@@ -3,10 +3,8 @@ package com.thekeeperofpie.artistalleydatabase.anime
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalLifecycleOwner
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraphBuilder
@@ -16,12 +14,12 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
 import com.anilist.fragment.CharacterNavigationData
+import com.anilist.fragment.MediaHeaderData
 import com.anilist.fragment.MediaNavigationData
 import com.anilist.fragment.MediaPreviewWithDescription
 import com.anilist.fragment.StaffNavigationData
 import com.anilist.fragment.UserFavoriteMediaNode
 import com.anilist.fragment.UserNavigationData
-import com.anilist.type.MediaSeason
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
@@ -35,12 +33,17 @@ import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreViewM
 import com.thekeeperofpie.artistalleydatabase.anime.list.AnimeUserListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.list.AnimeUserListViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderValues
 import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeMediaFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsScreen
+import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationsScreen
+import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationsViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.review.ReviewsScreen
+import com.thekeeperofpie.artistalleydatabase.anime.review.ReviewsViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.review.details.ReviewDetailsScreen
+import com.thekeeperofpie.artistalleydatabase.anime.review.details.ReviewDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.schedule.AiringScheduleScreen
 import com.thekeeperofpie.artistalleydatabase.anime.search.AnimeSearchScreen
 import com.thekeeperofpie.artistalleydatabase.anime.search.AnimeSearchViewModel
@@ -148,18 +151,7 @@ object AnimeNavigator {
 
         navGraphBuilder.composable(
             route = AnimeNavDestinations.MEDIA_DETAILS.id
-                    + "?mediaId={mediaId}"
-                    + "&title={title}"
-                    + "&subtitleFormatRes={subtitleFormatRes}"
-                    + "&subtitleStatusRes={subtitleStatusRes}"
-                    + "&subtitleSeason={subtitleSeason}"
-                    + "&subtitleSeasonYear={subtitleSeasonYear}"
-                    + "&nextEpisode={nextEpisode}"
-                    + "&nextEpisodeAiringAt={nextEpisodeAiringAt}"
-                    + "&coverImage={coverImage}"
-                    + "&coverImageWidthToHeightRatio={coverImageWidthToHeightRatio}"
-                    + "&color={color}"
-                    + "&bannerImage={bannerImage}",
+                    + "?mediaId={mediaId}${MediaHeaderValues.routeSuffix}",
             deepLinks = listOf(
                 navDeepLink { uriPattern = "${AniListUtils.ANILIST_BASE_URL}/anime/{mediaId}" },
                 navDeepLink { uriPattern = "${AniListUtils.ANILIST_BASE_URL}/anime/{mediaId}/.*" },
@@ -171,51 +163,14 @@ object AnimeNavigator {
                     type = NavType.StringType
                     nullable = false
                 }
-            ) + listOf(
-                "title",
-                "subtitleFormatRes",
-                "subtitleStatusRes",
-                "subtitleSeason",
-                "subtitleSeasonYear",
-                "nextEpisode",
-                "nextEpisodeAiringAt",
-                "coverImage",
-                "coverImageWidthToHeightRatio",
-                "bannerImage",
-                "color",
-            ).map {
-                navArgument(it) {
-                    type = NavType.StringType
-                    nullable = true
-                }
-            },
+            ) + MediaHeaderValues.navArguments()
         ) {
             val arguments = it.arguments!!
-            val title = arguments.getString("title")
             val mediaId = arguments.getString("mediaId")!!
-            val coverImage = arguments.getString("coverImage")
-            val coverImageWidthToHeightRatio = arguments.getString("coverImageWidthToHeightRatio")
-                ?.toFloatOrNull() ?: 1f
-            val bannerImage = arguments.getString("bannerImage")
-            val subtitleFormatRes =
-                arguments.getString("subtitleFormatRes")?.toIntOrNull()
-            val subtitleStatusRes =
-                arguments.getString("subtitleStatusRes")?.toIntOrNull()
-            val subtitleSeason = arguments.getString("subtitleSeason")?.let { season ->
-                MediaSeason.values().find { it.rawValue == season }
-            }
-            val subtitleSeasonYear =
-                arguments.getString("subtitleSeasonYear")?.toIntOrNull()
-            val nextEpisode = arguments.getString("nextEpisode")?.toIntOrNull()
-            val nextEpisodeAiringAt =
-                arguments.getString("nextEpisodeAiringAt")?.toIntOrNull()
-            val color = arguments.getString("color")
-                ?.toIntOrNull()
-                ?.let(::Color)
 
-            val viewModel = hiltViewModel<AnimeMediaDetailsViewModel>().apply {
-                initialize(mediaId)
-            }
+            val viewModel = hiltViewModel<AnimeMediaDetailsViewModel>()
+                .apply { initialize(mediaId) }
+            val headerValues = MediaHeaderValues(arguments) { viewModel.entry?.media }
 
             val lifecycleOwner = LocalLifecycleOwner.current
             DisposableEffect(lifecycleOwner) {
@@ -229,53 +184,8 @@ object AnimeNavigator {
 
             AnimeMediaDetailsScreen(
                 viewModel = viewModel,
-                color = {
-                    viewModel.entry?.media?.coverImage?.color
-                        ?.let(ComposeColorUtils::hexToColor)
-                        ?: color
-                },
-                coverImage = {
-                    viewModel.entry?.media?.coverImage?.extraLarge ?: coverImage
-                },
-                coverImageWidthToHeightRatio = coverImageWidthToHeightRatio,
-                bannerImage = {
-                    viewModel.entry?.media?.bannerImage ?: bannerImage
-                },
-                title = {
-                    viewModel.entry?.media?.title?.userPreferred ?: title ?: ""
-                },
-                subtitle = {
-                    viewModel.entry?.media?.let {
-                        MediaUtils.formatSubtitle(
-                            format = it.format,
-                            status = it.status,
-                            season = it.season,
-                            seasonYear = it.seasonYear,
-                        )
-                    } ?: listOfNotNull(
-                        subtitleFormatRes?.let { stringResource(it) },
-                        subtitleStatusRes?.let { stringResource(it) },
-                        MediaUtils.formatSeasonYear(
-                            subtitleSeason,
-                            subtitleSeasonYear
-                        ),
-                    )
-                        .joinToString(separator = " - ")
-                        .ifEmpty { null }
-                },
-                nextEpisode = {
-                    viewModel.entry?.media?.nextAiringEpisode?.episode
-                        ?: nextEpisode
-                },
-                nextEpisodeAiringAt = {
-                    viewModel.entry?.media?.nextAiringEpisode?.airingAt
-                        ?: nextEpisodeAiringAt
-                },
-                entry = {
-                    viewModel.entry?.media?.let {
-                        AnimeMediaDetailsScreen.Entry(mediaId, it)
-                    }
-                },
+                headerValues = headerValues,
+                entry = { viewModel.entry },
                 onGenreLongClick = { /*TODO*/ },
                 onCharacterLongClick = { /*TODO*/ },
                 onStaffLongClick = { /*TODO*/ },
@@ -471,112 +381,97 @@ object AnimeNavigator {
 
         navGraphBuilder.composable(
             route = AnimeNavDestinations.MEDIA_CHARACTERS.id
-                    + "?mediaId={mediaId}"
-                    + "&title={title}"
-                    + "&subtitleFormatRes={subtitleFormatRes}"
-                    + "&subtitleStatusRes={subtitleStatusRes}"
-                    + "&subtitleSeason={subtitleSeason}"
-                    + "&subtitleSeasonYear={subtitleSeasonYear}"
-                    + "&nextEpisode={nextEpisode}"
-                    + "&nextEpisodeAiringAt={nextEpisodeAiringAt}"
-                    + "&coverImage={coverImage}"
-                    + "&coverImageWidthToHeightRatio={coverImageWidthToHeightRatio}"
-                    + "&color={color}"
-                    + "&bannerImage={bannerImage}",
+                    + "?mediaId={mediaId}${MediaHeaderValues.routeSuffix}",
             arguments = listOf(
                 navArgument("mediaId") {
                     type = NavType.StringType
                     nullable = false
                 }
-            ) + listOf(
-                "title",
-                "subtitleFormatRes",
-                "subtitleStatusRes",
-                "subtitleSeason",
-                "subtitleSeasonYear",
-                "nextEpisode",
-                "nextEpisodeAiringAt",
-                "coverImage",
-                "coverImageWidthToHeightRatio",
-                "bannerImage",
-                "color",
-            ).map {
-                navArgument(it) {
-                    type = NavType.StringType
-                    nullable = true
-                }
-            },
+            ) + MediaHeaderValues.navArguments()
         ) {
             val arguments = it.arguments!!
-            val title = arguments.getString("title")
             val mediaId = arguments.getString("mediaId")!!
-            val coverImage = arguments.getString("coverImage")
-            val coverImageWidthToHeightRatio = arguments.getString("coverImageWidthToHeightRatio")
-                ?.toFloatOrNull() ?: 1f
-            val bannerImage = arguments.getString("bannerImage")
-            val subtitleFormatRes =
-                arguments.getString("subtitleFormatRes")?.toIntOrNull()
-            val subtitleStatusRes =
-                arguments.getString("subtitleStatusRes")?.toIntOrNull()
-            val subtitleSeason = arguments.getString("subtitleSeason")?.let { season ->
-                MediaSeason.values().find { it.rawValue == season }
-            }
-            val subtitleSeasonYear =
-                arguments.getString("subtitleSeasonYear")?.toIntOrNull()
-            val nextEpisode = arguments.getString("nextEpisode")?.toIntOrNull()
-            val nextEpisodeAiringAt =
-                arguments.getString("nextEpisodeAiringAt")?.toIntOrNull()
-            val color = arguments.getString("color")
-                ?.toIntOrNull()
-                ?.let(::Color)
 
             val viewModel = hiltViewModel<CharactersViewModel>().apply { initialize(mediaId) }
+            val headerValues = MediaHeaderValues(arguments) { viewModel.entry?.media }
 
             CharactersScreen(
                 viewModel = viewModel,
-                color = {
-                    viewModel.entry?.media?.coverImage?.color
-                        ?.let(ComposeColorUtils::hexToColor)
-                        ?: color
+                headerValues = headerValues,
+                navigationCallback = navigationCallback,
+            )
+        }
+
+        navGraphBuilder.composable(
+            route = AnimeNavDestinations.MEDIA_REVIEWS.id
+                    + "?mediaId={mediaId}${MediaHeaderValues.routeSuffix}",
+            arguments = listOf(
+                navArgument("mediaId") {
+                    type = NavType.StringType
+                    nullable = false
+                }
+            ) + MediaHeaderValues.navArguments()
+        ) {
+            val arguments = it.arguments!!
+            val mediaId = arguments.getString("mediaId")!!
+
+            val viewModel = hiltViewModel<ReviewsViewModel>().apply { initialize(mediaId) }
+            val headerValues = MediaHeaderValues(arguments) { viewModel.entry?.media }
+
+            ReviewsScreen(
+                viewModel = viewModel,
+                headerValues = headerValues,
+                navigationCallback = navigationCallback,
+            )
+        }
+
+        navGraphBuilder.composable(
+            route = AnimeNavDestinations.MEDIA_RECOMMENDATIONS.id
+                    + "?mediaId={mediaId}${MediaHeaderValues.routeSuffix}",
+            arguments = listOf(
+                navArgument("mediaId") {
+                    type = NavType.StringType
+                    nullable = false
+                }
+            ) + MediaHeaderValues.navArguments()
+        ) {
+            val arguments = it.arguments!!
+            val mediaId = arguments.getString("mediaId")!!
+
+            val viewModel = hiltViewModel<RecommendationsViewModel>().apply { initialize(mediaId) }
+            val headerValues = MediaHeaderValues(arguments) { viewModel.entry?.media }
+
+            RecommendationsScreen(
+                viewModel = viewModel,
+                headerValues = headerValues,
+                navigationCallback = navigationCallback,
+            )
+        }
+
+        navGraphBuilder.composable(
+            route = AnimeNavDestinations.REVIEW_DETAILS.id + "?reviewId={reviewId}",
+            deepLinks = listOf(
+                navDeepLink { uriPattern = "${AniListUtils.ANILIST_BASE_URL}/review/{reviewId}" },
+                navDeepLink {
+                    uriPattern = "${AniListUtils.ANILIST_BASE_URL}/review/{reviewId}/.*"
                 },
-                coverImage = {
-                    viewModel.entry?.media?.coverImage?.extraLarge ?: coverImage
-                },
-                coverImageWidthToHeightRatio = coverImageWidthToHeightRatio,
-                bannerImage = {
-                    viewModel.entry?.media?.bannerImage ?: bannerImage
-                },
-                titleText = {
-                    viewModel.entry?.media?.title?.userPreferred ?: title ?: ""
-                },
-                subtitleText = {
-                    viewModel.entry?.media?.let {
-                        MediaUtils.formatSubtitle(
-                            format = it.format,
-                            status = it.status,
-                            season = it.season,
-                            seasonYear = it.seasonYear,
-                        )
-                    } ?: listOfNotNull(
-                        subtitleFormatRes?.let { stringResource(it) },
-                        subtitleStatusRes?.let { stringResource(it) },
-                        MediaUtils.formatSeasonYear(
-                            subtitleSeason,
-                            subtitleSeasonYear,
-                            withSeparator = true,
-                        ),
-                    )
-                        .joinToString(separator = " - ")
-                        .ifEmpty { null }
-                },
-                nextEpisode = {
-                    viewModel.entry?.media?.nextAiringEpisode?.episode
-                        ?: nextEpisode
-                },
-                nextEpisodeAiringAt = {
-                    viewModel.entry?.media?.nextAiringEpisode?.airingAt
-                        ?: nextEpisodeAiringAt
-                },
+            ),
+            arguments = listOf(
+                navArgument("reviewId") {
+                    type = NavType.StringType
+                    nullable = false
+                }
+            ) + MediaHeaderValues.navArguments()
+        ) {
+            val arguments = it.arguments!!
+            val reviewId = arguments.getString("reviewId")!!
+
+            val viewModel = hiltViewModel<ReviewDetailsViewModel>().apply { initialize(reviewId) }
+            val headerValues = MediaHeaderValues(arguments) { viewModel.entry?.review?.media }
+
+            ReviewDetailsScreen(
+                viewModel = viewModel,
+                headerValues = headerValues,
                 navigationCallback = navigationCallback,
             )
         }
@@ -596,17 +491,7 @@ object AnimeNavigator {
     ) = navHostController.navigate(
         AnimeNavDestinations.MEDIA_DETAILS.id +
                 "?mediaId=${entry.media.id}" +
-                "&title=${entry.media.title?.userPreferred}" +
-                "&subtitleFormatRes=${entry.media.format.toTextRes()}" +
-                "&subtitleStatusRes=${entry.media.status.toTextRes()}" +
-                "&subtitleSeason=${entry.media.season}" +
-                "&subtitleSeasonYear=${entry.media.seasonYear}" +
-                "&nextEpisode=${entry.media.nextAiringEpisode?.episode}" +
-                "&nextEpisodeAiringAt=${entry.media.nextAiringEpisode?.airingAt}" +
-                "&bannerImage=${entry.media.bannerImage}" +
-                "&coverImage=${entry.media.coverImage?.extraLarge}" +
-                "&coverImageWidthToHeightRatio=$imageWidthToHeightRatio" +
-                "&color=${entry.color?.toArgb()}"
+                MediaHeaderValues.routeSuffix(entry.media, imageWidthToHeightRatio)
     )
 
     fun onMediaCharactersClick(
@@ -616,19 +501,27 @@ object AnimeNavigator {
     ) = navHostController.navigate(
         AnimeNavDestinations.MEDIA_CHARACTERS.id +
                 "?mediaId=${entry.mediaId}" +
-                "&title=${entry.media.title?.userPreferred}" +
-                "&subtitleFormatRes=${entry.media.format.toTextRes()}" +
-                "&subtitleStatusRes=${entry.media.status.toTextRes()}" +
-                "&subtitleSeason=${entry.media.season}" +
-                "&subtitleSeasonYear=${entry.media.seasonYear}" +
-                "&nextEpisode=${entry.media.nextAiringEpisode?.episode}" +
-                "&nextEpisodeAiringAt=${entry.media.nextAiringEpisode?.airingAt}" +
-                "&bannerImage=${entry.media.bannerImage}" +
-                "&coverImage=${entry.media.coverImage?.extraLarge}" +
-                "&coverImageWidthToHeightRatio=$imageWidthToHeightRatio" +
-                "&color=${
-                    entry.media.coverImage?.color?.let(ComposeColorUtils::hexToColor)?.toArgb()
-                }"
+                MediaHeaderValues.routeSuffix(entry.media, imageWidthToHeightRatio)
+    )
+
+    fun onMediaReviewsClick(
+        navHostController: NavHostController,
+        entry: AnimeMediaDetailsScreen.Entry,
+        imageWidthToHeightRatio: Float,
+    ) = navHostController.navigate(
+        AnimeNavDestinations.MEDIA_REVIEWS.id +
+                "?mediaId=${entry.mediaId}" +
+                MediaHeaderValues.routeSuffix(entry.media, imageWidthToHeightRatio)
+    )
+
+    fun onMediaRecommendationsClick(
+        navHostController: NavHostController,
+        entry: AnimeMediaDetailsScreen.Entry,
+        imageWidthToHeightRatio: Float,
+    ) = navHostController.navigate(
+        AnimeNavDestinations.MEDIA_RECOMMENDATIONS.id +
+                "?mediaId=${entry.mediaId}" +
+                MediaHeaderValues.routeSuffix(entry.media, imageWidthToHeightRatio)
     )
 
     fun onMediaClick(
@@ -716,6 +609,17 @@ object AnimeNavigator {
                     "&mediaType=${mediaType?.rawValue}"
         )
     }
+
+    fun onReviewClick(
+        navHostController: NavHostController,
+        reviewId: String,
+        media: MediaHeaderData?,
+        imageWidthToHeightRatio: Float,
+    ) = navHostController.navigate(
+        AnimeNavDestinations.REVIEW_DETAILS.id +
+                "?reviewId=$reviewId" +
+                MediaHeaderValues.routeSuffix(media, imageWidthToHeightRatio)
+    )
 
     @Composable
     fun SearchScreen(
@@ -824,6 +728,22 @@ object AnimeNavigator {
             navHostController?.let { onMediaCharactersClick(it, media, imageWidthToHeightRatio) }
         }
 
+        fun onMediaReviewsClick(
+            media: AnimeMediaDetailsScreen.Entry,
+            imageWidthToHeightRatio: Float
+        ) {
+            navHostController?.let { onMediaReviewsClick(it, media, imageWidthToHeightRatio) }
+        }
+
+        fun onMediaRecommendationsClick(
+            media: AnimeMediaDetailsScreen.Entry,
+            imageWidthToHeightRatio: Float
+        ) {
+            navHostController?.let {
+                onMediaRecommendationsClick(it, media, imageWidthToHeightRatio)
+            }
+        }
+
         fun onTagClick(id: String, name: String) {
             navHostController?.let { onTagClick(it, id, name) }
         }
@@ -870,6 +790,14 @@ object AnimeNavigator {
 
         fun onAiringScheduleClick() {
             navHostController?.navigate(AnimeNavDestinations.AIRING_SCHEDULE.id)
+        }
+
+        fun onReviewClick(
+            reviewId: String,
+            media: MediaHeaderData?,
+            imageWidthToHeightRatio: Float
+        ) {
+            navHostController?.let { onReviewClick(it, reviewId, media, imageWidthToHeightRatio) }
         }
 
         fun navigate(route: String) = navHostController?.navigate(route)

@@ -18,6 +18,7 @@ fragment AniListMedia on Media {
 
 fragment AniListListRowMedia on Media {
     ...MediaNavigationData
+    ...MediaHeaderData
     id
     bannerImage
     coverImage {
@@ -69,6 +70,7 @@ fragment MediaCompactWithTags on Media {
     }
     averageScore
     popularity
+    isAdult
 }
 
 query MediaAdvancedSearch($page: Int, $perPage: Int, $search: String, $type: MediaType!,
@@ -135,6 +137,7 @@ fragment MediaNavigationData on Media {
 
 query MediaDetails($mediaId: Int!) {
     Media(id: $mediaId) {
+        ...MediaHeaderData
         bannerImage
         coverImage {
             color
@@ -209,6 +212,7 @@ query MediaDetails($mediaId: Int!) {
             allTime
             context
         }
+
         relations {
             edges {
                 id
@@ -218,7 +222,11 @@ query MediaDetails($mediaId: Int!) {
                 }
             }
         }
-        recommendations {
+
+        recommendations(sort: [RATING_DESC], perPage: 5) {
+            pageInfo {
+                hasNextPage
+            }
             edges {
                 node {
                     id
@@ -231,17 +239,12 @@ query MediaDetails($mediaId: Int!) {
         }
 
         # TODO: Handle pagination
-        reviews(sort: [RATING_DESC]) {
+        reviews(sort: [RATING_DESC], perPage: 3) {
+            pageInfo {
+                hasNextPage
+            }
             nodes {
-                id
-                user {
-                    ...UserNavigationData
-                }
-                rating
-                ratingAmount
-                score
-                summary
-                updatedAt
+                ...MediaAndReviewsReview
             }
         }
         season
@@ -456,6 +459,127 @@ query AiringSchedule(
             episode
             media {
                 ...AniListListRowMedia
+            }
+        }
+    }
+}
+
+fragment MediaHeaderData on Media {
+    ...MediaNavigationData
+    id
+    bannerImage
+    coverImage {
+        color
+        extraLarge
+    }
+    title {
+        romaji
+        english
+        native
+        userPreferred
+    }
+    format
+    status
+    season
+    seasonYear
+    averageScore
+    popularity
+    nextAiringEpisode {
+        episode
+        airingAt
+    }
+}
+
+fragment MediaAndReviewsReview on Review {
+    id
+    user {
+        ...UserNavigationData
+    }
+    rating
+    ratingAmount
+    score
+    summary
+    updatedAt
+}
+
+query MediaAndReviews(
+    $mediaId: Int!,
+    $sort: [ReviewSort]!,
+    $reviewsPerPage: Int!,
+) {
+    Media(id: $mediaId) @nonnull {
+        ...MediaHeaderData
+        reviews(sort: $sort, page: 1, perPage: $reviewsPerPage) {
+            pageInfo @nonnull {
+                ...PaginationInfo
+            }
+            nodes {
+                ...MediaAndReviewsReview
+            }
+        }
+    }
+}
+
+query MediaAndReviewsPagination(
+    $mediaId: Int!,
+    $sort: [ReviewSort]!,
+    $page: Int!,
+    $reviewsPerPage: Int!,
+) {
+    Media(id: $mediaId) @nonnull {
+        reviews(sort: $sort, page: $page, perPage: $reviewsPerPage) {
+            pageInfo @nonnull {
+                ...PaginationInfo
+            }
+            nodes {
+                ...MediaAndReviewsReview
+            }
+        }
+    }
+}
+
+fragment MediaAndRecommendationsRecommendation on Recommendation {
+    id
+    user {
+        ...UserNavigationData
+    }
+    rating
+    mediaRecommendation {
+        ...AniListListRowMedia
+    }
+}
+
+query MediaAndRecommendations(
+    $mediaId: Int!,
+    $sort: [RecommendationSort]!,
+    $recommendationsPerPage: Int!,
+) {
+    Media(id: $mediaId) @nonnull {
+        ...MediaHeaderData
+        recommendations(sort: $sort, page: 1, perPage: $recommendationsPerPage) {
+            pageInfo @nonnull {
+                ...PaginationInfo
+            }
+            nodes {
+                ...MediaAndRecommendationsRecommendation
+            }
+        }
+    }
+}
+
+query MediaAndRecommendationsPagination(
+    $mediaId: Int!,
+    $sort: [RecommendationSort]!,
+    $page: Int!,
+    $recommendationsPerPage: Int!,
+) {
+    Media(id: $mediaId) @nonnull {
+        recommendations(sort: $sort, page: $page, perPage: $recommendationsPerPage) {
+            pageInfo @nonnull {
+                ...PaginationInfo
+            }
+            nodes {
+                ...MediaAndRecommendationsRecommendation
             }
         }
     }

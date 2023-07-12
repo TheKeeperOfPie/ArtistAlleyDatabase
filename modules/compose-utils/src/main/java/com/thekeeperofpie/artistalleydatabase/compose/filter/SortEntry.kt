@@ -11,3 +11,8 @@ data class SortEntry<T : SortOption>(
             enumClass.java.enumConstants!!.map(::SortEntry)
     }
 }
+
+fun <T : SortOption> List<SortEntry<T>>.selectedOption(default: T) =
+    firstOrNull { it.state == FilterIncludeExcludeState.INCLUDE }
+        ?.value
+        ?: default

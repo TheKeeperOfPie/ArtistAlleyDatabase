@@ -12,10 +12,16 @@ import com.anilist.HomeMangaQuery
 import com.anilist.MediaAdvancedSearchQuery
 import com.anilist.MediaAndCharactersPaginationQuery
 import com.anilist.MediaAndCharactersQuery
+import com.anilist.MediaAndRecommendationsPaginationQuery
+import com.anilist.MediaAndRecommendationsQuery
+import com.anilist.MediaAndReviewsPaginationQuery
+import com.anilist.MediaAndReviewsQuery
 import com.anilist.MediaByIdsQuery
 import com.anilist.MediaDetailsQuery
 import com.anilist.MediaTagsQuery
 import com.anilist.MediaTitlesAndImagesQuery
+import com.anilist.RateReviewMutation
+import com.anilist.ReviewDetailsQuery
 import com.anilist.SaveMediaEntryEditMutation
 import com.anilist.StaffDetailsCharacterMediaPaginationQuery
 import com.anilist.StaffDetailsQuery
@@ -39,6 +45,9 @@ import com.anilist.type.MediaSort
 import com.anilist.type.MediaSource
 import com.anilist.type.MediaStatus
 import com.anilist.type.MediaType
+import com.anilist.type.RecommendationSort
+import com.anilist.type.ReviewRating
+import com.anilist.type.ReviewSort
 import com.anilist.type.StaffSort
 import com.anilist.type.UserSort
 import com.apollographql.apollo3.ApolloClient
@@ -448,9 +457,6 @@ class AuthedAniListApi(
         )
     )
 
-    private suspend fun <D : Query.Data> query(query: Query<D>) =
-        apolloClient.query(query).execute().dataOrThrow()
-
     suspend fun mediaAndCharacters(mediaId: String, charactersPerPage: Int = 10) = query(
         MediaAndCharactersQuery(
             mediaId = mediaId.toInt(),
@@ -469,4 +475,65 @@ class AuthedAniListApi(
             charactersPerPage = charactersPerPage,
         )
     )
+
+    suspend fun mediaAndReviews(
+        mediaId: String,
+        sort: ReviewSort,
+        reviewsPerPage: Int = 10,
+    ) = query(
+        MediaAndReviewsQuery(
+            mediaId = mediaId.toInt(),
+            sort = listOf(sort),
+            reviewsPerPage = reviewsPerPage,
+        )
+    ).media
+
+    suspend fun mediaAndReviewsPage(
+        mediaId: String,
+        sort: ReviewSort,
+        page: Int,
+        reviewsPerPage: Int = 10,
+    ) = query(
+        MediaAndReviewsPaginationQuery(
+            mediaId = mediaId.toInt(),
+            sort = listOf(sort),
+            page = page,
+            reviewsPerPage = reviewsPerPage,
+        )
+    )
+
+    suspend fun reviewDetails(reviewId: String) = query(ReviewDetailsQuery(reviewId.toInt())).review
+
+    suspend fun rateReview(reviewId: String, rating: ReviewRating) =
+        apolloClient.mutation(RateReviewMutation(id = reviewId.toInt(), rating = rating)).execute()
+            .dataOrThrow().rateReview.userRating
+
+    suspend fun mediaAndRecommendations(
+        mediaId: String,
+        sort: RecommendationSort,
+        recommendationsPerPage: Int = 10,
+    ) = query(
+        MediaAndRecommendationsQuery(
+            mediaId = mediaId.toInt(),
+            sort = listOf(sort),
+            recommendationsPerPage = recommendationsPerPage,
+        )
+    ).media
+
+    suspend fun mediaAndRecommendationsPage(
+        mediaId: String,
+        sort: RecommendationSort,
+        page: Int,
+        recommendationsPerPage: Int = 10,
+    ) = query(
+        MediaAndRecommendationsPaginationQuery(
+            mediaId = mediaId.toInt(),
+            sort = listOf(sort),
+            page = page,
+            recommendationsPerPage = recommendationsPerPage,
+        )
+    )
+
+    private suspend fun <D : Query.Data> query(query: Query<D>) =
+        apolloClient.query(query).execute().dataOrThrow()
 }

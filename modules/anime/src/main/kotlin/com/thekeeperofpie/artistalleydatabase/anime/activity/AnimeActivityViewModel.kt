@@ -17,12 +17,16 @@ import com.anilist.UserSocialActivityQuery.Data.Page.TextActivityActivity
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListPagingSource
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
+import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityUtils.isAdult
+import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIntIds
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -32,6 +36,7 @@ import javax.inject.Inject
 @HiltViewModel
 class AnimeActivityViewModel @Inject constructor(
     private val aniListApi: AuthedAniListApi,
+    private val settings: AnimeSettings,
 ) : ViewModel() {
 
     val colorMap = mutableStateMapOf<String, Pair<Color, Color>>()
@@ -69,7 +74,11 @@ class AnimeActivityViewModel @Inject constructor(
         following: Boolean,
     ) = viewModelScope.launch(CustomDispatchers.IO) {
         aniListApi.authedUser.flatMapLatest { viewer ->
-            refreshUptimeMillis.flatMapLatest {
+            combine(
+                settings.showAdult,
+                refreshUptimeMillis,
+                ::Pair
+            ).flatMapLatest { (showAdult, _) ->
                 Pager(config = PagingConfig(10)) {
                     AniListPagingSource {
                         val result = aniListApi.userSocialActivity(
@@ -80,19 +89,17 @@ class AnimeActivityViewModel @Inject constructor(
                         result.page?.pageInfo to
                                 result.page?.activities?.filterNotNull().orEmpty()
                     }
-                }.flow
+                }
+                    .flow
+                    .map { it.filter { showAdult || !it.isAdult() } }
             }
         }
-            .map {
-                // AniList can return duplicates across pages, manually enforce uniqueness
-                val seenIds = mutableSetOf<Int>()
-                it.filter {
-                    when (it) {
-                        is ListActivityActivity -> seenIds.add(it.id)
-                        is MessageActivityActivity -> seenIds.add(it.id)
-                        is TextActivityActivity -> seenIds.add(it.id)
-                        is OtherActivity -> false
-                    }
+            .enforceUniqueIntIds {
+                when (it) {
+                    is ListActivityActivity -> it.id
+                    is MessageActivityActivity -> it.id
+                    is TextActivityActivity -> it.id
+                    is OtherActivity -> null
                 }
             }
             .cachedIn(viewModelScope)

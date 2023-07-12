@@ -130,6 +130,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.takeOrElse
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.text.HtmlCompat
+import androidx.core.text.method.LinkMovementMethodCompat
 import coil.Coil
 import coil.request.ImageRequest
 import com.thekeeperofpie.compose_proxy.R
@@ -207,7 +208,7 @@ fun ButtonFooter(vararg pairs: Pair<Int, () -> Unit>) {
 @Composable
 fun SnackbarErrorText(
     @StringRes errorRes: Int?,
-    exception: Exception?,
+    exception: Throwable?,
     onErrorDismiss: (() -> Unit)? = null,
 ) {
     if (errorRes != null) {
@@ -235,7 +236,7 @@ fun SnackbarErrorText(
 @Composable
 private fun RowScope.SnackbarErrorTextInner(
     @StringRes errorRes: Int,
-    exception: Exception?,
+    exception: Throwable?,
 ) {
     Text(
         text = stringResource(id = errorRes),
@@ -1067,10 +1068,9 @@ private class ImageGetterWrapper(var delegate: Html.ImageGetter? = null) : Html.
 fun ImageHtmlText(
     modifier: Modifier = Modifier,
     text: String,
-    maxLines: Int,
     color: Color,
-
-    ) {
+    maxLines: Int? = null,
+) {
     val context = LocalContext.current
     var updateMillis by remember { mutableLongStateOf(-1L) }
     val imageGetter = remember {
@@ -1092,9 +1092,13 @@ fun ImageHtmlText(
         factory = ::TextView,
         update = {
             it.text = htmlText
-            it.maxLines = maxLines
+            if (maxLines != null) {
+                it.maxLines = maxLines
+            }
             it.setTextColor(color.toArgb())
             it.ellipsize = TextUtils.TruncateAt.END
+            it.movementMethod = LinkMovementMethodCompat.getInstance()
+            it.setTextIsSelectable(true)
         }
     )
 }
@@ -1106,19 +1110,15 @@ fun DetailsSectionHeader(
     onClickViewAll: (() -> Unit)? = null,
     @StringRes viewAllContentDescriptionTextRes: Int? = null,
 ) {
-    @Composable
-    fun Text(modifier: Modifier = Modifier) {
-        Text(
-            text = text,
-            style = MaterialTheme.typography.titleMedium,
-            modifier = modifier
-                .fillMaxWidth()
-                .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 10.dp),
-        )
-    }
     if (onClickViewAll != null) {
-        Row {
-            Text(modifier = modifier.weight(1f))
+        Row(modifier = modifier) {
+            Text(
+                text = text,
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 10.dp),
+            )
             IconButton(
                 onClick = onClickViewAll,
                 modifier = Modifier.padding(top = 4.dp)
@@ -1132,7 +1132,13 @@ fun DetailsSectionHeader(
             }
         }
     } else {
-        Text()
+        Text(
+            text = text,
+            style = MaterialTheme.typography.titleMedium,
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 10.dp),
+        )
     }
 }
 

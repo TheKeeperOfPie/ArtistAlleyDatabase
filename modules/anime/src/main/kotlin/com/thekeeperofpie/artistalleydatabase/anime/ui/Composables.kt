@@ -4,6 +4,7 @@ package com.thekeeperofpie.artistalleydatabase.anime.ui
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Arrangement
@@ -39,7 +40,6 @@ import androidx.compose.ui.unit.dp
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.compose.DetailsSectionHeader
-import com.thekeeperofpie.artistalleydatabase.compose.optionalClickable
 import java.time.LocalDate
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
@@ -228,10 +228,13 @@ fun <T> LazyListScope.listSection(
     values: Collection<T>,
     valueToId: (T) -> String?,
     aboveFold: Int,
-    expanded: () -> Boolean,
-    onExpandedChange: (Boolean) -> Unit,
+    hasMoreValues: Boolean = false,
+    expanded: () -> Boolean = { false },
+    onExpandedChange: (Boolean) -> Unit = {},
     hidden: () -> Boolean = { false },
     hiddenContent: @Composable () -> Unit = {},
+    onClickViewAll: (() -> Unit)? = null,
+    @StringRes viewAllContentDescriptionTextRes: Int? = null,
     itemContent: @Composable LazyListScope.(T, paddingBottom: Dp, modifier: Modifier) -> Unit,
 ) {
     if (values.isNotEmpty()) {
@@ -239,9 +242,18 @@ fun <T> LazyListScope.listSection(
         item("$titleRes-header") {
             DetailsSectionHeader(
                 text = stringResource(titleRes),
-                modifier = Modifier.optionalClickable(
-                    { onExpandedChange(!expanded()) }.takeIf { hasMore }
-                )
+                modifier = Modifier.clickable(
+                    enabled = hasMore || hasMoreValues,
+                    onClick = {
+                        if (hasMore) {
+                            onExpandedChange(!expanded())
+                        } else {
+                            onClickViewAll?.invoke()
+                        }
+                    },
+                ),
+                onClickViewAll = onClickViewAll,
+                viewAllContentDescriptionTextRes = viewAllContentDescriptionTextRes
             )
         }
 
@@ -259,11 +271,30 @@ fun <T> LazyListScope.listSection(
             val paddingBottom = if (index == values.size
                     .coerceAtMost(aboveFold) - 1
             ) {
-                if (hasMore) 16.dp else 0.dp
+                if (hasMore || hasMoreValues) 16.dp else 0.dp
             } else {
                 16.dp
             }
             this@listSection.itemContent(item, paddingBottom, Modifier.animateItemPlacement())
+        }
+
+        fun showAllButton() {
+            item("$titleRes-showAll") {
+                ElevatedCard(
+                    onClick = { onClickViewAll?.invoke() },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                        .animateItemPlacement()
+                ) {
+                    Text(
+                        text = stringResource(UtilsStringR.view_all),
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp, vertical = 10.dp)
+                            .align(Alignment.CenterHorizontally)
+                    )
+                }
+            }
         }
 
         if (hasMore) {
@@ -274,31 +305,47 @@ fun <T> LazyListScope.listSection(
                 ) { _, item ->
                     this@listSection.itemContent(item, 16.dp, Modifier.animateItemPlacement())
                 }
-            }
 
-            item("$titleRes-showMore") {
-                @Suppress("NAME_SHADOWING") val expanded = expanded()
-                ElevatedCard(
-                    onClick = { onExpandedChange(!expanded) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
-                        .animateItemPlacement()
-                ) {
-                    Text(
-                        text = stringResource(
-                            if (expanded) {
-                                UtilsStringR.show_less
-                            } else {
-                                UtilsStringR.show_more
-                            }
-                        ),
+                if (hasMoreValues) {
+                    showAllButton()
+                } else {
+                    item("$titleRes-showLess") {
+                        ElevatedCard(
+                            onClick = { onExpandedChange(false) },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp)
+                                .animateItemPlacement()
+                        ) {
+                            Text(
+                                text = stringResource(UtilsStringR.show_less),
+                                modifier = Modifier
+                                    .padding(horizontal = 16.dp, vertical = 10.dp)
+                                    .align(Alignment.CenterHorizontally)
+                            )
+                        }
+                    }
+                }
+            } else {
+                item("$titleRes-showMore") {
+                    ElevatedCard(
+                        onClick = { onExpandedChange(true) },
                         modifier = Modifier
-                            .padding(horizontal = 16.dp, vertical = 10.dp)
-                            .align(Alignment.CenterHorizontally)
-                    )
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp)
+                            .animateItemPlacement()
+                    ) {
+                        Text(
+                            text = stringResource(UtilsStringR.show_more),
+                            modifier = Modifier
+                                .padding(horizontal = 16.dp, vertical = 10.dp)
+                                .align(Alignment.CenterHorizontally)
+                        )
+                    }
                 }
             }
+        } else if (hasMoreValues) {
+            showAllButton()
         }
     }
 }

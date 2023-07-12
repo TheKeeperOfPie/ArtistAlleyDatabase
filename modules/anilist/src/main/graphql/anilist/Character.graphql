@@ -180,27 +180,7 @@ fragment MediaAndCharactersCharacterEdge on CharacterEdge {
 
 query MediaAndCharacters($mediaId: Int!, $charactersPerPage: Int!) {
     Media(id: $mediaId) {
-        bannerImage
-        coverImage {
-            color
-            extraLarge
-        }
-        title {
-            romaji
-            english
-            native
-            userPreferred
-        }
-        format
-        status
-        season
-        seasonYear
-        averageScore
-        popularity
-        nextAiringEpisode {
-            episode
-            airingAt
-        }
+        ...MediaHeaderData
         characters(sort: [RELEVANCE, ROLE, FAVOURITES_DESC], page: 1, perPage: $charactersPerPage) {
             pageInfo @nonnull {
                 ...PaginationInfo

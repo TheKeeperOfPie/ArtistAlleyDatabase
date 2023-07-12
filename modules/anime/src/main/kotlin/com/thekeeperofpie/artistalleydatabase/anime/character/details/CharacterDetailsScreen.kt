@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.anime.character.details
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -51,8 +52,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.mediaListSection
 import com.thekeeperofpie.artistalleydatabase.anime.staff.DetailsStaff
 import com.thekeeperofpie.artistalleydatabase.anime.staff.staffSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.CoverAndBannerHeader
+import com.thekeeperofpie.artistalleydatabase.anime.ui.DetailsLoadingOrError
 import com.thekeeperofpie.artistalleydatabase.anime.ui.descriptionSection
-import com.thekeeperofpie.artistalleydatabase.anime.ui.detailsLoadingOrError
 import com.thekeeperofpie.artistalleydatabase.compose.AutoResizeHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.CollapsingToolbar
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
@@ -112,20 +113,30 @@ object CharacterDetailsScreen {
                 }
             },
             modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
-        ) {
+        ) { scaffoldPadding ->
             val expandedState = rememberExpandedState()
-            LazyColumn(
-                contentPadding = PaddingValues(bottom = 16.dp),
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(it)
-            ) {
-                content(
-                    viewModel = viewModel,
-                    expandedState = expandedState,
-                    navigationCallback = navigationCallback,
-                    colorCalculationState = colorCalculationState,
-                )
+            val entry = viewModel.entry
+            Crossfade(targetState = entry, label = "Character details crossfade") {
+                if (it == null) {
+                    DetailsLoadingOrError(
+                        loading = viewModel.loading,
+                        errorResource = { viewModel.errorResource },
+                    )
+                } else {
+                    LazyColumn(
+                        contentPadding = PaddingValues(bottom = 16.dp),
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(scaffoldPadding)
+                    ) {
+                        content(
+                            entry = it,
+                            expandedState = expandedState,
+                            navigationCallback = navigationCallback,
+                            colorCalculationState = colorCalculationState,
+                        )
+                    }
+                }
             }
         }
     }
@@ -179,20 +190,11 @@ object CharacterDetailsScreen {
     }
 
     private fun LazyListScope.content(
-        viewModel: AnimeCharacterDetailsViewModel,
+        entry: Entry,
         expandedState: ExpandedState,
         navigationCallback: AnimeNavigator.NavigationCallback,
         colorCalculationState: ColorCalculationState,
     ) {
-        val entry = viewModel.entry
-        if (entry == null) {
-            detailsLoadingOrError(
-                loading = viewModel.loading,
-                errorResource = { viewModel.errorResource },
-            )
-            return
-        }
-
         descriptionSection(
             htmlText = entry.character.description,
             expanded = expandedState::description,

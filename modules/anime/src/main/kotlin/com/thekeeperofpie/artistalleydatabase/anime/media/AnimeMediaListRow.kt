@@ -44,6 +44,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import coil.size.Dimension
 import com.anilist.fragment.AniListListRowMedia
+import com.anilist.fragment.MediaHeaderData
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.material.placeholder
 import com.google.accompanist.placeholder.material.shimmer
@@ -246,10 +247,10 @@ object AnimeMediaListRow {
         )
     }
 
-    open class Entry<MediaType : AniListListRowMedia>(
+    open class Entry<MediaType>(
         val media: MediaType,
         ignored: Boolean = false
-    ) {
+    ) where MediaType : AniListListRowMedia, MediaType : MediaHeaderData {
         val color = media.coverImage?.color?.let(ComposeColorUtils::hexToColor)
         val tags = media.tags?.filterNotNull()?.map(::AnimeMediaTagEntry).orEmpty()
         var ignored by mutableStateOf(ignored)

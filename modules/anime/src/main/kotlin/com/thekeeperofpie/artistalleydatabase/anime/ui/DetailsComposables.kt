@@ -54,7 +54,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.coerceAtMost
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
 import coil.compose.AsyncImage
@@ -179,7 +178,11 @@ internal fun CoverAndBannerHeader(
                                 .run {
                                     if (coverImageWidthToHeightRatio != 1f) {
                                         width(
-                                            (lerp(coverSize, pinnedHeight, progress) * coverImageWidthToHeightRatio)
+                                            (lerp(
+                                                coverSize,
+                                                pinnedHeight,
+                                                progress
+                                            ) * coverImageWidthToHeightRatio)
                                                 .coerceAtMost(maxWidth)
                                         )
                                     } else if (success) {
@@ -204,6 +207,31 @@ internal fun CoverAndBannerHeader(
     }
 }
 
+@Composable
+internal fun DetailsLoadingOrError(
+    loading: Boolean,
+    errorResource: @Composable () -> Pair<Int, Throwable?>?,
+) {
+    if (loading) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+        ) {
+            CircularProgressIndicator(
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .padding(32.dp)
+            )
+        }
+    } else {
+        val errorResource = errorResource()
+        AnimeMediaListScreen.Error(
+            errorTextRes = errorResource?.first,
+            exception = errorResource?.second,
+        )
+    }
+}
+
 internal fun LazyListScope.detailsLoadingOrError(
     loading: Boolean,
     errorResource: @Composable () -> Pair<Int, Exception?>?,
@@ -213,7 +241,6 @@ internal fun LazyListScope.detailsLoadingOrError(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .animateItemPlacement()
             ) {
                 CircularProgressIndicator(
                     modifier = Modifier

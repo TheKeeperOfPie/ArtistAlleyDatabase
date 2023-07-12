@@ -339,7 +339,10 @@
     <string name="anime_media_details_reviews_label">Reviews</string>
     <string name="anime_media_details_reviews_user_avatar_content_description">Review author avatar</string>
     <string name="anime_media_details_reviews_rating_upvote_content_description">Review rating upvotes</string>
+    <string name="anime_media_details_reviews_rating_downvote_content_description">Review rating downvotes</string>
     <string name="anime_media_details_reviews_rating_amount_content_description">Review rating population indicator</string>
+
+    <string name="anime_media_details_view_all_content_description">View all</string>
 
     <string name="anime_media_edit_date_today_content_description">Set to today</string>
     <string name="anime_media_edit_date_start_date_label">Start</string>
@@ -472,6 +475,7 @@
     <string name="anime_character_favorites_icon_content_description">Favorites</string>
 
     <string name="anime_characters_error_loading">Error loading characters</string>
+    <string name="anime_characters_header">Characters</string>
 
     <string name="anime_staff_overview_label">Overview</string>
     <string name="anime_staff_media_label">Media</string>
@@ -574,4 +578,21 @@
     <string name="anime_activity_tab_global">Global</string>
     <string name="anime_activity_title">Activity</string>
     <string name="anime_activity_global_title">Global activity</string>
+
+    <string name="anime_reviews_sort_id">ID</string>
+    <string name="anime_reviews_sort_score">Score</string>
+    <string name="anime_reviews_sort_rating">Rating</string>
+    <string name="anime_reviews_sort_created_at">Created date</string>
+    <string name="anime_reviews_sort_updated_at">Last updated</string>
+    <string name="anime_reviews_error_loading">Error loading reviews</string>
+    <string name="anime_reviews_error_loading_details">Error loading review</string>
+    <string name="anime_reviews_header">Reviews</string>
+    <string name="anime_review_details_upvote_content_description">Upvote review</string>
+    <string name="anime_review_details_downvote_content_description">Downvote review</string>
+    <string name="anime_review_details_score">Score: %1$s/100</string>
+    <string name="anime_review_details_error_rating">Failed to rate review</string>
+
+    <string name="anime_recommendations_sort_id">Last added</string>
+    <string name="anime_recommendations_sort_rating">Rating</string>
+    <string name="anime_recommendations_header">Recommendations</string>
 </resources>

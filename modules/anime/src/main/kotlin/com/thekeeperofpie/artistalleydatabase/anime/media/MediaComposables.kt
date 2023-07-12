@@ -2,14 +2,8 @@
 
 package com.thekeeperofpie.artistalleydatabase.anime.media
 
-import android.util.Log
 import androidx.annotation.StringRes
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateIntAsState
-import androidx.compose.animation.expandHorizontally
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -41,12 +35,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.graphics.toArgb
@@ -75,17 +66,14 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
 import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
-import com.thekeeperofpie.artistalleydatabase.anime.ui.CoverAndBannerHeader
 import com.thekeeperofpie.artistalleydatabase.anime.ui.listSection
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
-import com.thekeeperofpie.artistalleydatabase.compose.AutoResizeHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.compose.fadingEdgeEnd
 import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
-import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 
 fun <T> LazyListScope.mediaListSection(
     screenKey: String,
@@ -93,19 +81,25 @@ fun <T> LazyListScope.mediaListSection(
     values: Collection<T>,
     valueToEntry: (T) -> AnimeMediaListRow.Entry<*>,
     aboveFold: Int,
-    expanded: () -> Boolean,
-    onExpandedChange: (Boolean) -> Unit,
+    hasMoreValues: Boolean = false,
+    expanded: () -> Boolean = { false },
+    onExpandedChange: (Boolean) -> Unit = {},
     colorCalculationState: ColorCalculationState,
     navigationCallback: AnimeNavigator.NavigationCallback,
     onTagLongClick: (String) -> Unit,
     label: (@Composable (T) -> Unit)? = null,
+    onClickViewAll: (() -> Unit)? = null,
+    @StringRes viewAllContentDescriptionTextRes: Int? = null,
 ) = listSection(
     titleRes = titleRes,
     values = values,
     valueToId = { "anime_media_${valueToEntry(it).media.id}" },
     aboveFold = aboveFold,
+    hasMoreValues = hasMoreValues,
     expanded = expanded,
     onExpandedChange = onExpandedChange,
+    onClickViewAll = onClickViewAll,
+    viewAllContentDescriptionTextRes = viewAllContentDescriptionTextRes,
 ) { item, paddingBottom, modifier ->
     val entry = valueToEntry(item)
     AnimeMediaListRow(
@@ -276,14 +270,7 @@ fun MediaRatingIconsSection(
                     modifier = Modifier.padding(top = 4.dp)
                 )
 
-                val iconTint = remember(rating) {
-                    when {
-                        rating > 80 -> Color.Green
-                        rating > 70 -> Color.Yellow
-                        rating > 50 -> Color(0xFFFF9000) // Orange
-                        else -> Color.Red
-                    }
-                }
+                val iconTint = remember(rating) { MediaUtils.ratingColor(rating) }
                 Icon(
                     imageVector = Icons.Filled.BarChart,
                     contentDescription = stringResource(
@@ -401,139 +388,6 @@ fun MediaTagRow(
                 textStyle = tagTextStyle,
                 modifier = Modifier.height(height),
             )
-        }
-    }
-}
-
-
-@Composable
-fun MediaHeader(
-    screenKey: String,
-    mediaId: String,
-    titles: List<String>?,
-    averageScore: Int?,
-    popularity: Int?,
-    progress: Float,
-    color: () -> Color?,
-    coverImage: @Composable () -> String?,
-    coverImageWidthToHeightRatio: Float,
-    bannerImage: @Composable () -> String?,
-    titleText: @Composable () -> String,
-    subtitleText: @Composable () -> String?,
-    nextEpisode: @Composable () -> Int?,
-    nextEpisodeAiringAt: @Composable () -> Int?,
-    colorCalculationState: ColorCalculationState,
-    onImageWidthToHeightRatioAvailable: (Float) -> Unit = {},
-    enableCoverImageSharedElement: Boolean = true,
-) {
-    Log.d("MediaDebug", "MediaHeader $screenKey coverImageWidthToHeightRatio = $coverImageWidthToHeightRatio")
-    var preferredTitle by remember { mutableStateOf<Int?>(null) }
-    SharedElement(
-        key = "anime_media_${mediaId}_header",
-        screenKey = screenKey,
-    ) {
-        CoverAndBannerHeader(
-            screenKey = screenKey,
-            entryId = if (enableCoverImageSharedElement) {
-                EntryId("anime_media", mediaId)
-            } else {
-                EntryId("unknown", "disabled")
-            },
-            progress = progress,
-            color = color,
-            coverImage = coverImage,
-            coverImageWidthToHeightRatio = coverImageWidthToHeightRatio,
-            bannerImage = bannerImage,
-            onClickEnabled = (titles?.size ?: 0) > 1,
-            onClick = {
-                preferredTitle =
-                    ((preferredTitle ?: 0) + 1) % (titles?.size ?: 1)
-            },
-            coverImageOnSuccess = { success ->
-                onImageWidthToHeightRatioAvailable(success.widthToHeightRatio())
-                ComposeColorUtils.calculatePalette(mediaId, success, colorCalculationState)
-            }
-        ) {
-            Row {
-                Column(modifier = Modifier.weight(1f)) {
-                    AutoResizeHeightText(
-                        text = when (val index = preferredTitle) {
-                            null -> null
-                            else -> titles?.get(index)
-                        } ?: titleText(),
-                        style = MaterialTheme.typography.headlineLarge,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(1f)
-                            .padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 4.dp),
-                    )
-
-                    val subtitleText = subtitleText()
-                    AnimatedVisibility(
-                        subtitleText != null,
-                        label = "Media details subtitle text"
-                    ) {
-                        if (subtitleText != null) {
-                            Text(
-                                text = subtitleText,
-                                style = MaterialTheme.typography.bodyMedium,
-                                modifier = Modifier
-                                    .wrapContentHeight()
-                                    .padding(horizontal = 16.dp, vertical = 4.dp)
-                                    .fillMaxWidth()
-                                    .wrapContentHeight(Alignment.Bottom)
-                            )
-                        }
-                    }
-
-                    val nextEpisodeAiringAt = nextEpisodeAiringAt()
-                    val nextEpisode = nextEpisode()
-                    AnimatedVisibility(
-                        nextEpisodeAiringAt != null && nextEpisode != null,
-                        label = "Media details nextEpisodeAiringAt text"
-                    ) {
-                        if (nextEpisodeAiringAt != null && nextEpisode != null) {
-                            val context = LocalContext.current
-                            val airingAt = remember {
-                                MediaUtils.formatAiringAt(context, nextEpisodeAiringAt * 1000L)
-                            }
-
-                            val remainingTime = remember {
-                                MediaUtils.formatRemainingTime(nextEpisodeAiringAt * 1000L)
-                            }
-
-                            Text(
-                                text = stringResource(
-                                    R.string.anime_media_next_airing_episode,
-                                    nextEpisode,
-                                    airingAt,
-                                    remainingTime,
-                                ),
-                                style = MaterialTheme.typography.labelMedium,
-                                color = MaterialTheme.colorScheme.surfaceTint,
-                                modifier = Modifier
-                                    .wrapContentHeight(Alignment.Bottom)
-                                    .padding(horizontal = 16.dp, vertical = 4.dp)
-                            )
-                        }
-                    }
-                }
-
-                AnimatedVisibility(
-                    visible = progress > 0.8f,
-                    enter = fadeIn() + expandHorizontally(),
-                    exit = fadeOut() + shrinkHorizontally(),
-                    modifier = Modifier.align(Alignment.Top)
-                ) {
-                    MediaRatingIconsSection(
-                        rating = averageScore,
-                        popularity = popularity,
-                        modifier = Modifier
-                            .alpha(if (progress > 0.8f) 1f - ((1f - progress) / 0.2f) else 0f)
-                            .padding(start = 8.dp, end = 8.dp, top = 4.dp)
-                    )
-                }
-            }
         }
     }
 }

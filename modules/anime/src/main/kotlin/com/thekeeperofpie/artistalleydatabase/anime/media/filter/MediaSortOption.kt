@@ -9,6 +9,7 @@ enum class MediaSortOption(@StringRes override val textRes: Int) : SortOption {
 
     // TODO: CHAPTERS/VOLUMES for manga
     // Omissions: SEARCH_MATCH is used as a default
+    // TODO: Rename ID to last added
     ID(R.string.anime_media_sort_id),
     TITLE_ROMAJI(R.string.anime_media_sort_title_romaji),
     TITLE_ENGLISH(R.string.anime_media_sort_title_english),

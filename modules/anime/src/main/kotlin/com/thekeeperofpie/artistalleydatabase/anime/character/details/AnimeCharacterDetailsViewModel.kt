@@ -26,7 +26,7 @@ class AnimeCharacterDetailsViewModel @Inject constructor(
 
     var entry by mutableStateOf<CharacterDetailsScreen.Entry?>(null)
     var loading by mutableStateOf(true)
-    var errorResource by mutableStateOf<Pair<Int, Exception?>?>(null)
+    var errorResource by mutableStateOf<Pair<Int, Throwable?>?>(null)
     val colorMap = mutableStateMapOf<String, Pair<Color, Color>>()
 
     fun initialize(characterId: String) {

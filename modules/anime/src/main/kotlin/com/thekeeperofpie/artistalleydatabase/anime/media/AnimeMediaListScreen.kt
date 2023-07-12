@@ -99,7 +99,7 @@ object AnimeMediaListScreen {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = modifier
-                .fillMaxSize()
+                .wrapContentSize()
                 .verticalScroll(rememberScrollState()),
         ) {
             Text(

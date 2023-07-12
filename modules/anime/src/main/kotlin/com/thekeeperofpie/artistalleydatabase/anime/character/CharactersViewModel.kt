@@ -11,15 +11,14 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import androidx.paging.filter
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListPagingSource
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIds
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -77,11 +76,7 @@ class CharactersViewModel @Inject constructor(
                         }
                     }
                 }.flow
-                    .map {
-                        // AniList can return duplicates across pages, manually enforce uniqueness
-                        val seenIds = mutableSetOf<String>()
-                        it.filter { seenIds.add(it.id) }
-                    }
+                    .enforceUniqueIds { it.id }
                     .cachedIn(viewModelScope)
                     .collectLatest(characters::emit)
             } catch (e: Exception) {

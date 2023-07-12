@@ -96,6 +96,3 @@ fun Color.multiplyCoerceSaturation(
     ColorUtils.colorToHSL(this.toArgb(), array)
     return Color.hsl(array[0], (array[1] * multiplier).coerceAtMost(maxSaturation), array[2], alpha)
 }
-
-@Composable
-fun Color.ifNotSpecified(color: @Composable () -> Color) = this.takeIf { isSpecified } ?: color()

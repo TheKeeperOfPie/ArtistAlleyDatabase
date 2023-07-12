@@ -12,6 +12,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.res.stringResource
@@ -24,7 +25,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.compose.AssistChip
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.assistChipColors
-import com.thekeeperofpie.artistalleydatabase.compose.ifNotSpecified
 
 data class AnimeMediaTagEntry(
     val id: String,
@@ -63,8 +63,9 @@ data class AnimeMediaTagEntry(
                 onLongClick = { onTagLongClick(tag.id) },
                 colors = assistChipColors(
                     containerColor = containerColor
-                        .ifNotSpecified { MaterialTheme.colorScheme.surfaceVariant },
-                    labelColor = textColor.ifNotSpecified { MaterialTheme.colorScheme.onSurfaceVariant },
+                        .takeOrElse { MaterialTheme.colorScheme.surfaceVariant },
+                    labelColor = textColor
+                        .takeOrElse { MaterialTheme.colorScheme.onSurfaceVariant },
                 ),
                 border = null,
                 leadingIcon = {

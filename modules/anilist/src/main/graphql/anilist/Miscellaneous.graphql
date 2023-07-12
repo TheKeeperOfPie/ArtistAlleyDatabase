@@ -21,3 +21,30 @@ fragment PaginationInfo on PageInfo {
     hasNextPage
     total
 }
+
+query ReviewDetails($id: Int!) {
+    Review(id: $id) @nonnull {
+        id
+        rating
+        ratingAmount
+        body(asHtml: true)
+        userRating
+        score
+        private
+        siteUrl
+        createdAt
+        updatedAt
+        user {
+            ...UserNavigationData
+        }
+        media {
+            ...MediaHeaderData
+        }
+    }
+}
+
+mutation RateReview($id: Int!, $rating: ReviewRating!) {
+    RateReview(reviewId: $id, rating: $rating) @nonnull {
+        userRating @nonnull
+    }
+}

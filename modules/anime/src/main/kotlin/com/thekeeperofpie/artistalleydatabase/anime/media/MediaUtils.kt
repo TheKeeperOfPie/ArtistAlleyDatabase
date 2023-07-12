@@ -427,4 +427,11 @@ object MediaUtils {
             formatSeasonYear(season, seasonYear, withSeparator = true),
         ).joinToString(separator = " - ")
     }
+
+    fun ratingColor(rating: Int) = when {
+        rating > 80 -> Color.Green
+        rating > 70 -> Color.Yellow
+        rating > 50 -> Color(0xFFFF9000) // Orange
+        else -> Color.Red
+    }
 }

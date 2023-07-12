@@ -115,6 +115,7 @@ object AnimeHomeScreen {
     private val SCREEN_KEY = AnimeNavDestinations.HOME.id
     private val MEDIA_ROW_HEIGHT = 180.dp
 
+    @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     @Composable
     operator fun invoke(
         viewModel: AnimeHomeViewModel = hiltViewModel<AnimeHomeViewModel>(),
@@ -173,14 +174,28 @@ object AnimeHomeScreen {
                 )
             )
         ) {
+            val density = LocalDensity.current
+            val topBarPadding by remember {
+                derivedStateOf {
+                    scrollBehavior.state.heightOffsetLimit
+                        .takeUnless { it == -Float.MAX_VALUE }
+                        ?.let { density.run { -it.toDp() } }
+                        ?: 0.dp
+                }
+            }
+            val topOffset by remember {
+                derivedStateOf {
+                    (topBarPadding + density.run { scrollBehavior.state.heightOffset.toDp() })
+                        .coerceAtLeast(0.dp)
+                }
+            }
             Box(
-                modifier = Modifier
-                    .padding(it)
-                    .pullRefresh(pullRefreshState)
+                modifier = Modifier.pullRefresh(pullRefreshState)
             ) {
                 LazyColumn(
                     state = scrollStateSaver.lazyListState(),
                     contentPadding = PaddingValues(
+                        top = topBarPadding,
                         bottom = 16.dp + bottomNavigationState.bottomNavBarPadding()
                     ),
                     modifier = Modifier
@@ -240,7 +255,7 @@ object AnimeHomeScreen {
                 PullRefreshIndicator(
                     refreshing = viewModel.loading,
                     state = pullRefreshState,
-                    modifier = Modifier.align(Alignment.TopCenter)
+                    modifier = Modifier.padding(top = topOffset).align(Alignment.TopCenter)
                 )
             }
         }

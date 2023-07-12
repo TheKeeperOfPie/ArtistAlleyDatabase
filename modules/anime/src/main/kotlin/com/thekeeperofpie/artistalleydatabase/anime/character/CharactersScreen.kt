@@ -31,7 +31,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
@@ -58,9 +57,11 @@ import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeader
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderValues
 import com.thekeeperofpie.artistalleydatabase.compose.AutoSizeText
 import com.thekeeperofpie.artistalleydatabase.compose.CollapsingToolbar
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
+import com.thekeeperofpie.artistalleydatabase.compose.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
 import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
@@ -75,14 +76,7 @@ object CharactersScreen {
     @Composable
     operator fun invoke(
         viewModel: CharactersViewModel,
-        color: () -> Color?,
-        coverImage: @Composable () -> String?,
-        coverImageWidthToHeightRatio: Float,
-        bannerImage: @Composable () -> String?,
-        titleText: @Composable () -> String,
-        subtitleText: @Composable () -> String?,
-        nextEpisode: @Composable () -> Int?,
-        nextEpisodeAiringAt: @Composable () -> Int?,
+        headerValues: MediaHeaderValues,
         navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
         val colorCalculationState = rememberColorCalculationState(viewModel.colorMap)
@@ -103,14 +97,7 @@ object CharactersScreen {
                         averageScore = media?.averageScore,
                         popularity = media?.popularity,
                         progress = it,
-                        color = color,
-                        coverImage = coverImage,
-                        coverImageWidthToHeightRatio = coverImageWidthToHeightRatio,
-                        bannerImage = bannerImage,
-                        titleText = titleText,
-                        subtitleText = subtitleText,
-                        nextEpisode = nextEpisode,
-                        nextEpisodeAiringAt = nextEpisodeAiringAt,
+                        headerValues = headerValues,
                         colorCalculationState = colorCalculationState,
                         enableCoverImageSharedElement = false,
                     )
@@ -128,12 +115,15 @@ object CharactersScreen {
             val characters = viewModel.characters.collectAsLazyPagingItems()
             LazyVerticalGrid(
                 columns = GridCells.Adaptive(350.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
+                contentPadding = PaddingValues(bottom = 32.dp),
                 modifier = Modifier
                     .nestedScroll(scrollBehavior.nestedScrollConnection)
                     .padding(it)
             ) {
+                item("header") {
+                    DetailsSectionHeader(text = stringResource(R.string.anime_characters_header))
+                }
+
                 items(
                     count = characters.itemCount,
                     key = characters.itemKey { it.id },
@@ -162,6 +152,7 @@ object CharactersScreen {
             },
             modifier = Modifier
                 .fillMaxWidth()
+                .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
         ) {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
