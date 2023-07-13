@@ -13,7 +13,7 @@ import androidx.paging.PagingData
 import androidx.paging.filter
 import com.anilist.AuthedUserQuery
 import com.anilist.MediaTagsQuery
-import com.anilist.fragment.AniListListRowMedia
+import com.anilist.fragment.MediaPreview
 import com.anilist.type.MediaFormat
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaSeason
@@ -28,6 +28,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
 import com.thekeeperofpie.artistalleydatabase.anime.list.MediaListSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaStatusAware
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterEntry
@@ -58,16 +59,14 @@ class AnimeMediaFilterController<T>(
     private val aniListApi: AuthedAniListApi,
     private val settings: AnimeSettings,
     private val ignoreList: AnimeMediaIgnoreList,
-    defaultEnabled: List<T> = emptyList(),
+    defaultEnabled: T? = null,
 ) where T : SortOption, T : Enum<*> {
 
     companion object {
         private const val TAG = "AnimeMediaFilterController"
     }
 
-    val sortOptions = MutableStateFlow(SortEntry.options(sortEnumClass).map {
-        if (defaultEnabled.contains(it.value)) it.copy(state = FilterIncludeExcludeState.INCLUDE) else it
-    })
+    val sortOptions = MutableStateFlow(SortEntry.options(sortEnumClass, defaultEnabled))
     val sortAscending = MutableStateFlow(false)
 
     val genres = MutableStateFlow(emptyList<GenreEntry>())
@@ -743,7 +742,7 @@ class AnimeMediaFilterController<T>(
         ::FilterParams
     )
 
-    fun <MediaEntryType : AnimeMediaListRow.Entry<MediaType>, MediaType : AniListListRowMedia> filterEntries(
+    fun <MediaEntryType : AnimeMediaListRow.Entry<MediaType>, MediaType : MediaPreview> filterEntries(
         filterParams: FilterParams,
         entries: List<MediaEntryType>,
         forceShowIgnored: Boolean = false,
@@ -805,7 +804,7 @@ class AnimeMediaFilterController<T>(
         }
 
         if (!filterParams.showIgnored && !forceShowIgnored) {
-            filteredEntries = filteredEntries.filterNot { ignoreList.get(it.media.id) }
+            filteredEntries = filteredEntries.filterNot { it.ignored }
         }
 
         filteredEntries = when (val airingDate = filterParams.airingDate) {
@@ -943,9 +942,9 @@ class AnimeMediaFilterController<T>(
         return filteredEntries
     }
 
-    fun <Entry : Any> filterMedia(
+    fun <Entry : MediaStatusAware> filterMedia(
         result: PagingData<Entry>,
-        transform: (Entry) -> AniListListRowMedia,
+        transform: (Entry) -> MediaPreview,
     ) =
         combine(
             flowOf(result),
@@ -969,7 +968,7 @@ class AnimeMediaFilterController<T>(
                     return@filter false
                 }
 
-                if (showIgnored) true else !ignoreList.get(media.id)
+                if (showIgnored) true else !it.ignored
             }
         }
 

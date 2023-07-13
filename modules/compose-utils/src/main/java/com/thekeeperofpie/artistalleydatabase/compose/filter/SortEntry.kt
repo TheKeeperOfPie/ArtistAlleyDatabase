@@ -7,8 +7,14 @@ data class SortEntry<T : SortOption>(
     override val state: FilterIncludeExcludeState = FilterIncludeExcludeState.DEFAULT,
 ) : FilterEntry<T> {
     companion object {
-        fun <T : SortOption> options(enumClass: KClass<T>) =
-            enumClass.java.enumConstants!!.map(::SortEntry)
+        fun <T : SortOption> options(enumClass: KClass<T>, defaultEnabled: T?) =
+            enumClass.java.enumConstants!!.map(::SortEntry).map {
+                if (it.value == defaultEnabled) {
+                    it.copy(state = FilterIncludeExcludeState.INCLUDE)
+                } else {
+                    it
+                }
+            }
     }
 }
 

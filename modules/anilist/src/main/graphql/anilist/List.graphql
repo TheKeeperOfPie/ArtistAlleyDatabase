@@ -6,7 +6,7 @@ query UserMediaList($userId: Int!, $type: MediaType!, $chunk: Int, $perChunk: In
             entries {
                 id
                 media {
-                    ...AniListListRowMedia
+                    ...MediaPreview
 
                     mediaListEntry {
                         status

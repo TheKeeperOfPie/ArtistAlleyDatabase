@@ -18,9 +18,9 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
-import androidx.paging.filter
 import androidx.paging.map
 import com.anilist.MediaAdvancedSearchQuery
+import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaSeason
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
@@ -29,10 +29,13 @@ import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
+import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaStatusChanges
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeMediaFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.FilterData
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.search.AnimeSearchMediaPagingSource
+import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIntIds
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -53,8 +56,9 @@ import kotlin.time.Duration.Companion.milliseconds
 @HiltViewModel
 class SeasonalViewModel @Inject constructor(
     private val aniListApi: AuthedAniListApi,
-    settings: AnimeSettings,
+    private val settings: AnimeSettings,
     val ignoreList: AnimeMediaIgnoreList,
+    val statusController: MediaListStatusController,
 ) : ViewModel() {
 
     // TODO: Does this actually evict old pages from memory?
@@ -111,10 +115,18 @@ class SeasonalViewModel @Inject constructor(
         return pageData.content.collectAsLazyPagingItems()
     }
 
+    fun onMediaLongClick(entry: AnimeMediaListRow.Entry<*>) =
+        ignoreList.toggle(entry.media.id.toString())
+
     class MediaEntry(
         media: MediaAdvancedSearchQuery.Data.Page.Medium,
-        ignored: Boolean,
-    ) : AnimeMediaListRow.Entry<MediaAdvancedSearchQuery.Data.Page.Medium>(media, ignored)
+        mediaListStatus: MediaListStatus? = media.mediaListEntry?.status,
+        ignored: Boolean = false,
+    ) : AnimeMediaListRow.Entry<MediaAdvancedSearchQuery.Data.Page.Medium>(
+        media,
+        mediaListStatus = mediaListStatus,
+        ignored = ignored,
+    )
 
     enum class Type {
         LAST,
@@ -150,13 +162,22 @@ class SeasonalViewModel @Inject constructor(
                             AnimeSearchMediaPagingSource(aniListApi, it, MediaType.ANIME)
                         }.flow
                     }
-                    .map {
-                        // AniList can return duplicates across pages, manually enforce uniqueness
-                        val seenIds = mutableSetOf<Int>()
-                        it.filter { seenIds.add(it.id) }
-                            .map { MediaEntry(it, ignored = ignoreList.get(it.id)) }
-                    }
+                    .enforceUniqueIntIds { it.id }
+                    .map { it.map { MediaEntry(it) } }
                     .cachedIn(viewModelScope)
+                    .applyMediaStatusChanges(
+                        statusController = statusController,
+                        ignoreList = ignoreList,
+                        settings = settings,
+                        media = { it.media },
+                        copy = { mediaListStatus, ignored ->
+                            MediaEntry(
+                                media = media,
+                                mediaListStatus = mediaListStatus,
+                                ignored = ignored,
+                            )
+                        },
+                    )
                     .flatMapLatest { filterController.filterMedia(it) { it.media } }
                     .flowOn(CustomDispatchers.IO)
                     .collectLatest(content::emit)

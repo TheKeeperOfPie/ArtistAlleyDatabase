@@ -130,6 +130,7 @@ object CharacterDetailsScreen {
                             .padding(scaffoldPadding)
                     ) {
                         content(
+                            viewModel = viewModel,
                             entry = it,
                             expandedState = expandedState,
                             navigationCallback = navigationCallback,
@@ -190,6 +191,7 @@ object CharacterDetailsScreen {
     }
 
     private fun LazyListScope.content(
+        viewModel: AnimeCharacterDetailsViewModel,
         entry: Entry,
         expandedState: ExpandedState,
         navigationCallback: AnimeNavigator.NavigationCallback,
@@ -217,6 +219,7 @@ object CharacterDetailsScreen {
             onExpandedChange = { expandedState.media = it },
             colorCalculationState = colorCalculationState,
             navigationCallback = navigationCallback,
+            onLongClick = viewModel::onMediaLongClick,
             onTagLongClick = { /* TODO */ },
         )
 
@@ -388,6 +391,7 @@ object CharacterDetailsScreen {
         onExpandedChange: (Boolean) -> Unit,
         colorCalculationState: ColorCalculationState,
         navigationCallback: AnimeNavigator.NavigationCallback,
+        onLongClick: (AnimeMediaListRow.Entry<*>) -> Unit,
         onTagLongClick: (String) -> Unit,
     ) {
         mediaListSection(
@@ -400,11 +404,12 @@ object CharacterDetailsScreen {
             onExpandedChange = onExpandedChange,
             colorCalculationState = colorCalculationState,
             navigationCallback = navigationCallback,
+            onLongClick = onLongClick,
             onTagLongClick = onTagLongClick,
         )
     }
 
-    data class Entry(val character: Character) {
+    data class Entry(val character: Character, val media: List<AnimeMediaListRow.Entry<*>>) {
         val voiceActors = character.media?.edges?.filterNotNull()
             ?.flatMap {
                 it.voiceActorRoles?.filterNotNull()
@@ -421,11 +426,6 @@ object CharacterDetailsScreen {
                     .orEmpty()
             }.orEmpty()
             .distinctBy { it.id }
-
-        val media = character.media?.edges
-            ?.mapNotNull { it?.node?.let { AnimeMediaListRow.Entry(it) } }
-            .orEmpty()
-            .distinctBy { it.media.id }
     }
 
     @Composable

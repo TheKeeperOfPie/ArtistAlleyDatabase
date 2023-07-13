@@ -19,7 +19,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import com.anilist.MediaDetailsQuery
-import com.anilist.fragment.AniListListRowMedia
+import com.anilist.fragment.MediaPreview
 import com.anilist.fragment.GeneralMediaTag
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.compose.AssistChip
@@ -123,7 +123,7 @@ data class AnimeMediaTagEntry(
         rank = rank,
     )
 
-    constructor(tag: AniListListRowMedia.Tag) : this(
+    constructor(tag: MediaPreview.Tag) : this(
         tag,
         isMediaSpoiler = tag.isMediaSpoiler,
         rank = tag.rank

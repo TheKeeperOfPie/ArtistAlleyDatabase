@@ -16,7 +16,7 @@ fragment AniListMedia on Media {
     synonyms
 }
 
-fragment AniListListRowMedia on Media {
+fragment MediaPreview on Media {
     ...MediaNavigationData
     ...MediaHeaderData
     id
@@ -41,6 +41,9 @@ fragment AniListListRowMedia on Media {
     mediaListEntry {
         status
     }
+
+    # TODO: Type can probably be inferred by other means
+    type
     season
     seasonYear
     source
@@ -94,7 +97,7 @@ query MediaAdvancedSearch($page: Int, $perPage: Int, $search: String, $type: Med
             averageScore_lesser: $averageScoreLesser, episodes_greater: $episodesGreater,
             episodes_lesser: $episodesLesser, source_in: $sourceIn,
             minimumTagRank: $minimumTagRank) @nonnull {
-            ...AniListListRowMedia
+            ...MediaPreview
         }
     }
 }
@@ -218,7 +221,7 @@ query MediaDetails($mediaId: Int!) {
                 id
                 relationType
                 node {
-                    ...AniListListRowMedia
+                    ...MediaPreview
                 }
             }
         }
@@ -232,7 +235,7 @@ query MediaDetails($mediaId: Int!) {
                     id
                     rating
                     mediaRecommendation {
-                        ...AniListListRowMedia
+                        ...MediaPreview
                     }
                 }
             }
@@ -310,7 +313,7 @@ query MediaTitlesAndImages($ids: [Int]) {
 query MediaByIds($ids: [Int]) {
     Page {
         media(id_in: $ids) {
-            ...AniListListRowMedia
+            ...MediaPreview
             title {
                 romaji
                 native
@@ -348,7 +351,7 @@ query MediaWithCharacters($mediaId: Int, $page: Int, $perPage: Int) {
 }
 
 fragment MediaPreviewWithDescription on Media {
-    ...AniListListRowMedia
+    ...MediaPreview
     description(asHtml: true)
 }
 
@@ -458,7 +461,7 @@ query AiringSchedule(
             airingAt
             episode
             media {
-                ...AniListListRowMedia
+                ...MediaPreview
             }
         }
     }
@@ -545,7 +548,7 @@ fragment MediaAndRecommendationsRecommendation on Recommendation {
     }
     rating
     mediaRecommendation {
-        ...AniListListRowMedia
+        ...MediaPreview
     }
 }
 

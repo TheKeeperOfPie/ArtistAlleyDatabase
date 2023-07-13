@@ -82,9 +82,8 @@ class AnimeNewsViewModel @Inject constructor(
         var crunchyrollNewsCategoriesExpanded by mutableStateOf(false)
 
         var sortOptions by mutableStateOf(
-            SortEntry.options(AnimeNewsSortOption::class).map {
-                if (it.value == AnimeNewsSortOption.DATETIME) it.copy(state = FilterIncludeExcludeState.INCLUDE) else it
-            })
+            SortEntry.options(AnimeNewsSortOption::class, AnimeNewsSortOption.DATETIME)
+        )
             private set
 
         var sortAscending by mutableStateOf(false)

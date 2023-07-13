@@ -8,6 +8,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
@@ -25,7 +26,11 @@ import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListOAuthStore
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AppMediaPlayer
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
+import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
+import com.thekeeperofpie.artistalleydatabase.anime.media.applyStatusAndIgnored
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditData
 import com.thekeeperofpie.artistalleydatabase.animethemes.AnimeThemesApi
 import com.thekeeperofpie.artistalleydatabase.animethemes.AnimeThemesUtils
@@ -33,9 +38,13 @@ import com.thekeeperofpie.artistalleydatabase.animethemes.models.AnimeTheme
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDao
 import com.thekeeperofpie.artistalleydatabase.cds.grid.CdEntryGridModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -44,7 +53,7 @@ import java.time.LocalDate
 import java.time.ZoneOffset
 import javax.inject.Inject
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalCoroutinesApi::class)
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 @HiltViewModel
 class AnimeMediaDetailsViewModel @Inject constructor(
@@ -55,6 +64,8 @@ class AnimeMediaDetailsViewModel @Inject constructor(
     private val animeThemesApi: AnimeThemesApi,
     val mediaPlayer: AppMediaPlayer,
     oAuthStore: AniListOAuthStore,
+    val statusController: MediaListStatusController,
+    val ignoreList: AnimeMediaIgnoreList,
 ) : ViewModel(), DefaultLifecycleObserver {
 
     companion object {
@@ -78,6 +89,7 @@ class AnimeMediaDetailsViewModel @Inject constructor(
     var trailerPlaybackPosition = 0f
 
     var listEntry = MutableStateFlow<MediaDetailsListEntry?>(null)
+    var listEntryStatus = MutableStateFlow<MediaListStatus?>(null)
 
     private var animeSongStates by mutableStateOf(emptyMap<String, AnimeSongState>())
 
@@ -88,13 +100,88 @@ class AnimeMediaDetailsViewModel @Inject constructor(
         this.mediaId = mediaId
 
         viewModelScope.launch(CustomDispatchers.IO) {
-            val media = try {
-                aniListApi.mediaDetails(mediaId).also {
-                    val entry = AnimeMediaDetailsScreen.Entry(mediaId, it)
-                    withContext(CustomDispatchers.Main) {
-                        this@AnimeMediaDetailsViewModel.entry = entry
+            try {
+                val media = aniListApi.mediaDetails(mediaId)
+                val relations = media.relations?.edges?.filterNotNull()
+                    ?.mapNotNull {
+                        val node = it.node ?: return@mapNotNull null
+                        val relation = it.relationType ?: return@mapNotNull null
+                        AnimeMediaDetailsScreen.Entry.Relation(
+                            it.id.toString(),
+                            relation,
+                            AnimeMediaListRow.Entry(node)
+                        )
                     }
-                }
+                    .orEmpty()
+                    .sortedBy { AnimeMediaDetailsScreen.RELATION_SORT_ORDER.indexOf(it.relation) }
+
+                val recommendations = media.recommendations?.edges?.filterNotNull()
+                    ?.mapNotNull {
+                        val node = it.node ?: return@mapNotNull null
+                        val media = node.mediaRecommendation ?: return@mapNotNull null
+                        AnimeMediaDetailsScreen.Entry.Recommendation(
+                            node.id.toString(),
+                            node.rating,
+                            AnimeMediaListRow.Entry(media)
+                        )
+                    }
+                    .orEmpty()
+
+                val mediaIds = setOf(media.id.toString()) +
+                        relations.map { it.entry.media.id.toString() } +
+                        recommendations.map { it.entry.media.id.toString() }
+                combine(
+                    statusController.allChanges(mediaIds),
+                    ignoreList.updates,
+                    ::Pair,
+                )
+                    .mapLatest { (statuses, ignoredIds) ->
+                        AnimeMediaDetailsScreen.Entry(
+                            mediaId,
+                            media,
+                            relations = relations.map {
+                                applyStatusAndIgnored(
+                                    statuses,
+                                    ignoredIds,
+                                    it,
+                                    { it.entry },
+                                    it.entry.media,
+                                    copy = { mediaListStatus, ignored ->
+                                        copy(
+                                            entry = AnimeMediaListRow.Entry(
+                                                media = it.entry.media,
+                                                mediaListStatus = mediaListStatus,
+                                                ignored = ignored,
+                                            )
+                                        )
+                                    }
+                                )
+                            },
+                            recommendations = recommendations.map {
+                                applyStatusAndIgnored(
+                                    statuses,
+                                    ignoredIds,
+                                    it,
+                                    { it.entry },
+                                    it.entry.media,
+                                    copy = { mediaListStatus, ignored ->
+                                        copy(
+                                            entry = AnimeMediaListRow.Entry(
+                                                media = it.entry.media,
+                                                mediaListStatus = mediaListStatus,
+                                                ignored = ignored,
+                                            )
+                                        )
+                                    }
+                                )
+                            }
+                        )
+                    }
+                    .collectLatest {
+                        withContext(CustomDispatchers.Main) {
+                            this@AnimeMediaDetailsViewModel.entry = it
+                        }
+                    }
             } catch (e: Exception) {
                 withContext(CustomDispatchers.Main) {
                     errorResource = R.string.anime_media_error_loading_details to e
@@ -105,66 +192,81 @@ class AnimeMediaDetailsViewModel @Inject constructor(
                     loading = false
                 }
             }
+        }
 
-            withContext(CustomDispatchers.Main) {
-                initializeListEntry(entry?.media?.mediaListEntry)
-            }
-
+        viewModelScope.launch(CustomDispatchers.IO) {
             val cdEntries = cdEntryDao.searchSeriesByMediaId(appJson, mediaId)
                 .map { CdEntryGridModel.buildFromEntry(application, it) }
             withContext(CustomDispatchers.Main) {
                 this@AnimeMediaDetailsViewModel.cdEntries = cdEntries
             }
+        }
 
-            if (media?.type == MediaType.ANIME) {
-                try {
-                    val anime = animeThemesApi.getAnime(mediaId)
-                    val songEntries = anime
-                        ?.animethemes
-                        ?.flatMap { animeTheme ->
-                            animeTheme.animeThemeEntries.map {
-                                val video = it.videos.firstOrNull()
-                                AnimeSongEntry(
-                                    id = it.id,
-                                    type = animeTheme.type,
-                                    title = animeTheme.song?.title.orEmpty(),
-                                    spoiler = it.spoiler,
-                                    artists = animeTheme.song?.artists
-                                        ?.map { buildArtist(media, it) }
-                                        .orEmpty(),
-                                    episodes = it.episodes,
-                                    videoUrl = video?.link,
-                                    audioUrl = video?.audio?.link,
-                                    link = AnimeThemesUtils.buildWebsiteLink(anime, animeTheme, it),
-                                )
+        viewModelScope.launch(CustomDispatchers.IO) {
+            snapshotFlow { entry }
+                .flowOn(CustomDispatchers.Main)
+                .collectLatest {
+                    val media = it?.media
+                    if (media?.type == MediaType.ANIME) {
+                        try {
+                            val anime = animeThemesApi.getAnime(mediaId)
+                            val songEntries = anime
+                                ?.animethemes
+                                ?.flatMap { animeTheme ->
+                                    animeTheme.animeThemeEntries.map {
+                                        val video = it.videos.firstOrNull()
+                                        AnimeSongEntry(
+                                            id = it.id,
+                                            type = animeTheme.type,
+                                            title = animeTheme.song?.title.orEmpty(),
+                                            spoiler = it.spoiler,
+                                            artists = animeTheme.song?.artists
+                                                ?.map { buildArtist(media, it) }
+                                                .orEmpty(),
+                                            episodes = it.episodes,
+                                            videoUrl = video?.link,
+                                            audioUrl = video?.audio?.link,
+                                            link = AnimeThemesUtils.buildWebsiteLink(
+                                                anime,
+                                                animeTheme,
+                                                it
+                                            ),
+                                        )
+                                    }
+                                }
+                                .orEmpty()
+
+                            if (songEntries.isNotEmpty()) {
+                                val songStates = songEntries
+                                    .map { AnimeSongState(id = it.id, entry = it) }
+                                    .associateBy { it.id }
+
+                                withContext(CustomDispatchers.Main) {
+                                    animeSongStates = songStates
+                                    animeSongs = AnimeSongs(songEntries)
+                                }
                             }
-                        }
-                        .orEmpty()
-
-                    if (songEntries.isNotEmpty()) {
-                        val songStates = songEntries
-                            .map { AnimeSongState(id = it.id, entry = it) }
-                            .associateBy { it.id }
-
-                        withContext(CustomDispatchers.Main) {
-                            animeSongStates = songStates
-                            animeSongs = AnimeSongs(songEntries)
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Error loading from AnimeThemes", e)
                         }
                     }
-                } catch (e: Exception) {
-                    Log.e(TAG, "Error loading from AnimeThemes", e)
                 }
-            }
         }
 
         viewModelScope.launch(CustomDispatchers.Main) {
-            combine(listEntry, scoreFormat, ::Pair)
-                .collectLatest { (listEntry, format) ->
-                    initializeListEntry(listEntry)
-
-                    editData.score = listEntry?.score
-                        ?.let {MediaUtils.scoreFormatToText(it, format) }
-                        .orEmpty()
+            combine(
+                snapshotFlow { entry }.filterNotNull(),
+                statusController.allChanges(setOf(mediaId)),
+                scoreFormat,
+                ::Triple,
+            )
+                .collectLatest { (entry, statusUpdates, format) ->
+                    val status = if (statusUpdates.containsKey(mediaId)) {
+                        statusUpdates[mediaId]
+                    } else {
+                        entry.media.mediaListEntry?.status
+                    }
+                    initializeListEntry(entry.media.mediaListEntry, status, format)
                 }
         }
 
@@ -175,9 +277,14 @@ class AnimeMediaDetailsViewModel @Inject constructor(
         }
     }
 
-    private fun initializeListEntry(listEntry: MediaDetailsListEntry?) {
+    private fun initializeListEntry(
+        listEntry: MediaDetailsListEntry?,
+        status: MediaListStatus?,
+        format: ScoreFormat,
+    ) {
         this.listEntry.value = listEntry
-        editData.status = listEntry?.status
+        this.listEntryStatus.value = status
+        editData.status = status
         editData.progress = listEntry?.progress?.toString().orEmpty()
         editData.repeat = listEntry?.repeat?.toString().orEmpty()
         editData.startDate = MediaUtils.parseLocalDate(listEntry?.startedAt)
@@ -186,6 +293,9 @@ class AnimeMediaDetailsViewModel @Inject constructor(
         editData.private = listEntry?.private ?: false
         editData.updatedAt = listEntry?.updatedAt?.toLong()
         editData.createdAt = listEntry?.createdAt?.toLong()
+        editData.score = listEntry?.score
+            ?.let { MediaUtils.scoreFormatToText(it, format) }
+            .orEmpty()
     }
 
     // TODO: Something better than exact string matching
@@ -337,8 +447,9 @@ class AnimeMediaDetailsViewModel @Inject constructor(
         viewModelScope.launch(CustomDispatchers.IO) {
             try {
                 aniListApi.deleteMediaListEntry(listEntry.value?.id?.toString()!!)
+                statusController.onUpdate(mediaId, null)
                 withContext(CustomDispatchers.Main) {
-                    initializeListEntry(null)
+                    initializeListEntry(null, null, scoreFormat.value)
                     editData.deleting = false
                     editData.showing = false
                     editData.showConfirmClose = false
@@ -428,11 +539,14 @@ class AnimeMediaDetailsViewModel @Inject constructor(
                     completedAt = endDate,
                     hiddenFromStatusLists = null,
                 )
+
+                statusController.onUpdate(mediaId, result.status)
+
                 withContext(CustomDispatchers.Main) {
                     editData.saving = false
                     editData.showing = false
                     editData.showConfirmClose = false
-                    initializeListEntry(result)
+                    initializeListEntry(result, result.status, scoreFormat.value)
                 }
             } catch (e: Exception) {
                 withContext(CustomDispatchers.Main) {
@@ -442,6 +556,9 @@ class AnimeMediaDetailsViewModel @Inject constructor(
             }
         }
     }
+
+    fun onMediaLongClick(entry: AnimeMediaListRow.Entry<*>) =
+        ignoreList.toggle(entry.media.id.toString())
 
     data class AnimeSongs(
         val entries: List<AnimeSongEntry>,

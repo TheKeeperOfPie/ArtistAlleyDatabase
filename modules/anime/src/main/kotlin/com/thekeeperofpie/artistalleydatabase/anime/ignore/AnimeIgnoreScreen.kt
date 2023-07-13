@@ -30,7 +30,7 @@ import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
-import com.anilist.fragment.AniListListRowMedia
+import com.anilist.fragment.MediaPreview
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
@@ -138,9 +138,10 @@ object AnimeIgnoreScreen {
                                             colorCalculationState = colorCalculationState,
                                             navigationCallback = navigationCallback,
                                         )
-                                        null -> AnimeMediaListRow<AniListListRowMedia>(
+                                        null -> AnimeMediaListRow<MediaPreview>(
                                             screenKey = AnimeNavDestinations.IGNORED.id,
                                             entry = null,
+                                            onLongClick = {},
                                         )
                                     }
                                 }

@@ -70,7 +70,7 @@ abstract class AnimeHomeMediaViewModel(
     fun onLongClickEntry(entry: AnimeHomeDataEntry.MediaEntry) {
         val mediaId = entry.media.id.toString()
         val ignored = !entry.ignored
-        ignoreList.set(mediaId, ignored)
+        ignoreList.toggle(mediaId)
         entry.ignored = ignored
     }
 

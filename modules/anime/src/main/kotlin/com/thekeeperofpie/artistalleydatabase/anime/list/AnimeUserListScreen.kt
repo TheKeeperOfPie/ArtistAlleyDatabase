@@ -31,9 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import com.anilist.UserMediaListQuery.Data.MediaListCollection.List.Entry.Media
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
@@ -189,6 +187,7 @@ object AnimeUserListScreen {
                                         is Entry.Item -> AnimeMediaListRow(
                                             screenKey = AnimeNavDestinations.USER_LIST.id,
                                             entry = it,
+                                            onLongClick = viewModel::onMediaLongClick,
                                             onTagLongClick = viewModel::onTagLongClick,
                                             onLongPressImage = onLongPressImage,
                                             colorCalculationState = colorCalculationState,
@@ -241,24 +240,4 @@ object AnimeUserListScreen {
             val exception: Throwable? = null
         ) : ContentState
     }
-}
-
-@Preview
-@Composable
-private fun Preview() {
-    val viewModel = hiltViewModel<AnimeUserListViewModel>().apply {
-        content = AnimeUserListScreen.ContentState.Success(
-            listOf(
-                AnimeUserListScreen.Entry.Header("Completed", MediaListStatus.COMPLETED),
-                AnimeUserListScreen.Entry.Item(
-                    Media(
-                        title = Media.Title(
-                            userPreferred = "Ano Hi Mita Hana no Namae wo Bokutachi wa Mada Shiranai.",
-                        ),
-                    )
-                )
-            )
-        )
-    }
-    AnimeUserListScreen(viewModel = viewModel)
 }

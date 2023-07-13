@@ -31,16 +31,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.LoadState
-import androidx.paging.PagingData
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
-import com.anilist.MediaAdvancedSearchQuery.Data.Page.Medium
-import com.anilist.fragment.AniListListRowMedia
+import com.anilist.fragment.MediaPreview
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
@@ -222,7 +219,10 @@ object AnimeSearchScreen {
                                         is AnimeSearchEntry.Media<*> -> AnimeMediaListRow(
                                             screenKey = AnimeNavDestinations.SEARCH.id,
                                             entry = item,
-                                            onLongClick = { viewModel.ignoreList.toggle(item) },
+                                            onLongClick = {
+                                                viewModel.ignoreList
+                                                    .toggle(item.media.id.toString())
+                                            },
                                             onTagLongClick = viewModel::onTagLongClick,
                                             onLongPressImage = onLongPressImage,
                                             colorCalculationState = colorCalculationState,
@@ -250,9 +250,10 @@ object AnimeSearchScreen {
                                         )
 
                                         // TODO: Separated placeholder types
-                                        null -> AnimeMediaListRow<AniListListRowMedia>(
+                                        null -> AnimeMediaListRow<MediaPreview>(
                                             screenKey = AnimeNavDestinations.SEARCH.id,
                                             entry = null,
+                                            onLongClick = {},
                                         )
                                     }
                                 }
@@ -273,24 +274,4 @@ object AnimeSearchScreen {
             }
         }
     }
-}
-
-@Preview
-@Composable
-private fun Preview() {
-    val viewModel = hiltViewModel<AnimeSearchViewModel>().apply {
-        content.value = PagingData.from(
-            listOf(
-                AnimeSearchEntry.Media(
-                    Medium(
-                        title = Medium.Title(
-                            userPreferred = "Ano Hi Mita Hana no Namae wo Bokutachi wa Mada Shiranai.",
-                        ),
-                    ),
-                    ignored = false
-                )
-            )
-        )
-    }
-    AnimeSearchScreen(viewModel = viewModel)
 }

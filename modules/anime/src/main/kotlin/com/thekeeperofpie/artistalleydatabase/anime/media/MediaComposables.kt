@@ -55,8 +55,8 @@ import androidx.core.graphics.ColorUtils
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import coil.size.Dimension
-import com.anilist.fragment.AniListListRowMedia
 import com.anilist.fragment.MediaNavigationData
+import com.anilist.fragment.MediaPreview
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.material.placeholder
 import com.google.accompanist.placeholder.material.shimmer
@@ -86,6 +86,7 @@ fun <T> LazyListScope.mediaListSection(
     onExpandedChange: (Boolean) -> Unit = {},
     colorCalculationState: ColorCalculationState,
     navigationCallback: AnimeNavigator.NavigationCallback,
+    onLongClick: (AnimeMediaListRow.Entry<*>) -> Unit,
     onTagLongClick: (String) -> Unit,
     label: (@Composable (T) -> Unit)? = null,
     onClickViewAll: (() -> Unit)? = null,
@@ -108,6 +109,7 @@ fun <T> LazyListScope.mediaListSection(
         label = if (label == null) null else {
             { label(item) }
         },
+        onLongClick = onLongClick,
         onTagLongClick = onTagLongClick,
         colorCalculationState = colorCalculationState,
         navigationCallback = navigationCallback,
@@ -318,7 +320,7 @@ fun MediaRatingIconsSection(
 
 @Composable
 fun MediaNextAiringSection(
-    nextAiringEpisode: AniListListRowMedia.NextAiringEpisode,
+    nextAiringEpisode: MediaPreview.NextAiringEpisode,
     loading: Boolean
 ) {
     val context = LocalContext.current

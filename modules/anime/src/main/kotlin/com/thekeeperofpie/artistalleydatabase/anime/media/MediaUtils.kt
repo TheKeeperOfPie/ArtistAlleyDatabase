@@ -93,6 +93,8 @@ object MediaUtils {
         else -> R.string.anime_media_status_unknown
     }
 
+    fun MediaListStatus?.toTextRes(mediaType: MediaType?) = toTextRes(mediaType != MediaType.MANGA)
+
     fun MediaListStatus?.toTextRes(anime: Boolean) = when (this) {
         MediaListStatus.CURRENT -> if (anime) {
             R.string.anime_media_list_status_current_anime

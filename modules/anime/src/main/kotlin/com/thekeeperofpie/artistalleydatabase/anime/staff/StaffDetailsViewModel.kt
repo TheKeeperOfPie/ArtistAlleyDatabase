@@ -72,6 +72,7 @@ class StaffDetailsViewModel @Inject constructor(
         }
 
         // TODO: More robust pagination
+        // TODO: Handle ignored
         viewModelScope.launch(CustomDispatchers.IO) {
             combine(
                 mediaTimeline,

@@ -26,6 +26,8 @@ import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
+import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaStatusChanges
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeMediaFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortOption
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -52,6 +54,7 @@ class AnimeSearchViewModel @Inject constructor(
     aniListApi: AuthedAniListApi,
     settings: AnimeSettings,
     val ignoreList: AnimeMediaIgnoreList,
+    private val statusController: MediaListStatusController,
 ) : ViewModel() {
 
     var query by mutableStateOf("")
@@ -108,8 +111,23 @@ class AnimeSearchViewModel @Inject constructor(
             },
             pagingSource = { AnimeSearchMediaPagingSource(aniListApi, it, MediaType.ANIME) },
             id = { it.id },
-            entry = { AnimeSearchEntry.Media(it, ignored = ignoreList.get(it.id)) },
+            entry = { AnimeSearchEntry.Media(it) },
             filter = { filterController.filterMedia(it) { it.media } },
+            finalTransform = {
+                applyMediaStatusChanges(
+                    statusController = statusController,
+                    ignoreList = ignoreList,
+                    settings = settings,
+                    media = { it.media },
+                    copy = { mediaListStatus, ignored ->
+                        AnimeSearchEntry.Media(
+                            media = media,
+                            mediaListStatus = mediaListStatus,
+                            ignored = ignored,
+                        )
+                    },
+                )
+            }
         )
 
         collectSearch(
@@ -126,8 +144,23 @@ class AnimeSearchViewModel @Inject constructor(
             },
             pagingSource = { AnimeSearchMediaPagingSource(aniListApi, it, MediaType.MANGA) },
             id = { it.id },
-            entry = { AnimeSearchEntry.Media(it, ignored = ignoreList.get(it.id)) },
+            entry = { AnimeSearchEntry.Media(it) },
             filter = { filterController.filterMedia(it) { it.media } },
+            finalTransform = {
+                applyMediaStatusChanges(
+                    statusController = statusController,
+                    ignoreList = ignoreList,
+                    settings = settings,
+                    media = { it.media },
+                    copy = { mediaListStatus, ignored ->
+                        AnimeSearchEntry.Media(
+                            media = media,
+                            mediaListStatus = mediaListStatus,
+                            ignored = ignored,
+                        )
+                    },
+                )
+            }
         )
 
         collectSearch(
@@ -200,7 +233,8 @@ class AnimeSearchViewModel @Inject constructor(
         pagingSource: (Params) -> PagingSource<Int, Result>,
         id: (Result) -> Int,
         entry: (Result) -> Entry,
-        filter: ((PagingData<Entry>) -> Flow<PagingData<Entry>>)? = null
+        filter: ((PagingData<Entry>) -> Flow<PagingData<Entry>>)? = null,
+        finalTransform: Flow<PagingData<Entry>>.() -> Flow<PagingData<Entry>> = { this },
     ) {
         viewModelScope.launch(CustomDispatchers.Main) {
             snapshotFlow { selectedType }
@@ -223,6 +257,7 @@ class AnimeSearchViewModel @Inject constructor(
                 .run {
                     if (filter != null) flatMapLatest { filter(it) } else this
                 }
+                .run(finalTransform)
                 .collectLatest {
                     results[searchType]!!.emit(it)
                 }

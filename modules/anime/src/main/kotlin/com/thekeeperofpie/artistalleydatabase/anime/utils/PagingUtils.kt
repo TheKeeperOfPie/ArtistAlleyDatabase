@@ -1,7 +1,10 @@
+@file:OptIn(ExperimentalCoroutinesApi::class)
+
 package com.thekeeperofpie.artistalleydatabase.anime.utils
 
 import androidx.paging.PagingData
 import androidx.paging.filter
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 

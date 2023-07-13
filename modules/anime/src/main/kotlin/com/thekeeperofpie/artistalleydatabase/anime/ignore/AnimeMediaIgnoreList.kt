@@ -2,19 +2,22 @@ package com.thekeeperofpie.artistalleydatabase.anime.ignore
 
 import androidx.collection.ArraySet
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
-import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
+import kotlinx.coroutines.flow.MutableSharedFlow
 
 class AnimeMediaIgnoreList(private val settings: AnimeSettings) {
 
-    fun get(mediaId: Int) = settings.ignoredAniListMediaIds.value.contains(mediaId)
-    fun get(mediaId: String) = get(mediaId.toInt())
+    val updates = MutableSharedFlow<Set<Int>>(replay = 5, extraBufferCapacity = 5)
+        .apply { tryEmit(settings.ignoredAniListMediaIds.value) }
 
-    fun set(mediaId: String, ignored: Boolean) {
+    private fun get(mediaId: Int) = settings.ignoredAniListMediaIds.value.contains(mediaId)
+    private fun get(mediaId: String) = get(mediaId.toInt())
+
+    private fun set(mediaId: String, ignored: Boolean) {
         val set = settings.ignoredAniListMediaIds.value
         val mediaIdAsInt = mediaId.toInt()
         if (set.contains(mediaIdAsInt) == ignored) return
 
-        settings.ignoredAniListMediaIds.value = ArraySet<Int>(1).apply {
+        val newSet = ArraySet<Int>(1).apply {
             addAll(set)
             if (ignored) {
                 add(mediaIdAsInt)
@@ -22,12 +25,9 @@ class AnimeMediaIgnoreList(private val settings: AnimeSettings) {
                 remove(mediaIdAsInt)
             }
         }
+        settings.ignoredAniListMediaIds.value = newSet
+        updates.tryEmit(newSet)
     }
 
-    fun toggle(entry: AnimeMediaListRow.Entry<*>) {
-        val mediaId = entry.media.id.toString()
-        val ignored = !entry.ignored
-        set(mediaId, ignored)
-        entry.ignored = ignored
-    }
+    fun toggle(mediaId: String) = set(mediaId, !get(mediaId))
 }

@@ -11,6 +11,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.anilist.AuthedUserQuery
 import com.anilist.UserMediaListQuery
+import com.anilist.UserMediaListQuery.Data.MediaListCollection.List.Entry.Media
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
 import com.hoc081098.flowext.startWith
@@ -18,6 +19,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatc
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
+import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeMediaFilterController
 import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortEntry
@@ -43,7 +45,7 @@ import kotlin.time.Duration.Companion.milliseconds
 open class AnimeUserListViewModel @Inject constructor(
     private val aniListApi: AuthedAniListApi,
     settings: AnimeSettings,
-    ignoreList: AnimeMediaIgnoreList
+    private val ignoreList: AnimeMediaIgnoreList
 ) : ViewModel() {
 
     var query by mutableStateOf("")
@@ -65,7 +67,7 @@ open class AnimeUserListViewModel @Inject constructor(
         aniListApi,
         settings,
         ignoreList,
-        listOf(MediaListSortOption.UPDATED_TIME),
+        MediaListSortOption.UPDATED_TIME,
     )
 
     private val refreshUptimeMillis = MutableStateFlow(-1L)
@@ -186,6 +188,9 @@ open class AnimeUserListViewModel @Inject constructor(
             .mapNotNull { it.findTag(tagId) }
             .firstOrNull()
     }
+
+    fun onMediaLongClick(entry: AnimeMediaListRow.Entry<Media>) =
+        ignoreList.toggle(entry.media.id.toString())
 
     private fun toFilteredEntries(
         query: String,

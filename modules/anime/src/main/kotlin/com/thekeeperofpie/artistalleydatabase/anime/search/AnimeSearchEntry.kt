@@ -3,9 +3,11 @@ package com.thekeeperofpie.artistalleydatabase.anime.search
 import com.anilist.CharacterAdvancedSearchQuery
 import com.anilist.StaffSearchQuery
 import com.anilist.UserSearchQuery
-import com.anilist.fragment.AniListListRowMedia
+import com.anilist.fragment.MediaPreview
+import com.anilist.type.MediaListStatus
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaStatusAware
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffListRow
 import com.thekeeperofpie.artistalleydatabase.anime.user.UserListRow
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
@@ -14,8 +16,12 @@ sealed interface AnimeSearchEntry {
 
     val entryId: EntryId
 
-    class Media<MediaType : AniListListRowMedia>(media: MediaType, ignored: Boolean) :
-        AnimeMediaListRow.Entry<MediaType>(media, ignored), AnimeSearchEntry {
+    class Media<MediaType : MediaPreview>(
+        media: MediaType,
+        mediaListStatus: MediaListStatus? = media.mediaListEntry?.status,
+        ignored: Boolean = false,
+    ) : AnimeMediaListRow.Entry<MediaType>(media, mediaListStatus, ignored), AnimeSearchEntry,
+        MediaStatusAware {
         override val entryId = EntryId("media", media.id.toString())
     }
 

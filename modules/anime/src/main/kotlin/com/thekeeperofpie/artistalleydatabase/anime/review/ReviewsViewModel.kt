@@ -18,7 +18,6 @@ import com.thekeeperofpie.artistalleydatabase.anilist.AniListPagingSource
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIntIds
-import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortEntry
 import com.thekeeperofpie.artistalleydatabase.compose.filter.selectedOption
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -55,9 +54,8 @@ class ReviewsViewModel @Inject constructor(
 
     // TODO: Actually expose sort options?
     var sortOptions by mutableStateOf(
-        SortEntry.options(ReviewsSortOption::class).map {
-            if (it.value == ReviewsSortOption.RATING) it.copy(state = FilterIncludeExcludeState.INCLUDE) else it
-        })
+        SortEntry.options(ReviewsSortOption::class, ReviewsSortOption.RATING)
+    )
         private set
 
     var sortAscending by mutableStateOf(false)

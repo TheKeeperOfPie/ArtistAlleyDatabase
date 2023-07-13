@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.anime
 
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsController
 import dagger.Module
 import dagger.Provides
@@ -32,4 +33,8 @@ object AnimeHiltModule {
         okHttpClient: OkHttpClient,
         animeSettings: AnimeSettings,
     ) = AnimeNewsController(scopedApplication, okHttpClient, animeSettings)
+
+    @Singleton
+    @Provides
+    fun provideMediaListStatusController() = MediaListStatusController()
 }

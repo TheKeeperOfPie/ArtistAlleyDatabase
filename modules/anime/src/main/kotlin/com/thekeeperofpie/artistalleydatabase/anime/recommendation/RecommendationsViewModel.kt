@@ -12,13 +12,17 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import com.anilist.fragment.MediaAndRecommendationsRecommendation
+import androidx.paging.map
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListPagingSource
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
+import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
+import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaStatusChanges
 import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIntIds
-import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortEntry
 import com.thekeeperofpie.artistalleydatabase.compose.filter.selectedOption
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -29,6 +33,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -38,7 +43,10 @@ import javax.inject.Inject
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class RecommendationsViewModel @Inject constructor(
-    private val aniListApi: AuthedAniListApi
+    private val aniListApi: AuthedAniListApi,
+    private val statusController: MediaListStatusController,
+    private val ignoreList: AnimeMediaIgnoreList,
+    private val settings: AnimeSettings,
 ) : ViewModel() {
 
     var mediaId by mutableStateOf("")
@@ -49,17 +57,15 @@ class RecommendationsViewModel @Inject constructor(
     var entry by mutableStateOf<RecommendationsScreen.Entry?>(null)
         private set
 
-    var recommendations =
-        MutableStateFlow(PagingData.empty<MediaAndRecommendationsRecommendation>())
+    var recommendations = MutableStateFlow(PagingData.empty<RecommendationEntry>())
         private set
 
     var error by mutableStateOf<Pair<Int, Throwable?>?>(null)
 
     // TODO: Actually expose sort options?
     var sortOptions by mutableStateOf(
-        SortEntry.options(RecommendationsSortOption::class).map {
-            if (it.value == RecommendationsSortOption.RATING) it.copy(state = FilterIncludeExcludeState.INCLUDE) else it
-        })
+        SortEntry.options(RecommendationsSortOption::class, RecommendationsSortOption.RATING)
+    )
         private set
 
     var sortAscending by mutableStateOf(false)
@@ -127,9 +133,22 @@ class RecommendationsViewModel @Inject constructor(
                             }
                         }
                     }.flow
+                        .map { it.map { RecommendationEntry(it) } }
                 }
-                .enforceUniqueIntIds { it.id }
+                .enforceUniqueIntIds { it.recommendation.id }
                 .cachedIn(viewModelScope)
+                .applyMediaStatusChanges(
+                    statusController = statusController,
+                    ignoreList = ignoreList,
+                    settings = settings,
+                    media = { it.recommendation.mediaRecommendation },
+                    copy = { mediaListStatus, ignored ->
+                        copy(
+                            mediaListStatus = mediaListStatus,
+                            ignored = ignored,
+                        )
+                    },
+                )
                 .collectLatest(recommendations::emit)
         }
     }
@@ -137,4 +156,7 @@ class RecommendationsViewModel @Inject constructor(
     fun initialize(mediaId: String) {
         this.mediaId = mediaId
     }
+
+    fun onMediaLongClick(entry: AnimeMediaListRow.Entry<*>) =
+        ignoreList.toggle(entry.media.id.toString())
 }

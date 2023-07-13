@@ -94,14 +94,15 @@ object RecommendationsScreen {
 
                 items(
                     count = recommendations.itemCount,
-                    key = recommendations.itemKey { it.id },
+                    key = recommendations.itemKey { it.recommendation.id },
                     contentType = recommendations.itemContentType { "character" },
                 ) {
                     val recommendation = recommendations[it]
                     // TODO: Show recommendation rating alongside user rating
                     AnimeMediaListRow(
                         screenKey = SCREEN_KEY,
-                        entry = recommendation?.mediaRecommendation?.let(AnimeMediaListRow::Entry),
+                        entry = recommendation?.entry,
+                        onLongClick = viewModel::onMediaLongClick,
                         onTagLongClick = { /* TODO */ },
                         colorCalculationState = colorCalculationState,
                         navigationCallback = navigationCallback,

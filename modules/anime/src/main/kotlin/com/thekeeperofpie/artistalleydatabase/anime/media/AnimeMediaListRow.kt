@@ -3,6 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.anime.media
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
@@ -23,10 +24,7 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -43,8 +41,9 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import coil.size.Dimension
-import com.anilist.fragment.AniListListRowMedia
 import com.anilist.fragment.MediaHeaderData
+import com.anilist.fragment.MediaPreview
+import com.anilist.type.MediaListStatus
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.material.placeholder
 import com.google.accompanist.placeholder.material.shimmer
@@ -54,6 +53,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
 import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
@@ -62,15 +62,15 @@ import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
 object AnimeMediaListRow {
 
     @Composable
-    operator fun <MediaType : AniListListRowMedia> invoke(
+    operator fun <MediaType : MediaPreview> invoke(
         screenKey: String,
         entry: Entry<MediaType>?,
         modifier: Modifier = Modifier,
         label: (@Composable () -> Unit)? = null,
-        onLongClick: (Entry<MediaType>) -> Unit = {},
+        onLongClick: (Entry<MediaType>) -> Unit,
         onTagLongClick: (tagId: String) -> Unit = {},
         onLongPressImage: (entry: Entry<MediaType>) -> Unit = {},
-        nextAiringEpisode: AniListListRowMedia.NextAiringEpisode? = entry?.media?.nextAiringEpisode,
+        nextAiringEpisode: MediaPreview.NextAiringEpisode? = entry?.media?.nextAiringEpisode,
         colorCalculationState: ColorCalculationState = ColorCalculationState(),
         navigationCallback: AnimeNavigator.NavigationCallback =
             AnimeNavigator.NavigationCallback(null),
@@ -105,7 +105,7 @@ object AnimeMediaListRow {
                     },
                     onLongPressImage = onLongPressImage,
                     colorCalculationState = colorCalculationState,
-                    onRatioAvailable = { imageWidthToHeightRatio = it }
+                    onRatioAvailable = { imageWidthToHeightRatio = it },
                 )
 
                 Column(modifier = Modifier.heightIn(min = 180.dp)) {
@@ -146,7 +146,7 @@ object AnimeMediaListRow {
     }
 
     @Composable
-    private fun <MediaType : AniListListRowMedia> CoverImage(
+    private fun <MediaType : MediaPreview> CoverImage(
         screenKey: String,
         entry: Entry<MediaType>?,
         onClick: (Entry<MediaType>) -> Unit = {},
@@ -158,53 +158,72 @@ object AnimeMediaListRow {
             key = "anime_media${entry?.media?.id}_image",
             screenKey = screenKey,
         ) {
-            AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(entry?.media?.coverImage?.extraLarge)
-                    .crossfade(true)
-                    .allowHardware(colorCalculationState.hasColor(entry?.media?.id?.toString()))
-                    .size(
-                        width = Dimension.Pixels(LocalDensity.current.run { 130.dp.roundToPx() }),
-                        height = Dimension.Undefined
-                    )
-                    .build(),
-                contentScale = ContentScale.Crop,
-                fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
-                onSuccess = {
-                    onRatioAvailable(it.widthToHeightRatio())
-                    entry?.media?.id?.let { mediaId ->
-                        ComposeColorUtils.calculatePalette(
-                            mediaId.toString(),
-                            it,
-                            colorCalculationState,
+            Box {
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(entry?.media?.coverImage?.extraLarge)
+                        .crossfade(true)
+                        .allowHardware(colorCalculationState.hasColor(entry?.media?.id?.toString()))
+                        .size(
+                            width = Dimension.Pixels(LocalDensity.current.run { 130.dp.roundToPx() }),
+                            height = Dimension.Undefined
+                        )
+                        .build(),
+                    contentScale = ContentScale.Crop,
+                    fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
+                    onSuccess = {
+                        onRatioAvailable(it.widthToHeightRatio())
+                        entry?.media?.id?.let { mediaId ->
+                            ComposeColorUtils.calculatePalette(
+                                mediaId.toString(),
+                                it,
+                                colorCalculationState,
+                            )
+                        }
+                    },
+                    contentDescription = stringResource(R.string.anime_media_cover_image_content_description),
+                    modifier = Modifier
+                        // Clip to match card so that shared element animation keeps rounded corner
+                        .clip(RoundedCornerShape(topStart = 12.dp, bottomStart = 12.dp))
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                        .fillMaxHeight()
+                        .heightIn(min = 180.dp)
+                        .width(130.dp)
+                        .placeholder(
+                            visible = entry == null,
+                            highlight = PlaceholderHighlight.shimmer(),
+                        )
+                        .combinedClickable(
+                            onClick = { if (entry != null) onClick(entry) },
+                            onLongClick = { if (entry != null) onLongPressImage(entry) },
+                            onLongClickLabel = stringResource(
+                                R.string.anime_media_cover_image_long_press_preview
+                            ),
+                        )
+                )
+
+                val userListStatus = entry?.mediaListStatus
+                if (userListStatus != null) {
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .width(130.dp)
+                            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.6f))
+                    ) {
+                        Text(
+                            text = stringResource(userListStatus.toTextRes(entry.media.type)),
+                            style = MaterialTheme.typography.labelSmall,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                         )
                     }
-                },
-                contentDescription = stringResource(R.string.anime_media_cover_image_content_description),
-                modifier = Modifier
-                    // Clip to match card so that shared element animation keeps rounded corner
-                    .clip(RoundedCornerShape(topStart = 12.dp, bottomStart = 12.dp))
-                    .background(MaterialTheme.colorScheme.surfaceVariant)
-                    .fillMaxHeight()
-                    .heightIn(min = 180.dp)
-                    .width(130.dp)
-                    .placeholder(
-                        visible = entry == null,
-                        highlight = PlaceholderHighlight.shimmer(),
-                    )
-                    .combinedClickable(
-                        onClick = { if (entry != null) onClick(entry) },
-                        onLongClick = { if (entry != null) onLongPressImage(entry) },
-                        onLongClickLabel = stringResource(
-                            R.string.anime_media_cover_image_long_press_preview
-                        ),
-                    )
-            )
+                }
+            }
         }
     }
 
     @Composable
-    private fun <MediaType : AniListListRowMedia> TitleText(
+    private fun <MediaType : MediaPreview> TitleText(
         entry: Entry<MediaType>?,
         paddingTop: Dp,
     ) {
@@ -224,7 +243,7 @@ object AnimeMediaListRow {
     }
 
     @Composable
-    private fun <MediaType : AniListListRowMedia> SubtitleText(entry: Entry<MediaType>?) {
+    private fun <MediaType : MediaPreview> SubtitleText(entry: Entry<MediaType>?) {
         val media = entry?.media
         Text(
             text = MediaUtils.formatSubtitle(
@@ -249,10 +268,10 @@ object AnimeMediaListRow {
 
     open class Entry<MediaType>(
         val media: MediaType,
-        ignored: Boolean = false
-    ) where MediaType : AniListListRowMedia, MediaType : MediaHeaderData {
+        override var mediaListStatus: MediaListStatus? = media.mediaListEntry?.status,
+        override val ignored: Boolean = false
+    ) : MediaStatusAware where MediaType : MediaPreview, MediaType : MediaHeaderData {
         val color = media.coverImage?.color?.let(ComposeColorUtils::hexToColor)
         val tags = media.tags?.filterNotNull()?.map(::AnimeMediaTagEntry).orEmpty()
-        var ignored by mutableStateOf(ignored)
     }
 }

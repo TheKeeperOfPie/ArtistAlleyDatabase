@@ -38,7 +38,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import coil.compose.AsyncImage
-import com.anilist.fragment.AniListListRowMedia
+import com.anilist.fragment.MediaPreview
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeMediaFilterController
@@ -48,7 +48,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.ZoomPanBox
 object AnimeMediaListScreen {
 
     @Composable
-    operator fun <MediaType : AniListListRowMedia> invoke(
+    operator fun <MediaType : MediaPreview> invoke(
         refreshing: Boolean,
         onRefresh: () -> Unit,
         modifier: Modifier = Modifier,
@@ -184,7 +184,7 @@ object AnimeMediaListScreen {
     }
 
     @Composable
-    private fun <MediaType : AniListListRowMedia> EntryImagePreview(
+    private fun <MediaType : MediaPreview> EntryImagePreview(
         entry: AnimeMediaListRow.Entry<MediaType>,
         onDismiss: () -> Unit,
     ) {

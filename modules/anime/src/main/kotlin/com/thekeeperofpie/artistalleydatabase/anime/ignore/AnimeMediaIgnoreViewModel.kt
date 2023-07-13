@@ -17,10 +17,13 @@ import androidx.paging.filter
 import androidx.paging.map
 import com.anilist.MediaByIdsQuery.Data.Page.Medium
 import com.anilist.type.MediaType
+import com.hoc081098.flowext.withLatestFrom
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
+import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaStatusChanges
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeMediaFilterController
 import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -42,6 +45,7 @@ class AnimeMediaIgnoreViewModel @Inject constructor(
     private val aniListApi: AuthedAniListApi,
     private val settings: AnimeSettings,
     private val ignoreList: AnimeMediaIgnoreList,
+    private val statusController: MediaListStatusController,
 ) : ViewModel() {
 
     var query by mutableStateOf("")
@@ -79,23 +83,42 @@ class AnimeMediaIgnoreViewModel @Inject constructor(
             )
                 .debounce(100.milliseconds)
                 .flatMapLatest {
+                    Pager(PagingConfig(pageSize = 10, enablePlaceholders = true)) {
+                        AnimeMediaIgnorePagingSource(aniListApi, it)
+                    }.flow
+                }
+                .cachedIn(viewModelScope)
+                .map { it.map { AnimeMediaListRow.Entry(it, ignored = false) } }
+                .applyMediaStatusChanges(
+                    statusController = statusController,
+                    ignoreList = ignoreList,
+                    settings = settings,
+                    media = { it.media },
+                    forceShowIgnored = true,
+                    copy = { mediaListStatus, ignored ->
+                        AnimeMediaListRow.Entry(
+                            media = media,
+                            mediaListStatus = mediaListStatus,
+                            ignored = ignored,
+                        )
+                    },
+                )
+                .withLatestFrom(
                     combine(
-                        Pager(PagingConfig(pageSize = 10, enablePlaceholders = true)) {
-                            AnimeMediaIgnorePagingSource(aniListApi, it)
-                        }.flow.cachedIn(viewModelScope),
                         snapshotFlow { query }.debounce(500.milliseconds),
                         filterController.filterParams(),
-                        ::Triple
+                        ::Pair,
                     )
-                }
-                .map { (pagingData, query, filterParams) ->
+                )
+                .map { (pagingData, paramsPair) ->
+                    val (query, filterParams) = paramsPair
                     val includes = filterParams.listStatuses
                         .filter { it.state == FilterIncludeExcludeState.INCLUDE }
                         .map { it.value }
                     val excludes = filterParams.listStatuses
                         .filter { it.state == FilterIncludeExcludeState.EXCLUDE }
                         .map { it.value }
-                    pagingData.map { AnimeMediaListRow.Entry(it, ignored = false) }
+                    pagingData
                         .filter {
                             filterController.filterEntries(
                                 filterParams = filterParams,
@@ -104,7 +127,7 @@ class AnimeMediaIgnoreViewModel @Inject constructor(
                             ).isNotEmpty()
                         }
                         .filter {
-                            val listStatus = it.media.mediaListEntry?.status
+                            val listStatus = it.mediaListStatus
                             if (excludes.isNotEmpty() && excludes.contains(listStatus)) {
                                 return@filter false
                             }
@@ -135,10 +158,6 @@ class AnimeMediaIgnoreViewModel @Inject constructor(
             .firstOrNull()
     }
 
-    fun onMediaLongClick(entry: AnimeMediaListRow.Entry<*>) {
-        val mediaId = entry.media.id.toString()
-        val ignored = !ignoreList.get(mediaId)
-        ignoreList.set(mediaId, ignored)
-        entry.ignored = !ignored
-    }
+    fun onMediaLongClick(entry: AnimeMediaListRow.Entry<*>) =
+        ignoreList.toggle(entry.media.id.toString())
 }

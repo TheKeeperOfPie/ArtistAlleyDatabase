@@ -100,7 +100,7 @@ import androidx.media3.ui.PlayerView
 import coil.compose.AsyncImage
 import coil.size.Dimension
 import com.anilist.MediaDetailsQuery.Data.Media
-import com.anilist.fragment.AniListListRowMedia
+import com.anilist.fragment.MediaPreview
 import com.anilist.type.ExternalLinkType
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaRankType
@@ -177,7 +177,7 @@ object AnimeMediaDetailsScreen {
     private const val REVIEWS_ABOVE_FOLD = 3
 
     // Sorted by most relevant for an anime-first viewer
-    private val RELATION_SORT_ORDER = listOf(
+    val RELATION_SORT_ORDER = listOf(
         MediaRelation.PARENT,
         MediaRelation.PREQUEL,
         MediaRelation.SEQUEL,
@@ -248,6 +248,7 @@ object AnimeMediaDetailsScreen {
         val lazyListState = rememberLazyListState()
         val colorCalculationState = rememberColorCalculationState(viewModel.colorMap)
         val listEntry by viewModel.listEntry.collectAsState()
+        val listEntryStatus by viewModel.listEntryStatus.collectAsState()
         val scoreFormat by viewModel.scoreFormat.collectAsState()
 
         var coverImageWidthToHeightRatio by remember {
@@ -341,7 +342,7 @@ object AnimeMediaDetailsScreen {
                                     } ?: 1
 
                                     Text(
-                                        listEntry?.status.toStatusText(
+                                        listEntryStatus.toStatusText(
                                             mediaType = media.type,
                                             progress = progress,
                                             progressMax = progressMax,
@@ -351,14 +352,14 @@ object AnimeMediaDetailsScreen {
                                     )
                                 },
                                 icon = {
-                                    val (vector, contentDescription) = listEntry?.status
+                                    val (vector, contentDescription) = listEntryStatus
                                         .toStatusIcon(mediaType = media.type)
                                     Icon(
                                         imageVector = vector,
                                         contentDescription = stringResource(contentDescription),
                                     )
                                 },
-                                expanded = listEntry?.status
+                                expanded = listEntryStatus
                                     ?.takeUnless { it == MediaListStatus.UNKNOWN__ }
                                     ?.takeIf { expanded } != null,
                                 containerColor = containerColor,
@@ -482,6 +483,7 @@ object AnimeMediaDetailsScreen {
             onRelationsExpandedChange = { expandedState.relations = it },
             colorCalculationState = colorCalculationState,
             navigationCallback = navigationCallback,
+            onLongClick = viewModel::onMediaLongClick,
             onTagLongClick = onTagLongClick,
         )
 
@@ -541,6 +543,7 @@ object AnimeMediaDetailsScreen {
             onExpandedChange = { expandedState.recommendations = it },
             colorCalculationState = colorCalculationState,
             navigationCallback = navigationCallback,
+            onLongClick = viewModel::onMediaLongClick,
             onTagLongClick = onTagLongClick,
         )
 
@@ -588,6 +591,7 @@ object AnimeMediaDetailsScreen {
         entry: Entry,
         relationsExpanded: () -> Boolean,
         onRelationsExpandedChange: (Boolean) -> Unit,
+        onLongClick: (AnimeMediaListRow.Entry<*>) -> Unit,
         onTagLongClick: (String) -> Unit,
         colorCalculationState: ColorCalculationState,
         navigationCallback: AnimeNavigator.NavigationCallback,
@@ -602,6 +606,7 @@ object AnimeMediaDetailsScreen {
             onExpandedChange = onRelationsExpandedChange,
             colorCalculationState = colorCalculationState,
             navigationCallback = navigationCallback,
+            onLongClick = onLongClick,
             onTagLongClick = onTagLongClick,
             label = { RelationLabel(it.relation) },
         )
@@ -1168,6 +1173,7 @@ object AnimeMediaDetailsScreen {
         onExpandedChange: (Boolean) -> Unit,
         colorCalculationState: ColorCalculationState,
         navigationCallback: AnimeNavigator.NavigationCallback,
+        onLongClick: (AnimeMediaListRow.Entry<*>) -> Unit,
         onTagLongClick: (String) -> Unit,
     ) {
         mediaListSection(
@@ -1181,6 +1187,7 @@ object AnimeMediaDetailsScreen {
             onExpandedChange = onExpandedChange,
             colorCalculationState = colorCalculationState,
             navigationCallback = navigationCallback,
+            onLongClick = onLongClick,
             onTagLongClick = onTagLongClick,
             onClickViewAll = {
                 entry.let {
@@ -1636,6 +1643,8 @@ object AnimeMediaDetailsScreen {
     data class Entry(
         val mediaId: String,
         val media: Media,
+        val relations: List<Relation>,
+        val recommendations: List<Recommendation>,
     ) {
         val id = EntryId("media", mediaId)
         val titlesUnique = media.title
@@ -1675,23 +1684,6 @@ object AnimeMediaDetailsScreen {
                 )
             }
         }.orEmpty().distinctBy { it.id }
-
-        val relations = media.relations?.edges?.filterNotNull()
-            ?.mapNotNull {
-                val node = it.node ?: return@mapNotNull null
-                val relation = it.relationType ?: return@mapNotNull null
-                Relation(it.id.toString(), relation, AnimeMediaListRow.Entry(node))
-            }
-            .orEmpty()
-            .sortedBy { RELATION_SORT_ORDER.indexOf(it.relation) }
-
-        val recommendations = media.recommendations?.edges?.filterNotNull()
-            ?.mapNotNull {
-                val node = it.node ?: return@mapNotNull null
-                val media = node.mediaRecommendation ?: return@mapNotNull null
-                Recommendation(node.id.toString(), node.rating, AnimeMediaListRow.Entry(media))
-            }
-            .orEmpty()
 
         val recommendationsHasMore = media.recommendations?.pageInfo?.hasNextPage ?: true
 
@@ -1772,14 +1764,14 @@ object AnimeMediaDetailsScreen {
         data class Relation(
             val id: String,
             val relation: MediaRelation,
-            val entry: AnimeMediaListRow.Entry<AniListListRowMedia>,
+            val entry: AnimeMediaListRow.Entry<MediaPreview>,
         )
 
         data class Recommendation(
             val id: String,
             // TODO: Actually surface rating
             val rating: Int?,
-            val entry: AnimeMediaListRow.Entry<AniListListRowMedia>,
+            val entry: AnimeMediaListRow.Entry<MediaPreview>,
         )
 
         data class Link(

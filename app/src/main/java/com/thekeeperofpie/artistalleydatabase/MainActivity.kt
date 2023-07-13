@@ -60,6 +60,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListOAuthStore
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryNavigator
 import com.thekeeperofpie.artistalleydatabase.art.ArtNavDestinations
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseScreen
