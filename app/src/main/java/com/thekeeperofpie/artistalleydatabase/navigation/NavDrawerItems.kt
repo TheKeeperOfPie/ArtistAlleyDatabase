@@ -16,7 +16,6 @@ import com.thekeeperofpie.artistalleydatabase.R
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.art.ArtNavDestinations
 import com.thekeeperofpie.artistalleydatabase.cds.CdNavDestinations
-import com.thekeeperofpie.artistalleydatabase.settings.SettingsStringR
 
 enum class NavDrawerItems(
     val id: String,
@@ -34,7 +33,7 @@ enum class NavDrawerItems(
     EXPORT(AppNavDestinations.EXPORT.id, R.string.nav_drawer_export, Icons.Default.Build),
     SETTINGS(
         AppNavDestinations.SETTINGS.id,
-        SettingsStringR.settings_nav_drawer,
+        com.thekeeperofpie.artistalleydatabase.settings.R.string.settings_nav_drawer,
         Icons.Default.Settings,
         route = "settings?root=true"
     ),

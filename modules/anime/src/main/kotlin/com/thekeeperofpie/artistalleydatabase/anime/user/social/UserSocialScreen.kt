@@ -70,6 +70,8 @@ object UserSocialScreen {
             .apply { initialize(userId) }
         val followersViewModel = hiltViewModel<UserSocialViewModel.Followers>()
             .apply { initialize(userId) }
+        
+        // TODO: Handle LoadStates
         val following = followingViewModel.data().collectAsLazyPagingItems()
         val followers = followersViewModel.data().collectAsLazyPagingItems()
 

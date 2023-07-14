@@ -11,18 +11,17 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatc
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
-import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaLargeCard.Entry.Loading.ignored
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
+import com.thekeeperofpie.artistalleydatabase.anime.media.applyStatusAndIgnored
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
-import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
@@ -44,7 +43,6 @@ class AnimeCharacterDetailsViewModel @Inject constructor(
         this.characterId = characterId
 
         viewModelScope.launch(CustomDispatchers.IO) {
-            val startTime = System.currentTimeMillis()
             try {
                 val character = aniListApi.characterDetails(characterId)
                 val media = character.media?.edges
@@ -52,32 +50,37 @@ class AnimeCharacterDetailsViewModel @Inject constructor(
                     ?.mapNotNull { it?.node?.let(AnimeMediaListRow::Entry) }
                     .orEmpty()
 
-                val endTime = System.currentTimeMillis()
-                val timeDifference = endTime - startTime
-                if (timeDifference < 450) {
-                    // Prevent shared transition from previous screen for lazily loaded content
-                    // TODO: Find a better way to prevent shared transitions for lazy content
-                    delay((450 - timeDifference).milliseconds)
-                }
-                statusController.allChanges(media.map { it.media.id.toString() }.toSet())
-                    .mapLatest { statuses ->
-                        CharacterDetailsScreen.Entry(character, media = media.map {
-                            val mediaId = it.media.id.toString()
-                            if (statuses.containsKey(mediaId)) {
-                                AnimeMediaListRow.Entry(
-                                    media = it.media,
-                                    mediaListStatus = statuses[mediaId],
-                                    ignored = ignored
+                combine(
+                    statusController.allChanges(media.map { it.media.id.toString() }.toSet()),
+                    ignoreList.updates,
+                    ::Pair,
+                )
+                    .mapLatest { (statuses, ignoredIds) ->
+                        CharacterDetailsScreen.Entry(
+                            character,
+                            media = media.map {
+                                applyStatusAndIgnored(
+                                    statuses,
+                                    ignoredIds,
+                                    it,
+                                    { it },
+                                    it.media,
+                                    copy = { mediaListStatus, ignored ->
+                                        AnimeMediaListRow.Entry(
+                                            media = this.media,
+                                            mediaListStatus = mediaListStatus,
+                                            ignored = ignored,
+                                        )
+                                    }
                                 )
-                            } else it
-                        })
+                            },
+                        )
                     }
                     .collectLatest {
                         withContext(CustomDispatchers.Main) {
-                            this@AnimeCharacterDetailsViewModel.entry = entry
+                            this@AnimeCharacterDetailsViewModel.entry = it
                         }
                     }
-
             } catch (exception: Exception) {
                 withContext(CustomDispatchers.Main) {
                     errorResource = R.string.anime_character_error_loading to exception

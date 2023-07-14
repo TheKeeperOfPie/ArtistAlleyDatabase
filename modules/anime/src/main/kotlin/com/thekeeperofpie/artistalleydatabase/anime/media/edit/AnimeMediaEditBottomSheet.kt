@@ -59,6 +59,7 @@ import com.anilist.type.ScoreFormat
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toStatusIcon
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.ui.StartEndDateDialog
 import com.thekeeperofpie.artistalleydatabase.anime.ui.StartEndDateRow
@@ -92,7 +93,7 @@ object AnimeMediaEditBottomSheet {
             val isAnime = type() == MediaType.ANIME
             SectionHeader(R.string.anime_media_edit_status_label)
             ItemDropdown(
-                value = stringResource(editData.status.toTextRes(isAnime)),
+                value = editData.status,
                 iconContentDescription = R.string.anime_media_edit_status_dropdown_content_description,
                 values = {
                     listOf(
@@ -103,6 +104,14 @@ object AnimeMediaEditBottomSheet {
                         MediaListStatus.DROPPED,
                         MediaListStatus.PAUSED,
                         MediaListStatus.REPEATING,
+                    )
+                },
+                iconForValue = {
+                    val (imageVector, contentDescriptionRes) =
+                        it.toStatusIcon(mediaType = type())
+                    Icon(
+                        imageVector = imageVector,
+                        contentDescription = stringResource(contentDescriptionRes),
                     )
                 },
                 textForValue = { stringResource(it.toTextRes(isAnime)) },
@@ -319,7 +328,7 @@ object AnimeMediaEditBottomSheet {
                         false -> R.string.anime_media_edit_private_false
                     }.let { stringResource(it) }
                     ItemDropdown(
-                        value = editData.private.toPrivateText(),
+                        value = editData.private,
                         iconContentDescription = R.string.anime_media_edit_private_dropdown_content_description,
                         values = {
                             listOf(

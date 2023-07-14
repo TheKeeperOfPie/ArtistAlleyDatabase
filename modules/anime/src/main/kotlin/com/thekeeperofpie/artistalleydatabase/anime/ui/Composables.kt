@@ -243,14 +243,8 @@ fun <T> LazyListScope.listSection(
             DetailsSectionHeader(
                 text = stringResource(titleRes),
                 modifier = Modifier.clickable(
-                    enabled = hasMore || hasMoreValues,
-                    onClick = {
-                        if (hasMore) {
-                            onExpandedChange(!expanded())
-                        } else {
-                            onClickViewAll?.invoke()
-                        }
-                    },
+                    enabled = onClickViewAll != null,
+                    onClick = { onClickViewAll?.invoke() },
                 ),
                 onClickViewAll = onClickViewAll,
                 viewAllContentDescriptionTextRes = viewAllContentDescriptionTextRes

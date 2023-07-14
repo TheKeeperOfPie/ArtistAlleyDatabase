@@ -75,10 +75,10 @@ fun MediaHeader(
                 preferredTitle =
                     ((preferredTitle ?: 0) + 1) % (titles?.size ?: 1)
             },
-            coverImageOnSuccess = { success ->
-                onImageWidthToHeightRatioAvailable(success.widthToHeightRatio())
+            coverImageOnSuccess = {
+                onImageWidthToHeightRatioAvailable(it.widthToHeightRatio())
                 if (mediaId != null) {
-                    ComposeColorUtils.calculatePalette(mediaId, success, colorCalculationState)
+                    ComposeColorUtils.calculatePalette(mediaId, it, colorCalculationState)
                 }
             }
         ) {

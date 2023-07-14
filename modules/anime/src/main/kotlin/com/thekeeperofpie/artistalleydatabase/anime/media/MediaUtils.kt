@@ -4,10 +4,10 @@ import android.content.Context
 import android.text.format.DateUtils
 import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.CheckBox
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material.icons.filled.Monitor
 import androidx.compose.material.icons.filled.PauseCircle
@@ -194,7 +194,7 @@ object MediaUtils {
                 R.string.anime_media_details_fab_user_status_paused_icon_content_description
         MediaListStatus.REPEATING -> Icons.Filled.Repeat to
                 R.string.anime_media_details_fab_user_status_repeating_icon_content_description
-        MediaListStatus.UNKNOWN__, null -> Icons.Filled.Edit to
+        MediaListStatus.UNKNOWN__, null -> Icons.Filled.Add to
                 R.string.anime_media_details_fab_user_status_edit_icon_content_description
     }
 

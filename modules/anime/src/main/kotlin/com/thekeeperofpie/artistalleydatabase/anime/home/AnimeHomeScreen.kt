@@ -129,6 +129,8 @@ object AnimeHomeScreen {
         val animeViewModel = hiltViewModel<AnimeHomeMediaViewModel.Anime>()
         val mangaViewModel = hiltViewModel<AnimeHomeMediaViewModel.Manga>()
         val selectedItemTracker = remember { SelectedItemTracker() }
+
+        // TODO: Handle LoadStates
         val activity = viewModel.activity.collectAsLazyPagingItems()
 
         val pullRefreshState = rememberPullRefreshState(

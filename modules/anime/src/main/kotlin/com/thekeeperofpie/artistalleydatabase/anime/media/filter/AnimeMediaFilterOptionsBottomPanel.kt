@@ -971,7 +971,7 @@ object AnimeMediaFilterOptionsBottomPanel {
         ) {
             ItemDropdown(
                 label = R.string.anime_media_filter_airing_date_season,
-                value = data.season?.toTextRes()?.let { stringResource(it) }.orEmpty(),
+                value = data.season,
                 iconContentDescription = R.string.anime_media_filter_airing_date_season_dropdown_content_description,
                 values = {
                     listOf(

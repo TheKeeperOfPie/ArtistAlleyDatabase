@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anime.character.details
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
@@ -28,6 +27,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.listSaver
@@ -35,7 +35,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -46,18 +45,17 @@ import com.anilist.CharacterDetailsQuery.Data.Character
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterHeader
+import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterHeaderValues
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.mediaListSection
 import com.thekeeperofpie.artistalleydatabase.anime.staff.DetailsStaff
 import com.thekeeperofpie.artistalleydatabase.anime.staff.staffSection
-import com.thekeeperofpie.artistalleydatabase.anime.ui.CoverAndBannerHeader
 import com.thekeeperofpie.artistalleydatabase.anime.ui.DetailsLoadingOrError
 import com.thekeeperofpie.artistalleydatabase.anime.ui.descriptionSection
-import com.thekeeperofpie.artistalleydatabase.compose.AutoResizeHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.CollapsingToolbar
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
-import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.compose.DetailsSubsectionHeader
 import com.thekeeperofpie.artistalleydatabase.compose.InfoText
@@ -65,24 +63,27 @@ import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.fadingEdgeBottom
 import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.twoColumnInfoText
-import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 
 @Suppress("NAME_SHADOWING")
 @OptIn(ExperimentalMaterial3Api::class)
 object CharacterDetailsScreen {
 
+    private val SCREEN_KEY = AnimeNavDestinations.CHARACTER_DETAILS.id
     private const val MEDIA_ABOVE_FOLD = 3
 
     @Composable
     operator fun invoke(
         viewModel: AnimeCharacterDetailsViewModel = hiltViewModel(),
-        coverImage: @Composable () -> String? = { null },
-        coverImageWidthToHeightRatio: Float = 1f,
-        title: @Composable () -> String = { "First Last" },
+        headerValues: CharacterHeaderValues,
         navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
         val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
         val colorCalculationState = rememberColorCalculationState(viewModel.colorMap)
+
+        var characterImageWidthToHeightRatio by remember {
+            mutableFloatStateOf(headerValues.imageWidthToHeightRatio)
+        }
+
         Scaffold(
             topBar = {
                 CollapsingToolbar(
@@ -90,25 +91,15 @@ object CharacterDetailsScreen {
                     pinnedHeight = 120.dp,
                     scrollBehavior = scrollBehavior,
                 ) {
-                    Header(
+                    CharacterHeader(
+                        screenKey = SCREEN_KEY,
                         characterId = viewModel.characterId,
                         progress = it,
-                        color = { viewModel.colorMap[viewModel.characterId]?.first },
-                        coverImage = coverImage,
-                        coverImageWidthToHeightRatio = coverImageWidthToHeightRatio,
-                        titleText = title,
-                        subtitleText = {
-                            viewModel.entry?.character?.name?.run {
-                                if (native != userPreferred) {
-                                    native
-                                } else if (full != userPreferred) {
-                                    full
-                                } else {
-                                    null
-                                }
-                            }
-                        },
+                        headerValues = headerValues,
                         colorCalculationState = colorCalculationState,
+                        onImageWidthToHeightRatioAvailable = {
+                            characterImageWidthToHeightRatio = it
+                        },
                     )
                 }
             },
@@ -131,7 +122,9 @@ object CharacterDetailsScreen {
                     ) {
                         content(
                             viewModel = viewModel,
+                            headerValues = headerValues,
                             entry = it,
+                            characterImageWidthToHeightRatio = { characterImageWidthToHeightRatio },
                             expandedState = expandedState,
                             navigationCallback = navigationCallback,
                             colorCalculationState = colorCalculationState,
@@ -142,57 +135,11 @@ object CharacterDetailsScreen {
         }
     }
 
-    @Composable
-    private fun Header(
-        characterId: String,
-        progress: Float,
-        color: () -> Color?,
-        coverImage: @Composable () -> String?,
-        coverImageWidthToHeightRatio: Float,
-        titleText: @Composable () -> String,
-        subtitleText: @Composable () -> String?,
-        colorCalculationState: ColorCalculationState,
-    ) {
-        CoverAndBannerHeader(
-            screenKey = AnimeNavDestinations.CHARACTER_DETAILS.id,
-            entryId = EntryId("anime_character", characterId),
-            progress = progress,
-            color = color,
-            coverImage = coverImage,
-            coverImageWidthToHeightRatio = coverImageWidthToHeightRatio,
-            coverImageOnSuccess = {
-                ComposeColorUtils.calculatePalette(characterId, it, colorCalculationState)
-            }
-        ) {
-            AutoResizeHeightText(
-                text = titleText(),
-                style = MaterialTheme.typography.headlineLarge,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-                    .padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 4.dp),
-            )
-
-            val subtitleText = subtitleText()
-            AnimatedVisibility(subtitleText != null, label = "Character details subtitle text") {
-                if (subtitleText != null) {
-                    Text(
-                        text = subtitleText,
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier
-                            .wrapContentHeight()
-                            .padding(horizontal = 16.dp, vertical = 4.dp)
-                            .fillMaxWidth()
-                            .wrapContentHeight(Alignment.Bottom)
-                    )
-                }
-            }
-        }
-    }
-
     private fun LazyListScope.content(
         viewModel: AnimeCharacterDetailsViewModel,
+        headerValues: CharacterHeaderValues,
         entry: Entry,
+        characterImageWidthToHeightRatio: () -> Float,
         expandedState: ExpandedState,
         navigationCallback: AnimeNavigator.NavigationCallback,
         colorCalculationState: ColorCalculationState,
@@ -215,6 +162,8 @@ object CharacterDetailsScreen {
 
         mediaSection(
             entry = entry,
+            headerValues = headerValues,
+            characterImageWidthToHeightRatio = characterImageWidthToHeightRatio,
             expanded = expandedState::media,
             onExpandedChange = { expandedState.media = it },
             colorCalculationState = colorCalculationState,
@@ -387,6 +336,8 @@ object CharacterDetailsScreen {
 
     private fun LazyListScope.mediaSection(
         entry: Entry,
+        headerValues: CharacterHeaderValues,
+        characterImageWidthToHeightRatio: () -> Float,
         expanded: () -> Boolean,
         onExpandedChange: (Boolean) -> Unit,
         colorCalculationState: ColorCalculationState,
@@ -400,12 +351,23 @@ object CharacterDetailsScreen {
             values = entry.media,
             valueToEntry = { it },
             aboveFold = MEDIA_ABOVE_FOLD,
+            hasMoreValues = entry.mediaHasMore,
             expanded = expanded,
             onExpandedChange = onExpandedChange,
             colorCalculationState = colorCalculationState,
             navigationCallback = navigationCallback,
             onLongClick = onLongClick,
             onTagLongClick = onTagLongClick,
+            onClickViewAll = {
+                entry.let {
+                    navigationCallback.onCharacterMediasClick(
+                        character = it.character,
+                        imageWidthToHeightRatio = characterImageWidthToHeightRatio(),
+                        color = headerValues.color(colorCalculationState),
+                    )
+                }
+            },
+            viewAllContentDescriptionTextRes = R.string.anime_character_details_view_all_content_description,
         )
     }
 
@@ -426,6 +388,8 @@ object CharacterDetailsScreen {
                     .orEmpty()
             }.orEmpty()
             .distinctBy { it.id }
+
+        val mediaHasMore = character.media?.pageInfo?.hasNextPage == true
     }
 
     @Composable

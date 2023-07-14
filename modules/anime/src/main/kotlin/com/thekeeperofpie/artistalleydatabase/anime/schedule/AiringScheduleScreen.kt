@@ -33,6 +33,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.paging.LoadState
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
 import com.anilist.AiringScheduleQuery.Data.Page.AiringSchedule.Media.NextAiringEpisode
@@ -40,6 +41,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
+import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
@@ -162,30 +164,50 @@ object AiringScheduleScreen {
                     .fillMaxSize()
             ) {
                 val data = viewModel.items(it)
-                LazyColumn(
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
-                ) {
-                    items(
-                        count = data.itemCount,
-                        key = data.itemKey { it.data.id },
-                        contentType = data.itemContentType { "airingSchedule" },
-                    ) { index ->
-                        val schedule = data[index]
-                        AnimeMediaListRow(
-                            screenKey = SCREEN_KEY,
-                            entry = schedule?.entry,
-                            onLongClick = viewModel::onLongClickEntry,
-                            nextAiringEpisode = schedule?.data?.let {
-                                NextAiringEpisode(
-                                    id = it.id,
-                                    episode = it.episode,
-                                    airingAt = it.airingAt,
-                                )
-                            },
-                            colorCalculationState = colorCalculationState,
-                            navigationCallback = navigationCallback,
-                        )
+                when (val refreshState = data.loadState.refresh) {
+                    LoadState.Loading -> Unit
+                    is LoadState.Error -> AnimeMediaListScreen.Error(exception = refreshState.error)
+                    is LoadState.NotLoading -> {
+                        if (data.itemCount == 0) {
+                            AnimeMediaListScreen.NoResults()
+                        } else {
+                            LazyColumn(
+                                contentPadding = PaddingValues(16.dp),
+                                verticalArrangement = Arrangement.spacedBy(16.dp),
+                            ) {
+                                items(
+                                    count = data.itemCount,
+                                    key = data.itemKey { it.data.id },
+                                    contentType = data.itemContentType { "airingSchedule" },
+                                ) { index ->
+                                    val schedule = data[index]
+                                    AnimeMediaListRow(
+                                        screenKey = SCREEN_KEY,
+                                        entry = schedule?.entry,
+                                        onLongClick = viewModel::onLongClickEntry,
+                                        nextAiringEpisode = schedule?.data?.let {
+                                            NextAiringEpisode(
+                                                id = it.id,
+                                                episode = it.episode,
+                                                airingAt = it.airingAt,
+                                            )
+                                        },
+                                        colorCalculationState = colorCalculationState,
+                                        navigationCallback = navigationCallback,
+                                    )
+                                }
+
+                                when (data.loadState.append) {
+                                    is LoadState.Loading -> item("load_more_append") {
+                                        AnimeMediaListScreen.LoadingMore()
+                                    }
+                                    is LoadState.Error -> item("load_more_error") {
+                                        AnimeMediaListScreen.AppendError { data.retry() }
+                                    }
+                                    is LoadState.NotLoading -> Unit
+                                }
+                            }
+                        }
                     }
                 }
             }

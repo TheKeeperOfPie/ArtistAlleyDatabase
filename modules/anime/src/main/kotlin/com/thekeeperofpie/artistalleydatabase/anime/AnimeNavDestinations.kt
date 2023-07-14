@@ -18,4 +18,6 @@ enum class AnimeNavDestinations(val id: String) {
     MEDIA_REVIEWS("anime_media_reviews"),
     REVIEW_DETAILS("anime_review_details"),
     MEDIA_RECOMMENDATIONS("anime_media_recommendations"),
+    CHARACTER_MEDIAS("anime_character_medias"),
+    STAFF_CHARACTERS("anime_staff_characters"),
 }

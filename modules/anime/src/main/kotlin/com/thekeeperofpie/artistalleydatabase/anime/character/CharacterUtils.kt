@@ -9,29 +9,32 @@ object CharacterUtils {
     fun <CharacterEdge : DetailsCharacterEdge> toDetailsCharacters(
         edges: List<CharacterEdge?>?,
         role: ((CharacterEdge) -> CharacterRole?)? = null,
-    ) = edges?.filterNotNull()?.map {
-        DetailsCharacter(
-            id = it.node?.id.toString(),
-            name = it.node?.name?.userPreferred,
-            image = it.node?.image?.large,
-            languageToVoiceActor = it.voiceActors?.filterNotNull()
-                ?.mapNotNull {
-                    it.languageV2?.let { language ->
-                        language to DetailsCharacter.VoiceActor(
-                            id = it.id.toString(),
-                            name = it.name?.userPreferred?.replace(Regex("\\s"), " "),
-                            image = it.image?.large,
-                            language = language,
-                            staff = it,
-                        )
-                    }
+    ) = edges?.filterNotNull()?.map { toDetailsCharacter(it, role) }.orEmpty().distinctBy { it.id }
+
+    fun <CharacterEdge : DetailsCharacterEdge> toDetailsCharacter(
+        edge: CharacterEdge,
+        role: ((CharacterEdge) -> CharacterRole?)? = null,
+    ) = DetailsCharacter(
+        id = edge.node?.id.toString(),
+        name = edge.node?.name?.userPreferred,
+        image = edge.node?.image?.large,
+        languageToVoiceActor = edge.voiceActors?.filterNotNull()
+            ?.mapNotNull {
+                it.languageV2?.let { language ->
+                    language to DetailsCharacter.VoiceActor(
+                        id = it.id.toString(),
+                        name = it.name?.userPreferred?.replace(Regex("\\s"), " "),
+                        image = it.image?.large,
+                        language = language,
+                        staff = it,
+                    )
                 }
-                ?.associate { it }
-                .orEmpty(),
-            character = it.node,
-            roleTextRes = role?.invoke(it)?.toTextRes(),
-        )
-    }.orEmpty().distinctBy { it.id }
+            }
+            ?.associate { it }
+            .orEmpty(),
+        character = edge.node,
+        roleTextRes = role?.invoke(edge)?.toTextRes(),
+    )
 
     fun CharacterRole.toTextRes() = when (this) {
         CharacterRole.MAIN -> R.string.anime_character_role_main
@@ -39,4 +42,13 @@ object CharacterUtils {
         CharacterRole.BACKGROUND -> R.string.anime_character_role_background
         CharacterRole.UNKNOWN__ -> R.string.anime_character_role_unknown
     }
+
+    fun subtitleName(userPreferred: String?, native: String?, full: String?) =
+        if (native != userPreferred) {
+            native
+        } else if (full != userPreferred) {
+            full
+        } else {
+            null
+        }
 }

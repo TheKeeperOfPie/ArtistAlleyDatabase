@@ -5,12 +5,22 @@ package com.thekeeperofpie.artistalleydatabase.anime.character
 import androidx.annotation.StringRes
 import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -21,6 +31,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -37,6 +48,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -44,14 +56,20 @@ import androidx.core.graphics.ColorUtils
 import coil.compose.AsyncImage
 import coil.compose.AsyncImagePainter
 import coil.request.ImageRequest
+import coil.size.Dimension
 import com.anilist.fragment.CharacterNavigationData
 import com.anilist.fragment.StaffNavigationData
+import com.google.accompanist.placeholder.PlaceholderHighlight
+import com.google.accompanist.placeholder.material.placeholder
+import com.google.accompanist.placeholder.material.shimmer
 import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
 import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
 import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
+import com.thekeeperofpie.artistalleydatabase.compose.AutoSizeText
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.DetailsSectionHeader
@@ -60,7 +78,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 
 @Composable
-fun CharacterCard(
+fun CharacterSmallCard(
     screenKey: String,
     id: EntryId,
     image: String?,
@@ -212,9 +230,9 @@ fun LazyListScope.charactersSection(
     screenKey: String,
     @StringRes titleRes: Int,
     characters: List<DetailsCharacter>,
-    onCharacterClick: (CharacterNavigationData, imageWidthToHeightRatio: Float) -> Unit,
+    onCharacterClick: (CharacterNavigationData, imageWidthToHeightRatio: Float, color: Color?) -> Unit,
     onCharacterLongClick: (String) -> Unit,
-    onStaffClick: (StaffNavigationData, imageWidthToHeightRatio: Float) -> Unit,
+    onStaffClick: (StaffNavigationData, imageWidthToHeightRatio: Float, color: Color?) -> Unit,
     onClickViewAll: (() -> Unit)? = null,
     @StringRes viewAllContentDescriptionTextRes: Int? = null,
     colorCalculationState: ColorCalculationState,
@@ -238,21 +256,29 @@ fun LazyListScope.charactersSection(
                 var innerImageWidthToHeightRatio by remember { MutableSingle(1f) }
                 val voiceActor = (it.languageToVoiceActor["Japanese"]
                     ?: it.languageToVoiceActor.values.firstOrNull())
-                CharacterCard(
+                CharacterSmallCard(
                     screenKey = screenKey,
                     id = EntryId("anime_character", it.id),
                     image = it.image,
                     colorCalculationState = colorCalculationState,
                     onClick = {
                         it.character?.let {
-                            onCharacterClick(it, imageWidthToHeightRatio)
+                            onCharacterClick(
+                                it,
+                                imageWidthToHeightRatio,
+                                colorCalculationState.getColors(it.id.toString()).first,
+                            )
                         }
                     },
                     innerImage = voiceActor?.image,
                     innerImageKey = "anime_staff_${voiceActor?.id}_image",
                     onClickInnerImage = voiceActor?.image?.let {
                         {
-                            onStaffClick(voiceActor.staff, innerImageWidthToHeightRatio)
+                            onStaffClick(
+                                voiceActor.staff,
+                                innerImageWidthToHeightRatio,
+                                colorCalculationState.getColors(voiceActor.id).first,
+                            )
                         }
                     },
                     onImageSuccess = { imageWidthToHeightRatio = it.widthToHeightRatio() },
@@ -274,6 +300,175 @@ fun LazyListScope.charactersSection(
                         modifier = Modifier
                             .size(width = 100.dp, height = 56.dp)
                             .padding(horizontal = 12.dp, vertical = 8.dp)
+                    )
+                }
+            }
+        }
+    }
+}
+
+
+@Composable
+fun CharacterCard(
+    screenKey: String,
+    imageWidth: Dp,
+    minHeight: Dp,
+    character: DetailsCharacter?,
+    colorCalculationState: ColorCalculationState,
+    navigationCallback: AnimeNavigator.NavigationCallback,
+) {
+    var imageWidthToHeightRatio by remember { MutableSingle(1f) }
+    ElevatedCard(
+        onClick = {
+            character?.character?.let {
+                navigationCallback.onCharacterClick(
+                    it,
+                    imageWidthToHeightRatio,
+                    colorCalculationState.getColors(it.id.toString()).first,
+                )
+            }
+        },
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
+    ) {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier
+                .height(IntrinsicSize.Min)
+                .heightIn(min = minHeight)
+        ) {
+            val density = LocalDensity.current
+            val width = density.run { imageWidth.roundToPx() }
+            SharedElement(
+                key = "anime_character_${character?.id}_image",
+                screenKey = screenKey,
+            ) {
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(character?.image)
+                        .crossfade(true)
+                        .allowHardware(true)
+                        .size(width = Dimension.Pixels(width), height = Dimension.Undefined)
+                        .build(),
+                    contentScale = ContentScale.Crop,
+                    fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
+                    contentDescription = stringResource(
+                        R.string.anime_character_image_content_description
+                    ),
+                    onSuccess = { imageWidthToHeightRatio = it.widthToHeightRatio() },
+                    modifier = Modifier
+                        .width(imageWidth)
+                        .fillMaxHeight()
+                        .clip(RoundedCornerShape(topStart = 12.dp, bottomStart = 12.dp))
+                        .placeholder(
+                            visible = character == null,
+                            highlight = PlaceholderHighlight.shimmer(),
+                        )
+                )
+            }
+
+            val voiceActor = (character?.languageToVoiceActor?.get("Japanese")
+                ?: character?.languageToVoiceActor?.values?.firstOrNull())
+
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight()
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.Start,
+                    modifier = Modifier
+                        .align(Alignment.Start)
+                        .padding(vertical = 10.dp)
+                ) {
+                    Text(
+                        text = character?.name ?: "FirstName LastName",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Black,
+                        modifier = Modifier.placeholder(
+                            visible = character == null,
+                            highlight = PlaceholderHighlight.shimmer(),
+                        )
+                    )
+
+                    if (character == null || character.roleTextRes != null) {
+                        Text(
+                            text = stringResource(
+                                character?.roleTextRes ?: R.string.anime_character_role_main
+                            ),
+                            style = MaterialTheme.typography.labelSmall,
+                            modifier = Modifier.placeholder(
+                                visible = character == null,
+                                highlight = PlaceholderHighlight.shimmer(),
+                            )
+                        )
+                    }
+                }
+
+                Spacer(Modifier.weight(1f))
+
+                if (character == null || voiceActor != null) {
+                    Box(
+                        contentAlignment = Alignment.BottomEnd,
+                        modifier = Modifier
+                            .wrapContentWidth()
+                            .align(Alignment.End)
+                    ) {
+                        AutoSizeText(
+                            text = voiceActor?.name ?: "FirstName LastName",
+                            style = MaterialTheme.typography.labelSmall,
+                            modifier = Modifier
+                                .padding(vertical = 10.dp)
+                                .placeholder(
+                                    visible = character == null,
+                                    highlight = PlaceholderHighlight.shimmer(),
+                                )
+                        )
+                    }
+                }
+            }
+
+            if (character == null || voiceActor?.image != null) {
+                var voiceActorImageWidthToHeightRatio by remember { MutableSingle(1f) }
+                SharedElement(
+                    key = "anime_staff_${voiceActor?.id}_image",
+                    screenKey = screenKey,
+                ) {
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(voiceActor?.image)
+                            .crossfade(true)
+                            .allowHardware(true)
+                            .size(width = Dimension.Pixels(width), height = Dimension.Undefined)
+                            .build(),
+                        contentScale = ContentScale.Crop,
+                        fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
+                        contentDescription = stringResource(
+                            R.string.anime_media_voice_actor_image
+                        ),
+                        onSuccess = {
+                            voiceActorImageWidthToHeightRatio = it.widthToHeightRatio()
+                        },
+                        modifier = Modifier
+                            .width(imageWidth)
+                            .fillMaxHeight()
+                            .clip(RoundedCornerShape(topEnd = 12.dp, bottomEnd = 12.dp))
+                            .placeholder(
+                                visible = character == null,
+                                highlight = PlaceholderHighlight.shimmer(),
+                            )
+                            .clickable {
+                                if (voiceActor != null) {
+                                    navigationCallback.onStaffClick(
+                                        voiceActor.staff,
+                                        voiceActorImageWidthToHeightRatio,
+                                        colorCalculationState.getColors(
+                                            voiceActor.staff.id.toString()
+                                        ).first,
+                                    )
+                                }
+                            }
                     )
                 }
             }

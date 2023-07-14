@@ -19,6 +19,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserScreen
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserViewModel
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
+import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 
 object UserMediaScreen {
 
@@ -29,6 +30,7 @@ object UserMediaScreen {
         user: () -> UserByIdQuery.Data.User?,
         statistics: @Composable () -> AniListUserScreen.Entry.Statistics?,
         state: AniListUserViewModel.States,
+        colorCalculationState: ColorCalculationState,
         navigationCallback: AnimeNavigator.NavigationCallback,
         bottomNavigationState: BottomNavigationState? = null,
     ) {
@@ -114,7 +116,11 @@ object UserMediaScreen {
                     valueToMeanScore = UserMediaStatistics.VoiceActor::meanScore,
                     valueToMediaIds = { it.mediaIds.filterNotNull() },
                     onValueClick = { value, imageWidthToHeightRatio ->
-                        navigationCallback.onStaffClick(value.voiceActor!!, imageWidthToHeightRatio)
+                        navigationCallback.onStaffClick(
+                            value.voiceActor!!,
+                            imageWidthToHeightRatio,
+                            colorCalculationState.getColors(value.voiceActor!!.id.toString()).first,
+                        )
                     },
                     initialItemId = { it.voiceActor?.id.toString() },
                     initialItemImage = { it.voiceActor?.image?.large },
@@ -152,7 +158,11 @@ object UserMediaScreen {
                     valueToMeanScore = UserMediaStatistics.Staff::meanScore,
                     valueToMediaIds = { it.mediaIds.filterNotNull() },
                     onValueClick = { value, imageWidthToHeightRatio ->
-                        navigationCallback.onStaffClick(value.staff!!, imageWidthToHeightRatio)
+                        navigationCallback.onStaffClick(
+                            value.staff!!,
+                            imageWidthToHeightRatio,
+                            colorCalculationState.getColors(value.staff!!.id.toString()).first,
+                        )
                     },
                     initialItemId = { it.staff?.id.toString() },
                     initialItemImage = { it.staff?.image?.large },

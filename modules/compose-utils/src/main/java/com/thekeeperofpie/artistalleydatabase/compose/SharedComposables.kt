@@ -450,12 +450,13 @@ fun TrailingDropdownIcon(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun <T> ItemDropdown(
-    value: String,
+    value: T,
     @StringRes iconContentDescription: Int,
     modifier: Modifier = Modifier,
     @StringRes label: Int? = null,
     values: @Composable () -> Iterable<T> = { emptyList() },
     textForValue: @Composable (T) -> String = { "" },
+    iconForValue: @Composable ((T) -> Unit)? = null,
     onSelectItem: (T) -> Unit = {},
     wrapWidth: Boolean = false,
     maxLines: Int = Int.MAX_VALUE,
@@ -469,11 +470,12 @@ fun <T> ItemDropdown(
         modifier = modifier.wrapWidthIfRequested(),
     ) {
         TextField(
-            value = value,
+            value = textForValue(value),
             onValueChange = {},
             readOnly = true,
             maxLines = maxLines,
             label = label?.let { { Text(stringResource(it)) } },
+            leadingIcon = iconForValue?.let { { iconForValue(value) } },
             trailingIcon = {
                 TrailingDropdownIcon(
                     expanded = expanded,
@@ -491,13 +493,14 @@ fun <T> ItemDropdown(
             onDismissRequest = { expanded = false },
             modifier = Modifier.wrapWidthIfRequested()
         ) {
-            values().forEach {
+            values().forEach { value ->
                 DropdownMenuItem(
                     onClick = {
                         expanded = false
-                        onSelectItem(it)
+                        onSelectItem(value)
                     },
-                    text = { Text(textForValue(it)) },
+                    leadingIcon = iconForValue?.let { { iconForValue(value) } },
+                    text = { Text(textForValue(value)) },
                     contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
                     modifier = Modifier.wrapWidthIfRequested(),
                 )

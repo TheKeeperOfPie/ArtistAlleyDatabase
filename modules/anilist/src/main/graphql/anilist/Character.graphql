@@ -83,7 +83,7 @@ fragment DetailsCharacterEdge on CharacterEdge {
             alternative
         }
     }
-    node {
+    node @nonnull {
         ...CharacterNavigationData
         name {
             full
@@ -102,16 +102,24 @@ fragment CharacterNavigationData on Character {
     }
 }
 
+fragment CharacterHeaderData on Character {
+    ...CharacterNavigationData
+    id
+    name {
+        full
+        alternative
+        alternativeSpoiler
+        native
+        userPreferred
+    }
+    image {
+        large
+    }
+}
+
 query CharacterDetails($id: Int!) {
     Character(id: $id) {
-        id
-        name {
-            full
-            alternative
-            alternativeSpoiler
-            native
-            userPreferred
-        }
+        ...CharacterHeaderData
         description(asHtml: true)
         age
         dateOfBirth {
@@ -121,13 +129,13 @@ query CharacterDetails($id: Int!) {
         }
         gender
         bloodType
-        image {
-            large
-        }
         favourites
 
         # TODO: Pagination
-        media(sort: [POPULARITY_DESC]) {
+        media(sort: [POPULARITY_DESC], perPage: 5) {
+            pageInfo {
+                hasNextPage
+            }
             edges {
                 characterName
                 characterRole
@@ -173,33 +181,94 @@ query CharactersByIds($ids: [Int], $mediaPage: Int, $mediaPerPage: Int) {
     }
 }
 
-fragment MediaAndCharactersCharacterEdge on CharacterEdge {
+fragment CharacterWithRole on CharacterEdge {
     ...DetailsCharacterEdge
     role
 }
 
+fragment CharacterWithRoleAndFavorites on CharacterEdge {
+    ...DetailsCharacterEdge
+    node {
+        media(sort: [FAVOURITES_DESC]) {
+            nodes {
+                ...MediaNavigationData
+            }
+        }
+        favourites
+    }
+    role
+}
+
+fragment CharacterMediaPreview on MediaEdge {
+    id
+    voiceActors {
+        ...StaffNavigationData
+        languageV2
+    }
+    node {
+        ...MediaNavigationData
+    }
+}
+
 query MediaAndCharacters($mediaId: Int!, $charactersPerPage: Int!) {
-    Media(id: $mediaId) {
+    Media(id: $mediaId) @nonnull {
         ...MediaHeaderData
         characters(sort: [RELEVANCE, ROLE, FAVOURITES_DESC], page: 1, perPage: $charactersPerPage) {
             pageInfo @nonnull {
                 ...PaginationInfo
             }
             edges {
-                ...MediaAndCharactersCharacterEdge
+                ...CharacterWithRole
             }
         }
     }
 }
 
 query MediaAndCharactersPagination($mediaId: Int!, $page: Int!, $charactersPerPage: Int!) {
-    Media(id: $mediaId) {
+    Media(id: $mediaId) @nonnull {
         characters(sort: [RELEVANCE, ROLE, FAVOURITES_DESC], page: $page, perPage: $charactersPerPage) {
             pageInfo @nonnull {
                 ...PaginationInfo
             }
             edges {
-                ...MediaAndCharactersCharacterEdge
+                ...CharacterWithRole
+            }
+        }
+    }
+}
+
+query CharacterAndMedias(
+    $characterId: Int!,
+    $sort: [MediaSort]!,
+    $mediasPerPage: Int!,
+) {
+    Character(id: $characterId) @nonnull {
+        ...CharacterHeaderData
+
+        media(sort: $sort, page: 1, perPage: $mediasPerPage) {
+            pageInfo @nonnull {
+                ...PaginationInfo
+            }
+            nodes {
+                ...MediaPreview
+            }
+        }
+    }
+}
+
+query CharacterAndMediasPagination(
+    $characterId: Int!,
+    $sort: [MediaSort]!,
+    $page: Int!,
+    $mediasPerPage: Int!,
+) {
+    Character(id: $characterId) @nonnull {
+        media(sort: $sort, page: $page, perPage: $mediasPerPage) {
+            pageInfo @nonnull {
+                ...PaginationInfo
+            }
+            nodes {
+                ...MediaPreview
             }
         }
     }

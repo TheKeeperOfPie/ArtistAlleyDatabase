@@ -38,6 +38,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
@@ -87,6 +88,7 @@ internal fun CoverAndBannerHeader(
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val elevation = lerp(0.dp, 16.dp, AccelerateEasing.transform(progress))
+    val bottomCornerDp = lerp(0.dp, 12.dp, progress)
 
     Surface(
         shape = RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp),
@@ -94,7 +96,9 @@ internal fun CoverAndBannerHeader(
         contentColor = MaterialTheme.colorScheme.onSurface,
         tonalElevation = elevation,
         shadowElevation = elevation,
-        modifier = Modifier.optionalClickable(onClick = onClick, enabled = onClickEnabled)
+        modifier = Modifier
+            .clip(RoundedCornerShape(bottomStart = bottomCornerDp, bottomEnd = bottomCornerDp))
+            .optionalClickable(onClick = onClick, enabled = onClickEnabled)
     ) {
         Box {
             AsyncImage(

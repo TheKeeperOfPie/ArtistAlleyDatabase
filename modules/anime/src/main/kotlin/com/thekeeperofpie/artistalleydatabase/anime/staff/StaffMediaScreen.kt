@@ -27,7 +27,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
-import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterCard
+import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterSmallCard
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
@@ -69,7 +69,7 @@ object StaffMediaScreen {
                         items(entries, { it.id }) {
                             var imageWidthToHeightRatio by remember { MutableSingle(1f) }
                             var innerImageWidthToHeightRatio by remember { MutableSingle(1f) }
-                            CharacterCard(
+                            CharacterSmallCard(
                                 screenKey = AnimeNavDestinations.STAFF_DETAILS.id,
                                 id = EntryId("anime_character", it.character.id.toString()),
                                 image = it.character.image?.large,
@@ -85,7 +85,9 @@ object StaffMediaScreen {
                                 onClick = {
                                     navigationCallback.onCharacterClick(
                                         it.character,
-                                        imageWidthToHeightRatio
+                                        imageWidthToHeightRatio,
+                                        colorCalculationState.getColors(it.character.id.toString())
+                                            .first,
                                     )
                                 },
                                 onClickInnerImage = {

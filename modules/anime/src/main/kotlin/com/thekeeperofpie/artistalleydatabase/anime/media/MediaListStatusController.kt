@@ -52,7 +52,7 @@ fun <Input> applyStatusAndIgnored(
     val status = if (mediaId == null || !statuses.containsKey(mediaId.toString())) {
         media?.mediaListEntry?.status
     } else {
-        statuses[media.toString()]
+        statuses[mediaId.toString()]
     }
 
     val ignored = ignoredIds.contains(mediaId)

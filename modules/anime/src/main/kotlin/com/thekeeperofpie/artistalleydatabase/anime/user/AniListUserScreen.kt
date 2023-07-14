@@ -227,6 +227,7 @@ object AniListUserScreen {
                                 user = { user },
                                 statistics = { viewModel.entry?.statisticsAnime },
                                 state = viewModel.animeStates,
+                                colorCalculationState = colorCalculationState,
                                 navigationCallback = navigationCallback,
                                 bottomNavigationState = bottomNavigationState,
                             )
@@ -234,6 +235,7 @@ object AniListUserScreen {
                                 user = { user },
                                 statistics = { viewModel.entry?.statisticsManga },
                                 state = viewModel.mangaStates,
+                                colorCalculationState = colorCalculationState,
                                 navigationCallback = navigationCallback,
                                 bottomNavigationState = bottomNavigationState,
                             )

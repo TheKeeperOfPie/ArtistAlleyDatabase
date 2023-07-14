@@ -4,6 +4,8 @@ import android.util.Log
 import com.anilist.AiringScheduleQuery
 import com.anilist.AuthedUserQuery
 import com.anilist.CharacterAdvancedSearchQuery
+import com.anilist.CharacterAndMediasPaginationQuery
+import com.anilist.CharacterAndMediasQuery
 import com.anilist.CharacterDetailsQuery
 import com.anilist.DeleteMediaEntryMutation
 import com.anilist.GenresQuery
@@ -23,6 +25,8 @@ import com.anilist.MediaTitlesAndImagesQuery
 import com.anilist.RateReviewMutation
 import com.anilist.ReviewDetailsQuery
 import com.anilist.SaveMediaEntryEditMutation
+import com.anilist.StaffAndCharactersPaginationQuery
+import com.anilist.StaffAndCharactersQuery
 import com.anilist.StaffDetailsCharacterMediaPaginationQuery
 import com.anilist.StaffDetailsQuery
 import com.anilist.StaffDetailsStaffMediaPaginationQuery
@@ -462,7 +466,7 @@ class AuthedAniListApi(
             mediaId = mediaId.toInt(),
             charactersPerPage = charactersPerPage,
         )
-    )
+    ).media
 
     suspend fun mediaAndCharactersPage(
         mediaId: String,
@@ -531,6 +535,58 @@ class AuthedAniListApi(
             sort = listOf(sort),
             page = page,
             recommendationsPerPage = recommendationsPerPage,
+        )
+    )
+
+    suspend fun characterAndMedias(
+        characterId: String,
+        sort: MediaSort,
+        mediasPerPage: Int = 10,
+    ) = query(
+        CharacterAndMediasQuery(
+            characterId = characterId.toInt(),
+            sort = listOf(sort),
+            mediasPerPage = mediasPerPage,
+        )
+    ).character
+
+    suspend fun characterAndMediasPage(
+        characterId: String,
+        sort: MediaSort,
+        page: Int,
+        mediasPerPage: Int = 10,
+    ) = query(
+        CharacterAndMediasPaginationQuery(
+            characterId = characterId.toInt(),
+            sort = listOf(sort),
+            page = page,
+            mediasPerPage = mediasPerPage,
+        )
+    )
+
+    suspend fun staffAndCharacters(
+        staffId: String,
+        sort: List<CharacterSort>,
+        charactersPerPage: Int = 5
+    ) = query(
+        StaffAndCharactersQuery(
+            staffId = staffId.toInt(),
+            sort = sort,
+            charactersPerPage = charactersPerPage,
+        )
+    ).staff
+
+    suspend fun staffAndCharactersPage(
+        staffId: String,
+        sort: List<CharacterSort>,
+        page: Int,
+        charactersPerPage: Int = 5,
+    ) = query(
+        StaffAndCharactersPaginationQuery(
+            staffId = staffId.toInt(),
+            sort = sort,
+            page = page,
+            charactersPerPage = charactersPerPage,
         )
     )
 

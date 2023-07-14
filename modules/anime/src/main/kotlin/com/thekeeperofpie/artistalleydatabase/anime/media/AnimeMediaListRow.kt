@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
@@ -20,6 +21,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ImageNotSupported
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -53,7 +56,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
 import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toStatusIcon
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
@@ -131,6 +134,7 @@ object AnimeMediaListRow {
                     nextAiringEpisode?.let {
                         MediaNextAiringSection(it, loading = entry == null)
                     }
+
                     val (containerColor, textColor) =
                         colorCalculationState.getColors(entry?.media?.id?.toString())
                     MediaTagRow(
@@ -155,7 +159,7 @@ object AnimeMediaListRow {
         onRatioAvailable: (Float) -> Unit,
     ) {
         SharedElement(
-            key = "anime_media${entry?.media?.id}_image",
+            key = "anime_media_${entry?.media?.id}_image",
             screenKey = screenKey,
         ) {
             Box {
@@ -202,21 +206,23 @@ object AnimeMediaListRow {
                         )
                 )
 
+
                 val userListStatus = entry?.mediaListStatus
-                if (userListStatus != null) {
-                    Box(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier
-                            .align(Alignment.BottomCenter)
-                            .width(130.dp)
-                            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.6f))
-                    ) {
-                        Text(
-                            text = stringResource(userListStatus.toTextRes(entry.media.type)),
-                            style = MaterialTheme.typography.labelSmall,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                        )
-                    }
+                IconButton(
+                    onClick = { /* TODO: Edit panel */ },
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .clip(RoundedCornerShape(topEnd = 12.dp))
+                        .size(36.dp)
+                        .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.5f))
+                ) {
+                    val (imageVector, contentDescriptionRes) =
+                        userListStatus.toStatusIcon(entry?.media?.type)
+                    Icon(
+                        imageVector = imageVector,
+                        contentDescription = stringResource(contentDescriptionRes),
+                        modifier = Modifier.size(20.dp)
+                    )
                 }
             }
         }

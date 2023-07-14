@@ -29,6 +29,7 @@ object StaffOverviewScreen {
     @Composable
     operator fun invoke(
         entry: StaffDetailsScreen.Entry,
+        staffImageWidthToHeightRatio: () -> Float,
         colorCalculationState: ColorCalculationState,
         expandedState: StaffDetailsScreen.ExpandedState,
         navigationCallback: AnimeNavigator.NavigationCallback,
@@ -43,7 +44,6 @@ object StaffOverviewScreen {
                 onExpandedChange = { expandedState.description = it },
             )
 
-            // TODO: Use full width UI that scrolls vertically?
             charactersSection(
                 screenKey = AnimeNavDestinations.STAFF_DETAILS.id,
                 titleRes = R.string.anime_staff_details_characters_label,
@@ -51,6 +51,14 @@ object StaffOverviewScreen {
                 onCharacterClick = navigationCallback::onCharacterClick,
                 onCharacterLongClick = navigationCallback::onCharacterLongClick,
                 onStaffClick = navigationCallback::onStaffClick,
+                onClickViewAll = {
+                    navigationCallback.onStaffCharactersClick(
+                        entry.staff,
+                        staffImageWidthToHeightRatio(),
+                        colorCalculationState.getColors(entry.staff.id.toString()).first
+                    )
+                },
+                viewAllContentDescriptionTextRes = R.string.anime_staff_details_view_all_content_description,
                 colorCalculationState = colorCalculationState,
             )
 
@@ -99,8 +107,15 @@ object StaffOverviewScreen {
 
                 val yearsActive = entry.staff.yearsActive?.filterNotNull().orEmpty()
                 val yearsActiveText = when (yearsActive.size) {
-                    1 -> stringResource(R.string.anime_staff_details_years_active_beginning, yearsActive[0])
-                    2 -> stringResource(R.string.anime_staff_details_years_active_beginning_and_end, yearsActive[0], yearsActive[1])
+                    1 -> stringResource(
+                        R.string.anime_staff_details_years_active_beginning,
+                        yearsActive[0]
+                    )
+                    2 -> stringResource(
+                        R.string.anime_staff_details_years_active_beginning_and_end,
+                        yearsActive[0],
+                        yearsActive[1]
+                    )
                     else -> null
                 }
                 if (yearsActiveText != null) {

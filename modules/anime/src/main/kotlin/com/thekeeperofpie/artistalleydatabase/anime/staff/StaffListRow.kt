@@ -84,30 +84,27 @@ object StaffListRow {
             AnimeNavigator.NavigationCallback(null),
     ) {
         var imageWidthToHeightRatio by remember { MutableSingle(1f) }
+        val onClick = {
+            navigationCallback.onStaffClick(
+                entry.staff,
+                imageWidthToHeightRatio,
+                colorCalculationState.getColors(entry.staff.id.toString()).first,
+            )
+        }
         ElevatedCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .heightIn(min = 180.dp)
                 .clickable(
                     enabled = true, // TODO: placeholder,
-                    onClick = {
-                        navigationCallback.onStaffClick(
-                            entry.staff,
-                            imageWidthToHeightRatio,
-                        )
-                    },
+                    onClick = onClick,
                 )
         ) {
             Row(modifier = Modifier.height(IntrinsicSize.Min)) {
                 StaffImage(
                     screenKey = screenKey,
                     entry = entry,
-                    onClick = {
-                        navigationCallback.onStaffClick(
-                            entry.staff,
-                            imageWidthToHeightRatio,
-                        )
-                    },
+                    onClick = onClick,
                     onLongPressImage = { onLongPressImage(entry) },
                     colorCalculationState = colorCalculationState,
                     onRatioAvailable = { imageWidthToHeightRatio = it }
@@ -131,6 +128,7 @@ object StaffListRow {
 
                     CharactersAndMediaRow(
                         entry = entry,
+                        colorCalculationState = colorCalculationState,
                         navigationCallback = navigationCallback,
                     )
                 }
@@ -269,6 +267,7 @@ object StaffListRow {
     @Composable
     private fun CharactersAndMediaRow(
         entry: Entry,
+        colorCalculationState: ColorCalculationState,
         navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
         val media = entry.media
@@ -290,7 +289,13 @@ object StaffListRow {
                     density = density,
                     image = it.image?.large,
                     contentDescriptionTextRes = R.string.anime_character_image_content_description,
-                    onClick = { ratio -> navigationCallback.onCharacterClick(it, ratio) }
+                    onClick = { ratio ->
+                        navigationCallback.onCharacterClick(
+                            it,
+                            ratio,
+                            colorCalculationState.getColors(it.id.toString()).first,
+                        )
+                    }
                 )
             }
 

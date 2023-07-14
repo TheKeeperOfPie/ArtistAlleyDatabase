@@ -17,7 +17,6 @@ import androidx.paging.filter
 import androidx.paging.map
 import com.anilist.MediaByIdsQuery.Data.Page.Medium
 import com.anilist.type.MediaType
-import com.hoc081098.flowext.withLatestFrom
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
@@ -34,6 +33,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -103,46 +103,48 @@ class AnimeMediaIgnoreViewModel @Inject constructor(
                         )
                     },
                 )
-                .withLatestFrom(
+                .flowOn(CustomDispatchers.IO)
+                .flatMapLatest { pagingData ->
                     combine(
-                        snapshotFlow { query }.debounce(500.milliseconds),
+                        snapshotFlow { query }.debounce(500.milliseconds)
+                            .flowOn(CustomDispatchers.Main),
                         filterController.filterParams(),
                         ::Pair,
-                    )
-                )
-                .map { (pagingData, paramsPair) ->
-                    val (query, filterParams) = paramsPair
-                    val includes = filterParams.listStatuses
-                        .filter { it.state == FilterIncludeExcludeState.INCLUDE }
-                        .map { it.value }
-                    val excludes = filterParams.listStatuses
-                        .filter { it.state == FilterIncludeExcludeState.EXCLUDE }
-                        .map { it.value }
-                    pagingData
-                        .filter {
-                            filterController.filterEntries(
-                                filterParams = filterParams,
-                                entries = listOf(it),
-                                forceShowIgnored = true,
-                            ).isNotEmpty()
-                        }
-                        .filter {
-                            val listStatus = it.mediaListStatus
-                            if (excludes.isNotEmpty() && excludes.contains(listStatus)) {
-                                return@filter false
+                    ).map { paramsPair ->
+                        val (query, filterParams) = paramsPair
+                        val includes = filterParams.listStatuses
+                            .filter { it.state == FilterIncludeExcludeState.INCLUDE }
+                            .map { it.value }
+                        val excludes = filterParams.listStatuses
+                            .filter { it.state == FilterIncludeExcludeState.EXCLUDE }
+                            .map { it.value }
+                        pagingData
+                            .filter {
+                                filterController.filterEntries(
+                                    filterParams = filterParams,
+                                    entries = listOf(it),
+                                    forceShowIgnored = true,
+                                ).isNotEmpty()
                             }
+                            .filter {
+                                val listStatus = it.mediaListStatus
+                                if (excludes.isNotEmpty() && excludes.contains(listStatus)) {
+                                    return@filter false
+                                }
 
-                            includes.isEmpty() || includes.contains(listStatus)
-                        }
-                        .filter {
-                            listOfNotNull(
-                                it.media.title?.romaji,
-                                it.media.title?.english,
-                                it.media.title?.native,
-                            ).plus(it.media.synonyms?.filterNotNull().orEmpty())
-                                .any { it.contains(query, ignoreCase = true) }
-                        }
+                                includes.isEmpty() || includes.contains(listStatus)
+                            }
+                            .filter {
+                                listOfNotNull(
+                                    it.media.title?.romaji,
+                                    it.media.title?.english,
+                                    it.media.title?.native,
+                                ).plus(it.media.synonyms?.filterNotNull().orEmpty())
+                                    .any { it.contains(query, ignoreCase = true) }
+                            }
+                    }
                 }
+                .flowOn(CustomDispatchers.IO)
                 .collectLatest(content::emit)
         }
     }

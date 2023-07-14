@@ -460,6 +460,7 @@
     <string name="anime_character_details_alternative_names_spoiler_expand_content_description">Alternative names spoiler expand</string>
     <string name="anime_character_details_alternative_names_spoiler_warning">Spoiler</string>
     <string name="anime_character_details_alternative_names_spoiler_warning_content_description">Character alternative name spoiler warning icon</string>
+    <string name="anime_character_details_view_all_content_description">View all</string>
 
     <string name="anime_character_role_main">Main</string>
     <string name="anime_character_role_supporting">Supporting</string>
@@ -468,6 +469,7 @@
 
     <string name="anime_character_sort_id">ID</string>
     <string name="anime_character_sort_role">Role</string>
+    <string name="anime_character_sort_search_match">Search match</string>
     <string name="anime_character_sort_favorites">Favorites</string>
     <string name="anime_character_sort_relevance">Relevance</string>
     <string name="anime_character_image">Character image</string>
@@ -494,6 +496,7 @@
     <string name="anime_staff_details_years_active_beginning_and_end">%1$d - %1$d</string>
     <string name="anime_staff_details_characters_label">Characters</string>
     <string name="anime_staff_details_media_load_retry">Retry</string>
+    <string name="anime_staff_details_view_all_content_description">View all</string>
     <string name="anime_staff_media_year_unknown">TBA</string>
 
     <string name="anime_staff_sort_id">ID</string>
@@ -595,4 +598,11 @@
     <string name="anime_recommendations_sort_id">Last added</string>
     <string name="anime_recommendations_sort_rating">Rating</string>
     <string name="anime_recommendations_header">Recommendations</string>
+    <string name="anime_recommendations_error_loading">Error loading recommendations</string>
+
+    <string name="anime_character_medias_error_loading">Error loading media</string>
+    <string name="anime_character_medias_header">Media</string>
+
+    <string name="anime_staff_characters_error_loading">Error loading characters</string>
+    <string name="anime_staff_characters_header">Characters</string>
 </resources>

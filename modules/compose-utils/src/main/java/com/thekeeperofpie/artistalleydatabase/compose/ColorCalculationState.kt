@@ -14,7 +14,7 @@ class ColorCalculationState @OptIn(DelicateCoroutinesApi::class) constructor(
     val colorMap: MutableMap<String, Pair<Color, Color>> = mutableMapOf(),
     val isDarkMode: Boolean = true,
 ) {
-    fun getColors(id: String?) = colorMap[id.orEmpty()]
+    fun getColors(id: String?) = (if (id.isNullOrEmpty()) null else colorMap[id])
         ?: (Color.Unspecified to Color.Unspecified)
 
     fun hasColor(id: String?) = colorMap.contains(id)

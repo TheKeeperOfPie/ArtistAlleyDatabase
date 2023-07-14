@@ -11,6 +11,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.unit.dp
@@ -18,7 +19,7 @@ import com.anilist.fragment.StaffNavigationData
 import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
 import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
 import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
-import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterCard
+import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterSmallCard
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.DetailsSectionHeader
@@ -29,7 +30,7 @@ fun LazyListScope.staffSection(
     screenKey: String,
     @StringRes titleRes: Int,
     staff: List<DetailsStaff>,
-    onStaffClick: (StaffNavigationData, imageWidthToHeightRatio: Float) -> Unit,
+    onStaffClick: (StaffNavigationData, imageWidthToHeightRatio: Float, color: Color?) -> Unit,
     onStaffLongClick: (String) -> Unit,
     colorCalculationState: ColorCalculationState,
     roleLines: Int = 1,
@@ -43,13 +44,19 @@ fun LazyListScope.staffSection(
         ) {
             items(staff, { it.id }) {
                 var imageWidthToHeightRatio by remember { MutableSingle(1f) }
-                CharacterCard(
+                CharacterSmallCard(
                     screenKey = screenKey,
                     id = EntryId("anime_staff", it.id),
                     image = it.image,
                     colorCalculationState = colorCalculationState,
-                    onClick = { onStaffClick(it.staff, imageWidthToHeightRatio) },
-                    onImageSuccess = { imageWidthToHeightRatio = it.widthToHeightRatio()}
+                    onClick = {
+                        onStaffClick(
+                            it.staff,
+                            imageWidthToHeightRatio,
+                            colorCalculationState.getColors(it.id).first,
+                        )
+                    },
+                    onImageSuccess = { imageWidthToHeightRatio = it.widthToHeightRatio() }
                 ) { textColor ->
                     it.role?.let {
                         AutoHeightText(

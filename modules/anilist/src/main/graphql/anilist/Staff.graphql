@@ -19,15 +19,7 @@ fragment StaffNavigationData on Staff {
 
 query StaffDetails($id: Int!) {
     Staff(id: $id) {
-        name {
-            full
-            native
-            alternative
-            userPreferred
-        }
-        image {
-            large
-        }
+        ...StaffHeaderData
         description(asHtml: true)
         languageV2
         primaryOccupations
@@ -147,6 +139,57 @@ query StaffSearch(
                 nodes {
                     ...MediaNavigationData
                 }
+            }
+        }
+    }
+}
+
+fragment StaffHeaderData on Staff {
+    ...StaffNavigationData
+    id
+    name {
+        full
+        alternative
+        native
+        userPreferred
+    }
+    image {
+        large
+    }
+}
+
+query StaffAndCharacters(
+    $staffId: Int!,
+    $sort: [CharacterSort]!,
+    $charactersPerPage: Int!,
+) {
+    Staff(id: $staffId) @nonnull {
+        ...StaffHeaderData
+
+        characters(sort: $sort, page: 1, perPage: $charactersPerPage) {
+            pageInfo @nonnull {
+                ...PaginationInfo
+            }
+            edges {
+                ...CharacterWithRoleAndFavorites
+            }
+        }
+    }
+}
+
+query StaffAndCharactersPagination(
+    $staffId: Int!,
+    $sort: [CharacterSort]!,
+    $page: Int!,
+    $charactersPerPage: Int!,
+) {
+    Staff(id: $staffId) @nonnull {
+        characters(sort: $sort, page: $page, perPage: $charactersPerPage) {
+            pageInfo @nonnull {
+                ...PaginationInfo
+            }
+            edges {
+                ...CharacterWithRoleAndFavorites
             }
         }
     }

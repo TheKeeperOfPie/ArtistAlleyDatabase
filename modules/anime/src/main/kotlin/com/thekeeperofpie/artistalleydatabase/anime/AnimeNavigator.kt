@@ -3,6 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.anime
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.Dp
@@ -13,10 +14,12 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
+import com.anilist.fragment.CharacterHeaderData
 import com.anilist.fragment.CharacterNavigationData
 import com.anilist.fragment.MediaHeaderData
 import com.anilist.fragment.MediaNavigationData
 import com.anilist.fragment.MediaPreviewWithDescription
+import com.anilist.fragment.StaffHeaderData
 import com.anilist.fragment.StaffNavigationData
 import com.anilist.fragment.UserFavoriteMediaNode
 import com.anilist.fragment.UserNavigationData
@@ -24,10 +27,13 @@ import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anime.activity.AnimeActivityScreen
+import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterHeaderValues
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharactersScreen
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharactersViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.character.details.AnimeCharacterDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.character.details.CharacterDetailsScreen
+import com.thekeeperofpie.artistalleydatabase.anime.character.media.CharacterMediasScreen
+import com.thekeeperofpie.artistalleydatabase.anime.character.media.CharacterMediasViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeIgnoreScreen
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.list.AnimeUserListScreen
@@ -51,6 +57,9 @@ import com.thekeeperofpie.artistalleydatabase.anime.seasonal.SeasonalScreen
 import com.thekeeperofpie.artistalleydatabase.anime.seasonal.SeasonalViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffDetailsViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffHeaderValues
+import com.thekeeperofpie.artistalleydatabase.anime.staff.character.StaffCharactersScreen
+import com.thekeeperofpie.artistalleydatabase.anime.staff.character.StaffCharactersViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserScreen
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserViewModel
 import com.thekeeperofpie.artistalleydatabase.cds.CdEntryNavigator
@@ -196,10 +205,7 @@ object AnimeNavigator {
 
         navGraphBuilder.composable(
             route = AnimeNavDestinations.CHARACTER_DETAILS.id
-                    + "?characterId={characterId}"
-                    + "&name={name}"
-                    + "&coverImage={coverImage}"
-                    + "&coverImageWidthToHeightRatio={coverImageWidthToHeightRatio}",
+                    + "?characterId={characterId}${CharacterHeaderValues.routeSuffix}",
             deepLinks = listOf(
                 navDeepLink {
                     uriPattern = "${AniListUtils.ANILIST_BASE_URL}/character/{characterId}"
@@ -213,43 +219,49 @@ object AnimeNavigator {
                     type = NavType.StringType
                     nullable = false
                 }
-            ) + listOf(
-                "name",
-                "coverImage",
-                "coverImageWidthToHeightRatio",
-            ).map {
-                navArgument(it) {
-                    type = NavType.StringType
-                    nullable = true
-                }
-            },
+            ) + CharacterHeaderValues.navArguments(),
         ) {
             val arguments = it.arguments!!
             val characterId = arguments.getString("characterId")!!
-            val name = arguments.getString("name")
-            val coverImage = arguments.getString("coverImage")
-            val coverImageWidthToHeightRatio = arguments.getString("coverImageWidthToHeightRatio")
-                ?.toFloatOrNull() ?: 1f
 
-            val viewModel = hiltViewModel<AnimeCharacterDetailsViewModel>().apply {
-                initialize(characterId)
-            }
+            val viewModel = hiltViewModel<AnimeCharacterDetailsViewModel>()
+                .apply { initialize(characterId) }
+            val headerValues = CharacterHeaderValues(arguments) { viewModel.entry?.character }
 
             CharacterDetailsScreen(
                 viewModel = viewModel,
-                coverImage = { viewModel.entry?.character?.image?.large ?: coverImage },
-                coverImageWidthToHeightRatio = coverImageWidthToHeightRatio,
-                title = { viewModel.entry?.character?.name?.userPreferred ?: name ?: "" },
+                headerValues = headerValues,
+                navigationCallback = navigationCallback,
+            )
+        }
+
+        navGraphBuilder.composable(
+            route = AnimeNavDestinations.CHARACTER_MEDIAS.id
+                    + "?characterId={characterId}${CharacterHeaderValues.routeSuffix}",
+            arguments = listOf(
+                navArgument("characterId") {
+                    type = NavType.StringType
+                    nullable = false
+                }
+            ) + MediaHeaderValues.navArguments()
+        ) {
+            val arguments = it.arguments!!
+            val characterId = arguments.getString("characterId")!!
+
+            val viewModel = hiltViewModel<CharacterMediasViewModel>()
+                .apply { initialize(characterId) }
+            val headerValues = CharacterHeaderValues(arguments) { viewModel.entry?.character }
+
+            CharacterMediasScreen(
+                viewModel = viewModel,
+                headerValues = headerValues,
                 navigationCallback = navigationCallback,
             )
         }
 
         navGraphBuilder.composable(
             route = AnimeNavDestinations.STAFF_DETAILS.id
-                    + "?staffId={staffId}"
-                    + "&name={name}"
-                    + "&coverImage={coverImage}"
-                    + "&coverImageWidthToHeightRatio={coverImageWidthToHeightRatio}",
+                    + "?staffId={staffId}${StaffHeaderValues.routeSuffix}",
             deepLinks = listOf(
                 navDeepLink { uriPattern = "${AniListUtils.ANILIST_BASE_URL}/staff/{staffId}" },
                 navDeepLink { uriPattern = "${AniListUtils.ANILIST_BASE_URL}/staff/{staffId}/.*" },
@@ -259,33 +271,41 @@ object AnimeNavigator {
                     type = NavType.StringType
                     nullable = false
                 }
-            ) + listOf(
-                "name",
-                "coverImage",
-                "coverImageWidthToHeightRatio",
-            ).map {
-                navArgument(it) {
-                    type = NavType.StringType
-                    nullable = true
-                }
-            },
+            ) + StaffHeaderValues.navArguments(),
         ) {
             val arguments = it.arguments!!
             val staffId = arguments.getString("staffId")!!
-            val name = arguments.getString("name")
-            val coverImage = arguments.getString("coverImage")
-            val coverImageWidthToHeightRatio = arguments.getString("coverImageWidthToHeightRatio")
-                ?.toFloatOrNull() ?: 1f
+            val viewModel = hiltViewModel<StaffDetailsViewModel>()
+                .apply { initialize(staffId) }
 
-            val viewModel = hiltViewModel<StaffDetailsViewModel>().apply {
-                initialize(staffId)
-            }
+            val headerValues = StaffHeaderValues(arguments) { viewModel.entry?.staff }
 
             StaffDetailsScreen(
                 viewModel = viewModel,
-                coverImage = { viewModel.entry?.staff?.image?.large ?: coverImage },
-                coverImageWidthToHeightRatio = coverImageWidthToHeightRatio,
-                title = { viewModel.entry?.staff?.name?.userPreferred ?: name ?: "" },
+                headerValues = headerValues,
+                navigationCallback = navigationCallback,
+            )
+        }
+
+        navGraphBuilder.composable(
+            route = AnimeNavDestinations.STAFF_CHARACTERS.id
+                    + "?staffId={staffId}${StaffHeaderValues.routeSuffix}",
+            arguments = listOf(
+                navArgument("staffId") {
+                    type = NavType.StringType
+                    nullable = false
+                }
+            ) + StaffHeaderValues.navArguments()
+        ) {
+            val arguments = it.arguments!!
+            val staffId = arguments.getString("staffId")!!
+
+            val viewModel = hiltViewModel<StaffCharactersViewModel>().apply { initialize(staffId) }
+            val headerValues = StaffHeaderValues(arguments) { viewModel.entry?.staff }
+
+            StaffCharactersScreen(
+                viewModel = viewModel,
+                headerValues = headerValues,
                 navigationCallback = navigationCallback,
             )
         }
@@ -567,24 +587,55 @@ object AnimeNavigator {
         navHostController: NavHostController,
         character: CharacterNavigationData,
         imageWidthToHeightRatio: Float,
+        color: Color?,
     ) = navHostController.navigate(
         AnimeNavDestinations.CHARACTER_DETAILS.id +
                 "?characterId=${character.id}" +
-                "&name=${character.name?.userPreferred}" +
-                "&coverImage=${character.image?.large}" +
-                "&coverImageWidthToHeightRatio=$imageWidthToHeightRatio"
+                CharacterHeaderValues.routeSuffix(character, imageWidthToHeightRatio, color)
+    )
+
+    fun onCharacterMediasClick(
+        navHostController: NavHostController,
+        character: CharacterHeaderData,
+        imageWidthToHeightRatio: Float,
+        color: Color?,
+    ) = navHostController.navigate(
+        AnimeNavDestinations.CHARACTER_MEDIAS.id +
+                "?characterId=${character.id}" +
+                CharacterHeaderValues.routeSuffix(character, imageWidthToHeightRatio, color)
     )
 
     fun onStaffClick(
         navHostController: NavHostController,
-        character: StaffNavigationData,
+        staff: StaffNavigationData,
         imageWidthToHeightRatio: Float,
+        color: Color?,
     ) = navHostController.navigate(
         AnimeNavDestinations.STAFF_DETAILS.id +
-                "?staffId=${character.id}" +
-                "&name=${character.name?.userPreferred}" +
-                "&coverImage=${character.image?.large}" +
-                "&coverImageWidthToHeightRatio=$imageWidthToHeightRatio"
+                "?staffId=${staff.id}" +
+                StaffHeaderValues.routeSuffix(staff, imageWidthToHeightRatio, color)
+    )
+
+    fun onStaffClick(
+        navHostController: NavHostController,
+        staff: StaffHeaderData,
+        imageWidthToHeightRatio: Float,
+        color: Color?,
+    ) = navHostController.navigate(
+        AnimeNavDestinations.STAFF_DETAILS.id +
+                "?staffId=${staff.id}" +
+                StaffHeaderValues.routeSuffix(staff, imageWidthToHeightRatio, color)
+    )
+
+    fun onStaffCharactersClick(
+        navHostController: NavHostController,
+        staff: StaffHeaderData,
+        imageWidthToHeightRatio: Float,
+        color: Color?,
+    ) = navHostController.navigate(
+        AnimeNavDestinations.STAFF_CHARACTERS.id +
+                "?staffId=${staff.id}" +
+                StaffHeaderValues.routeSuffix(staff, imageWidthToHeightRatio, color)
     )
 
     fun onUserClick(
@@ -756,16 +807,46 @@ object AnimeNavigator {
             navHostController?.let { onUserClick(it, userNavigationData, imageWidthToHeightRatio) }
         }
 
-        fun onCharacterClick(character: CharacterNavigationData, imageWidthToHeightRatio: Float) {
-            navHostController?.let { onCharacterClick(it, character, imageWidthToHeightRatio) }
+        fun onCharacterClick(
+            character: CharacterNavigationData,
+            imageWidthToHeightRatio: Float,
+            color: Color?,
+        ) {
+            navHostController?.let {
+                onCharacterClick(it, character, imageWidthToHeightRatio, color)
+            }
+        }
+
+        fun onCharacterMediasClick(
+            character: CharacterHeaderData,
+            imageWidthToHeightRatio: Float,
+            color: Color?,
+        ) {
+            navHostController?.let {
+                onCharacterMediasClick(it, character, imageWidthToHeightRatio, color)
+            }
         }
 
         fun onCharacterLongClick(id: String) {
             // TODO
         }
 
-        fun onStaffClick(staff: StaffNavigationData, imageWidthToHeightRatio: Float) {
-            navHostController?.let { onStaffClick(it, staff, imageWidthToHeightRatio) }
+        fun onStaffClick(
+            staff: StaffNavigationData,
+            imageWidthToHeightRatio: Float,
+            color: Color?,
+        ) {
+            navHostController?.let { onStaffClick(it, staff, imageWidthToHeightRatio, color) }
+        }
+
+        fun onStaffCharactersClick(
+            staff: StaffHeaderData,
+            imageWidthToHeightRatio: Float,
+            color: Color?,
+        ) {
+            navHostController?.let {
+                onStaffCharactersClick(it, staff, imageWidthToHeightRatio, color)
+            }
         }
 
         fun onStaffLongClick(id: String) {

@@ -1,89 +1,46 @@
 package com.thekeeperofpie.artistalleydatabase.anime.character
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.graphics.Color
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import androidx.paging.Pager
-import androidx.paging.PagingConfig
-import androidx.paging.PagingData
-import androidx.paging.cachedIn
-import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListPagingSource
+import com.anilist.fragment.CharacterWithRole
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.R
-import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIds
+import com.thekeeperofpie.artistalleydatabase.anime.utils.HeaderAndListViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
 class CharactersViewModel @Inject constructor(
     private val aniListApi: AuthedAniListApi,
-) : ViewModel() {
+) : HeaderAndListViewModel<CharactersScreen.Entry, CharacterWithRole, DetailsCharacter, CharacterSortOption>(
+    sortOptionEnum = CharacterSortOption::class,
+    sortOptionEnumDefault = CharacterSortOption.ROLE,
+    loadingErrorTextRes = R.string.anime_characters_error_loading,
+) {
+    override fun makeEntry(item: CharacterWithRole) = CharacterUtils.toDetailsCharacter(item) { item.role }
 
-    lateinit var mediaId: String
+    override fun entryId(entry: DetailsCharacter) = entry.id
 
-    val colorMap = mutableStateMapOf<String, Pair<Color, Color>>()
+    override suspend fun initialRequest(
+        headerId: String,
+        sortOption: CharacterSortOption,
+        sortAscending: Boolean
+    ) = CharactersScreen.Entry(
+        // TODO: Sort
+        aniListApi.mediaAndCharacters(mediaId = headerId)
+    )
 
-    var entry by mutableStateOf<CharactersScreen.Entry?>(null)
-        private set
-
-    val characters = MutableStateFlow(PagingData.empty<DetailsCharacter>())
-
-    var error by mutableStateOf<Pair<Int, Exception?>?>(null)
-
-    // TODO: Refresh support
-    // TODO: Pass the media information through memory rather than re-fetching
-    fun initialize(mediaId: String) {
-        if (::mediaId.isInitialized) return
-        this.mediaId = mediaId
-
-        viewModelScope.launch(CustomDispatchers.IO) {
-            try {
-                val entry = CharactersScreen.Entry(
-                    aniListApi.mediaAndCharacters(mediaId).media!!
-                )
-                withContext(CustomDispatchers.Main) {
-                    this@CharactersViewModel.entry = entry
-                }
-
-                Pager(config = PagingConfig(10)) {
-                    AniListPagingSource {
-                        if (it == 1) {
-                            val result = entry.media.characters
-                            result?.pageInfo to result?.edges?.filterNotNull()
-                                ?.let {
-                                    CharacterUtils.toDetailsCharacters(it) { it.role }
-                                }
-                                .orEmpty()
-                        } else {
-                            val result = aniListApi.mediaAndCharactersPage(
-                                mediaId = mediaId,
-                                page = it
-                            ).media?.characters
-                            result?.pageInfo to result?.edges?.filterNotNull()
-                                ?.let {
-                                    CharacterUtils.toDetailsCharacters(it) { it.role }
-                                }
-                                .orEmpty()
-                        }
-                    }
-                }.flow
-                    .enforceUniqueIds { it.id }
-                    .cachedIn(viewModelScope)
-                    .collectLatest(characters::emit)
-            } catch (e: Exception) {
-                withContext(CustomDispatchers.Main) {
-                    error = R.string.anime_characters_error_loading to e
-                }
-            }
-        }
+    override suspend fun pagedRequest(
+        entry: CharactersScreen.Entry,
+        page: Int,
+        sortOption: CharacterSortOption,
+        sortAscending: Boolean
+    ) = if (page == 1) {
+        val result = entry.media.characters
+        result?.pageInfo to result?.edges?.filterNotNull().orEmpty()
+    } else {
+        val result = aniListApi.mediaAndCharactersPage(
+            mediaId = entry.media.id.toString(),
+            page = page,
+        ).media.characters
+        result?.pageInfo to result?.edges?.filterNotNull().orEmpty()
     }
 }

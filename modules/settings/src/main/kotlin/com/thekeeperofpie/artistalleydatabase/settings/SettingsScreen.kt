@@ -120,7 +120,7 @@ object SettingsScreen {
                 val networkLoggingLevel = viewModel.networkLoggingLevel.collectAsState().value
                 ItemDropdown(
                     label = R.string.settings_network_logging_level_label,
-                    value = networkLoggingLevel.name,
+                    value = networkLoggingLevel,
                     iconContentDescription = R.string.settings_network_logging_level_label_dropdown_content_description,
                     values = { NetworkSettings.NetworkLoggingLevel.values().toList() },
                     textForValue = { it.name },

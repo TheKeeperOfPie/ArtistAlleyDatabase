@@ -64,6 +64,7 @@ class AnimeSearchViewModel @Inject constructor(
 
     private var initialized = false
 
+    // TODO: Swap the sort based on selected tab
     private val filterController =
         AnimeMediaFilterController(MediaSortOption::class, aniListApi, settings, ignoreList)
 
