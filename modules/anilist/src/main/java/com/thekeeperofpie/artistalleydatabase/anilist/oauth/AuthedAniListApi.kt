@@ -20,6 +20,7 @@ import com.anilist.MediaAndReviewsPaginationQuery
 import com.anilist.MediaAndReviewsQuery
 import com.anilist.MediaByIdsQuery
 import com.anilist.MediaDetailsQuery
+import com.anilist.MediaListEntryQuery
 import com.anilist.MediaTagsQuery
 import com.anilist.MediaTitlesAndImagesQuery
 import com.anilist.RateReviewMutation
@@ -201,6 +202,8 @@ class AuthedAniListApi(
     suspend fun mediaTitlesAndImages(mediaIds: List<Int>) =
         query(MediaTitlesAndImagesQuery(ids = Optional.present(mediaIds)))
             .page?.media?.filterNotNull().orEmpty()
+
+    suspend fun mediaListEntry(id: String) = query(MediaListEntryQuery(id.toInt()))
 
     suspend fun deleteMediaListEntry(id: String) =
         apolloClient.mutation(DeleteMediaEntryMutation(id = id.toInt()))

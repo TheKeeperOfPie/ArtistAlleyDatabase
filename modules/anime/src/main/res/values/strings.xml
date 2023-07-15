@@ -319,11 +319,14 @@
     <string name="anime_media_details_streaming_episode_spoiler_content_description">Episodes spoiler warning</string>
     <string name="anime_media_details_streaming_episode_spoiler">Spoiler</string>
     <string name="anime_media_details_fab_user_status_current_anime">Watching %1$d/%2$d</string>
+    <string name="anime_media_details_fab_user_status_current_anime_unknown_max">Watching %1$d/?</string>
     <string name="anime_media_details_fab_user_status_current_not_anime">Reading %1$d/%2$d</string>
+    <string name="anime_media_details_fab_user_status_current_not_anime_unknown_max">Reading %1$d/?</string>
     <string name="anime_media_details_fab_user_status_planning">Planning</string>
     <string name="anime_media_details_fab_user_status_completed">Completed</string>
     <string name="anime_media_details_fab_user_status_completed_with_score">Completed - %1$s</string>
     <string name="anime_media_details_fab_user_status_dropped">Dropped %1$d/%2$d</string>
+    <string name="anime_media_details_fab_user_status_dropped_unknown_max">Dropped %1$d/?</string>
     <string name="anime_media_details_fab_user_status_paused">On hold</string>
     <string name="anime_media_details_fab_user_status_repeating">Repeating</string>
     <string name="anime_media_details_fab_user_status_unknown">Unknown</string>
@@ -374,6 +377,7 @@
     <string name="anime_media_edit_error_invalid_priority">Invalid priority</string>
     <string name="anime_media_edit_error_saving">Error saving</string>
     <string name="anime_media_edit_error_deleting">Error deleting</string>
+    <string name="anime_media_edit_error_loading">Error loading</string>
 
     <string name="anime_media_edit_priority_label">Priority</string>
     <string name="anime_media_edit_priority_decrement_content_description">Decrement priority</string>

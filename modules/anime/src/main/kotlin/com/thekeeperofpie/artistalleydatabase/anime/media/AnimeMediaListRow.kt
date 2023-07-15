@@ -70,6 +70,7 @@ object AnimeMediaListRow {
         entry: Entry<MediaType>?,
         modifier: Modifier = Modifier,
         label: (@Composable () -> Unit)? = null,
+        onClickListEdit: (Entry<MediaType>) -> Unit = {},
         onLongClick: (Entry<MediaType>) -> Unit,
         onTagLongClick: (tagId: String) -> Unit = {},
         onLongPressImage: (entry: Entry<MediaType>) -> Unit = {},
@@ -106,6 +107,7 @@ object AnimeMediaListRow {
                             navigationCallback.onMediaClick(entry, imageWidthToHeightRatio)
                         }
                     },
+                    onClickListEdit = onClickListEdit,
                     onLongPressImage = onLongPressImage,
                     colorCalculationState = colorCalculationState,
                     onRatioAvailable = { imageWidthToHeightRatio = it },
@@ -154,6 +156,7 @@ object AnimeMediaListRow {
         screenKey: String,
         entry: Entry<MediaType>?,
         onClick: (Entry<MediaType>) -> Unit = {},
+        onClickListEdit: (Entry<MediaType>) -> Unit,
         onLongPressImage: (entry: Entry<MediaType>) -> Unit,
         colorCalculationState: ColorCalculationState,
         onRatioAvailable: (Float) -> Unit,
@@ -209,7 +212,7 @@ object AnimeMediaListRow {
 
                 val userListStatus = entry?.mediaListStatus
                 IconButton(
-                    onClick = { /* TODO: Edit panel */ },
+                    onClick = { if (entry != null) onClickListEdit(entry) },
                     modifier = Modifier
                         .align(Alignment.BottomStart)
                         .clip(RoundedCornerShape(topEnd = 12.dp))

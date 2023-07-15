@@ -362,6 +362,7 @@ object AnimeMediaFilterOptionsBottomPanel {
         showIgnoredFilter: Boolean,
         modifier: Modifier = Modifier,
     ) {
+        Divider()
         var airingDateShown by remember { mutableStateOf<Boolean?>(null) }
         Column(
             modifier
@@ -370,8 +371,6 @@ object AnimeMediaFilterOptionsBottomPanel {
                 .animateContentSize()
         ) {
             val data = filterData()
-
-            Divider()
 
             SortSection(
                 headerTextRes = R.string.anime_media_filter_sort_label,

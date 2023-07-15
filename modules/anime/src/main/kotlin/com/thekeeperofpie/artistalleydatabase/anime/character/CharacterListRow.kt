@@ -149,6 +149,7 @@ object CharacterListRow {
                     Spacer(Modifier.weight(1f))
 
                     MediaRow(
+                        screenKey = screenKey,
                         entry = entry,
                         colorCalculationState = colorCalculationState,
                         navigationCallback = navigationCallback,
@@ -288,6 +289,7 @@ object CharacterListRow {
 
     @Composable
     private fun MediaRow(
+        screenKey: String,
         entry: Entry?,
         colorCalculationState: ColorCalculationState,
         navigationCallback: AnimeNavigator.NavigationCallback,
@@ -305,22 +307,25 @@ object CharacterListRow {
                 .size(width = LocalConfiguration.current.screenWidthDp.dp, height = 96.dp)
         ) {
             if (entry?.voiceActor?.image?.large != null) {
-                item(entry.voiceActor.id) {
-                    StaffOrMediaImage(
-                        context = context,
-                        density = density,
-                        image = entry.voiceActor.image?.large,
-                        contentDescriptionTextRes = R.string.anime_staff_image_content_description,
-                        onClick = { ratio ->
-                            navigationCallback.onStaffClick(
-                                entry.voiceActor,
-                                ratio,
-                                colorCalculationState.getColors(
-                                    entry.voiceActor.id.toString()
-                                ).first
-                            )
-                        },
-                    )
+                val staffId = entry.voiceActor.id
+                item(staffId) {
+                    SharedElement(key = "anime_staff_${staffId}_image", screenKey = screenKey) {
+                        StaffOrMediaImage(
+                            context = context,
+                            density = density,
+                            image = entry.voiceActor.image?.large,
+                            contentDescriptionTextRes = R.string.anime_staff_image_content_description,
+                            onClick = { ratio ->
+                                navigationCallback.onStaffClick(
+                                    entry.voiceActor,
+                                    ratio,
+                                    colorCalculationState.getColors(
+                                        staffId.toString()
+                                    ).first
+                                )
+                            },
+                        )
+                    }
                 }
             }
 
@@ -328,17 +333,19 @@ object CharacterListRow {
                 media,
                 key = { index, item -> if (item == null) "placeholder_$index" else item.id },
             ) { index, item ->
-                StaffOrMediaImage(
-                    context = context,
-                    density = density,
-                    image = item?.coverImage?.extraLarge,
-                    contentDescriptionTextRes = R.string.anime_media_cover_image_content_description,
-                    onClick = { ratio ->
-                        if (item != null) {
-                            navigationCallback.onMediaClick(item, ratio)
-                        }
-                    },
-                )
+                SharedElement(key = "anime_media_${item?.id}_image", screenKey = screenKey) {
+                    StaffOrMediaImage(
+                        context = context,
+                        density = density,
+                        image = item?.coverImage?.extraLarge,
+                        contentDescriptionTextRes = R.string.anime_media_cover_image_content_description,
+                        onClick = { ratio ->
+                            if (item != null) {
+                                navigationCallback.onMediaClick(item, ratio)
+                            }
+                        },
+                    )
+                }
             }
         }
     }

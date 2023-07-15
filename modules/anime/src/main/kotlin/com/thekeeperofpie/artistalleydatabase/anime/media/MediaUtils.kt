@@ -123,23 +123,37 @@ object MediaUtils {
     fun MediaListStatus?.toStatusText(
         mediaType: MediaType?,
         progress: Int,
-        progressMax: Int,
+        progressMax: Int?,
         score: Double?,
         scoreFormat: ScoreFormat?,
     ) = when (this) {
         MediaListStatus.CURRENT -> {
             if (mediaType == MediaType.ANIME) {
-                stringResource(
-                    R.string.anime_media_details_fab_user_status_current_anime,
-                    progress,
-                    progressMax,
-                )
+                if (progressMax == null) {
+                    stringResource(
+                        R.string.anime_media_details_fab_user_status_current_anime_unknown_max,
+                        progress,
+                    )
+                } else {
+                    stringResource(
+                        R.string.anime_media_details_fab_user_status_current_anime,
+                        progress,
+                        progressMax,
+                    )
+                }
             } else {
-                stringResource(
-                    R.string.anime_media_details_fab_user_status_current_not_anime,
-                    progress,
-                    progressMax,
-                )
+                if (progressMax == null) {
+                    stringResource(
+                        R.string.anime_media_details_fab_user_status_current_not_anime_unknown_max,
+                        progress,
+                    )
+                } else {
+                    stringResource(
+                        R.string.anime_media_details_fab_user_status_current_not_anime,
+                        progress,
+                        progressMax,
+                    )
+                }
             }
         }
         MediaListStatus.PLANNING -> stringResource(
@@ -154,20 +168,23 @@ object MediaUtils {
                 scoreFormatToText(score, scoreFormat),
             )
         }
-        MediaListStatus.DROPPED -> stringResource(
-            R.string.anime_media_details_fab_user_status_dropped,
-            progress,
-            progressMax,
-        )
+        MediaListStatus.DROPPED -> if (progressMax == null) {
+            stringResource(
+                R.string.anime_media_details_fab_user_status_dropped_unknown_max,
+                progress,
+            )
+        } else {
+            stringResource(
+                R.string.anime_media_details_fab_user_status_dropped,
+                progress,
+                progressMax,
+            )
+        }
         MediaListStatus.PAUSED -> stringResource(
             R.string.anime_media_details_fab_user_status_paused,
-            progress,
-            progressMax,
         )
         MediaListStatus.REPEATING -> stringResource(
             R.string.anime_media_details_fab_user_status_repeating,
-            progress,
-            progressMax,
         )
         MediaListStatus.UNKNOWN__, null -> stringResource(
             R.string.anime_media_details_fab_user_status_unknown
@@ -408,7 +425,7 @@ object MediaUtils {
     fun parseLocalDate(completedAt: MediaDetailsListEntry.CompletedAt?) =
         completedAt?.run { parseLocalDate(year, month, day) }
 
-    private fun parseLocalDate(year: Int?, month: Int?, dayOfMonth: Int?): LocalDate? {
+    fun parseLocalDate(year: Int?, month: Int?, dayOfMonth: Int?): LocalDate? {
         return if (year != null && month != null && dayOfMonth != null) {
             LocalDate.of(year, month, dayOfMonth)
         } else null

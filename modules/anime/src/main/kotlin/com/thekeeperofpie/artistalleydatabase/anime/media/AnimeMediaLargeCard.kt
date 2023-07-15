@@ -51,7 +51,6 @@ import com.google.accompanist.placeholder.material.shimmer
 import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.CustomHtmlText
@@ -249,6 +248,7 @@ object AnimeMediaLargeCard {
         val media: MediaPreviewWithDescription?,
         ignored: Boolean = false,
     ) {
+        // TODO: Nullability support
         object Loading : Entry(null)
 
         val id = EntryId("anime_media", media?.id.toString())
@@ -256,11 +256,6 @@ object AnimeMediaLargeCard {
         val imageBanner = media?.bannerImage
         val color = media?.coverImage?.color?.let(ComposeColorUtils::hexToColor)
         val title = media?.title?.userPreferred
-
-        val subtitleFormatRes = media?.format.toTextRes()
-        val subtitleStatusRes = media?.status.toTextRes()
-        val subtitleSeason = media?.season
-        val subtitleSeasonYear = media?.seasonYear
 
         val rating = media?.averageScore
         val popularity = media?.popularity

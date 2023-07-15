@@ -4,7 +4,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.anilist.fragment.MediaDetailsListEntry
+import com.anilist.fragment.MediaNavigationData
 import com.anilist.type.MediaListStatus
+import com.anilist.type.MediaType
 import com.anilist.type.ScoreFormat
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import java.time.LocalDate
@@ -24,19 +26,29 @@ class MediaEditData {
     var showing by mutableStateOf(false)
     var deleting by mutableStateOf(false)
     var saving by mutableStateOf(false)
-    var errorRes by mutableStateOf<Pair<Int, Exception?>?>(null)
+    var error by mutableStateOf<Pair<Int, Throwable?>?>(null)
 
     var showConfirmClose by mutableStateOf(false)
 
-    fun isEqualTo(listEntry: MediaDetailsListEntry?, scoreFormat: ScoreFormat): Boolean {
-        return status == listEntry?.status
-                && fieldAsInt(progress) == (listEntry?.progress ?: 0)
-                && fieldAsInt(repeat) == (listEntry?.repeat ?: 0)
-                && fieldAsInt(priority) == (listEntry?.priority ?: 0)
-                && scoreRaw(scoreFormat) == (listEntry?.score?.toInt() ?: 0)
-                && startDate == MediaUtils.parseLocalDate(listEntry?.startedAt)
-                && endDate == MediaUtils.parseLocalDate(listEntry?.completedAt)
-                && private == (listEntry?.private ?: false)
+    fun isEqualTo(other: InitialParams?, scoreFormat: ScoreFormat): Boolean {
+        return status == other?.status
+                && fieldAsInt(progress) == (other?.progress ?: 0)
+                && fieldAsInt(repeat) == (other?.repeat ?: 0)
+                && fieldAsInt(priority) == (other?.priority ?: 0)
+                && scoreRaw(scoreFormat) == (other?.score?.toInt() ?: 0)
+                && startDate ==
+                MediaUtils.parseLocalDate(
+                    year = other?.startedAtYear,
+                    month = other?.startedAtMonth,
+                    dayOfMonth = other?.startedAtDay
+                )
+                && endDate ==
+                MediaUtils.parseLocalDate(
+                    year = other?.completedAtYear,
+                    month = other?.completedAtMonth,
+                    dayOfMonth = other?.completedAtDay
+                )
+                && private == (other?.private ?: false)
     }
 
     fun scoreRaw(scoreFormat: ScoreFormat): Int? {
@@ -61,6 +73,60 @@ class MediaEditData {
     private fun fieldAsInt(field: String): Int? {
         if (field.isBlank()) return 0
         return field.toIntOrNull()
+    }
+
+    data class InitialParams(
+        val id: String?,
+        val mediaId: String?,
+        val media: MediaNavigationData?,
+        val status: MediaListStatus?,
+        val score: Double?,
+        val progress: Int?,
+        val progressVolumes: Int?,
+        val repeat: Int?,
+        val priority: Int?,
+        val private: Boolean?,
+        val notes: String?,
+        val startedAtYear: Int?,
+        val startedAtMonth: Int?,
+        val startedAtDay: Int?,
+        val completedAtYear: Int?,
+        val completedAtMonth: Int?,
+        val completedAtDay: Int?,
+        val updatedAt: Int?,
+        val createdAt: Int?,
+        val mediaType: MediaType?,
+        val maxProgress: Int,
+    ) {
+        constructor(
+            mediaId: String?,
+            media: MediaNavigationData?,
+            mediaListEntry: MediaDetailsListEntry?,
+            mediaType: MediaType?,
+            maxProgress: Int,
+        ) : this(
+            id = mediaListEntry?.id?.toString(),
+            mediaId = mediaId,
+            media = media,
+            status = mediaListEntry?.status,
+            score = mediaListEntry?.score,
+            progress = mediaListEntry?.progress,
+            progressVolumes = mediaListEntry?.progressVolumes,
+            repeat = mediaListEntry?.repeat,
+            priority = mediaListEntry?.priority,
+            private = mediaListEntry?.private,
+            notes = mediaListEntry?.notes,
+            startedAtYear = mediaListEntry?.startedAt?.year,
+            startedAtMonth = mediaListEntry?.startedAt?.month,
+            startedAtDay = mediaListEntry?.startedAt?.day,
+            completedAtYear = mediaListEntry?.completedAt?.year,
+            completedAtMonth = mediaListEntry?.completedAt?.month,
+            completedAtDay = mediaListEntry?.completedAt?.day,
+            updatedAt = mediaListEntry?.updatedAt,
+            createdAt = mediaListEntry?.createdAt,
+            mediaType = mediaType,
+            maxProgress = maxProgress,
+        )
     }
 }
 

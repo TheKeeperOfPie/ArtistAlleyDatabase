@@ -45,7 +45,6 @@ import androidx.compose.material.icons.filled.PauseCircleOutline
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PlayCircleOutline
 import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.Divider
@@ -60,7 +59,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.contentColorFor
 import androidx.compose.material3.rememberBottomSheetScaffoldState
@@ -129,6 +127,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toStatusIco
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toStatusText
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.AnimeMediaEditBottomSheet
+import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
+import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.mediaListSection
 import com.thekeeperofpie.artistalleydatabase.anime.review.ReviewSmallCard
 import com.thekeeperofpie.artistalleydatabase.anime.staff.DetailsStaff
@@ -205,59 +205,21 @@ object AnimeMediaDetailsScreen {
         onTagLongClick: (String) -> Unit = {},
         navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
-        val bottomSheetScaffoldState = rememberBottomSheetScaffoldState(
-            bottomSheetState = rememberStandardBottomSheetState(
-                initialValue = SheetValue.Hidden,
-                confirmValueChange = viewModel::onEditSheetValueChange,
-                skipHiddenState = false,
-            )
-        )
-
-        val bottomSheetShowing = viewModel.editData.showing
-        LaunchedEffect(bottomSheetShowing) {
-            launch {
-                if (bottomSheetShowing) {
-                    bottomSheetScaffoldState.bottomSheetState.expand()
-                } else {
-                    bottomSheetScaffoldState.bottomSheetState.hide()
-                }
-            }
-        }
-
-        val currentValue = bottomSheetScaffoldState.bottomSheetState.currentValue
-        LaunchedEffect(currentValue) {
-            launch {
-                if (bottomSheetScaffoldState.bottomSheetState.currentValue == SheetValue.Hidden) {
-                    viewModel.editData.showing = false
-                }
-            }
-        }
-
-        val scope = rememberCoroutineScope()
-        BackHandler(
-            enabled = bottomSheetScaffoldState.bottomSheetState.currentValue != SheetValue.Hidden
-        ) {
-            if (viewModel.onEditSheetValueChange(SheetValue.Hidden)) {
-                scope.launch {
-                    bottomSheetScaffoldState.bottomSheetState.hide()
-                }
-            }
-        }
-
         val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
         val lazyListState = rememberLazyListState()
         val colorCalculationState = rememberColorCalculationState(viewModel.colorMap)
-        val listEntry by viewModel.listEntry.collectAsState()
-        val listEntryStatus by viewModel.listEntryStatus.collectAsState()
-        val scoreFormat by viewModel.scoreFormat.collectAsState()
 
         var coverImageWidthToHeightRatio by remember {
             mutableFloatStateOf(headerValues.coverImageWidthToHeightRatio)
         }
 
-        BottomSheetScaffold(
-            scaffoldState = bottomSheetScaffoldState,
-            sheetPeekHeight = 0.dp,
+        val editViewModel = hiltViewModel<MediaEditViewModel>()
+        MediaEditBottomSheetScaffold(
+            screenKey = AnimeNavDestinations.MEDIA_DETAILS.id,
+            viewModel = editViewModel,
+            media = viewModel.entry?.media,
+            colorCalculationState = colorCalculationState,
+            navigationCallback = navigationCallback,
             topBar = {
                 CollapsingToolbar(
                     maxHeight = 356.dp,
@@ -277,32 +239,6 @@ object AnimeMediaDetailsScreen {
                         onImageWidthToHeightRatioAvailable = { coverImageWidthToHeightRatio = it },
                     )
                 }
-            },
-            snackbarHost = {
-                val editData = viewModel.editData
-                if (editData.errorRes != null) {
-                    SnackbarErrorText(
-                        editData.errorRes?.first,
-                        editData.errorRes?.second,
-                        onErrorDismiss = { editData.errorRes = null },
-                    )
-                } else {
-                    // Bottom sheet requires at least one measurable component
-                    Spacer(modifier = Modifier.size(0.dp))
-                }
-            },
-            sheetContent = {
-                AnimeMediaEditBottomSheet(
-                    editData = viewModel.editData,
-                    id = { listEntry?.id?.toString() },
-                    type = { entry()?.media?.type },
-                    progressMax = { entry()?.media?.run { episodes ?: volumes } ?: 1 },
-                    scoreFormat = { scoreFormat },
-                    onDateChange = viewModel::onDateChange,
-                    onStatusChange = viewModel::onStatusChange,
-                    onClickDelete = viewModel::onClickDelete,
-                    onClickSave = viewModel::onClickSave,
-                )
             },
         ) {
             Scaffold(
@@ -328,45 +264,49 @@ object AnimeMediaDetailsScreen {
                                 ComposeColorUtils.bestTextColor(containerColor)
                                     ?: contentColorFor(containerColor)
 
+                            val initialParams =
+                                editViewModel.initialParams.collectAsState().value
                             ExtendedFloatingActionButton(
                                 text = {
                                     val progress = if (media.type == MediaType.ANIME) {
-                                        listEntry?.progress
+                                        initialParams?.progress
                                     } else {
-                                        listEntry?.progressVolumes
+                                        initialParams?.progressVolumes
                                     } ?: 0
+
                                     val progressMax = if (media.type == MediaType.ANIME) {
                                         media.episodes
                                     } else {
                                         media.volumes
-                                    } ?: 1
+                                    }
 
                                     Text(
-                                        listEntryStatus.toStatusText(
+                                        initialParams?.status.toStatusText(
                                             mediaType = media.type,
                                             progress = progress,
                                             progressMax = progressMax,
-                                            score = listEntry?.score,
-                                            scoreFormat = viewModel.scoreFormat.collectAsState().value,
+                                            score = initialParams?.score,
+                                            scoreFormat = editViewModel.scoreFormat
+                                                .collectAsState().value,
                                         )
                                     )
                                 },
                                 icon = {
-                                    val (vector, contentDescription) = listEntryStatus
+                                    val (vector, contentDescription) = initialParams?.status
                                         .toStatusIcon(mediaType = media.type)
                                     Icon(
                                         imageVector = vector,
                                         contentDescription = stringResource(contentDescription),
                                     )
                                 },
-                                expanded = listEntryStatus
+                                expanded = initialParams?.status
                                     ?.takeUnless { it == MediaListStatus.UNKNOWN__ }
                                     ?.takeIf { expanded } != null,
                                 containerColor = containerColor,
                                 contentColor = contentColor,
                                 onClick = {
                                     if (showFloatingActionButton) {
-                                        viewModel.editData.showing = true
+                                        editViewModel.editData.showing = true
                                     }
                                 },
                             )
@@ -407,33 +347,6 @@ object AnimeMediaDetailsScreen {
                     }
                 }
             }
-        }
-
-        if (viewModel.editData.showConfirmClose) {
-            AlertDialog(
-                onDismissRequest = { viewModel.editData.showConfirmClose = false },
-                title = { Text(stringResource(R.string.anime_media_edit_confirm_close_title)) },
-                text = { Text(stringResource(R.string.anime_media_edit_confirm_close_text)) },
-                confirmButton = {
-                    TextButton(onClick = {
-                        viewModel.editData.showConfirmClose = false
-                        viewModel.onClickSave()
-                    }) {
-                        Text(stringResource(UtilsStringR.yes))
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = {
-                        viewModel.editData.showConfirmClose = false
-                        viewModel.editData.showing = false
-                        scope.launch {
-                            bottomSheetScaffoldState.bottomSheetState.hide()
-                        }
-                    }) {
-                        Text(stringResource(UtilsStringR.no))
-                    }
-                },
-            )
         }
     }
 
@@ -1191,7 +1104,10 @@ object AnimeMediaDetailsScreen {
             onTagLongClick = onTagLongClick,
             onClickViewAll = {
                 entry.let {
-                    navigationCallback.onMediaRecommendationsClick(it, coverImageWidthToHeightRatio())
+                    navigationCallback.onMediaRecommendationsClick(
+                        it,
+                        coverImageWidthToHeightRatio()
+                    )
                 }
             },
             viewAllContentDescriptionTextRes = R.string.anime_media_details_view_all_content_description,

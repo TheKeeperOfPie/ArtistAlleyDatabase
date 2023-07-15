@@ -35,6 +35,7 @@ fragment MediaPreview on Media {
     }
     averageScore
     episodes
+    volumes
     format
     genres
     isAdult
@@ -584,6 +585,21 @@ query MediaAndRecommendationsPagination(
             nodes {
                 ...MediaAndRecommendationsRecommendation
             }
+        }
+    }
+}
+
+query MediaListEntry($id: Int!) {
+    Media(id: $id) @nonnull {
+        type
+        episodes
+        volumes
+        status
+        nextAiringEpisode {
+            episode
+        }
+        mediaListEntry {
+            ...MediaDetailsListEntry
         }
     }
 }

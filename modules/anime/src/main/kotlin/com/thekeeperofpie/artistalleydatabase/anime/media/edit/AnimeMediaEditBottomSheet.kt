@@ -3,24 +3,32 @@ package com.thekeeperofpie.artistalleydatabase.anime.media.edit
 import androidx.annotation.StringRes
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircleOutline
+import androidx.compose.material.icons.filled.ImageNotSupported
 import androidx.compose.material.icons.filled.RemoveCircleOutline
 import androidx.compose.material.icons.filled.SentimentNeutral
 import androidx.compose.material.icons.filled.SentimentVeryDissatisfied
@@ -39,61 +47,150 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
+import coil.size.Dimension
+import com.anilist.fragment.MediaNavigationData
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
 import com.anilist.type.ScoreFormat
+import com.google.accompanist.placeholder.PlaceholderHighlight
+import com.google.accompanist.placeholder.material.placeholder
+import com.google.accompanist.placeholder.material.shimmer
+import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaCompactListRow
+import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaLargeCard.Entry.Loading.media
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toStatusIcon
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.ui.StartEndDateDialog
 import com.thekeeperofpie.artistalleydatabase.anime.ui.StartEndDateRow
+import com.thekeeperofpie.artistalleydatabase.compose.AutoSizeText
+import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
+import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.ItemDropdown
+import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
+import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalFoundationApi::class)
 @Suppress("NAME_SHADOWING")
 object AnimeMediaEditBottomSheet {
 
+    private val DEFAULT_IMAGE_HEIGHT = 100.dp
+    private val DEFAULT_IMAGE_WIDTH = 72.dp
+
     @Composable
     operator fun invoke(
-        editData: MediaEditData,
-        id: @Composable () -> String?,
-        type: @Composable () -> MediaType?,
-        progressMax: @Composable () -> Int,
-        scoreFormat: @Composable () -> ScoreFormat,
-        onDateChange: (start: Boolean, Long?) -> Unit,
-        onStatusChange: (status: MediaListStatus?) -> Unit,
-        onClickDelete: () -> Unit,
-        onClickSave: () -> Unit,
+        screenKey: String,
+        viewModel: MediaEditViewModel,
+        modifier: Modifier = Modifier,
+        onLongPressImage: (MediaNavigationData) -> Unit = { /* TODO */ },
+        onDismiss: () -> Unit,
+        colorCalculationState: ColorCalculationState,
+        navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
         var startEndDateShown by remember { mutableStateOf<Boolean?>(null) }
         var showDelete by remember { mutableStateOf(false) }
 
+        Divider()
         Column(
-            modifier = Modifier
+            modifier = modifier
                 .verticalScroll(rememberScrollState())
                 .wrapContentHeight()
         ) {
-            Divider()
+            val initialParams by viewModel.initialParams.collectAsState()
+            val media = initialParams?.media
+            if (media != null) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .height(IntrinsicSize.Min)
+                        .padding(horizontal = 16.dp, vertical = 10.dp)
+                ) {
+                    SharedElement(
+                        key = "anime_media_${media.id}_image",
+                        screenKey = screenKey,
+                    ) {
+                        var imageWidthToHeightRatio by remember { mutableFloatStateOf(1f) }
+                        AsyncImage(
+                            model = ImageRequest.Builder(LocalContext.current)
+                                .data(media.coverImage?.extraLarge)
+                                .crossfade(true)
+                                .allowHardware(colorCalculationState.hasColor(media.id?.toString()))
+                                .build(),
+                            contentScale = ContentScale.FillHeight,
+                            fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
+                            onSuccess = {
+                                imageWidthToHeightRatio = it.widthToHeightRatio()
+                                ComposeColorUtils.calculatePalette(
+                                    media.id.toString(),
+                                    it,
+                                    colorCalculationState,
+                                )
+                            },
+                            contentDescription = stringResource(R.string.anime_media_cover_image_content_description),
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(MaterialTheme.colorScheme.surfaceVariant)
+                                .fillMaxHeight()
+                                .size(width = DEFAULT_IMAGE_WIDTH, height = DEFAULT_IMAGE_HEIGHT)
+                                .combinedClickable(
+                                    onClick = {
+                                        navigationCallback.onMediaClick(
+                                            media,
+                                            imageWidthToHeightRatio,
+                                        )
+                                    },
+                                    onLongClick = { onLongPressImage(media) },
+                                    onLongClickLabel = stringResource(
+                                        R.string.anime_media_cover_image_long_press_preview
+                                    ),
+                                )
+                        )
+                    }
 
-            val isAnime = type() == MediaType.ANIME
+                    AutoSizeText(
+                        text = media.title?.userPreferred.orEmpty(),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Black,
+                        modifier = Modifier
+                            .weight(1f)
+                    )
+                }
+
+                Divider()
+            }
+
+            val isAnime = initialParams?.mediaType == MediaType.ANIME
             SectionHeader(R.string.anime_media_edit_status_label)
             ItemDropdown(
-                value = editData.status,
+                value = viewModel.editData.status,
                 iconContentDescription = R.string.anime_media_edit_status_dropdown_content_description,
                 values = {
                     listOf(
@@ -108,24 +205,24 @@ object AnimeMediaEditBottomSheet {
                 },
                 iconForValue = {
                     val (imageVector, contentDescriptionRes) =
-                        it.toStatusIcon(mediaType = type())
+                        it.toStatusIcon(mediaType = initialParams?.mediaType)
                     Icon(
                         imageVector = imageVector,
                         contentDescription = stringResource(contentDescriptionRes),
                     )
                 },
                 textForValue = { stringResource(it.toTextRes(isAnime)) },
-                onSelectItem = onStatusChange,
+                onSelectItem = viewModel::onStatusChange,
                 modifier = Modifier.padding(horizontal = 16.dp),
             )
 
             TwoColumn(
                 labelOneRes = R.string.anime_media_edit_progress_label,
                 columnOneContent = {
-                    val progress = editData.progress
+                    val progress = viewModel.editData.progress
                     TextField(
                         value = progress,
-                        onValueChange = { editData.progress = it },
+                        onValueChange = { viewModel.editData.progress = it },
                         singleLine = true,
                         textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
                         keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
@@ -140,7 +237,7 @@ object AnimeMediaEditBottomSheet {
                                 enabled = visible,
                                 onClick = {
                                     progress.toIntOrNull()?.let {
-                                        editData.progress = (it - 1).toString()
+                                        viewModel.editData.progress = (it - 1).toString()
                                     }
                                 },
                                 modifier = Modifier.alpha(alpha)
@@ -156,7 +253,7 @@ object AnimeMediaEditBottomSheet {
                         trailingIcon = {
                             val visible = progress.isBlank()
                                     || progress.toIntOrNull()
-                                ?.let { it < progressMax() } == true
+                                ?.let { it < (initialParams?.maxProgress ?: 1) } == true
                             val alpha by animateFloatAsState(
                                 if (visible) 1f else 0f,
                                 label = "Progress increment alpha",
@@ -165,10 +262,10 @@ object AnimeMediaEditBottomSheet {
                                 enabled = visible,
                                 onClick = {
                                     if (progress.isBlank()) {
-                                        editData.progress = "1"
+                                        viewModel.editData.progress = "1"
                                     } else {
                                         progress.toIntOrNull()?.let {
-                                            editData.progress = (it + 1).toString()
+                                            viewModel.editData.progress = (it + 1).toString()
                                         }
                                     }
                                 },
@@ -187,10 +284,10 @@ object AnimeMediaEditBottomSheet {
                 },
                 labelTwoRes = R.string.anime_media_edit_repeat_label,
                 columnTwoContent = {
-                    val repeat = editData.repeat
+                    val repeat = viewModel.editData.repeat
                     TextField(
                         value = repeat,
-                        onValueChange = { editData.repeat = it },
+                        onValueChange = { viewModel.editData.repeat = it },
                         singleLine = true,
                         textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
                         keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
@@ -205,7 +302,7 @@ object AnimeMediaEditBottomSheet {
                                 enabled = visible,
                                 onClick = {
                                     repeat.toIntOrNull()?.let {
-                                        editData.repeat = (it - 1).toString()
+                                        viewModel.editData.repeat = (it - 1).toString()
                                     }
                                 },
                                 modifier = Modifier.alpha(alpha),
@@ -222,10 +319,10 @@ object AnimeMediaEditBottomSheet {
                             IconButton(
                                 onClick = {
                                     if (repeat.isBlank()) {
-                                        editData.repeat = "1"
+                                        viewModel.editData.repeat = "1"
                                     } else {
                                         repeat.toIntOrNull()?.let {
-                                            editData.repeat = (it + 1).toString()
+                                            viewModel.editData.repeat = (it + 1).toString()
                                         }
                                     }
                                 }) {
@@ -243,34 +340,34 @@ object AnimeMediaEditBottomSheet {
             )
 
             ScoreSection(
-                format = scoreFormat,
-                score = { editData.score },
-                onScoreChange = { editData.score = it },
+                format = { viewModel.scoreFormat.collectAsState().value },
+                score = { viewModel.editData.score },
+                onScoreChange = { viewModel.editData.score = it },
             )
 
             SectionHeader(R.string.anime_media_edit_date_label)
             StartEndDateRow(
-                startDate = editData.startDate,
-                endDate = editData.endDate,
+                startDate = viewModel.editData.startDate,
+                endDate = viewModel.editData.endDate,
                 onRequestDatePicker = { startEndDateShown = it },
-                onDateChange = onDateChange,
+                onDateChange = viewModel::onDateChange,
             )
 
             if (startEndDateShown != null) {
                 StartEndDateDialog(
                     shownForStartDate = startEndDateShown,
                     onShownForStartDateChange = { startEndDateShown = it },
-                    onDateChange = onDateChange,
+                    onDateChange = viewModel::onDateChange,
                 )
             }
 
             TwoColumn(
                 labelOneRes = R.string.anime_media_edit_priority_label,
                 columnOneContent = {
-                    val priority = editData.priority
+                    val priority = viewModel.editData.priority
                     TextField(
                         value = priority,
-                        onValueChange = { editData.priority = it },
+                        onValueChange = { viewModel.editData.priority = it },
                         singleLine = true,
                         textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
                         keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
@@ -285,7 +382,7 @@ object AnimeMediaEditBottomSheet {
                                 enabled = visible,
                                 onClick = {
                                     priority.toIntOrNull()?.let {
-                                        editData.priority = (it - 1).toString()
+                                        viewModel.editData.priority = (it - 1).toString()
                                     }
                                 },
                                 modifier = Modifier.alpha(alpha),
@@ -302,10 +399,10 @@ object AnimeMediaEditBottomSheet {
                             IconButton(
                                 onClick = {
                                     if (priority.isBlank()) {
-                                        editData.priority = "1"
+                                        viewModel.editData.priority = "1"
                                     } else {
                                         priority.toIntOrNull()?.let {
-                                            editData.priority = (it + 1).toString()
+                                            viewModel.editData.priority = (it + 1).toString()
                                         }
                                     }
                                 }) {
@@ -328,7 +425,7 @@ object AnimeMediaEditBottomSheet {
                         false -> R.string.anime_media_edit_private_false
                     }.let { stringResource(it) }
                     ItemDropdown(
-                        value = editData.private,
+                        value = viewModel.editData.private,
                         iconContentDescription = R.string.anime_media_edit_private_dropdown_content_description,
                         values = {
                             listOf(
@@ -337,13 +434,13 @@ object AnimeMediaEditBottomSheet {
                             )
                         },
                         textForValue = { it.toPrivateText() },
-                        onSelectItem = { editData.private = it },
+                        onSelectItem = { viewModel.editData.private = it },
                         modifier = Modifier.fillMaxWidth(),
                     )
                 }
             )
 
-            val createdAt = editData.createdAt
+            val createdAt = viewModel.editData.createdAt
             val createdAtShown = createdAt != null && createdAt > 0
             if (createdAtShown) {
                 Text(
@@ -354,16 +451,12 @@ object AnimeMediaEditBottomSheet {
                             createdAt!! * 1000,
                         ),
                     ),
-                    modifier = Modifier.padding(
-                        start = 16.dp,
-                        end = 16.dp,
-                        top = 16.dp,
-                        bottom = 4.dp
-                    ),
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                 )
             }
 
-            val updatedAt = editData.updatedAt
+            val updatedAt = viewModel.editData.updatedAt
             if (updatedAt != null && updatedAt > 0) {
                 Text(
                     text = stringResource(
@@ -373,24 +466,23 @@ object AnimeMediaEditBottomSheet {
                             updatedAt * 1000,
                         ),
                     ),
+                    style = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier.padding(
                         start = 16.dp,
                         end = 16.dp,
-                        top = if (createdAtShown) 4.dp else 16.dp,
-                        bottom = 10.dp
+                        top = if (createdAtShown) 0.dp else 8.dp,
+                        bottom = 8.dp
                     ),
                 )
             }
 
-            Spacer(Modifier.height(32.dp))
-
             Divider()
 
             Row(modifier = Modifier.align(Alignment.End)) {
-                if (id() != null) {
+                if (initialParams?.id != null) {
                     TextButton(onClick = { showDelete = true }) {
                         Crossfade(
-                            targetState = editData.deleting,
+                            targetState = viewModel.editData.deleting,
                             label = "Media edit delete indicator crossfade"
                         ) {
                             if (it) {
@@ -408,9 +500,9 @@ object AnimeMediaEditBottomSheet {
                     }
                 }
 
-                TextButton(onClick = onClickSave) {
+                TextButton(onClick = viewModel::onClickSave) {
                     Crossfade(
-                        targetState = editData.saving,
+                        targetState = viewModel.editData.saving,
                         label = "Media edit save indicator crossfade"
                     ) {
                         if (it) {
@@ -436,13 +528,37 @@ object AnimeMediaEditBottomSheet {
                 confirmButton = {
                     TextButton(onClick = {
                         showDelete = false
-                        onClickDelete()
+                        viewModel.onClickDelete()
                     }) {
                         Text(stringResource(UtilsStringR.yes))
                     }
                 },
                 dismissButton = {
                     TextButton(onClick = { showDelete = false }) {
+                        Text(stringResource(UtilsStringR.no))
+                    }
+                },
+            )
+        } else if (viewModel.editData.showConfirmClose) {
+            AlertDialog(
+                onDismissRequest = { viewModel.editData.showConfirmClose = false },
+                title = { Text(stringResource(R.string.anime_media_edit_confirm_close_title)) },
+                text = { Text(stringResource(R.string.anime_media_edit_confirm_close_text)) },
+                confirmButton = {
+                    TextButton(onClick = {
+                        viewModel.editData.showConfirmClose = false
+                        viewModel.onClickSave()
+                    }) {
+                        Text(stringResource(UtilsStringR.yes))
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = {
+                        viewModel.editData.showConfirmClose = false
+                        viewModel.editData.showing = false
+                        viewModel.dismissRequests.tryEmit(System.currentTimeMillis())
+                        onDismiss()
+                    }) {
                         Text(stringResource(UtilsStringR.no))
                     }
                 },
@@ -629,7 +745,7 @@ object AnimeMediaEditBottomSheet {
                     start = horizontalPadding,
                     end = horizontalPadding,
                     top = 12.dp,
-                    bottom = 8.dp,
+                    bottom = 4.dp,
                 )
         )
     }

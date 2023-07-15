@@ -45,6 +45,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
+import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
+import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeMediaFilterOptionsBottomPanel
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffListRow
 import com.thekeeperofpie.artistalleydatabase.anime.user.UserListRow
@@ -74,198 +76,212 @@ object AnimeSearchScreen {
     ) {
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
         val colorCalculationState = rememberColorCalculationState(viewModel.colorMap)
-        AnimeMediaFilterOptionsBottomPanel(
-            topBar = {
-                if (isRoot) {
-                    EnterAlwaysTopAppBar(scrollBehavior = scrollBehavior) {
-                        val isNotEmpty by remember { derivedStateOf { viewModel.query.isNotEmpty() } }
-                        BackHandler(isNotEmpty && !WindowInsets.isImeVisible) {
-                            viewModel.query = ""
-                        }
-                        Column {
-                            StaticSearchBar(
-                                query = viewModel.query,
-                                onQueryChange = { viewModel.query = it },
-                                leadingIcon = if (upIconOption != null) {
-                                    { UpIconButton(upIconOption) }
-                                } else null,
-                                placeholder = {
-                                    Text(
-                                        stringResource(
-                                            when (viewModel.selectedType) {
-                                                AnimeSearchViewModel.SearchType.ANIME ->
-                                                    R.string.anime_search_anime
-                                                AnimeSearchViewModel.SearchType.MANGA ->
-                                                    R.string.anime_search_manga
-                                                AnimeSearchViewModel.SearchType.CHARACTER ->
-                                                    R.string.anime_search_characters
-                                                AnimeSearchViewModel.SearchType.STAFF ->
-                                                    R.string.anime_search_staff
-                                                AnimeSearchViewModel.SearchType.USER ->
-                                                    R.string.anime_search_user
-                                            }
-                                        )
-                                    )
-                                },
-                                trailingIcon = {
-                                    IconButton(onClick = { viewModel.query = "" }) {
-                                        Icon(
-                                            imageVector = Icons.Filled.Clear,
-                                            contentDescription = stringResource(
-                                                R.string.anime_search_clear
-                                            ),
-                                        )
-                                    }
-                                },
-                                modifier = Modifier.background(MaterialTheme.colorScheme.surface)
-                            )
 
-                            val selectedTypeIndex = AnimeSearchViewModel.SearchType.values()
-                                .indexOf(viewModel.selectedType)
-                            ScrollableTabRow(
-                                selectedTabIndex = selectedTypeIndex,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .align(Alignment.CenterHorizontally),
-                                divider = { /* No divider, manually draw so that it's full width */ }
-                            ) {
-                                AnimeSearchViewModel.SearchType.values()
-                                    .forEachIndexed { index, tab ->
-                                        Tab(
-                                            selected = selectedTypeIndex == index,
-                                            onClick = { viewModel.selectedType = tab },
-                                            text = {
-                                                Text(
-                                                    text = stringResource(tab.textRes),
-                                                    maxLines = 1,
-                                                )
-                                            }
-                                        )
-                                    }
-                            }
-
-                            Divider()
-                        }
-                    }
-                } else if (title != null) {
-                    val text = if (title is Either.Left) {
-                        stringResource(title.value)
-                    } else {
-                        title.rightOrNull().orEmpty()
-                    }
-                    AppBar(
-                        text = text,
-                        upIconOption = upIconOption,
-                        scrollBehavior = scrollBehavior,
-                    )
-                }
-            },
-            filterData = viewModel::filterData,
-            onTagLongClick = viewModel::onTagLongClick,
-            showLoadSave = true,
+        val editViewModel = hiltViewModel<MediaEditViewModel>()
+        MediaEditBottomSheetScaffold(
+            screenKey = AnimeNavDestinations.SEARCH.id,
+            viewModel = editViewModel,
+            colorCalculationState = colorCalculationState,
+            navigationCallback = navigationCallback,
             bottomNavigationState = bottomNavigationState,
-        ) { scaffoldPadding ->
-            val content = viewModel.content.collectAsLazyPagingItems()
-            val refreshing = content.loadState.refresh is LoadState.Loading
-            val density = LocalDensity.current
-            val topBarPadding by remember {
-                derivedStateOf {
-                    scrollBehavior.state.heightOffsetLimit
-                        .takeUnless { it == -Float.MAX_VALUE }
-                        ?.let { density.run { -it.toDp() } }
-                        ?: 0.dp
-                }
-            }
-            AnimeMediaListScreen(
-                refreshing = refreshing,
-                onRefresh = viewModel::onRefresh,
-                tagShown = viewModel::tagShown,
-                onTagDismiss = { viewModel.tagShown = null },
-                pullRefreshTopPadding = { topBarPadding },
-                modifier = Modifier.nestedScroll(
-                    NestedScrollSplitter(
-                        bottomNavigationState?.nestedScrollConnection,
-                        scrollBehavior.nestedScrollConnection,
-                        consumeNone = true,
-                    )
-                )
-            ) { onLongPressImage ->
-                when (val refreshState = content.loadState.refresh) {
-                    LoadState.Loading -> Unit
-                    is LoadState.Error -> AnimeMediaListScreen.Error(
-                        exception = refreshState.error,
-                        modifier = Modifier.padding(top = topBarPadding),
-                    )
-                    is LoadState.NotLoading -> {
-                        if (content.itemCount == 0) {
-                            AnimeMediaListScreen.NoResults(Modifier.padding(top = topBarPadding))
-                        } else {
-                            LazyColumn(
-                                state = scrollStateSaver.lazyListState(),
-                                contentPadding = PaddingValues(
-                                    start = 16.dp,
-                                    end = 16.dp,
-                                    top = 16.dp + topBarPadding,
-                                    bottom = 16.dp + scaffoldPadding.calculateBottomPadding()
-                                ),
-                                verticalArrangement = Arrangement.spacedBy(16.dp),
-                            ) {
-                                items(
-                                    count = content.itemCount,
-                                    key = content.itemKey { it.entryId.scopedId },
-                                    contentType = content.itemContentType { it.entryId.type }
-                                ) { index ->
-                                    when (val item = content[index]) {
-                                        is AnimeSearchEntry.Media<*> -> AnimeMediaListRow(
-                                            screenKey = AnimeNavDestinations.SEARCH.id,
-                                            entry = item,
-                                            onLongClick = {
-                                                viewModel.ignoreList
-                                                    .toggle(item.media.id.toString())
-                                            },
-                                            onTagLongClick = viewModel::onTagLongClick,
-                                            onLongPressImage = onLongPressImage,
-                                            colorCalculationState = colorCalculationState,
-                                            navigationCallback = navigationCallback,
+        ) {
+            AnimeMediaFilterOptionsBottomPanel(
+                topBar = {
+                    if (isRoot) {
+                        EnterAlwaysTopAppBar(scrollBehavior = scrollBehavior) {
+                            val isNotEmpty by remember { derivedStateOf { viewModel.query.isNotEmpty() } }
+                            BackHandler(isNotEmpty && !WindowInsets.isImeVisible) {
+                                viewModel.query = ""
+                            }
+                            Column {
+                                StaticSearchBar(
+                                    query = viewModel.query,
+                                    onQueryChange = { viewModel.query = it },
+                                    leadingIcon = if (upIconOption != null) {
+                                        { UpIconButton(upIconOption) }
+                                    } else null,
+                                    placeholder = {
+                                        Text(
+                                            stringResource(
+                                                when (viewModel.selectedType) {
+                                                    AnimeSearchViewModel.SearchType.ANIME ->
+                                                        R.string.anime_search_anime
+                                                    AnimeSearchViewModel.SearchType.MANGA ->
+                                                        R.string.anime_search_manga
+                                                    AnimeSearchViewModel.SearchType.CHARACTER ->
+                                                        R.string.anime_search_characters
+                                                    AnimeSearchViewModel.SearchType.STAFF ->
+                                                        R.string.anime_search_staff
+                                                    AnimeSearchViewModel.SearchType.USER ->
+                                                        R.string.anime_search_user
+                                                }
+                                            )
                                         )
-                                        is AnimeSearchEntry.Character -> CharacterListRow(
-                                            screenKey = AnimeNavDestinations.SEARCH.id,
-                                            entry = item,
-                                            onLongPressImage = { /* TODO */ },
-                                            colorCalculationState = colorCalculationState,
-                                            navigationCallback = navigationCallback,
-                                        )
-                                        is AnimeSearchEntry.Staff -> StaffListRow(
-                                            screenKey = AnimeNavDestinations.SEARCH.id,
-                                            entry = item,
-                                            onLongPressImage = { /* TODO */ },
-                                            colorCalculationState = colorCalculationState,
-                                            navigationCallback = navigationCallback,
-                                        )
-                                        is AnimeSearchEntry.User -> UserListRow(
-                                            entry = item,
-                                            onLongPressImage = { /* TODO */ },
-                                            colorCalculationState = colorCalculationState,
-                                            navigationCallback = navigationCallback,
-                                        )
+                                    },
+                                    trailingIcon = {
+                                        IconButton(onClick = { viewModel.query = "" }) {
+                                            Icon(
+                                                imageVector = Icons.Filled.Clear,
+                                                contentDescription = stringResource(
+                                                    R.string.anime_search_clear
+                                                ),
+                                            )
+                                        }
+                                    },
+                                    modifier = Modifier.background(MaterialTheme.colorScheme.surface)
+                                )
 
-                                        // TODO: Separated placeholder types
-                                        null -> AnimeMediaListRow<MediaPreview>(
-                                            screenKey = AnimeNavDestinations.SEARCH.id,
-                                            entry = null,
-                                            onLongClick = {},
-                                        )
-                                    }
+                                val selectedTypeIndex = AnimeSearchViewModel.SearchType.values()
+                                    .indexOf(viewModel.selectedType)
+                                ScrollableTabRow(
+                                    selectedTabIndex = selectedTypeIndex,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .align(Alignment.CenterHorizontally),
+                                    divider = { /* No divider, manually draw so that it's full width */ }
+                                ) {
+                                    AnimeSearchViewModel.SearchType.values()
+                                        .forEachIndexed { index, tab ->
+                                            Tab(
+                                                selected = selectedTypeIndex == index,
+                                                onClick = { viewModel.selectedType = tab },
+                                                text = {
+                                                    Text(
+                                                        text = stringResource(tab.textRes),
+                                                        maxLines = 1,
+                                                    )
+                                                }
+                                            )
+                                        }
                                 }
 
-                                when (content.loadState.append) {
-                                    is LoadState.Loading -> item(key = "load_more_append") {
-                                        AnimeMediaListScreen.LoadingMore()
+                                Divider()
+                            }
+                        }
+                    } else if (title != null) {
+                        val text = if (title is Either.Left) {
+                            stringResource(title.value)
+                        } else {
+                            title.rightOrNull().orEmpty()
+                        }
+                        AppBar(
+                            text = text,
+                            upIconOption = upIconOption,
+                            scrollBehavior = scrollBehavior,
+                        )
+                    }
+                },
+                filterData = viewModel::filterData,
+                onTagLongClick = viewModel::onTagLongClick,
+                showLoadSave = true,
+                bottomNavigationState = bottomNavigationState,
+            ) { scaffoldPadding ->
+                val content = viewModel.content.collectAsLazyPagingItems()
+                val refreshing = content.loadState.refresh is LoadState.Loading
+                val density = LocalDensity.current
+                val topBarPadding by remember {
+                    derivedStateOf {
+                        scrollBehavior.state.heightOffsetLimit
+                            .takeUnless { it == -Float.MAX_VALUE }
+                            ?.let { density.run { -it.toDp() } }
+                            ?: 0.dp
+                    }
+                }
+                AnimeMediaListScreen(
+                    refreshing = refreshing,
+                    onRefresh = viewModel::onRefresh,
+                    tagShown = viewModel::tagShown,
+                    onTagDismiss = { viewModel.tagShown = null },
+                    pullRefreshTopPadding = { topBarPadding },
+                    modifier = Modifier.nestedScroll(
+                        NestedScrollSplitter(
+                            bottomNavigationState?.nestedScrollConnection,
+                            scrollBehavior.nestedScrollConnection,
+                            consumeNone = true,
+                        )
+                    )
+                ) { onLongPressImage ->
+                    when (val refreshState = content.loadState.refresh) {
+                        LoadState.Loading -> Unit
+                        is LoadState.Error -> AnimeMediaListScreen.Error(
+                            exception = refreshState.error,
+                            modifier = Modifier.padding(top = topBarPadding),
+                        )
+                        is LoadState.NotLoading -> {
+                            if (content.itemCount == 0) {
+                                AnimeMediaListScreen.NoResults(Modifier.padding(top = topBarPadding))
+                            } else {
+                                LazyColumn(
+                                    state = scrollStateSaver.lazyListState(),
+                                    contentPadding = PaddingValues(
+                                        start = 16.dp,
+                                        end = 16.dp,
+                                        top = 16.dp + topBarPadding,
+                                        bottom = 16.dp + scaffoldPadding.calculateBottomPadding()
+                                    ),
+                                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                                ) {
+                                    items(
+                                        count = content.itemCount,
+                                        key = content.itemKey { it.entryId.scopedId },
+                                        contentType = content.itemContentType { it.entryId.type }
+                                    ) { index ->
+                                        when (val item = content[index]) {
+                                            is AnimeSearchEntry.Media<*> -> AnimeMediaListRow(
+                                                screenKey = AnimeNavDestinations.SEARCH.id,
+                                                entry = item,
+                                                onClickListEdit = {
+                                                    editViewModel.initialize(it.media)
+                                                },
+                                                onLongClick = {
+                                                    viewModel.ignoreList
+                                                        .toggle(item.media.id.toString())
+                                                },
+                                                onTagLongClick = viewModel::onTagLongClick,
+                                                onLongPressImage = onLongPressImage,
+                                                colorCalculationState = colorCalculationState,
+                                                navigationCallback = navigationCallback,
+                                            )
+                                            is AnimeSearchEntry.Character -> CharacterListRow(
+                                                screenKey = AnimeNavDestinations.SEARCH.id,
+                                                entry = item,
+                                                onLongPressImage = { /* TODO */ },
+                                                colorCalculationState = colorCalculationState,
+                                                navigationCallback = navigationCallback,
+                                            )
+                                            is AnimeSearchEntry.Staff -> StaffListRow(
+                                                screenKey = AnimeNavDestinations.SEARCH.id,
+                                                entry = item,
+                                                onLongPressImage = { /* TODO */ },
+                                                colorCalculationState = colorCalculationState,
+                                                navigationCallback = navigationCallback,
+                                            )
+                                            is AnimeSearchEntry.User -> UserListRow(
+                                                entry = item,
+                                                onLongPressImage = { /* TODO */ },
+                                                colorCalculationState = colorCalculationState,
+                                                navigationCallback = navigationCallback,
+                                            )
+
+                                            // TODO: Separated placeholder types
+                                            null -> AnimeMediaListRow<MediaPreview>(
+                                                screenKey = AnimeNavDestinations.SEARCH.id,
+                                                entry = null,
+                                                onClickListEdit = {},
+                                                onLongClick = {},
+                                            )
+                                        }
                                     }
-                                    is LoadState.Error -> item(key = "load_more_error") {
-                                        AnimeMediaListScreen.AppendError { content.retry() }
+
+                                    when (content.loadState.append) {
+                                        is LoadState.Loading -> item(key = "load_more_append") {
+                                            AnimeMediaListScreen.LoadingMore()
+                                        }
+                                        is LoadState.Error -> item(key = "load_more_error") {
+                                            AnimeMediaListScreen.AppendError { content.retry() }
+                                        }
+                                        is LoadState.NotLoading -> Unit
                                     }
-                                    is LoadState.NotLoading -> Unit
                                 }
                             }
                         }
