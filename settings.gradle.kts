@@ -28,7 +28,7 @@ dependencyResolutionManagement {
     versionCatalogs {
         create("kaptProcessors") {
             prefix("androidx") { library("androidx.hilt:hilt-compiler:1.0.0") }
-            prefix("dagger") { library("com.google.dagger:hilt-compiler:2.46.1") }
+            prefix("dagger") { library("com.google.dagger:hilt-compiler:2.47") }
         }
 
         create("kspProcessors") {
@@ -41,7 +41,7 @@ dependencyResolutionManagement {
             plugin("com.apollographql.apollo3.external").version("4.0.0-alpha.2")
             plugin("com.autonomousapps.dependency-analysis").version("1.20.0")
             plugin("com.github.ben-manes.versions").version("0.47.0")
-            plugin("com.google.dagger.hilt.android").version("2.46.1")
+            plugin("com.google.dagger.hilt.android").version("2.47")
             plugin("com.jaredsburrows.license").version("0.9.3")
             plugin("org.barfuin.gradle.taskinfo").version("2.1.0")
             plugin("org.jetbrains.kotlin.plugin.serialization").version("1.9.0")
@@ -84,7 +84,7 @@ dependencyResolutionManagement {
             library("com.google.accompanist:accompanist-placeholder-material:0.31.5-beta")
             library("com.google.accompanist:accompanist-navigation-animation:0.31.5-beta")
             library("com.google.accompanist:accompanist-pager-indicators:0.31.5-beta")
-            library("com.google.dagger:hilt-android:2.46.1")
+            library("com.google.dagger:hilt-android:2.47")
             library("com.google.net.cronet:cronet-okhttp:0.1.0")
             library("com.google.truth:truth:1.1.5")
             library("com.linkedin.dexmaker:dexmaker-mockito-inline:2.28.3")
