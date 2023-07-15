@@ -52,7 +52,6 @@ class AnimeSearchCharacterPagingSource(
         val requestMillis: Long,
         val sortOptions: List<SortEntry<CharacterSortOption>>,
         val sortAscending: Boolean,
-//        val filterParams: AnimeMediaFilterController.FilterParams,
     ) {
         fun sortApiValue() = sortOptions
             .firstOrNull { it.state == FilterIncludeExcludeState.INCLUDE }

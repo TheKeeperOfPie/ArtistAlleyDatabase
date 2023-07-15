@@ -34,8 +34,12 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AcUnit
 import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.EnergySavingsLeaf
+import androidx.compose.material.icons.filled.Grass
 import androidx.compose.material.icons.filled.OpenInNew
+import androidx.compose.material.icons.filled.WbSunny
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
@@ -84,6 +88,7 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.anilist.UserSocialActivityQuery
+import com.anilist.type.MediaSeason
 import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
@@ -94,6 +99,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.activity.TextActivitySmallCa
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaLargeCard
 import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsArticleEntry
 import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsSmallCard
+import com.thekeeperofpie.artistalleydatabase.anime.ui.GenericViewAllCard
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
@@ -155,6 +161,21 @@ object AnimeHomeScreen {
                             }
                         },
                         actions = {
+                            IconButton(onClick = navigationCallback::onSeasonalClick) {
+                                Icon(
+                                    imageVector = when (AniListUtils.getCurrentSeasonYear().first) {
+                                        MediaSeason.WINTER -> Icons.Filled.AcUnit
+                                        MediaSeason.SPRING -> Icons.Filled.Grass
+                                        MediaSeason.SUMMER -> Icons.Filled.WbSunny
+                                        // TODO: Use a better leaf
+                                        MediaSeason.FALL -> Icons.Filled.EnergySavingsLeaf
+                                        MediaSeason.UNKNOWN__ -> TODO()
+                                    },
+                                    contentDescription = stringResource(
+                                        R.string.anime_seasonal_icon_content_description
+                                    ),
+                                )
+                            }
                             IconButton(onClick = navigationCallback::onAiringScheduleClick) {
                                 Icon(
                                     imageVector = Icons.Filled.CalendarMonth,
@@ -257,7 +278,9 @@ object AnimeHomeScreen {
                 PullRefreshIndicator(
                     refreshing = viewModel.loading,
                     state = pullRefreshState,
-                    modifier = Modifier.padding(top = topOffset).align(Alignment.TopCenter)
+                    modifier = Modifier
+                        .padding(top = topOffset)
+                        .align(Alignment.TopCenter)
                 )
             }
         }
@@ -573,6 +596,14 @@ object AnimeHomeScreen {
                                     .animateContentSize()
                             )
                         }
+                    }
+                }
+
+                if (viewAllRoute != null) {
+                    item("view_all") {
+                        GenericViewAllCard(onClick = {
+                            navigationCallback.navigate(viewAllRoute)
+                        })
                     }
                 }
             }

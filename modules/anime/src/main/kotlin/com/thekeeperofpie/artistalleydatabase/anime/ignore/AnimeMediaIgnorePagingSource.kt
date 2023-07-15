@@ -5,8 +5,8 @@ import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.anilist.MediaByIdsQuery
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
+import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeSortFilterController
 import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
-import com.thekeeperofpie.artistalleydatabase.compose.filter.SortEntry
 
 class AnimeMediaIgnorePagingSource(
     private val aniListApi: AuthedAniListApi,
@@ -51,14 +51,13 @@ class AnimeMediaIgnorePagingSource(
         constructor(
             requestMillis: Long,
             ignoredIds: Set<Int>,
-            sortOptions: List<SortEntry<MediaIgnoreSortOption>>,
-            sortAscending: Boolean,
+            filterParams: AnimeSortFilterController.FilterParams<MediaIgnoreSortOption>,
         ) : this(
             requestMillis,
-            if (sortOptions.find { it.state == FilterIncludeExcludeState.INCLUDE }?.value
+            if (filterParams.sort.find { it.state == FilterIncludeExcludeState.INCLUDE }?.value
                 == MediaIgnoreSortOption.ID
             ) {
-                if (sortAscending) ignoredIds.sorted() else ignoredIds.sortedDescending()
+                if (filterParams.sortAscending) ignoredIds.sorted() else ignoredIds.sortedDescending()
             } else ignoredIds.toMutableList()
         )
     }

@@ -5,7 +5,6 @@ import androidx.paging.PagingState
 import com.anilist.UserSearchQuery.Data.Page.User
 import com.anilist.type.UserSort
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
-import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeMediaFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.user.UserSortOption
 import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortEntry
@@ -53,7 +52,6 @@ class AnimeSearchUserPagingSource(
         val requestMillis: Long,
         val sortOptions: List<SortEntry<UserSortOption>>,
         val sortAscending: Boolean,
-//        val filterParams: AnimeMediaFilterController.FilterParams,
     ) {
         fun sortApiValue() = sortOptions.filter { it.state == FilterIncludeExcludeState.INCLUDE }
             .map { it.value.toApiValue(sortAscending) }

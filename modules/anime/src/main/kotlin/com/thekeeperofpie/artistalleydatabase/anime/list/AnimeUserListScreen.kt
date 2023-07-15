@@ -23,6 +23,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
@@ -44,7 +45,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
-import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeMediaFilterOptionsBottomPanel
+import com.thekeeperofpie.artistalleydatabase.anime.media.filter.SortFilterBottomScaffoldNoAppBarOffset
+import com.thekeeperofpie.artistalleydatabase.anime.ui.StartEndDateDialog
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBar
 import com.thekeeperofpie.artistalleydatabase.compose.NestedScrollSplitter
@@ -78,58 +80,19 @@ object AnimeUserListScreen {
             navigationCallback = navigationCallback,
             bottomNavigationState = bottomNavigationState,
         ) {
-            AnimeMediaFilterOptionsBottomPanel(
-                topBar = {
-                    EnterAlwaysTopAppBar(scrollBehavior = scrollBehavior) {
-                        val isNotEmpty by remember { derivedStateOf { viewModel.query.isNotEmpty() } }
-                        BackHandler(isNotEmpty && !WindowInsets.isImeVisible) {
-                            viewModel.query = ""
-                        }
-                        StaticSearchBar(
-                            query = viewModel.query,
-                            onQueryChange = { viewModel.query = it },
-                            leadingIcon = if (upIconOption != null) {
-                                { UpIconButton(upIconOption) }
-                            } else null,
-                            placeholder = {
-                                val userName = viewModel.userName
-                                Text(
-                                    if (userName != null) {
-                                        stringResource(
-                                            when (mediaType) {
-                                                MediaType.ANIME,
-                                                MediaType.UNKNOWN__ -> R.string.anime_user_list_user_name_anime_search
-                                                MediaType.MANGA -> R.string.anime_user_list_user_name_manga_search
-                                            },
-                                            userName
-                                        )
-                                    } else {
-                                        stringResource(
-                                            when (mediaType) {
-                                                MediaType.ANIME,
-                                                MediaType.UNKNOWN__ -> R.string.anime_user_list_anime_search
-                                                MediaType.MANGA -> R.string.anime_user_list_manga_search
-                                            }
-                                        )
-                                    }
-                                )
-                            },
-                            trailingIcon = {
-                                IconButton(onClick = { viewModel.query = "" }) {
-                                    Icon(
-                                        imageVector = Icons.Filled.Clear,
-                                        contentDescription = stringResource(
-                                            R.string.anime_search_clear
-                                        ),
-                                    )
-                                }
-                            },
-                        )
-                    }
-                },
-                filterData = viewModel::filterData,
-                onTagLongClick = viewModel::onTagLongClick,
-                showLoadSave = false,
+            val sortFilterController = viewModel.sortFilterController
+            if (sortFilterController.airingDateShown != null) {
+                StartEndDateDialog(
+                    shownForStartDate = sortFilterController.airingDateShown,
+                    onShownForStartDateChange = {
+                        sortFilterController.airingDateShown = it
+                    },
+                    onDateChange = sortFilterController::onAiringDateChange,
+                )
+            }
+            SortFilterBottomScaffoldNoAppBarOffset(
+                sortFilterController = sortFilterController,
+                topBar = { TopBar(viewModel, mediaType, upIconOption, scrollBehavior) },
                 bottomNavigationState = bottomNavigationState,
             ) { scaffoldPadding ->
                 val content = viewModel.content
@@ -218,6 +181,61 @@ object AnimeUserListScreen {
                     }
                 }
             }
+        }
+    }
+
+    @Composable
+    private fun TopBar(
+        viewModel: AnimeUserListViewModel,
+        mediaType: MediaType,
+        upIconOption: UpIconOption?,
+        scrollBehavior: TopAppBarScrollBehavior,
+    ) {
+        EnterAlwaysTopAppBar(scrollBehavior = scrollBehavior) {
+            val isNotEmpty by remember { derivedStateOf { viewModel.query.isNotEmpty() } }
+            BackHandler(isNotEmpty && !WindowInsets.isImeVisible) {
+                viewModel.query = ""
+            }
+            StaticSearchBar(
+                query = viewModel.query,
+                onQueryChange = { viewModel.query = it },
+                leadingIcon = if (upIconOption != null) {
+                    { UpIconButton(upIconOption) }
+                } else null,
+                placeholder = {
+                    val userName = viewModel.userName
+                    Text(
+                        if (userName != null) {
+                            stringResource(
+                                when (mediaType) {
+                                    MediaType.ANIME,
+                                    MediaType.UNKNOWN__ -> R.string.anime_user_list_user_name_anime_search
+                                    MediaType.MANGA -> R.string.anime_user_list_user_name_manga_search
+                                },
+                                userName
+                            )
+                        } else {
+                            stringResource(
+                                when (mediaType) {
+                                    MediaType.ANIME,
+                                    MediaType.UNKNOWN__ -> R.string.anime_user_list_anime_search
+                                    MediaType.MANGA -> R.string.anime_user_list_manga_search
+                                }
+                            )
+                        }
+                    )
+                },
+                trailingIcon = {
+                    IconButton(onClick = { viewModel.query = "" }) {
+                        Icon(
+                            imageVector = Icons.Filled.Clear,
+                            contentDescription = stringResource(
+                                R.string.anime_search_clear
+                            ),
+                        )
+                    }
+                },
+            )
         }
     }
 

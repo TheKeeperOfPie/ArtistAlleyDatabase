@@ -16,6 +16,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
@@ -39,7 +40,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
-import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeMediaFilterOptionsBottomPanel
+import com.thekeeperofpie.artistalleydatabase.anime.media.filter.SortFilterBottomScaffoldNoAppBarOffset
 import com.thekeeperofpie.artistalleydatabase.compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBar
 import com.thekeeperofpie.artistalleydatabase.compose.StaticSearchBar
@@ -65,35 +66,10 @@ object AnimeIgnoreScreen {
             colorCalculationState = colorCalculationState,
             navigationCallback = navigationCallback,
         ) {
-            AnimeMediaFilterOptionsBottomPanel(
-                topBar = {
-                    EnterAlwaysTopAppBar(scrollBehavior = scrollBehavior) {
-                        val isNotEmpty by remember { derivedStateOf { viewModel.query.isNotEmpty() } }
-                        BackHandler(isNotEmpty && !WindowInsets.isImeVisible) {
-                            viewModel.query = ""
-                        }
-                        StaticSearchBar(
-                            query = viewModel.query,
-                            onQueryChange = { viewModel.query = it },
-                            leadingIcon = { ArrowBackIconButton(onClickBack) },
-                            placeholder = { Text(stringResource(titleRes)) },
-                            trailingIcon = {
-                                IconButton(onClick = { viewModel.query = "" }) {
-                                    Icon(
-                                        imageVector = Icons.Filled.Clear,
-                                        contentDescription = stringResource(
-                                            R.string.anime_search_clear
-                                        ),
-                                    )
-                                }
-                            },
-                        )
-                    }
-                },
-                filterData = viewModel::filterData,
-                onTagLongClick = viewModel::onTagLongClick,
-                showLoadSave = true,
-                showIgnoredFilter = false,
+            val sortFilterController = viewModel.sortFilterController
+            SortFilterBottomScaffoldNoAppBarOffset(
+                sortFilterController = sortFilterController,
+                topBar = { TopBar(viewModel, onClickBack, titleRes, scrollBehavior) },
             ) { scaffoldPadding ->
                 val content = viewModel.content.collectAsLazyPagingItems()
                 val refreshing = content.loadState.refresh is LoadState.Loading
@@ -178,6 +154,37 @@ object AnimeIgnoreScreen {
                     }
                 }
             }
+        }
+    }
+
+    @Composable
+    private fun TopBar(
+        viewModel: AnimeMediaIgnoreViewModel,
+        onClickBack: () -> Unit,
+        @StringRes titleRes: Int,
+        scrollBehavior: TopAppBarScrollBehavior,
+    ) {
+        EnterAlwaysTopAppBar(scrollBehavior = scrollBehavior) {
+            val isNotEmpty by remember { derivedStateOf { viewModel.query.isNotEmpty() } }
+            BackHandler(isNotEmpty && !WindowInsets.isImeVisible) {
+                viewModel.query = ""
+            }
+            StaticSearchBar(
+                query = viewModel.query,
+                onQueryChange = { viewModel.query = it },
+                leadingIcon = { ArrowBackIconButton(onClickBack) },
+                placeholder = { Text(stringResource(titleRes)) },
+                trailingIcon = {
+                    IconButton(onClick = { viewModel.query = "" }) {
+                        Icon(
+                            imageVector = Icons.Filled.Clear,
+                            contentDescription = stringResource(
+                                R.string.anime_search_clear
+                            ),
+                        )
+                    }
+                },
+            )
         }
     }
 }

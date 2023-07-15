@@ -2,7 +2,6 @@ package com.thekeeperofpie.artistalleydatabase.anime.list
 
 import androidx.annotation.StringRes
 import com.thekeeperofpie.artistalleydatabase.anime.R
-import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeMediaFilterController
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortOption
 
 enum class MediaListSortOption(@StringRes override val textRes: Int) : SortOption {

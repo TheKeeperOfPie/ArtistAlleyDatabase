@@ -20,9 +20,9 @@ import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
-import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeMediaFilterController
+import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeSortFilterController
+import com.thekeeperofpie.artistalleydatabase.anime.media.filter.TagSection
 import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
-import com.thekeeperofpie.artistalleydatabase.compose.filter.SortEntry
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -53,7 +53,7 @@ open class AnimeUserListViewModel @Inject constructor(
     var content by mutableStateOf<AnimeUserListScreen.ContentState>(
         AnimeUserListScreen.ContentState.LoadingEmpty
     )
-    var tagShown by mutableStateOf<AnimeMediaFilterController.TagSection.Tag?>(null)
+    var tagShown by mutableStateOf<TagSection.Tag?>(null)
     val colorMap = mutableStateMapOf<String, Pair<Color, Color>>()
 
     var userName by mutableStateOf<String?>(null)
@@ -63,12 +63,10 @@ open class AnimeUserListViewModel @Inject constructor(
     private var initialized = false
     private lateinit var mediaType: MediaType
 
-    private val filterController = AnimeMediaFilterController(
+    val sortFilterController = AnimeSortFilterController(
         MediaListSortOption::class,
         aniListApi,
         settings,
-        ignoreList,
-        MediaListSortOption.UPDATED_TIME,
     )
 
     private val refreshUptimeMillis = MutableStateFlow(-1L)
@@ -79,12 +77,15 @@ open class AnimeUserListViewModel @Inject constructor(
         this.userId = userId
         this.mediaType = mediaType
         this.userName = userName
-        filterController.initialize(
-            this, refreshUptimeMillis, AnimeMediaFilterController.InitialParams(
+        sortFilterController.initialize(
+            viewModel = this,
+            refreshUptimeMillis = refreshUptimeMillis,
+            initialParams = AnimeSortFilterController.InitialParams(
                 // Disable "On list" filter, everything in this screen is on the user's list
                 onListEnabled = false,
-                isAnime = mediaType == MediaType.ANIME,
-            )
+                defaultSort = MediaListSortOption.UPDATED_TIME
+            ),
+            mediaType = mediaType
         )
 
         if (userId != null) {
@@ -125,14 +126,11 @@ open class AnimeUserListViewModel @Inject constructor(
 
                         combine(
                             snapshotFlow { query }.debounce(500.milliseconds),
-                            filterController.filterParams(),
-                            filterController.sortOptions,
-                            filterController.sortAscending,
+                            sortFilterController.filterParams(),
                             ::FilterParams
-                        ).map {
-                            val (query, filterParams, sortOptions, sortAscending) = it
-                            val sortOption =
-                                sortOptions.find { it.state == FilterIncludeExcludeState.INCLUDE }?.value
+                        ).map { (query, filterParams) ->
+                            val sortOption = filterParams.sort
+                                .find { it.state == FilterIncludeExcludeState.INCLUDE }?.value
                             baseResponse?.lists
                                 ?.filterNotNull()
                                 ?.filter {
@@ -158,15 +156,7 @@ open class AnimeUserListViewModel @Inject constructor(
                                         } else it
                                     } else it
                                 }
-                                ?.map {
-                                    toFilteredEntries(
-                                        query,
-                                        sortOption,
-                                        sortAscending,
-                                        filterParams,
-                                        it
-                                    )
-                                }
+                                ?.map { toFilteredEntries(query, filterParams, it) }
                                 ?.flatten()
                                 ?.let(AnimeUserListScreen.ContentState::Success)
                                 ?: AnimeUserListScreen.ContentState.Error()
@@ -179,12 +169,10 @@ open class AnimeUserListViewModel @Inject constructor(
         }
     }
 
-    fun filterData() = filterController.data()
-
     fun onRefresh() = refreshUptimeMillis.update { SystemClock.uptimeMillis() }
 
     fun onTagLongClick(tagId: String) {
-        tagShown = filterController.tagsByCategory.value.values
+        tagShown = sortFilterController.tagsByCategory.value.values
             .asSequence()
             .mapNotNull { it.findTag(tagId) }
             .firstOrNull()
@@ -195,9 +183,7 @@ open class AnimeUserListViewModel @Inject constructor(
 
     private fun toFilteredEntries(
         query: String,
-        sortOption: MediaListSortOption?,
-        sortAscending: Boolean,
-        filterParams: AnimeMediaFilterController.FilterParams,
+        filterParams: AnimeSortFilterController.FilterParams<MediaListSortOption>,
         list: UserMediaListQuery.Data.MediaListCollection.List
     ): List<AnimeUserListScreen.Entry> {
         val entries = list.entries?.filterNotNull()
@@ -205,7 +191,7 @@ open class AnimeUserListViewModel @Inject constructor(
             ?.map { AnimeUserListScreen.Entry.Item(it) }
             .orEmpty()
 
-        var filteredEntries = filterController.filterEntries(filterParams, entries)
+        var filteredEntries = AnimeSortFilterController.filterEntries(filterParams, entries)
 
         if (query.isNotBlank()) {
             filteredEntries = filteredEntries.filter {
@@ -218,6 +204,8 @@ open class AnimeUserListViewModel @Inject constructor(
             }
         }
 
+        val sortOption = filterParams.sort
+            .find { it.state == FilterIncludeExcludeState.INCLUDE }?.value
         if (sortOption != null) {
             val baseComparator: Comparator<AnimeUserListScreen.Entry.Item> = when (sortOption) {
                 MediaListSortOption.SCORE -> compareBy { it.media.averageScore }
@@ -249,7 +237,7 @@ open class AnimeUserListViewModel @Inject constructor(
             }
 
             val comparator = nullsFirst(baseComparator).let {
-                if (sortAscending) it else it.reversed()
+                if (filterParams.sortAscending) it else it.reversed()
             }
 
             filteredEntries = filteredEntries.sortedWith(comparator)
@@ -274,8 +262,6 @@ open class AnimeUserListViewModel @Inject constructor(
 
     private data class FilterParams(
         val query: String,
-        val filterParams: AnimeMediaFilterController.FilterParams,
-        val sortOptions: List<SortEntry<MediaListSortOption>>,
-        val sortAscending: Boolean,
+        val filterParams: AnimeSortFilterController.FilterParams<MediaListSortOption>,
     )
 }

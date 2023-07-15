@@ -31,9 +31,9 @@ import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaStatusChanges
-import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeMediaFilterController
-import com.thekeeperofpie.artistalleydatabase.anime.media.filter.FilterData
+import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortOption
+import com.thekeeperofpie.artistalleydatabase.anime.media.filter.TagSection
 import com.thekeeperofpie.artistalleydatabase.anime.search.AnimeSearchMediaPagingSource
 import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIntIds
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -68,11 +68,11 @@ class SeasonalViewModel @Inject constructor(
     private val currentSeasonYear = AniListUtils.getCurrentSeasonYear()
 
     var initialPage = 0
-    var tagShown by mutableStateOf<AnimeMediaFilterController.TagSection.Tag?>(null)
+    var tagShown by mutableStateOf<TagSection.Tag?>(null)
     val colorMap = mutableStateMapOf<String, Pair<Color, Color>>()
 
-    val filterController =
-        AnimeMediaFilterController(MediaSortOption::class, aniListApi, settings, ignoreList)
+    val sortFilterController =
+        AnimeSortFilterController(MediaSortOption::class, aniListApi, settings)
 
     private val refreshUptimeMillis = MutableStateFlow(-1L)
 
@@ -82,19 +82,20 @@ class SeasonalViewModel @Inject constructor(
             Type.THIS -> Int.MAX_VALUE / 2
             Type.NEXT -> Int.MAX_VALUE / 2 + 1
         }
-        val initialParams = AnimeMediaFilterController.InitialParams(
-            isAnime = true,
-            airingDateEnabled = false,
-            filterData = FilterData(
-                sortOption = MediaSortOption.POPULARITY,
-                sortAscending = false,
-            )
+
+        sortFilterController.initialize(
+            viewModel = this,
+            refreshUptimeMillis = refreshUptimeMillis,
+            initialParams = AnimeSortFilterController.InitialParams(
+                airingDateEnabled = false,
+                defaultSort = MediaSortOption.POPULARITY,
+            ),
+            mediaType = MediaType.ANIME,
         )
-        filterController.initialize(this, refreshUptimeMillis, initialParams)
     }
 
     fun onTagLongClick(tagId: String) {
-        tagShown = filterController.tagsByCategory.value.values
+        tagShown = sortFilterController.tagsByCategory.value.values
             .asSequence()
             .mapNotNull { it.findTag(tagId) }
             .firstOrNull()
@@ -144,15 +145,11 @@ class SeasonalViewModel @Inject constructor(
                 combine(
                     flowOf(""),
                     refreshUptimeMillis,
-                    filterController.sortOptions,
-                    filterController.sortAscending,
-                    filterController.filterParams(),
-                ) { query, requestMillis, sortOptions, sortAscending, filterParams ->
+                    sortFilterController.filterParams(),
+                ) { query, requestMillis, filterParams ->
                     AnimeSearchMediaPagingSource.RefreshParams(
                         query = query,
                         requestMillis = requestMillis,
-                        sortOptions = sortOptions,
-                        sortAscending = sortAscending,
                         filterParams = filterParams,
                         seasonYearOverride = seasonYear,
                     )
@@ -180,7 +177,7 @@ class SeasonalViewModel @Inject constructor(
                             )
                         },
                     )
-                    .flatMapLatest { filterController.filterMedia(it) { it.media } }
+                    .flatMapLatest { sortFilterController.filterMedia(it) { it.media } }
                     .flowOn(CustomDispatchers.IO)
                     .collectLatest(content::emit)
             }

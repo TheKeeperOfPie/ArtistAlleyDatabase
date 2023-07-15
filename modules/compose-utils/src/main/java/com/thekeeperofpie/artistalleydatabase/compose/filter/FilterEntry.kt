@@ -11,8 +11,22 @@ interface FilterEntry<T> {
     companion object {
         fun <T : Any> values(
             values: Array<T>,
-            included: List<T> = emptyList(),
-            excluded: List<T> = emptyList()
+            included: Collection<T> = emptyList(),
+            excluded: Collection<T> = emptyList()
+        ) = values.map {
+            FilterEntryImpl(
+                it, FilterIncludeExcludeState.toState(
+                    value = it,
+                    included = included,
+                    excluded = excluded
+                )
+            )
+        }
+
+        fun <T : Any> values(
+            values: Iterable<T>,
+            included: Collection<T> = emptyList(),
+            excluded: Collection<T> = emptyList()
         ) = values.map {
             FilterEntryImpl(
                 it, FilterIncludeExcludeState.toState(

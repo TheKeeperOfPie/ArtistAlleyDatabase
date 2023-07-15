@@ -18,8 +18,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
@@ -29,16 +31,23 @@ import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.RangeSlider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.thekeeperofpie.artistalleydatabase.compose.CustomOutlinedTextField
 import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortAndFilterComposables.SortFilterHeaderText
 import com.thekeeperofpie.compose_proxy.R
+import kotlin.math.roundToInt
 
 @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 object SortAndFilterComposables {
@@ -296,6 +305,184 @@ fun IncludeExcludeIcon(
                 imageVector = it,
                 contentDescription = stringResource(contentDescriptionRes)
             )
+        }
+    }
+}
+
+
+@Composable
+fun CustomFilterSection(
+    expanded: Boolean,
+    onExpandedChange: (Boolean) -> Unit,
+    @StringRes titleRes: Int,
+    @StringRes titleDropdownContentDescriptionRes: Int,
+    summaryText: (@Composable () -> String?)? = null,
+    onSummaryClick: () -> Unit = {},
+    content: @Composable () -> Unit
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onExpandedChange(!expanded) }
+    ) {
+        FlowRow(
+            verticalArrangement = Arrangement.Center,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier
+                .weight(1f)
+                .padding(start = 16.dp)
+                .animateContentSize()
+        ) {
+            SortFilterHeaderText(expanded, titleRes)
+
+            if (!expanded) {
+                summaryText?.invoke()?.let {
+                    FilterChip(
+                        selected = true,
+                        onClick = onSummaryClick,
+                        label = { Text(it) },
+                        modifier = Modifier
+                            .padding(0.dp)
+                            .heightIn(min = 32.dp)
+                    )
+                }
+            }
+        }
+
+        TrailingDropdownIconButton(
+            expanded = expanded,
+            contentDescription = stringResource(titleDropdownContentDescriptionRes),
+            onClick = { onExpandedChange(!expanded) },
+        )
+    }
+
+    content()
+
+    Divider()
+}
+
+data class RangeData(
+    val maxValue: Int = 100,
+    val hardMax: Boolean = false,
+    val startString: String = "0",
+    val endString: String = if (hardMax) maxValue.toString() else "",
+) {
+    val startInt = startString.toIntOrNull()?.takeIf { it > 0 }?.let {
+        if (hardMax) it.coerceAtMost(maxValue) else it
+    }
+    val endInt = endString.toIntOrNull()?.takeIf { it > 0 }?.let {
+        if (hardMax) it.coerceAtMost(maxValue) else it
+    }
+
+    val apiStart = startInt?.takeIf { it > 0 }
+    val apiEnd = endInt?.takeIf { it != maxValue || !hardMax }?.let { it + 1 }
+
+    val summaryText = if (startInt != null && endInt != null) {
+        if (startInt == endInt) {
+            startInt.toString()
+        } else if (endInt == maxValue && hardMax) {
+            "≥ $startInt"
+        } else {
+            "$startString - $endString"
+        }
+    } else if (startInt != null) {
+        "≥ $startInt"
+    } else if (endInt != null) {
+        if (hardMax && endInt == maxValue) null else "≤ $endInt"
+    } else null
+
+    val value = if (startInt != null && endInt != null) {
+        startInt.coerceAtMost(maxValue).toFloat()..endInt.coerceAtMost(maxValue).toFloat()
+    } else if (startInt != null) {
+        startInt.coerceAtMost(maxValue).toFloat()..maxValue.toFloat()
+    } else if (endInt != null) {
+        0f..endInt.toFloat()
+    } else {
+        0f..maxValue.toFloat()
+    }
+
+    val valueRange = 0f..maxValue.toFloat()
+}
+
+@Composable
+fun RangeDataFilterSection(
+    expanded: () -> Boolean,
+    onExpandedChange: (Boolean) -> Unit,
+    range: @Composable () -> RangeData,
+    onRangeChange: (String, String) -> Unit,
+    @StringRes titleRes: Int,
+    @StringRes titleDropdownContentDescriptionRes: Int,
+) {
+    @Suppress("NAME_SHADOWING")
+    val expanded = expanded()
+    CustomFilterSection(
+        expanded = expanded,
+        onExpandedChange = onExpandedChange,
+        titleRes = titleRes,
+        titleDropdownContentDescriptionRes = titleDropdownContentDescriptionRes,
+        summaryText = { range().summaryText },
+        onSummaryClick = { onRangeChange("", "") },
+    ) {
+        AnimatedVisibility(
+            visible = expanded,
+            enter = expandVertically(),
+            exit = shrinkVertically(),
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+            ) {
+                @Suppress("NAME_SHADOWING")
+                val range = range()
+                CustomOutlinedTextField(
+                    value = range.startString,
+                    onValueChange = { onRangeChange("0", range.endString) },
+                    textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
+                    keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+                    contentPadding = OutlinedTextFieldDefaults.contentPadding(
+                        start = 12.dp,
+                        top = 8.dp,
+                        end = 12.dp,
+                        bottom = 8.dp
+                    ),
+                    // TODO: Figure out a text size dependent width or get wrap width working
+                    modifier = Modifier.width(64.dp),
+                )
+
+                RangeSlider(
+                    value = range.value,
+                    valueRange = range.valueRange,
+                    steps = range.maxValue,
+                    onValueChange = {
+                        onRangeChange(
+                            it.start.roundToInt().toString(),
+                            it.endInclusive.roundToInt()
+                                .takeIf { range.hardMax || it != range.maxValue }
+                                ?.toString()
+                                .orEmpty()
+                        )
+                    },
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(horizontal = 4.dp),
+                )
+
+                CustomOutlinedTextField(
+                    value = range.endString,
+                    onValueChange = { onRangeChange(range.startString, it) },
+                    textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
+                    keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+                    contentPadding = OutlinedTextFieldDefaults.contentPadding(
+                        start = 12.dp,
+                        top = 8.dp,
+                        end = 12.dp,
+                        bottom = 8.dp
+                    ),
+                    modifier = Modifier.width(64.dp),
+                )
+            }
         }
     }
 }

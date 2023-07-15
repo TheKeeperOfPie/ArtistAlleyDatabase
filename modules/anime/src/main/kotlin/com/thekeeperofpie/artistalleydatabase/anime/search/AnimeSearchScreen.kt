@@ -22,6 +22,7 @@ import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
@@ -48,8 +49,9 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
-import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeMediaFilterOptionsBottomPanel
+import com.thekeeperofpie.artistalleydatabase.anime.media.filter.SortFilterBottomScaffoldNoAppBarOffset
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffListRow
+import com.thekeeperofpie.artistalleydatabase.anime.ui.StartEndDateDialog
 import com.thekeeperofpie.artistalleydatabase.anime.user.UserListRow
 import com.thekeeperofpie.artistalleydatabase.compose.AppBar
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
@@ -86,95 +88,20 @@ object AnimeSearchScreen {
             navigationCallback = navigationCallback,
             bottomNavigationState = bottomNavigationState,
         ) {
-            AnimeMediaFilterOptionsBottomPanel(
-                topBar = {
-                    if (isRoot) {
-                        EnterAlwaysTopAppBar(scrollBehavior = scrollBehavior) {
-                            val isNotEmpty by remember { derivedStateOf { viewModel.query.isNotEmpty() } }
-                            BackHandler(isNotEmpty && !WindowInsets.isImeVisible) {
-                                viewModel.query = ""
-                            }
-                            Column {
-                                StaticSearchBar(
-                                    query = viewModel.query,
-                                    onQueryChange = { viewModel.query = it },
-                                    leadingIcon = if (upIconOption != null) {
-                                        { UpIconButton(upIconOption) }
-                                    } else null,
-                                    placeholder = {
-                                        Text(
-                                            stringResource(
-                                                when (viewModel.selectedType) {
-                                                    AnimeSearchViewModel.SearchType.ANIME ->
-                                                        R.string.anime_search_anime
-                                                    AnimeSearchViewModel.SearchType.MANGA ->
-                                                        R.string.anime_search_manga
-                                                    AnimeSearchViewModel.SearchType.CHARACTER ->
-                                                        R.string.anime_search_characters
-                                                    AnimeSearchViewModel.SearchType.STAFF ->
-                                                        R.string.anime_search_staff
-                                                    AnimeSearchViewModel.SearchType.USER ->
-                                                        R.string.anime_search_user
-                                                }
-                                            )
-                                        )
-                                    },
-                                    trailingIcon = {
-                                        IconButton(onClick = { viewModel.query = "" }) {
-                                            Icon(
-                                                imageVector = Icons.Filled.Clear,
-                                                contentDescription = stringResource(
-                                                    R.string.anime_search_clear
-                                                ),
-                                            )
-                                        }
-                                    },
-                                    modifier = Modifier.background(MaterialTheme.colorScheme.surface)
-                                )
-
-                                val selectedTypeIndex = AnimeSearchViewModel.SearchType.values()
-                                    .indexOf(viewModel.selectedType)
-                                ScrollableTabRow(
-                                    selectedTabIndex = selectedTypeIndex,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .align(Alignment.CenterHorizontally),
-                                    divider = { /* No divider, manually draw so that it's full width */ }
-                                ) {
-                                    AnimeSearchViewModel.SearchType.values()
-                                        .forEachIndexed { index, tab ->
-                                            Tab(
-                                                selected = selectedTypeIndex == index,
-                                                onClick = { viewModel.selectedType = tab },
-                                                text = {
-                                                    Text(
-                                                        text = stringResource(tab.textRes),
-                                                        maxLines = 1,
-                                                    )
-                                                }
-                                            )
-                                        }
-                                }
-
-                                Divider()
-                            }
-                        }
-                    } else if (title != null) {
-                        val text = if (title is Either.Left) {
-                            stringResource(title.value)
-                        } else {
-                            title.rightOrNull().orEmpty()
-                        }
-                        AppBar(
-                            text = text,
-                            upIconOption = upIconOption,
-                            scrollBehavior = scrollBehavior,
-                        )
-                    }
-                },
-                filterData = viewModel::filterData,
-                onTagLongClick = viewModel::onTagLongClick,
-                showLoadSave = true,
+            val sortFilterController = viewModel.animeSortFilterController
+                .takeIf { viewModel.selectedType == AnimeSearchViewModel.SearchType.ANIME}
+            if (sortFilterController?.airingDateShown != null) {
+                StartEndDateDialog(
+                    shownForStartDate = sortFilterController.airingDateShown,
+                    onShownForStartDateChange = {
+                        sortFilterController.airingDateShown = it
+                    },
+                    onDateChange = sortFilterController::onAiringDateChange,
+                )
+            }
+            SortFilterBottomScaffoldNoAppBarOffset(
+                sortFilterController = sortFilterController,
+                topBar = { TopBar(viewModel, upIconOption, isRoot, title, scrollBehavior) },
                 bottomNavigationState = bottomNavigationState,
             ) { scaffoldPadding ->
                 val content = viewModel.content.collectAsLazyPagingItems()
@@ -294,4 +221,98 @@ object AnimeSearchScreen {
             }
         }
     }
+
+    @Composable
+    private fun TopBar(
+        viewModel: AnimeSearchViewModel,
+        upIconOption: UpIconOption? = null,
+        isRoot: Boolean = true,
+        title: Either<Int, String>? = null,
+        scrollBehavior: TopAppBarScrollBehavior,
+    ) {
+        if (isRoot) {
+            EnterAlwaysTopAppBar(scrollBehavior = scrollBehavior) {
+                val isNotEmpty by remember { derivedStateOf { viewModel.query.isNotEmpty() } }
+                BackHandler(isNotEmpty && !WindowInsets.isImeVisible) {
+                    viewModel.query = ""
+                }
+                Column {
+                    StaticSearchBar(
+                        query = viewModel.query,
+                        onQueryChange = { viewModel.query = it },
+                        leadingIcon = if (upIconOption != null) {
+                            { UpIconButton(upIconOption) }
+                        } else null,
+                        placeholder = {
+                            Text(
+                                stringResource(
+                                    when (viewModel.selectedType) {
+                                        AnimeSearchViewModel.SearchType.ANIME ->
+                                            R.string.anime_search_anime
+                                        AnimeSearchViewModel.SearchType.MANGA ->
+                                            R.string.anime_search_manga
+                                        AnimeSearchViewModel.SearchType.CHARACTER ->
+                                            R.string.anime_search_characters
+                                        AnimeSearchViewModel.SearchType.STAFF ->
+                                            R.string.anime_search_staff
+                                        AnimeSearchViewModel.SearchType.USER ->
+                                            R.string.anime_search_user
+                                    }
+                                )
+                            )
+                        },
+                        trailingIcon = {
+                            IconButton(onClick = { viewModel.query = "" }) {
+                                Icon(
+                                    imageVector = Icons.Filled.Clear,
+                                    contentDescription = stringResource(
+                                        R.string.anime_search_clear
+                                    ),
+                                )
+                            }
+                        },
+                        modifier = Modifier.background(MaterialTheme.colorScheme.surface)
+                    )
+
+                    val selectedTypeIndex = AnimeSearchViewModel.SearchType.values()
+                        .indexOf(viewModel.selectedType)
+                    ScrollableTabRow(
+                        selectedTabIndex = selectedTypeIndex,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .align(Alignment.CenterHorizontally),
+                        divider = { /* No divider, manually draw so that it's full width */ }
+                    ) {
+                        AnimeSearchViewModel.SearchType.values()
+                            .forEachIndexed { index, tab ->
+                                Tab(
+                                    selected = selectedTypeIndex == index,
+                                    onClick = { viewModel.selectedType = tab },
+                                    text = {
+                                        Text(
+                                            text = stringResource(tab.textRes),
+                                            maxLines = 1,
+                                        )
+                                    }
+                                )
+                            }
+                    }
+
+                    Divider()
+                }
+            }
+        } else if (title != null) {
+            val text = if (title is Either.Left) {
+                stringResource(title.value)
+            } else {
+                title.rightOrNull().orEmpty()
+            }
+            AppBar(
+                text = text,
+                upIconOption = upIconOption,
+                scrollBehavior = scrollBehavior,
+            )
+        }
+    }
+
 }

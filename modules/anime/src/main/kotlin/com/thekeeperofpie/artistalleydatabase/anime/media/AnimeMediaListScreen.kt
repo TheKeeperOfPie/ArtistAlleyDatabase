@@ -41,7 +41,7 @@ import coil.compose.AsyncImage
 import com.anilist.fragment.MediaPreview
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.anime.R
-import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeMediaFilterController
+import com.thekeeperofpie.artistalleydatabase.anime.media.filter.TagSection
 import com.thekeeperofpie.artistalleydatabase.compose.ZoomPanBox
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -52,7 +52,7 @@ object AnimeMediaListScreen {
         refreshing: Boolean,
         onRefresh: () -> Unit,
         modifier: Modifier = Modifier,
-        tagShown: () -> AnimeMediaFilterController.TagSection.Tag? = { null },
+        tagShown: () -> TagSection.Tag? = { null },
         onTagDismiss: () -> Unit = {},
         pullRefreshTopPadding: @Composable () -> Dp = { 0.dp },
         listContent: @Composable (
@@ -164,7 +164,7 @@ object AnimeMediaListScreen {
 
     @Composable
     private fun TagPreview(
-        tag: AnimeMediaFilterController.TagSection.Tag,
+        tag: TagSection.Tag,
         onDismiss: () -> Unit,
     ) {
         AlertDialog(

@@ -28,8 +28,9 @@ import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaStatusChanges
-import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeMediaFilterController
+import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortOption
+import com.thekeeperofpie.artistalleydatabase.anime.media.filter.TagSection
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -60,14 +61,14 @@ class AnimeSearchViewModel @Inject constructor(
     val viewer = aniListApi.authedUser
     var query by mutableStateOf("")
     var content = MutableStateFlow(PagingData.empty<AnimeSearchEntry>())
-    var tagShown by mutableStateOf<AnimeMediaFilterController.TagSection.Tag?>(null)
+    var tagShown by mutableStateOf<TagSection.Tag?>(null)
     val colorMap = mutableStateMapOf<String, Pair<Color, Color>>()
 
     private var initialized = false
 
     // TODO: Swap the sort based on selected tab
-    private val filterController =
-        AnimeMediaFilterController(MediaSortOption::class, aniListApi, settings, ignoreList)
+    val animeSortFilterController =
+        AnimeSortFilterController(MediaSortOption::class, aniListApi, settings)
 
     private val refreshUptimeMillis = MutableStateFlow(-1L)
 
@@ -105,16 +106,14 @@ class AnimeSearchViewModel @Inject constructor(
                 combine(
                     snapshotFlow { query }.debounce(500.milliseconds),
                     refreshUptimeMillis,
-                    filterController.sortOptions,
-                    filterController.sortAscending,
-                    filterController.filterParams(),
+                    animeSortFilterController.filterParams(),
                     AnimeSearchMediaPagingSource::RefreshParams
                 )
             },
             pagingSource = { AnimeSearchMediaPagingSource(aniListApi, it, MediaType.ANIME) },
             id = { it.id },
             entry = { AnimeSearchEntry.Media(it) },
-            filter = { filterController.filterMedia(it) { it.media } },
+            filter = { animeSortFilterController.filterMedia(it) { it.media } },
             finalTransform = {
                 applyMediaStatusChanges(
                     statusController = statusController,
@@ -138,16 +137,14 @@ class AnimeSearchViewModel @Inject constructor(
                 combine(
                     snapshotFlow { query }.debounce(500.milliseconds),
                     refreshUptimeMillis,
-                    filterController.sortOptions,
-                    filterController.sortAscending,
-                    filterController.filterParams(),
+                    animeSortFilterController.filterParams(),
                     AnimeSearchMediaPagingSource::RefreshParams
                 )
             },
             pagingSource = { AnimeSearchMediaPagingSource(aniListApi, it, MediaType.MANGA) },
             id = { it.id },
             entry = { AnimeSearchEntry.Media(it) },
-            filter = { filterController.filterMedia(it) { it.media } },
+            filter = { animeSortFilterController.filterMedia(it) { it.media } },
             finalTransform = {
                 applyMediaStatusChanges(
                     statusController = statusController,
@@ -266,18 +263,22 @@ class AnimeSearchViewModel @Inject constructor(
         }
     }
 
-    fun initialize(filterParams: AnimeMediaFilterController.InitialParams) {
+    fun initialize(initialParams: AnimeSortFilterController.InitialParams<MediaSortOption>) {
         if (initialized) return
         initialized = true
-        filterController.initialize(this, refreshUptimeMillis, filterParams)
+        animeSortFilterController.initialize(
+            viewModel = this,
+            refreshUptimeMillis = refreshUptimeMillis,
+            initialParams = initialParams,
+            mediaType = MediaType.ANIME,
+            tagLongClickListener = ::onTagLongClick,
+        )
     }
-
-    fun filterData() = filterController.data()
 
     fun onRefresh() = refreshUptimeMillis.update { SystemClock.uptimeMillis() }
 
     fun onTagLongClick(tagId: String) {
-        tagShown = filterController.tagsByCategory.value.values
+        tagShown = animeSortFilterController.tagsByCategory.value.values
             .asSequence()
             .mapNotNull { it.findTag(tagId) }
             .firstOrNull()

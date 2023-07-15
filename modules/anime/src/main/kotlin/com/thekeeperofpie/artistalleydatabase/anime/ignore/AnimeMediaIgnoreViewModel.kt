@@ -15,7 +15,6 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.filter
 import androidx.paging.map
-import com.anilist.AuthedUserQuery
 import com.anilist.MediaByIdsQuery.Data.Page.Medium
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
@@ -24,7 +23,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaStatusChanges
-import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeMediaFilterController
+import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeSortFilterController
+import com.thekeeperofpie.artistalleydatabase.anime.media.filter.TagSection
 import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -52,14 +52,14 @@ class AnimeMediaIgnoreViewModel @Inject constructor(
     val viewer = aniListApi.authedUser
     var query by mutableStateOf("")
     var content = MutableStateFlow(PagingData.empty<AnimeMediaListRow.Entry<Medium>>())
-    var tagShown by mutableStateOf<AnimeMediaFilterController.TagSection.Tag?>(null)
+    var tagShown by mutableStateOf<TagSection.Tag?>(null)
     val colorMap = mutableStateMapOf<String, Pair<Color, Color>>()
 
     private var initialized = false
     private lateinit var mediaType: MediaType
 
-    private val filterController =
-        AnimeMediaFilterController(MediaIgnoreSortOption::class, aniListApi, settings, ignoreList)
+    val sortFilterController =
+        AnimeSortFilterController(MediaIgnoreSortOption::class, aniListApi, settings)
 
     private val refreshUptimeMillis = MutableStateFlow(-1L)
 
@@ -67,11 +67,14 @@ class AnimeMediaIgnoreViewModel @Inject constructor(
         if (initialized) return
         initialized = true
         this.mediaType = mediaType
-        filterController.initialize(
-            this, refreshUptimeMillis, AnimeMediaFilterController.InitialParams(
-                isAnime = mediaType == MediaType.ANIME,
-                showListStatusExcludes = true,
-            )
+        sortFilterController.initialize(
+            viewModel = this,
+            refreshUptimeMillis = refreshUptimeMillis,
+            initialParams = AnimeSortFilterController.InitialParams(
+                defaultSort = MediaIgnoreSortOption.ID,
+                showIgnoredEnabled = false,
+            ),
+            mediaType = mediaType,
         )
 
         viewModelScope.launch(CustomDispatchers.Main) {
@@ -79,8 +82,7 @@ class AnimeMediaIgnoreViewModel @Inject constructor(
             combine(
                 refreshUptimeMillis,
                 settings.ignoredAniListMediaIds,
-                filterController.sortOptions,
-                filterController.sortAscending,
+                sortFilterController.filterParams(),
                 AnimeMediaIgnorePagingSource::RefreshParams,
             )
                 .debounce(100.milliseconds)
@@ -110,7 +112,7 @@ class AnimeMediaIgnoreViewModel @Inject constructor(
                     combine(
                         snapshotFlow { query }.debounce(500.milliseconds)
                             .flowOn(CustomDispatchers.Main),
-                        filterController.filterParams(),
+                        sortFilterController.filterParams(),
                         ::Pair,
                     ).map { paramsPair ->
                         val (query, filterParams) = paramsPair
@@ -122,7 +124,7 @@ class AnimeMediaIgnoreViewModel @Inject constructor(
                             .map { it.value }
                         pagingData
                             .filter {
-                                filterController.filterEntries(
+                                AnimeSortFilterController.filterEntries(
                                     filterParams = filterParams,
                                     entries = listOf(it),
                                     forceShowIgnored = true,
@@ -151,12 +153,10 @@ class AnimeMediaIgnoreViewModel @Inject constructor(
         }
     }
 
-    fun filterData() = filterController.data()
-
     fun onRefresh() = refreshUptimeMillis.update { SystemClock.uptimeMillis() }
 
     fun onTagLongClick(tagId: String) {
-        tagShown = filterController.tagsByCategory.value.values
+        tagShown = sortFilterController.tagsByCategory.value.values
             .asSequence()
             .mapNotNull { it.findTag(tagId) }
             .firstOrNull()

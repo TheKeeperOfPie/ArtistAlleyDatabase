@@ -42,7 +42,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderValues
 import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDetailsViewModel
-import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeMediaFilterController
+import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeSortFilterController
+import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationsViewModel
@@ -104,6 +105,10 @@ object AnimeNavigator {
                     nullable = true
                 },
                 navArgument("tagId") {
+                    type = NavType.StringType
+                    nullable = true
+                },
+                navArgument("sort") {
                     type = NavType.StringType
                     nullable = true
                 },
@@ -683,10 +688,9 @@ object AnimeNavigator {
     ) {
         val viewModel = hiltViewModel<AnimeSearchViewModel>().apply {
             initialize(
-                AnimeMediaFilterController.InitialParams(
-                    isAnime = true,
+                AnimeSortFilterController.InitialParams(
                     tagId = tagId,
-                    showListStatusExcludes = true,
+                    defaultSort = MediaSortOption.TRENDING,
                 )
             )
         }
@@ -871,6 +875,10 @@ object AnimeNavigator {
 
         fun onAiringScheduleClick() {
             navHostController?.navigate(AnimeNavDestinations.AIRING_SCHEDULE.id)
+        }
+
+        fun onSeasonalClick() {
+            navHostController?.navigate(AnimeNavDestinations.SEASONAL.id)
         }
 
         fun onReviewClick(
