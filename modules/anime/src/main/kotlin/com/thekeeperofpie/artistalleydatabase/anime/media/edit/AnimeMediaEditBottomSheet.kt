@@ -12,13 +12,11 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
@@ -52,7 +50,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -76,15 +73,10 @@ import com.anilist.fragment.MediaNavigationData
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
 import com.anilist.type.ScoreFormat
-import com.google.accompanist.placeholder.PlaceholderHighlight
-import com.google.accompanist.placeholder.material.placeholder
-import com.google.accompanist.placeholder.material.shimmer
 import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
-import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaCompactListRow
-import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaLargeCard.Entry.Loading.media
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toStatusIcon
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
@@ -95,7 +87,6 @@ import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.ItemDropdown
 import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class)
 @Suppress("NAME_SHADOWING")
@@ -114,367 +105,36 @@ object AnimeMediaEditBottomSheet {
         colorCalculationState: ColorCalculationState,
         navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
-        var startEndDateShown by remember { mutableStateOf<Boolean?>(null) }
         var showDelete by remember { mutableStateOf(false) }
 
         Divider()
+
+        val initialParams by viewModel.initialParams.collectAsState()
         Column(
             modifier = modifier
                 .verticalScroll(rememberScrollState())
                 .wrapContentHeight()
         ) {
-            val initialParams by viewModel.initialParams.collectAsState()
-            val media = initialParams?.media
-            if (media != null) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .height(IntrinsicSize.Min)
-                        .padding(horizontal = 16.dp, vertical = 10.dp)
-                ) {
-                    SharedElement(
-                        key = "anime_media_${media.id}_image",
-                        screenKey = screenKey,
-                    ) {
-                        var imageWidthToHeightRatio by remember { mutableFloatStateOf(1f) }
-                        AsyncImage(
-                            model = ImageRequest.Builder(LocalContext.current)
-                                .data(media.coverImage?.extraLarge)
-                                .crossfade(true)
-                                .allowHardware(colorCalculationState.hasColor(media.id?.toString()))
-                                .build(),
-                            contentScale = ContentScale.FillHeight,
-                            fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
-                            onSuccess = {
-                                imageWidthToHeightRatio = it.widthToHeightRatio()
-                                ComposeColorUtils.calculatePalette(
-                                    media.id.toString(),
-                                    it,
-                                    colorCalculationState,
-                                )
-                            },
-                            contentDescription = stringResource(R.string.anime_media_cover_image_content_description),
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(MaterialTheme.colorScheme.surfaceVariant)
-                                .fillMaxHeight()
-                                .size(width = DEFAULT_IMAGE_WIDTH, height = DEFAULT_IMAGE_HEIGHT)
-                                .combinedClickable(
-                                    onClick = {
-                                        navigationCallback.onMediaClick(
-                                            media,
-                                            imageWidthToHeightRatio,
-                                        )
-                                    },
-                                    onLongClick = { onLongPressImage(media) },
-                                    onLongClickLabel = stringResource(
-                                        R.string.anime_media_cover_image_long_press_preview
-                                    ),
-                                )
+            Crossfade(targetState = initialParams?.loading, label = "Media edit sheet crossfade") {
+                if (it == true) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                    )
+                } else {
+                    Column {
+                        Form(
+                            screenKey = screenKey,
+                            viewModel = viewModel,
+                            initialParams = initialParams,
+                            onLongPressImage = onLongPressImage,
+                            colorCalculationState = colorCalculationState,
+                            navigationCallback = navigationCallback,
                         )
                     }
-
-                    AutoSizeText(
-                        text = media.title?.userPreferred.orEmpty(),
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Black,
-                        modifier = Modifier
-                            .weight(1f)
-                    )
                 }
-
-                Divider()
             }
 
-            val isAnime = initialParams?.mediaType == MediaType.ANIME
-            SectionHeader(R.string.anime_media_edit_status_label)
-            ItemDropdown(
-                value = viewModel.editData.status,
-                iconContentDescription = R.string.anime_media_edit_status_dropdown_content_description,
-                values = {
-                    listOf(
-                        null,
-                        MediaListStatus.CURRENT,
-                        MediaListStatus.PLANNING,
-                        MediaListStatus.COMPLETED,
-                        MediaListStatus.DROPPED,
-                        MediaListStatus.PAUSED,
-                        MediaListStatus.REPEATING,
-                    )
-                },
-                iconForValue = {
-                    val (imageVector, contentDescriptionRes) =
-                        it.toStatusIcon(mediaType = initialParams?.mediaType)
-                    Icon(
-                        imageVector = imageVector,
-                        contentDescription = stringResource(contentDescriptionRes),
-                    )
-                },
-                textForValue = { stringResource(it.toTextRes(isAnime)) },
-                onSelectItem = viewModel::onStatusChange,
-                modifier = Modifier.padding(horizontal = 16.dp),
-            )
-
-            TwoColumn(
-                labelOneRes = R.string.anime_media_edit_progress_label,
-                columnOneContent = {
-                    val progress = viewModel.editData.progress
-                    TextField(
-                        value = progress,
-                        onValueChange = { viewModel.editData.progress = it },
-                        singleLine = true,
-                        textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
-                        keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
-                        leadingIcon = {
-                            val visible = progress.isNotBlank()
-                                    && progress.toIntOrNull()?.let { it > 0 } == true
-                            val alpha by animateFloatAsState(
-                                if (visible) 1f else 0f,
-                                label = "Progress decrement alpha",
-                            )
-                            IconButton(
-                                enabled = visible,
-                                onClick = {
-                                    progress.toIntOrNull()?.let {
-                                        viewModel.editData.progress = (it - 1).toString()
-                                    }
-                                },
-                                modifier = Modifier.alpha(alpha)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Filled.RemoveCircleOutline,
-                                    contentDescription = stringResource(
-                                        R.string.anime_media_edit_progress_decrement_content_description
-                                    ),
-                                )
-                            }
-                        },
-                        trailingIcon = {
-                            val visible = progress.isBlank()
-                                    || progress.toIntOrNull()
-                                ?.let { it < (initialParams?.maxProgress ?: 1) } == true
-                            val alpha by animateFloatAsState(
-                                if (visible) 1f else 0f,
-                                label = "Progress increment alpha",
-                            )
-                            IconButton(
-                                enabled = visible,
-                                onClick = {
-                                    if (progress.isBlank()) {
-                                        viewModel.editData.progress = "1"
-                                    } else {
-                                        progress.toIntOrNull()?.let {
-                                            viewModel.editData.progress = (it + 1).toString()
-                                        }
-                                    }
-                                },
-                                modifier = Modifier.alpha(alpha)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Filled.AddCircleOutline,
-                                    contentDescription = stringResource(
-                                        R.string.anime_media_edit_progress_increment_content_description
-                                    ),
-                                )
-                            }
-                        },
-                        modifier = Modifier.fillMaxSize(),
-                    )
-                },
-                labelTwoRes = R.string.anime_media_edit_repeat_label,
-                columnTwoContent = {
-                    val repeat = viewModel.editData.repeat
-                    TextField(
-                        value = repeat,
-                        onValueChange = { viewModel.editData.repeat = it },
-                        singleLine = true,
-                        textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
-                        keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
-                        leadingIcon = {
-                            val visible = repeat.isNotBlank()
-                                    && repeat.toIntOrNull()?.let { it > 0 } == true
-                            val alpha by animateFloatAsState(
-                                if (visible) 1f else 0f,
-                                label = "Repeat decrement alpha",
-                            )
-                            IconButton(
-                                enabled = visible,
-                                onClick = {
-                                    repeat.toIntOrNull()?.let {
-                                        viewModel.editData.repeat = (it - 1).toString()
-                                    }
-                                },
-                                modifier = Modifier.alpha(alpha),
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Filled.RemoveCircleOutline,
-                                    contentDescription = stringResource(
-                                        R.string.anime_media_edit_repeat_decrement_content_description
-                                    ),
-                                )
-                            }
-                        },
-                        trailingIcon = {
-                            IconButton(
-                                onClick = {
-                                    if (repeat.isBlank()) {
-                                        viewModel.editData.repeat = "1"
-                                    } else {
-                                        repeat.toIntOrNull()?.let {
-                                            viewModel.editData.repeat = (it + 1).toString()
-                                        }
-                                    }
-                                }) {
-                                Icon(
-                                    imageVector = Icons.Filled.AddCircleOutline,
-                                    contentDescription = stringResource(
-                                        R.string.anime_media_edit_repeat_increment_content_description
-                                    ),
-                                )
-                            }
-                        },
-                        modifier = Modifier.fillMaxSize(),
-                    )
-                }
-            )
-
-            ScoreSection(
-                format = { viewModel.scoreFormat.collectAsState().value },
-                score = { viewModel.editData.score },
-                onScoreChange = { viewModel.editData.score = it },
-            )
-
-            SectionHeader(R.string.anime_media_edit_date_label)
-            StartEndDateRow(
-                startDate = viewModel.editData.startDate,
-                endDate = viewModel.editData.endDate,
-                onRequestDatePicker = { startEndDateShown = it },
-                onDateChange = viewModel::onDateChange,
-            )
-
-            if (startEndDateShown != null) {
-                StartEndDateDialog(
-                    shownForStartDate = startEndDateShown,
-                    onShownForStartDateChange = { startEndDateShown = it },
-                    onDateChange = viewModel::onDateChange,
-                )
-            }
-
-            TwoColumn(
-                labelOneRes = R.string.anime_media_edit_priority_label,
-                columnOneContent = {
-                    val priority = viewModel.editData.priority
-                    TextField(
-                        value = priority,
-                        onValueChange = { viewModel.editData.priority = it },
-                        singleLine = true,
-                        textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
-                        keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
-                        leadingIcon = {
-                            val visible = priority.isNotBlank()
-                                    && priority.toIntOrNull()?.let { it > 0 } == true
-                            val alpha by animateFloatAsState(
-                                if (visible) 1f else 0f,
-                                label = "Priority decrement alpha",
-                            )
-                            IconButton(
-                                enabled = visible,
-                                onClick = {
-                                    priority.toIntOrNull()?.let {
-                                        viewModel.editData.priority = (it - 1).toString()
-                                    }
-                                },
-                                modifier = Modifier.alpha(alpha),
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Filled.RemoveCircleOutline,
-                                    contentDescription = stringResource(
-                                        R.string.anime_media_edit_priority_decrement_content_description
-                                    ),
-                                )
-                            }
-                        },
-                        trailingIcon = {
-                            IconButton(
-                                onClick = {
-                                    if (priority.isBlank()) {
-                                        viewModel.editData.priority = "1"
-                                    } else {
-                                        priority.toIntOrNull()?.let {
-                                            viewModel.editData.priority = (it + 1).toString()
-                                        }
-                                    }
-                                }) {
-                                Icon(
-                                    imageVector = Icons.Filled.AddCircleOutline,
-                                    contentDescription = stringResource(
-                                        R.string.anime_media_edit_priority_increment_content_description
-                                    ),
-                                )
-                            }
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                },
-                labelTwoRes = R.string.anime_media_edit_private_label,
-                columnTwoContent = {
-                    @Composable
-                    fun Boolean.toPrivateText() = when (this) {
-                        true -> R.string.anime_media_edit_private_true
-                        false -> R.string.anime_media_edit_private_false
-                    }.let { stringResource(it) }
-                    ItemDropdown(
-                        value = viewModel.editData.private,
-                        iconContentDescription = R.string.anime_media_edit_private_dropdown_content_description,
-                        values = {
-                            listOf(
-                                true,
-                                false,
-                            )
-                        },
-                        textForValue = { it.toPrivateText() },
-                        onSelectItem = { viewModel.editData.private = it },
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                }
-            )
-
-            val createdAt = viewModel.editData.createdAt
-            val createdAtShown = createdAt != null && createdAt > 0
-            if (createdAtShown) {
-                Text(
-                    text = stringResource(
-                        R.string.anime_media_edit_created_at,
-                        MediaUtils.formatEntryDateTime(
-                            LocalContext.current,
-                            createdAt!! * 1000,
-                        ),
-                    ),
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                )
-            }
-
-            val updatedAt = viewModel.editData.updatedAt
-            if (updatedAt != null && updatedAt > 0) {
-                Text(
-                    text = stringResource(
-                        R.string.anime_media_edit_updated_at,
-                        MediaUtils.formatEntryDateTime(
-                            LocalContext.current,
-                            updatedAt * 1000,
-                        ),
-                    ),
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.padding(
-                        start = 16.dp,
-                        end = 16.dp,
-                        top = if (createdAtShown) 0.dp else 8.dp,
-                        bottom = 8.dp
-                    ),
-                )
-            }
+            Spacer(Modifier.height(16.dp))
 
             Divider()
 
@@ -562,6 +222,374 @@ object AnimeMediaEditBottomSheet {
                         Text(stringResource(UtilsStringR.no))
                     }
                 },
+            )
+        }
+    }
+
+    @Composable
+    private fun ColumnScope.Form(
+        screenKey: String,
+        viewModel: MediaEditViewModel,
+        initialParams: MediaEditData.InitialParams?,
+        onLongPressImage: (MediaNavigationData) -> Unit = { /* TODO */ },
+        colorCalculationState: ColorCalculationState,
+        navigationCallback: AnimeNavigator.NavigationCallback,
+    ) {
+        var startEndDateShown by remember { mutableStateOf<Boolean?>(null) }
+        val media = initialParams?.media
+        if (media != null) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .height(IntrinsicSize.Min)
+                    .padding(horizontal = 16.dp, vertical = 10.dp)
+            ) {
+                SharedElement(
+                    key = "anime_media_${media.id}_image",
+                    screenKey = screenKey,
+                ) {
+                    var imageWidthToHeightRatio by remember { mutableFloatStateOf(1f) }
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(media.coverImage?.extraLarge)
+                            .crossfade(true)
+                            .allowHardware(colorCalculationState.hasColor(media.id.toString()))
+                            .size(
+                                width = Dimension.Pixels(
+                                    LocalDensity.current.run { DEFAULT_IMAGE_WIDTH.roundToPx() }
+                                ),
+                                height = Dimension.Undefined
+                            )
+                            .build(),
+                        contentScale = ContentScale.Crop,
+                        fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
+                        onSuccess = {
+                            imageWidthToHeightRatio = it.widthToHeightRatio()
+                            ComposeColorUtils.calculatePalette(
+                                media.id.toString(),
+                                it,
+                                colorCalculationState,
+                            )
+                        },
+                        contentDescription = stringResource(R.string.anime_media_cover_image_content_description),
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                            .size(width = DEFAULT_IMAGE_WIDTH, height = DEFAULT_IMAGE_HEIGHT)
+                            .combinedClickable(
+                                onClick = {
+                                    navigationCallback.onMediaClick(
+                                        media,
+                                        imageWidthToHeightRatio,
+                                    )
+                                },
+                                onLongClick = { onLongPressImage(media) },
+                                onLongClickLabel = stringResource(
+                                    R.string.anime_media_cover_image_long_press_preview
+                                ),
+                            )
+                    )
+                }
+
+                AutoSizeText(
+                    text = media.title?.userPreferred.orEmpty(),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Black,
+                    modifier = Modifier
+                        .weight(1f)
+                )
+            }
+
+            Divider()
+        }
+
+        val isAnime = initialParams?.mediaType == MediaType.ANIME
+        SectionHeader(R.string.anime_media_edit_status_label)
+        ItemDropdown(
+            value = viewModel.editData.status,
+            iconContentDescription = R.string.anime_media_edit_status_dropdown_content_description,
+            values = {
+                listOf(
+                    null,
+                    MediaListStatus.CURRENT,
+                    MediaListStatus.PLANNING,
+                    MediaListStatus.COMPLETED,
+                    MediaListStatus.DROPPED,
+                    MediaListStatus.PAUSED,
+                    MediaListStatus.REPEATING,
+                )
+            },
+            iconForValue = {
+                val (imageVector, contentDescriptionRes) =
+                    it.toStatusIcon(mediaType = initialParams?.mediaType)
+                Icon(
+                    imageVector = imageVector,
+                    contentDescription = stringResource(contentDescriptionRes),
+                )
+            },
+            textForValue = { stringResource(it.toTextRes(isAnime)) },
+            onSelectItem = viewModel::onStatusChange,
+            modifier = Modifier.padding(horizontal = 16.dp),
+        )
+
+        TwoColumn(
+            labelOneRes = R.string.anime_media_edit_progress_label,
+            columnOneContent = {
+                val progress = viewModel.editData.progress
+                TextField(
+                    value = progress,
+                    onValueChange = { viewModel.editData.progress = it },
+                    singleLine = true,
+                    textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
+                    keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+                    leadingIcon = {
+                        val visible = progress.isNotBlank()
+                                && progress.toIntOrNull()?.let { it > 0 } == true
+                        val alpha by animateFloatAsState(
+                            if (visible) 1f else 0f,
+                            label = "Progress decrement alpha",
+                        )
+                        IconButton(
+                            enabled = visible,
+                            onClick = {
+                                progress.toIntOrNull()?.let {
+                                    viewModel.editData.progress = (it - 1).toString()
+                                }
+                            },
+                            modifier = Modifier.alpha(alpha)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.RemoveCircleOutline,
+                                contentDescription = stringResource(
+                                    R.string.anime_media_edit_progress_decrement_content_description
+                                ),
+                            )
+                        }
+                    },
+                    trailingIcon = {
+                        val visible = progress.isBlank()
+                                || progress.toIntOrNull()
+                            ?.let { it < (initialParams?.maxProgress ?: 1) } == true
+                        val alpha by animateFloatAsState(
+                            if (visible) 1f else 0f,
+                            label = "Progress increment alpha",
+                        )
+                        IconButton(
+                            enabled = visible,
+                            onClick = {
+                                if (progress.isBlank()) {
+                                    viewModel.editData.progress = "1"
+                                } else {
+                                    progress.toIntOrNull()?.let {
+                                        viewModel.editData.progress = (it + 1).toString()
+                                    }
+                                }
+                            },
+                            modifier = Modifier.alpha(alpha)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.AddCircleOutline,
+                                contentDescription = stringResource(
+                                    R.string.anime_media_edit_progress_increment_content_description
+                                ),
+                            )
+                        }
+                    },
+                    modifier = Modifier.fillMaxSize(),
+                )
+            },
+            labelTwoRes = R.string.anime_media_edit_repeat_label,
+            columnTwoContent = {
+                val repeat = viewModel.editData.repeat
+                TextField(
+                    value = repeat,
+                    onValueChange = { viewModel.editData.repeat = it },
+                    singleLine = true,
+                    textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
+                    keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+                    leadingIcon = {
+                        val visible = repeat.isNotBlank()
+                                && repeat.toIntOrNull()?.let { it > 0 } == true
+                        val alpha by animateFloatAsState(
+                            if (visible) 1f else 0f,
+                            label = "Repeat decrement alpha",
+                        )
+                        IconButton(
+                            enabled = visible,
+                            onClick = {
+                                repeat.toIntOrNull()?.let {
+                                    viewModel.editData.repeat = (it - 1).toString()
+                                }
+                            },
+                            modifier = Modifier.alpha(alpha),
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.RemoveCircleOutline,
+                                contentDescription = stringResource(
+                                    R.string.anime_media_edit_repeat_decrement_content_description
+                                ),
+                            )
+                        }
+                    },
+                    trailingIcon = {
+                        IconButton(
+                            onClick = {
+                                if (repeat.isBlank()) {
+                                    viewModel.editData.repeat = "1"
+                                } else {
+                                    repeat.toIntOrNull()?.let {
+                                        viewModel.editData.repeat = (it + 1).toString()
+                                    }
+                                }
+                            }) {
+                            Icon(
+                                imageVector = Icons.Filled.AddCircleOutline,
+                                contentDescription = stringResource(
+                                    R.string.anime_media_edit_repeat_increment_content_description
+                                ),
+                            )
+                        }
+                    },
+                    modifier = Modifier.fillMaxSize(),
+                )
+            }
+        )
+
+        ScoreSection(
+            format = { viewModel.scoreFormat.collectAsState().value },
+            score = { viewModel.editData.score },
+            onScoreChange = { viewModel.editData.score = it },
+        )
+
+        SectionHeader(R.string.anime_media_edit_date_label)
+        StartEndDateRow(
+            startDate = viewModel.editData.startDate,
+            endDate = viewModel.editData.endDate,
+            onRequestDatePicker = { startEndDateShown = it },
+            onDateChange = viewModel::onDateChange,
+        )
+
+        if (startEndDateShown != null) {
+            StartEndDateDialog(
+                shownForStartDate = startEndDateShown,
+                onShownForStartDateChange = { startEndDateShown = it },
+                onDateChange = viewModel::onDateChange,
+            )
+        }
+
+        TwoColumn(
+            labelOneRes = R.string.anime_media_edit_priority_label,
+            columnOneContent = {
+                val priority = viewModel.editData.priority
+                TextField(
+                    value = priority,
+                    onValueChange = { viewModel.editData.priority = it },
+                    singleLine = true,
+                    textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
+                    keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+                    leadingIcon = {
+                        val visible = priority.isNotBlank()
+                                && priority.toIntOrNull()?.let { it > 0 } == true
+                        val alpha by animateFloatAsState(
+                            if (visible) 1f else 0f,
+                            label = "Priority decrement alpha",
+                        )
+                        IconButton(
+                            enabled = visible,
+                            onClick = {
+                                priority.toIntOrNull()?.let {
+                                    viewModel.editData.priority = (it - 1).toString()
+                                }
+                            },
+                            modifier = Modifier.alpha(alpha),
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.RemoveCircleOutline,
+                                contentDescription = stringResource(
+                                    R.string.anime_media_edit_priority_decrement_content_description
+                                ),
+                            )
+                        }
+                    },
+                    trailingIcon = {
+                        IconButton(
+                            onClick = {
+                                if (priority.isBlank()) {
+                                    viewModel.editData.priority = "1"
+                                } else {
+                                    priority.toIntOrNull()?.let {
+                                        viewModel.editData.priority = (it + 1).toString()
+                                    }
+                                }
+                            }) {
+                            Icon(
+                                imageVector = Icons.Filled.AddCircleOutline,
+                                contentDescription = stringResource(
+                                    R.string.anime_media_edit_priority_increment_content_description
+                                ),
+                            )
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            },
+            labelTwoRes = R.string.anime_media_edit_private_label,
+            columnTwoContent = {
+                @Composable
+                fun Boolean.toPrivateText() = when (this) {
+                    true -> R.string.anime_media_edit_private_true
+                    false -> R.string.anime_media_edit_private_false
+                }.let { stringResource(it) }
+                ItemDropdown(
+                    value = viewModel.editData.private,
+                    iconContentDescription = R.string.anime_media_edit_private_dropdown_content_description,
+                    values = {
+                        listOf(
+                            true,
+                            false,
+                        )
+                    },
+                    textForValue = { it.toPrivateText() },
+                    onSelectItem = { viewModel.editData.private = it },
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+        )
+
+        val createdAt = viewModel.editData.createdAt
+        val createdAtShown = createdAt != null && createdAt > 0
+        if (createdAtShown) {
+            Text(
+                text = stringResource(
+                    R.string.anime_media_edit_created_at,
+                    MediaUtils.formatEntryDateTime(
+                        LocalContext.current,
+                        createdAt!! * 1000,
+                    ),
+                ),
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+            )
+        }
+
+        val updatedAt = viewModel.editData.updatedAt
+        if (updatedAt != null && updatedAt > 0) {
+            Text(
+                text = stringResource(
+                    R.string.anime_media_edit_updated_at,
+                    MediaUtils.formatEntryDateTime(
+                        LocalContext.current,
+                        updatedAt * 1000,
+                    ),
+                ),
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(
+                    start = 16.dp,
+                    end = 16.dp,
+                    top = if (createdAtShown) 0.dp else 8.dp,
+                    bottom = 8.dp
+                ),
             )
         }
     }

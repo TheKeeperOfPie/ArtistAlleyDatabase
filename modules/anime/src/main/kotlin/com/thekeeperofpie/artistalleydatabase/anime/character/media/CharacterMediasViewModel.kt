@@ -18,11 +18,12 @@ import javax.inject.Inject
 // TODO: De-dupe this code with ReviewsViewModel
 @HiltViewModel
 class CharacterMediasViewModel @Inject constructor(
-    private val aniListApi: AuthedAniListApi,
+    aniListApi: AuthedAniListApi,
     private val statusController: MediaListStatusController,
     private val ignoreList: AnimeMediaIgnoreList,
     private val settings: AnimeSettings,
 ) : HeaderAndListViewModel<CharacterMediasScreen.Entry, MediaPreview, AnimeMediaListRow.Entry<MediaPreview>, MediaSortOption>(
+    aniListApi = aniListApi,
     sortOptionEnum = MediaSortOption::class,
     sortOptionEnumDefault = MediaSortOption.POPULARITY,
     loadingErrorTextRes = R.string.anime_character_medias_error_loading,

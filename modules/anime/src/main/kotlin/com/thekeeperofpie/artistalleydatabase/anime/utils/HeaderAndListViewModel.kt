@@ -17,6 +17,7 @@ import androidx.paging.map
 import com.anilist.fragment.PaginationInfo
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListPagingSource
+import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortEntry
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortOption
 import com.thekeeperofpie.artistalleydatabase.compose.filter.selectedOption
@@ -36,11 +37,14 @@ import kotlin.reflect.KClass
 
 @OptIn(ExperimentalCoroutinesApi::class)
 abstract class HeaderAndListViewModel<EntryType, ListItemType : Any, ListEntryType : Any, SortType : SortOption>(
+    protected val aniListApi: AuthedAniListApi,
     sortOptionEnum: KClass<SortType>,
     private val sortOptionEnumDefault: SortType,
     @StringRes private val loadingErrorTextRes: Int,
     defaultSortAscending: Boolean = false,
 ) : ViewModel() {
+
+    val viewer = aniListApi.authedUser
 
     var headerId by mutableStateOf("")
         private set

@@ -35,6 +35,9 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
@@ -60,6 +63,7 @@ class AnimeMediaDetailsViewModel @Inject constructor(
         private const val TAG = "AnimeMediaDetailsViewModel"
     }
 
+    val viewer = aniListApi.authedUser
     val colorMap = mutableStateMapOf<String, Pair<Color, Color>>()
 
     lateinit var mediaId: String
@@ -68,6 +72,8 @@ class AnimeMediaDetailsViewModel @Inject constructor(
 
     var loading by mutableStateOf(true)
     var entry by mutableStateOf<AnimeMediaDetailsScreen.Entry?>(null)
+    var listStatus by mutableStateOf<MediaListStatusController.Update?>(null)
+
     var errorResource by mutableStateOf<Pair<Int, Exception?>?>(null)
     var animeSongs by mutableStateOf<AnimeSongs?>(null)
     var cdEntries by mutableStateOf(emptyList<CdEntryGridModel>())
@@ -160,19 +166,39 @@ class AnimeMediaDetailsViewModel @Inject constructor(
                     }
                     .collectLatest {
                         withContext(CustomDispatchers.Main) {
-                            this@AnimeMediaDetailsViewModel.entry = it
+                            entry = it
                         }
                     }
             } catch (e: Exception) {
                 withContext(CustomDispatchers.Main) {
                     errorResource = R.string.anime_media_error_loading_details to e
                 }
-                null
             } finally {
                 withContext(CustomDispatchers.Main) {
                     loading = false
                 }
             }
+        }
+
+        viewModelScope.launch(CustomDispatchers.IO) {
+            snapshotFlow { entry }
+                .flowOn(CustomDispatchers.Main)
+                .filterNotNull()
+                .flatMapLatest {
+                    combine(flowOf(it), statusController.allChanges(it.mediaId), ::Pair)
+                }
+                .mapLatest { (entry, update) ->
+                    val mediaListEntry = entry.media.mediaListEntry
+                    MediaListStatusController.Update(
+                        mediaId = entry.mediaId,
+                        entry = if (update == null) mediaListEntry else update.entry,
+                    )
+                }
+                .collectLatest {
+                    withContext(CustomDispatchers.Main) {
+                        listStatus = it
+                    }
+                }
         }
 
         viewModelScope.launch(CustomDispatchers.IO) {
@@ -242,7 +268,7 @@ class AnimeMediaDetailsViewModel @Inject constructor(
     ): AnimeSongEntry.Artist {
         val edges = media.characters?.edges?.filterNotNull()
         val edge = edges?.find {
-            val characterName = it.node?.name ?: return@find false
+            val characterName = it.node.name ?: return@find false
             characterName.full == artist.character ||
                     (characterName.alternative?.any { it == artist.character } == true)
         }

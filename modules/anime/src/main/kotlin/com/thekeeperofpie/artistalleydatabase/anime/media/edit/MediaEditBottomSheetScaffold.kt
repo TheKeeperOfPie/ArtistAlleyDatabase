@@ -9,15 +9,16 @@ import androidx.compose.material3.SheetState
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.anilist.MediaDetailsQuery
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
@@ -30,69 +31,7 @@ object MediaEditBottomSheetScaffold {
     operator fun invoke(
         screenKey: String,
         viewModel: MediaEditViewModel,
-        media: MediaDetailsQuery.Data.Media?,
-        topBar: @Composable (() -> Unit)? = null,
-        colorCalculationState: ColorCalculationState,
-        navigationCallback: AnimeNavigator.NavigationCallback,
-        content: @Composable (PaddingValues) -> Unit,
-    ) {
-        LaunchedEffect(media) {
-            val maxProgress = media?.episodes ?: media?.volumes ?: media?.nextAiringEpisode
-                ?.episode?.let { (it - 1).coerceAtLeast(1) }
-            viewModel.initialize(
-                mediaId = media?.id?.toString().orEmpty(),
-                media = null, // Don't show preview when context is preserved
-                mediaListEntry = media?.mediaListEntry,
-                mediaType = media?.type,
-                status = media?.mediaListEntry?.status,
-                maxProgress = maxProgress,
-            )
-        }
-
-        Scaffold(
-            screenKey = screenKey,
-            viewModel = viewModel,
-            topBar = topBar,
-            colorCalculationState = colorCalculationState,
-            navigationCallback = navigationCallback,
-            clearData = false,
-            content = content,
-        )
-    }
-
-    @Composable
-    operator fun invoke(
-        screenKey: String,
-        viewModel: MediaEditViewModel,
-        topBar: @Composable (() -> Unit)? = null,
-        colorCalculationState: ColorCalculationState,
-        navigationCallback: AnimeNavigator.NavigationCallback,
-        bottomNavigationState: BottomNavigationState? = null,
-        content: @Composable (PaddingValues) -> Unit,
-    ) {
-        val sheetState = rememberStandardBottomSheetState(
-            initialValue = SheetValue.Hidden,
-            confirmValueChange = viewModel::onEditSheetValueChange,
-            skipHiddenState = false,
-        )
-
-        Scaffold(
-            screenKey = screenKey,
-            viewModel = viewModel,
-            topBar = topBar,
-            colorCalculationState = colorCalculationState,
-            navigationCallback = navigationCallback,
-            bottomNavigationState = bottomNavigationState,
-            sheetState = sheetState,
-            clearData = true,
-            content = content,
-        )
-    }
-
-    @Composable
-    private fun Scaffold(
-        screenKey: String,
-        viewModel: MediaEditViewModel,
+        modifier: Modifier = Modifier,
         topBar: @Composable (() -> Unit)? = null,
         colorCalculationState: ColorCalculationState,
         navigationCallback: AnimeNavigator.NavigationCallback,
@@ -102,10 +41,13 @@ object MediaEditBottomSheetScaffold {
             confirmValueChange = viewModel::onEditSheetValueChange,
             skipHiddenState = false,
         ),
-        clearData: Boolean,
+        snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
         content: @Composable (PaddingValues) -> Unit,
     ) {
-        val bottomSheetScaffoldState = rememberBottomSheetScaffoldState(sheetState)
+        val bottomSheetScaffoldState = rememberBottomSheetScaffoldState(
+            bottomSheetState = sheetState,
+            snackbarHostState = snackbarHostState,
+        )
 
         val bottomSheetShowing = viewModel.editData.showing
         LaunchedEffect(bottomSheetShowing) {
@@ -113,14 +55,14 @@ object MediaEditBottomSheetScaffold {
                 launch { sheetState.expand() }
             } else {
                 launch { sheetState.hide() }
-                    .invokeOnCompletion { viewModel.hide(clearData) }
+                    .invokeOnCompletion { viewModel.hide() }
             }
         }
 
         val currentValue = sheetState.currentValue
         LaunchedEffect(currentValue) {
             if (currentValue != SheetValue.Expanded) {
-                viewModel.hide(clearData)
+                viewModel.hide()
             }
         }
 
@@ -128,7 +70,7 @@ object MediaEditBottomSheetScaffold {
         BackHandler(enabled = sheetState.currentValue != SheetValue.Hidden) {
             if (viewModel.onEditSheetValueChange(SheetValue.Hidden)) {
                 scope.launch { sheetState.hide() }
-                    .invokeOnCompletion { viewModel.hide(clearData) }
+                    .invokeOnCompletion { viewModel.hide() }
             }
         }
 
@@ -136,7 +78,7 @@ object MediaEditBottomSheetScaffold {
         val errorString = error?.first?.let { stringResource(it) }
         LaunchedEffect(error) {
             if (error != null) {
-                bottomSheetScaffoldState.snackbarHostState.showSnackbar(
+                snackbarHostState.showSnackbar(
                     message = errorString.orEmpty(),
                     withDismissAction = true,
                     duration = SnackbarDuration.Long,
@@ -165,13 +107,14 @@ object MediaEditBottomSheetScaffold {
                         scope.launch { sheetState.hide() }
                             .invokeOnCompletion {
                                 if (!sheetState.isVisible) {
-                                    viewModel.hide(clearData)
+                                    viewModel.hide()
                                 }
                             }
                     },
                     modifier = Modifier.padding(bottom = bottomPadding)
                 )
             },
+            modifier = modifier,
             content = content,
         )
     }

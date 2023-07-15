@@ -20,6 +20,8 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
@@ -39,6 +41,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
+import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
+import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeMediaFilterOptionsBottomPanel
 import com.thekeeperofpie.artistalleydatabase.compose.AppBar
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
@@ -65,93 +69,102 @@ object SeasonalScreen {
         )
 
         val currentSeasonYear = remember { AniListUtils.getCurrentSeasonYear() }
-        AnimeMediaFilterOptionsBottomPanel(
-            topBar = {
-                Column {
-                    AppBar(
-                        text = stringResource(R.string.anime_seasonal_title),
-                        upIconOption = upIconOption,
-                    )
+        val editViewModel = hiltViewModel<MediaEditViewModel>()
+        MediaEditBottomSheetScaffold(
+            screenKey = AnimeNavDestinations.SEASONAL.id,
+            viewModel = editViewModel,
+            colorCalculationState = colorCalculationState,
+            navigationCallback = navigationCallback,
+        ) {
+            AnimeMediaFilterOptionsBottomPanel(
+                topBar = {
+                    Column {
+                        AppBar(
+                            text = stringResource(R.string.anime_seasonal_title),
+                            upIconOption = upIconOption,
+                        )
 
-                    val state =
-                        rememberLazyListState(initialFirstVisibleItemIndex = pagerState.initialPage)
-                    val coroutineScope = rememberCoroutineScope()
+                        val state =
+                            rememberLazyListState(initialFirstVisibleItemIndex = pagerState.initialPage)
+                        val coroutineScope = rememberCoroutineScope()
 
-                    val settledPage = pagerState.settledPage
-                    LaunchedEffect(settledPage) {
-                        val lastVisibleItem = state.layoutInfo.visibleItemsInfo.lastOrNull()
-                        val lastVisibleIndex = lastVisibleItem?.index ?: 0
-                        if (settledPage !in (state.firstVisibleItemIndex..lastVisibleIndex)) {
-                            state.animateScrollToItem(settledPage)
+                        val settledPage = pagerState.settledPage
+                        LaunchedEffect(settledPage) {
+                            val lastVisibleItem = state.layoutInfo.visibleItemsInfo.lastOrNull()
+                            val lastVisibleIndex = lastVisibleItem?.index ?: 0
+                            if (settledPage !in (state.firstVisibleItemIndex..lastVisibleIndex)) {
+                                state.animateScrollToItem(settledPage)
+                            }
                         }
-                    }
 
-                    LazyRow(
-                        state = state,
-                        flingBehavior = rememberSnapFlingBehavior(state),
-                        modifier = Modifier.background(MaterialTheme.colorScheme.background)
-                    ) {
-                        items(
-                            Int.MAX_VALUE,
-                            key = { it },
-                            contentType = { "seasonYear" },
-                        ) { index ->
-                            val selected = index == pagerState.currentPage
-                            Tab(
-                                selected = selected,
-                                text = {
-                                    val (season, year) = AniListUtils.calculateSeasonYearWithOffset(
-                                        seasonYear = currentSeasonYear,
-                                        offset = Int.MAX_VALUE / 2 - index,
-                                    )
-                                    Text(
-                                        text = stringResource(
-                                            R.string.anime_seasonal_season_year,
-                                            stringResource(season.toTextRes()),
-                                            year,
-                                        ),
-                                        color = if (index == Int.MAX_VALUE / 2) {
-                                            MaterialTheme.colorScheme.onSurfaceVariant
-                                        } else {
-                                            Color.Unspecified
-                                        },
-                                        maxLines = 1,
-                                    )
-                                },
-                                onClick = {
-                                    coroutineScope.launch {
-                                        pagerState.animateScrollToPage(index)
+                        LazyRow(
+                            state = state,
+                            flingBehavior = rememberSnapFlingBehavior(state),
+                            modifier = Modifier.background(MaterialTheme.colorScheme.background)
+                        ) {
+                            items(
+                                Int.MAX_VALUE,
+                                key = { it },
+                                contentType = { "seasonYear" },
+                            ) { index ->
+                                val selected = index == pagerState.currentPage
+                                Tab(
+                                    selected = selected,
+                                    text = {
+                                        val (season, year) = AniListUtils.calculateSeasonYearWithOffset(
+                                            seasonYear = currentSeasonYear,
+                                            offset = Int.MAX_VALUE / 2 - index,
+                                        )
+                                        Text(
+                                            text = stringResource(
+                                                R.string.anime_seasonal_season_year,
+                                                stringResource(season.toTextRes()),
+                                                year,
+                                            ),
+                                            color = if (index == Int.MAX_VALUE / 2) {
+                                                MaterialTheme.colorScheme.onSurfaceVariant
+                                            } else {
+                                                Color.Unspecified
+                                            },
+                                            maxLines = 1,
+                                        )
+                                    },
+                                    onClick = {
+                                        coroutineScope.launch {
+                                            pagerState.animateScrollToPage(index)
+                                        }
+                                    },
+                                    modifier = Modifier.conditionally(selected) {
+                                        bottomBorder(
+                                            color = MaterialTheme.colorScheme.primary,
+                                            width = 3.dp,
+                                        )
                                     }
-                                },
-                                modifier = Modifier.conditionally(selected) {
-                                    bottomBorder(
-                                        color = MaterialTheme.colorScheme.primary,
-                                        width = 3.dp,
-                                    )
-                                }
-                            )
+                                )
+                            }
                         }
-                    }
 
-                    Divider()
+                        Divider()
+                    }
+                },
+                filterData = viewModel.filterController::data,
+                onTagLongClick = viewModel::onTagLongClick,
+                ignoreAppBarOffset = false,
+            ) { scaffoldPadding ->
+                HorizontalPager(
+                    state = pagerState,
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    val data = viewModel.items(it)
+                    ListContent(
+                        viewModel = viewModel,
+                        editViewModel = editViewModel,
+                        content = data,
+                        scaffoldPadding = scaffoldPadding,
+                        colorCalculationState = colorCalculationState,
+                        navigationCallback = navigationCallback,
+                    )
                 }
-            },
-            filterData = viewModel.filterController::data,
-            onTagLongClick = viewModel::onTagLongClick,
-            ignoreAppBarOffset = false,
-        ) { scaffoldPadding ->
-            HorizontalPager(
-                state = pagerState,
-                modifier = Modifier.fillMaxSize()
-            ) {
-                val data = viewModel.items(it)
-                ListContent(
-                    viewModel = viewModel,
-                    content = data,
-                    scaffoldPadding = scaffoldPadding,
-                    colorCalculationState = colorCalculationState,
-                    navigationCallback = navigationCallback,
-                )
             }
         }
     }
@@ -159,12 +172,14 @@ object SeasonalScreen {
     @Composable
     private fun ListContent(
         viewModel: SeasonalViewModel,
+        editViewModel: MediaEditViewModel,
         content: LazyPagingItems<SeasonalViewModel.MediaEntry>,
         scaffoldPadding: PaddingValues,
         colorCalculationState: ColorCalculationState,
         navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
         val refreshing = content.loadState.refresh is LoadState.Loading
+        val viewer by viewModel.viewer.collectAsState()
         AnimeMediaListScreen(
             refreshing = refreshing,
             onRefresh = viewModel::onRefresh,
@@ -193,13 +208,17 @@ object SeasonalScreen {
                                 if (item == null) {
                                     AnimeMediaListRow<MediaPreview>(
                                         screenKey = AnimeNavDestinations.SEARCH.id,
+                                        viewer = null,
                                         entry = null,
+                                        onClickListEdit = {},
                                         onLongClick = {},
                                     )
                                 } else {
                                     AnimeMediaListRow(
                                         screenKey = AnimeNavDestinations.SEASONAL.id,
+                                        viewer = viewer,
                                         entry = item,
+                                        onClickListEdit = { editViewModel.initialize(it.media) },
                                         onLongClick = viewModel::onMediaLongClick,
                                         onTagLongClick = viewModel::onTagLongClick,
                                         onLongPressImage = onLongPressImage,

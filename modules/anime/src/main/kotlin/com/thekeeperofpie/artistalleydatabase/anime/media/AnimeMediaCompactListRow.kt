@@ -6,7 +6,6 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -175,7 +174,6 @@ object AnimeMediaCompactListRow {
                     // Clip to match card so that shared element animation keeps rounded corner
                     .clip(RoundedCornerShape(topStart = 12.dp, bottomStart = 12.dp))
                     .background(MaterialTheme.colorScheme.surfaceVariant)
-                    .fillMaxHeight()
                     .size(width = DEFAULT_IMAGE_WIDTH, height = DEFAULT_IMAGE_HEIGHT)
                     .placeholder(
                         visible = entry == null,

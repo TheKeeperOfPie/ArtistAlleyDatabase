@@ -57,6 +57,7 @@ class AnimeSearchViewModel @Inject constructor(
     private val statusController: MediaListStatusController,
 ) : ViewModel() {
 
+    val viewer = aniListApi.authedUser
     var query by mutableStateOf("")
     var content = MutableStateFlow(PagingData.empty<AnimeSearchEntry>())
     var tagShown by mutableStateOf<AnimeMediaFilterController.TagSection.Tag?>(null)

@@ -23,6 +23,7 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -187,6 +188,7 @@ object AnimeSearchScreen {
                             ?: 0.dp
                     }
                 }
+                val viewer by viewModel.viewer.collectAsState()
                 AnimeMediaListScreen(
                     refreshing = refreshing,
                     onRefresh = viewModel::onRefresh,
@@ -229,6 +231,7 @@ object AnimeSearchScreen {
                                         when (val item = content[index]) {
                                             is AnimeSearchEntry.Media<*> -> AnimeMediaListRow(
                                                 screenKey = AnimeNavDestinations.SEARCH.id,
+                                                viewer = viewer,
                                                 entry = item,
                                                 onClickListEdit = {
                                                     editViewModel.initialize(it.media)
@@ -266,6 +269,7 @@ object AnimeSearchScreen {
                                             // TODO: Separated placeholder types
                                             null -> AnimeMediaListRow<MediaPreview>(
                                                 screenKey = AnimeNavDestinations.SEARCH.id,
+                                                viewer = null,
                                                 entry = null,
                                                 onClickListEdit = {},
                                                 onLongClick = {},

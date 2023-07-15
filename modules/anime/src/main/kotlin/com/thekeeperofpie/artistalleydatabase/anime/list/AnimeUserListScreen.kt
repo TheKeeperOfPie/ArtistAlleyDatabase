@@ -24,6 +24,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -32,6 +33,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.anilist.UserMediaListQuery.Data.MediaListCollection.List.Entry.Media
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
@@ -40,6 +42,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
+import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
+import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeMediaFilterOptionsBottomPanel
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBar
@@ -66,133 +70,147 @@ object AnimeUserListScreen {
     ) {
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
         val colorCalculationState = rememberColorCalculationState(viewModel.colorMap)
-        AnimeMediaFilterOptionsBottomPanel(
-            topBar = {
-                EnterAlwaysTopAppBar(scrollBehavior = scrollBehavior) {
-                    val isNotEmpty by remember { derivedStateOf { viewModel.query.isNotEmpty() } }
-                    BackHandler(isNotEmpty && !WindowInsets.isImeVisible) {
-                        viewModel.query = ""
-                    }
-                    StaticSearchBar(
-                        query = viewModel.query,
-                        onQueryChange = { viewModel.query = it },
-                        leadingIcon = if (upIconOption != null) {
-                            { UpIconButton(upIconOption) }
-                        } else null,
-                        placeholder = {
-                            val userName = viewModel.userName
-                            Text(
-                                if (userName != null) {
-                                    stringResource(
-                                        when (mediaType) {
-                                            MediaType.ANIME,
-                                            MediaType.UNKNOWN__ -> R.string.anime_user_list_user_name_anime_search
-                                            MediaType.MANGA -> R.string.anime_user_list_user_name_manga_search
-                                        },
-                                        userName
-                                    )
-                                } else {
-                                    stringResource(
-                                        when (mediaType) {
-                                            MediaType.ANIME,
-                                            MediaType.UNKNOWN__ -> R.string.anime_user_list_anime_search
-                                            MediaType.MANGA -> R.string.anime_user_list_manga_search
-                                        }
+        val editViewModel = hiltViewModel<MediaEditViewModel>()
+        MediaEditBottomSheetScaffold(
+            screenKey = AnimeNavDestinations.USER_LIST.id,
+            viewModel = editViewModel,
+            colorCalculationState = colorCalculationState,
+            navigationCallback = navigationCallback,
+            bottomNavigationState = bottomNavigationState,
+        ) {
+            AnimeMediaFilterOptionsBottomPanel(
+                topBar = {
+                    EnterAlwaysTopAppBar(scrollBehavior = scrollBehavior) {
+                        val isNotEmpty by remember { derivedStateOf { viewModel.query.isNotEmpty() } }
+                        BackHandler(isNotEmpty && !WindowInsets.isImeVisible) {
+                            viewModel.query = ""
+                        }
+                        StaticSearchBar(
+                            query = viewModel.query,
+                            onQueryChange = { viewModel.query = it },
+                            leadingIcon = if (upIconOption != null) {
+                                { UpIconButton(upIconOption) }
+                            } else null,
+                            placeholder = {
+                                val userName = viewModel.userName
+                                Text(
+                                    if (userName != null) {
+                                        stringResource(
+                                            when (mediaType) {
+                                                MediaType.ANIME,
+                                                MediaType.UNKNOWN__ -> R.string.anime_user_list_user_name_anime_search
+                                                MediaType.MANGA -> R.string.anime_user_list_user_name_manga_search
+                                            },
+                                            userName
+                                        )
+                                    } else {
+                                        stringResource(
+                                            when (mediaType) {
+                                                MediaType.ANIME,
+                                                MediaType.UNKNOWN__ -> R.string.anime_user_list_anime_search
+                                                MediaType.MANGA -> R.string.anime_user_list_manga_search
+                                            }
+                                        )
+                                    }
+                                )
+                            },
+                            trailingIcon = {
+                                IconButton(onClick = { viewModel.query = "" }) {
+                                    Icon(
+                                        imageVector = Icons.Filled.Clear,
+                                        contentDescription = stringResource(
+                                            R.string.anime_search_clear
+                                        ),
                                     )
                                 }
-                            )
-                        },
-                        trailingIcon = {
-                            IconButton(onClick = { viewModel.query = "" }) {
-                                Icon(
-                                    imageVector = Icons.Filled.Clear,
-                                    contentDescription = stringResource(
-                                        R.string.anime_search_clear
-                                    ),
-                                )
-                            }
-                        },
-                    )
+                            },
+                        )
+                    }
+                },
+                filterData = viewModel::filterData,
+                onTagLongClick = viewModel::onTagLongClick,
+                showLoadSave = false,
+                bottomNavigationState = bottomNavigationState,
+            ) { scaffoldPadding ->
+                val content = viewModel.content
+                val refreshing = when (content) {
+                    ContentState.LoadingEmpty -> true
+                    is ContentState.Success -> content.loading
+                    is ContentState.Error -> false
                 }
-            },
-            filterData = viewModel::filterData,
-            onTagLongClick = viewModel::onTagLongClick,
-            showLoadSave = false,
-            bottomNavigationState = bottomNavigationState,
-        ) { scaffoldPadding ->
-            val content = viewModel.content
-            val refreshing = when (content) {
-                ContentState.LoadingEmpty -> true
-                is ContentState.Success -> content.loading
-                is ContentState.Error -> false
-            }
-            val density = LocalDensity.current
-            val topBarPadding by remember {
-                derivedStateOf {
-                    scrollBehavior.state.heightOffsetLimit
-                        .takeUnless { it == -Float.MAX_VALUE }
-                        ?.let { density.run { -it.toDp() } }
-                        ?: 0.dp
+                val density = LocalDensity.current
+                val topBarPadding by remember {
+                    derivedStateOf {
+                        scrollBehavior.state.heightOffsetLimit
+                            .takeUnless { it == -Float.MAX_VALUE }
+                            ?.let { density.run { -it.toDp() } }
+                            ?: 0.dp
+                    }
                 }
-            }
 
-            AnimeMediaListScreen(
-                refreshing = refreshing,
-                onRefresh = viewModel::onRefresh,
-                tagShown = viewModel::tagShown,
-                onTagDismiss = { viewModel.tagShown = null },
-                pullRefreshTopPadding = { topBarPadding },
-                modifier = Modifier.nestedScroll(
-                    NestedScrollSplitter(
-                        bottomNavigationState?.nestedScrollConnection,
-                        scrollBehavior.nestedScrollConnection,
-                        consumeNone = bottomNavigationState == null,
+                val viewer by viewModel.viewer.collectAsState()
+                AnimeMediaListScreen(
+                    refreshing = refreshing,
+                    onRefresh = viewModel::onRefresh,
+                    tagShown = viewModel::tagShown,
+                    onTagDismiss = { viewModel.tagShown = null },
+                    pullRefreshTopPadding = { topBarPadding },
+                    modifier = Modifier.nestedScroll(
+                        NestedScrollSplitter(
+                            bottomNavigationState?.nestedScrollConnection,
+                            scrollBehavior.nestedScrollConnection,
+                            consumeNone = bottomNavigationState == null,
+                        )
                     )
-                )
-            ) { onLongPressImage ->
-                when (content) {
-                    is ContentState.Error -> AnimeMediaListScreen.Error(
-                        errorTextRes = content.errorRes,
-                        exception = content.exception,
-                        modifier = Modifier.padding(top = topBarPadding),
-                    )
-                    ContentState.LoadingEmpty ->
-                        // Empty column to allow pull refresh to work
-                        Column(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .verticalScroll(rememberScrollState()),
-                        ) {
-                        }
-                    is ContentState.Success -> {
-                        if (content.entries.isEmpty()) {
-                            AnimeMediaListScreen.NoResults(Modifier.padding(top = topBarPadding))
-                        } else {
-                            LazyColumn(
-                                state = scrollStateSaver.lazyListState(),
-                                contentPadding = PaddingValues(
-                                    start = 16.dp,
-                                    end = 16.dp,
-                                    top = scrollBehavior.state.heightOffsetLimit
-                                        .takeUnless { it == -Float.MAX_VALUE }
-                                        ?.let { LocalDensity.current.run { -it.toDp() } }
-                                        ?: 0.dp,
-                                    bottom = scaffoldPadding.calculateBottomPadding()
-                                ),
-                                verticalArrangement = Arrangement.spacedBy(16.dp),
+                ) { onLongPressImage ->
+                    when (content) {
+                        is ContentState.Error -> AnimeMediaListScreen.Error(
+                            errorTextRes = content.errorRes,
+                            exception = content.exception,
+                            modifier = Modifier.padding(top = topBarPadding),
+                        )
+                        ContentState.LoadingEmpty ->
+                            // Empty column to allow pull refresh to work
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .verticalScroll(rememberScrollState()),
                             ) {
-                                items(content.entries, { it.id.scopedId }) {
-                                    when (it) {
-                                        is Entry.Header -> Header(it)
-                                        is Entry.Item -> AnimeMediaListRow(
-                                            screenKey = AnimeNavDestinations.USER_LIST.id,
-                                            entry = it,
-                                            onLongClick = viewModel::onMediaLongClick,
-                                            onTagLongClick = viewModel::onTagLongClick,
-                                            onLongPressImage = onLongPressImage,
-                                            colorCalculationState = colorCalculationState,
-                                            navigationCallback = navigationCallback,
-                                        )
+                            }
+                        is ContentState.Success -> {
+                            if (content.entries.isEmpty()) {
+                                AnimeMediaListScreen.NoResults(Modifier.padding(top = topBarPadding))
+                            } else {
+                                LazyColumn(
+                                    state = scrollStateSaver.lazyListState(),
+                                    contentPadding = PaddingValues(
+                                        start = 16.dp,
+                                        end = 16.dp,
+                                        top = scrollBehavior.state.heightOffsetLimit
+                                            .takeUnless { it == -Float.MAX_VALUE }
+                                            ?.let { LocalDensity.current.run { -it.toDp() } }
+                                            ?: 0.dp,
+                                        bottom = scaffoldPadding.calculateBottomPadding()
+                                    ),
+                                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                                ) {
+                                    items(content.entries, { it.id.scopedId }) {
+                                        when (it) {
+                                            is Entry.Header -> Header(it)
+                                            is Entry.Item -> AnimeMediaListRow(
+                                                screenKey = AnimeNavDestinations.USER_LIST.id,
+                                                entry = it,
+                                                viewer = viewer,
+                                                onClickListEdit = {
+                                                    editViewModel.initialize(it.media)
+                                                },
+                                                onLongClick = viewModel::onMediaLongClick,
+                                                onTagLongClick = viewModel::onTagLongClick,
+                                                onLongPressImage = onLongPressImage,
+                                                colorCalculationState = colorCalculationState,
+                                                navigationCallback = navigationCallback,
+                                            )
+                                        }
                                     }
                                 }
                             }

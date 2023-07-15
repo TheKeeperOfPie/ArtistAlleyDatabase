@@ -31,6 +31,8 @@ class AnimeCharacterDetailsViewModel @Inject constructor(
     private val ignoreList: AnimeMediaIgnoreList,
 ) : ViewModel() {
 
+    val viewer = aniListApi.authedUser
+
     lateinit var characterId: String
 
     var entry by mutableStateOf<CharacterDetailsScreen.Entry?>(null)

@@ -11,8 +11,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 class StaffCharactersViewModel @Inject constructor(
-    private val aniListApi: AuthedAniListApi,
+    aniListApi: AuthedAniListApi,
 ) : HeaderAndListViewModel<StaffCharactersScreen.Entry, CharacterWithRoleAndFavorites, CharacterListRow.Entry, CharacterSortOption>(
+    aniListApi = aniListApi,
     sortOptionEnum = CharacterSortOption::class,
     sortOptionEnumDefault = CharacterSortOption.FAVORITES,
     loadingErrorTextRes = R.string.anime_staff_characters_error_loading,

@@ -45,6 +45,7 @@ class AiringScheduleViewModel @Inject constructor(
     private val statusController: MediaListStatusController,
 ) : ViewModel() {
 
+    val viewer = aniListApi.authedUser
     var sort by mutableStateOf(AiringScheduleSort.POPULARITY)
     val colorMap = mutableStateMapOf<String, Pair<Color, Color>>()
 

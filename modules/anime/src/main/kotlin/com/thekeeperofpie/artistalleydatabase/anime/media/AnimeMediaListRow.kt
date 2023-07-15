@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import coil.size.Dimension
+import com.anilist.AuthedUserQuery
 import com.anilist.fragment.MediaHeaderData
 import com.anilist.fragment.MediaPreview
 import com.anilist.type.MediaListStatus
@@ -68,9 +69,10 @@ object AnimeMediaListRow {
     operator fun <MediaType : MediaPreview> invoke(
         screenKey: String,
         entry: Entry<MediaType>?,
+        viewer: AuthedUserQuery.Data.Viewer?,
         modifier: Modifier = Modifier,
         label: (@Composable () -> Unit)? = null,
-        onClickListEdit: (Entry<MediaType>) -> Unit = {},
+        onClickListEdit: (Entry<MediaType>) -> Unit,
         onLongClick: (Entry<MediaType>) -> Unit,
         onTagLongClick: (tagId: String) -> Unit = {},
         onLongPressImage: (entry: Entry<MediaType>) -> Unit = {},
@@ -102,6 +104,7 @@ object AnimeMediaListRow {
                 CoverImage(
                     screenKey = screenKey,
                     entry = entry,
+                    viewer = viewer,
                     onClick = {
                         if (entry != null) {
                             navigationCallback.onMediaClick(entry, imageWidthToHeightRatio)
@@ -155,6 +158,7 @@ object AnimeMediaListRow {
     private fun <MediaType : MediaPreview> CoverImage(
         screenKey: String,
         entry: Entry<MediaType>?,
+        viewer: AuthedUserQuery.Data.Viewer?,
         onClick: (Entry<MediaType>) -> Unit = {},
         onClickListEdit: (Entry<MediaType>) -> Unit,
         onLongPressImage: (entry: Entry<MediaType>) -> Unit,
@@ -209,23 +213,24 @@ object AnimeMediaListRow {
                         )
                 )
 
-
-                val userListStatus = entry?.mediaListStatus
-                IconButton(
-                    onClick = { if (entry != null) onClickListEdit(entry) },
-                    modifier = Modifier
-                        .align(Alignment.BottomStart)
-                        .clip(RoundedCornerShape(topEnd = 12.dp))
-                        .size(36.dp)
-                        .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.5f))
-                ) {
-                    val (imageVector, contentDescriptionRes) =
-                        userListStatus.toStatusIcon(entry?.media?.type)
-                    Icon(
-                        imageVector = imageVector,
-                        contentDescription = stringResource(contentDescriptionRes),
-                        modifier = Modifier.size(20.dp)
-                    )
+                if (viewer != null) {
+                    val userListStatus = entry?.mediaListStatus
+                    IconButton(
+                        onClick = { if (entry != null) onClickListEdit(entry) },
+                        modifier = Modifier
+                            .align(Alignment.BottomStart)
+                            .clip(RoundedCornerShape(topEnd = 12.dp))
+                            .size(36.dp)
+                            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.5f))
+                    ) {
+                        val (imageVector, contentDescriptionRes) =
+                            userListStatus.toStatusIcon(entry?.media?.type)
+                        Icon(
+                            imageVector = imageVector,
+                            contentDescription = stringResource(contentDescriptionRes),
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
                 }
             }
         }

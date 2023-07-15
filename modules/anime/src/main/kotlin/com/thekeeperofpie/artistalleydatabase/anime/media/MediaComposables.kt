@@ -55,6 +55,7 @@ import androidx.core.graphics.ColorUtils
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import coil.size.Dimension
+import com.anilist.AuthedUserQuery
 import com.anilist.fragment.MediaNavigationData
 import com.anilist.fragment.MediaPreview
 import com.google.accompanist.placeholder.PlaceholderHighlight
@@ -77,6 +78,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
 
 fun <T> LazyListScope.mediaListSection(
     screenKey: String,
+    viewer: AuthedUserQuery.Data.Viewer?,
     @StringRes titleRes: Int,
     values: Collection<T>,
     valueToEntry: (T) -> AnimeMediaListRow.Entry<*>,
@@ -86,6 +88,7 @@ fun <T> LazyListScope.mediaListSection(
     onExpandedChange: (Boolean) -> Unit = {},
     colorCalculationState: ColorCalculationState,
     navigationCallback: AnimeNavigator.NavigationCallback,
+    onClickListEdit: (AnimeMediaListRow.Entry<*>) -> Unit,
     onLongClick: (AnimeMediaListRow.Entry<*>) -> Unit,
     onTagLongClick: (String) -> Unit,
     label: (@Composable (T) -> Unit)? = null,
@@ -106,9 +109,11 @@ fun <T> LazyListScope.mediaListSection(
     AnimeMediaListRow(
         screenKey = screenKey,
         entry = entry,
+        viewer = viewer,
         label = if (label == null) null else {
             { label(item) }
         },
+        onClickListEdit = onClickListEdit,
         onLongClick = onLongClick,
         onTagLongClick = onTagLongClick,
         colorCalculationState = colorCalculationState,

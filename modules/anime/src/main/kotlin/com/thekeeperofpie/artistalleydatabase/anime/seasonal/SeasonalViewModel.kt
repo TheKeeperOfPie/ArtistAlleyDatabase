@@ -61,6 +61,8 @@ class SeasonalViewModel @Inject constructor(
     val statusController: MediaListStatusController,
 ) : ViewModel() {
 
+    val viewer = aniListApi.authedUser
+
     // TODO: Does this actually evict old pages from memory?
     private val pages = LruCache<Int, Page>(10)
     private val currentSeasonYear = AniListUtils.getCurrentSeasonYear()

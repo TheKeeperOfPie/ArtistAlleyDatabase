@@ -22,10 +22,10 @@ import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -41,6 +41,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.anilist.AuthedUserQuery
 import com.anilist.CharacterDetailsQuery.Data.Character
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
@@ -49,6 +50,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterHeader
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterHeaderValues
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
+import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
+import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.mediaListSection
 import com.thekeeperofpie.artistalleydatabase.anime.staff.DetailsStaff
 import com.thekeeperofpie.artistalleydatabase.anime.staff.staffSection
@@ -64,7 +67,6 @@ import com.thekeeperofpie.artistalleydatabase.compose.fadingEdgeBottom
 import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.twoColumnInfoText
 
-@Suppress("NAME_SHADOWING")
 @OptIn(ExperimentalMaterial3Api::class)
 object CharacterDetailsScreen {
 
@@ -84,7 +86,13 @@ object CharacterDetailsScreen {
             mutableFloatStateOf(headerValues.imageWidthToHeightRatio)
         }
 
-        Scaffold(
+        val viewer by viewModel.viewer.collectAsState()
+        val editViewModel = hiltViewModel<MediaEditViewModel>()
+        MediaEditBottomSheetScaffold(
+            screenKey = AnimeNavDestinations.SEARCH.id,
+            viewModel = editViewModel,
+            colorCalculationState = colorCalculationState,
+            navigationCallback = navigationCallback,
             topBar = {
                 CollapsingToolbar(
                     maxHeight = 356.dp,
@@ -122,8 +130,10 @@ object CharacterDetailsScreen {
                     ) {
                         content(
                             viewModel = viewModel,
+                            editViewModel = editViewModel,
                             headerValues = headerValues,
                             entry = it,
+                            viewer = viewer,
                             characterImageWidthToHeightRatio = { characterImageWidthToHeightRatio },
                             expandedState = expandedState,
                             navigationCallback = navigationCallback,
@@ -137,8 +147,10 @@ object CharacterDetailsScreen {
 
     private fun LazyListScope.content(
         viewModel: AnimeCharacterDetailsViewModel,
+        editViewModel: MediaEditViewModel,
         headerValues: CharacterHeaderValues,
         entry: Entry,
+        viewer: AuthedUserQuery.Data.Viewer?,
         characterImageWidthToHeightRatio: () -> Float,
         expandedState: ExpandedState,
         navigationCallback: AnimeNavigator.NavigationCallback,
@@ -161,6 +173,7 @@ object CharacterDetailsScreen {
         )
 
         mediaSection(
+            viewer = viewer,
             entry = entry,
             headerValues = headerValues,
             characterImageWidthToHeightRatio = characterImageWidthToHeightRatio,
@@ -168,6 +181,7 @@ object CharacterDetailsScreen {
             onExpandedChange = { expandedState.media = it },
             colorCalculationState = colorCalculationState,
             navigationCallback = navigationCallback,
+            onClickListEdit = { editViewModel.initialize(it.media) },
             onLongClick = viewModel::onMediaLongClick,
             onTagLongClick = { /* TODO */ },
         )
@@ -335,6 +349,7 @@ object CharacterDetailsScreen {
     }
 
     private fun LazyListScope.mediaSection(
+        viewer: AuthedUserQuery.Data.Viewer?,
         entry: Entry,
         headerValues: CharacterHeaderValues,
         characterImageWidthToHeightRatio: () -> Float,
@@ -342,11 +357,13 @@ object CharacterDetailsScreen {
         onExpandedChange: (Boolean) -> Unit,
         colorCalculationState: ColorCalculationState,
         navigationCallback: AnimeNavigator.NavigationCallback,
+        onClickListEdit: (AnimeMediaListRow.Entry<*>) -> Unit,
         onLongClick: (AnimeMediaListRow.Entry<*>) -> Unit,
         onTagLongClick: (String) -> Unit,
     ) {
         mediaListSection(
             screenKey = AnimeNavDestinations.CHARACTER_DETAILS.id,
+            viewer = viewer,
             titleRes = R.string.anime_character_details_media_label,
             values = entry.media,
             valueToEntry = { it },
@@ -356,6 +373,7 @@ object CharacterDetailsScreen {
             onExpandedChange = onExpandedChange,
             colorCalculationState = colorCalculationState,
             navigationCallback = navigationCallback,
+            onClickListEdit = onClickListEdit,
             onLongClick = onLongClick,
             onTagLongClick = onTagLongClick,
             onClickViewAll = {

@@ -16,12 +16,13 @@ import javax.inject.Inject
 
 @HiltViewModel
 class RecommendationsViewModel @Inject constructor(
-    private val aniListApi: AuthedAniListApi,
+    aniListApi: AuthedAniListApi,
     private val statusController: MediaListStatusController,
     private val ignoreList: AnimeMediaIgnoreList,
     private val settings: AnimeSettings,
 ) : HeaderAndListViewModel<RecommendationsScreen.Entry, MediaAndRecommendationsRecommendation,
         RecommendationEntry, RecommendationsSortOption>(
+    aniListApi = aniListApi,
     sortOptionEnum = RecommendationsSortOption::class,
     sortOptionEnumDefault = RecommendationsSortOption.RATING,
     loadingErrorTextRes = R.string.anime_recommendations_error_loading

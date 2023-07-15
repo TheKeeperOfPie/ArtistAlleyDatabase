@@ -48,6 +48,7 @@ open class AnimeUserListViewModel @Inject constructor(
     private val ignoreList: AnimeMediaIgnoreList
 ) : ViewModel() {
 
+    val viewer = aniListApi.authedUser
     var query by mutableStateOf("")
     var content by mutableStateOf<AnimeUserListScreen.ContentState>(
         AnimeUserListScreen.ContentState.LoadingEmpty

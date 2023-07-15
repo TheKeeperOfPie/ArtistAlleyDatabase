@@ -17,12 +17,12 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.RadioButton
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -38,11 +38,14 @@ import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
 import com.anilist.AiringScheduleQuery.Data.Page.AiringSchedule.Media.NextAiringEpisode
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
+import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
+import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
 import kotlinx.coroutines.launch
@@ -51,7 +54,7 @@ import java.time.LocalDate
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 object AiringScheduleScreen {
 
-    private const val SCREEN_KEY = "airingSchedule"
+    private val SCREEN_KEY = AnimeNavDestinations.AIRING_SCHEDULE.id
 
     @Composable
     operator fun invoke(
@@ -65,7 +68,13 @@ object AiringScheduleScreen {
             initialPage = initialDayIndex,
             pageCount = { 21 },
         )
-        Scaffold(
+
+        val editViewModel = hiltViewModel<MediaEditViewModel>()
+        MediaEditBottomSheetScaffold(
+            screenKey = SCREEN_KEY,
+            viewModel = editViewModel,
+            colorCalculationState = colorCalculationState,
+            navigationCallback = navigationCallback,
             topBar = {
                 Column {
                     TopAppBar(
@@ -158,6 +167,7 @@ object AiringScheduleScreen {
                 }
             }
         ) {
+            val viewer by viewModel.viewer.collectAsState()
             HorizontalPager(
                 state = pagerState, modifier = Modifier
                     .padding(it)
@@ -183,7 +193,9 @@ object AiringScheduleScreen {
                                     val schedule = data[index]
                                     AnimeMediaListRow(
                                         screenKey = SCREEN_KEY,
+                                        viewer = viewer,
                                         entry = schedule?.entry,
+                                        onClickListEdit = { editViewModel.initialize(it.media) },
                                         onLongClick = viewModel::onLongClickEntry,
                                         nextAiringEpisode = schedule?.data?.let {
                                             NextAiringEpisode(

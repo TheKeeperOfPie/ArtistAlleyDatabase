@@ -15,6 +15,7 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.filter
 import androidx.paging.map
+import com.anilist.AuthedUserQuery
 import com.anilist.MediaByIdsQuery.Data.Page.Medium
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
@@ -48,6 +49,7 @@ class AnimeMediaIgnoreViewModel @Inject constructor(
     private val statusController: MediaListStatusController,
 ) : ViewModel() {
 
+    val viewer = aniListApi.authedUser
     var query by mutableStateOf("")
     var content = MutableStateFlow(PagingData.empty<AnimeMediaListRow.Entry<Medium>>())
     var tagShown by mutableStateOf<AnimeMediaFilterController.TagSection.Tag?>(null)

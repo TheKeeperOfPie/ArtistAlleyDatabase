@@ -24,7 +24,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.launch
@@ -42,7 +41,7 @@ class MediaEditViewModel @Inject constructor(
 ) : ViewModel() {
 
     val initialParams = MutableStateFlow<MediaEditData.InitialParams?>(null)
-    private val mediaEntryRequest = MutableStateFlow<MediaNavigationData?>(null)
+    private val mediaEntryRequest = MutableSharedFlow<MediaNavigationData>(1, 1)
 
     val editData = MediaEditData()
 
@@ -60,7 +59,6 @@ class MediaEditViewModel @Inject constructor(
 
         viewModelScope.launch(CustomDispatchers.IO) {
             mediaEntryRequest
-                .filterNotNull()
                 .mapLatest {
                     Result.success(it to aniListApi.mediaListEntry(it.id.toString()).media)
                 }
@@ -89,20 +87,13 @@ class MediaEditViewModel @Inject constructor(
         viewModelScope.launch(CustomDispatchers.Main) {
             initialParams.flatMapLatest {
                 if (it?.mediaId != null) {
-                    combine(
-                        flowOf(it.mediaId),
-                        statusController.allChanges(setOf(it.mediaId)),
-                        ::Pair,
-                    )
+                    statusController.allChanges(it.mediaId)
                 } else {
                     emptyFlow()
                 }
             }
-                .collectLatest { (mediaId, statusUpdates) ->
-                    if (statusUpdates.containsKey(mediaId)) {
-                        editData.status = statusUpdates[mediaId]
-                    }
-                }
+                .filterNotNull()
+                .collectLatest { editData.status = it.entry?.status }
         }
 
         viewModelScope.launch(CustomDispatchers.Main) {
@@ -115,17 +106,16 @@ class MediaEditViewModel @Inject constructor(
 
     fun initialize(media: MediaNavigationData) {
         val mediaId = media.id
-        if (mediaEntryRequest.value?.id != mediaId) {
-            initialize(
-                mediaId = mediaId.toString(),
-                media = media,
-                mediaListEntry = null,
-                mediaType = null,
-                status = null,
-                maxProgress = null,
-            )
-            mediaEntryRequest.value = media
-        }
+        initialize(
+            mediaId = mediaId.toString(),
+            media = media,
+            mediaListEntry = null,
+            mediaType = null,
+            status = null,
+            maxProgress = null,
+            loading = true,
+        )
+        mediaEntryRequest.tryEmit(media)
         editData.showing = true
     }
 
@@ -136,13 +126,15 @@ class MediaEditViewModel @Inject constructor(
         mediaType: MediaType?,
         status: MediaListStatus?,
         maxProgress: Int?,
+        loading: Boolean = false,
     ) {
         initialParams.value = MediaEditData.InitialParams(
             mediaId = mediaId,
             media = media,
             mediaListEntry = mediaListEntry,
             mediaType = mediaType,
-            maxProgress = maxProgress ?: 1
+            maxProgress = maxProgress ?: 1,
+            loading = loading,
         )
         editData.status = status
         editData.progress = mediaListEntry?.progress?.toString().orEmpty()
@@ -156,19 +148,17 @@ class MediaEditViewModel @Inject constructor(
         rawScore.value = mediaListEntry?.score
     }
 
-    fun hide(clearData: Boolean) {
+    fun hide() {
         editData.showing = false
         editData.error = null
-        if (clearData) {
-            initialize(
-                mediaId = "",
-                media = null,
-                mediaListEntry = null,
-                mediaType = null,
-                status = null,
-                maxProgress = null,
-            )
-        }
+        initialize(
+            mediaId = "",
+            media = null,
+            mediaListEntry = null,
+            mediaType = null,
+            status = null,
+            maxProgress = null,
+        )
     }
 
     fun onEditSheetValueChange(sheetValue: SheetValue): Boolean {
@@ -219,14 +209,16 @@ class MediaEditViewModel @Inject constructor(
             try {
                 val initialParams = initialParams.value
                 aniListApi.deleteMediaListEntry(initialParams?.id!!)
-                statusController.onUpdate(initialParams.mediaId!!, null)
+
+                val mediaId = initialParams.mediaId!!
+                statusController.onUpdate(mediaId, null)
                 withContext(CustomDispatchers.Main) {
                     editData.deleting = false
                     editData.showing = false
                     editData.showConfirmClose = false
                     dismissRequests.emit(System.currentTimeMillis())
                     initialize(
-                        mediaId = "",
+                        mediaId = mediaId,
                         media = null,
                         mediaListEntry = null,
                         mediaType = null,
@@ -322,7 +314,7 @@ class MediaEditViewModel @Inject constructor(
                     hiddenFromStatusLists = null,
                 )
 
-                statusController.onUpdate(mediaId, result.status)
+                statusController.onUpdate(mediaId, result)
 
                 withContext(CustomDispatchers.Main) {
                     editData.saving = false

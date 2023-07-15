@@ -9,8 +9,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ReviewsViewModel @Inject constructor(
-    private val aniListApi: AuthedAniListApi
+    aniListApi: AuthedAniListApi
 ) : HeaderAndListViewModel<ReviewsScreen.Entry, MediaAndReviewsReview, MediaAndReviewsReview, ReviewsSortOption>(
+    aniListApi = aniListApi,
     sortOptionEnum = ReviewsSortOption::class,
     sortOptionEnumDefault = ReviewsSortOption.RATING,
     loadingErrorTextRes = R.string.anime_reviews_error_loading,

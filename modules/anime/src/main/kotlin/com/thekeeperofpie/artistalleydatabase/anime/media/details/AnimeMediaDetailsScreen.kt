@@ -1,7 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media.details
 
 import android.view.View
-import androidx.activity.compose.BackHandler
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
@@ -20,7 +19,6 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -46,7 +44,6 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PlayCircleOutline
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AssistChipDefaults
-import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -56,22 +53,17 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.contentColorFor
-import androidx.compose.material3.rememberBottomSheetScaffoldState
-import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -97,6 +89,7 @@ import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
 import coil.compose.AsyncImage
 import coil.size.Dimension
+import com.anilist.AuthedUserQuery
 import com.anilist.MediaDetailsQuery.Data.Media
 import com.anilist.fragment.MediaPreview
 import com.anilist.type.ExternalLinkType
@@ -126,7 +119,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toColor
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toStatusIcon
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toStatusText
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
-import com.thekeeperofpie.artistalleydatabase.anime.media.edit.AnimeMediaEditBottomSheet
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.mediaListSection
@@ -148,7 +140,6 @@ import com.thekeeperofpie.artistalleydatabase.compose.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.compose.DetailsSubsectionHeader
 import com.thekeeperofpie.artistalleydatabase.compose.InfoText
 import com.thekeeperofpie.artistalleydatabase.compose.PieChart
-import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
 import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.assistChipColors
 import com.thekeeperofpie.artistalleydatabase.compose.expandableListInfoText
@@ -159,7 +150,6 @@ import com.thekeeperofpie.artistalleydatabase.compose.showFloatingActionButtonOn
 import com.thekeeperofpie.artistalleydatabase.compose.twoColumnInfoText
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGrid
-import kotlinx.coroutines.launch
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.math.roundToInt
 
@@ -217,7 +207,6 @@ object AnimeMediaDetailsScreen {
         MediaEditBottomSheetScaffold(
             screenKey = AnimeNavDestinations.MEDIA_DETAILS.id,
             viewModel = editViewModel,
-            media = viewModel.entry?.media,
             colorCalculationState = colorCalculationState,
             navigationCallback = navigationCallback,
             topBar = {
@@ -264,14 +253,14 @@ object AnimeMediaDetailsScreen {
                                 ComposeColorUtils.bestTextColor(containerColor)
                                     ?: contentColorFor(containerColor)
 
-                            val initialParams =
-                                editViewModel.initialParams.collectAsState().value
+                            val listStatus = viewModel.listStatus
+                            val status = listStatus?.entry?.status
                             ExtendedFloatingActionButton(
                                 text = {
                                     val progress = if (media.type == MediaType.ANIME) {
-                                        initialParams?.progress
+                                        listStatus?.entry?.progress
                                     } else {
-                                        initialParams?.progressVolumes
+                                        listStatus?.entry?.progressVolumes
                                     } ?: 0
 
                                     val progressMax = if (media.type == MediaType.ANIME) {
@@ -281,31 +270,41 @@ object AnimeMediaDetailsScreen {
                                     }
 
                                     Text(
-                                        initialParams?.status.toStatusText(
+                                        status.toStatusText(
                                             mediaType = media.type,
                                             progress = progress,
                                             progressMax = progressMax,
-                                            score = initialParams?.score,
+                                            score = listStatus?.entry?.score,
                                             scoreFormat = editViewModel.scoreFormat
                                                 .collectAsState().value,
                                         )
                                     )
                                 },
                                 icon = {
-                                    val (vector, contentDescription) = initialParams?.status
+                                    val (vector, contentDescription) = status
                                         .toStatusIcon(mediaType = media.type)
                                     Icon(
                                         imageVector = vector,
                                         contentDescription = stringResource(contentDescription),
                                     )
                                 },
-                                expanded = initialParams?.status
+                                expanded = status
                                     ?.takeUnless { it == MediaListStatus.UNKNOWN__ }
                                     ?.takeIf { expanded } != null,
                                 containerColor = containerColor,
                                 contentColor = contentColor,
                                 onClick = {
                                     if (showFloatingActionButton) {
+                                        val maxProgress = media.episodes ?: media.volumes ?: media.nextAiringEpisode
+                                            ?.episode?.let { (it - 1).coerceAtLeast(1) }
+                                        editViewModel.initialize(
+                                            mediaId = media.id.toString(),
+                                            media = null,
+                                            mediaListEntry = listStatus?.entry,
+                                            mediaType = media.type,
+                                            status = listStatus?.entry?.status,
+                                            maxProgress = maxProgress,
+                                        )
                                         editViewModel.editData.showing = true
                                     }
                                 },
@@ -318,6 +317,7 @@ object AnimeMediaDetailsScreen {
                     .fillMaxSize()
             ) { scaffoldPadding ->
                 val entry = entry()
+                val viewer by viewModel.viewer.collectAsState()
                 val expandedState = rememberExpandedState()
                 Crossfade(targetState = entry, label = "Media details crossfade") {
                     if (it == null) {
@@ -333,7 +333,9 @@ object AnimeMediaDetailsScreen {
                         ) {
                             content(
                                 viewModel = viewModel,
+                                viewer = viewer,
                                 entry = it,
+                                onClickListEdit = { editViewModel.initialize(it.media) },
                                 onGenreLongClick = onGenreLongClick,
                                 onCharacterLongClick = onCharacterLongClick,
                                 onStaffLongClick = onStaffLongClick,
@@ -352,7 +354,9 @@ object AnimeMediaDetailsScreen {
 
     private fun LazyListScope.content(
         viewModel: AnimeMediaDetailsViewModel,
+        viewer: AuthedUserQuery.Data.Viewer?,
         entry: Entry,
+        onClickListEdit: (AnimeMediaListRow.Entry<*>) -> Unit,
         onGenreLongClick: (String) -> Unit,
         onCharacterLongClick: (String) -> Unit,
         onStaffLongClick: (String) -> Unit,
@@ -391,11 +395,13 @@ object AnimeMediaDetailsScreen {
         )
 
         relationsSection(
+            viewer = viewer,
             entry = entry,
             relationsExpanded = expandedState::relations,
             onRelationsExpandedChange = { expandedState.relations = it },
             colorCalculationState = colorCalculationState,
             navigationCallback = navigationCallback,
+            onClickListEdit = onClickListEdit,
             onLongClick = viewModel::onMediaLongClick,
             onTagLongClick = onTagLongClick,
         )
@@ -450,12 +456,14 @@ object AnimeMediaDetailsScreen {
         otherLinksSection(entry = entry)
 
         recommendationsSection(
+            viewer = viewer,
             entry = entry,
             coverImageWidthToHeightRatio = coverImageWidthToHeightRatio,
             expanded = expandedState::recommendations,
             onExpandedChange = { expandedState.recommendations = it },
             colorCalculationState = colorCalculationState,
             navigationCallback = navigationCallback,
+            onClickListEdit = onClickListEdit,
             onLongClick = viewModel::onMediaLongClick,
             onTagLongClick = onTagLongClick,
         )
@@ -492,7 +500,10 @@ object AnimeMediaDetailsScreen {
                             ),
                             onLongClick = { onGenreLongClick(it.name) },
                             label = { AutoHeightText(it.name) },
-                            colors = assistChipColors(containerColor = it.color),
+                            colors = assistChipColors(
+                                containerColor = it.color,
+                                labelColor = it.textColor ?: MaterialTheme.colorScheme.onSurface,
+                            ),
                         )
                     }
                 }
@@ -501,9 +512,11 @@ object AnimeMediaDetailsScreen {
     }
 
     private fun LazyListScope.relationsSection(
+        viewer: AuthedUserQuery.Data.Viewer?,
         entry: Entry,
         relationsExpanded: () -> Boolean,
         onRelationsExpandedChange: (Boolean) -> Unit,
+        onClickListEdit: (AnimeMediaListRow.Entry<*>) -> Unit,
         onLongClick: (AnimeMediaListRow.Entry<*>) -> Unit,
         onTagLongClick: (String) -> Unit,
         colorCalculationState: ColorCalculationState,
@@ -511,6 +524,7 @@ object AnimeMediaDetailsScreen {
     ) {
         mediaListSection(
             screenKey = AnimeNavDestinations.MEDIA_DETAILS.id + "_relations",
+            viewer = viewer,
             titleRes = R.string.anime_media_details_relations_label,
             values = entry.relations,
             valueToEntry = { it.entry },
@@ -519,6 +533,7 @@ object AnimeMediaDetailsScreen {
             onExpandedChange = onRelationsExpandedChange,
             colorCalculationState = colorCalculationState,
             navigationCallback = navigationCallback,
+            onClickListEdit = onClickListEdit,
             onLongClick = onLongClick,
             onTagLongClick = onTagLongClick,
             label = { RelationLabel(it.relation) },
@@ -1080,17 +1095,20 @@ object AnimeMediaDetailsScreen {
     }
 
     private fun LazyListScope.recommendationsSection(
+        viewer: AuthedUserQuery.Data.Viewer?,
         entry: Entry,
         coverImageWidthToHeightRatio: () -> Float,
         expanded: () -> Boolean,
         onExpandedChange: (Boolean) -> Unit,
         colorCalculationState: ColorCalculationState,
         navigationCallback: AnimeNavigator.NavigationCallback,
+        onClickListEdit: (AnimeMediaListRow.Entry<*>) -> Unit,
         onLongClick: (AnimeMediaListRow.Entry<*>) -> Unit,
         onTagLongClick: (String) -> Unit,
     ) {
         mediaListSection(
             screenKey = AnimeNavDestinations.MEDIA_DETAILS.id + "_recommendations",
+            viewer = viewer,
             titleRes = R.string.anime_media_details_recommendations_label,
             values = entry.recommendations,
             valueToEntry = { it.entry },
@@ -1100,6 +1118,7 @@ object AnimeMediaDetailsScreen {
             onExpandedChange = onExpandedChange,
             colorCalculationState = colorCalculationState,
             navigationCallback = navigationCallback,
+            onClickListEdit = onClickListEdit,
             onLongClick = onLongClick,
             onTagLongClick = onTagLongClick,
             onClickViewAll = {
@@ -1675,6 +1694,7 @@ object AnimeMediaDetailsScreen {
         data class Genre(
             val name: String,
             val color: Color = MediaUtils.genreColor(name),
+            val textColor: Color? = ComposeColorUtils.bestTextColor(color),
         )
 
         data class Relation(

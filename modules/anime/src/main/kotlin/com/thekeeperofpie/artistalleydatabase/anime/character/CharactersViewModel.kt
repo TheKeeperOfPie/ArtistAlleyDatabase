@@ -9,8 +9,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 class CharactersViewModel @Inject constructor(
-    private val aniListApi: AuthedAniListApi,
+    aniListApi: AuthedAniListApi,
 ) : HeaderAndListViewModel<CharactersScreen.Entry, CharacterWithRole, DetailsCharacter, CharacterSortOption>(
+    aniListApi = aniListApi,
     sortOptionEnum = CharacterSortOption::class,
     sortOptionEnumDefault = CharacterSortOption.ROLE,
     loadingErrorTextRes = R.string.anime_characters_error_loading,
