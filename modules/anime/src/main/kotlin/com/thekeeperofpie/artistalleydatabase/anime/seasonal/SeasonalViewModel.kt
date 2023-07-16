@@ -33,6 +33,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusControl
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaStatusChanges
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortOption
+import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaTagsController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.TagSection
 import com.thekeeperofpie.artistalleydatabase.anime.search.AnimeSearchMediaPagingSource
 import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIntIds
@@ -57,8 +58,9 @@ import kotlin.time.Duration.Companion.milliseconds
 class SeasonalViewModel @Inject constructor(
     private val aniListApi: AuthedAniListApi,
     private val settings: AnimeSettings,
-    val ignoreList: AnimeMediaIgnoreList,
-    val statusController: MediaListStatusController,
+    private val ignoreList: AnimeMediaIgnoreList,
+    private val statusController: MediaListStatusController,
+    private val mediaTagsController: MediaTagsController,
 ) : ViewModel() {
 
     val viewer = aniListApi.authedUser
@@ -72,7 +74,7 @@ class SeasonalViewModel @Inject constructor(
     val colorMap = mutableStateMapOf<String, Pair<Color, Color>>()
 
     val sortFilterController =
-        AnimeSortFilterController(MediaSortOption::class, aniListApi, settings)
+        AnimeSortFilterController(MediaSortOption::class, aniListApi, settings, mediaTagsController)
 
     private val refreshUptimeMillis = MutableStateFlow(-1L)
 
@@ -90,12 +92,11 @@ class SeasonalViewModel @Inject constructor(
                 airingDateEnabled = false,
                 defaultSort = MediaSortOption.POPULARITY,
             ),
-            mediaType = MediaType.ANIME,
         )
     }
 
     fun onTagLongClick(tagId: String) {
-        tagShown = sortFilterController.tagsByCategory.value.values
+        tagShown = mediaTagsController.tags.value.values
             .asSequence()
             .mapNotNull { it.findTag(tagId) }
             .firstOrNull()

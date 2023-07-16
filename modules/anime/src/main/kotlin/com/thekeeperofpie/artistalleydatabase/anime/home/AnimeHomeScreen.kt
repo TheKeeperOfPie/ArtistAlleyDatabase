@@ -18,9 +18,8 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyListState
@@ -108,7 +107,6 @@ import com.thekeeperofpie.artistalleydatabase.compose.NestedScrollSplitter
 import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
-import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
 
@@ -119,7 +117,8 @@ import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
 object AnimeHomeScreen {
 
     private val SCREEN_KEY = AnimeNavDestinations.HOME.id
-    private val MEDIA_ROW_HEIGHT = 180.dp
+    private val MEDIA_ROW_IMAGE_HEIGHT = 180.dp
+    private val MEDIA_ROW_IMAGE_WIDTH = 120.dp
 
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     @Composable
@@ -475,11 +474,20 @@ object AnimeHomeScreen {
             val colorPrimary = MaterialTheme.colorScheme.primary
             val cardOutlineBorder = remember { BorderStroke(1.5.dp, colorPrimary) }
 
+            val density = LocalDensity.current
+            val coilWidth =
+                coil.size.Dimension.Pixels(density.run { MEDIA_ROW_IMAGE_WIDTH.roundToPx() })
+            val coilHeight =
+                coil.size.Dimension.Pixels(density.run { MEDIA_ROW_IMAGE_HEIGHT.roundToPx() })
+
             LazyRow(
                 state = listState,
                 contentPadding = PaddingValues(
                     start = 16.dp,
-                    end = LocalConfiguration.current.screenWidthDp.dp - 80.dp,
+                    end = (LocalConfiguration.current.screenWidthDp.dp
+                            - MEDIA_ROW_IMAGE_WIDTH).let {
+                        if (viewAllRoute == null) it else it - 16.dp - MEDIA_ROW_IMAGE_WIDTH
+                    },
                 ),
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 flingBehavior = rememberSnapFlingBehavior(snapLayoutInfoProvider)
@@ -515,13 +523,17 @@ object AnimeHomeScreen {
                     }
 
                     val baseModifier = Modifier
-                        .animateItemPlacement()
+                        .size(
+                            width = MEDIA_ROW_IMAGE_WIDTH,
+                            height = MEDIA_ROW_IMAGE_HEIGHT
+                        )
                         .clip(RoundedCornerShape(12.dp))
                         .combinedClickable(
                             onClick = onClick,
                             onLongClick = { onLongClickEntry(item) },
                         )
                         .alpha(if (item.ignored) 0.38f else 1f)
+                        .animateItemPlacement()
 
                     val card: @Composable (@Composable ColumnScope.() -> Unit) -> Unit =
                         if (selectedItemTracker.keyToPosition[rowKey]?.second == index) {
@@ -561,14 +573,9 @@ object AnimeHomeScreen {
                                     .data(media.coverImage?.extraLarge)
                                     .crossfade(false)
                                     .allowHardware(colorCalculationState.hasColor(id))
-                                    .size(
-                                        width = coil.size.Dimension.Undefined,
-                                        height = coil.size.Dimension.Pixels(
-                                            LocalDensity.current.run { MEDIA_ROW_HEIGHT.roundToPx() }
-                                        ),
-                                    )
+                                    .size(width = coilWidth, height = coilHeight)
                                     .build(),
-                                contentScale = ContentScale.FillHeight,
+                                contentScale = ContentScale.Crop,
                                 contentDescription = stringResource(R.string.anime_media_cover_image_content_description),
                                 onSuccess = {
                                     widthToHeightRatio = it.widthToHeightRatio()
@@ -583,16 +590,10 @@ object AnimeHomeScreen {
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(12.dp))
                                     .alpha(alpha)
-                                    .height(MEDIA_ROW_HEIGHT)
-                                    .conditionally(widthToHeightRatio == null) {
-                                        widthIn(
-                                            min = MEDIA_ROW_HEIGHT *
-                                                    AniListUtils.COVER_IMAGE_WIDTH_TO_HEIGHT_RATIO
-                                        )
-                                    }
-                                    .conditionally(widthToHeightRatio != null) {
-                                        widthIn(max = MEDIA_ROW_HEIGHT)
-                                    }
+                                    .size(
+                                        width = MEDIA_ROW_IMAGE_WIDTH,
+                                        height = MEDIA_ROW_IMAGE_HEIGHT
+                                    )
                                     .animateContentSize()
                             )
                         }

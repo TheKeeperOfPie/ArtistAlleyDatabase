@@ -22,8 +22,10 @@ import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaStatusChanges
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeSortFilterController
+import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaTagsController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.TagSection
 import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -47,6 +49,7 @@ class AnimeMediaIgnoreViewModel @Inject constructor(
     private val settings: AnimeSettings,
     private val ignoreList: AnimeMediaIgnoreList,
     private val statusController: MediaListStatusController,
+    private val mediaTagsController: MediaTagsController,
 ) : ViewModel() {
 
     val viewer = aniListApi.authedUser
@@ -58,8 +61,12 @@ class AnimeMediaIgnoreViewModel @Inject constructor(
     private var initialized = false
     private lateinit var mediaType: MediaType
 
-    val sortFilterController =
-        AnimeSortFilterController(MediaIgnoreSortOption::class, aniListApi, settings)
+    val sortFilterController = AnimeSortFilterController(
+        sortTypeEnumClass = MediaIgnoreSortOption::class,
+        aniListApi = aniListApi,
+        settings = settings,
+        mediaTagsController = mediaTagsController,
+    )
 
     private val refreshUptimeMillis = MutableStateFlow(-1L)
 
@@ -74,7 +81,6 @@ class AnimeMediaIgnoreViewModel @Inject constructor(
                 defaultSort = MediaIgnoreSortOption.ID,
                 showIgnoredEnabled = false,
             ),
-            mediaType = mediaType,
         )
 
         viewModelScope.launch(CustomDispatchers.Main) {
@@ -124,7 +130,7 @@ class AnimeMediaIgnoreViewModel @Inject constructor(
                             .map { it.value }
                         pagingData
                             .filter {
-                                AnimeSortFilterController.filterEntries(
+                                MediaUtils.filterEntries(
                                     filterParams = filterParams,
                                     entries = listOf(it),
                                     forceShowIgnored = true,
@@ -156,7 +162,7 @@ class AnimeMediaIgnoreViewModel @Inject constructor(
     fun onRefresh() = refreshUptimeMillis.update { SystemClock.uptimeMillis() }
 
     fun onTagLongClick(tagId: String) {
-        tagShown = sortFilterController.tagsByCategory.value.values
+        tagShown = mediaTagsController.tags.value.values
             .asSequence()
             .mapNotNull { it.findTag(tagId) }
             .firstOrNull()

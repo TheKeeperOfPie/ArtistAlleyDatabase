@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import com.anilist.MediaDetailsQuery
 import com.anilist.fragment.MediaDetailsListEntry
+import com.anilist.fragment.MediaPreview
 import com.anilist.type.MediaFormat
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaRelation
@@ -29,6 +30,11 @@ import com.anilist.type.MediaStatus
 import com.anilist.type.MediaType
 import com.anilist.type.ScoreFormat
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AiringDate
+import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortFilterController
+import com.thekeeperofpie.artistalleydatabase.anime.media.filter.TagSection
+import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
+import com.thekeeperofpie.artistalleydatabase.compose.filter.SortOption
 import java.time.Instant
 import java.time.LocalDate
 import java.time.Month
@@ -452,5 +458,197 @@ object MediaUtils {
         rating > 70 -> Color.Yellow
         rating > 50 -> Color(0xFFFF9000) // Orange
         else -> Color.Red
+    }
+
+    fun <SortType : SortOption, MediaEntryType : AnimeMediaListRow.Entry<MediaType>, MediaType : MediaPreview> filterEntries(
+        filterParams: MediaSortFilterController.FilterParams<SortType>,
+        entries: List<MediaEntryType>,
+        forceShowIgnored: Boolean = false,
+    ): List<MediaEntryType> {
+        var filteredEntries = entries
+
+        filteredEntries = FilterIncludeExcludeState.applyFiltering(
+            filterParams.statuses,
+            filteredEntries,
+            transform = { listOfNotNull(it.media.status) }
+        )
+
+        filteredEntries = FilterIncludeExcludeState.applyFiltering(
+            filterParams.formats,
+            filteredEntries,
+            transform = { listOfNotNull(it.media.format) }
+        )
+
+        filteredEntries = FilterIncludeExcludeState.applyFiltering(
+            filterParams.genres,
+            filteredEntries,
+            transform = { it.media.genres?.filterNotNull().orEmpty() }
+        )
+
+        val tagRank = filterParams.tagRank
+        val transformIncludes: ((AnimeMediaListRow.Entry<*>) -> List<String>)? =
+            if (tagRank == null) null else {
+                {
+                    it.media.tags
+                        ?.filterNotNull()
+                        ?.filter { it.rank?.let { it >= tagRank } == true }
+                        ?.map { it.id.toString() }
+                        .orEmpty()
+                }
+            }
+
+        filteredEntries = FilterIncludeExcludeState.applyFiltering(
+            filterParams.tagsByCategory.values.flatMap {
+                when (it) {
+                    is TagSection.Category -> it.flatten()
+                    is TagSection.Tag -> listOf(it)
+                }
+            },
+            filteredEntries,
+            state = { it.state },
+            key = { it.value.id.toString() },
+            transform = { it.media.tags?.filterNotNull()?.map { it.id.toString() }.orEmpty() },
+            transformIncludes = transformIncludes,
+        )
+
+        if (!filterParams.showAdult) {
+            filteredEntries = filteredEntries.filterNot { it.media.isAdult ?: false }
+        }
+
+        if (!filterParams.showIgnored && !forceShowIgnored) {
+            filteredEntries = filteredEntries.filterNot { it.ignored }
+        }
+
+        filteredEntries = when (val airingDate = filterParams.airingDate) {
+            is AiringDate.Basic -> {
+                filteredEntries.filter {
+                    val season = airingDate.season
+                    val seasonYear = airingDate.seasonYear.toIntOrNull()
+                    (seasonYear == null || it.media.seasonYear == seasonYear)
+                            && (season == null || it.media.season == season)
+                }
+            }
+            is AiringDate.Advanced -> {
+                val startDate = airingDate.startDate
+                val endDate = airingDate.endDate
+
+                if (startDate == null && endDate == null) {
+                    filteredEntries
+                } else {
+                    fun List<MediaEntryType>.filterStartDate(
+                        startDate: LocalDate
+                    ) = filter {
+                        val mediaStartDate = it.media.startDate
+                        val mediaYear = mediaStartDate?.year
+                        if (mediaYear == null) {
+                            return@filter false
+                        } else if (mediaYear > startDate.year) {
+                            return@filter true
+                        } else if (mediaYear < startDate.year) {
+                            return@filter false
+                        }
+
+                        val mediaMonth = mediaStartDate.month
+                        val mediaDayOfMonth = mediaStartDate.day
+
+                        // TODO: Is this the correct behavior?
+                        // If there's no month, match the media to avoid stripping expected result
+                        if (mediaMonth == null) {
+                            return@filter true
+                        }
+
+                        if (mediaMonth < startDate.monthValue) {
+                            return@filter false
+                        }
+
+                        if (mediaMonth > startDate.monthValue) {
+                            return@filter true
+                        }
+
+                        mediaDayOfMonth == null || mediaDayOfMonth >= startDate.dayOfMonth
+                    }
+
+                    fun List<MediaEntryType>.filterEndDate(
+                        endDate: LocalDate
+                    ) = filter {
+                        val mediaStartDate = it.media.startDate
+                        val mediaYear = mediaStartDate?.year
+                        if (mediaYear == null) {
+                            return@filter false
+                        } else if (mediaYear > endDate.year) {
+                            return@filter false
+                        } else if (mediaYear < endDate.year) {
+                            return@filter true
+                        }
+
+                        val mediaMonth = mediaStartDate.month
+                        val mediaDayOfMonth = mediaStartDate.day
+
+                        // TODO: Is this the correct behavior?
+                        // If there's no month, match the media to avoid stripping expected result
+                        if (mediaMonth == null) {
+                            return@filter true
+                        }
+
+                        if (mediaMonth < endDate.monthValue) {
+                            return@filter true
+                        }
+
+                        if (mediaMonth > endDate.monthValue) {
+                            return@filter false
+                        }
+
+                        mediaDayOfMonth == null || mediaDayOfMonth <= endDate.dayOfMonth
+                    }
+
+                    if (startDate != null && endDate != null) {
+                        filteredEntries.filterStartDate(startDate)
+                            .filterEndDate(endDate)
+                    } else if (startDate != null) {
+                        filteredEntries.filterStartDate(startDate)
+                    } else if (endDate != null) {
+                        filteredEntries.filterEndDate(endDate)
+                    } else {
+                        filteredEntries
+                    }
+                }
+            }
+        }
+
+        val averageScore = filterParams.averageScoreRange
+        val averageScoreStart = averageScore.startInt ?: 0
+        val averageScoreEnd = averageScore.endInt
+        if (averageScoreStart > 0) {
+            filteredEntries = filteredEntries.filter {
+                it.media.averageScore.let { it != null && it >= averageScoreStart }
+            }
+        }
+        if (averageScoreEnd != null) {
+            filteredEntries = filteredEntries.filter {
+                it.media.averageScore.let { it != null && it <= averageScoreEnd }
+            }
+        }
+
+        val episodes = filterParams.episodesRange
+        val episodesStart = episodes.startInt ?: 0
+        val episodesEnd = episodes.endInt
+        if (episodesStart > 0) {
+            filteredEntries = filteredEntries.filter {
+                it.media.episodes.let { it != null && it >= episodesStart }
+            }
+        }
+        if (episodesEnd != null) {
+            filteredEntries = filteredEntries.filter {
+                it.media.episodes.let { it != null && it <= episodesEnd }
+            }
+        }
+
+        filteredEntries = FilterIncludeExcludeState.applyFiltering(
+            filterParams.sources,
+            filteredEntries,
+            transform = { listOfNotNull(it.media.source) }
+        )
+
+        return filteredEntries
     }
 }

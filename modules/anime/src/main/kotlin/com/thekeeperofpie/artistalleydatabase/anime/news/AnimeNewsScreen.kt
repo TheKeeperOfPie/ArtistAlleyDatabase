@@ -104,6 +104,7 @@ object AnimeNewsScreen {
         }
     }
 
+    // TODO: Collapse into other sort/filter infra
     @Composable
     private fun FilterPanel(data: AnimeNewsViewModel.FilterData) {
         Column(
@@ -121,7 +122,8 @@ object AnimeNewsScreen {
                 sortOptions = { data.sortOptions },
                 onSortClick = { data.onSortChanged(it) },
                 sortAscending = { data.sortAscending },
-                onSortAscendingChange = { data.sortAscending = it }
+                onSortAscendingChange = { data.sortAscending = it },
+                showDivider = true,
             )
 
             FilterSection(
@@ -133,6 +135,7 @@ object AnimeNewsScreen {
                 titleDropdownContentDescriptionRes = R.string.anime_news_filter_anime_news_network_region_content_description,
                 valueToText = { stringResource(it.value.textRes) },
                 includeExcludeIconContentDescriptionRes = R.string.anime_news_filter_anime_news_network_region_chip_state_content_description,
+                showDivider = true,
             )
 
             FilterSection(
@@ -144,6 +147,7 @@ object AnimeNewsScreen {
                 titleDropdownContentDescriptionRes = R.string.anime_news_filter_anime_news_network_categories_content_description,
                 valueToText = { stringResource(it.value.textRes) },
                 includeExcludeIconContentDescriptionRes = R.string.anime_news_filter_anime_news_network_categories_chip_state_content_description,
+                showDivider = true,
             )
 
             FilterSection(
@@ -155,6 +159,7 @@ object AnimeNewsScreen {
                 titleDropdownContentDescriptionRes = R.string.anime_news_filter_crunchyroll_news_categories_content_description,
                 valueToText = { stringResource(it.value.textRes) },
                 includeExcludeIconContentDescriptionRes = R.string.anime_news_filter_crunchyroll_news_categories_chip_state_content_description,
+                showDivider = true,
             )
 
             Spacer(Modifier.height(80.dp))

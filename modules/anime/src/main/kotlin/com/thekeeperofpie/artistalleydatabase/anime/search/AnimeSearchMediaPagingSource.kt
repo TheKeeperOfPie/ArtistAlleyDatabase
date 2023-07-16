@@ -8,7 +8,7 @@ import com.anilist.type.MediaSort
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AiringDate
-import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeSortFilterController
+import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.TagSection
 import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
@@ -43,16 +43,7 @@ class AnimeSearchMediaPagingSource(
         // AniList pages start at 1
         val page = params.key ?: 1
 
-        val onListOptions = filterParams.onListOptions
-        val containsOnList =
-            onListOptions.find { it.value }?.state == FilterIncludeExcludeState.INCLUDE
-        val containsNotOnList =
-            onListOptions.find { !it.value }?.state == FilterIncludeExcludeState.INCLUDE
-        val onList = when {
-            !containsOnList && !containsNotOnList -> null
-            containsOnList && containsNotOnList -> null
-            else -> containsOnList
-        }
+        val onList = filterParams.onList
 
         val season = refreshParams.seasonYearOverride?.first
             ?: (filterParams.airingDate as? AiringDate.Basic)?.season
@@ -140,7 +131,7 @@ class AnimeSearchMediaPagingSource(
     data class RefreshParams(
         val query: String,
         val requestMillis: Long,
-        val filterParams: AnimeSortFilterController.FilterParams<MediaSortOption>,
+        val filterParams: MediaSortFilterController.FilterParams<MediaSortOption>,
         val seasonYearOverride: Pair<MediaSeason, Int>? = null,
     ) {
         fun sortApiValue() = filterParams.sort.filter { it.state == FilterIncludeExcludeState.INCLUDE }

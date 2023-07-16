@@ -686,14 +686,8 @@ object AnimeNavigator {
         scrollStateSaver: ScrollStateSaver,
         bottomNavigationState: BottomNavigationState? = null,
     ) {
-        val viewModel = hiltViewModel<AnimeSearchViewModel>().apply {
-            initialize(
-                AnimeSortFilterController.InitialParams(
-                    tagId = tagId,
-                    defaultSort = MediaSortOption.TRENDING,
-                )
-            )
-        }
+        val viewModel = hiltViewModel<AnimeSearchViewModel>()
+            .apply { initialize(tagId) }
         AnimeSearchScreen(
             upIconOption = upIconOption,
             isRoot = title == null,

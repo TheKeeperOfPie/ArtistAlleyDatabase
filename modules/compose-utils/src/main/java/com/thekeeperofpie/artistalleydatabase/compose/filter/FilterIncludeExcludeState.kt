@@ -5,7 +5,7 @@ enum class FilterIncludeExcludeState {
 
     companion object {
 
-        fun <T : Any> toState(value: T, included: Collection<T>, excluded: Collection<T>) = when {
+        fun <T : Any?> toState(value: T, included: Collection<T>, excluded: Collection<T>) = when {
             included.contains(value) -> INCLUDE
             excluded.contains(value) -> EXCLUDE
             else -> DEFAULT
@@ -21,6 +21,19 @@ enum class FilterIncludeExcludeState {
         ) = applyFiltering(
             includes = filters.filter { state(it) == INCLUDE }.map(key),
             excludes = filters.filter { state(it) == EXCLUDE }.map(key),
+            list = list,
+            transform = transform,
+            transformIncludes = transformIncludes
+        )
+
+        fun <Base, Comparison> applyFiltering(
+            filters: List<FilterEntry<Comparison>>,
+            list: List<Base>,
+            transform: (Base) -> List<Comparison>,
+            transformIncludes: ((Base) -> List<Comparison>)? = null,
+        ) = applyFiltering(
+            includes = filters.filter { it.state == INCLUDE }.map { it.value },
+            excludes = filters.filter { it.state == EXCLUDE }.map { it.value },
             list = list,
             transform = transform,
             transformIncludes = transformIncludes

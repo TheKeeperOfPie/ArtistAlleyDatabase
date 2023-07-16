@@ -9,7 +9,7 @@ interface FilterEntry<T> {
     val leadingIconContentDescription: Int? get() = null
 
     companion object {
-        fun <T : Any> values(
+        fun <T : Any?> values(
             values: Array<T>,
             included: Collection<T> = emptyList(),
             excluded: Collection<T> = emptyList()
@@ -23,7 +23,7 @@ interface FilterEntry<T> {
             )
         }
 
-        fun <T : Any> values(
+        fun <T : Any?> values(
             values: Iterable<T>,
             included: Collection<T> = emptyList(),
             excluded: Collection<T> = emptyList()

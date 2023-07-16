@@ -35,7 +35,8 @@
     <string name="anime_description_spoiler">[Spoiler]</string>
 
     <string name="anime_media_sort_default">Default</string>
-    <string name="anime_media_sort_id">ID</string>
+    <string name="anime_media_sort_id">Last added</string>
+    <string name="anime_media_sort_search_match">Search match</string>
     <string name="anime_media_sort_title_romaji">Title (Romaji)</string>
     <string name="anime_media_sort_title_english">Title (English)</string>
     <string name="anime_media_sort_title_native">Title (native)</string>
@@ -47,6 +48,8 @@
     <string name="anime_media_sort_popularity">Popularity</string>
     <string name="anime_media_sort_trending">Trending</string>
     <string name="anime_media_sort_episodes">Episodes</string>
+    <string name="anime_media_sort_volumes">Volumes</string>
+    <string name="anime_media_sort_chapters">Chapters</string>
     <string name="anime_media_sort_duration">Duration</string>
     <string name="anime_media_sort_status">Status</string>
     <string name="anime_media_sort_updated_at">Last updated</string>
@@ -92,6 +95,7 @@
     <string name="anime_media_filter_list_status_label">User list status</string>
     <string name="anime_media_filter_list_status_content_description">User list status filter expand</string>
     <string name="anime_media_filter_list_status_chip_state_content_description">User list status chip state</string>
+    <string name="anime_media_filter_list_status_on_list">On list</string>
 
     <string name="anime_media_filter_genre_label">Genres</string>
     <string name="anime_media_filter_genre_content_description">Genre filter expand</string>
@@ -152,12 +156,6 @@
 
     <string name="anime_media_filter_show_adult_content">Show adult content</string>
 
-    <string name="anime_media_filter_on_list_label">On user list</string>
-    <string name="anime_media_filter_on_list_on_list">On list</string>
-    <string name="anime_media_filter_on_list_not_on_list">Not on list</string>
-    <string name="anime_media_filter_on_list_dropdown_content_description">On list dropdown</string>
-    <string name="anime_media_filter_on_list_chip_state_content_description">On list chip state</string>
-
     <string name="anime_media_filter_airing_date">Airing date</string>
     <string name="anime_media_filter_airing_date_content_description">Airing date expand</string>
     <string name="anime_media_filter_airing_date_season">Season</string>
@@ -175,6 +173,9 @@
     <string name="anime_media_filter_airing_date_season_year_today_content_description">Set to current year</string>
     <string name="anime_media_filter_airing_date_season_basic">Basic</string>
     <string name="anime_media_filter_airing_date_season_advanced">Advanced</string>
+
+    <string name="anime_media_filter_release_date">Release date</string>
+    <string name="anime_media_filter_release_date_content_description">Release date expand</string>
 
     <string name="anime_media_filter_average_score_label">Average score</string>
     <string name="anime_media_filter_average_score_expand_content_description">Average score filter expand</string>
@@ -207,6 +208,8 @@
 
     <string name="anime_media_filter_collapse_on_close">Collapse sections on close</string>
     <string name="anime_media_filter_show_ignored">Show ignored</string>
+    <string name="anime_media_filter_advanced_group">Advanced</string>
+    <string name="anime_media_filter_advanced_group_expand_content_description">Advanced group expand</string>
 
     <string name="anime_media_filter_expand_all_content_description">Expand/collapse all sections</string>
     <string name="anime_media_cover_image_long_press_preview">Preview cover image</string>
@@ -437,7 +440,7 @@
 
     <string name="anime_user_image">User image</string>
     <string name="anime_user_image_long_press_preview">Preview user image</string>
-    <string name="anime_user_sort_id">ID</string>
+    <string name="anime_user_sort_id">Last added</string>
     <string name="anime_user_sort_username">Username</string>
     <string name="anime_user_sort_watched_time">Watched time</string>
     <string name="anime_user_sort_chapters_read">Chapters read</string>
@@ -451,6 +454,8 @@
     <string name="anime_media_ignore_title_manga">Ignored manga</string>
     <string name="anime_media_ignore_search_anime">Search anime…</string>
     <string name="anime_media_ignore_search_manga">Search manga…</string>
+
+    <string name="anime_character_filter_sort_label">Sort</string>
 
     <string name="anime_character_details_voice_actors_label">Voice actors</string>
     <string name="anime_character_details_media_label">Media</string>
@@ -471,7 +476,7 @@
     <string name="anime_character_role_background">Background</string>
     <string name="anime_character_role_unknown">Unknown</string>
 
-    <string name="anime_character_sort_id">ID</string>
+    <string name="anime_character_sort_id">Last added</string>
     <string name="anime_character_sort_role">Role</string>
     <string name="anime_character_sort_search_match">Search match</string>
     <string name="anime_character_sort_favorites">Favorites</string>
@@ -503,7 +508,7 @@
     <string name="anime_staff_details_view_all_content_description">View all</string>
     <string name="anime_staff_media_year_unknown">TBA</string>
 
-    <string name="anime_staff_sort_id">ID</string>
+    <string name="anime_staff_sort_id">Last added</string>
     <string name="anime_staff_sort_role">Role</string>
     <string name="anime_staff_sort_language">Language</string>
     <string name="anime_staff_sort_favorites">Favorites</string>
@@ -524,7 +529,7 @@
     <string name="anime_airing_schedule_label">Airing schedule</string>
     <string name="anime_airing_schedule_icon_content_description">Airing schedule</string>
     <string name="anime_airing_schedule_sort_popularity">Popularity</string>
-    <string name="anime_airing_schedule_sort_id">ID</string>
+    <string name="anime_airing_schedule_sort_id">Last added</string>
     <string name="anime_airing_schedule_sort_time">Time</string>
     <string name="anime_airing_schedule_sort_content_description">Sort options</string>
     <string name="anime_airing_schedule_today">Today</string>
@@ -587,7 +592,7 @@
     <string name="anime_activity_title">Activity</string>
     <string name="anime_activity_global_title">Global activity</string>
 
-    <string name="anime_reviews_sort_id">ID</string>
+    <string name="anime_reviews_sort_id">Last added</string>
     <string name="anime_reviews_sort_score">Score</string>
     <string name="anime_reviews_sort_rating">Rating</string>
     <string name="anime_reviews_sort_created_at">Created date</string>
@@ -611,4 +616,5 @@
     <string name="anime_staff_characters_error_loading">Error loading characters</string>
     <string name="anime_staff_characters_header">Characters</string>
     <string name="anime_generic_view_all_content_description">View all</string>
+    <string name="anime_character_filter_birthday_label">Birthday today</string>
 </resources>

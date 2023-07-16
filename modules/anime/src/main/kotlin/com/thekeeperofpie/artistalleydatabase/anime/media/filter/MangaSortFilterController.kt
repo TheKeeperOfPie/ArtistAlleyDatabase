@@ -1,5 +1,8 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media.filter
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -23,6 +26,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.filter.SortFilterSection
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaStatusAware
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
+import com.thekeeperofpie.artistalleydatabase.compose.filter.CustomFilterSection
 import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterEntry
 import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
 import com.thekeeperofpie.artistalleydatabase.compose.filter.RangeData
@@ -39,61 +43,85 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 import kotlin.reflect.KClass
 import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
-class AnimeSortFilterController<SortType : SortOption>(
+class MangaSortFilterController<SortType : SortOption>(
     sortTypeEnumClass: KClass<SortType>,
     aniListApi: AuthedAniListApi,
     settings: AnimeSettings,
     mediaTagsController: MediaTagsController,
-) : MediaSortFilterController<SortType, AnimeSortFilterController.InitialParams<SortType>>(
+) : MediaSortFilterController<SortType, MangaSortFilterController.InitialParams<SortType>>(
     sortTypeEnumClass = sortTypeEnumClass,
     aniListApi = aniListApi,
     settings = settings,
     mediaTagsController = mediaTagsController,
-    mediaType = MediaType.ANIME,
+    mediaType = MediaType.MANGA,
 ) {
     private val formatSection = SortFilterSection.Filter(
         titleRes = R.string.anime_media_filter_format_label,
         titleDropdownContentDescriptionRes = R.string.anime_media_filter_format_content_description,
         includeExcludeIconContentDescriptionRes = R.string.anime_media_filter_format_chip_state_content_description,
         values = listOf(
-            MediaFormat.TV,
-            MediaFormat.TV_SHORT,
-            MediaFormat.MOVIE,
-            MediaFormat.SPECIAL,
-            MediaFormat.OVA,
-            MediaFormat.ONA,
-            MediaFormat.MUSIC,
-            // MANGA, NOVEL, and ONE_SHOT excluded since not anime
+            MediaFormat.MANGA,
+            MediaFormat.NOVEL,
+            MediaFormat.ONE_SHOT,
         ),
         valueToText = { stringResource(it.value.toTextRes()) },
     )
 
-    var airingDate by mutableStateOf(AiringDate.Basic() to AiringDate.Advanced())
-    var airingDateIsAdvanced by mutableStateOf(false)
-    var airingDateShown by mutableStateOf<Boolean?>(null)
+    var releaseDate by mutableStateOf(AiringDate.Advanced())
+    var releaseDateShown by mutableStateOf<Boolean?>(null)
 
-    private val airingDateSection = object : SortFilterSection.Custom("airingDate") {
+    private val releaseDateSection = object : SortFilterSection.Custom("releaseDate") {
         @Composable
         override fun Content(state: ExpandedState, showDivider: Boolean) {
-            AiringDateSection(
-                expanded = { state.expandedState[id] ?: false },
+            val expanded = state.expandedState[id] ?: false
+            CustomFilterSection(
+                expanded = expanded,
                 onExpandedChange = { state.expandedState[id] = it },
-                data = { if (airingDateIsAdvanced) airingDate.second else airingDate.first },
-                onSeasonChange = {
-                    airingDate = airingDate.copy(first = airingDate.first.copy(season = it))
+                titleRes = R.string.anime_media_filter_release_date,
+                titleDropdownContentDescriptionRes = R.string.anime_media_filter_release_date_content_description,
+                summaryText = {
+                    val startDate =
+                        releaseDate.startDate?.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT))
+                    val endDate =
+                        releaseDate.endDate?.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT))
+
+                    when {
+                        startDate != null && endDate != null -> {
+                            if (releaseDate.startDate == releaseDate.endDate) {
+                                startDate
+                            } else {
+                                "$startDate - $endDate"
+                            }
+                        }
+                        startDate != null -> "≥ $startDate"
+                        endDate != null -> "≤ $endDate"
+                        else -> null
+                    }
                 },
-                onSeasonYearChange = {
-                    airingDate = airingDate.copy(first = airingDate.first.copy(seasonYear = it))
+                onSummaryClick = {
+                    onReleaseDateChange(true, null)
+                    onReleaseDateChange(false, null)
                 },
-                onIsAdvancedToggle = { airingDateIsAdvanced = it },
-                onRequestDatePicker = { airingDateShown = it },
-                onDateChange = ::onAiringDateChange,
                 showDivider = showDivider,
-            )
+            ) {
+                AnimatedVisibility(
+                    visible = expanded,
+                    enter = expandVertically(),
+                    exit = shrinkVertically(),
+                ) {
+                    AiringDateAdvancedSection(
+                        data = releaseDate,
+                        onRequestDatePicker = { releaseDateShown = it },
+                        onDateChange = ::onReleaseDateChange,
+                    )
+                }
+            }
         }
     }
 
@@ -134,7 +162,7 @@ class AnimeSortFilterController<SortType : SortOption>(
                         formatSection,
                         genreSection,
                         tagSection,
-                        airingDateSection.takeIf { initialParams.airingDateEnabled },
+                        releaseDateSection.takeIf { initialParams.airingDateEnabled },
                         listStatusSection.takeIf { viewer != null }?.apply {
                             if (initialParams.onListEnabled) {
                                 if (filterOptions.none { it.value == null }) {
@@ -188,7 +216,7 @@ class AnimeSortFilterController<SortType : SortOption>(
                     episodesRange = episodesSection.data,
                     showAdult = false,
                     showIgnored = true,
-                    airingDate = if (airingDateIsAdvanced) airingDate.second else airingDate.first,
+                    airingDate = releaseDate,
                     sources = sourceSection.filterOptions,
                 )
             }.flowOn(CustomDispatchers.Main),
@@ -203,7 +231,7 @@ class AnimeSortFilterController<SortType : SortOption>(
             )
         }.debounce(500.milliseconds)
 
-    fun onAiringDateChange(start: Boolean, selectedMillis: Long?) {
+    fun onReleaseDateChange(start: Boolean, selectedMillis: Long?) {
         // Selected value is in UTC
         val selectedDate = selectedMillis?.let {
             Instant.ofEpochMilli(it)
@@ -211,13 +239,11 @@ class AnimeSortFilterController<SortType : SortOption>(
                 .toLocalDate()
         }
 
-        airingDate = airingDate.copy(
-            second = if (start) {
-                airingDate.second.copy(startDate = selectedDate)
-            } else {
-                airingDate.second.copy(endDate = selectedDate)
-            }
-        )
+        releaseDate = if (start) {
+            releaseDate.copy(startDate = selectedDate)
+        } else {
+            releaseDate.copy(endDate = selectedDate)
+        }
     }
 
     fun <Entry : MediaStatusAware> filterMedia(

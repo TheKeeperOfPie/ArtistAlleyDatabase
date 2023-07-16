@@ -7,12 +7,12 @@ import com.thekeeperofpie.artistalleydatabase.compose.filter.SortOption
 
 enum class CharacterSortOption(
     @StringRes override val textRes: Int,
-    val supportsAscending: Boolean = true,
+    override val supportsAscending: Boolean = true,
 ) : SortOption {
 
+    SEARCH_MATCH(R.string.anime_character_sort_search_match, supportsAscending = false),
     ID(R.string.anime_character_sort_id),
     ROLE(R.string.anime_character_sort_role),
-    SEARCH_MATCH(R.string.anime_character_sort_search_match, supportsAscending = false),
     FAVORITES(R.string.anime_character_sort_favorites),
     RELEVANCE(R.string.anime_character_sort_relevance, supportsAscending = false),
 
@@ -33,6 +33,23 @@ enum class CharacterSortOption(
             if (ascending) CharacterSort.FAVOURITES else CharacterSort.FAVOURITES_DESC,
             CharacterSort.RELEVANCE,
             CharacterSort.ROLE_DESC,
+        )
+        RELEVANCE -> listOf(CharacterSort.RELEVANCE, CharacterSort.ROLE_DESC)
+    }
+
+    fun toApiValueForSearch(ascending: Boolean) = when (this) {
+        ID -> listOf(if (ascending) CharacterSort.ID else CharacterSort.ID_DESC)
+        ROLE -> listOf(
+            if (ascending) CharacterSort.ROLE else CharacterSort.ROLE_DESC,
+            CharacterSort.SEARCH_MATCH,
+        )
+        SEARCH_MATCH -> listOf(
+            CharacterSort.SEARCH_MATCH,
+            CharacterSort.FAVOURITES_DESC,
+            CharacterSort.ID_DESC,
+        )
+        FAVORITES -> listOf(
+            if (ascending) CharacterSort.FAVOURITES else CharacterSort.FAVOURITES_DESC,
         )
         RELEVANCE -> listOf(CharacterSort.RELEVANCE, CharacterSort.ROLE_DESC)
     }

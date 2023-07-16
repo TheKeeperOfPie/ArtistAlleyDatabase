@@ -29,7 +29,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anime.home.AnimeHomeScreen
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.user.viewer.AniListViewerProfileScreen
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysNavigationBar

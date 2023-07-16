@@ -5,9 +5,8 @@ import androidx.paging.PagingState
 import com.anilist.CharacterAdvancedSearchQuery.Data.Page.Character
 import com.anilist.type.CharacterSort
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
-import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterSortOption
+import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterSortFilterController
 import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
-import com.thekeeperofpie.artistalleydatabase.compose.filter.SortEntry
 
 class AnimeSearchCharacterPagingSource(
     private val aniListApi: AuthedAniListApi,
@@ -29,6 +28,7 @@ class AnimeSearchCharacterPagingSource(
             query = refreshParams.query,
             page = page,
             sort = refreshParams.sortApiValue(),
+            isBirthday = refreshParams.filterParams.isBirthday,
         )
         val pageInfo = result.page.pageInfo
         val itemsAfter = if (pageInfo.hasNextPage != true) {
@@ -50,13 +50,12 @@ class AnimeSearchCharacterPagingSource(
     data class RefreshParams(
         val query: String,
         val requestMillis: Long,
-        val sortOptions: List<SortEntry<CharacterSortOption>>,
-        val sortAscending: Boolean,
+        val filterParams: CharacterSortFilterController.FilterParams,
     ) {
-        fun sortApiValue() = sortOptions
+        fun sortApiValue() = filterParams.sort
             .firstOrNull { it.state == FilterIncludeExcludeState.INCLUDE }
             ?.value
-            ?.toApiValue(sortAscending)
+            ?.toApiValueForSearch(filterParams.sortAscending)
             ?: listOf(CharacterSort.SEARCH_MATCH)
     }
 }

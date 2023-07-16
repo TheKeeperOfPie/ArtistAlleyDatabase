@@ -10,12 +10,10 @@ import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
@@ -350,15 +348,17 @@ fun <T> LazyListScope.listSection(
 }
 
 @Composable
-fun GenericViewAllCard(onClick: () -> Unit) {
+fun GenericViewAllCard(
+    onClick: () -> Unit,
+    width: Dp = 120.dp,
+    height: Dp = 180.dp,
+) {
     ElevatedCard(
         onClick = onClick,
         modifier = Modifier
-            .fillMaxHeight()
-            .heightIn(min = 180.dp)
-            .width(120.dp)
+            .size(width = width, height = height)
     ) {
-        Box(modifier = Modifier.fillMaxSize()) {
+        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
             Icon(
                 imageVector = Icons.Filled.OpenInNew,
                 contentDescription = stringResource(

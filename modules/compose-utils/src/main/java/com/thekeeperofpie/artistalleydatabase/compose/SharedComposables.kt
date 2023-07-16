@@ -23,7 +23,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.rememberTransformableState
 import androidx.compose.foundation.gestures.transformable
+import androidx.compose.foundation.interaction.InteractionSource
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -32,6 +34,7 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -40,7 +43,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.InlineTextContent
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.selection.LocalTextSelectionColors
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
@@ -68,19 +75,24 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldColors
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarColors
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -94,8 +106,11 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.drawscope.ContentDrawScope
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
@@ -119,6 +134,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
@@ -1403,4 +1419,104 @@ fun ZoomPanBox(
             ),
         content = content,
     )
+}
+
+@Composable
+fun MinWidthTextField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    readOnly: Boolean = false,
+    textStyle: TextStyle = LocalTextStyle.current,
+    label: @Composable (() -> Unit)? = null,
+    placeholder: @Composable (() -> Unit)? = null,
+    leadingIcon: @Composable (() -> Unit)? = null,
+    trailingIcon: @Composable (() -> Unit)? = null,
+    prefix: @Composable (() -> Unit)? = null,
+    suffix: @Composable (() -> Unit)? = null,
+    supportingText: @Composable (() -> Unit)? = null,
+    isError: Boolean = false,
+    visualTransformation: VisualTransformation = VisualTransformation.None,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    keyboardActions: KeyboardActions = KeyboardActions.Default,
+    singleLine: Boolean = false,
+    maxLines: Int = if (singleLine) 1 else Int.MAX_VALUE,
+    minLines: Int = 1,
+    interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
+    shape: Shape = TextFieldDefaults.shape,
+    colors: TextFieldColors = TextFieldDefaults.colors(),
+    minWidth: Dp,
+) {
+    @Composable
+    fun TextFieldColors.textColor(
+        enabled: Boolean,
+        isError: Boolean,
+        interactionSource: InteractionSource
+    ): State<Color> {
+        val focused by interactionSource.collectIsFocusedAsState()
+
+        val targetValue = when {
+            !enabled -> disabledTextColor
+            isError -> errorTextColor
+            focused -> focusedTextColor
+            else -> unfocusedTextColor
+        }
+        return rememberUpdatedState(targetValue)
+    }
+
+    @Composable
+    fun TextFieldColors.cursorColor(isError: Boolean): State<Color> {
+        return rememberUpdatedState(if (isError) errorCursorColor else cursorColor)
+    }
+
+    // If color is not provided via the text style, use content color as a default
+    val textColor = textStyle.color.takeOrElse {
+        colors.textColor(enabled, isError, interactionSource).value
+    }
+    val mergedTextStyle = textStyle.merge(TextStyle(color = textColor))
+
+    CompositionLocalProvider(LocalTextSelectionColors provides colors.textSelectionColors) {
+        BasicTextField(
+            value = value,
+            modifier = modifier
+                .defaultMinSize(
+                    minWidth = minWidth,
+                    minHeight = TextFieldDefaults.MinHeight
+                ),
+            onValueChange = onValueChange,
+            enabled = enabled,
+            readOnly = readOnly,
+            textStyle = mergedTextStyle,
+            cursorBrush = SolidColor(colors.cursorColor(isError).value),
+            visualTransformation = visualTransformation,
+            keyboardOptions = keyboardOptions,
+            keyboardActions = keyboardActions,
+            interactionSource = interactionSource,
+            singleLine = singleLine,
+            maxLines = maxLines,
+            minLines = minLines,
+            decorationBox = @Composable { innerTextField ->
+                // places leading icon, text field with label and placeholder, trailing icon
+                TextFieldDefaults.DecorationBox(
+                    value = value,
+                    visualTransformation = visualTransformation,
+                    innerTextField = innerTextField,
+                    placeholder = placeholder,
+                    label = label,
+                    leadingIcon = leadingIcon,
+                    trailingIcon = trailingIcon,
+                    prefix = prefix,
+                    suffix = suffix,
+                    supportingText = supportingText,
+                    shape = shape,
+                    singleLine = singleLine,
+                    enabled = enabled,
+                    isError = isError,
+                    interactionSource = interactionSource,
+                    colors = colors,
+                )
+            }
+        )
+    }
 }

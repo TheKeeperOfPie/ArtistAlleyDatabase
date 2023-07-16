@@ -5,11 +5,12 @@ import com.anilist.type.MediaSort
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortOption
 
-enum class MediaSortOption(@StringRes override val textRes: Int) : SortOption {
+enum class MediaSortOption(
+    @StringRes override val textRes: Int,
+    override val supportsAscending: Boolean = true,
+) : SortOption {
 
-    // TODO: CHAPTERS/VOLUMES for manga
-    // Omissions: SEARCH_MATCH is used as a default
-    // TODO: Rename ID to last added
+    SEARCH_MATCH(R.string.anime_media_sort_search_match, false),
     ID(R.string.anime_media_sort_id),
     TITLE_ROMAJI(R.string.anime_media_sort_title_romaji),
     TITLE_ENGLISH(R.string.anime_media_sort_title_english),
@@ -22,6 +23,8 @@ enum class MediaSortOption(@StringRes override val textRes: Int) : SortOption {
     POPULARITY(R.string.anime_media_sort_popularity),
     TRENDING(R.string.anime_media_sort_trending),
     EPISODES(R.string.anime_media_sort_episodes),
+    VOLUMES(R.string.anime_media_sort_volumes),
+    CHAPTERS(R.string.anime_media_sort_chapters),
     DURATION(R.string.anime_media_sort_duration),
     STATUS(R.string.anime_media_sort_status),
     UPDATED_AT(R.string.anime_media_sort_updated_at),
@@ -31,6 +34,7 @@ enum class MediaSortOption(@StringRes override val textRes: Int) : SortOption {
 
     fun toApiValue(ascending: Boolean) = when (this) {
         ID -> if (ascending) MediaSort.ID else MediaSort.ID_DESC
+        SEARCH_MATCH -> MediaSort.SEARCH_MATCH
         TITLE_ROMAJI -> if (ascending) MediaSort.TITLE_ROMAJI else MediaSort.TITLE_ROMAJI_DESC
         TITLE_ENGLISH -> if (ascending) MediaSort.TITLE_ENGLISH else MediaSort.TITLE_ENGLISH_DESC
         TITLE_NATIVE -> if (ascending) MediaSort.TITLE_NATIVE else MediaSort.TITLE_NATIVE_DESC
@@ -42,6 +46,8 @@ enum class MediaSortOption(@StringRes override val textRes: Int) : SortOption {
         POPULARITY -> if (ascending) MediaSort.POPULARITY else MediaSort.POPULARITY_DESC
         TRENDING -> if (ascending) MediaSort.TRENDING else MediaSort.TRENDING_DESC
         EPISODES -> if (ascending) MediaSort.EPISODES else MediaSort.EPISODES_DESC
+        VOLUMES -> if (ascending) MediaSort.VOLUMES else MediaSort.VOLUMES_DESC
+        CHAPTERS -> if (ascending) MediaSort.CHAPTERS else MediaSort.CHAPTERS_DESC
         DURATION -> if (ascending) MediaSort.DURATION else MediaSort.DURATION_DESC
         STATUS -> if (ascending) MediaSort.STATUS else MediaSort.STATUS_DESC
         UPDATED_AT -> if (ascending) MediaSort.UPDATED_AT else MediaSort.UPDATED_AT_DESC

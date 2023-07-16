@@ -56,13 +56,14 @@ object SortAndFilterComposables {
     fun RowScope.SortFilterHeaderText(
         expanded: Boolean,
         @StringRes titleRes: Int,
+        modifier: Modifier = Modifier
     ) {
         Text(
             // Use a zero width space to invalidate the Composable, or otherwise the width
             // will not change in response to expanded. This might be a bug in Compose.
             text = stringResource(titleRes) + "\u200B".takeIf { expanded }.orEmpty(),
             style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier
+            modifier = modifier
                 .run {
                     if (expanded) {
                         fillMaxWidth()
@@ -86,6 +87,7 @@ object SortAndFilterComposables {
         onSortClick: (SortType) -> Unit,
         sortAscending: @Composable () -> Boolean,
         onSortAscendingChange: (Boolean) -> Unit,
+        showDivider: Boolean = true,
     ) {
         @Suppress("NAME_SHADOWING")
         val expanded = expanded()
@@ -152,7 +154,8 @@ object SortAndFilterComposables {
 
             AnimatedVisibility(
                 visible = expanded && sortOptions()
-                    .any { it.state != FilterIncludeExcludeState.DEFAULT },
+                    .filter { it.state != FilterIncludeExcludeState.DEFAULT }
+                    .any { it.value.supportsAscending },
                 enter = expandVertically(),
                 exit = shrinkVertically(),
             ) {
@@ -207,7 +210,9 @@ object SortAndFilterComposables {
             }
         }
 
-        Divider()
+        if (showDivider) {
+            Divider()
+        }
     }
 
     @Composable
@@ -231,6 +236,7 @@ fun <Entry : FilterEntry<*>> FilterSection(
     @StringRes titleDropdownContentDescriptionRes: Int,
     valueToText: @Composable (Entry) -> String,
     @StringRes includeExcludeIconContentDescriptionRes: Int,
+    showDivider: Boolean = true,
     showIcons: Boolean = true,
 ) {
     @Suppress("NAME_SHADOWING")
@@ -276,7 +282,9 @@ fun <Entry : FilterEntry<*>> FilterSection(
         )
     }
 
-    Divider()
+    if (showDivider) {
+        Divider()
+    }
 }
 
 
@@ -318,7 +326,8 @@ fun CustomFilterSection(
     @StringRes titleDropdownContentDescriptionRes: Int,
     summaryText: (@Composable () -> String?)? = null,
     onSummaryClick: () -> Unit = {},
-    content: @Composable () -> Unit
+    showDivider: Boolean = true,
+    content: @Composable () -> Unit,
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -359,7 +368,9 @@ fun CustomFilterSection(
 
     content()
 
-    Divider()
+    if (showDivider) {
+        Divider()
+    }
 }
 
 data class RangeData(
@@ -413,6 +424,7 @@ fun RangeDataFilterSection(
     onRangeChange: (String, String) -> Unit,
     @StringRes titleRes: Int,
     @StringRes titleDropdownContentDescriptionRes: Int,
+    showDivider: Boolean = true,
 ) {
     @Suppress("NAME_SHADOWING")
     val expanded = expanded()
@@ -423,6 +435,7 @@ fun RangeDataFilterSection(
         titleDropdownContentDescriptionRes = titleDropdownContentDescriptionRes,
         summaryText = { range().summaryText },
         onSummaryClick = { onRangeChange("", "") },
+        showDivider = showDivider,
     ) {
         AnimatedVisibility(
             visible = expanded,

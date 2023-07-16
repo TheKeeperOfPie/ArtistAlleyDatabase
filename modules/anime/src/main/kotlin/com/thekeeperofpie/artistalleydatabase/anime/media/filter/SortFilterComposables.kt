@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -44,7 +45,6 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -55,12 +55,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
 import com.anilist.type.MediaSeason
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.filter.SortFilterController
+import com.thekeeperofpie.artistalleydatabase.anime.filter.SortFilterSection
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.ui.StartEndDateRow
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
@@ -69,6 +73,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.BottomSheetScaffoldNoAppBa
 import com.thekeeperofpie.artistalleydatabase.compose.CustomOutlinedTextField
 import com.thekeeperofpie.artistalleydatabase.compose.FilterChip
 import com.thekeeperofpie.artistalleydatabase.compose.ItemDropdown
+import com.thekeeperofpie.artistalleydatabase.compose.MinWidthTextField
 import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.filter.CustomFilterSection
 import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
@@ -96,7 +101,7 @@ fun SortFilterOptionsPanel(
     ) {
         val state = sectionState()
         sections().forEach {
-            it.Content(state)
+            it.Content(state, showDivider = true)
         }
     }
 }
@@ -209,8 +214,8 @@ private fun SheetDragHandle(
     Box(Modifier.fillMaxWidth()) {
         BottomSheetDefaults.DragHandle(modifier = Modifier.align(Alignment.Center))
 
-        if (sortFilterController != null) {
-            val collapseOnClose = sortFilterController.collapseOnClose()
+        val collapseOnClose = sortFilterController?.collapseOnClose()
+        if (collapseOnClose != null) {
             val targetValue = targetValue()
             val expandAllAlpha by animateFloatAsState(
                 targetValue = if (targetValue == SheetValue.Expanded) 1f else 0f,
@@ -226,7 +231,7 @@ private fun SheetDragHandle(
                 }
             }
 
-            val showExpandAll = expandedState.isEmpty()
+            val showExpandAll = expandedState.none { it.value }
 
             IconButton(
                 onClick = {
@@ -284,6 +289,7 @@ fun AiringDateSection(
     onIsAdvancedToggle: (Boolean) -> Unit,
     onRequestDatePicker: (Boolean) -> Unit,
     onDateChange: (start: Boolean, Long?) -> Unit,
+    showDivider: Boolean,
 ) {
     @Suppress("NAME_SHADOWING")
     val expanded = expanded()
@@ -341,6 +347,7 @@ fun AiringDateSection(
                 }
             }
         },
+        showDivider = showDivider,
     ) {
         AnimatedVisibility(
             visible = expanded,
@@ -415,27 +422,29 @@ private fun AiringDateBasicSection(
             modifier = Modifier.weight(1f),
         )
 
-        TextField(
+        val screenWidth = LocalConfiguration.current.screenWidthDp.dp
+        val minWidth = screenWidth / 2 - 32.dp
+        val leadingIcon = @Composable {
+            IconButton(onClick = {
+                data.seasonYear.toIntOrNull()?.let {
+                    onSeasonYearChange((it - 1).toString())
+                }
+            }) {
+                Icon(
+                    imageVector = Icons.Filled.RemoveCircleOutline,
+                    contentDescription = stringResource(
+                        R.string.anime_media_filter_airing_date_season_year_decrement_content_description
+                    ),
+                )
+            }
+        }
+
+        MinWidthTextField(
             value = data.seasonYear,
             onValueChange = onSeasonYearChange,
             label = { Text(stringResource(R.string.anime_media_filter_airing_date_season_year)) },
             keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
-            leadingIcon = if (data.seasonYear.isNotBlank()) {
-                @Composable {
-                    IconButton(onClick = {
-                        data.seasonYear.toIntOrNull()?.let {
-                            onSeasonYearChange((it - 1).toString())
-                        }
-                    }) {
-                        Icon(
-                            imageVector = Icons.Filled.RemoveCircleOutline,
-                            contentDescription = stringResource(
-                                R.string.anime_media_filter_airing_date_season_year_decrement_content_description
-                            ),
-                        )
-                    }
-                }
-            } else null,
+            leadingIcon = leadingIcon.takeIf { data.seasonYear.isNotBlank() },
             trailingIcon = {
                 Row {
                     val isYearBlank = data.seasonYear.isBlank()
@@ -480,13 +489,16 @@ private fun AiringDateBasicSection(
                     }
                 }
             },
-            modifier = Modifier.width(IntrinsicSize.Min),
+            minWidth = minWidth,
+            modifier = Modifier
+                .width(IntrinsicSize.Min)
+                .widthIn(max = (screenWidth - 160.dp).coerceAtLeast(minWidth)),
         )
     }
 }
 
 @Composable
-private fun AiringDateAdvancedSection(
+fun AiringDateAdvancedSection(
     data: AiringDate.Advanced,
     onRequestDatePicker: (forStart: Boolean) -> Unit,
     onDateChange: (start: Boolean, Long?) -> Unit,
@@ -508,6 +520,7 @@ fun TagSection(
     onTagLongClick: (String) -> Unit,
     tagRank: @Composable () -> String,
     onTagRankChange: (String) -> Unit,
+    showDivider: Boolean,
 ) {
     @Suppress("NAME_SHADOWING")
     val expanded = expanded()
@@ -525,6 +538,7 @@ fun TagSection(
             }
         },
         onSummaryClick = { onTagRankChange("") },
+        showDivider = showDivider,
     ) {
         Column(modifier = Modifier.animateContentSize()) {
             @Suppress("NAME_SHADOWING")

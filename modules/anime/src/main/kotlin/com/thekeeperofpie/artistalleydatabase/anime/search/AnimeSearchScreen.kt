@@ -88,16 +88,34 @@ object AnimeSearchScreen {
             navigationCallback = navigationCallback,
             bottomNavigationState = bottomNavigationState,
         ) {
-            val sortFilterController = viewModel.animeSortFilterController
-                .takeIf { viewModel.selectedType == AnimeSearchViewModel.SearchType.ANIME}
-            if (sortFilterController?.airingDateShown != null) {
-                StartEndDateDialog(
-                    shownForStartDate = sortFilterController.airingDateShown,
-                    onShownForStartDateChange = {
-                        sortFilterController.airingDateShown = it
-                    },
-                    onDateChange = sortFilterController::onAiringDateChange,
-                )
+            val sortFilterController = when (viewModel.selectedType) {
+                AnimeSearchViewModel.SearchType.ANIME -> viewModel.animeSortFilterController
+                    .also { sortFilterController ->
+                        if (sortFilterController.airingDateShown != null) {
+                            StartEndDateDialog(
+                                shownForStartDate = sortFilterController.airingDateShown,
+                                onShownForStartDateChange = {
+                                    sortFilterController.airingDateShown = it
+                                },
+                                onDateChange = sortFilterController::onAiringDateChange,
+                            )
+                        }
+                    }
+                AnimeSearchViewModel.SearchType.MANGA -> viewModel.mangaSortFilterController
+                    .also { sortFilterController ->
+                        if (sortFilterController.releaseDateShown != null) {
+                            StartEndDateDialog(
+                                shownForStartDate = sortFilterController.releaseDateShown,
+                                onShownForStartDateChange = {
+                                    sortFilterController.releaseDateShown = it
+                                },
+                                onDateChange = sortFilterController::onReleaseDateChange,
+                            )
+                        }
+                    }
+                AnimeSearchViewModel.SearchType.CHARACTER -> viewModel.characterSortFilterController
+                AnimeSearchViewModel.SearchType.STAFF,
+                AnimeSearchViewModel.SearchType.USER -> null
             }
             SortFilterBottomScaffoldNoAppBarOffset(
                 sortFilterController = sortFilterController,

@@ -7,6 +7,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -115,11 +116,17 @@ object AnimeMediaEditBottomSheet {
                 .verticalScroll(rememberScrollState())
                 .wrapContentHeight()
         ) {
-            Crossfade(targetState = initialParams?.loading, label = "Media edit sheet crossfade") {
+            Crossfade(
+                targetState = initialParams?.loading,
+                label = "Media edit sheet crossfade"
+            ) {
                 if (it == true) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.align(Alignment.CenterHorizontally)
-                    )
+                    Box(modifier = Modifier.fillMaxWidth()) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.align(Alignment.Center)
+                                .padding(32.dp)
+                        )
+                    }
                 } else {
                     Column {
                         Form(

@@ -264,24 +264,15 @@ class AuthedAniListApi(
         perPage: Int? = null,
         isBirthday: Boolean? = null,
         sort: List<CharacterSort>? = null,
-    ): CharacterAdvancedSearchQuery.Data {
-        val sortParam =
-            if (query.isEmpty() && sort?.size == 1 && sort.contains(CharacterSort.SEARCH_MATCH)) {
-                // On a default, empty search, sort by FAVOURITES_DESC
-                Optional.Present(listOf(CharacterSort.FAVOURITES_DESC))
-            } else {
-                Optional.presentIfNotNull(listOf(CharacterSort.SEARCH_MATCH) + sort.orEmpty())
-            }
-        return query(
-            CharacterAdvancedSearchQuery(
-                search = Optional.presentIfNotNull(query.ifEmpty { null }),
-                page = Optional.Present(page),
-                perPage = Optional.Present(perPage),
-                isBirthday = Optional.presentIfNotNull(isBirthday),
-                sort = sortParam,
-            )
+    ) = query(
+        CharacterAdvancedSearchQuery(
+            search = Optional.presentIfNotNull(query.ifEmpty { null }),
+            page = Optional.Present(page),
+            perPage = Optional.Present(perPage),
+            isBirthday = Optional.presentIfNotNull(isBirthday),
+            sort = Optional.presentIfNotNull(sort),
         )
-    }
+    )
 
     suspend fun characterDetails(id: String) = query(CharacterDetailsQuery(id.toInt()))
         .character!!
