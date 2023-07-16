@@ -196,14 +196,20 @@ fragment UserNavigationData on User {
     name
 }
 
-query UserSearch($page: Int, $perPage: Int, $search: String, $sort: [UserSort]) {
+query UserSearch(
+    $page: Int,
+    $perPage: Int,
+    $search: String,
+    $sort: [UserSort],
+    $isModerator: Boolean,
+) {
     Page(page: $page, perPage: $perPage) @nonnull {
         pageInfo @nonnull {
             hasNextPage
             total
         }
 
-        users(search: $search, sort: $sort) {
+        users(search: $search, sort: $sort, isModerator: $isModerator) {
             ...UserNavigationData
             bannerImage
             favourites {

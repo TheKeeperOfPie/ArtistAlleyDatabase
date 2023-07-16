@@ -135,7 +135,7 @@ class AnimeSearchMediaPagingSource(
         val seasonYearOverride: Pair<MediaSeason, Int>? = null,
     ) {
         fun sortApiValue() = filterParams.sort.filter { it.state == FilterIncludeExcludeState.INCLUDE }
-            .map { it.value.toApiValue(filterParams.sortAscending) }
+            .flatMap { it.value.toApiValue(filterParams.sortAscending) }
             .ifEmpty { listOf(MediaSort.SEARCH_MATCH) }
     }
 }

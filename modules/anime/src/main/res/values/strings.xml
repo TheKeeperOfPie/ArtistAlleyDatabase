@@ -441,6 +441,7 @@
     <string name="anime_user_image">User image</string>
     <string name="anime_user_image_long_press_preview">Preview user image</string>
     <string name="anime_user_sort_id">Last added</string>
+    <string name="anime_user_sort_search_match">Search match</string>
     <string name="anime_user_sort_username">Username</string>
     <string name="anime_user_sort_watched_time">Watched time</string>
     <string name="anime_user_sort_chapters_read">Chapters read</string>
@@ -449,6 +450,9 @@
     <string name="anime_user_social_followers">Followers</string>
     <string name="anime_user_social_not_following_anyone">Not following anyone</string>
     <string name="anime_user_social_activity_list_status">%1$s %2$s</string>
+
+    <string name="anime_user_filter_sort_label">Sort</string>
+    <string name="anime_user_filter_moderator_label">Moderator</string>
 
     <string name="anime_media_ignore_title_anime">Ignored anime</string>
     <string name="anime_media_ignore_title_manga">Ignored manga</string>
@@ -509,12 +513,17 @@
     <string name="anime_staff_media_year_unknown">TBA</string>
 
     <string name="anime_staff_sort_id">Last added</string>
+    <string name="anime_staff_sort_search_match">Search match</string>
     <string name="anime_staff_sort_role">Role</string>
     <string name="anime_staff_sort_language">Language</string>
     <string name="anime_staff_sort_favorites">Favorites</string>
+    <string name="anime_staff_sort_relevance">Relevance</string>
     <string name="anime_staff_image">Staff image</string>
     <string name="anime_staff_image_long_press_preview">Preview staff image</string>
     <string name="anime_staff_favorites_icon_content_description">Favorites</string>
+
+    <string name="anime_staff_filter_sort_label">Sort</string>
+    <string name="anime_staff_filter_birthday_label">Birthday today</string>
 
     <string name="anime_home_tab_anime">Anime</string>
     <string name="anime_home_tab_manga">Manga</string>

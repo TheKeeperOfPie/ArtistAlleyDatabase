@@ -126,7 +126,7 @@ fun <T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, R> combine(
         args[7] as T7,
         args[8] as T8,
         args[9] as T9,
-        args[10]as T10,
+        args[10] as T10,
         args[11] as T11,
         args[12] as T12,
     )
@@ -236,3 +236,6 @@ fun <T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, R> combin
         args[14] as T15,
     )
 }
+
+inline fun <T> T.transformIf(shouldRun: Boolean, block: T.() -> T) =
+    if (shouldRun) run(block) else this

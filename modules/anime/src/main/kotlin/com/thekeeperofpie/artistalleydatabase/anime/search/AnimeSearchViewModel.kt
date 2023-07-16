@@ -34,6 +34,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MangaSortFilter
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaTagsController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.TagSection
+import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffSortFilterController
+import com.thekeeperofpie.artistalleydatabase.anime.user.UserSortFilterController
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -78,6 +80,10 @@ class AnimeSearchViewModel @Inject constructor(
         MangaSortFilterController(MediaSortOption::class, aniListApi, settings, mediaTagsController)
 
     val characterSortFilterController = CharacterSortFilterController(settings)
+
+    val staffSortFilterController = StaffSortFilterController(settings)
+
+    val userSortFilterController = UserSortFilterController(settings)
 
     private val refreshUptimeMillis = MutableStateFlow(-1L)
 
@@ -192,15 +198,9 @@ class AnimeSearchViewModel @Inject constructor(
                 combine(
                     snapshotFlow { query }.debounce(500.milliseconds),
                     refreshUptimeMillis,
-                ) { query, requestMillis ->
-                    AnimeSearchStaffPagingSource.RefreshParams(
-                        query = query,
-                        requestMillis = requestMillis,
-                        sortOptions = emptyList(),
-                        sortAscending = false,
-                        // TODO: Actually hook up filters
-                    )
-                }
+                    staffSortFilterController.filterParams(),
+                    AnimeSearchStaffPagingSource::RefreshParams
+                )
             },
             pagingSource = { AnimeSearchStaffPagingSource(aniListApi, it) },
             id = { it.id },
@@ -213,15 +213,9 @@ class AnimeSearchViewModel @Inject constructor(
                 combine(
                     snapshotFlow { query }.debounce(500.milliseconds),
                     refreshUptimeMillis,
-                ) { query, requestMillis ->
-                    AnimeSearchUserPagingSource.RefreshParams(
-                        query = query,
-                        requestMillis = requestMillis,
-                        sortOptions = emptyList(),
-                        sortAscending = false,
-                        // TODO: Actually hook up filters
-                    )
-                }
+                    userSortFilterController.filterParams(),
+                    AnimeSearchUserPagingSource::RefreshParams
+                )
             },
             pagingSource = { AnimeSearchUserPagingSource(aniListApi, it) },
             id = { it.id },
@@ -274,7 +268,7 @@ class AnimeSearchViewModel @Inject constructor(
             refreshUptimeMillis = refreshUptimeMillis,
             initialParams = AnimeSortFilterController.InitialParams(
                 tagId = tagId,
-                defaultSort = MediaSortOption.TRENDING,
+                defaultSort = MediaSortOption.SEARCH_MATCH,
             ),
             tagLongClickListener = ::onTagLongClick,
         )
@@ -283,7 +277,7 @@ class AnimeSearchViewModel @Inject constructor(
             refreshUptimeMillis = refreshUptimeMillis,
             initialParams = MangaSortFilterController.InitialParams(
                 tagId = tagId,
-                defaultSort = MediaSortOption.TRENDING,
+                defaultSort = MediaSortOption.SEARCH_MATCH,
             ),
             tagLongClickListener = ::onTagLongClick,
         )

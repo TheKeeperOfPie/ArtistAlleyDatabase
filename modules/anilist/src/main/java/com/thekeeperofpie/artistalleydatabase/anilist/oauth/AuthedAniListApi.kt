@@ -269,7 +269,7 @@ class AuthedAniListApi(
             search = Optional.presentIfNotNull(query.ifEmpty { null }),
             page = Optional.Present(page),
             perPage = Optional.Present(perPage),
-            isBirthday = Optional.presentIfNotNull(isBirthday),
+            isBirthday = Optional.presentIfNotNull(isBirthday?.takeIf { it }),
             sort = Optional.presentIfNotNull(sort),
         )
     )
@@ -296,7 +296,7 @@ class AuthedAniListApi(
                 search = Optional.presentIfNotNull(query.ifEmpty { null }),
                 page = Optional.Present(page),
                 perPage = Optional.Present(perPage),
-                isBirthday = Optional.presentIfNotNull(isBirthday),
+                isBirthday = Optional.presentIfNotNull(isBirthday?.takeIf { it }),
                 sort = sortParam,
             )
         )
@@ -325,23 +325,16 @@ class AuthedAniListApi(
         page: Int? = null,
         perPage: Int? = null,
         sort: List<UserSort>? = null,
-    ): UserSearchQuery.Data {
-        val sortParam =
-            if (query.isEmpty() && sort?.size == 1 && sort.contains(UserSort.SEARCH_MATCH)) {
-                // On a default, empty search, sort by WATCHED_TIME_DESC
-                Optional.Present(listOf(UserSort.WATCHED_TIME_DESC))
-            } else {
-                Optional.presentIfNotNull(listOf(UserSort.SEARCH_MATCH) + sort.orEmpty())
-            }
-        return query(
-            UserSearchQuery(
-                search = Optional.presentIfNotNull(query.ifEmpty { null }),
-                page = Optional.Present(page),
-                perPage = Optional.Present(perPage),
-                sort = sortParam,
-            )
+        isModerator: Boolean? = null,
+    ) = query(
+        UserSearchQuery(
+            search = Optional.presentIfNotNull(query.ifEmpty { null }),
+            page = Optional.Present(page),
+            perPage = Optional.Present(perPage),
+            isModerator = Optional.presentIfNotNull(isModerator?.takeIf { it }),
+            sort = Optional.presentIfNotNull(sort),
         )
-    }
+    )
 
     suspend fun user(id: String) = query(UserByIdQuery(id.toInt())).user
 
@@ -534,25 +527,25 @@ class AuthedAniListApi(
 
     suspend fun characterAndMedias(
         characterId: String,
-        sort: MediaSort,
+        sort: List<MediaSort>,
         mediasPerPage: Int = 10,
     ) = query(
         CharacterAndMediasQuery(
             characterId = characterId.toInt(),
-            sort = listOf(sort),
+            sort = sort,
             mediasPerPage = mediasPerPage,
         )
     ).character
 
     suspend fun characterAndMediasPage(
         characterId: String,
-        sort: MediaSort,
+        sort: List<MediaSort>,
         page: Int,
         mediasPerPage: Int = 10,
     ) = query(
         CharacterAndMediasPaginationQuery(
             characterId = characterId.toInt(),
-            sort = listOf(sort),
+            sort = sort,
             page = page,
             mediasPerPage = mediasPerPage,
         )

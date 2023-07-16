@@ -33,24 +33,24 @@ enum class MediaSortOption(
     ;
 
     fun toApiValue(ascending: Boolean) = when (this) {
-        ID -> if (ascending) MediaSort.ID else MediaSort.ID_DESC
-        SEARCH_MATCH -> MediaSort.SEARCH_MATCH
-        TITLE_ROMAJI -> if (ascending) MediaSort.TITLE_ROMAJI else MediaSort.TITLE_ROMAJI_DESC
-        TITLE_ENGLISH -> if (ascending) MediaSort.TITLE_ENGLISH else MediaSort.TITLE_ENGLISH_DESC
-        TITLE_NATIVE -> if (ascending) MediaSort.TITLE_NATIVE else MediaSort.TITLE_NATIVE_DESC
-        TYPE -> if (ascending) MediaSort.TYPE else MediaSort.TYPE_DESC
-        FORMAT -> if (ascending) MediaSort.FORMAT else MediaSort.FORMAT_DESC
-        START_DATE -> if (ascending) MediaSort.START_DATE else MediaSort.START_DATE_DESC
-        END_DATE -> if (ascending) MediaSort.END_DATE else MediaSort.END_DATE_DESC
-        SCORE -> if (ascending) MediaSort.SCORE else MediaSort.SCORE_DESC
-        POPULARITY -> if (ascending) MediaSort.POPULARITY else MediaSort.POPULARITY_DESC
-        TRENDING -> if (ascending) MediaSort.TRENDING else MediaSort.TRENDING_DESC
-        EPISODES -> if (ascending) MediaSort.EPISODES else MediaSort.EPISODES_DESC
-        VOLUMES -> if (ascending) MediaSort.VOLUMES else MediaSort.VOLUMES_DESC
-        CHAPTERS -> if (ascending) MediaSort.CHAPTERS else MediaSort.CHAPTERS_DESC
-        DURATION -> if (ascending) MediaSort.DURATION else MediaSort.DURATION_DESC
-        STATUS -> if (ascending) MediaSort.STATUS else MediaSort.STATUS_DESC
-        UPDATED_AT -> if (ascending) MediaSort.UPDATED_AT else MediaSort.UPDATED_AT_DESC
-        FAVOURITES -> if (ascending) MediaSort.FAVOURITES else MediaSort.FAVOURITES_DESC
+        ID -> listOf(if (ascending) MediaSort.ID else MediaSort.ID_DESC)
+        SEARCH_MATCH -> listOf(MediaSort.SEARCH_MATCH, MediaSort.TRENDING_DESC)
+        TITLE_ROMAJI -> listOf(if (ascending) MediaSort.TITLE_ROMAJI else MediaSort.TITLE_ROMAJI_DESC)
+        TITLE_ENGLISH -> listOf(if (ascending) MediaSort.TITLE_ENGLISH else MediaSort.TITLE_ENGLISH_DESC)
+        TITLE_NATIVE -> listOf(if (ascending) MediaSort.TITLE_NATIVE else MediaSort.TITLE_NATIVE_DESC)
+        TYPE -> listOf(if (ascending) MediaSort.TYPE else MediaSort.TYPE_DESC)
+        FORMAT -> listOf(if (ascending) MediaSort.FORMAT else MediaSort.FORMAT_DESC)
+        START_DATE -> listOf(if (ascending) MediaSort.START_DATE else MediaSort.START_DATE_DESC)
+        END_DATE -> listOf(if (ascending) MediaSort.END_DATE else MediaSort.END_DATE_DESC)
+        SCORE -> listOf(if (ascending) MediaSort.SCORE else MediaSort.SCORE_DESC)
+        POPULARITY -> listOf(if (ascending) MediaSort.POPULARITY else MediaSort.POPULARITY_DESC)
+        TRENDING -> listOf(if (ascending) MediaSort.TRENDING else MediaSort.TRENDING_DESC)
+        EPISODES -> listOf(if (ascending) MediaSort.EPISODES else MediaSort.EPISODES_DESC)
+        VOLUMES -> listOf(if (ascending) MediaSort.VOLUMES else MediaSort.VOLUMES_DESC)
+        CHAPTERS -> listOf(if (ascending) MediaSort.CHAPTERS else MediaSort.CHAPTERS_DESC)
+        DURATION -> listOf(if (ascending) MediaSort.DURATION else MediaSort.DURATION_DESC)
+        STATUS -> listOf(if (ascending) MediaSort.STATUS else MediaSort.STATUS_DESC)
+        UPDATED_AT -> listOf(if (ascending) MediaSort.UPDATED_AT else MediaSort.UPDATED_AT_DESC)
+        FAVOURITES -> listOf(if (ascending) MediaSort.FAVOURITES else MediaSort.FAVOURITES_DESC)
     }
 }

@@ -18,6 +18,7 @@ import com.anilist.type.MediaSource
 import com.anilist.type.MediaStatus
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.transformIf
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
@@ -122,10 +123,7 @@ abstract class MediaSortFilterController<SortType : SortOption, ParamsType : Med
     protected val tagsByCategoryFiltered = tagsByCategory.flatMapLatest { tags ->
         settings.showAdult.map { showAdult ->
             if (showAdult) return@map tags
-            tags.values.mapNotNull {
-                // Keep if previously selected (not DEFAULT)
-                it.filter { it.state != FilterIncludeExcludeState.DEFAULT || it.isAdult != true }
-            }
+            tags.values.mapNotNull { it.filter { it.isAdult == false } }
                 .associateBy { it.name }
                 .toSortedMap(String.CASE_INSENSITIVE_ORDER)
         }
@@ -252,7 +250,20 @@ abstract class MediaSortFilterController<SortType : SortOption, ParamsType : Med
         }
 
         viewModel.viewModelScope.launch(CustomDispatchers.Main) {
-            mediaTagsController.tags.collectLatest(tagsByCategory::emit)
+            mediaTagsController.tags
+                .map {
+                    it.mapValues { (_, section) ->
+                        section.replace { tag ->
+                            tag.transformIf(tag.id == initialParams.tagId) {
+                                copy(
+                                    state = FilterIncludeExcludeState.INCLUDE,
+                                    clickable = false,
+                                )
+                            }
+                        }
+                    }
+                }
+                .collectLatest(tagsByCategory::emit)
         }
     }
 

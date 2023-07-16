@@ -5,9 +5,8 @@ import androidx.paging.PagingState
 import com.anilist.StaffSearchQuery.Data.Page.Staff
 import com.anilist.type.StaffSort
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
-import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffSortOption
+import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffSortFilterController
 import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
-import com.thekeeperofpie.artistalleydatabase.compose.filter.SortEntry
 
 class AnimeSearchStaffPagingSource(
     private val aniListApi: AuthedAniListApi,
@@ -29,6 +28,7 @@ class AnimeSearchStaffPagingSource(
             query = refreshParams.query,
             page = page,
             sort = refreshParams.sortApiValue(),
+            isBirthday = refreshParams.filterParams.isBirthday,
         )
         val pageInfo = result.page.pageInfo
         val itemsAfter = if (pageInfo.hasNextPage != true) {
@@ -50,11 +50,10 @@ class AnimeSearchStaffPagingSource(
     data class RefreshParams(
         val query: String,
         val requestMillis: Long,
-        val sortOptions: List<SortEntry<StaffSortOption>>,
-        val sortAscending: Boolean,
+        val filterParams: StaffSortFilterController.FilterParams,
     ) {
-        fun sortApiValue() = sortOptions.filter { it.state == FilterIncludeExcludeState.INCLUDE }
-            .map { it.value.toApiValue(sortAscending) }
+        fun sortApiValue() = filterParams.sort.filter { it.state == FilterIncludeExcludeState.INCLUDE }
+            .flatMap { it.value.toApiValueForSearch(filterParams.sortAscending) }
             .ifEmpty { listOf(StaffSort.SEARCH_MATCH) }
     }
 }

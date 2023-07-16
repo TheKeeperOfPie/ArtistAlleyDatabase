@@ -114,8 +114,8 @@ object AnimeSearchScreen {
                         }
                     }
                 AnimeSearchViewModel.SearchType.CHARACTER -> viewModel.characterSortFilterController
-                AnimeSearchViewModel.SearchType.STAFF,
-                AnimeSearchViewModel.SearchType.USER -> null
+                AnimeSearchViewModel.SearchType.STAFF -> viewModel.staffSortFilterController
+                AnimeSearchViewModel.SearchType.USER -> viewModel.userSortFilterController
             }
             SortFilterBottomScaffoldNoAppBarOffset(
                 sortFilterController = sortFilterController,

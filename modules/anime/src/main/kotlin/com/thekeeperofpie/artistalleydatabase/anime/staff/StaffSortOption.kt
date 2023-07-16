@@ -5,20 +5,39 @@ import com.anilist.type.StaffSort
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortOption
 
-enum class StaffSortOption(@StringRes override val textRes: Int) : SortOption {
+enum class StaffSortOption(
+    @StringRes override val textRes: Int,
+    override val supportsAscending: Boolean = true,
+) : SortOption {
 
     // Omissions: SEARCH_MATCH is used as a default, RELEVANCE not useful for search
+    SEARCH_MATCH(R.string.anime_staff_sort_search_match, supportsAscending = false),
     ID(R.string.anime_staff_sort_id),
     ROLE(R.string.anime_staff_sort_role),
     LANGUAGE(R.string.anime_staff_sort_language),
     FAVORITES(R.string.anime_staff_sort_favorites),
+    RELEVANCE(R.string.anime_staff_sort_relevance)
 
     ;
 
-    fun toApiValue(ascending: Boolean) = when (this) {
-        ID -> if (ascending) StaffSort.ID else StaffSort.ID_DESC
-        ROLE -> if (ascending) StaffSort.ROLE else StaffSort.ROLE_DESC
-        LANGUAGE -> if (ascending) StaffSort.LANGUAGE else StaffSort.LANGUAGE_DESC
-        FAVORITES -> if (ascending) StaffSort.FAVOURITES else StaffSort.FAVOURITES_DESC
+    fun toApiValueForSearch(ascending: Boolean) = when (this) {
+        SEARCH_MATCH -> listOf(
+            StaffSort.SEARCH_MATCH,
+            StaffSort.FAVOURITES_DESC,
+            StaffSort.ID_DESC,
+        )
+        ID -> listOf(if (ascending) StaffSort.ID else StaffSort.ID_DESC)
+        ROLE -> listOf(
+            if (ascending) StaffSort.ROLE else StaffSort.ROLE_DESC,
+            StaffSort.SEARCH_MATCH,
+        )
+        LANGUAGE -> listOf(
+            if (ascending) StaffSort.LANGUAGE else StaffSort.LANGUAGE_DESC,
+            StaffSort.SEARCH_MATCH,
+        )
+        FAVORITES -> listOf(
+            if (ascending) StaffSort.FAVOURITES else StaffSort.FAVOURITES_DESC
+        )
+        RELEVANCE -> listOf(StaffSort.RELEVANCE, StaffSort.ROLE_DESC)
     }
 }

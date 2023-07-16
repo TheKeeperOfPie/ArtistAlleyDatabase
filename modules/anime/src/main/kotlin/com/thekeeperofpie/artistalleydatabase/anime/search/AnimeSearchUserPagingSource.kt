@@ -5,6 +5,7 @@ import androidx.paging.PagingState
 import com.anilist.UserSearchQuery.Data.Page.User
 import com.anilist.type.UserSort
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
+import com.thekeeperofpie.artistalleydatabase.anime.user.UserSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.user.UserSortOption
 import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortEntry
@@ -29,6 +30,7 @@ class AnimeSearchUserPagingSource(
             query = refreshParams.query,
             page = page,
             sort = refreshParams.sortApiValue(),
+            isModerator = refreshParams.filterParams.isModerator,
         )
         val pageInfo = result.page.pageInfo
         val itemsAfter = if (pageInfo.hasNextPage != true) {
@@ -50,11 +52,10 @@ class AnimeSearchUserPagingSource(
     data class RefreshParams(
         val query: String,
         val requestMillis: Long,
-        val sortOptions: List<SortEntry<UserSortOption>>,
-        val sortAscending: Boolean,
+        val filterParams: UserSortFilterController.FilterParams,
     ) {
-        fun sortApiValue() = sortOptions.filter { it.state == FilterIncludeExcludeState.INCLUDE }
-            .map { it.value.toApiValue(sortAscending) }
+        fun sortApiValue() = filterParams.sort.filter { it.state == FilterIncludeExcludeState.INCLUDE }
+            .flatMap { it.value.toApiValue(filterParams.sortAscending) }
             .ifEmpty { listOf(UserSort.SEARCH_MATCH) }
     }
 }
