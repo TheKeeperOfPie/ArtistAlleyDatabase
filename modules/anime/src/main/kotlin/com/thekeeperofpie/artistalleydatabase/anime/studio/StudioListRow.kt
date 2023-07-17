@@ -133,7 +133,8 @@ object StudioListRow {
                                 navigationCallback.onMediaClick(item.media, ratio)
                             }
                         },
-                        modifier = Modifier.size(width = 120.dp, height = 180.dp)
+                        width = 120.dp,
+                        height = 180.dp,
                     )
                 }
             }

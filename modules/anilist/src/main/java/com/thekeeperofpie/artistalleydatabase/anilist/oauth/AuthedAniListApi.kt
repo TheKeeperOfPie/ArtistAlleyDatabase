@@ -123,13 +123,12 @@ class AuthedAniListApi(
     suspend fun userMediaList(
         userId: Int,
         type: MediaType,
-    ) =
-        query(
-            UserMediaListQuery(
-                userId = userId,
-                type = type,
-            )
-        ).mediaListCollection
+    ) = query(
+        UserMediaListQuery(
+            userId = userId,
+            type = type,
+        )
+    ).mediaListCollection
 
     suspend fun searchMedia(
         query: String,
@@ -213,6 +212,7 @@ class AuthedAniListApi(
         apolloClient.mutation(DeleteMediaEntryMutation(id = id.toInt()))
             .execute().dataOrThrow()
 
+    // TODO: Progress is broken for volume/chapter entries
     suspend fun saveMediaListEntry(
         id: String?,
         mediaId: String,

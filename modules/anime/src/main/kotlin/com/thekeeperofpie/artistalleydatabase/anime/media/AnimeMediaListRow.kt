@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
@@ -21,8 +20,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ImageNotSupported
 import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -57,7 +54,6 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
 import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toStatusIcon
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
@@ -136,9 +132,7 @@ object AnimeMediaListRow {
 
                     Spacer(Modifier.weight(1f))
 
-                    nextAiringEpisode?.let {
-                        MediaNextAiringSection(it, loading = entry == null)
-                    }
+                    nextAiringEpisode?.let { MediaNextAiringSection(it) }
 
                     val (containerColor, textColor) =
                         colorCalculationState.getColors(entry?.media?.id?.toString())
@@ -213,24 +207,16 @@ object AnimeMediaListRow {
                         )
                 )
 
-                if (viewer != null) {
-                    val userListStatus = entry?.mediaListStatus
-                    IconButton(
-                        onClick = { if (entry != null) onClickListEdit(entry) },
-                        modifier = Modifier
-                            .align(Alignment.BottomStart)
-                            .clip(RoundedCornerShape(topEnd = 12.dp))
-                            .size(36.dp)
-                            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.5f))
-                    ) {
-                        val (imageVector, contentDescriptionRes) =
-                            userListStatus.toStatusIcon(entry?.media?.type)
-                        Icon(
-                            imageVector = imageVector,
-                            contentDescription = stringResource(contentDescriptionRes),
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
+                if (viewer != null && entry != null) {
+                    MediaListQuickEditIconButton(
+                        mediaType = entry.media.type,
+                        listStatus = entry.mediaListStatus,
+                        progress = entry.progress,
+                        progressVolumes = entry.progressVolumes,
+                        maxProgress = entry.media.episodes ?: entry.media.volumes,
+                        onClick = { onClickListEdit(entry) },
+                        modifier = Modifier.align(Alignment.BottomStart)
+                    )
                 }
             }
         }
@@ -282,8 +268,10 @@ object AnimeMediaListRow {
 
     open class Entry<MediaType>(
         val media: MediaType,
-        override var mediaListStatus: MediaListStatus? = media.mediaListEntry?.status,
-        override val ignored: Boolean = false
+        override val mediaListStatus: MediaListStatus? = media.mediaListEntry?.status,
+        override val progress: Int? = null,
+        override val progressVolumes: Int? = null,
+        override val ignored: Boolean = false,
     ) : MediaStatusAware where MediaType : MediaPreview, MediaType : MediaHeaderData {
         val color = media.coverImage?.color?.let(ComposeColorUtils::hexToColor)
         val tags = media.tags?.filterNotNull()?.map(::AnimeMediaTagEntry).orEmpty()

@@ -8,6 +8,7 @@ import androidx.paging.map
 import com.anilist.fragment.MediaDetailsListEntry
 import com.anilist.fragment.MediaPreview
 import com.anilist.type.MediaListStatus
+import com.apollographql.apollo3.api.Optional
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -57,25 +58,39 @@ fun <Input> applyMediaFiltering(
     statuses: Map<String, MediaListStatusController.Update>,
     ignoredIds: Set<Int>,
     showAdult: Boolean,
+    showIgnored: Boolean,
     entry: Input,
     transform: (Input) -> MediaStatusAware,
     media: MediaPreview?,
-    copy: Input.(MediaListStatus?, ignored: Boolean) -> Input,
+    copy: Input.(MediaListStatus?, progress: Int?, progressVolumes: Int?, ignored: Boolean) -> Input,
 ): Input? {
     if (!showAdult && media?.isAdult != false) return null
     val mediaId = media?.id
-    val status = if (mediaId == null || !statuses.containsKey(mediaId.toString())) {
-        media?.mediaListEntry?.status
+    val status: MediaListStatus?
+    val progress: Int?
+    val progressVolumes: Int?
+    if (mediaId == null || !statuses.containsKey(mediaId.toString())) {
+        status = media?.mediaListEntry?.status
+        progress = media?.mediaListEntry?.progress
+        progressVolumes = media?.mediaListEntry?.progressVolumes
     } else {
-        statuses[mediaId.toString()]?.entry?.status
+        val update = statuses[mediaId.toString()]?.entry
+        status = update?.status
+        progress = update?.progress
+        progressVolumes = update?.progressVolumes
     }
 
     val ignored = ignoredIds.contains(mediaId)
+    if (!showIgnored && ignored) return null
     val mediaStatusAware = transform(entry)
-    return if (status == mediaStatusAware.mediaListStatus && mediaStatusAware.ignored == ignored) {
+    return if (status == mediaStatusAware.mediaListStatus
+        && mediaStatusAware.ignored == ignored
+        && mediaStatusAware.progress == progress
+        && mediaStatusAware.progressVolumes == progressVolumes
+    ) {
         entry
     } else {
-        entry.copy(status, ignored)
+        entry.copy(status, progress, progressVolumes, ignored)
     }
 }
 
@@ -85,7 +100,7 @@ fun <T : MediaStatusAware> Flow<PagingData<T>>.applyMediaStatusChanges(
     settings: AnimeSettings,
     media: (T) -> MediaPreview?,
     forceShowIgnored: Boolean = false,
-    copy: T.(MediaListStatus?, ignored: Boolean) -> T,
+    copy: T.(MediaListStatus?, progress: Int?, progressVolumes: Int?, ignored: Boolean) -> T,
 ) = flatMapLatest { pagingData ->
     combine(
         statusController.allChanges(),
@@ -96,20 +111,23 @@ fun <T : MediaStatusAware> Flow<PagingData<T>>.applyMediaStatusChanges(
     ).mapLatest {
         val (statuses, ignoredIds, showIgnored, showAdult) = it
         pagingData
-            .filter { showAdult || (media(it)?.isAdult == false) }
             .map {
                 val mediaPreview = media(it)
-                applyMediaFiltering(
-                    statuses = statuses,
-                    ignoredIds = ignoredIds,
-                    showAdult = showAdult,
-                    entry = it,
-                    transform = { it },
-                    media = mediaPreview,
-                    copy = copy
-                )!!
+                Optional.presentIfNotNull(
+                    applyMediaFiltering(
+                        statuses = statuses,
+                        ignoredIds = ignoredIds,
+                        showAdult = showAdult,
+                        showIgnored = showIgnored,
+                        entry = it,
+                        transform = { it },
+                        media = mediaPreview,
+                        copy = copy,
+                    )
+                )
             }
-            .filter { showIgnored || !it.ignored }
+            .filter { it is Optional.Present }
+            .map { it.getOrThrow() }
     }
 }
 

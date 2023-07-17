@@ -68,13 +68,16 @@ class AnimeCharacterDetailsViewModel @Inject constructor(
                                     statuses = statuses,
                                     ignoredIds = ignoredIds,
                                     showAdult = showAdult,
+                                    showIgnored = true,
                                     entry = it,
                                     transform = { it },
                                     media = it.media,
-                                    copy = { mediaListStatus, ignored ->
+                                    copy = { mediaListStatus, progress, progressVolumes, ignored ->
                                         AnimeMediaListRow.Entry(
                                             media = this.media,
                                             mediaListStatus = mediaListStatus,
+                                            progress = progress,
+                                            progressVolumes = progressVolumes,
                                             ignored = ignored,
                                         )
                                     }

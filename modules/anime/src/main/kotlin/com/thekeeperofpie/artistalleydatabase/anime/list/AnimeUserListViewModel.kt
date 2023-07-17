@@ -9,8 +9,6 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.anilist.AuthedUserQuery
-import com.anilist.UserMediaListQuery
 import com.anilist.UserMediaListQuery.Data.MediaListCollection.List.Entry.Media
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
@@ -21,6 +19,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
+import com.thekeeperofpie.artistalleydatabase.anime.media.UserMediaListController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaTagsController
@@ -34,22 +33,22 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
 
+@OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class AnimeUserListViewModel @Inject constructor(
     private val aniListApi: AuthedAniListApi,
     settings: AnimeSettings,
     private val ignoreList: AnimeMediaIgnoreList,
     private val mediaTagsController: MediaTagsController,
+    private val userMediaListController: UserMediaListController,
 ) : ViewModel() {
 
     val viewer = aniListApi.authedUser
@@ -104,76 +103,76 @@ class AnimeUserListViewModel @Inject constructor(
         }
 
         viewModelScope.launch(CustomDispatchers.Main) {
-            @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
-            combine(
-                aniListApi.authedUser.run {
-                    if (userId == null) filterNotNull() else this
-                },
-                refreshUptimeMillis,
-                ::RefreshParams
-            )
-                .debounce(100.milliseconds)
-                .flatMapLatest { refreshParams ->
-                    withContext(CustomDispatchers.IO) {
-                        val baseResponse = try {
-                            aniListApi.userMediaList(
-                                userId = userId?.toIntOrNull() ?: refreshParams.authedUser!!.id,
-                                type = mediaType,
-                            )
-                        } catch (exception: Exception) {
-                            return@withContext flowOf(
-                                AnimeUserListScreen.ContentState.Error(
-                                    exception = exception
-                                )
-                            )
+            val response = if (userId == null) {
+                userMediaListController.data
+                    .map {
+                        when (mediaType) {
+                            MediaType.MANGA -> it?.manga!!.getOrThrow()
+                            MediaType.ANIME,
+                            MediaType.UNKNOWN__,
+                            -> it?.anime!!.getOrThrow()
                         }
+                    }
+            } else {
+                refreshUptimeMillis.mapLatest {
+                    aniListApi.userMediaList(userId = userId.toInt(), type = mediaType)
+                        .let {
+                            it.lists?.filterNotNull()?.map(UserMediaListController.Entry::ListEntry)
+                                .orEmpty()
+                        }
+                }
+            }
 
-                        combine(
-                            snapshotFlow { query }.debounce(500.milliseconds),
-                            sortFilterController.filterParams(),
-                            ::FilterParams
-                        ).map { (query, filterParams) ->
-                            val sortOption = filterParams.sort
-                                .find { it.state == FilterIncludeExcludeState.INCLUDE }?.value
-                            baseResponse?.lists
-                                ?.filterNotNull()
-                                ?.filter {
-                                    val listStatuses = filterParams.listStatuses
-                                        .filter { it.state == FilterIncludeExcludeState.INCLUDE }
-                                        .map { it.value }
-                                    if (listStatuses.isEmpty()) {
-                                        true
-                                    } else {
-                                        listStatuses.contains(it.status)
-                                    }
-                                }
-                                ?.let {
-                                    if (sortOption == null) {
-                                        // If default sort, force COMPLETED list to top
-                                        val index =
-                                            it.indexOfFirst { it.status == MediaListStatus.COMPLETED }
-                                        if (index >= 0) {
-                                            val mutableList = it.toMutableList()
-                                            val completedList = mutableList.removeAt(index)
-                                            mutableList.add(0, completedList)
-                                            mutableList
-                                        } else it
-                                    } else it
-                                }
-                                ?.map { toFilteredEntries(query, filterParams, it) }
-                                ?.flatten()
-                                ?.let(AnimeUserListScreen.ContentState::Success)
-                                ?: AnimeUserListScreen.ContentState.Error()
-                        }
-                            .startWith(AnimeUserListScreen.ContentState.LoadingEmpty)
-                            .catch { emit(AnimeUserListScreen.ContentState.Error(exception = it)) }
+            combine(
+                response,
+                snapshotFlow { query }.debounce(500.milliseconds),
+                sortFilterController.filterParams(),
+                ::FilterParams
+            ).map { (lists, query, filterParams) ->
+                val sortOption = filterParams.sort
+                    .find { it.state == FilterIncludeExcludeState.INCLUDE }?.value
+                lists.filter {
+                    val listStatuses = filterParams.listStatuses
+                        .filter { it.state == FilterIncludeExcludeState.INCLUDE }
+                        .map { it.value }
+                    if (listStatuses.isEmpty()) {
+                        true
+                    } else {
+                        listStatuses.contains(it.status)
                     }
                 }
+                    .let {
+                        if (sortOption == null) {
+                            // If default sort, force COMPLETED list to top
+                            val index =
+                                it.indexOfFirst { it.status == MediaListStatus.COMPLETED }
+                            if (index >= 0) {
+                                val mutableList = it.toMutableList()
+                                val completedList = mutableList.removeAt(index)
+                                mutableList.add(0, completedList)
+                                mutableList
+                            } else it
+                        } else it
+                    }
+                    .map { toFilteredEntries(query, filterParams, it) }
+                    .flatten()
+                    .let(AnimeUserListScreen.ContentState::Success)
+            }
+                .startWith(AnimeUserListScreen.ContentState.LoadingEmpty)
+                .catch { emit(AnimeUserListScreen.ContentState.Error(exception = it)) }
+                .flowOn(CustomDispatchers.IO)
                 .collectLatest { content = it }
         }
     }
 
-    fun onRefresh() = refreshUptimeMillis.update { SystemClock.uptimeMillis() }
+    // TODO: Refresh indicator doesn't last duration of refresh
+    fun onRefresh() {
+        if (userId == null) {
+            userMediaListController.refresh.value = SystemClock.uptimeMillis()
+        } else {
+            refreshUptimeMillis.value = SystemClock.uptimeMillis()
+        }
+    }
 
     fun onTagLongClick(tagId: String) {
         tagShown = mediaTagsController.tags.value.values
@@ -188,14 +187,15 @@ class AnimeUserListViewModel @Inject constructor(
     private fun toFilteredEntries(
         query: String,
         filterParams: MediaSortFilterController.FilterParams<MediaListSortOption>,
-        list: UserMediaListQuery.Data.MediaListCollection.List
+        list: UserMediaListController.Entry.ListEntry,
     ): List<AnimeUserListScreen.Entry> {
-        val entries = list.entries?.filterNotNull()
-            ?.mapNotNull { it.media }
-            ?.map { AnimeUserListScreen.Entry.Item(it) }
-            .orEmpty()
+        val entries = list.entries
 
-        var filteredEntries = MediaUtils.filterEntries(filterParams, entries)
+        var filteredEntries = MediaUtils.filterEntries(
+            filterParams = filterParams,
+            entries = entries,
+            media = { it.media },
+        )
 
         if (query.isNotBlank()) {
             filteredEntries = filteredEntries.filter {
@@ -211,34 +211,35 @@ class AnimeUserListViewModel @Inject constructor(
         val sortOption = filterParams.sort
             .find { it.state == FilterIncludeExcludeState.INCLUDE }?.value
         if (sortOption != null) {
-            val baseComparator: Comparator<AnimeUserListScreen.Entry.Item> = when (sortOption) {
-                MediaListSortOption.SCORE -> compareBy { it.media.averageScore }
-                MediaListSortOption.STATUS -> compareBy { it.media.status }
-                MediaListSortOption.PROGRESS -> if (mediaType == MediaType.ANIME) {
-                    compareBy { it.media.mediaListEntry?.progress }
-                } else {
-                    compareBy { it.media.mediaListEntry?.progressVolumes }
+            val baseComparator: Comparator<UserMediaListController.Entry.MediaEntry> =
+                when (sortOption) {
+                    MediaListSortOption.SCORE -> compareBy { it.media.averageScore }
+                    MediaListSortOption.STATUS -> compareBy { it.media.status }
+                    MediaListSortOption.PROGRESS -> if (mediaType == MediaType.ANIME) {
+                        compareBy { it.media.mediaListEntry?.progress }
+                    } else {
+                        compareBy { it.media.mediaListEntry?.progressVolumes }
+                    }
+                    MediaListSortOption.PRIORITY -> compareBy { it.media.mediaListEntry?.priority }
+                    MediaListSortOption.STARTED_ON ->
+                        compareBy<UserMediaListController.Entry.MediaEntry, Int?>(nullsLast()) {
+                            it.media.startDate?.year
+                        }
+                            .thenComparing(compareBy(nullsLast()) { it.media.startDate?.month })
+                            .thenComparing(compareBy(nullsLast()) { it.media.startDate?.day })
+                    MediaListSortOption.FINISHED_ON ->
+                        compareBy<UserMediaListController.Entry.MediaEntry, Int?>(nullsLast()) {
+                            it.media.endDate?.year
+                        }
+                            .thenComparing(compareBy(nullsLast()) { it.media.endDate?.month })
+                            .thenComparing(compareBy(nullsLast()) { it.media.endDate?.day })
+                    MediaListSortOption.ADDED_TIME -> compareBy { it.media.mediaListEntry?.createdAt }
+                    MediaListSortOption.UPDATED_TIME -> compareBy { it.media.mediaListEntry?.updatedAt }
+                    MediaListSortOption.TITLE_ROMAJI -> compareBy { it.media.title?.romaji }
+                    MediaListSortOption.TITLE_ENGLISH -> compareBy { it.media.title?.english }
+                    MediaListSortOption.TITLE_NATIVE -> compareBy { it.media.title?.native }
+                    MediaListSortOption.POPULARITY -> compareBy { it.media.popularity }
                 }
-                MediaListSortOption.PRIORITY -> compareBy { it.media.mediaListEntry?.priority }
-                MediaListSortOption.STARTED_ON ->
-                    compareBy<AnimeUserListScreen.Entry.Item, Int?>(nullsLast()) {
-                        it.media.startDate?.year
-                    }
-                        .thenComparing(compareBy(nullsLast()) { it.media.startDate?.month })
-                        .thenComparing(compareBy(nullsLast()) { it.media.startDate?.day })
-                MediaListSortOption.FINISHED_ON ->
-                    compareBy<AnimeUserListScreen.Entry.Item, Int?>(nullsLast()) {
-                        it.media.endDate?.year
-                    }
-                        .thenComparing(compareBy(nullsLast()) { it.media.endDate?.month })
-                        .thenComparing(compareBy(nullsLast()) { it.media.endDate?.day })
-                MediaListSortOption.ADDED_TIME -> compareBy { it.media.mediaListEntry?.createdAt }
-                MediaListSortOption.UPDATED_TIME -> compareBy { it.media.mediaListEntry?.updatedAt }
-                MediaListSortOption.TITLE_ROMAJI -> compareBy { it.media.title?.romaji }
-                MediaListSortOption.TITLE_ENGLISH -> compareBy { it.media.title?.english }
-                MediaListSortOption.TITLE_NATIVE -> compareBy { it.media.title?.native }
-                MediaListSortOption.POPULARITY -> compareBy { it.media.popularity }
-            }
 
             val comparator = nullsFirst(baseComparator).let {
                 if (filterParams.sortAscending) it else it.reversed()
@@ -248,23 +249,19 @@ class AnimeUserListViewModel @Inject constructor(
         }
 
         return if (filteredEntries.isEmpty()) {
-            filteredEntries
+            filteredEntries.map(AnimeUserListScreen.Entry::Item)
         } else {
             mutableListOf(
                 AnimeUserListScreen.Entry.Header(
-                    list.name.orEmpty(),
+                    list.name,
                     list.status,
                 )
-            ) + filteredEntries
+            ) + filteredEntries.map(AnimeUserListScreen.Entry::Item)
         }
     }
 
-    private data class RefreshParams(
-        val authedUser: AuthedUserQuery.Data.Viewer?,
-        val requestMillis: Long = SystemClock.uptimeMillis(),
-    )
-
     private data class FilterParams(
+        val response: List<UserMediaListController.Entry.ListEntry>,
         val query: String,
         val filterParams: MediaSortFilterController.FilterParams<MediaListSortOption>,
     )

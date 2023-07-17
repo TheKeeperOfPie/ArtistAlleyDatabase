@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import coil.size.Dimension
+import com.anilist.fragment.MediaNavigationData
 import com.anilist.fragment.MediaPreviewWithDescription
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.material.placeholder
@@ -64,10 +65,10 @@ object AnimeMediaLargeCard {
     @Composable
     operator fun invoke(
         screenKey: String,
-        entry: Entry,
+        entry: Entry?,
         modifier: Modifier = Modifier,
         label: (@Composable () -> Unit)? = null,
-        onLongClick: (Entry) -> Unit = {},
+        onLongClick: (MediaNavigationData) -> Unit = {},
         onTagLongClick: (tagId: String) -> Unit = {},
         colorCalculationState: ColorCalculationState = ColorCalculationState(),
         navigationCallback: AnimeNavigator.NavigationCallback =
@@ -77,15 +78,15 @@ object AnimeMediaLargeCard {
             modifier = modifier
                 .fillMaxWidth()
                 .heightIn(min = HEIGHT)
-                .alpha(if (entry.ignored) 0.38f else 1f)
+                .alpha(if (entry?.ignored == true) 0.38f else 1f)
         ) {
             Box(
                 modifier = Modifier.combinedClickable(
-                    enabled = entry != Entry.Loading,
+                    enabled = entry == null,
                     onClick = {
-                        navigationCallback.onMediaClick(entry.media!!)
+                        if (entry != null) navigationCallback.onMediaClick(entry.media)
                     },
-                    onLongClick = { onLongClick(entry) }
+                    onLongClick = { if (entry?.media != null) onLongClick(entry.media) }
                 )
             ) {
                 BannerImage(
@@ -107,16 +108,16 @@ object AnimeMediaLargeCard {
                         }
 
                         MediaRatingIconsSection(
-                            rating = entry.rating,
-                            popularity = entry.popularity,
-                            loading = entry == Entry.Loading,
+                            rating = entry?.rating,
+                            popularity = entry?.popularity,
+                            loading = entry == null,
                             modifier = Modifier
                                 .padding(horizontal = 8.dp, vertical = 8.dp)
                                 .wrapContentWidth()
                         )
                     }
 
-                    val description = entry.media?.description
+                    val description = entry?.media?.description
                     if (description == null) {
                         Spacer(Modifier.weight(1f))
                     } else {
@@ -132,13 +133,11 @@ object AnimeMediaLargeCard {
                         )
                     }
 
-                    entry.nextAiringEpisode?.let {
-                        MediaNextAiringSection(it, entry == Entry.Loading)
-                    }
+                    entry?.nextAiringEpisode?.let { MediaNextAiringSection(it) }
                     val (containerColor, textColor) =
-                        colorCalculationState.getColors(entry.id.valueId)
+                        colorCalculationState.getColors(entry?.id?.valueId)
                     MediaTagRow(
-                        tags = entry.tags,
+                        tags = entry?.tags.orEmpty(),
                         onTagClick = navigationCallback::onTagClick,
                         onTagLongClick = onTagLongClick,
                         tagContainerColor = containerColor,
@@ -152,24 +151,24 @@ object AnimeMediaLargeCard {
     @Composable
     private fun BannerImage(
         screenKey: String,
-        entry: Entry,
+        entry: Entry?,
         colorCalculationState: ColorCalculationState,
     ) {
         SharedElement(
-            key = "${entry.id.scopedId}_banner_image",
+            key = "${entry?.id?.scopedId}_banner_image",
             screenKey = screenKey,
         ) {
             val foregroundColor = MaterialTheme.colorScheme.surface
-            var loaded by remember(entry.id.valueId) { mutableStateOf(false) }
+            var loaded by remember(entry?.id?.valueId) { mutableStateOf(false) }
             val alpha by animateFloatAsState(
                 if (loaded) 1f else 0f,
                 label = "AnimeMediaLargeCard banner image alpha",
             )
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
-                    .data(entry.imageBanner ?: entry.image)
+                    .data(entry?.imageBanner ?: entry?.image)
                     .crossfade(true)
-                    .allowHardware(colorCalculationState.hasColor(entry.id.valueId))
+                    .allowHardware(colorCalculationState.hasColor(entry?.id?.valueId))
                     .size(
                         width = Dimension.Undefined,
                         height = Dimension.Pixels(LocalDensity.current.run { HEIGHT.roundToPx() }),
@@ -179,17 +178,19 @@ object AnimeMediaLargeCard {
                 fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
                 onSuccess = {
                     loaded = true
-                    ComposeColorUtils.calculatePalette(
-                        entry.id.valueId,
-                        it,
-                        colorCalculationState,
-                    )
+                    if (entry != null) {
+                        ComposeColorUtils.calculatePalette(
+                            entry.id.valueId,
+                            it,
+                            colorCalculationState,
+                        )
+                    }
                 },
                 contentDescription = stringResource(
                     R.string.anime_media_banner_image_content_description
                 ),
                 modifier = Modifier
-                    .background(entry.color ?: MaterialTheme.colorScheme.surfaceVariant)
+                    .background(entry?.color ?: MaterialTheme.colorScheme.surfaceVariant)
                     .fillMaxWidth()
                     .height(HEIGHT)
                     .drawWithContent {
@@ -204,9 +205,9 @@ object AnimeMediaLargeCard {
     }
 
     @Composable
-    private fun TitleText(entry: Entry) {
+    private fun TitleText(entry: Entry?) {
         Text(
-            text = entry.title ?: "Loading...",
+            text = entry?.title ?: "Loading...",
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Black,
             modifier = Modifier
@@ -214,17 +215,17 @@ object AnimeMediaLargeCard {
                 .wrapContentHeight(Alignment.Top)
                 .padding(start = 12.dp, top = 10.dp, end = 16.dp)
                 .placeholder(
-                    visible = entry == Entry.Loading,
+                    visible = entry == null,
                     highlight = PlaceholderHighlight.shimmer(),
                 )
         )
     }
 
     @Composable
-    private fun SubtitleText(entry: Entry) {
-        val media = entry.media
+    private fun SubtitleText(entry: Entry?) {
+        val media = entry?.media
         Text(
-            text = MediaUtils.formatSubtitle(
+            text = if (entry == null) "Loading..." else MediaUtils.formatSubtitle(
                 format = media?.format,
                 status = media?.status,
                 season = media?.season,
@@ -238,19 +239,16 @@ object AnimeMediaLargeCard {
                 .wrapContentHeight()
                 .padding(start = 12.dp, top = 4.dp, end = 16.dp, bottom = 10.dp)
                 .placeholder(
-                    visible = entry == Entry.Loading,
+                    visible = entry == null,
                     highlight = PlaceholderHighlight.shimmer(),
                 )
         )
     }
 
     open class Entry(
-        val media: MediaPreviewWithDescription?,
+        val media: MediaPreviewWithDescription,
         ignored: Boolean = false,
     ) {
-        // TODO: Nullability support
-        object Loading : Entry(null)
-
         val id = EntryId("anime_media", media?.id.toString())
         val image = media?.coverImage?.extraLarge
         val imageBanner = media?.bannerImage

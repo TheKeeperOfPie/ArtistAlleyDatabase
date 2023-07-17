@@ -82,8 +82,13 @@ class AiringScheduleViewModel @Inject constructor(
                         ignoreList = ignoreList,
                         settings = settings,
                         media = { it.data.media },
-                        copy = { mediaListStatus, ignored ->
-                            copy(mediaListStatus = mediaListStatus, ignored = ignored)
+                        copy = { mediaListStatus, progress, progressVolumes, ignored ->
+                            copy(
+                                mediaListStatus = mediaListStatus,
+                                progress = progress,
+                                progressVolumes = progressVolumes,
+                                ignored = ignored,
+                            )
                         },
                     )
                     .collectLatest(dayFlows[it]::emit)
@@ -100,8 +105,18 @@ class AiringScheduleViewModel @Inject constructor(
     data class Entry(
         val data: AiringScheduleQuery.Data.Page.AiringSchedule,
         override val mediaListStatus: MediaListStatus? = data.media?.mediaListEntry?.status,
+        override val progress: Int? = null,
+        override val progressVolumes: Int? = null,
         override val ignored: Boolean = false,
     ) : MediaStatusAware {
-        val entry = data.media?.let { AnimeMediaListRow.Entry(it, mediaListStatus, ignored) }
+        val entry = data.media?.let {
+            AnimeMediaListRow.Entry(
+                media = it,
+                mediaListStatus = mediaListStatus,
+                progress = progress,
+                progressVolumes = progressVolumes,
+                ignored = ignored
+            )
+        }
     }
 }

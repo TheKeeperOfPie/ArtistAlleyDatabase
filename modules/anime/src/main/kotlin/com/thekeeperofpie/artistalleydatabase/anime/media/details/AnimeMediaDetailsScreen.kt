@@ -160,6 +160,8 @@ import kotlin.math.roundToInt
 )
 object AnimeMediaDetailsScreen {
 
+    private val SCREEN_KEY = AnimeNavDestinations.MEDIA_DETAILS.id
+
     private const val RELATIONS_ABOVE_FOLD = 3
     private const val RECOMMENDATIONS_ABOVE_FOLD = 3
     private const val SONGS_ABOVE_FOLD = 3
@@ -205,7 +207,7 @@ object AnimeMediaDetailsScreen {
 
         val editViewModel = hiltViewModel<MediaEditViewModel>()
         MediaEditBottomSheetScaffold(
-            screenKey = AnimeNavDestinations.MEDIA_DETAILS.id,
+            screenKey = SCREEN_KEY,
             viewModel = editViewModel,
             colorCalculationState = colorCalculationState,
             navigationCallback = navigationCallback,
@@ -217,7 +219,7 @@ object AnimeMediaDetailsScreen {
                 ) {
                     val entry = entry()
                     MediaHeader(
-                        screenKey = AnimeNavDestinations.MEDIA_DETAILS.id,
+                        screenKey = SCREEN_KEY,
                         mediaId = viewModel.mediaId,
                         titles = entry?.titlesUnique,
                         averageScore = entry?.media?.averageScore,
@@ -379,7 +381,7 @@ object AnimeMediaDetailsScreen {
         )
 
         charactersSection(
-            screenKey = AnimeNavDestinations.MEDIA_DETAILS.id + "_characters",
+            screenKey = SCREEN_KEY,
             titleRes = R.string.anime_media_details_characters_label,
             characters = entry.characters,
             onCharacterClick = navigationCallback::onCharacterClick,
@@ -420,7 +422,7 @@ object AnimeMediaDetailsScreen {
         )
 
         staffSection(
-            screenKey = AnimeNavDestinations.MEDIA_DETAILS.id + "_staff",
+            screenKey = SCREEN_KEY,
             titleRes = R.string.anime_media_details_staff_label,
             staff = entry.staff,
             onStaffClick = navigationCallback::onStaffClick,
@@ -523,7 +525,7 @@ object AnimeMediaDetailsScreen {
         navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
         mediaListSection(
-            screenKey = AnimeNavDestinations.MEDIA_DETAILS.id + "_relations",
+            screenKey = SCREEN_KEY,
             viewer = viewer,
             titleRes = R.string.anime_media_details_relations_label,
             values = entry.relations,
@@ -1081,7 +1083,7 @@ object AnimeMediaDetailsScreen {
                         shape = RoundedCornerShape(cornerDp),
                     ) {
                         EntryGrid.Entry(
-                            imageScreenKey = AnimeNavDestinations.MEDIA_DETAILS.id + "_cds",
+                            imageScreenKey = SCREEN_KEY,
                             expectedWidth = width,
                             index = index,
                             entry = cdEntry,
@@ -1107,7 +1109,7 @@ object AnimeMediaDetailsScreen {
         onTagLongClick: (String) -> Unit,
     ) {
         mediaListSection(
-            screenKey = AnimeNavDestinations.MEDIA_DETAILS.id + "_recommendations",
+            screenKey = SCREEN_KEY,
             viewer = viewer,
             titleRes = R.string.anime_media_details_recommendations_label,
             values = entry.recommendations,

@@ -5,6 +5,7 @@ package com.thekeeperofpie.artistalleydatabase.anime.media
 import androidx.annotation.StringRes
 import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,6 +21,7 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.PeopleAlt
@@ -30,6 +32,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -38,6 +41,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.graphics.toArgb
@@ -58,6 +62,8 @@ import coil.size.Dimension
 import com.anilist.AuthedUserQuery
 import com.anilist.fragment.MediaNavigationData
 import com.anilist.fragment.MediaPreview
+import com.anilist.type.MediaListStatus
+import com.anilist.type.MediaType
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.material.placeholder
 import com.google.accompanist.placeholder.material.shimmer
@@ -67,6 +73,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
 import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toStatusIcon
 import com.thekeeperofpie.artistalleydatabase.anime.ui.listSection
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
@@ -132,7 +139,7 @@ fun LazyListScope.mediaHorizontalRow(
     showTitle: Boolean = true,
     sectionTitle: @Composable () -> Unit = {
         DetailsSectionHeader(stringResource(titleRes))
-    }
+    },
 ) {
     if (entries.isEmpty()) return
     item { sectionTitle() }
@@ -324,10 +331,7 @@ fun MediaRatingIconsSection(
 }
 
 @Composable
-fun MediaNextAiringSection(
-    nextAiringEpisode: MediaPreview.NextAiringEpisode,
-    loading: Boolean
-) {
+fun MediaNextAiringSection(nextAiringEpisode: MediaPreview.NextAiringEpisode) {
     val context = LocalContext.current
     val airingAt = remember(nextAiringEpisode.id) {
         MediaUtils.formatAiringAt(context, nextAiringEpisode.airingAt * 1000L)
@@ -353,10 +357,6 @@ fun MediaNextAiringSection(
         modifier = Modifier
             .wrapContentHeight(Alignment.Bottom)
             .padding(start = 12.dp, top = 4.dp, end = 16.dp, bottom = 4.dp)
-            .placeholder(
-                visible = loading,
-                highlight = PlaceholderHighlight.shimmer(),
-            )
     )
 }
 
@@ -395,6 +395,55 @@ fun MediaTagRow(
                 textStyle = tagTextStyle,
                 modifier = Modifier.height(height),
             )
+        }
+    }
+}
+
+@Composable
+fun MediaListQuickEditIconButton(
+    mediaType: MediaType?,
+    listStatus: MediaListStatus?,
+    progress: Int?,
+    progressVolumes: Int?,
+    maxProgress: Int?,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier
+            .clip(RoundedCornerShape(topEnd = 12.dp))
+            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.5f))
+    ) {
+        IconButton(
+            onClick = onClick,
+            modifier = Modifier.size(36.dp)
+        ) {
+            val (imageVector, contentDescriptionRes) =
+                listStatus.toStatusIcon(mediaType)
+            Icon(
+                imageVector = imageVector,
+                contentDescription = stringResource(contentDescriptionRes),
+                modifier = Modifier.size(20.dp)
+            )
+        }
+
+        if (listStatus == MediaListStatus.CURRENT) {
+            val realProgress = progress ?: progressVolumes
+            if (realProgress != null) {
+                Text(
+                    text = if (maxProgress != null) stringResource(
+                        R.string.anime_media_current_progress,
+                        realProgress.toString(),
+                        maxProgress.toString(),
+                    ) else stringResource(
+                        R.string.anime_media_current_progress_unknown_max,
+                        realProgress.toString()
+                    ),
+                    style = MaterialTheme.typography.labelSmall,
+                    modifier = Modifier.padding(top = 4.dp, bottom = 4.dp, end = 8.dp)
+                )
+            }
         }
     }
 }

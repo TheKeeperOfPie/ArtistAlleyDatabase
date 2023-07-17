@@ -4,6 +4,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
+import com.thekeeperofpie.artistalleydatabase.anime.media.UserMediaListController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaTagsController
 import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsController
 import dagger.Module
@@ -46,4 +47,20 @@ object AnimeHiltModule {
         scopedApplication: ScopedApplication,
         aniListApi: AuthedAniListApi,
     ) = MediaTagsController(scopedApplication, aniListApi)
+
+    @Singleton
+    @Provides
+    fun provideUserMediaListController(
+        scopedApplication: ScopedApplication,
+        aniListApi: AuthedAniListApi,
+        ignoreList: AnimeMediaIgnoreList,
+        statusController: MediaListStatusController,
+        settings: AnimeSettings,
+    ) = UserMediaListController(
+        scopedApplication = scopedApplication,
+        aniListApi = aniListApi,
+        ignoreList = ignoreList,
+        statusController = statusController,
+        settings = settings,
+    )
 }

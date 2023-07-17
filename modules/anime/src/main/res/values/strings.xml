@@ -393,6 +393,9 @@
     <string name="anime_media_edit_confirm_close_text">Do you want to save changes?</string>
     <string name="anime_media_edit_confirm_delete_title">Delete entry?</string>
 
+    <string name="anime_media_current_progress">%1$s/%2$s</string>
+    <string name="anime_media_current_progress_unknown_max">%1$s/?</string>
+
     <string name="anime_user_error_loading">Error loading user</string>
 
     <string name="anime_user_following_you">Following you</string>
@@ -530,6 +533,12 @@
     <string name="anime_home_top">TOP ALL TIME</string>
     <string name="anime_home_error_loading_anime">Error loading anime</string>
     <string name="anime_home_error_loading_manga">Error loading manga</string>
+    <string name="anime_home_label">Home</string>
+    <string name="anime_home_activity_label">Activity</string>
+    <string name="anime_home_row_view_all_content_description">View all</string>
+    <string name="anime_home_anime_current_header">WATCHING</string>
+    <string name="anime_home_manga_current_header">READING</string>
+
     <string name="anime_airing_schedule_label">Airing schedule</string>
     <string name="anime_airing_schedule_icon_content_description">Airing schedule</string>
     <string name="anime_airing_schedule_sort_popularity">Popularity</string>
@@ -539,9 +548,6 @@
     <string name="anime_airing_schedule_today">Today</string>
     <string name="anime_airing_schedule_tomorrow">Tomorrow</string>
     <string name="anime_settings_content_description">View settings</string>
-    <string name="anime_home_label">Home</string>
-    <string name="anime_home_activity_label">Activity</string>
-    <string name="anime_home_row_view_all_content_description">View all</string>
     <string name="anime_seasonal_title">Seasonal</string>
     <string name="anime_seasonal_previous_season_content_description">Previous season</string>
     <string name="anime_seasonal_next_season_content_description">Next season</string>

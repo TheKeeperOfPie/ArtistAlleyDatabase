@@ -17,9 +17,16 @@ sealed interface AnimeSearchEntry {
     class Media<MediaType : MediaPreview>(
         media: MediaType,
         mediaListStatus: MediaListStatus? = media.mediaListEntry?.status,
+        progress: Int? = null,
+        progressVolumes: Int? = null,
         ignored: Boolean = false,
-    ) : AnimeMediaListRow.Entry<MediaType>(media, mediaListStatus, ignored), AnimeSearchEntry,
-        MediaStatusAware {
+    ) : AnimeMediaListRow.Entry<MediaType>(
+        media = media,
+        mediaListStatus = mediaListStatus,
+        progress = progress,
+        progressVolumes = progressVolumes,
+        ignored = ignored
+    ), AnimeSearchEntry, MediaStatusAware {
         override val entryId = EntryId("media", media.id.toString())
     }
 

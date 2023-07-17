@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -400,7 +399,8 @@ fun ListRowSmallImage(
     ignored: Boolean,
     image: String?,
     @StringRes contentDescriptionTextRes: Int,
-    modifier: Modifier = Modifier,
+    width: Dp = 64.dp,
+    height: Dp = 96.dp,
     onClick: (imageWidthToHeightRatio: Float) -> Unit,
 ) {
     var imageWidthToHeightRatio by remember { mutableStateOf<Float?>(null) }
@@ -408,16 +408,15 @@ fun ListRowSmallImage(
         model = ImageRequest.Builder(context)
             .data(image)
             .size(
-                width = density.run { 64.dp.roundToPx() },
-                height = density.run { 96.dp.roundToPx() },
+                width = density.run { width.roundToPx() },
+                height = density.run { height.roundToPx() },
             )
             .crossfade(true)
             .build(),
         contentScale = ContentScale.Crop,
         contentDescription = stringResource(contentDescriptionTextRes),
         onSuccess = { imageWidthToHeightRatio = it.widthToHeightRatio() },
-        modifier = modifier
-            .defaultMinSize(minWidth = 64.dp, minHeight = 96.dp)
+        modifier = Modifier.size(width = width, height = height)
             .clip(RoundedCornerShape(12.dp))
             .background(MaterialTheme.colorScheme.surfaceColorAtElevation(4.dp))
             .clickable { onClick(imageWidthToHeightRatio ?: 1f) }

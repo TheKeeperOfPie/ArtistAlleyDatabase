@@ -66,9 +66,11 @@ class RecommendationsViewModel @Inject constructor(
             ignoreList = ignoreList,
             settings = settings,
             media = { it.recommendation.mediaRecommendation },
-            copy = { mediaListStatus, ignored ->
+            copy = { mediaListStatus, progress, progressVolumes, ignored ->
                 copy(
                     mediaListStatus = mediaListStatus,
+                    progress = progress,
+                    progressVolumes = progressVolumes,
                     ignored = ignored,
                 )
             },

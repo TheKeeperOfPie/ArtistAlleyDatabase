@@ -35,7 +35,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.anilist.UserMediaListQuery.Data.MediaListCollection.List.Entry.Media
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
@@ -43,6 +42,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
+import com.thekeeperofpie.artistalleydatabase.anime.media.UserMediaListController
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.SortFilterBottomScaffoldNoAppBarOffset
@@ -162,11 +162,9 @@ object AnimeUserListScreen {
                                             is Entry.Header -> Header(it)
                                             is Entry.Item -> AnimeMediaListRow(
                                                 screenKey = AnimeNavDestinations.USER_LIST.id,
-                                                entry = it,
+                                                entry = it.rowEntry,
                                                 viewer = viewer,
-                                                onClickListEdit = {
-                                                    editViewModel.initialize(it.media)
-                                                },
+                                                onClickListEdit = { editViewModel.initialize(it.media) },
                                                 onLongClick = viewModel::onMediaLongClick,
                                                 onTagLongClick = viewModel::onTagLongClick,
                                                 onLongPressImage = onLongPressImage,
@@ -258,8 +256,18 @@ object AnimeUserListScreen {
             override val id = EntryId("header", name)
         }
 
-        class Item(media: Media) : Entry, AnimeMediaListRow.Entry<Media>(media) {
-            override val id = EntryId("anime_media", media.id.toString())
+        data class Item(
+            val entry: UserMediaListController.Entry.MediaEntry,
+        ) : Entry {
+            val rowEntry = AnimeMediaListRow.Entry(
+                media = entry.media,
+                mediaListStatus = entry.mediaListStatus,
+                progress = entry.progress,
+                progressVolumes = entry.progressVolumes,
+                ignored = entry.ignored,
+            )
+
+            override val id = EntryId("anime_media", entry.media.id.toString())
         }
     }
 

@@ -1,11 +1,11 @@
 query UserMediaList($userId: Int!, $type: MediaType!, $chunk: Int, $perChunk: Int) {
     # Sort for this API is completely broken
-    MediaListCollection(userId: $userId, type: $type, chunk: $chunk, perChunk: $perChunk) {
+    MediaListCollection(userId: $userId, type: $type, chunk: $chunk, perChunk: $perChunk) @nonnull {
         hasNextChunk
         lists {
             entries {
                 id
-                media {
+                media @nonnull {
                     ...MediaPreview
 
                     mediaListEntry {

@@ -35,7 +35,7 @@ class CharacterMediasViewModel @Inject constructor(
     override suspend fun initialRequest(
         headerId: String,
         sortOption: MediaSortOption,
-        sortAscending: Boolean
+        sortAscending: Boolean,
     ) = CharacterMediasScreen.Entry(
         aniListApi.characterAndMedias(
             characterId = headerId,
@@ -47,7 +47,7 @@ class CharacterMediasViewModel @Inject constructor(
         entry: CharacterMediasScreen.Entry,
         page: Int,
         sortOption: MediaSortOption,
-        sortAscending: Boolean
+        sortAscending: Boolean,
     ) = if (page == 1) {
         val result = entry.character.media
         result?.pageInfo to result?.nodes?.filterNotNull().orEmpty()
@@ -66,10 +66,12 @@ class CharacterMediasViewModel @Inject constructor(
             ignoreList = ignoreList,
             settings = settings,
             media = { it.media },
-            copy = { mediaListStatus, ignored ->
+            copy = { mediaListStatus, progress, progressVolumes, ignored ->
                 AnimeMediaListRow.Entry(
                     media = this.media,
                     mediaListStatus = mediaListStatus,
+                    progress = progress,
+                    progressVolumes = progressVolumes,
                     ignored = ignored,
                 )
             },

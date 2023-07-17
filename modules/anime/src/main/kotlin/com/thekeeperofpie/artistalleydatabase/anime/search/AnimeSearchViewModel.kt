@@ -146,10 +146,12 @@ class AnimeSearchViewModel @Inject constructor(
                     ignoreList = ignoreList,
                     settings = settings,
                     media = { it.media },
-                    copy = { mediaListStatus, ignored ->
+                    copy = { mediaListStatus, progress, progressVolumes, ignored ->
                         AnimeSearchEntry.Media(
                             media = media,
                             mediaListStatus = mediaListStatus,
+                            progress = progress,
+                            progressVolumes = progressVolumes,
                             ignored = ignored,
                         )
                     },
@@ -177,10 +179,12 @@ class AnimeSearchViewModel @Inject constructor(
                     ignoreList = ignoreList,
                     settings = settings,
                     media = { it.media },
-                    copy = { mediaListStatus, ignored ->
+                    copy = { mediaListStatus, progress, progressVolumes, ignored ->
                         AnimeSearchEntry.Media(
                             media = media,
                             mediaListStatus = mediaListStatus,
+                            progress = progress,
+                            progressVolumes = progressVolumes,
                             ignored = ignored,
                         )
                     },

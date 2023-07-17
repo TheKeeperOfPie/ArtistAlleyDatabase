@@ -2,7 +2,6 @@ package com.thekeeperofpie.artistalleydatabase.anime.media.details
 
 import android.app.Application
 import android.util.Log
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
@@ -45,7 +44,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalCoroutinesApi::class)
+@OptIn(ExperimentalCoroutinesApi::class)
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 @HiltViewModel
 class AnimeMediaDetailsViewModel @Inject constructor(
@@ -135,14 +134,17 @@ class AnimeMediaDetailsViewModel @Inject constructor(
                                     statuses = statuses,
                                     ignoredIds = ignoredIds,
                                     showAdult = showAdult,
+                                    showIgnored = true,
                                     entry = it,
                                     transform = { it.entry },
                                     media = it.entry.media,
-                                    copy = { mediaListStatus, ignored ->
+                                    copy = { mediaListStatus, progress, progressVolumes, ignored ->
                                         copy(
                                             entry = AnimeMediaListRow.Entry(
                                                 media = it.entry.media,
                                                 mediaListStatus = mediaListStatus,
+                                                progress = progress,
+                                                progressVolumes = progressVolumes,
                                                 ignored = ignored,
                                             )
                                         )
@@ -154,14 +156,17 @@ class AnimeMediaDetailsViewModel @Inject constructor(
                                     statuses = statuses,
                                     ignoredIds = ignoredIds,
                                     showAdult = showAdult,
+                                    showIgnored = true,
                                     entry = it,
                                     transform = { it.entry },
                                     media = it.entry.media,
-                                    copy = { mediaListStatus, ignored ->
+                                    copy = { mediaListStatus, progress, progressVolumes, ignored ->
                                         copy(
                                             entry = AnimeMediaListRow.Entry(
                                                 media = it.entry.media,
                                                 mediaListStatus = mediaListStatus,
+                                                progress = progress,
+                                                progressVolumes = progressVolumes,
                                                 ignored = ignored,
                                             )
                                         )

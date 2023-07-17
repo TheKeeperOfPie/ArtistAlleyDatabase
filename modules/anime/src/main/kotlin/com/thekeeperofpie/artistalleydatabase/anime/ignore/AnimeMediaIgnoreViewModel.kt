@@ -105,10 +105,12 @@ class AnimeMediaIgnoreViewModel @Inject constructor(
                     settings = settings,
                     media = { it.media },
                     forceShowIgnored = true,
-                    copy = { mediaListStatus, ignored ->
+                    copy = { mediaListStatus, progress, progressVolumes, ignored ->
                         AnimeMediaListRow.Entry(
                             media = media,
                             mediaListStatus = mediaListStatus,
+                            progress = progress,
+                            progressVolumes = progressVolumes,
                             ignored = ignored,
                         )
                     },
@@ -133,6 +135,7 @@ class AnimeMediaIgnoreViewModel @Inject constructor(
                                 MediaUtils.filterEntries(
                                     filterParams = filterParams,
                                     entries = listOf(it),
+                                    media = { it.media },
                                     forceShowIgnored = true,
                                 ).isNotEmpty()
                             }

@@ -41,6 +41,8 @@ fragment MediaPreview on Media {
     isAdult
     mediaListEntry {
         status
+        progress
+        progressVolumes
     }
 
     # TODO: Type can probably be inferred by other means

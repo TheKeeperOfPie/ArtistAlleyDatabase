@@ -125,10 +125,14 @@ class SeasonalViewModel @Inject constructor(
     class MediaEntry(
         media: MediaAdvancedSearchQuery.Data.Page.Medium,
         mediaListStatus: MediaListStatus? = media.mediaListEntry?.status,
+        progress: Int? = null,
+        progressVolumes: Int? = null,
         ignored: Boolean = false,
     ) : AnimeMediaListRow.Entry<MediaAdvancedSearchQuery.Data.Page.Medium>(
-        media,
+        media = media,
         mediaListStatus = mediaListStatus,
+        progress = progress,
+        progressVolumes = progressVolumes,
         ignored = ignored,
     )
 
@@ -170,10 +174,12 @@ class SeasonalViewModel @Inject constructor(
                         ignoreList = ignoreList,
                         settings = settings,
                         media = { it.media },
-                        copy = { mediaListStatus, ignored ->
+                        copy = { mediaListStatus, progress, progressVolumes, ignored ->
                             MediaEntry(
                                 media = media,
                                 mediaListStatus = mediaListStatus,
+                                progress = progress,
+                                progressVolumes = progressVolumes,
                                 ignored = ignored,
                             )
                         },

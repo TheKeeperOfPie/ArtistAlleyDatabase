@@ -4,5 +4,7 @@ import com.anilist.type.MediaListStatus
 
 interface MediaStatusAware {
     val mediaListStatus: MediaListStatus?
+    val progress: Int?
+    val progressVolumes: Int?
     val ignored: Boolean
 }
