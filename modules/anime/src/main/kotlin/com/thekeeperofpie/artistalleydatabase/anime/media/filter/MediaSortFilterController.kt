@@ -48,12 +48,10 @@ import kotlin.reflect.KClass
 abstract class MediaSortFilterController<SortType : SortOption, ParamsType : MediaSortFilterController.InitialParams<SortType>>(
     sortTypeEnumClass: KClass<SortType>,
     protected val aniListApi: AuthedAniListApi,
-    protected val settings: AnimeSettings,
+    settings: AnimeSettings,
     private val mediaTagsController: MediaTagsController,
     private val mediaType: MediaType,
-) : SortFilterController {
-    override val state = SortFilterSection.ExpandedState()
-
+) : SortFilterController(settings) {
     var tagLongClickListener: (String) -> Unit = {}
 
     protected var initialParams by mutableStateOf<ParamsType?>(null)
@@ -187,29 +185,6 @@ abstract class MediaSortFilterController<SortType : SortOption, ParamsType : Med
         exclusive = true,
     )
 
-    protected val showAdultSection = SortFilterSection.SwitchBySetting(
-        titleRes = R.string.anime_media_filter_show_adult_content,
-        settings = settings,
-        property = { it.showAdult },
-    )
-
-    protected val collapseOnCloseSection = SortFilterSection.SwitchBySetting(
-        titleRes = R.string.anime_media_filter_collapse_on_close,
-        settings = settings,
-        property = { it.collapseAnimeFiltersOnClose },
-    )
-
-    protected val showIgnoredSection = SortFilterSection.SwitchBySetting(
-        titleRes = R.string.anime_media_filter_show_ignored,
-        settings = settings,
-        property = { it.showIgnored },
-    )
-
-    protected val advancedSection = SortFilterSection.Group(
-        titleRes = R.string.anime_media_filter_advanced_group,
-        titleDropdownContentDescriptionRes = R.string.anime_media_filter_advanced_group_expand_content_description,
-    )
-
     private val actionsSection = object : SortFilterSection.Custom("actions") {
         @Composable
         override fun Content(state: ExpandedState, showDivider: Boolean) {
@@ -267,15 +242,16 @@ abstract class MediaSortFilterController<SortType : SortOption, ParamsType : Med
         }
     }
 
-    fun <Entry : MediaStatusAware> filterMediaForListStatusAndIgnored(
+    fun <Entry : MediaStatusAware> filterMedia(
         result: PagingData<Entry>,
         transform: (Entry) -> MediaPreview,
     ) = combine(
         flowOf(result),
+        settings.showAdult,
         settings.showIgnored,
         snapshotFlow { listStatusSection.filterOptions }
             .flowOn(CustomDispatchers.Main),
-    ) { pagingData, showIgnored, listStatuses ->
+    ) { pagingData, showAdult, showIgnored, listStatuses ->
         val includes = listStatuses
             .filter { it.state == FilterIncludeExcludeState.INCLUDE }
             .mapNotNull { it.value }
@@ -290,6 +266,10 @@ abstract class MediaSortFilterController<SortType : SortOption, ParamsType : Med
             }
 
             if (includes.isNotEmpty() && !includes.contains(listStatus)) {
+                return@filter false
+            }
+
+            if (!showAdult && media.isAdult != false) {
                 return@filter false
             }
 

@@ -42,8 +42,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderValues
 import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDetailsViewModel
-import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeSortFilterController
-import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationsViewModel
@@ -61,6 +59,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffHeaderValues
 import com.thekeeperofpie.artistalleydatabase.anime.staff.character.StaffCharactersScreen
 import com.thekeeperofpie.artistalleydatabase.anime.staff.character.StaffCharactersViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.studio.StudioMediasScreen
+import com.thekeeperofpie.artistalleydatabase.anime.studio.StudioMediasViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserScreen
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserViewModel
 import com.thekeeperofpie.artistalleydatabase.cds.CdEntryNavigator
@@ -500,6 +500,40 @@ object AnimeNavigator {
                 navigationCallback = navigationCallback,
             )
         }
+
+        navGraphBuilder.composable(
+            route = AnimeNavDestinations.STUDIO_MEDIAS.id
+                    + "?studioId={studioId}&name={name}",
+            deepLinks = listOf(
+                navDeepLink { uriPattern = "${AniListUtils.ANILIST_BASE_URL}/studio/{studioId}" },
+                navDeepLink {
+                    uriPattern = "${AniListUtils.ANILIST_BASE_URL}/studio/{studioId}/.*"
+                },
+            ),
+            arguments = listOf(
+                navArgument("studioId") {
+                    type = NavType.StringType
+                    nullable = false
+                },
+                navArgument("name") {
+                    type = NavType.StringType
+                    nullable = true
+                },
+            ),
+        ) {
+            val arguments = it.arguments!!
+            val studioId = arguments.getString("studioId")!!
+            val name = arguments.getString("name")
+
+            val viewModel = hiltViewModel<StudioMediasViewModel>().apply { initialize(studioId) }
+
+            StudioMediasScreen(
+                upIconOption = UpIconOption.Back(navHostController),
+                viewModel = viewModel,
+                name = { viewModel.entry?.studio?.name ?: name ?: "" },
+                navigationCallback = navigationCallback,
+            )
+        }
     }
 
     fun onTagClick(navHostController: NavHostController, tagId: String, tagName: String) {
@@ -677,6 +711,15 @@ object AnimeNavigator {
                 MediaHeaderValues.routeSuffix(media, imageWidthToHeightRatio)
     )
 
+    fun onStudioClick(
+        navHostController: NavHostController,
+        studioId: String,
+        name: String,
+    ) = navHostController.navigate(
+        AnimeNavDestinations.STUDIO_MEDIAS.id +
+                "?studioId=$studioId&name=$name"
+    )
+
     @Composable
     fun SearchScreen(
         title: String?,
@@ -851,7 +894,8 @@ object AnimeNavigator {
             // TODO
         }
 
-        fun onStudioClick(id: String) = onOpenUri(AniListUtils.studioUrl(id))
+        fun onStudioClick(id: String, name: String) =
+            navHostController?.let { onStudioClick(it, id, name) }
 
         fun onGenreClick(genre: String) {
             // TODO

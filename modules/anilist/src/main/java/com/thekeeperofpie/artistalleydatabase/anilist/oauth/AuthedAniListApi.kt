@@ -32,6 +32,9 @@ import com.anilist.StaffDetailsCharacterMediaPaginationQuery
 import com.anilist.StaffDetailsQuery
 import com.anilist.StaffDetailsStaffMediaPaginationQuery
 import com.anilist.StaffSearchQuery
+import com.anilist.StudioMediasPaginationQuery
+import com.anilist.StudioMediasQuery
+import com.anilist.StudioSearchQuery
 import com.anilist.ToggleFollowMutation
 import com.anilist.UserByIdQuery
 import com.anilist.UserMediaListQuery
@@ -54,6 +57,7 @@ import com.anilist.type.RecommendationSort
 import com.anilist.type.ReviewRating
 import com.anilist.type.ReviewSort
 import com.anilist.type.StaffSort
+import com.anilist.type.StudioSort
 import com.anilist.type.UserSort
 import com.apollographql.apollo3.ApolloClient
 import com.apollographql.apollo3.api.Optional
@@ -283,24 +287,15 @@ class AuthedAniListApi(
         perPage: Int? = null,
         isBirthday: Boolean? = null,
         sort: List<StaffSort>? = null,
-    ): StaffSearchQuery.Data {
-        val sortParam =
-            if (query.isEmpty() && sort?.size == 1 && sort.contains(StaffSort.SEARCH_MATCH)) {
-                // On a default, empty search, sort by FAVOURITES_DESC
-                Optional.Present(listOf(StaffSort.FAVOURITES_DESC))
-            } else {
-                Optional.presentIfNotNull(listOf(StaffSort.SEARCH_MATCH) + sort.orEmpty())
-            }
-        return query(
-            StaffSearchQuery(
-                search = Optional.presentIfNotNull(query.ifEmpty { null }),
-                page = Optional.Present(page),
-                perPage = Optional.Present(perPage),
-                isBirthday = Optional.presentIfNotNull(isBirthday?.takeIf { it }),
-                sort = sortParam,
-            )
+    ) = query(
+        StaffSearchQuery(
+            search = Optional.presentIfNotNull(query.ifEmpty { null }),
+            page = Optional.Present(page),
+            perPage = Optional.Present(perPage),
+            isBirthday = Optional.presentIfNotNull(isBirthday?.takeIf { it }),
+            sort = Optional.presentIfNotNull(sort),
         )
-    }
+    )
 
     suspend fun staffDetails(id: String) = query(StaffDetailsQuery(id.toInt())).staff!!
 
@@ -574,6 +569,46 @@ class AuthedAniListApi(
             sort = sort,
             page = page,
             charactersPerPage = charactersPerPage,
+        )
+    )
+
+    suspend fun searchStudios(
+        query: String,
+        page: Int,
+        perPage: Int,
+        sort: List<StudioSort>,
+    ) = query(
+        StudioSearchQuery(
+            search = Optional.presentIfNotNull(query.ifEmpty { null }),
+            page = page,
+            perPage = perPage,
+            sort = sort,
+        )
+    )
+
+    suspend fun studioMedias(
+        studioId: String,
+        sort: List<MediaSort>,
+        mediasPerPage: Int = 10
+    ) = query(
+        StudioMediasQuery(
+            studioId = studioId.toInt(),
+            sort = sort,
+            mediasPerPage = mediasPerPage,
+        )
+    ).studio
+
+    suspend fun studioMediasPage(
+        studioId: String,
+        sort: List<MediaSort>,
+        page: Int,
+        mediasPerPage: Int = 10,
+    ) = query(
+        StudioMediasPaginationQuery(
+            studioId = studioId.toInt(),
+            sort = sort,
+            page = page,
+            mediasPerPage = mediasPerPage,
         )
     )
 

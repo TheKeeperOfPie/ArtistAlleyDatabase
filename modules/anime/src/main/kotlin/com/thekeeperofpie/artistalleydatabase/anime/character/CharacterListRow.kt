@@ -1,7 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anime.character
 
-import android.content.Context
-import androidx.annotation.StringRes
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -33,12 +31,8 @@ import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -49,7 +43,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
@@ -70,6 +63,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.toTextRes
+import com.thekeeperofpie.artistalleydatabase.anime.ui.ListRowSmallImage
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
@@ -310,9 +304,10 @@ object CharacterListRow {
                 val staffId = entry.voiceActor.id
                 item(staffId) {
                     SharedElement(key = "anime_staff_${staffId}_image", screenKey = screenKey) {
-                        StaffOrMediaImage(
+                        ListRowSmallImage(
                             context = context,
                             density = density,
+                            ignored = false,
                             image = entry.voiceActor.image?.large,
                             contentDescriptionTextRes = R.string.anime_staff_image_content_description,
                             onClick = { ratio ->
@@ -331,17 +326,18 @@ object CharacterListRow {
 
             itemsIndexed(
                 media,
-                key = { index, item -> if (item == null) "placeholder_$index" else item.id },
+                key = { index, item -> item?.media?.id ?: "placeholder_$index" },
             ) { index, item ->
-                SharedElement(key = "anime_media_${item?.id}_image", screenKey = screenKey) {
-                    StaffOrMediaImage(
+                SharedElement(key = "anime_media_${item?.media?.id}_image", screenKey = screenKey) {
+                    ListRowSmallImage(
                         context = context,
                         density = density,
-                        image = item?.coverImage?.extraLarge,
+                        ignored = item?.ignored ?: false,
+                        image = item?.media?.coverImage?.extraLarge,
                         contentDescriptionTextRes = R.string.anime_media_cover_image_content_description,
                         onClick = { ratio ->
                             if (item != null) {
-                                navigationCallback.onMediaClick(item, ratio)
+                                navigationCallback.onMediaClick(item.media, ratio)
                             }
                         },
                     )
@@ -350,50 +346,17 @@ object CharacterListRow {
         }
     }
 
-    @Composable
-    private fun StaffOrMediaImage(
-        context: Context,
-        density: Density,
-        image: String?,
-        @StringRes contentDescriptionTextRes: Int,
-        onClick: (imageWidthToHeightRatio: Float) -> Unit,
-    ) {
-        var imageWidthToHeightRatio by remember { mutableStateOf<Float?>(null) }
-        AsyncImage(
-            model = ImageRequest.Builder(context)
-                .data(image)
-                .size(
-                    width = density.run { 64.dp.roundToPx() },
-                    height = density.run { 96.dp.roundToPx() },
-                )
-                .crossfade(true)
-                .build(),
-            contentScale = ContentScale.Crop,
-            contentDescription = stringResource(contentDescriptionTextRes),
-            onSuccess = { imageWidthToHeightRatio = it.widthToHeightRatio() },
-            modifier = Modifier
-                .size(width = 64.dp, height = 96.dp)
-                .clip(RoundedCornerShape(12.dp))
-                .background(MaterialTheme.colorScheme.surfaceColorAtElevation(4.dp))
-                .clickable { onClick(imageWidthToHeightRatio ?: 1f) }
-                .placeholder(
-                    visible = imageWidthToHeightRatio == null,
-                    highlight = PlaceholderHighlight.shimmer(),
-                )
-        )
-    }
-
-    open class Entry(
+    data class Entry(
         val character: CharacterNavigationData,
         val role: CharacterRole?,
-        val media: List<MediaNavigationData>,
+        val media: List<MediaEntry>,
         val favorites: Int?,
         val voiceActor: StaffNavigationData?,
     ) {
-        constructor(character: Character) : this(
+        constructor(character: Character, media: List<MediaEntry>) : this(
             character = character,
             role = null,
-            media = character.media?.edges?.mapNotNull { it?.node }.orEmpty().distinctBy { it.id },
+            media = media,
             favorites = character.favourites,
             voiceActor = character.media?.edges?.filterNotNull()
                 ?.flatMap { it.voiceActors?.filterNotNull().orEmpty() }
@@ -406,13 +369,20 @@ object CharacterListRow {
         constructor(character: CharacterWithRoleAndFavorites) : this(
             character = character.node,
             role = character.role,
-            media = character.node.media?.nodes?.filterNotNull().orEmpty().distinctBy { it.id },
+            media = character.node.media?.nodes?.filterNotNull().orEmpty().distinctBy { it.id }
+                .map { MediaEntry(media = it, isAdult = it.isAdult) },
             favorites = character.node.favourites,
             voiceActor = character.voiceActors?.filterNotNull().orEmpty()
                 .groupBy { it.languageV2 }
                 .let {
                     it["Japanese"]?.firstOrNull() ?: it.entries.firstOrNull()?.value?.firstOrNull()
                 }
+        )
+
+        data class MediaEntry(
+            val media: MediaNavigationData,
+            val isAdult: Boolean?,
+            val ignored: Boolean = false,
         )
     }
 }

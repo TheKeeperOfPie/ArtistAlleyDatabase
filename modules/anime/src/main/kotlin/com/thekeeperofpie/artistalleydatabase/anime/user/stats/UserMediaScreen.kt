@@ -140,7 +140,9 @@ object UserMediaScreen {
                     valueToMeanScore = UserMediaStatistics.Studio::meanScore,
                     valueToMediaIds = { it.mediaIds.filterNotNull() },
                     onValueClick = { value, _ ->
-                        navigationCallback.onStudioClick(value.studio?.id.toString())
+                        value.studio?.let {
+                            navigationCallback.onStudioClick(it.id.toString(), it.name)
+                        }
                     },
                 )
                 UserStatsTab.STAFF -> UserStatsDetailScreen(

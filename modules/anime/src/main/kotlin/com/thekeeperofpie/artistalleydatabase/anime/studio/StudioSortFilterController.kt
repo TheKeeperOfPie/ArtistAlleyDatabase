@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.anime.staff
+package com.thekeeperofpie.artistalleydatabase.anime.studio
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -14,32 +14,19 @@ import kotlinx.coroutines.flow.debounce
 import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(FlowPreview::class)
-class StaffSortFilterController(
-    settings: AnimeSettings,
-    private val allowRelevanceSort: Boolean = false,
-) : SortFilterController(settings) {
+class StudioSortFilterController(settings: AnimeSettings) : SortFilterController(settings) {
 
     @Composable
     override fun collapseOnClose() = settings.collapseAnimeFiltersOnClose.collectAsState().value
 
     private val sortSection = SortFilterSection.Sort(
-        enumClass = StaffSortOption::class,
-        defaultEnabled = StaffSortOption.SEARCH_MATCH,
-        headerTextRes = R.string.anime_staff_filter_sort_label,
-    ).apply {
-        if (!allowRelevanceSort) {
-            sortOptions = sortOptions.filter { it.value != StaffSortOption.RELEVANCE }
-        }
-    }
-
-    private val birthdaySection = SortFilterSection.Switch(
-        titleRes = R.string.anime_staff_filter_birthday_label,
-        enabled = false,
+        enumClass = StudioSortOption::class,
+        defaultEnabled = StudioSortOption.SEARCH_MATCH,
+        headerTextRes = R.string.anime_studio_filter_sort_label,
     )
 
     override var sections = listOf(
         sortSection,
-        birthdaySection,
         advancedSection,
         SortFilterSection.Spacer(height = 32.dp),
     )
@@ -48,13 +35,11 @@ class StaffSortFilterController(
         FilterParams(
             sort = sortSection.sortOptions,
             sortAscending = sortSection.sortAscending,
-            isBirthday = birthdaySection.enabled,
         )
     }.debounce(500.milliseconds)
 
     data class FilterParams(
-        val sort: List<SortEntry<StaffSortOption>>,
+        val sort: List<SortEntry<StudioSortOption>>,
         val sortAscending: Boolean,
-        val isBirthday: Boolean,
     )
 }

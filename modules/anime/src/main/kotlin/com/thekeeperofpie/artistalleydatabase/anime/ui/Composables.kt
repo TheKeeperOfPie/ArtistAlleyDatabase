@@ -2,47 +2,70 @@
 
 package com.thekeeperofpie.artistalleydatabase.anime.ui
 
+import android.content.Context
 import androidx.annotation.StringRes
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.OpenInNew
+import androidx.compose.material.icons.filled.PeopleAlt
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.PersonOutline
+import androidx.compose.material.icons.outlined.PeopleAlt
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
+import com.google.accompanist.placeholder.PlaceholderHighlight
+import com.google.accompanist.placeholder.material.placeholder
+import com.google.accompanist.placeholder.material.shimmer
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.compose.DetailsSectionHeader
+import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
 import java.time.LocalDate
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
@@ -364,6 +387,86 @@ fun GenericViewAllCard(
                 contentDescription = stringResource(
                     R.string.anime_generic_view_all_content_description
                 )
+            )
+        }
+    }
+}
+
+// TODO: Placeholder background color
+@Composable
+fun ListRowSmallImage(
+    context: Context,
+    density: Density,
+    ignored: Boolean,
+    image: String?,
+    @StringRes contentDescriptionTextRes: Int,
+    modifier: Modifier = Modifier,
+    onClick: (imageWidthToHeightRatio: Float) -> Unit,
+) {
+    var imageWidthToHeightRatio by remember { mutableStateOf<Float?>(null) }
+    AsyncImage(
+        model = ImageRequest.Builder(context)
+            .data(image)
+            .size(
+                width = density.run { 64.dp.roundToPx() },
+                height = density.run { 96.dp.roundToPx() },
+            )
+            .crossfade(true)
+            .build(),
+        contentScale = ContentScale.Crop,
+        contentDescription = stringResource(contentDescriptionTextRes),
+        onSuccess = { imageWidthToHeightRatio = it.widthToHeightRatio() },
+        modifier = modifier
+            .defaultMinSize(minWidth = 64.dp, minHeight = 96.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(MaterialTheme.colorScheme.surfaceColorAtElevation(4.dp))
+            .clickable { onClick(imageWidthToHeightRatio ?: 1f) }
+            .placeholder(
+                visible = imageWidthToHeightRatio == null,
+                highlight = PlaceholderHighlight.shimmer(),
+            )
+            .alpha(if (ignored) 0.38f else 1f)
+    )
+}
+
+@Composable
+fun ListRowFavoritesSection(
+    loading: Boolean,
+    favorites: Int?,
+) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+        horizontalAlignment = Alignment.End,
+        modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp),
+    ) {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = favorites?.toString() ?: "000",
+                style = MaterialTheme.typography.labelLarge,
+                modifier = Modifier.placeholder(
+                    visible = loading,
+                    highlight = PlaceholderHighlight.shimmer(),
+                ),
+            )
+
+            Icon(
+                imageVector = when {
+                    favorites == null -> Icons.Outlined.PeopleAlt
+                    favorites > 2000 -> Icons.Filled.PeopleAlt
+                    favorites > 1000 -> Icons.Outlined.PeopleAlt
+                    favorites > 100 -> Icons.Filled.Person
+                    else -> Icons.Filled.PersonOutline
+                },
+                contentDescription = stringResource(
+                    R.string.anime_generic_favorites_icon_content_description
+                ),
+                modifier = Modifier.placeholder(
+                    visible = loading,
+                    highlight = PlaceholderHighlight.shimmer(),
+                ),
             )
         }
     }

@@ -14,9 +14,7 @@ import kotlinx.coroutines.flow.debounce
 import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(FlowPreview::class)
-class UserSortFilterController(
-    private val settings: AnimeSettings,
-) : SortFilterController {
+class UserSortFilterController(settings: AnimeSettings) : SortFilterController(settings) {
 
     @Composable
     override fun collapseOnClose() = settings.collapseAnimeFiltersOnClose.collectAsState().value
@@ -35,9 +33,9 @@ class UserSortFilterController(
     override var sections = listOf(
         sortSection,
         moderatorSection,
+        advancedSection,
         SortFilterSection.Spacer(height = 32.dp),
     )
-    override val state = SortFilterSection.ExpandedState()
 
     fun filterParams() = snapshotFlow {
         FilterParams(

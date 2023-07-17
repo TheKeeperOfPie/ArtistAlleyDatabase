@@ -9,11 +9,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
-import com.thekeeperofpie.artistalleydatabase.anime.media.applyStatusAndIgnored
+import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaFiltering
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collectLatest
@@ -29,6 +30,7 @@ class AnimeCharacterDetailsViewModel @Inject constructor(
     private val aniListApi: AuthedAniListApi,
     private val statusController: MediaListStatusController,
     private val ignoreList: AnimeMediaIgnoreList,
+    private val settings: AnimeSettings,
 ) : ViewModel() {
 
     val viewer = aniListApi.authedUser
@@ -55,18 +57,20 @@ class AnimeCharacterDetailsViewModel @Inject constructor(
                 combine(
                     statusController.allChanges(media.map { it.media.id.toString() }.toSet()),
                     ignoreList.updates,
-                    ::Pair,
+                    settings.showAdult,
+                    ::Triple,
                 )
-                    .mapLatest { (statuses, ignoredIds) ->
+                    .mapLatest { (statuses, ignoredIds, showAdult) ->
                         CharacterDetailsScreen.Entry(
                             character,
-                            media = media.map {
-                                applyStatusAndIgnored(
-                                    statuses,
-                                    ignoredIds,
-                                    it,
-                                    { it },
-                                    it.media,
+                            media = media.mapNotNull {
+                                applyMediaFiltering(
+                                    statuses = statuses,
+                                    ignoredIds = ignoredIds,
+                                    showAdult = showAdult,
+                                    entry = it,
+                                    transform = { it },
+                                    media = it.media,
                                     copy = { mediaListStatus, ignored ->
                                         AnimeMediaListRow.Entry(
                                             media = this.media,

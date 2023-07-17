@@ -20,20 +20,14 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ImageNotSupported
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
@@ -50,11 +44,13 @@ import com.anilist.fragment.MediaNavigationData
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.material.placeholder
 import com.google.accompanist.placeholder.material.shimmer
+import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
 import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
 import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.ui.ListRowSmallImage
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
@@ -65,6 +61,7 @@ object UserListRow {
 
     @Composable
     operator fun invoke(
+        screenKey: String,
         entry: Entry,
         onLongPressImage: (Entry) -> Unit = {},
         colorCalculationState: ColorCalculationState = ColorCalculationState(),
@@ -88,6 +85,7 @@ object UserListRow {
         ) {
             Row(modifier = Modifier.height(IntrinsicSize.Min)) {
                 UserImage(
+                    screenKey = screenKey,
                     entry = entry,
                     onClick = {
                         navigationCallback.onUserClick(
@@ -114,7 +112,11 @@ object UserListRow {
 
                     Spacer(Modifier.weight(1f))
 
-                    MediaRow(entry = entry, onMediaClick = navigationCallback::onMediaClick)
+                    MediaRow(
+                        screenKey = screenKey,
+                        entry = entry,
+                        onMediaClick = navigationCallback::onMediaClick,
+                    )
                 }
             }
         }
@@ -122,50 +124,53 @@ object UserListRow {
 
     @Composable
     private fun UserImage(
+        screenKey: String,
         entry: Entry,
         onClick: () -> Unit = {},
         onLongPressImage: () -> Unit,
         colorCalculationState: ColorCalculationState,
         onRatioAvailable: (Float) -> Unit,
     ) {
-        AsyncImage(
-            model = ImageRequest.Builder(LocalContext.current)
-                .data(entry.user.avatar?.large)
-                .crossfade(true)
-                .allowHardware(colorCalculationState.hasColor(entry.user.id.toString()))
-                .size(
-                    width = Dimension.Pixels(LocalDensity.current.run { 130.dp.roundToPx() }),
-                    height = Dimension.Undefined
-                )
-                .build(),
-            contentScale = ContentScale.Crop,
-            fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
-            onSuccess = {
-                onRatioAvailable(it.widthToHeightRatio())
-                ComposeColorUtils.calculatePalette(
-                    entry.user.id.toString(),
-                    it,
-                    colorCalculationState,
-                )
-            },
-            contentDescription = stringResource(R.string.anime_user_image),
-            modifier = Modifier
-                .background(MaterialTheme.colorScheme.surfaceVariant)
-                .fillMaxHeight()
-                .heightIn(min = 180.dp)
-                .width(130.dp)
-                .placeholder(
-                    visible = false, // TODO: placeholder,
-                    highlight = PlaceholderHighlight.shimmer(),
-                )
-                .combinedClickable(
-                    onClick = onClick,
-                    onLongClick = onLongPressImage,
-                    onLongClickLabel = stringResource(
-                        R.string.anime_user_image_long_press_preview
-                    ),
-                )
-        )
+        SharedElement(key = "anime_user_${entry.user.id}_image", screenKey = screenKey) {
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(entry.user.avatar?.large)
+                    .crossfade(true)
+                    .allowHardware(colorCalculationState.hasColor(entry.user.id.toString()))
+                    .size(
+                        width = Dimension.Pixels(LocalDensity.current.run { 130.dp.roundToPx() }),
+                        height = Dimension.Undefined
+                    )
+                    .build(),
+                contentScale = ContentScale.Crop,
+                fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
+                onSuccess = {
+                    onRatioAvailable(it.widthToHeightRatio())
+                    ComposeColorUtils.calculatePalette(
+                        entry.user.id.toString(),
+                        it,
+                        colorCalculationState,
+                    )
+                },
+                contentDescription = stringResource(R.string.anime_user_image),
+                modifier = Modifier
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                    .fillMaxHeight()
+                    .heightIn(min = 180.dp)
+                    .width(130.dp)
+                    .placeholder(
+                        visible = false, // TODO: placeholder,
+                        highlight = PlaceholderHighlight.shimmer(),
+                    )
+                    .combinedClickable(
+                        onClick = onClick,
+                        onLongClick = onLongPressImage,
+                        onLongClickLabel = stringResource(
+                            R.string.anime_user_image_long_press_preview
+                        ),
+                    )
+            )
+        }
     }
 
     @Composable
@@ -185,6 +190,7 @@ object UserListRow {
 
     @Composable
     private fun MediaRow(
+        screenKey: String,
         entry: Entry,
         onMediaClick: (MediaNavigationData, imageWidthToHeightRatio: Float) -> Unit
     ) {
@@ -199,49 +205,29 @@ object UserListRow {
                 // The parent will clamp the actual width so all content still fits on screen.
                 .size(width = LocalConfiguration.current.screenWidthDp.dp, height = 96.dp)
         ) {
-            items(media, key = { it.id }) {
-                var imageWidthToHeightRatio by remember { mutableStateOf<Float?>(null) }
-                AsyncImage(
-                    model = ImageRequest.Builder(context)
-                        .data(it.coverImage?.extraLarge)
-                        .size(
-                            width = density.run { 64.dp.roundToPx() },
-                            height = density.run { 96.dp.roundToPx() },
-                        )
-                        .crossfade(true)
-                        .build(),
-                    contentScale = ContentScale.Crop,
-                    contentDescription = stringResource(
-                        R.string.anime_media_cover_image_content_description
-                    ),
-                    onSuccess = { imageWidthToHeightRatio = it.widthToHeightRatio() },
-                    modifier = Modifier
-                        .size(width = 64.dp, height = 96.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(MaterialTheme.colorScheme.surfaceColorAtElevation(4.dp))
-                        .clickable { onMediaClick(it, imageWidthToHeightRatio ?: 1f) }
-                        .placeholder(
-                            visible = imageWidthToHeightRatio == null,
-                            highlight = PlaceholderHighlight.shimmer(),
-                        )
-                )
+            items(media, key = { it.media.id }) {
+                SharedElement(key = "anime_media_${it.media.id}_image", screenKey = screenKey) {
+                    ListRowSmallImage(
+                        context = context,
+                        density = density,
+                        ignored = it.ignored,
+                        image = it.media.coverImage?.extraLarge,
+                        contentDescriptionTextRes = R.string.anime_media_cover_image_content_description,
+                        onClick = { imageWidthToHeightRatio ->
+                            onMediaClick(it.media, imageWidthToHeightRatio)
+                        },
+                    )
+                }
             }
         }
     }
 
-    open class Entry(val user: User) {
-        val anime = user.favourites?.anime?.edges
-            ?.filterNotNull()
-            ?.sortedBy { it.favouriteOrder }
-            ?.mapNotNull { it.node }
-            .orEmpty()
-
-        val manga = user.favourites?.manga?.edges
-            ?.filterNotNull()
-            ?.sortedBy { it.favouriteOrder }
-            ?.mapNotNull { it.node }
-            .orEmpty()
-
-        val media = (anime + manga).distinctBy { it.id }
+    // TODO: Hook up media isIgnored
+    data class Entry(val user: User, val media: List<MediaEntry>) {
+        data class MediaEntry(
+            val media: MediaNavigationData,
+            val isAdult: Boolean?,
+            val ignored: Boolean = false,
+        )
     }
 }

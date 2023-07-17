@@ -67,6 +67,7 @@ query CharacterAdvancedSearch(
                     }
                     node {
                         ...MediaNavigationData
+                        isAdult
                     }
                 }
             }
@@ -192,22 +193,12 @@ fragment CharacterWithRoleAndFavorites on CharacterEdge {
         media(sort: [FAVOURITES_DESC]) {
             nodes {
                 ...MediaNavigationData
+                isAdult
             }
         }
         favourites
     }
     role
-}
-
-fragment CharacterMediaPreview on MediaEdge {
-    id
-    voiceActors {
-        ...StaffNavigationData
-        languageV2
-    }
-    node {
-        ...MediaNavigationData
-    }
 }
 
 query MediaAndCharacters($mediaId: Int!, $charactersPerPage: Int!) {

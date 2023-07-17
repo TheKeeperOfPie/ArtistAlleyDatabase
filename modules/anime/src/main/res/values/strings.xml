@@ -79,6 +79,7 @@
     <string name="anime_search_manga">Search manga…</string>
     <string name="anime_search_characters">Search characters…</string>
     <string name="anime_search_staff">Search staff…</string>
+    <string name="anime_search_studio">Search studios…</string>
     <string name="anime_search_user">Search users…</string>
     <string name="anime_search_clear">Clear</string>
     <string name="anime_search_filter">Filter by type</string>
@@ -86,6 +87,7 @@
     <string name="anime_search_type_manga">Manga</string>
     <string name="anime_search_type_character">Characters</string>
     <string name="anime_search_type_staff">Staff</string>
+    <string name="anime_search_type_studio">Studios</string>
     <string name="anime_search_type_user">Users</string>
 
     <string name="anime_media_filter_status_label">Status</string>
@@ -154,8 +156,6 @@
     <string name="anime_media_season_summer_content_description">Summer season indicator</string>
     <string name="anime_media_season_fall_content_description">Fall season indicator</string>
 
-    <string name="anime_media_filter_show_adult_content">Show adult content</string>
-
     <string name="anime_media_filter_airing_date">Airing date</string>
     <string name="anime_media_filter_airing_date_content_description">Airing date expand</string>
     <string name="anime_media_filter_airing_date_season">Season</string>
@@ -205,11 +205,6 @@
     <string name="anime_media_filter_source_web_novel">Web novel</string>
     <string name="anime_media_filter_source_unknown">Unknown</string>
     <string name="anime_media_filter_tag_rank_label">Minimum rank</string>
-
-    <string name="anime_media_filter_collapse_on_close">Collapse sections on close</string>
-    <string name="anime_media_filter_show_ignored">Show ignored</string>
-    <string name="anime_media_filter_advanced_group">Advanced</string>
-    <string name="anime_media_filter_advanced_group_expand_content_description">Advanced group expand</string>
 
     <string name="anime_media_filter_expand_all_content_description">Expand/collapse all sections</string>
     <string name="anime_media_cover_image_long_press_preview">Preview cover image</string>
@@ -624,6 +619,20 @@
 
     <string name="anime_staff_characters_error_loading">Error loading characters</string>
     <string name="anime_staff_characters_header">Characters</string>
-    <string name="anime_generic_view_all_content_description">View all</string>
     <string name="anime_character_filter_birthday_label">Birthday today</string>
+
+    <string name="anime_generic_filter_show_adult_content">Show adult content</string>
+    <string name="anime_generic_view_all_content_description">View all</string>
+    <string name="anime_generic_filter_collapse_on_close">Collapse sections on close</string>
+    <string name="anime_generic_filter_show_ignored">Show ignored</string>
+    <string name="anime_generic_favorites_icon_content_description">Favorites</string>
+    <string name="anime_generic_filter_advanced_group">Advanced</string>
+    <string name="anime_generic_filter_advanced_group_expand_content_description">Advanced group expand</string>
+
+    <string name="anime_studio_sort_search_match">Search match</string>
+    <string name="anime_studio_sort_id">Last added</string>
+    <string name="anime_studio_sort_name">Name</string>
+    <string name="anime_studio_sort_favorites">Favorites</string>
+    <string name="anime_studio_filter_sort_label">Sort</string>
+    <string name="anime_studio_medias_error_loading">Error loading medias</string>
 </resources>

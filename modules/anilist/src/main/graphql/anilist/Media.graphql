@@ -160,6 +160,7 @@ query MediaDetails($mediaId: Int!) {
                 ...DetailsCharacterEdge
             }
         }
+        isAdult
         description
         averageScore
         meanScore

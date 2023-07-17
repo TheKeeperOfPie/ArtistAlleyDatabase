@@ -21,10 +21,13 @@ import androidx.paging.filter
 import androidx.paging.map
 import com.anilist.MediaAdvancedSearchQuery.Data.Page.Medium
 import com.anilist.type.MediaType
+import com.anilist.type.StudioSort
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListPagingSource
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterListRow
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
@@ -34,8 +37,13 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MangaSortFilter
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaTagsController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.TagSection
+import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffListRow
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffSortFilterController
+import com.thekeeperofpie.artistalleydatabase.anime.studio.StudioListRow
+import com.thekeeperofpie.artistalleydatabase.anime.studio.StudioSortFilterController
+import com.thekeeperofpie.artistalleydatabase.anime.user.UserListRow
 import com.thekeeperofpie.artistalleydatabase.anime.user.UserSortFilterController
+import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -83,6 +91,8 @@ class AnimeSearchViewModel @Inject constructor(
 
     val staffSortFilterController = StaffSortFilterController(settings)
 
+    val studioSortFilterController = StudioSortFilterController(settings)
+
     val userSortFilterController = UserSortFilterController(settings)
 
     private val refreshUptimeMillis = MutableStateFlow(-1L)
@@ -100,6 +110,7 @@ class AnimeSearchViewModel @Inject constructor(
                     SearchType.MANGA -> PagingData.empty<AnimeSearchEntry.Media<Medium>>(loadStates)
                     SearchType.CHARACTER -> PagingData.empty<AnimeSearchEntry.Character>(loadStates)
                     SearchType.STAFF -> PagingData.empty<AnimeSearchEntry.Staff>(loadStates)
+                    SearchType.STUDIO -> PagingData.empty<AnimeSearchEntry.Studio>(loadStates)
                     SearchType.USER -> PagingData.empty<AnimeSearchEntry.User>(loadStates)
                 }.let(::MutableStateFlow)
             }.associate { it }
@@ -189,7 +200,40 @@ class AnimeSearchViewModel @Inject constructor(
             },
             pagingSource = { AnimeSearchCharacterPagingSource(aniListApi, it) },
             id = { it.id },
-            entry = { AnimeSearchEntry.Character(it) },
+            entry = {
+                AnimeSearchEntry.Character(
+                    CharacterListRow.Entry(
+                        character = it,
+                        media = it.media?.edges?.mapNotNull { it?.node }.orEmpty()
+                            .distinctBy { it.id }
+                            .map {
+                                CharacterListRow.Entry.MediaEntry(
+                                    media = it,
+                                    isAdult = it.isAdult
+                                )
+                            }
+                    )
+                )
+            },
+            finalTransform = {
+                flatMapLatest { pagingData ->
+                    combine(
+                        ignoreList.updates,
+                        settings.showIgnored,
+                        settings.showAdult,
+                    ) { ignoredIds, showIgnored, showAdult ->
+                        pagingData
+                            .map {
+                                it.copy(entry = it.entry.copy(
+                                    media = it.entry.media
+                                        .filter { showAdult || it.isAdult == false }
+                                        .map { it.copy(ignored = ignoredIds.contains(it.media.id)) }
+                                        .filter { showIgnored || !it.ignored }
+                                ))
+                            }
+                    }
+                }
+            }
         )
 
         collectSearch(
@@ -204,7 +248,96 @@ class AnimeSearchViewModel @Inject constructor(
             },
             pagingSource = { AnimeSearchStaffPagingSource(aniListApi, it) },
             id = { it.id },
-            entry = { AnimeSearchEntry.Staff(it) },
+            entry = {
+                AnimeSearchEntry.Staff(
+                    StaffListRow.Entry(
+                        staff = it,
+                        media = it.staffMedia?.nodes?.filterNotNull().orEmpty()
+                            .distinctBy { it.id }
+                            .map { StaffListRow.Entry.MediaEntry(media = it, isAdult = it.isAdult) }
+                    )
+                )
+            },
+            finalTransform = {
+                flatMapLatest { pagingData ->
+                    combine(
+                        ignoreList.updates,
+                        settings.showIgnored,
+                        settings.showAdult,
+                    ) { ignoredIds, showIgnored, showAdult ->
+                        pagingData
+                            .map {
+                                it.copy(entry = it.entry.copy(
+                                    media = it.entry.media
+                                        .filter { showAdult || it.isAdult == false }
+                                        .map { it.copy(ignored = ignoredIds.contains(it.media.id)) }
+                                        .filter { showIgnored || !it.ignored }
+                                ))
+                            }
+                    }
+                }
+            }
+        )
+
+        collectSearch(
+            searchType = SearchType.STUDIO,
+            flow = {
+                combine(
+                    snapshotFlow { query }.debounce(500.milliseconds),
+                    refreshUptimeMillis,
+                    studioSortFilterController.filterParams(),
+                    ::Triple,
+                )
+            },
+            pagingSource = { (query, _, filterParams) ->
+                AniListPagingSource {
+                    val result = aniListApi.searchStudios(
+                        query = query,
+                        page = it,
+                        perPage = 10,
+                        sort = filterParams.sort.filter { it.state == FilterIncludeExcludeState.INCLUDE }
+                            .flatMap { it.value.toApiValue(filterParams.sortAscending) }
+                            .ifEmpty { listOf(StudioSort.SEARCH_MATCH) }
+                    )
+
+                    result.page.pageInfo to result.page.studios?.filterNotNull().orEmpty()
+                }
+            },
+            id = { it.id },
+            entry = {
+                AnimeSearchEntry.Studio(
+                    StudioListRow.Entry(
+                        studio = it,
+                        media = it.media?.nodes?.filterNotNull().orEmpty()
+                            .distinctBy { it.id }
+                            .map {
+                                StudioListRow.Entry.MediaEntry(
+                                    media = it,
+                                    isAdult = it.isAdult
+                                )
+                            }
+                    )
+                )
+            },
+            finalTransform = {
+                flatMapLatest { pagingData ->
+                    combine(
+                        ignoreList.updates,
+                        settings.showIgnored,
+                        settings.showAdult,
+                    ) { ignoredIds, showIgnored, showAdult ->
+                        pagingData
+                            .map {
+                                it.copy(entry = it.entry.copy(
+                                    media = it.entry.media
+                                        .filter { showAdult || it.isAdult == false }
+                                        .map { it.copy(ignored = ignoredIds.contains(it.media.id)) }
+                                        .filter { showIgnored || !it.ignored }
+                                ))
+                            }
+                    }
+                }
+            }
         )
 
         collectSearch(
@@ -219,7 +352,46 @@ class AnimeSearchViewModel @Inject constructor(
             },
             pagingSource = { AnimeSearchUserPagingSource(aniListApi, it) },
             id = { it.id },
-            entry = { AnimeSearchEntry.User(it) },
+            entry = {
+                val anime = it.favourites?.anime?.edges
+                    ?.filterNotNull()
+                    ?.sortedBy { it.favouriteOrder }
+                    ?.mapNotNull { it.node }
+                    .orEmpty()
+                    .map { UserListRow.Entry.MediaEntry(media = it, isAdult = it.isAdult) }
+
+                val manga = it.favourites?.manga?.edges
+                    ?.filterNotNull()
+                    ?.sortedBy { it.favouriteOrder }
+                    ?.mapNotNull { it.node }
+                    .orEmpty()
+                    .map { UserListRow.Entry.MediaEntry(media = it, isAdult = it.isAdult) }
+                AnimeSearchEntry.User(
+                    UserListRow.Entry(
+                        user = it,
+                        media = (anime + manga).distinctBy { it.media.id },
+                    )
+                )
+            },
+            finalTransform = {
+                flatMapLatest { pagingData ->
+                    combine(
+                        ignoreList.updates,
+                        settings.showIgnored,
+                        settings.showAdult,
+                    ) { ignoredIds, showIgnored, showAdult ->
+                        pagingData
+                            .map {
+                                it.copy(entry = it.entry.copy(
+                                    media = it.entry.media
+                                        .filter { showAdult || it.isAdult == false }
+                                        .map { it.copy(ignored = ignoredIds.contains(it.media.id)) }
+                                        .filter { showIgnored || !it.ignored }
+                                ))
+                            }
+                    }
+                }
+            }
         )
     }
 
@@ -297,6 +469,7 @@ class AnimeSearchViewModel @Inject constructor(
         MANGA(R.string.anime_search_type_manga),
         CHARACTER(R.string.anime_search_type_character),
         STAFF(R.string.anime_search_type_staff),
+        STUDIO(R.string.anime_search_type_studio),
         USER(R.string.anime_search_type_user),
     }
 }

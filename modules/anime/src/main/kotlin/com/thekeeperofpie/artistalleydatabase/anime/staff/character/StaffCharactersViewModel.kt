@@ -1,17 +1,28 @@
 package com.thekeeperofpie.artistalleydatabase.anime.staff.character
 
+import androidx.paging.PagingData
+import androidx.paging.map
 import com.anilist.fragment.CharacterWithRoleAndFavorites
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterListRow
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterSortOption
+import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
 import com.thekeeperofpie.artistalleydatabase.anime.utils.HeaderAndListViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
 import javax.inject.Inject
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class StaffCharactersViewModel @Inject constructor(
     aniListApi: AuthedAniListApi,
+    private val ignoreList: AnimeMediaIgnoreList,
+    private val settings: AnimeSettings,
 ) : HeaderAndListViewModel<StaffCharactersScreen.Entry, CharacterWithRoleAndFavorites, CharacterListRow.Entry, CharacterSortOption>(
     aniListApi = aniListApi,
     sortOptionEnum = CharacterSortOption::class,
@@ -46,4 +57,22 @@ class StaffCharactersViewModel @Inject constructor(
         ).staff.characters
         result?.pageInfo to result?.edges?.filterNotNull().orEmpty()
     }
+
+    override fun Flow<PagingData<CharacterListRow.Entry>>.transformFlow() =
+        flatMapLatest { pagingData ->
+            combine(
+                ignoreList.updates,
+                settings.showIgnored,
+                settings.showAdult,
+            ) { ignoredIds, showIgnored, showAdult ->
+                pagingData
+                    .map {
+                        it.copy(
+                            media = it.media
+                                .filter { showAdult || it.isAdult == false }
+                                .filter { showIgnored || !ignoredIds.contains(it.media.id) }
+                        )
+                    }
+            }
+        }
 }

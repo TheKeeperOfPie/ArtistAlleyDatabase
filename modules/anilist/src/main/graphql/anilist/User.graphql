@@ -23,6 +23,7 @@ fragment UserFavoriteMediaNode on Media {
     }
     format
     averageScore
+    isAdult
 }
 
 query UserById($id: Int!) {
@@ -218,6 +219,7 @@ query UserSearch(
                         favouriteOrder
                         node {
                             ...MediaNavigationData
+                            isAdult
                         }
                     }
                 }
@@ -226,6 +228,7 @@ query UserSearch(
                         favouriteOrder
                         node {
                             ...MediaNavigationData
+                            isAdult
                         }
                     }
                 }

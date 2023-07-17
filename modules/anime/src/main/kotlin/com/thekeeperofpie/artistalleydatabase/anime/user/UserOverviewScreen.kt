@@ -188,7 +188,7 @@ object UserOverviewScreen {
 
     private fun LazyListScope.favoriteStudiosSection(
         studios: List<AniListUserScreen.Entry.Studio>,
-        onClick: (String) -> Unit,
+        onClick: (id: String, name: String) -> Unit,
     ) {
         if (studios.isEmpty()) return
         item {
@@ -211,7 +211,7 @@ object UserOverviewScreen {
                         style = MaterialTheme.typography.bodyLarge,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { onClick(studio.id) }
+                            .clickable { onClick(studio.id, studio.name) }
                             .padding(horizontal = 16.dp, vertical = 10.dp)
                     )
                 }

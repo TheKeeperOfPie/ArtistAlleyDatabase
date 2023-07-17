@@ -10,9 +10,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.paging.PagingData
-import androidx.paging.filter
-import com.anilist.fragment.MediaPreview
 import com.anilist.type.MediaFormat
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
@@ -21,7 +18,6 @@ import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.filter.SortFilterSection
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaStatusAware
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterEntry
 import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
@@ -33,7 +29,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
@@ -218,36 +213,6 @@ class AnimeSortFilterController<SortType : SortOption>(
                 airingDate.second.copy(endDate = selectedDate)
             }
         )
-    }
-
-    fun <Entry : MediaStatusAware> filterMedia(
-        result: PagingData<Entry>,
-        transform: (Entry) -> MediaPreview,
-    ) = combine(
-        flowOf(result),
-        settings.showIgnored,
-        snapshotFlow { listStatusSection.filterOptions }
-            .flowOn(CustomDispatchers.Main),
-    ) { pagingData, showIgnored, listStatuses ->
-        val includes = listStatuses
-            .filter { it.state == FilterIncludeExcludeState.INCLUDE }
-            .mapNotNull { it.value }
-        val excludes = listStatuses
-            .filter { it.state == FilterIncludeExcludeState.EXCLUDE }
-            .mapNotNull { it.value }
-        pagingData.filter {
-            val media = transform(it)
-            val listStatus = media.mediaListEntry?.status
-            if (excludes.isNotEmpty() && excludes.contains(listStatus)) {
-                return@filter false
-            }
-
-            if (includes.isNotEmpty() && !includes.contains(listStatus)) {
-                return@filter false
-            }
-
-            if (showIgnored) true else !it.ignored
-        }
     }
 
     @Composable

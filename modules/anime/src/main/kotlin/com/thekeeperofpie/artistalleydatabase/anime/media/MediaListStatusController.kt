@@ -53,14 +53,16 @@ class MediaListStatusController {
     )
 }
 
-fun <Input> applyStatusAndIgnored(
+fun <Input> applyMediaFiltering(
     statuses: Map<String, MediaListStatusController.Update>,
     ignoredIds: Set<Int>,
+    showAdult: Boolean,
     entry: Input,
     transform: (Input) -> MediaStatusAware,
     media: MediaPreview?,
     copy: Input.(MediaListStatus?, ignored: Boolean) -> Input,
-): Input {
+): Input? {
+    if (!showAdult && media?.isAdult != false) return null
     val mediaId = media?.id
     val status = if (mediaId == null || !statuses.containsKey(mediaId.toString())) {
         media?.mediaListEntry?.status
@@ -97,7 +99,15 @@ fun <T : MediaStatusAware> Flow<PagingData<T>>.applyMediaStatusChanges(
             .filter { showAdult || (media(it)?.isAdult == false) }
             .map {
                 val mediaPreview = media(it)
-                applyStatusAndIgnored(statuses, ignoredIds, it, { it }, mediaPreview, copy)
+                applyMediaFiltering(
+                    statuses = statuses,
+                    ignoredIds = ignoredIds,
+                    showAdult = showAdult,
+                    entry = it,
+                    transform = { it },
+                    media = mediaPreview,
+                    copy = copy
+                )!!
             }
             .filter { showIgnored || !it.ignored }
     }

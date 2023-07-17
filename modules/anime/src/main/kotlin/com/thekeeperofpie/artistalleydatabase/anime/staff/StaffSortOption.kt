@@ -10,7 +10,6 @@ enum class StaffSortOption(
     override val supportsAscending: Boolean = true,
 ) : SortOption {
 
-    // Omissions: SEARCH_MATCH is used as a default, RELEVANCE not useful for search
     SEARCH_MATCH(R.string.anime_staff_sort_search_match, supportsAscending = false),
     ID(R.string.anime_staff_sort_id),
     ROLE(R.string.anime_staff_sort_role),

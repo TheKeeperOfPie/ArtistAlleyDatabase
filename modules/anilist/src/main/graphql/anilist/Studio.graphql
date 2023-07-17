@@ -1,0 +1,71 @@
+fragment StudioNavigationData on Studio {
+    id
+    name
+}
+
+query StudioSearch(
+    $page: Int!,
+    $perPage: Int!,
+    $search: String,
+    $sort: [StudioSort]!,
+) {
+    Page(page: $page, perPage: $perPage) @nonnull {
+        pageInfo @nonnull {
+            ...PaginationInfo
+        }
+
+        studios(search: $search, sort: $sort) {
+            ...StudioNavigationData
+            isAnimationStudio
+            favourites
+            media(sort: [FAVOURITES_DESC], perPage: 5, isMain: true) {
+                nodes {
+                    ...MediaNavigationData
+                    isAdult
+                }
+            }
+        }
+    }
+}
+query StudioMedias(
+    $studioId: Int!,
+    $sort: [MediaSort]!,
+    $mediasPerPage: Int!,
+) {
+    Studio(id: $studioId) @nonnull {
+        id
+        name
+        isAnimationStudio
+
+        media(sort: $sort, page: 1, perPage: $mediasPerPage) {
+            pageInfo @nonnull {
+                ...PaginationInfo
+            }
+            nodes {
+                ...MediaPreview
+            }
+        }
+    }
+}
+
+query StudioMediasPagination(
+    $studioId: Int!,
+    $sort: [MediaSort]!,
+    $page: Int!,
+    $mediasPerPage: Int!,
+) {
+    Studio(id: $studioId) @nonnull {
+        id
+        name
+        isAnimationStudio
+
+        media(sort: $sort, page: $page, perPage: $mediasPerPage) {
+            pageInfo @nonnull {
+                ...PaginationInfo
+            }
+            nodes {
+                ...MediaPreview
+            }
+        }
+    }
+}

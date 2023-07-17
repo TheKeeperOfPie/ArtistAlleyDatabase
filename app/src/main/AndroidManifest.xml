@@ -45,6 +45,10 @@
                 <data android:pathAdvancedPattern="/staff/[0-9]+/.*"/>
                 <data android:pathAdvancedPattern="/user/[0-9]+"/>
                 <data android:pathAdvancedPattern="/user/[0-9]+/.*"/>
+                <data android:pathAdvancedPattern="/studio/[0-9]+"/>
+                <data android:pathAdvancedPattern="/studio/[0-9]+/.*"/>
+                <data android:pathAdvancedPattern="/review/[0-9]+"/>
+                <data android:pathAdvancedPattern="/review/[0-9]+/.*"/>
             </intent-filter>
 
             <intent-filter>

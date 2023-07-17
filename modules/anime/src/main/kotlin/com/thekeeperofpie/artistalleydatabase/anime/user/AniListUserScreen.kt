@@ -252,6 +252,7 @@ object AniListUserScreen {
         }
     }
 
+    // TODO: Filter out isAdult
     data class Entry(
         val user: User,
     ) {

@@ -51,6 +51,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSh
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.SortFilterBottomScaffoldNoAppBarOffset
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffListRow
+import com.thekeeperofpie.artistalleydatabase.anime.studio.StudioListRow
 import com.thekeeperofpie.artistalleydatabase.anime.ui.StartEndDateDialog
 import com.thekeeperofpie.artistalleydatabase.anime.user.UserListRow
 import com.thekeeperofpie.artistalleydatabase.compose.AppBar
@@ -65,6 +66,8 @@ import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationSt
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 object AnimeSearchScreen {
+
+    private val SCREEN_KEY = AnimeNavDestinations.SEARCH.id
 
     @Composable
     operator fun invoke(
@@ -115,6 +118,7 @@ object AnimeSearchScreen {
                     }
                 AnimeSearchViewModel.SearchType.CHARACTER -> viewModel.characterSortFilterController
                 AnimeSearchViewModel.SearchType.STAFF -> viewModel.staffSortFilterController
+                AnimeSearchViewModel.SearchType.STUDIO -> viewModel.studioSortFilterController
                 AnimeSearchViewModel.SearchType.USER -> viewModel.userSortFilterController
             }
             SortFilterBottomScaffoldNoAppBarOffset(
@@ -175,7 +179,7 @@ object AnimeSearchScreen {
                                     ) { index ->
                                         when (val item = content[index]) {
                                             is AnimeSearchEntry.Media<*> -> AnimeMediaListRow(
-                                                screenKey = AnimeNavDestinations.SEARCH.id,
+                                                screenKey = SCREEN_KEY,
                                                 viewer = viewer,
                                                 entry = item,
                                                 onClickListEdit = {
@@ -191,29 +195,35 @@ object AnimeSearchScreen {
                                                 navigationCallback = navigationCallback,
                                             )
                                             is AnimeSearchEntry.Character -> CharacterListRow(
-                                                screenKey = AnimeNavDestinations.SEARCH.id,
-                                                entry = item,
+                                                screenKey = SCREEN_KEY,
+                                                entry = item.entry,
                                                 onLongPressImage = { /* TODO */ },
                                                 colorCalculationState = colorCalculationState,
                                                 navigationCallback = navigationCallback,
                                             )
                                             is AnimeSearchEntry.Staff -> StaffListRow(
-                                                screenKey = AnimeNavDestinations.SEARCH.id,
-                                                entry = item,
+                                                screenKey = SCREEN_KEY,
+                                                entry = item.entry,
                                                 onLongPressImage = { /* TODO */ },
                                                 colorCalculationState = colorCalculationState,
                                                 navigationCallback = navigationCallback,
                                             )
                                             is AnimeSearchEntry.User -> UserListRow(
-                                                entry = item,
+                                                screenKey = SCREEN_KEY,
+                                                entry = item.entry,
                                                 onLongPressImage = { /* TODO */ },
                                                 colorCalculationState = colorCalculationState,
+                                                navigationCallback = navigationCallback,
+                                            )
+                                            is AnimeSearchEntry.Studio -> StudioListRow(
+                                                screenKey = SCREEN_KEY,
+                                                entry = item.entry,
                                                 navigationCallback = navigationCallback,
                                             )
 
                                             // TODO: Separated placeholder types
                                             null -> AnimeMediaListRow<MediaPreview>(
-                                                screenKey = AnimeNavDestinations.SEARCH.id,
+                                                screenKey = SCREEN_KEY,
                                                 viewer = null,
                                                 entry = null,
                                                 onClickListEdit = {},
@@ -273,6 +283,8 @@ object AnimeSearchScreen {
                                             R.string.anime_search_characters
                                         AnimeSearchViewModel.SearchType.STAFF ->
                                             R.string.anime_search_staff
+                                        AnimeSearchViewModel.SearchType.STUDIO ->
+                                            R.string.anime_search_studio
                                         AnimeSearchViewModel.SearchType.USER ->
                                             R.string.anime_search_user
                                     }
