@@ -257,7 +257,7 @@ object AnimeUserListScreen {
         }
 
         data class Item(
-            val entry: UserMediaListController.Entry.MediaEntry,
+            val entry: UserMediaListController.MediaEntry,
         ) : Entry {
             val rowEntry = AnimeMediaListRow.Entry(
                 media = entry.media,

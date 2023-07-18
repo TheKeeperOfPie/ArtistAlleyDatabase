@@ -102,6 +102,7 @@ class AuthedAniListApi(
         .build()
 
     val authedUser = MutableStateFlow<AuthedUserQuery.Data.Viewer?>(null)
+    val hasAuthToken = oAuthStore.authToken.map { !it.isNullOrEmpty() }
 
     init {
         scopedApplication.scope.launch(CustomDispatchers.IO) {
@@ -216,12 +217,12 @@ class AuthedAniListApi(
     suspend fun saveMediaListEntry(
         id: String?,
         mediaId: String,
-        type: MediaType?,
         status: MediaListStatus?,
         scoreRaw: Int,
         progress: Int,
-        repeat: Int,
-        priority: Int,
+        progressVolumes: Int?,
+        repeat: Int?,
+        priority: Int?,
         private: Boolean,
         startedAt: LocalDate?,
         completedAt: LocalDate?,
@@ -231,14 +232,12 @@ class AuthedAniListApi(
             id = Optional.presentIfNotNull(id?.toIntOrNull()),
             mediaId = mediaId.toInt(),
             status = Optional.present(status),
-            scoreRaw = Optional.presentIfNotNull(scoreRaw),
-            progress = Optional.presentIfNotNull(progress.takeIf { type == MediaType.ANIME }),
-            progressVolumes = Optional.presentIfNotNull(
-                progress.takeIf { type != MediaType.ANIME }
-            ),
-            repeat = Optional.presentIfNotNull(repeat),
-            priority = Optional.presentIfNotNull(priority),
-            private = Optional.presentIfNotNull(private),
+            scoreRaw = Optional.present(scoreRaw),
+            progress = Optional.present(progress),
+            progressVolumes = Optional.presentIfNotNull(progressVolumes),
+            repeat = Optional.present(repeat),
+            priority = Optional.present(priority),
+            private = Optional.present(private),
             startedAt = Optional.present(startedAt?.let {
                 FuzzyDateInput(
                     year = Optional.present(it.year),
@@ -549,7 +548,7 @@ class AuthedAniListApi(
     suspend fun staffAndCharacters(
         staffId: String,
         sort: List<CharacterSort>,
-        charactersPerPage: Int = 5
+        charactersPerPage: Int = 5,
     ) = query(
         StaffAndCharactersQuery(
             staffId = staffId.toInt(),
@@ -589,7 +588,7 @@ class AuthedAniListApi(
     suspend fun studioMedias(
         studioId: String,
         sort: List<MediaSort>,
-        mediasPerPage: Int = 10
+        mediasPerPage: Int = 10,
     ) = query(
         StudioMediasQuery(
             studioId = studioId.toInt(),

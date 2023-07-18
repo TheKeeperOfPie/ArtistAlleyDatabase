@@ -37,6 +37,8 @@ import androidx.compose.material.icons.filled.AcUnit
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.EnergySavingsLeaf
 import androidx.compose.material.icons.filled.Grass
+import androidx.compose.material.icons.filled.MenuBook
+import androidx.compose.material.icons.filled.Monitor
 import androidx.compose.material.icons.filled.OpenInNew
 import androidx.compose.material.icons.filled.WbSunny
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
@@ -50,16 +52,15 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -80,12 +81,14 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.lerp
 import androidx.core.graphics.ColorUtils
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.anilist.AuthedUserQuery
 import com.anilist.UserSocialActivityQuery
 import com.anilist.fragment.MediaNavigationData
 import com.anilist.fragment.MediaPreview
@@ -100,6 +103,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.activity.ListActivitySmallCa
 import com.thekeeperofpie.artistalleydatabase.anime.activity.TextActivitySmallCard
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaLargeCard
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListQuickEditIconButton
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.UserMediaListController
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
@@ -138,22 +142,24 @@ object AnimeHomeScreen {
         scrollStateSaver: ScrollStateSaver,
         bottomNavigationState: BottomNavigationState,
     ) {
-        var selectedTabIndex by rememberSaveable { mutableIntStateOf(0) }
+        var selectedIsAnime by rememberSaveable { mutableStateOf(true) }
         val colorCalculationState = rememberColorCalculationState(viewModel.colorMap)
-        val animeViewModel = hiltViewModel<AnimeHomeMediaViewModel.Anime>()
-        val mangaViewModel = hiltViewModel<AnimeHomeMediaViewModel.Manga>()
         val selectedItemTracker = remember { SelectedItemTracker() }
 
         // TODO: Handle LoadStates
         val activity = viewModel.activity.collectAsLazyPagingItems()
 
+        val mediaViewModel = if (selectedIsAnime) {
+            hiltViewModel<AnimeHomeMediaViewModel.Anime>()
+        } else {
+            hiltViewModel<AnimeHomeMediaViewModel.Manga>()
+        }
+
         val pullRefreshState = rememberPullRefreshState(
             refreshing = viewModel.loading,
             onRefresh = {
                 viewModel.refresh()
-                when (selectedTabIndex) {
-                    0 -> animeViewModel.refresh()
-                }
+                mediaViewModel.refresh()
             }
         )
 
@@ -175,6 +181,18 @@ object AnimeHomeScreen {
                             }
                         },
                         actions = {
+                            IconButton(onClick = { selectedIsAnime = !selectedIsAnime }) {
+                                Icon(
+                                    imageVector = if (selectedIsAnime) {
+                                        Icons.Filled.MenuBook
+                                    } else {
+                                        Icons.Filled.Monitor
+                                    },
+                                    contentDescription = stringResource(
+                                        R.string.anime_home_media_type_switch_icon_content_description
+                                    ),
+                                )
+                            }
                             IconButton(onClick = navigationCallback::onSeasonalClick) {
                                 Icon(
                                     imageVector = when (AniListUtils.getCurrentSeasonYear().first) {
@@ -199,6 +217,11 @@ object AnimeHomeScreen {
                                 )
                             }
                         },
+                        colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(
+                                lerp(0.dp, 16.dp, scrollBehavior.state.overlappedFraction)
+                            )
+                        )
                     )
                 }
             },
@@ -229,6 +252,7 @@ object AnimeHomeScreen {
                         )
                     )
             ) {
+                val viewer by viewModel.viewer.collectAsState()
                 LazyColumn(
                     state = scrollStateSaver.lazyListState(),
                     contentPadding = PaddingValues(
@@ -237,30 +261,6 @@ object AnimeHomeScreen {
                     ),
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    item("tabs") {
-                        TabRow(selectedTabIndex = selectedTabIndex) {
-                            Tab(selected = selectedTabIndex == 0,
-                                onClick = { selectedTabIndex = 0 },
-                                text = {
-                                    Text(
-                                        text = stringResource(R.string.anime_home_tab_anime),
-                                        maxLines = 1,
-                                    )
-                                }
-                            )
-                            Tab(
-                                selected = selectedTabIndex == 1,
-                                onClick = { selectedTabIndex = 1 },
-                                text = {
-                                    Text(
-                                        text = stringResource(R.string.anime_home_tab_manga),
-                                        maxLines = 1,
-                                    )
-                                }
-                            )
-                        }
-                    }
-
                     newsRow(
                         data = viewModel.newsController.newsDateDescending(),
                         navigationCallback = navigationCallback,
@@ -272,22 +272,14 @@ object AnimeHomeScreen {
                         navigationCallback = navigationCallback,
                     )
 
-                    when (selectedTabIndex) {
-                        0 -> mediaList(
-                            mediaViewModel = animeViewModel,
-                            onClickListEdit = { editViewModel.initialize(it) },
-                            selectedItemTracker = selectedItemTracker,
-                            navigationCallback = navigationCallback,
-                            colorCalculationState = colorCalculationState,
-                        )
-                        1 -> mediaList(
-                            mediaViewModel = mangaViewModel,
-                            onClickListEdit = { editViewModel.initialize(it) },
-                            selectedItemTracker = selectedItemTracker,
-                            navigationCallback = navigationCallback,
-                            colorCalculationState = colorCalculationState,
-                        )
-                    }
+                    mediaList(
+                        mediaViewModel = mediaViewModel,
+                        viewer = viewer,
+                        onClickListEdit = { editViewModel.initialize(it) },
+                        selectedItemTracker = selectedItemTracker,
+                        navigationCallback = navigationCallback,
+                        colorCalculationState = colorCalculationState,
+                    )
                 }
 
                 PullRefreshIndicator(
@@ -303,6 +295,7 @@ object AnimeHomeScreen {
 
     private fun LazyListScope.mediaList(
         mediaViewModel: AnimeHomeMediaViewModel,
+        viewer: AuthedUserQuery.Data.Viewer?,
         onClickListEdit: (MediaPreview) -> Unit,
         selectedItemTracker: SelectedItemTracker,
         colorCalculationState: ColorCalculationState,
@@ -312,20 +305,24 @@ object AnimeHomeScreen {
         if (entry == null) {
             loading("entry-loading")
         } else {
-            currentMediaRow(
+            val loadingShown = currentMediaRow(
                 headerTextRes = mediaViewModel.currentHeaderTextRes,
                 current = entry.current,
+                viewer = viewer,
                 onClickListEdit = onClickListEdit,
                 colorCalculationState = colorCalculationState,
                 navigationCallback = navigationCallback
             )
 
             if (entry.lists == null) {
-                loading("entry-loading")
+                if (!loadingShown) {
+                    loading("entry-loading")
+                }
             } else {
                 entry.lists.forEach {
                     mediaRow(
                         data = it,
+                        viewer = viewer,
                         onClickListEdit = onClickListEdit,
                         onLongClickEntry = mediaViewModel::onLongClickEntry,
                         selectedItemTracker = selectedItemTracker,
@@ -415,13 +412,17 @@ object AnimeHomeScreen {
         }
     }
 
+    /**
+     * @return true if loading shown
+     */
     private fun LazyListScope.currentMediaRow(
         @StringRes headerTextRes: Int,
-        current: List<UserMediaListController.Entry.MediaEntry>?,
+        current: List<UserMediaListController.MediaEntry>?,
+        viewer: AuthedUserQuery.Data.Viewer?,
         onClickListEdit: (MediaPreview) -> Unit,
         colorCalculationState: ColorCalculationState,
         navigationCallback: AnimeNavigator.NavigationCallback,
-    ) {
+    ): Boolean {
         if (current == null || current.isNotEmpty()) {
             rowHeader(
                 titleRes = headerTextRes,
@@ -432,6 +433,7 @@ object AnimeHomeScreen {
 
         if (current == null) {
             loading("$headerTextRes-loading")
+            return true
         } else {
             item("$headerTextRes-current") {
                 val listState = rememberLazyListState()
@@ -456,6 +458,7 @@ object AnimeHomeScreen {
                             progress = item.progress,
                             progressVolumes = item.progressVolumes,
                             ignored = item.ignored,
+                            viewer = viewer,
                             cardOutlineBorder = cardOutlineBorder,
                             width = CURRENT_ROW_IMAGE_WIDTH,
                             height = CURRENT_ROW_IMAGE_HEIGHT,
@@ -471,6 +474,7 @@ object AnimeHomeScreen {
                     }
                 }
             }
+            return false
         }
     }
 
@@ -478,7 +482,9 @@ object AnimeHomeScreen {
         item(key) {
             Box(
                 contentAlignment = Alignment.Center,
-                modifier = Modifier.fillMaxWidth().animateItemPlacement()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .animateItemPlacement()
             ) {
                 CircularProgressIndicator(modifier = Modifier.padding(vertical = 8.dp))
             }
@@ -522,6 +528,7 @@ object AnimeHomeScreen {
 
     private fun LazyListScope.mediaRow(
         data: AnimeHomeDataEntry.RowData,
+        viewer: AuthedUserQuery.Data.Viewer?,
         onClickListEdit: (MediaPreview) -> Unit,
         onLongClickEntry: (MediaNavigationData) -> Unit,
         selectedItemTracker: SelectedItemTracker,
@@ -550,8 +557,7 @@ object AnimeHomeScreen {
                 val entry = entries[it]
                 AnimeMediaLargeCard(
                     screenKey = SCREEN_KEY,
-                    // TODO: Move entry wrapping elsewhere and abstract
-                    entry = AnimeMediaLargeCard.Entry(entry.media, entry.ignored),
+                    entry = entry,
                     onLongClick = { onLongClickEntry(entry.media) },
                     colorCalculationState = colorCalculationState,
                     navigationCallback = navigationCallback,
@@ -593,6 +599,7 @@ object AnimeHomeScreen {
                         progress = item.progress,
                         progressVolumes = item.progressVolumes,
                         ignored = item.ignored,
+                        viewer = viewer,
                         cardOutlineBorder = cardOutlineBorder,
                         width = MEDIA_ROW_IMAGE_WIDTH,
                         height = MEDIA_ROW_IMAGE_HEIGHT,
@@ -627,6 +634,7 @@ object AnimeHomeScreen {
         progress: Int?,
         progressVolumes: Int?,
         ignored: Boolean,
+        viewer: AuthedUserQuery.Data.Viewer?,
         cardOutlineBorder: BorderStroke,
         width: Dp,
         height: Dp,
@@ -736,15 +744,18 @@ object AnimeHomeScreen {
                             .animateContentSize()
                     )
 
-                    MediaListQuickEditIconButton(
-                        mediaType = media.type,
-                        listStatus = listStatus,
-                        progress = progress,
-                        progressVolumes = progressVolumes,
-                        maxProgress = media.episodes ?: media.volumes,
-                        onClick = { onClickListEdit(media) },
-                        modifier = Modifier.align(Alignment.BottomStart)
-                    )
+                    if (viewer != null) {
+                        MediaListQuickEditIconButton(
+                            mediaType = media.type,
+                            listStatus = listStatus,
+                            progress = progress,
+                            progressVolumes = progressVolumes,
+                            maxProgress = MediaUtils.maxProgress(media),
+                            maxProgressVolumes = media.volumes,
+                            onClick = { onClickListEdit(media) },
+                            modifier = Modifier.align(Alignment.BottomStart)
+                        )
+                    }
                 }
             }
         }

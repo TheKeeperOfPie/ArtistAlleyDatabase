@@ -2,6 +2,7 @@
 
 package com.thekeeperofpie.artistalleydatabase.anime.media
 
+import android.os.SystemClock
 import com.anilist.UserMediaListQuery
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
@@ -14,6 +15,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
@@ -28,38 +30,36 @@ import kotlinx.coroutines.flow.shareIn
  * implemented.
  */
 class UserMediaListController(
-    scopedApplication: ScopedApplication,
-    aniListApi: AuthedAniListApi,
-    ignoreList: AnimeMediaIgnoreList,
-    statusController: MediaListStatusController,
-    settings: AnimeSettings,
+    private val scopedApplication: ScopedApplication,
+    private val aniListApi: AuthedAniListApi,
+    private val ignoreList: AnimeMediaIgnoreList,
+    private val statusController: MediaListStatusController,
+    private val settings: AnimeSettings,
 ) {
-    val refresh = MutableStateFlow(-1L)
+    private val refreshAnime = MutableStateFlow(-1L)
+    private val refreshManga = MutableStateFlow(-1L)
 
-    var data: Flow<Entry?>
+    var anime: Flow<Result<List<ListEntry>>?>
+        private set
+
+    var manga: Flow<Result<List<ListEntry>>?>
         private set
 
     init {
-        data = combine(aniListApi.authedUser, refresh, ::Pair)
-            .mapLatest { (viewer, _) ->
-                if (viewer == null) {
-                    Entry(anime = null, manga = null)
-                } else {
-                    val anime = try {
-                        aniListApi.userMediaList(viewer.id, MediaType.ANIME)
-                            .let { it.lists?.filterNotNull()?.map(Entry::ListEntry).orEmpty() }
-                            .let(Result.Companion::success)
-                    } catch (t: Throwable) {
-                        Result.failure(t)
-                    }
-                    val manga = try {
-                        aniListApi.userMediaList(viewer.id, MediaType.MANGA)
-                            .let { it.lists?.filterNotNull()?.map(Entry::ListEntry).orEmpty() }
-                            .let(Result.Companion::success)
-                    } catch (t: Throwable) {
-                        Result.failure(t)
-                    }
-                    Entry(anime = anime, manga = manga)
+        anime = loadMedia(refreshAnime, MediaType.ANIME)
+        manga = loadMedia(refreshManga, MediaType.MANGA)
+    }
+
+    private fun loadMedia(refresh: StateFlow<Long>, mediaType: MediaType) =
+        combine(aniListApi.authedUser, refresh, ::Pair)
+            .mapLatest { (viewer) ->
+                if (viewer == null) return@mapLatest null
+                try {
+                    aniListApi.userMediaList(viewer.id, mediaType)
+                        .let { it.lists?.filterNotNull()?.map(UserMediaListController::ListEntry).orEmpty() }
+                        .let(Result.Companion::success)
+                } catch (t: Throwable) {
+                    Result.failure(t)
                 }
             }
             .flatMapLatest { entry ->
@@ -69,34 +69,24 @@ class UserMediaListController(
                     settings.showIgnored,
                     ignoreList.updates,
                 ) { statuses, showAdult, showIgnored, ignoredIds ->
-                    entry.copy(
-                        anime = applyStatus(
-                            statuses = statuses,
-                            showAdult = showAdult,
-                            showIgnored = showIgnored,
-                            ignoredIds = ignoredIds,
-                            result = entry.anime
-                        ),
-                        manga = applyStatus(
-                            statuses = statuses,
-                            showAdult = showAdult,
-                            showIgnored = showIgnored,
-                            ignoredIds = ignoredIds,
-                            result = entry.manga
-                        ),
+                    applyStatus(
+                        statuses = statuses,
+                        showAdult = showAdult,
+                        showIgnored = showIgnored,
+                        ignoredIds = ignoredIds,
+                        result = entry
                     )
                 }
             }
             .flowOn(CustomDispatchers.IO)
             .shareIn(scopedApplication.scope, SharingStarted.Lazily, replay = 1)
-    }
 
     private fun applyStatus(
         statuses: Map<String, MediaListStatusController.Update>,
         showAdult: Boolean,
         showIgnored: Boolean,
         ignoredIds: Set<Int>,
-        result: Result<List<Entry.ListEntry>>?
+        result: Result<List<ListEntry>>?,
     ) = if (result?.isSuccess != true) result else {
         result.getOrThrow()
             .map {
@@ -110,7 +100,7 @@ class UserMediaListController(
                         transform = { it },
                         media = it.media,
                         copy = { mediaListStatus, progress, progressVolumes, ignored ->
-                            Entry.MediaEntry(
+                            MediaEntry(
                                 media = media,
                                 mediaListStatus = mediaListStatus,
                                 progress = progress,
@@ -124,30 +114,33 @@ class UserMediaListController(
             .let(Result.Companion::success)
     }
 
-    data class Entry(
-        val anime: Result<List<ListEntry>>?,
-        val manga: Result<List<ListEntry>>?,
-    ) {
-        data class ListEntry(
-            val name: String,
-            val status: MediaListStatus?,
-            val entries: List<MediaEntry>,
-        ) {
-            constructor(list: UserMediaListQuery.Data.MediaListCollection.List) : this(
-                name = list.name.orEmpty(),
-                status = list.status,
-                entries = list.entries?.filterNotNull()
-                    ?.map { MediaEntry(it.media, ignored = false) }
-                    .orEmpty()
-            )
+    fun refresh(mediaType: MediaType) {
+        if (mediaType == MediaType.ANIME) {
+            refreshAnime.value = SystemClock.uptimeMillis()
+        } else {
+            refreshManga.value = SystemClock.uptimeMillis()
         }
-
-        data class MediaEntry(
-            val media: UserMediaListQuery.Data.MediaListCollection.List.Entry.Media,
-            override val mediaListStatus: MediaListStatus? = media.mediaListEntry?.status,
-            override val progress: Int? = null,
-            override val progressVolumes: Int? = null,
-            override val ignored: Boolean,
-        ) : MediaStatusAware
     }
+
+    data class ListEntry(
+        val name: String,
+        val status: MediaListStatus?,
+        val entries: List<MediaEntry>,
+    ) {
+        constructor(list: UserMediaListQuery.Data.MediaListCollection.List) : this(
+            name = list.name.orEmpty(),
+            status = list.status,
+            entries = list.entries?.filterNotNull()
+                ?.map { MediaEntry(it.media, ignored = false) }
+                .orEmpty()
+        )
+    }
+
+    data class MediaEntry(
+        val media: UserMediaListQuery.Data.MediaListCollection.List.Entry.Media,
+        override val mediaListStatus: MediaListStatus? = media.mediaListEntry?.status,
+        override val progress: Int? = null,
+        override val progressVolumes: Int? = null,
+        override val ignored: Boolean,
+    ) : MediaStatusAware
 }

@@ -213,7 +213,8 @@ object AnimeMediaListRow {
                         listStatus = entry.mediaListStatus,
                         progress = entry.progress,
                         progressVolumes = entry.progressVolumes,
-                        maxProgress = entry.media.episodes ?: entry.media.volumes,
+                        maxProgress = MediaUtils.maxProgress(entry.media),
+                        maxProgressVolumes = entry.media.volumes,
                         onClick = { onClickListEdit(entry) },
                         modifier = Modifier.align(Alignment.BottomStart)
                     )

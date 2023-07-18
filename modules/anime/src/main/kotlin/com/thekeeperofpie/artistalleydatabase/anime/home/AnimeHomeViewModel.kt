@@ -36,6 +36,7 @@ class AnimeHomeViewModel @Inject constructor(
     private val aniListApi: AuthedAniListApi,
 ) : ViewModel() {
 
+    val viewer = aniListApi.authedUser
     var loading by mutableStateOf(false)
         private set
     val colorMap = mutableStateMapOf<String, Pair<Color, Color>>()

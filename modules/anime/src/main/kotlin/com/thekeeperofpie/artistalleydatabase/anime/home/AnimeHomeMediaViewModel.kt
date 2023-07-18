@@ -12,6 +12,7 @@ import androidx.lifecycle.viewModelScope
 import com.anilist.fragment.MediaNavigationData
 import com.anilist.fragment.MediaPreviewWithDescription
 import com.anilist.type.MediaListStatus
+import com.anilist.type.MediaType
 import com.hoc081098.flowext.combine
 import com.hoc081098.flowext.startWith
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
@@ -26,10 +27,12 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaFiltering
 import com.thekeeperofpie.artistalleydatabase.anime.seasonal.SeasonalViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -38,9 +41,10 @@ abstract class AnimeHomeMediaViewModel(
     protected val aniListApi: AuthedAniListApi,
     protected val settings: AnimeSettings,
     private val ignoreList: AnimeMediaIgnoreList,
-    private val userMediaListController: UserMediaListController,
+    protected val userMediaListController: UserMediaListController,
     private val statusController: MediaListStatusController,
     @StringRes val currentHeaderTextRes: Int,
+    private val mediaType: MediaType,
 ) : ViewModel() {
 
     var entry by mutableStateOf<AnimeHomeDataEntry?>(null)
@@ -56,14 +60,18 @@ abstract class AnimeHomeMediaViewModel(
                 ignoreList.updates,
                 settings.showAdult,
                 settings.showIgnored,
-                userMediaListController.data
+                current()
                     .mapLatest {
-                        it?.let { current(it) }?.getOrNull()
+                        it?.getOrNull()
                             ?.find { it.status == MediaListStatus.CURRENT }
                             ?.entries
                             ?: emptyList()
                     }
-                    .startWith(item = null),
+                    .startWith(
+                        // If there's no user logged in, emit an empty list to hide the section
+                        aniListApi.hasAuthToken.take(1)
+                            .mapLatest { if (it) null else emptyList() }
+                    ),
             ) { rows, statuses, ignoredIds, showAdult, showIgnored, current ->
                 AnimeHomeDataEntry(
                     lists = rows?.map {
@@ -105,7 +113,7 @@ abstract class AnimeHomeMediaViewModel(
                             transform = { it },
                             media = it.media,
                             copy = { mediaListStatus, progress, progressVolumes, ignored ->
-                                UserMediaListController.Entry.MediaEntry(
+                                UserMediaListController.MediaEntry(
                                     media = media,
                                     mediaListStatus = mediaListStatus,
                                     progress = progress,
@@ -134,15 +142,13 @@ abstract class AnimeHomeMediaViewModel(
 
     protected abstract suspend fun rows(): List<RowInput>
 
-    protected abstract suspend fun current(
-        entry: UserMediaListController.Entry,
-    ): Result<List<UserMediaListController.Entry.ListEntry>>?
+    protected abstract suspend fun current(): Flow<Result<List<UserMediaListController.ListEntry>>?>
 
     fun onLongClickEntry(media: MediaNavigationData) = ignoreList.toggle(media.id.toString())
 
     fun refresh() {
         val refresh = SystemClock.uptimeMillis()
-        userMediaListController.refresh.value = refresh
+        userMediaListController.refresh(mediaType)
         refreshUptimeMillis.value = refresh
     }
 
@@ -160,9 +166,10 @@ abstract class AnimeHomeMediaViewModel(
         userMediaListController = userMediaListController,
         statusController = statusController,
         currentHeaderTextRes = R.string.anime_home_anime_current_header,
+        mediaType = MediaType.ANIME,
     ) {
 
-        override suspend fun current(entry: UserMediaListController.Entry) = entry.anime
+        override suspend fun current() = userMediaListController.anime
 
         override suspend fun rows(): List<RowInput> {
             val lists = aniListApi.homeAnime()
@@ -214,9 +221,10 @@ abstract class AnimeHomeMediaViewModel(
         userMediaListController = userMediaListController,
         statusController = statusController,
         currentHeaderTextRes = R.string.anime_home_manga_current_header,
+        mediaType = MediaType.MANGA,
     ) {
 
-        override suspend fun current(entry: UserMediaListController.Entry) = entry.manga
+        override suspend fun current() = userMediaListController.manga
 
         override suspend fun rows(): List<RowInput> {
             val lists = aniListApi.homeManga()

@@ -36,6 +36,7 @@ fragment MediaPreview on Media {
     averageScore
     episodes
     volumes
+    chapters
     format
     genres
     isAdult
@@ -144,6 +145,7 @@ fragment MediaNavigationData on Media {
 query MediaDetails($mediaId: Int!) {
     Media(id: $mediaId) {
         ...MediaHeaderData
+        ...MediaPreviewWithDescription
         bannerImage
         coverImage {
             color
@@ -163,7 +165,6 @@ query MediaDetails($mediaId: Int!) {
             }
         }
         isAdult
-        description
         averageScore
         meanScore
         countryOfOrigin
@@ -597,6 +598,7 @@ query MediaListEntry($id: Int!) {
         type
         episodes
         volumes
+        chapters
         status
         nextAiringEpisode {
             episode

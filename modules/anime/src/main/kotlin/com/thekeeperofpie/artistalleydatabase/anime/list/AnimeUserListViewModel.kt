@@ -104,20 +104,17 @@ class AnimeUserListViewModel @Inject constructor(
 
         viewModelScope.launch(CustomDispatchers.Main) {
             val response = if (userId == null) {
-                userMediaListController.data
-                    .map {
-                        when (mediaType) {
-                            MediaType.MANGA -> it?.manga!!.getOrThrow()
-                            MediaType.ANIME,
-                            MediaType.UNKNOWN__,
-                            -> it?.anime!!.getOrThrow()
-                        }
-                    }
+                when (mediaType) {
+                    MediaType.MANGA -> userMediaListController.manga
+                    MediaType.ANIME,
+                    MediaType.UNKNOWN__,
+                    -> userMediaListController.anime
+                }.mapLatest { it!!.getOrThrow() }
             } else {
                 refreshUptimeMillis.mapLatest {
                     aniListApi.userMediaList(userId = userId.toInt(), type = mediaType)
                         .let {
-                            it.lists?.filterNotNull()?.map(UserMediaListController.Entry::ListEntry)
+                            it.lists?.filterNotNull()?.map(UserMediaListController::ListEntry)
                                 .orEmpty()
                         }
                 }
@@ -168,7 +165,7 @@ class AnimeUserListViewModel @Inject constructor(
     // TODO: Refresh indicator doesn't last duration of refresh
     fun onRefresh() {
         if (userId == null) {
-            userMediaListController.refresh.value = SystemClock.uptimeMillis()
+            userMediaListController.refresh(mediaType)
         } else {
             refreshUptimeMillis.value = SystemClock.uptimeMillis()
         }
@@ -187,7 +184,7 @@ class AnimeUserListViewModel @Inject constructor(
     private fun toFilteredEntries(
         query: String,
         filterParams: MediaSortFilterController.FilterParams<MediaListSortOption>,
-        list: UserMediaListController.Entry.ListEntry,
+        list: UserMediaListController.ListEntry,
     ): List<AnimeUserListScreen.Entry> {
         val entries = list.entries
 
@@ -211,7 +208,7 @@ class AnimeUserListViewModel @Inject constructor(
         val sortOption = filterParams.sort
             .find { it.state == FilterIncludeExcludeState.INCLUDE }?.value
         if (sortOption != null) {
-            val baseComparator: Comparator<UserMediaListController.Entry.MediaEntry> =
+            val baseComparator: Comparator<UserMediaListController.MediaEntry> =
                 when (sortOption) {
                     MediaListSortOption.SCORE -> compareBy { it.media.averageScore }
                     MediaListSortOption.STATUS -> compareBy { it.media.status }
@@ -222,13 +219,13 @@ class AnimeUserListViewModel @Inject constructor(
                     }
                     MediaListSortOption.PRIORITY -> compareBy { it.media.mediaListEntry?.priority }
                     MediaListSortOption.STARTED_ON ->
-                        compareBy<UserMediaListController.Entry.MediaEntry, Int?>(nullsLast()) {
+                        compareBy<UserMediaListController.MediaEntry, Int?>(nullsLast()) {
                             it.media.startDate?.year
                         }
                             .thenComparing(compareBy(nullsLast()) { it.media.startDate?.month })
                             .thenComparing(compareBy(nullsLast()) { it.media.startDate?.day })
                     MediaListSortOption.FINISHED_ON ->
-                        compareBy<UserMediaListController.Entry.MediaEntry, Int?>(nullsLast()) {
+                        compareBy<UserMediaListController.MediaEntry, Int?>(nullsLast()) {
                             it.media.endDate?.year
                         }
                             .thenComparing(compareBy(nullsLast()) { it.media.endDate?.month })
@@ -261,7 +258,7 @@ class AnimeUserListViewModel @Inject constructor(
     }
 
     private data class FilterParams(
-        val response: List<UserMediaListController.Entry.ListEntry>,
+        val response: List<UserMediaListController.ListEntry>,
         val query: String,
         val filterParams: MediaSortFilterController.FilterParams<MediaListSortOption>,
     )

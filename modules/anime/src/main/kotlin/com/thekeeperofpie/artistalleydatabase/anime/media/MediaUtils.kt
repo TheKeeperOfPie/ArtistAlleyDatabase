@@ -19,6 +19,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import com.anilist.MediaDetailsQuery
+import com.anilist.MediaListEntryQuery
 import com.anilist.fragment.MediaDetailsListEntry
 import com.anilist.fragment.MediaPreview
 import com.anilist.type.MediaFormat
@@ -71,7 +72,7 @@ object MediaUtils {
     fun tagLeadingIcon(
         isAdult: Boolean? = false,
         isGeneralSpoiler: Boolean? = false,
-        isMediaSpoiler: Boolean? = null
+        isMediaSpoiler: Boolean? = null,
     ) = when {
         isAdult ?: false -> Icons.TwoTone._18UpRating
         (isGeneralSpoiler ?: false) || (isMediaSpoiler ?: false) ->
@@ -82,7 +83,7 @@ object MediaUtils {
     fun tagLeadingIconContentDescription(
         isAdult: Boolean? = false,
         isGeneralSpoiler: Boolean? = false,
-        isMediaSpoiler: Boolean? = null
+        isMediaSpoiler: Boolean? = null,
     ) = when {
         isAdult ?: false -> R.string.anime_media_tag_is_adult
         (isGeneralSpoiler ?: false) || (isMediaSpoiler
@@ -116,14 +117,16 @@ object MediaUtils {
         null -> R.string.anime_media_list_status_none
     }
 
-    fun scoreFormatToText(score: Double, format: ScoreFormat) = when (format) {
-        ScoreFormat.POINT_10_DECIMAL -> String.format("%.1f", score / 10f)
-        ScoreFormat.POINT_10 -> (score.roundToInt() / 10).toString()
-        ScoreFormat.POINT_100,
-        ScoreFormat.POINT_5,
-        ScoreFormat.POINT_3,
-        ScoreFormat.UNKNOWN__ -> score.roundToInt().toString()
-    }
+    fun scoreFormatToText(score: Double, format: ScoreFormat) =
+        if (score == 0.0) "" else when (format) {
+            ScoreFormat.POINT_10_DECIMAL -> String.format("%.1f", score / 10f)
+            ScoreFormat.POINT_10 -> (score.roundToInt() / 10).toString()
+            ScoreFormat.POINT_100,
+            ScoreFormat.POINT_5,
+            ScoreFormat.POINT_3,
+            ScoreFormat.UNKNOWN__,
+            -> score.roundToInt().toString()
+        }
 
     @Composable
     fun MediaListStatus?.toStatusText(
@@ -243,7 +246,8 @@ object MediaUtils {
         MediaFormat.NOVEL -> R.string.anime_media_format_novel
         MediaFormat.ONE_SHOT -> R.string.anime_media_format_one_shot
         MediaFormat.UNKNOWN__,
-        null -> R.string.anime_media_format_unknown
+        null,
+        -> R.string.anime_media_format_unknown
     }
 
     fun MediaFormat?.toColor() = when (this) {
@@ -285,7 +289,8 @@ object MediaUtils {
         MediaSource.VISUAL_NOVEL -> R.string.anime_media_filter_source_visual_novel
         MediaSource.WEB_NOVEL -> R.string.anime_media_filter_source_web_novel
         MediaSource.UNKNOWN__,
-        null -> R.string.anime_media_filter_source_unknown
+        null,
+        -> R.string.anime_media_filter_source_unknown
     }
 
     fun MediaRelation?.toTextRes() = when (this) {
@@ -303,7 +308,8 @@ object MediaUtils {
         MediaRelation.COMPILATION -> R.string.anime_media_relation_compilation
         MediaRelation.CONTAINS -> R.string.anime_media_relation_contains
         MediaRelation.UNKNOWN__,
-        null -> R.string.anime_media_relation_unknown
+        null,
+        -> R.string.anime_media_relation_unknown
     }
 
     @Composable
@@ -326,7 +332,7 @@ object MediaUtils {
         context: Context,
         year: Int?,
         month: Int?,
-        dayOfMonth: Int?
+        dayOfMonth: Int?,
     ): String? = when {
         year != null && month != null && dayOfMonth != null -> DateUtils.formatDateTime(
             context,
@@ -537,7 +543,7 @@ object MediaUtils {
                     filteredEntries
                 } else {
                     fun List<MediaEntryType>.filterStartDate(
-                        startDate: LocalDate
+                        startDate: LocalDate,
                     ) = filter {
                         val mediaStartDate = media(it).startDate
                         val mediaYear = mediaStartDate?.year
@@ -570,7 +576,7 @@ object MediaUtils {
                     }
 
                     fun List<MediaEntryType>.filterEndDate(
-                        endDate: LocalDate
+                        endDate: LocalDate,
                     ) = filter {
                         val mediaStartDate = media(it).startDate
                         val mediaYear = mediaStartDate?.year
@@ -651,5 +657,19 @@ object MediaUtils {
         )
 
         return filteredEntries
+    }
+
+    fun maxProgress(media: MediaPreview) = if (media.type == MediaType.MANGA) {
+        media.chapters
+    } else {
+        media.episodes ?: media.nextAiringEpisode
+            ?.episode?.let { (it - 1).coerceAtLeast(1) }
+    }
+
+    fun maxProgress(media: MediaListEntryQuery.Data.Media) = if (media.type == MediaType.MANGA) {
+        media.chapters
+    } else {
+        media.episodes ?: media.nextAiringEpisode
+            ?.episode?.let { (it - 1).coerceAtLeast(1) }
     }
 }

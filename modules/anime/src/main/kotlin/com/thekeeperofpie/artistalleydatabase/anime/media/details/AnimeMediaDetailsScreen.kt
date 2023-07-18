@@ -297,15 +297,15 @@ object AnimeMediaDetailsScreen {
                                 contentColor = contentColor,
                                 onClick = {
                                     if (showFloatingActionButton) {
-                                        val maxProgress = media.episodes ?: media.volumes ?: media.nextAiringEpisode
-                                            ?.episode?.let { (it - 1).coerceAtLeast(1) }
+
                                         editViewModel.initialize(
                                             mediaId = media.id.toString(),
                                             media = null,
                                             mediaListEntry = listStatus?.entry,
                                             mediaType = media.type,
                                             status = listStatus?.entry?.status,
-                                            maxProgress = maxProgress,
+                                            maxProgress = MediaUtils.maxProgress(media),
+                                            maxProgressVolumes = media.volumes,
                                         )
                                         editViewModel.editData.showing = true
                                     }

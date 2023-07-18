@@ -352,8 +352,11 @@
     <string name="anime_media_edit_status_label">Status</string>
     <string name="anime_media_edit_status_dropdown_content_description">Status dropdown</string>
     <string name="anime_media_edit_progress_label">Progress</string>
-    <string name="anime_media_edit_progress_decrement_content_description">Decrement progress</string>
-    <string name="anime_media_edit_progress_increment_content_description">Increment progress</string>
+    <string name="anime_media_edit_volumes_label">Volumes</string>
+    <string name="anime_media_edit_chapters_label">Chapters</string>
+    <string name="anime_media_edit_episodes_label">Episodes</string>
+    <string name="anime_media_edit_decrement_content_description">Decrement</string>
+    <string name="anime_media_edit_increment_content_description">Increment</string>
     <string name="anime_media_edit_score_label">Score</string>
     <string name="anime_media_edit_date_label">Dates</string>
     <string name="anime_media_edit_repeat_label">Repeating</string>
@@ -382,16 +385,16 @@
     <string name="anime_media_edit_priority_increment_content_description">Increment priority</string>
 
     <string name="anime_media_edit_private_label">Private</string>
-    <string name="anime_media_edit_private_dropdown_content_description">Private dropdown</string>
-    <string name="anime_media_edit_private_true">True</string>
-    <string name="anime_media_edit_private_false">False</string>
 
-    <string name="anime_media_edit_created_at">Entry created: %1$s</string>
-    <string name="anime_media_edit_updated_at">Last updated: %1$s</string>
+    <string name="anime_media_edit_created_at">Created: %1$s</string>
+    <string name="anime_media_edit_updated_at">Updated: %1$s</string>
     <string name="anime_media_edit_error_invalid_status">Must set status</string>
     <string name="anime_media_edit_confirm_close_title">Unsaved changes</string>
     <string name="anime_media_edit_confirm_close_text">Do you want to save changes?</string>
     <string name="anime_media_edit_confirm_delete_title">Delete entry?</string>
+    <string name="anime_media_edit_confirm_delete_exit_button">Exit</string>
+    <string name="anime_media_edit_confirm_delete_save_button">Save</string>
+    <string name="anime_media_edit_clear_content_description">Clear</string>
 
     <string name="anime_media_current_progress">%1$s/%2$s</string>
     <string name="anime_media_current_progress_unknown_max">%1$s/?</string>
@@ -538,6 +541,7 @@
     <string name="anime_home_row_view_all_content_description">View all</string>
     <string name="anime_home_anime_current_header">WATCHING</string>
     <string name="anime_home_manga_current_header">READING</string>
+    <string name="anime_home_media_type_switch_icon_content_description">Switch media type</string>
 
     <string name="anime_airing_schedule_label">Airing schedule</string>
     <string name="anime_airing_schedule_icon_content_description">Airing schedule</string>

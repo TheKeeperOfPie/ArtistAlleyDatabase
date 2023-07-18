@@ -32,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
@@ -44,7 +45,9 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import coil.size.Dimension
+import com.anilist.AuthedUserQuery
 import com.anilist.fragment.MediaNavigationData
+import com.anilist.fragment.MediaPreview
 import com.anilist.fragment.MediaPreviewWithDescription
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.material.placeholder
@@ -82,7 +85,7 @@ object AnimeMediaLargeCard {
         ) {
             Box(
                 modifier = Modifier.combinedClickable(
-                    enabled = entry == null,
+                    enabled = entry != null,
                     onClick = {
                         if (entry != null) navigationCallback.onMediaClick(entry.media)
                     },
@@ -136,6 +139,7 @@ object AnimeMediaLargeCard {
                     entry?.nextAiringEpisode?.let { MediaNextAiringSection(it) }
                     val (containerColor, textColor) =
                         colorCalculationState.getColors(entry?.id?.valueId)
+
                     MediaTagRow(
                         tags = entry?.tags.orEmpty(),
                         onTagClick = navigationCallback::onTagClick,
@@ -245,23 +249,28 @@ object AnimeMediaLargeCard {
         )
     }
 
-    open class Entry(
-        val media: MediaPreviewWithDescription,
-        ignored: Boolean = false,
-    ) {
-        val id = EntryId("anime_media", media?.id.toString())
-        val image = media?.coverImage?.extraLarge
-        val imageBanner = media?.bannerImage
-        val color = media?.coverImage?.color?.let(ComposeColorUtils::hexToColor)
-        val title = media?.title?.userPreferred
+    interface Entry : MediaStatusAware {
+        val media: MediaPreviewWithDescription
+        val id: EntryId
+            get() = EntryId("anime_media", media.id.toString())
+        val image: String?
+            get() = media.coverImage?.extraLarge
+        val imageBanner: String?
+            get() = media.bannerImage
+        val color: Color?
+            get() = media.coverImage?.color?.let(ComposeColorUtils::hexToColor)
+        val title: String?
+            get() = media.title?.userPreferred
 
-        val rating = media?.averageScore
-        val popularity = media?.popularity
+        val rating: Int?
+            get() = media.averageScore
+        val popularity: Int?
+            get() = media.popularity
 
-        val nextAiringEpisode = media?.nextAiringEpisode
+        val nextAiringEpisode: MediaPreviewWithDescription.NextAiringEpisode?
+            get() = media.nextAiringEpisode
 
-        val tags = media?.tags?.filterNotNull()?.map(::AnimeMediaTagEntry).orEmpty()
-
-        var ignored by mutableStateOf(ignored)
+        val tags: List<AnimeMediaTagEntry>
+            get() = media.tags?.filterNotNull()?.map(::AnimeMediaTagEntry).orEmpty()
     }
 }

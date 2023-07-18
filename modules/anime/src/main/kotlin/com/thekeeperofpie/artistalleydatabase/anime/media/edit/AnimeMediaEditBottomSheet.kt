@@ -27,6 +27,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircleOutline
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.ImageNotSupported
 import androidx.compose.material.icons.filled.RemoveCircleOutline
 import androidx.compose.material.icons.filled.SentimentNeutral
@@ -34,6 +35,7 @@ import androidx.compose.material.icons.filled.SentimentVeryDissatisfied
 import androidx.compose.material.icons.filled.SentimentVerySatisfied
 import androidx.compose.material.icons.filled.StarRate
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
@@ -123,7 +125,8 @@ object AnimeMediaEditBottomSheet {
                 if (it == true) {
                     Box(modifier = Modifier.fillMaxWidth()) {
                         CircularProgressIndicator(
-                            modifier = Modifier.align(Alignment.Center)
+                            modifier = Modifier
+                                .align(Alignment.Center)
                                 .padding(32.dp)
                         )
                     }
@@ -216,7 +219,7 @@ object AnimeMediaEditBottomSheet {
                         viewModel.editData.showConfirmClose = false
                         viewModel.onClickSave()
                     }) {
-                        Text(stringResource(UtilsStringR.yes))
+                        Text(stringResource(R.string.anime_media_edit_confirm_delete_save_button))
                     }
                 },
                 dismissButton = {
@@ -226,7 +229,7 @@ object AnimeMediaEditBottomSheet {
                         viewModel.dismissRequests.tryEmit(System.currentTimeMillis())
                         onDismiss()
                     }) {
-                        Text(stringResource(UtilsStringR.no))
+                        Text(stringResource(R.string.anime_media_edit_confirm_delete_exit_button))
                     }
                 },
             )
@@ -244,7 +247,7 @@ object AnimeMediaEditBottomSheet {
     ) {
         var startEndDateShown by remember { mutableStateOf<Boolean?>(null) }
         val media = initialParams?.media
-        if (media != null) {
+        if (media != null && viewModel.editData.showing) {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalAlignment = Alignment.CenterVertically,
@@ -340,128 +343,37 @@ object AnimeMediaEditBottomSheet {
             modifier = Modifier.padding(horizontal = 16.dp),
         )
 
-        TwoColumn(
-            labelOneRes = R.string.anime_media_edit_progress_label,
-            columnOneContent = {
-                val progress = viewModel.editData.progress
-                TextField(
-                    value = progress,
-                    onValueChange = { viewModel.editData.progress = it },
-                    singleLine = true,
-                    textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
-                    keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
-                    leadingIcon = {
-                        val visible = progress.isNotBlank()
-                                && progress.toIntOrNull()?.let { it > 0 } == true
-                        val alpha by animateFloatAsState(
-                            if (visible) 1f else 0f,
-                            label = "Progress decrement alpha",
-                        )
-                        IconButton(
-                            enabled = visible,
-                            onClick = {
-                                progress.toIntOrNull()?.let {
-                                    viewModel.editData.progress = (it - 1).toString()
-                                }
-                            },
-                            modifier = Modifier.alpha(alpha)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.RemoveCircleOutline,
-                                contentDescription = stringResource(
-                                    R.string.anime_media_edit_progress_decrement_content_description
-                                ),
-                            )
-                        }
-                    },
-                    trailingIcon = {
-                        val visible = progress.isBlank()
-                                || progress.toIntOrNull()
-                            ?.let { it < (initialParams?.maxProgress ?: 1) } == true
-                        val alpha by animateFloatAsState(
-                            if (visible) 1f else 0f,
-                            label = "Progress increment alpha",
-                        )
-                        IconButton(
-                            enabled = visible,
-                            onClick = {
-                                if (progress.isBlank()) {
-                                    viewModel.editData.progress = "1"
-                                } else {
-                                    progress.toIntOrNull()?.let {
-                                        viewModel.editData.progress = (it + 1).toString()
-                                    }
-                                }
-                            },
-                            modifier = Modifier.alpha(alpha)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.AddCircleOutline,
-                                contentDescription = stringResource(
-                                    R.string.anime_media_edit_progress_increment_content_description
-                                ),
-                            )
-                        }
-                    },
-                    modifier = Modifier.fillMaxSize(),
-                )
-            },
-            labelTwoRes = R.string.anime_media_edit_repeat_label,
-            columnTwoContent = {
-                val repeat = viewModel.editData.repeat
-                TextField(
-                    value = repeat,
-                    onValueChange = { viewModel.editData.repeat = it },
-                    singleLine = true,
-                    textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
-                    keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
-                    leadingIcon = {
-                        val visible = repeat.isNotBlank()
-                                && repeat.toIntOrNull()?.let { it > 0 } == true
-                        val alpha by animateFloatAsState(
-                            if (visible) 1f else 0f,
-                            label = "Repeat decrement alpha",
-                        )
-                        IconButton(
-                            enabled = visible,
-                            onClick = {
-                                repeat.toIntOrNull()?.let {
-                                    viewModel.editData.repeat = (it - 1).toString()
-                                }
-                            },
-                            modifier = Modifier.alpha(alpha),
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.RemoveCircleOutline,
-                                contentDescription = stringResource(
-                                    R.string.anime_media_edit_repeat_decrement_content_description
-                                ),
-                            )
-                        }
-                    },
-                    trailingIcon = {
-                        IconButton(
-                            onClick = {
-                                if (repeat.isBlank()) {
-                                    viewModel.editData.repeat = "1"
-                                } else {
-                                    repeat.toIntOrNull()?.let {
-                                        viewModel.editData.repeat = (it + 1).toString()
-                                    }
-                                }
-                            }) {
-                            Icon(
-                                imageVector = Icons.Filled.AddCircleOutline,
-                                contentDescription = stringResource(
-                                    R.string.anime_media_edit_repeat_increment_content_description
-                                ),
-                            )
-                        }
-                    },
-                    modifier = Modifier.fillMaxSize(),
-                )
-            }
-        )
+        if (initialParams?.mediaType == MediaType.MANGA) {
+            TwoColumn(
+                labelOneRes = R.string.anime_media_edit_volumes_label,
+                columnOneContent = {
+                    ProgressSection(
+                        progress = viewModel.editData.progressVolumes,
+                        progressMax = initialParams.maxProgressVolumes,
+                        onProgressChange = { viewModel.editData.progressVolumes = it },
+                    )
+                },
+                labelTwoRes = R.string.anime_media_edit_chapters_label,
+                columnTwoContent = {
+                    ProgressSection(
+                        progress = viewModel.editData.progress,
+                        progressMax = initialParams.maxProgress,
+                        onProgressChange = { viewModel.editData.progress = it },
+                    )
+                },
+            )
+        } else {
+            TwoColumn(
+                labelOneRes = R.string.anime_media_edit_episodes_label,
+                columnOneContent = {
+                    ProgressSection(
+                        progress = viewModel.editData.progress,
+                        progressMax = initialParams?.maxProgress ?: 1,
+                        onProgressChange = { viewModel.editData.progress = it },
+                    )
+                },
+            )
+        }
 
         ScoreSection(
             format = { viewModel.scoreFormat.collectAsState().value },
@@ -541,72 +453,192 @@ object AnimeMediaEditBottomSheet {
                     modifier = Modifier.fillMaxWidth(),
                 )
             },
-            labelTwoRes = R.string.anime_media_edit_private_label,
+            labelTwoRes = R.string.anime_media_edit_repeat_label,
             columnTwoContent = {
-                @Composable
-                fun Boolean.toPrivateText() = when (this) {
-                    true -> R.string.anime_media_edit_private_true
-                    false -> R.string.anime_media_edit_private_false
-                }.let { stringResource(it) }
-                ItemDropdown(
-                    value = viewModel.editData.private,
-                    iconContentDescription = R.string.anime_media_edit_private_dropdown_content_description,
-                    values = {
-                        listOf(
-                            true,
-                            false,
+                val repeat = viewModel.editData.repeat
+                TextField(
+                    value = repeat,
+                    onValueChange = { viewModel.editData.repeat = it },
+                    singleLine = true,
+                    textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
+                    keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+                    leadingIcon = {
+                        val visible = repeat.isNotBlank()
+                                && repeat.toIntOrNull()?.let { it > 0 } == true
+                        val alpha by animateFloatAsState(
+                            if (visible) 1f else 0f,
+                            label = "Repeat decrement alpha",
                         )
+                        IconButton(
+                            enabled = visible,
+                            onClick = {
+                                repeat.toIntOrNull()?.let {
+                                    viewModel.editData.repeat = (it - 1).toString()
+                                }
+                            },
+                            modifier = Modifier.alpha(alpha),
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.RemoveCircleOutline,
+                                contentDescription = stringResource(
+                                    R.string.anime_media_edit_repeat_decrement_content_description
+                                ),
+                            )
+                        }
                     },
-                    textForValue = { it.toPrivateText() },
-                    onSelectItem = { viewModel.editData.private = it },
-                    modifier = Modifier.fillMaxWidth(),
+                    trailingIcon = {
+                        IconButton(
+                            onClick = {
+                                if (repeat.isBlank()) {
+                                    viewModel.editData.repeat = "1"
+                                } else {
+                                    repeat.toIntOrNull()?.let {
+                                        viewModel.editData.repeat = (it + 1).toString()
+                                    }
+                                }
+                            }) {
+                            Icon(
+                                imageVector = Icons.Filled.AddCircleOutline,
+                                contentDescription = stringResource(
+                                    R.string.anime_media_edit_repeat_increment_content_description
+                                ),
+                            )
+                        }
+                    },
+                    modifier = Modifier.fillMaxSize(),
                 )
             }
         )
 
-        val createdAt = viewModel.editData.createdAt
-        val createdAtShown = createdAt != null && createdAt > 0
-        if (createdAtShown) {
-            Text(
-                text = stringResource(
-                    R.string.anime_media_edit_created_at,
-                    MediaUtils.formatEntryDateTime(
-                        LocalContext.current,
-                        createdAt!! * 1000,
-                    ),
-                ),
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-            )
-        }
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Column(modifier = Modifier.weight(1f)) {
+                val createdAt = viewModel.editData.createdAt
+                val createdAtShown = createdAt != null && createdAt > 0
+                if (createdAtShown) {
+                    Text(
+                        text = stringResource(
+                            R.string.anime_media_edit_created_at,
+                            MediaUtils.formatEntryDateTime(
+                                LocalContext.current,
+                                createdAt!! * 1000,
+                            ),
+                        ),
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                    )
+                }
 
-        val updatedAt = viewModel.editData.updatedAt
-        if (updatedAt != null && updatedAt > 0) {
-            Text(
-                text = stringResource(
-                    R.string.anime_media_edit_updated_at,
-                    MediaUtils.formatEntryDateTime(
-                        LocalContext.current,
-                        updatedAt * 1000,
-                    ),
-                ),
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(
-                    start = 16.dp,
-                    end = 16.dp,
-                    top = if (createdAtShown) 0.dp else 8.dp,
-                    bottom = 8.dp
-                ),
-            )
+                val updatedAt = viewModel.editData.updatedAt
+                if (updatedAt != null && updatedAt > 0) {
+                    Text(
+                        text = stringResource(
+                            R.string.anime_media_edit_updated_at,
+                            MediaUtils.formatEntryDateTime(
+                                LocalContext.current,
+                                updatedAt * 1000,
+                            ),
+                        ),
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(
+                            start = 16.dp,
+                            end = 16.dp,
+                            top = if (createdAtShown) 0.dp else 8.dp,
+                            bottom = 8.dp
+                        ),
+                    )
+                }
+            }
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)
+            ) {
+                val private = viewModel.editData.private
+                Text(
+                    text = stringResource(R.string.anime_media_edit_private_label),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+
+                Checkbox(
+                    checked = private,
+                    onCheckedChange = { viewModel.editData.private = it },
+                )
+            }
         }
+    }
+
+    @Composable
+    private fun ProgressSection(
+        progress: String,
+        progressMax: Int,
+        onProgressChange: (String) -> Unit,
+    ) {
+        TextField(
+            value = progress,
+            onValueChange = onProgressChange,
+            singleLine = true,
+            textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
+            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+            leadingIcon = {
+                val visible = progress.isNotBlank()
+                        && progress.toIntOrNull()?.let { it > 0 } == true
+                val alpha by animateFloatAsState(
+                    if (visible) 1f else 0f,
+                    label = "Progress decrement alpha",
+                )
+                IconButton(
+                    enabled = visible,
+                    onClick = {
+                        progress.toIntOrNull()?.let { onProgressChange((it - 1).toString()) }
+                    },
+                    modifier = Modifier.alpha(alpha)
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.RemoveCircleOutline,
+                        contentDescription = stringResource(
+                            R.string.anime_media_edit_decrement_content_description
+                        ),
+                    )
+                }
+            },
+            trailingIcon = {
+                val visible =
+                    progress.isBlank() || progress.toIntOrNull()?.let { it < progressMax } == true
+                val alpha by animateFloatAsState(
+                    if (visible) 1f else 0f,
+                    label = "Progress increment alpha",
+                )
+                IconButton(
+                    enabled = visible,
+                    onClick = {
+                        if (progress.isBlank()) {
+                            onProgressChange("1")
+                        } else {
+                            progress.toIntOrNull()?.let {
+                                onProgressChange((it + 1).toString())
+                            }
+                        }
+                    },
+                    modifier = Modifier.alpha(alpha)
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.AddCircleOutline,
+                        contentDescription = stringResource(
+                            R.string.anime_media_edit_increment_content_description
+                        ),
+                    )
+                }
+            },
+            modifier = Modifier.fillMaxSize(),
+        )
     }
 
     @Composable
     private fun TwoColumn(
         @StringRes labelOneRes: Int,
         columnOneContent: @Composable () -> Unit,
-        @StringRes labelTwoRes: Int,
-        columnTwoContent: @Composable () -> Unit,
+        @StringRes labelTwoRes: Int? = null,
+        columnTwoContent: (@Composable () -> Unit)? = null,
     ) {
         Row(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -614,13 +646,26 @@ object AnimeMediaEditBottomSheet {
                 .height(IntrinsicSize.Min)
                 .padding(horizontal = 16.dp)
         ) {
-            Column(modifier = Modifier.weight(1f)) {
-                SectionHeader(labelOneRes, horizontalPadding = 0.dp)
+            SectionHeader(labelOneRes, horizontalPadding = 0.dp, modifier = Modifier.weight(1f))
+
+            if (labelTwoRes != null) {
+                SectionHeader(labelTwoRes, horizontalPadding = 0.dp, modifier = Modifier.weight(1f))
+            }
+        }
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier
+                .height(IntrinsicSize.Min)
+                .padding(horizontal = 16.dp)
+        ) {
+            Box(modifier = Modifier.weight(1f)) {
                 columnOneContent()
             }
-            Column(modifier = Modifier.weight(1f)) {
-                SectionHeader(labelTwoRes, horizontalPadding = 0.dp)
-                columnTwoContent()
+
+            Box(modifier = Modifier.weight(1f)) {
+                if (columnTwoContent != null) {
+                    columnTwoContent()
+                }
             }
         }
     }
@@ -755,10 +800,27 @@ object AnimeMediaEditBottomSheet {
                         modifier = Modifier.weight(1f),
                     )
 
-                    // TODO: Add button to clear score
+                    val score = score()
                     TextField(
-                        value = score(),
+                        value = score,
                         onValueChange = onScoreChange,
+                        trailingIcon = {
+                            val alpha by animateFloatAsState(
+                                if (score.isBlank()) 0f else 1f,
+                                label = "Progress clear alpha",
+                            )
+                            IconButton(
+                                onClick = { onScoreChange("") },
+                                modifier = Modifier.alpha(alpha)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.Clear,
+                                    contentDescription = stringResource(
+                                        R.string.anime_media_edit_clear_content_description
+                                    ),
+                                )
+                            }
+                        },
                         singleLine = true,
                         textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
                         keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
@@ -771,17 +833,20 @@ object AnimeMediaEditBottomSheet {
     }
 
     @Composable
-    private fun SectionHeader(@StringRes titleRes: Int, horizontalPadding: Dp = 16.dp) {
+    private fun SectionHeader(
+        @StringRes titleRes: Int,
+        horizontalPadding: Dp = 16.dp,
+        modifier: Modifier = Modifier,
+    ) {
         Text(
             text = stringResource(titleRes),
             style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier
-                .padding(
-                    start = horizontalPadding,
-                    end = horizontalPadding,
-                    top = 12.dp,
-                    bottom = 4.dp,
-                )
+            modifier = modifier.padding(
+                start = horizontalPadding,
+                end = horizontalPadding,
+                top = 12.dp,
+                bottom = 4.dp,
+            )
         )
     }
 }

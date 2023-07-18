@@ -6,6 +6,7 @@ import androidx.annotation.StringRes
 import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -32,7 +33,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -406,42 +406,43 @@ fun MediaListQuickEditIconButton(
     progress: Int?,
     progressVolumes: Int?,
     maxProgress: Int?,
+    maxProgressVolumes: Int?,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
         modifier = modifier
             .clip(RoundedCornerShape(topEnd = 12.dp))
             .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.5f))
+            .padding(8.dp)
+            .clickable(onClick = onClick)
     ) {
-        IconButton(
-            onClick = onClick,
-            modifier = Modifier.size(36.dp)
-        ) {
-            val (imageVector, contentDescriptionRes) =
-                listStatus.toStatusIcon(mediaType)
-            Icon(
-                imageVector = imageVector,
-                contentDescription = stringResource(contentDescriptionRes),
-                modifier = Modifier.size(20.dp)
-            )
-        }
+        val (imageVector, contentDescriptionRes) =
+            listStatus.toStatusIcon(mediaType)
+        Icon(
+            imageVector = imageVector,
+            contentDescription = stringResource(contentDescriptionRes),
+            modifier = Modifier.size(20.dp)
+        )
 
         if (listStatus == MediaListStatus.CURRENT) {
-            val realProgress = progress ?: progressVolumes
+            val realProgress = if (mediaType == MediaType.MANGA) progressVolumes else progress
             if (realProgress != null) {
+                val realMaxProgress =
+                    if (mediaType == MediaType.MANGA) maxProgressVolumes else maxProgress
                 Text(
-                    text = if (maxProgress != null) stringResource(
+                    text = if (realMaxProgress != null) stringResource(
                         R.string.anime_media_current_progress,
                         realProgress.toString(),
-                        maxProgress.toString(),
+                        realMaxProgress.toString(),
                     ) else stringResource(
                         R.string.anime_media_current_progress_unknown_max,
                         realProgress.toString()
                     ),
                     style = MaterialTheme.typography.labelSmall,
-                    modifier = Modifier.padding(top = 4.dp, bottom = 4.dp, end = 8.dp)
+                    modifier = Modifier.padding(vertical = 4.dp)
                 )
             }
         }

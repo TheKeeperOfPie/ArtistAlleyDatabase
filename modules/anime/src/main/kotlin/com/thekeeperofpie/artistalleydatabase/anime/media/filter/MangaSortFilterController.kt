@@ -120,6 +120,7 @@ class MangaSortFilterController<SortType : SortOption>(
         }
     }
 
+    // TODO: Fix volumes/chapters range search
     private val episodesSection = SortFilterSection.Range(
         titleRes = R.string.anime_media_filter_episodes_label,
         titleDropdownContentDescriptionRes = R.string.anime_media_filter_episodes_expand_content_description,

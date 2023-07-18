@@ -8,6 +8,7 @@ import com.anilist.fragment.MediaNavigationData
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
 import com.anilist.type.ScoreFormat
+import com.thekeeperofpie.artistalleydatabase.android_utils.SimpleResult
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import java.time.LocalDate
 
@@ -15,6 +16,7 @@ class MediaEditData {
     var status by mutableStateOf<MediaListStatus?>(null)
     var score by mutableStateOf("")
     var progress by mutableStateOf("")
+    var progressVolumes by mutableStateOf("")
     var repeat by mutableStateOf("")
     var startDate by mutableStateOf<LocalDate?>(null)
     var endDate by mutableStateOf<LocalDate?>(null)
@@ -35,7 +37,7 @@ class MediaEditData {
                 && fieldAsInt(progress) == (other?.progress ?: 0)
                 && fieldAsInt(repeat) == (other?.repeat ?: 0)
                 && fieldAsInt(priority) == (other?.priority ?: 0)
-                && scoreRaw(scoreFormat) == (other?.score?.toInt() ?: 0)
+                && scoreRaw(scoreFormat).getOrNull() == (other?.score?.toInt() ?: 0)
                 && startDate ==
                 MediaUtils.parseLocalDate(
                     year = other?.startedAtYear,
@@ -51,23 +53,24 @@ class MediaEditData {
                 && private == (other?.private ?: false)
     }
 
-    fun scoreRaw(scoreFormat: ScoreFormat): Int? {
+    fun scoreRaw(scoreFormat: ScoreFormat): SimpleResult<Int> {
         val score = score
-        if (score.isBlank()) return 0
+        if (score.isBlank()) return SimpleResult.Success(0)
 
-        return when (scoreFormat) {
-            ScoreFormat.POINT_10_DECIMAL -> {
-                val scoreAsFloat = score.toFloatOrNull()?.let {
-                    (it * 10).takeIf { it < 101f }
+        return SimpleResult.successIfNotNull(when (scoreFormat) {
+                ScoreFormat.POINT_10_DECIMAL -> {
+                    val scoreAsFloat = score.toFloatOrNull()?.let {
+                        (it * 10).takeIf { it < 101f }
+                    }
+                    scoreAsFloat?.toInt()?.coerceAtMost(100)
                 }
-                scoreAsFloat?.toInt()?.coerceAtMost(100)
+                ScoreFormat.POINT_10 -> score.toIntOrNull()?.let { it * 10 }
+                ScoreFormat.POINT_100,
+                ScoreFormat.POINT_5,
+                ScoreFormat.POINT_3,
+                ScoreFormat.UNKNOWN__ -> score.toIntOrNull()
             }
-            ScoreFormat.POINT_10 -> score.toIntOrNull()?.let { it * 10 }
-            ScoreFormat.POINT_100,
-            ScoreFormat.POINT_5,
-            ScoreFormat.POINT_3,
-            ScoreFormat.UNKNOWN__ -> score.toIntOrNull()
-        }
+        )
     }
 
     private fun fieldAsInt(field: String): Int? {
@@ -97,6 +100,7 @@ class MediaEditData {
         val createdAt: Int?,
         val mediaType: MediaType?,
         val maxProgress: Int,
+        val maxProgressVolumes: Int,
         val loading: Boolean,
     ) {
         constructor(
@@ -105,6 +109,7 @@ class MediaEditData {
             mediaListEntry: MediaDetailsListEntry?,
             mediaType: MediaType?,
             maxProgress: Int,
+            maxProgressVolumes: Int,
             loading: Boolean,
         ) : this(
             id = mediaListEntry?.id?.toString(),
@@ -128,6 +133,7 @@ class MediaEditData {
             createdAt = mediaListEntry?.createdAt,
             mediaType = mediaType,
             maxProgress = maxProgress,
+            maxProgressVolumes = maxProgressVolumes,
             loading = loading,
         )
     }

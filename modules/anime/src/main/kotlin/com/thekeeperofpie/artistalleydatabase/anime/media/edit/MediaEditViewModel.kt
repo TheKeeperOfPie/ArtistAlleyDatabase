@@ -9,6 +9,7 @@ import com.anilist.fragment.MediaNavigationData
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
 import com.anilist.type.ScoreFormat
+import com.thekeeperofpie.artistalleydatabase.android_utils.SimpleResult
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.R
@@ -41,11 +42,11 @@ class MediaEditViewModel @Inject constructor(
 ) : ViewModel() {
 
     val initialParams = MutableStateFlow<MediaEditData.InitialParams?>(null)
-    private val mediaEntryRequest = MutableSharedFlow<MediaNavigationData>(1, 1)
+    private val mediaEntryRequest = MutableStateFlow<MediaNavigationData?>(null)
 
     val editData = MediaEditData()
 
-    private val rawScore = MutableStateFlow<Double?>(null)
+    private val rawScore = MutableSharedFlow<Double?>(1, 1)
     val scoreFormat = MutableStateFlow(ScoreFormat.POINT_100)
 
     val dismissRequests = MutableSharedFlow<Long>()
@@ -59,6 +60,7 @@ class MediaEditViewModel @Inject constructor(
 
         viewModelScope.launch(CustomDispatchers.IO) {
             mediaEntryRequest
+                .filterNotNull()
                 .mapLatest {
                     Result.success(it to aniListApi.mediaListEntry(it.id.toString()).media)
                 }
@@ -73,12 +75,13 @@ class MediaEditViewModel @Inject constructor(
                                 mediaListEntry = media.mediaListEntry,
                                 mediaType = media.type,
                                 status = media.mediaListEntry?.status,
-                                maxProgress = media.episodes ?: media.volumes ?: media
-                                    .nextAiringEpisode?.episode?.let { (it - 1).coerceAtLeast(1) },
+                                maxProgress = MediaUtils.maxProgress(media),
+                                maxProgressVolumes = media.volumes,
                             )
                         } else {
                             editData.error = R.string.anime_media_edit_error_loading to
                                     it.exceptionOrNull()
+                            mediaEntryRequest.emit(null)
                         }
                     }
                 }
@@ -106,16 +109,10 @@ class MediaEditViewModel @Inject constructor(
 
     fun initialize(media: MediaNavigationData) {
         val mediaId = media.id
-        initialize(
-            mediaId = mediaId.toString(),
-            media = media,
-            mediaListEntry = null,
-            mediaType = null,
-            status = null,
-            maxProgress = null,
-            loading = true,
-        )
-        mediaEntryRequest.tryEmit(media)
+        val initialParams = initialParams.value
+        if (initialParams?.mediaId != mediaId.toString()) {
+            mediaEntryRequest.tryEmit(media)
+        }
         editData.showing = true
     }
 
@@ -126,6 +123,7 @@ class MediaEditViewModel @Inject constructor(
         mediaType: MediaType?,
         status: MediaListStatus?,
         maxProgress: Int?,
+        maxProgressVolumes: Int?,
         loading: Boolean = false,
     ) {
         initialParams.value = MediaEditData.InitialParams(
@@ -134,10 +132,12 @@ class MediaEditViewModel @Inject constructor(
             mediaListEntry = mediaListEntry,
             mediaType = mediaType,
             maxProgress = maxProgress ?: 1,
+            maxProgressVolumes = maxProgressVolumes ?: 1,
             loading = loading,
         )
         editData.status = status
         editData.progress = mediaListEntry?.progress?.toString().orEmpty()
+        editData.progressVolumes = mediaListEntry?.progressVolumes?.toString().orEmpty()
         editData.repeat = mediaListEntry?.repeat?.toString().orEmpty()
         editData.startDate = MediaUtils.parseLocalDate(mediaListEntry?.startedAt)
         editData.endDate = MediaUtils.parseLocalDate(mediaListEntry?.completedAt)
@@ -145,20 +145,12 @@ class MediaEditViewModel @Inject constructor(
         editData.private = mediaListEntry?.private ?: false
         editData.updatedAt = mediaListEntry?.updatedAt?.toLong()
         editData.createdAt = mediaListEntry?.createdAt?.toLong()
-        rawScore.value = mediaListEntry?.score
+        rawScore.tryEmit(mediaListEntry?.score)
     }
 
     fun hide() {
         editData.showing = false
         editData.error = null
-        initialize(
-            mediaId = "",
-            media = null,
-            mediaListEntry = null,
-            mediaType = null,
-            status = null,
-            maxProgress = null,
-        )
     }
 
     fun onEditSheetValueChange(sheetValue: SheetValue): Boolean {
@@ -190,10 +182,13 @@ class MediaEditViewModel @Inject constructor(
             MediaListStatus.PLANNING,
             MediaListStatus.PAUSED,
             MediaListStatus.REPEATING,
-            MediaListStatus.UNKNOWN__, null -> Unit
+            MediaListStatus.UNKNOWN__, null,
+            -> Unit
             MediaListStatus.COMPLETED -> {
                 initialParams.value?.maxProgress
                     ?.let { editData.progress = it.toString() }
+                initialParams.value?.maxProgressVolumes
+                    ?.let { editData.progressVolumes = it.toString() }
                 editData.endDate = LocalDate.now()
             }
             MediaListStatus.DROPPED -> {
@@ -224,6 +219,7 @@ class MediaEditViewModel @Inject constructor(
                         mediaType = null,
                         status = null,
                         maxProgress = null,
+                        maxProgressVolumes = null,
                     )
                 }
             } catch (e: Exception) {
@@ -248,6 +244,7 @@ class MediaEditViewModel @Inject constructor(
         // Read values on main thread before entering coroutine
         val scoreRaw = editData.scoreRaw(scoreFormat.value)
         val progress = editData.progress
+        val progressVolumes = editData.progressVolumes
         val repeat = editData.repeat
         val priority = editData.priority
         val status = editData.status
@@ -256,12 +253,22 @@ class MediaEditViewModel @Inject constructor(
         val endDate = editData.endDate
 
         viewModelScope.launch(CustomDispatchers.IO) {
-            fun validateFieldAsInt(field: String): Int? {
-                if (field.isBlank()) return 0
-                return field.toIntOrNull()
+            val initialParams = initialParams.value!!
+            fun validateFieldAsInt(field: String): SimpleResult<Int> {
+                if (field.isBlank()) return SimpleResult.Success(0)
+                return SimpleResult.successIfNotNull(field.toIntOrNull())
+            }
+            fun validateFieldAsNullableInt(field: String): SimpleResult<Int?> {
+                if (field.isBlank()) return SimpleResult.Success(null)
+                val asInt = field.toIntOrNull()
+                return if (asInt == null) {
+                    SimpleResult.Failure()
+                } else {
+                    SimpleResult.Success(asInt)
+                }
             }
 
-            if (scoreRaw == null) {
+            if (scoreRaw is SimpleResult.Failure) {
                 withContext(CustomDispatchers.Main) {
                     editData.saving = false
                     editData.error = R.string.anime_media_edit_error_invalid_score to null
@@ -270,7 +277,7 @@ class MediaEditViewModel @Inject constructor(
             }
 
             val progressAsInt = validateFieldAsInt(progress)
-            if (progressAsInt == null) {
+            if (progressAsInt is SimpleResult.Failure) {
                 withContext(CustomDispatchers.Main) {
                     editData.saving = false
                     editData.error = R.string.anime_media_edit_error_invalid_progress to null
@@ -278,8 +285,21 @@ class MediaEditViewModel @Inject constructor(
                 return@launch
             }
 
-            val repeatAsInt = validateFieldAsInt(repeat)
-            if (repeatAsInt == null) {
+            val progressVolumesAsInt = if (initialParams.mediaType != MediaType.ANIME) {
+                validateFieldAsInt(progressVolumes).also {
+                    if (it is SimpleResult.Failure) {
+                        withContext(CustomDispatchers.Main) {
+                            editData.saving = false
+                            editData.error =
+                                R.string.anime_media_edit_error_invalid_progress to null
+                        }
+                        return@launch
+                    }
+                }
+            } else null
+
+            val repeatAsInt = validateFieldAsNullableInt(repeat)
+            if (repeatAsInt is SimpleResult.Failure) {
                 withContext(CustomDispatchers.Main) {
                     editData.saving = false
                     editData.error = R.string.anime_media_edit_error_invalid_repeat to null
@@ -287,8 +307,8 @@ class MediaEditViewModel @Inject constructor(
                 return@launch
             }
 
-            val priorityAsInt = validateFieldAsInt(priority)
-            if (priorityAsInt == null) {
+            val priorityAsInt = validateFieldAsNullableInt(priority)
+            if (priorityAsInt is SimpleResult.Failure) {
                 withContext(CustomDispatchers.Main) {
                     editData.saving = false
                     editData.error = R.string.anime_media_edit_error_invalid_priority to null
@@ -297,17 +317,16 @@ class MediaEditViewModel @Inject constructor(
             }
 
             try {
-                val initialParams = initialParams.value!!
                 val mediaId = initialParams.mediaId!!
                 val result = aniListApi.saveMediaListEntry(
                     id = initialParams.id,
                     mediaId = mediaId,
-                    type = initialParams.mediaType,
                     status = status,
-                    scoreRaw = scoreRaw,
-                    progress = progressAsInt,
-                    repeat = repeatAsInt,
-                    priority = priorityAsInt,
+                    scoreRaw = scoreRaw.getOrThrow(),
+                    progress = progressAsInt.getOrThrow(),
+                    progressVolumes = progressVolumesAsInt?.getOrThrow(),
+                    repeat = repeatAsInt.getOrThrow(),
+                    priority = priorityAsInt.getOrThrow(),
                     private = private,
                     startedAt = startDate,
                     completedAt = endDate,
@@ -327,7 +346,8 @@ class MediaEditViewModel @Inject constructor(
                         mediaListEntry = result,
                         mediaType = initialParams.mediaType,
                         status = result.status,
-                        maxProgress = initialParams.progress
+                        maxProgress = initialParams.maxProgress,
+                        maxProgressVolumes = initialParams.maxProgressVolumes,
                     )
                 }
             } catch (e: Exception) {
