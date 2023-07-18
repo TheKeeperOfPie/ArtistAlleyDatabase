@@ -23,7 +23,7 @@
 -dontobfuscate
 
 # TODO: Shrinking is broken
--dontshrink
+#-dontshrink
 
 # AGPBI META-INF/services warnings
 -dontwarn org.apache.xalan.extensions.bsf.BSFManager

@@ -40,7 +40,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.intl.Locale
+import androidx.compose.ui.text.toUpperCase
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -60,7 +63,6 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListOAuthStore
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryNavigator
 import com.thekeeperofpie.artistalleydatabase.art.ArtNavDestinations
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseScreen
@@ -82,6 +84,7 @@ import com.thekeeperofpie.artistalleydatabase.settings.SettingsScreen
 import com.thekeeperofpie.artistalleydatabase.settings.SettingsViewModel
 import com.thekeeperofpie.artistalleydatabase.ui.theme.ArtistAlleyDatabaseTheme
 import com.thekeeperofpie.artistalleydatabase.utils.DatabaseSyncWorker
+import com.thekeeperofpie.artistalleydatabase.R
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -485,15 +488,16 @@ class MainActivity : ComponentActivity() {
                 )
             }
 
-            if (BuildConfig.DEBUG) {
+            @Suppress("KotlinConstantConditions")
+            if (BuildConfig.BUILD_TYPE != "release") {
                 Box(
                     modifier = Modifier
-                        .background(MaterialTheme.colorScheme.primary)
+                        .background(colorResource(R.color.launcher_background))
                         .fillMaxWidth()
                         .height(48.dp)
                 ) {
                     Text(
-                        text = stringResource(R.string.debug_variant),
+                        text = BuildConfig.BUILD_TYPE.toUpperCase(Locale.current),
                         modifier = Modifier.align(Alignment.Center)
                     )
                 }

@@ -44,6 +44,7 @@ class AnimeNewsController(
         return newsDateDescending
     }
 
+    // TODO: Loading and error indicator
     private fun startJobIfNeeded() {
         if (job != null) return
         job = scopedApplication.scope.launch(CustomDispatchers.IO) {

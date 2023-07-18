@@ -67,11 +67,25 @@ android {
                 signingConfig = signingConfigs.getByName("default")
             }
         }
+        create("internal") {
+            applicationIdSuffix = ".internal"
+            isDebuggable = false
+            isMinifyEnabled = true
+            isShrinkResources = true
+            isCrunchPngs = true
+            proguardFiles(*proguardFiles)
+
+            if (debugKeystoreExists) {
+                signingConfig = signingConfigs.getByName("default")
+            }
+
+            matchingFallbacks += "release"
+        }
         getByName("release") {
             isDebuggable = false
             isMinifyEnabled = true
-            isShrinkResources = false
-            isCrunchPngs = false
+            isShrinkResources = true
+            isCrunchPngs = true
             proguardFiles(*proguardFiles)
 
             if (debugKeystoreExists) {
@@ -136,14 +150,14 @@ fun Exec.launchActivity(
 
 tasks.register("launchRelease") {
     dependsOn("installRelease")
-    finalizedBy("compileAndLaunchRelease", "installDebug")
+    finalizedBy("compileAndLaunchRelease", "installInternal", "installDebug")
     outputs.upToDateWhen { false }
 }
 
 tasks.register<Exec>("launchDebug") {
     dependsOn("installDebug")
     launchActivity("com.thekeeperofpie.artistalleydatabase.debug")
-    finalizedBy("installRelease")
+    finalizedBy("installRelease", "installInternal")
     outputs.upToDateWhen { false }
 }
 
