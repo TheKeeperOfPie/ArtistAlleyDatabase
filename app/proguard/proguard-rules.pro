@@ -23,7 +23,7 @@
 -dontobfuscate
 
 # TODO: Shrinking is broken
-#-dontshrink
+-dontshrink
 
 # AGPBI META-INF/services warnings
 -dontwarn org.apache.xalan.extensions.bsf.BSFManager
@@ -35,6 +35,9 @@
 
 # For AndroidX Compose, seems to be a library config error
 -keep class org.xml.sax.helpers.AttributesImpl
+
+# For RSS/Atom parsing, does not ship Proguard rules
+-keep class com.rometools.rome.** { *; }
 
 # Please add these rules to your existing keep rules in order to suppress warnings.
 # This is generated automatically by the Android Gradle plugin.

@@ -59,7 +59,6 @@ fragment StaffDetailsCharacterMediaPage on MediaConnection {
         characterName
         node {
             ...MediaNavigationData
-            isAdult
             startDate {
                 year
                 month
@@ -92,7 +91,6 @@ fragment StaffDetailsStaffMediaPage on MediaConnection {
         node {
             ...MediaNavigationData
             type
-            isAdult
             startDate {
                 year
                 month
@@ -138,7 +136,6 @@ query StaffSearch(
             staffMedia(sort: [TRENDING_DESC], perPage: 5) {
                 nodes {
                     ...MediaNavigationData
-                    isAdult
                 }
             }
         }

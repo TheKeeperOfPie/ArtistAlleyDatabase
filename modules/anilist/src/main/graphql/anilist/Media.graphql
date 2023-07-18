@@ -7,6 +7,7 @@ fragment AniListMedia on Media {
         native
     }
     type
+    isAdult
     coverImage {
         extraLarge
         large
@@ -39,7 +40,6 @@ fragment MediaPreview on Media {
     chapters
     format
     genres
-    isAdult
     mediaListEntry {
         status
         progress
@@ -77,7 +77,6 @@ fragment MediaCompactWithTags on Media {
     }
     averageScore
     popularity
-    isAdult
 }
 
 query MediaAdvancedSearch($page: Int, $perPage: Int, $search: String, $type: MediaType!,
@@ -140,6 +139,7 @@ fragment MediaNavigationData on Media {
     coverImage {
         extraLarge
     }
+    isAdult
 }
 
 query MediaDetails($mediaId: Int!) {
@@ -304,13 +304,7 @@ query MediaDetails($mediaId: Int!) {
 query MediaTitlesAndImages($ids: [Int]) {
     Page {
         media(id_in: $ids) {
-            id
-            title {
-                userPreferred
-            }
-            coverImage {
-                extraLarge
-            }
+            ...MediaNavigationData
         }
     }
 }
@@ -347,6 +341,7 @@ query SimpleMediaByIds($ids: [Int]) {
 
 query MediaWithCharacters($mediaId: Int, $page: Int, $perPage: Int) {
     Media(id: $mediaId) @nonnull {
+        isAdult
         characters(page: $page, perPage: $perPage, sort: [RELEVANCE, ROLE]) @nonnull {
             nodes @nonnull {
                 id
@@ -535,6 +530,7 @@ query MediaAndReviewsPagination(
     $reviewsPerPage: Int!,
 ) {
     Media(id: $mediaId) @nonnull {
+        isAdult
         reviews(sort: $sort, page: $page, perPage: $reviewsPerPage) {
             pageInfo @nonnull {
                 ...PaginationInfo
@@ -582,6 +578,7 @@ query MediaAndRecommendationsPagination(
     $recommendationsPerPage: Int!,
 ) {
     Media(id: $mediaId) @nonnull {
+        isAdult
         recommendations(sort: $sort, page: $page, perPage: $recommendationsPerPage) {
             pageInfo @nonnull {
                 ...PaginationInfo
@@ -595,6 +592,7 @@ query MediaAndRecommendationsPagination(
 
 query MediaListEntry($id: Int!) {
     Media(id: $id) @nonnull {
+        isAdult
         type
         episodes
         volumes

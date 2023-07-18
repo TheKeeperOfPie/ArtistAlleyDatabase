@@ -1,4 +1,4 @@
-mutation SaveMediaEntryEdit(
+mutation SaveMediaListEntry(
     $id: Int,
     $mediaId: Int!,
     $status: MediaListStatus,
@@ -29,10 +29,13 @@ mutation SaveMediaEntryEdit(
         hiddenFromStatusLists: $hiddenFromStatusLists,
     ) {
         ...MediaDetailsListEntry
+        media {
+            isAdult
+        }
     }
 }
 
-mutation DeleteMediaEntry($id: Int!) {
+mutation DeleteMediaListEntry($id: Int!) {
     DeleteMediaListEntry(id: $id) {
         deleted
     }

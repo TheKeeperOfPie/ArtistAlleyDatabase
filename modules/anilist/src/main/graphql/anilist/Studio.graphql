@@ -21,7 +21,6 @@ query StudioSearch(
             media(sort: [FAVOURITES_DESC], perPage: 5, isMain: true) {
                 nodes {
                     ...MediaNavigationData
-                    isAdult
                 }
             }
         }

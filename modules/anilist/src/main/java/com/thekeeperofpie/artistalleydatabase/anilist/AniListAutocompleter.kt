@@ -70,11 +70,13 @@ class AniListAutocompleter @Inject constructor(
     }
 
     fun querySeriesNetwork(query: String): Flow<List<Entry>> {
-        val search = aniListCall({ aniListApi.searchSeries(query) }) {
-            it.page.media
-                .filterNotNull()
-                .map(aniListDataConverter::seriesEntry)
+        val search = aniListApi.searchSeries(query).mapNotNull {
+            it?.page?.media
+                ?.filterNotNull()
+                ?.map(aniListDataConverter::seriesEntry)
         }
+            .catch { Log.e(TAG, "Failed to search", it) }
+            .startWith(item = emptyList())
 
         // AniList IDs are integers
         val queryAsId = query.toIntOrNull()
@@ -140,11 +142,13 @@ class AniListAutocompleter @Inject constructor(
     private fun queryCharactersNetwork(
         query: String
     ): Flow<List<Entry>> {
-        val search = aniListCall({ aniListApi.searchCharacters(query) }) {
-            it.page.characters
-                .filterNotNull()
-                .map(aniListDataConverter::characterEntry)
+        val search = aniListApi.searchCharacters(query).mapNotNull {
+            it?.page?.characters
+                ?.filterNotNull()
+                ?.map(aniListDataConverter::characterEntry)
         }
+            .catch { Log.e(TAG, "Failed to search", it) }
+            .startWith(item = emptyList())
 
         // AniList IDs are integers
         val queryAsId = query.toIntOrNull()

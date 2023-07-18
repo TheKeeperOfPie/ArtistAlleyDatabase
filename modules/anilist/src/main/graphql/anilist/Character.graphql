@@ -67,7 +67,6 @@ query CharacterAdvancedSearch(
                     }
                     node {
                         ...MediaNavigationData
-                        isAdult
                     }
                 }
             }
@@ -193,7 +192,6 @@ fragment CharacterWithRoleAndFavorites on CharacterEdge {
         media(sort: [FAVOURITES_DESC]) {
             nodes {
                 ...MediaNavigationData
-                isAdult
             }
         }
         favourites
@@ -217,6 +215,7 @@ query MediaAndCharacters($mediaId: Int!, $charactersPerPage: Int!) {
 
 query MediaAndCharactersPagination($mediaId: Int!, $page: Int!, $charactersPerPage: Int!) {
     Media(id: $mediaId) @nonnull {
+        isAdult
         characters(sort: [RELEVANCE, ROLE, FAVOURITES_DESC], page: $page, perPage: $charactersPerPage) {
             pageInfo @nonnull {
                 ...PaginationInfo

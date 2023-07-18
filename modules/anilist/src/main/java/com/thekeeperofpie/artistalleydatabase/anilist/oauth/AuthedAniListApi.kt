@@ -7,7 +7,7 @@ import com.anilist.CharacterAdvancedSearchQuery
 import com.anilist.CharacterAndMediasPaginationQuery
 import com.anilist.CharacterAndMediasQuery
 import com.anilist.CharacterDetailsQuery
-import com.anilist.DeleteMediaEntryMutation
+import com.anilist.DeleteMediaListEntryMutation
 import com.anilist.GenresQuery
 import com.anilist.HomeAnimeQuery
 import com.anilist.HomeMangaQuery
@@ -25,7 +25,7 @@ import com.anilist.MediaTagsQuery
 import com.anilist.MediaTitlesAndImagesQuery
 import com.anilist.RateReviewMutation
 import com.anilist.ReviewDetailsQuery
-import com.anilist.SaveMediaEntryEditMutation
+import com.anilist.SaveMediaListEntryMutation
 import com.anilist.StaffAndCharactersPaginationQuery
 import com.anilist.StaffAndCharactersQuery
 import com.anilist.StaffDetailsCharacterMediaPaginationQuery
@@ -85,7 +85,7 @@ import java.time.ZoneOffset
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
-class AuthedAniListApi(
+open class AuthedAniListApi(
     private val scopedApplication: ScopedApplication,
     private val oAuthStore: AniListOAuthStore,
     networkSettings: NetworkSettings,
@@ -121,7 +121,7 @@ class AuthedAniListApi(
 
     private suspend fun viewer() = query(AuthedUserQuery()).viewer
 
-    suspend fun userMediaList(
+    open suspend fun userMediaList(
         userId: Int,
         type: MediaType,
     ) = query(
@@ -131,7 +131,7 @@ class AuthedAniListApi(
         )
     ).mediaListCollection
 
-    suspend fun searchMedia(
+    open suspend fun searchMedia(
         query: String,
         mediaType: MediaType,
         page: Int? = null,
@@ -197,24 +197,24 @@ class AuthedAniListApi(
         )
     }
 
-    suspend fun genres() = query(GenresQuery())
+    open suspend fun genres() = query(GenresQuery())
 
-    suspend fun tags() = query(MediaTagsQuery())
+    open suspend fun tags() = query(MediaTagsQuery())
 
-    suspend fun mediaDetails(id: String) = query(MediaDetailsQuery(id.toInt())).media!!
+    open suspend fun mediaDetails(id: String) = query(MediaDetailsQuery(id.toInt())).media!!
 
-    suspend fun mediaTitlesAndImages(mediaIds: List<Int>) =
+    open suspend fun mediaTitlesAndImages(mediaIds: List<Int>) =
         query(MediaTitlesAndImagesQuery(ids = Optional.present(mediaIds)))
             .page?.media?.filterNotNull().orEmpty()
 
-    suspend fun mediaListEntry(id: String) = query(MediaListEntryQuery(id.toInt()))
+    open suspend fun mediaListEntry(id: String) = query(MediaListEntryQuery(id.toInt()))
 
-    suspend fun deleteMediaListEntry(id: String) =
-        apolloClient.mutation(DeleteMediaEntryMutation(id = id.toInt()))
+    open suspend fun deleteMediaListEntry(id: String) =
+        apolloClient.mutation(DeleteMediaListEntryMutation(id = id.toInt()))
             .execute().dataOrThrow()
 
     // TODO: Progress is broken for volume/chapter entries
-    suspend fun saveMediaListEntry(
+    open suspend fun saveMediaListEntry(
         id: String?,
         mediaId: String,
         status: MediaListStatus?,
@@ -228,7 +228,7 @@ class AuthedAniListApi(
         completedAt: LocalDate?,
         hiddenFromStatusLists: Boolean?,
     ) = apolloClient.mutation(
-        SaveMediaEntryEditMutation(
+        SaveMediaListEntryMutation(
             id = Optional.presentIfNotNull(id?.toIntOrNull()),
             mediaId = mediaId.toInt(),
             status = Optional.present(status),
@@ -256,12 +256,12 @@ class AuthedAniListApi(
         )
     ).execute().dataOrThrow().saveMediaListEntry!!
 
-    suspend fun mediaByIds(ids: List<Int>) =
+    open suspend fun mediaByIds(ids: List<Int>) =
         query(MediaByIdsQuery(ids = Optional.present(ids)))
             .page?.media?.filterNotNull()
             .orEmpty()
 
-    suspend fun searchCharacters(
+    open suspend fun searchCharacters(
         query: String,
         page: Int? = null,
         perPage: Int? = null,
@@ -277,10 +277,10 @@ class AuthedAniListApi(
         )
     )
 
-    suspend fun characterDetails(id: String) = query(CharacterDetailsQuery(id.toInt()))
+    open suspend fun characterDetails(id: String) = query(CharacterDetailsQuery(id.toInt()))
         .character!!
 
-    suspend fun searchStaff(
+    open suspend fun searchStaff(
         query: String,
         page: Int? = null,
         perPage: Int? = null,
@@ -296,9 +296,9 @@ class AuthedAniListApi(
         )
     )
 
-    suspend fun staffDetails(id: String) = query(StaffDetailsQuery(id.toInt())).staff!!
+    open suspend fun staffDetails(id: String) = query(StaffDetailsQuery(id.toInt())).staff!!
 
-    suspend fun staffDetailsCharacterMediaPagination(id: String, page: Int) =
+    open suspend fun staffDetailsCharacterMediaPagination(id: String, page: Int) =
         query(
             StaffDetailsCharacterMediaPaginationQuery(
                 id = id.toInt(),
@@ -306,7 +306,7 @@ class AuthedAniListApi(
             )
         ).staff?.characterMedia!!
 
-    suspend fun staffDetailsStaffMediaPagination(id: String, page: Int) =
+    open suspend fun staffDetailsStaffMediaPagination(id: String, page: Int) =
         query(
             StaffDetailsStaffMediaPaginationQuery(
                 id = id.toInt(),
@@ -314,7 +314,7 @@ class AuthedAniListApi(
             )
         ).staff?.staffMedia!!
 
-    suspend fun searchUsers(
+    open suspend fun searchUsers(
         query: String,
         page: Int? = null,
         perPage: Int? = null,
@@ -330,7 +330,7 @@ class AuthedAniListApi(
         )
     )
 
-    suspend fun user(id: String) = query(UserByIdQuery(id.toInt())).user
+    open suspend fun user(id: String) = query(UserByIdQuery(id.toInt())).user
 
     fun logOut() {
         scopedApplication.scope.launch(CustomDispatchers.IO) {
@@ -375,7 +375,7 @@ class AuthedAniListApi(
         }
     }
 
-    suspend fun homeAnime(
+    open suspend fun homeAnime(
         perPage: Int = 10,
     ): HomeAnimeQuery.Data {
         val currentSeasonYear = AniListUtils.getCurrentSeasonYear()
@@ -394,11 +394,11 @@ class AuthedAniListApi(
         )
     }
 
-    suspend fun homeManga(perPage: Int = 10) = query(
+    open suspend fun homeManga(perPage: Int = 10) = query(
         HomeMangaQuery(perPage = perPage)
     )
 
-    suspend fun airingSchedule(
+    open suspend fun airingSchedule(
         date: LocalDate,
         sort: AiringSort,
         perPage: Int,
@@ -417,16 +417,16 @@ class AuthedAniListApi(
         )
     }
 
-    suspend fun toggleFollow(userId: Int) =
+    open suspend fun toggleFollow(userId: Int) =
         apolloClient.mutation(ToggleFollowMutation(userId)).execute().dataOrThrow().toggleFollow
 
-    suspend fun userSocialFollowers(userId: Int, page: Int, perPage: Int = 10) =
+    open suspend fun userSocialFollowers(userId: Int, page: Int, perPage: Int = 10) =
         query(UserSocialFollowersQuery(userId = userId, perPage = perPage, page = page))
 
-    suspend fun userSocialFollowing(userId: Int, page: Int, perPage: Int = 10) =
+    open suspend fun userSocialFollowing(userId: Int, page: Int, perPage: Int = 10) =
         query(UserSocialFollowingQuery(userId = userId, perPage = perPage, page = page))
 
-    suspend fun userSocialActivity(
+    open suspend fun userSocialActivity(
         isFollowing: Boolean,
         page: Int,
         perPage: Int = 10,
@@ -442,14 +442,14 @@ class AuthedAniListApi(
         )
     )
 
-    suspend fun mediaAndCharacters(mediaId: String, charactersPerPage: Int = 10) = query(
+    open suspend fun mediaAndCharacters(mediaId: String, charactersPerPage: Int = 10) = query(
         MediaAndCharactersQuery(
             mediaId = mediaId.toInt(),
             charactersPerPage = charactersPerPage,
         )
     ).media
 
-    suspend fun mediaAndCharactersPage(
+    open suspend fun mediaAndCharactersPage(
         mediaId: String,
         page: Int,
         charactersPerPage: Int = 10,
@@ -461,7 +461,7 @@ class AuthedAniListApi(
         )
     )
 
-    suspend fun mediaAndReviews(
+    open suspend fun mediaAndReviews(
         mediaId: String,
         sort: ReviewSort,
         reviewsPerPage: Int = 10,
@@ -473,7 +473,7 @@ class AuthedAniListApi(
         )
     ).media
 
-    suspend fun mediaAndReviewsPage(
+    open suspend fun mediaAndReviewsPage(
         mediaId: String,
         sort: ReviewSort,
         page: Int,
@@ -487,13 +487,14 @@ class AuthedAniListApi(
         )
     )
 
-    suspend fun reviewDetails(reviewId: String) = query(ReviewDetailsQuery(reviewId.toInt())).review
+    open suspend fun reviewDetails(reviewId: String) =
+        query(ReviewDetailsQuery(reviewId.toInt())).review
 
-    suspend fun rateReview(reviewId: String, rating: ReviewRating) =
+    open suspend fun rateReview(reviewId: String, rating: ReviewRating) =
         apolloClient.mutation(RateReviewMutation(id = reviewId.toInt(), rating = rating)).execute()
             .dataOrThrow().rateReview.userRating
 
-    suspend fun mediaAndRecommendations(
+    open suspend fun mediaAndRecommendations(
         mediaId: String,
         sort: RecommendationSort,
         recommendationsPerPage: Int = 10,
@@ -505,7 +506,7 @@ class AuthedAniListApi(
         )
     ).media
 
-    suspend fun mediaAndRecommendationsPage(
+    open suspend fun mediaAndRecommendationsPage(
         mediaId: String,
         sort: RecommendationSort,
         page: Int,
@@ -519,7 +520,7 @@ class AuthedAniListApi(
         )
     )
 
-    suspend fun characterAndMedias(
+    open suspend fun characterAndMedias(
         characterId: String,
         sort: List<MediaSort>,
         mediasPerPage: Int = 10,
@@ -531,7 +532,7 @@ class AuthedAniListApi(
         )
     ).character
 
-    suspend fun characterAndMediasPage(
+    open suspend fun characterAndMediasPage(
         characterId: String,
         sort: List<MediaSort>,
         page: Int,
@@ -545,7 +546,7 @@ class AuthedAniListApi(
         )
     )
 
-    suspend fun staffAndCharacters(
+    open suspend fun staffAndCharacters(
         staffId: String,
         sort: List<CharacterSort>,
         charactersPerPage: Int = 5,
@@ -557,7 +558,7 @@ class AuthedAniListApi(
         )
     ).staff
 
-    suspend fun staffAndCharactersPage(
+    open suspend fun staffAndCharactersPage(
         staffId: String,
         sort: List<CharacterSort>,
         page: Int,
@@ -571,7 +572,7 @@ class AuthedAniListApi(
         )
     )
 
-    suspend fun searchStudios(
+    open suspend fun searchStudios(
         query: String,
         page: Int,
         perPage: Int,
@@ -585,7 +586,7 @@ class AuthedAniListApi(
         )
     )
 
-    suspend fun studioMedias(
+    open suspend fun studioMedias(
         studioId: String,
         sort: List<MediaSort>,
         mediasPerPage: Int = 10,
@@ -597,7 +598,7 @@ class AuthedAniListApi(
         )
     ).studio
 
-    suspend fun studioMediasPage(
+    open suspend fun studioMediasPage(
         studioId: String,
         sort: List<MediaSort>,
         page: Int,
@@ -611,6 +612,6 @@ class AuthedAniListApi(
         )
     )
 
-    private suspend fun <D : Query.Data> query(query: Query<D>) =
+    protected suspend fun <D : Query.Data> query(query: Query<D>) =
         apolloClient.query(query).execute().dataOrThrow()
 }

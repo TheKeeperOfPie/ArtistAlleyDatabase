@@ -10,6 +10,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaEntryDao
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListOAuthStore
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
+import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApiWrapper
 import com.thekeeperofpie.artistalleydatabase.network_utils.NetworkAuthProvider
 import com.thekeeperofpie.artistalleydatabase.network_utils.NetworkSettings
 import dagger.Module
@@ -38,6 +39,7 @@ class AniListHiltModule {
         okHttpClient: OkHttpClient,
     ) = AniListApi(application, networkSettings, okHttpClient)
 
+    @Suppress("KotlinConstantConditions")
     @Singleton
     @Provides
     fun provideAuthedAniListApi(
@@ -45,12 +47,21 @@ class AniListHiltModule {
         aniListOAuthStore: AniListOAuthStore,
         networkSettings: NetworkSettings,
         okHttpClient: OkHttpClient,
-    ) = AuthedAniListApi(
-        scopedApplication,
-        aniListOAuthStore,
-        networkSettings,
-        okHttpClient,
-    )
+    ) = if (BuildConfig.BUILD_TYPE == "release") {
+        AuthedAniListApiWrapper(
+            scopedApplication,
+            aniListOAuthStore,
+            networkSettings,
+            okHttpClient,
+        )
+    } else {
+        AuthedAniListApi(
+            scopedApplication,
+            aniListOAuthStore,
+            networkSettings,
+            okHttpClient,
+        )
+    }
 
     @Singleton
     @Provides
@@ -81,7 +92,7 @@ class AniListHiltModule {
     fun provideMediaRepository(
         application: ScopedApplication,
         mediaEntryDao: MediaEntryDao,
-        aniListApi: AniListApi
+        aniListApi: AniListApi,
     ) = MediaRepository(application, mediaEntryDao, aniListApi)
 
     @Singleton
@@ -94,7 +105,7 @@ class AniListHiltModule {
         application: ScopedApplication,
         appJson: AppJson,
         characterEntryDao: CharacterEntryDao,
-        aniListApi: AniListApi
+        aniListApi: AniListApi,
     ) = CharacterRepository(application, appJson, characterEntryDao, aniListApi)
 
     @Singleton

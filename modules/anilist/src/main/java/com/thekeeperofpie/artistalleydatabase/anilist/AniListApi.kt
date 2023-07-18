@@ -22,6 +22,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.flow.flatMapMerge
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.onTimeout
@@ -47,7 +48,7 @@ class AniListApi(
 
     private data class Request<T>(
         val id: String,
-        val result: CompletableDeferred<T?> = CompletableDeferred()
+        val result: CompletableDeferred<T?> = CompletableDeferred(),
     )
 
     private val mediaRequestChannel = Channel<Request<AniListMedia>>()
@@ -111,12 +112,14 @@ class AniListApi(
 
     suspend fun getMedias(ids: List<Int>) = ids.chunked(25).flatMap {
         apolloClient.query(SimpleMediaByIdsQuery(ids = Optional.present(it))).execute()
-            .dataOrThrow().page?.media?.filterNotNull().orEmpty()
+            .dataOrThrow().page?.media?.filterNotNull().orEmpty().filter { it.isAdult == false }
     }
 
     suspend fun getCharacters(ids: List<Int>) = ids.chunked(25).flatMap {
         apolloClient.query(CharactersByIdsQuery(ids = Optional.present(it))).execute()
-            .dataOrThrow().page?.characters?.filterNotNull().orEmpty()
+            .dataOrThrow().page?.characters?.filterNotNull().orEmpty().map {
+                it.copy(media = it.media?.copy(nodes = it.media.nodes?.filter { it?.isAdult == false }))
+            }
     }
 
     fun searchSeries(query: String) =
@@ -126,7 +129,10 @@ class AniListApi(
                 page = Optional.Present(0),
                 perPage = Optional.Present(10),
             )
-        ).toFlow()
+        ).toFlow().map {
+            val data = it.data
+            data?.copy(page = data.page.copy(media = data.page.media.filter { it?.isAdult == false }))
+        }
 
     fun searchCharacters(query: String) =
         apolloClient.query(
@@ -137,7 +143,12 @@ class AniListApi(
                 mediaPage = Optional.Present(0),
                 mediaPerPage = Optional.Present(1),
             )
-        ).toFlow()
+        ).toFlow().map {
+            val data = it.data
+            data?.copy(page = data.page.copy(characters = data.page.characters.map {
+                it?.copy(media = it.media?.copy(it.media.nodes?.filter { it?.isAdult == false }))
+            }))
+        }
 
     fun charactersByMedia(mediaId: String) =
         apolloClient.query(
@@ -147,6 +158,7 @@ class AniListApi(
                 perPage = Optional.Present(25),
             )
         ).toFlow()
+            .mapNotNull { it.takeIf { it.data?.media?.isAdult == false } }
             .mapNotNull { it.data?.media?.characters?.nodes?.filterNotNull() }
             .mapNotNull { getCharacters(it.map { it.id }) }
 }
