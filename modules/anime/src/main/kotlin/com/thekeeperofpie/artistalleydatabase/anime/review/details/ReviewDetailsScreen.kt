@@ -60,6 +60,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.CollapsingToolbar
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.ImageHtmlText
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
+import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
 
@@ -71,6 +72,7 @@ object ReviewDetailsScreen {
     @Composable
     operator fun invoke(
         viewModel: ReviewDetailsViewModel,
+        upIconOption: UpIconOption,
         headerValues: MediaHeaderValues,
         navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
@@ -87,6 +89,7 @@ object ReviewDetailsScreen {
                 ) {
                     MediaHeader(
                         screenKey = SCREEN_KEY,
+                        upIconOption = upIconOption,
                         mediaId = entry?.review?.media?.id?.toString(),
                         titles = entry?.titlesUnique,
                         averageScore = media?.averageScore,

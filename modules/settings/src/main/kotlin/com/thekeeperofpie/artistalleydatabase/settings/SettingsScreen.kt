@@ -162,6 +162,15 @@ object SettingsScreen {
 
                     Divider()
                 }
+
+                val screenshotMode by viewModel.screenshotMode.collectAsState()
+                SwitchRow(
+                    titleRes = R.string.settings_screenshot_mode,
+                    checked = { screenshotMode },
+                    onCheckedChange = viewModel::onScreenshotModeChanged,
+                )
+
+                Divider()
             }
         }
     }

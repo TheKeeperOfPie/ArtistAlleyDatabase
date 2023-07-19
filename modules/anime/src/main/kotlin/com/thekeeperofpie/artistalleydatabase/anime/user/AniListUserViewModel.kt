@@ -16,6 +16,7 @@ import com.anilist.fragment.UserMediaStatistics
 import com.hoc081098.flowext.startWith
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -33,6 +34,7 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.UUID
 import javax.inject.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -41,6 +43,7 @@ class AniListUserViewModel @Inject constructor(
     private val aniListApi: AuthedAniListApi,
 ) : ViewModel() {
 
+    val screenKey = "${AnimeNavDestinations.USER.id}-${UUID.randomUUID()}"
     private var initialized = false
     var userId: String? = null
 

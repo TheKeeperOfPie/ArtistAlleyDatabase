@@ -5,6 +5,7 @@ import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkHorizontally
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -25,6 +26,7 @@ import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -34,6 +36,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -42,12 +45,16 @@ import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserScreen
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.user.UserHeaderValues
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
+import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
+import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 
 object AniListViewerProfileScreen {
 
     @Composable
     operator fun invoke(
+        upIconOption: UpIconOption?,
         needAuth: @Composable () -> Boolean,
         onClickAuth: () -> Unit,
         onSubmitAuthToken: (String) -> Unit,
@@ -60,12 +67,16 @@ object AniListViewerProfileScreen {
                 onClickAuth = onClickAuth,
                 onSubmitAuthToken = onSubmitAuthToken,
                 onClickSettings = onClickSettings,
+                bottomNavigationState = bottomNavigationState,
             )
         } else {
             val viewModel = hiltViewModel<AniListUserViewModel>()
                 .apply { initialize(null) }
+            val headerValues = UserHeaderValues(null) { viewModel.entry?.user }
             AniListUserScreen(
                 viewModel = viewModel,
+                upIconOption = upIconOption,
+                headerValues = headerValues,
                 navigationCallback = navigationCallback,
                 bottomNavigationState = bottomNavigationState,
                 showLogOut = true,
@@ -79,90 +90,105 @@ object AniListViewerProfileScreen {
         onClickAuth: () -> Unit,
         onSubmitAuthToken: (String) -> Unit,
         onClickSettings: (() -> Unit)?,
+        bottomNavigationState: BottomNavigationState?,
     ) {
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp)
+        Scaffold(
+            modifier = Modifier.conditionally(bottomNavigationState != null) {
+                nestedScroll(bottomNavigationState!!.nestedScrollConnection)
+            }
         ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.width(IntrinsicSize.Min)
-                    .widthIn(min = 300.dp)
-                    .verticalScroll(rememberScrollState())
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(it)
             ) {
-                Text(
-                    stringResource(R.string.anime_auth_prompt_label),
-                    style = MaterialTheme.typography.headlineSmall,
-                    modifier = Modifier.padding(vertical = 8.dp, horizontal = 12.dp)
-                )
-
-                Text(
-                    stringResource(R.string.anime_auth_prompt_text),
-                    modifier = Modifier.padding(vertical = 8.dp)
-                )
-
-                var showWhy by remember { mutableStateOf(false) }
-                AnimatedVisibility(visible = showWhy) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center,
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .widthIn(min = 300.dp)
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
+                ) {
                     Text(
-                        stringResource(R.string.anime_auth_prompt_why),
-                        modifier = Modifier.padding(vertical = 8.dp)
+                        stringResource(R.string.anime_auth_prompt_label),
+                        style = MaterialTheme.typography.headlineSmall,
+                        modifier = Modifier.padding(top = 32.dp)
                     )
-                }
 
-                Row {
-                    AnimatedVisibility(
-                        visible = !showWhy,
-                        enter = fadeIn() + expandHorizontally(),
-                        exit = fadeOut() + shrinkHorizontally(),
-                    ) {
-                        Button(
-                            onClick = { showWhy = true },
-                            modifier = Modifier.padding(end = 12.dp)
+                    Text(
+                        stringResource(R.string.anime_auth_prompt_text),
+                        modifier = Modifier.padding(vertical = 8.dp)
+                            .widthIn(min = 300.dp)
+                            .width(IntrinsicSize.Min)
+                    )
+
+                    var showWhy by remember { mutableStateOf(false) }
+                    AnimatedVisibility(visible = showWhy) {
+                        Text(
+                            stringResource(R.string.anime_auth_prompt_why),
+                            modifier = Modifier.padding(vertical = 8.dp)
+                        )
+                    }
+
+                    Row {
+                        AnimatedVisibility(
+                            visible = !showWhy,
+                            enter = fadeIn() + expandHorizontally(),
+                            exit = fadeOut() + shrinkHorizontally(),
                         ) {
-                            Text(stringResource(R.string.anime_auth_button_why))
+                            Button(
+                                onClick = { showWhy = true },
+                                modifier = Modifier.padding(end = 12.dp)
+                            ) {
+                                Text(stringResource(R.string.anime_auth_button_why))
+                            }
+                        }
+
+                        FilledTonalButton(onClick = onClickAuth) {
+                            Text(stringResource(R.string.anime_auth_button_log_in))
                         }
                     }
 
-                    FilledTonalButton(onClick = onClickAuth) {
-                        Text(stringResource(R.string.anime_auth_button_log_in))
-                    }
-                }
-
-                Text(
-                    stringResource(R.string.anime_auth_prompt_paste),
-                    modifier = Modifier.padding(top = 20.dp)
-                )
-
-                var value by remember { mutableStateOf("") }
-                TextField(
-                    value = value,
-                    onValueChange = { value = it },
-                    modifier = Modifier
-                        .size(width = 200.dp, height = 200.dp)
-                        .padding(16.dp),
-                )
-
-                FilledTonalButton(onClick = {
-                    val token = value
-                    value = ""
-                    onSubmitAuthToken(token)
-                }) {
-                    Text(stringResource(UtilsStringR.confirm))
-                }
-
-                Spacer(Modifier.height(88.dp))
-            }
-
-            if (onClickSettings != null) {
-                IconButton(onClick = onClickSettings, modifier = Modifier.align(Alignment.TopEnd)) {
-                    Icon(
-                        imageVector = Icons.Filled.Settings,
-                        contentDescription = stringResource(
-                            R.string.anime_settings_content_description
-                        )
+                    Text(
+                        stringResource(R.string.anime_auth_prompt_paste),
+                        modifier = Modifier.padding(top = 20.dp)
                     )
+
+                    var value by remember { mutableStateOf("") }
+                    TextField(
+                        value = value,
+                        onValueChange = { value = it },
+                        modifier = Modifier
+                            .size(width = 200.dp, height = 200.dp)
+                            .padding(16.dp),
+                    )
+
+                    FilledTonalButton(onClick = {
+                        val token = value
+                        value = ""
+                        onSubmitAuthToken(token)
+                    }) {
+                        Text(stringResource(UtilsStringR.confirm))
+                    }
+
+                    Spacer(Modifier.height(88.dp))
+                }
+
+                if (onClickSettings != null) {
+                    IconButton(
+                        onClick = onClickSettings,
+                        modifier = Modifier.align(Alignment.TopEnd)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Settings,
+                            contentDescription = stringResource(
+                                R.string.anime_settings_content_description
+                            )
+                        )
+                    }
                 }
             }
         }

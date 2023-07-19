@@ -8,6 +8,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
@@ -37,12 +38,14 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.CoverAndBannerHeader
 import com.thekeeperofpie.artistalleydatabase.compose.AutoResizeHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
+import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 
 @Composable
 fun MediaHeader(
     screenKey: String,
+    upIconOption: UpIconOption,
     mediaId: String?,
     titles: List<String>?,
     averageScore: Int?,
@@ -52,6 +55,7 @@ fun MediaHeader(
     colorCalculationState: ColorCalculationState,
     onImageWidthToHeightRatioAvailable: (Float) -> Unit = {},
     enableCoverImageSharedElement: Boolean = true,
+    menuContent: (@Composable () -> Unit)? = null,
 ) {
     var preferredTitle by remember { mutableStateOf<Int?>(null) }
     SharedElement(
@@ -60,6 +64,7 @@ fun MediaHeader(
     ) {
         CoverAndBannerHeader(
             screenKey = screenKey,
+            upIconOption = upIconOption,
             entryId = if (enableCoverImageSharedElement) {
                 EntryId("anime_media", mediaId ?: "unknown")
             } else {
@@ -82,8 +87,8 @@ fun MediaHeader(
                 }
             }
         ) {
-            Row {
-                Column(modifier = Modifier.weight(1f)) {
+            Column {
+                Row(modifier = Modifier.weight(1f)) {
                     AutoResizeHeightText(
                         text = when (val index = preferredTitle) {
                             null -> null
@@ -91,75 +96,85 @@ fun MediaHeader(
                         } ?: headerValues.titleText,
                         style = MaterialTheme.typography.headlineLarge,
                         modifier = Modifier
-                            .fillMaxWidth()
+                            .fillMaxHeight()
                             .weight(1f)
                             .padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 4.dp),
                     )
-
-                    val subtitleText = headerValues.subtitleText()
                     AnimatedVisibility(
-                        subtitleText != null,
-                        label = "Media details subtitle text"
+                        visible = progress > 0.8f,
+                        enter = fadeIn() + expandHorizontally(),
+                        exit = fadeOut() + shrinkHorizontally(),
+                        modifier = Modifier.align(Alignment.Top)
                     ) {
-                        if (subtitleText != null) {
-                            Text(
-                                text = subtitleText,
-                                style = MaterialTheme.typography.bodyMedium,
-                                modifier = Modifier
-                                    .wrapContentHeight()
-                                    .padding(horizontal = 16.dp, vertical = 4.dp)
-                                    .fillMaxWidth()
-                                    .wrapContentHeight(Alignment.Bottom)
-                            )
-                        }
-                    }
-
-                    val nextEpisodeAiringAt = headerValues.nextEpisodeAiringAt
-                    val nextEpisode = headerValues.nextEpisode
-                    AnimatedVisibility(
-                        nextEpisodeAiringAt != null && nextEpisode != null,
-                        label = "Media details nextEpisodeAiringAt text"
-                    ) {
-                        if (nextEpisodeAiringAt != null && nextEpisode != null) {
-                            val context = LocalContext.current
-                            val airingAt = remember {
-                                MediaUtils.formatAiringAt(context, nextEpisodeAiringAt * 1000L)
-                            }
-
-                            val remainingTime = remember {
-                                MediaUtils.formatRemainingTime(nextEpisodeAiringAt * 1000L)
-                            }
-
-                            Text(
-                                text = stringResource(
-                                    R.string.anime_media_next_airing_episode,
-                                    nextEpisode,
-                                    airingAt,
-                                    remainingTime,
-                                ),
-                                style = MaterialTheme.typography.labelMedium,
-                                color = MaterialTheme.colorScheme.surfaceTint,
-                                modifier = Modifier
-                                    .wrapContentHeight(Alignment.Bottom)
-                                    .padding(horizontal = 16.dp, vertical = 4.dp)
-                            )
-                        }
+                        MediaRatingIconsSection(
+                            rating = averageScore,
+                            popularity = popularity,
+                            modifier = Modifier
+                                .alpha(if (progress > 0.8f) 1f - ((1f - progress) / 0.2f) else 0f)
+                                .padding(start = 8.dp, end = 8.dp, top = 4.dp)
+                        )
                     }
                 }
 
-                AnimatedVisibility(
-                    visible = progress > 0.8f,
-                    enter = fadeIn() + expandHorizontally(),
-                    exit = fadeOut() + shrinkHorizontally(),
-                    modifier = Modifier.align(Alignment.Top)
-                ) {
-                    MediaRatingIconsSection(
-                        rating = averageScore,
-                        popularity = popularity,
-                        modifier = Modifier
-                            .alpha(if (progress > 0.8f) 1f - ((1f - progress) / 0.2f) else 0f)
-                            .padding(start = 8.dp, end = 8.dp, top = 4.dp)
-                    )
+                Row(verticalAlignment = Alignment.Bottom) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        val subtitleText = headerValues.subtitleText()
+                        AnimatedVisibility(
+                            subtitleText != null,
+                            label = "Media details subtitle text"
+                        ) {
+                            if (subtitleText != null) {
+                                Text(
+                                    text = subtitleText,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    modifier = Modifier
+                                        .wrapContentHeight()
+                                        .padding(horizontal = 16.dp, vertical = 4.dp)
+                                        .fillMaxWidth()
+                                        .wrapContentHeight(Alignment.Bottom)
+                                )
+                            }
+                        }
+
+                        val nextEpisodeAiringAt = headerValues.nextEpisodeAiringAt
+                        val nextEpisode = headerValues.nextEpisode
+                        AnimatedVisibility(
+                            nextEpisodeAiringAt != null && nextEpisode != null,
+                            label = "Media details nextEpisodeAiringAt text"
+                        ) {
+                            if (nextEpisodeAiringAt != null && nextEpisode != null) {
+                                val context = LocalContext.current
+                                val airingAt = remember {
+                                    MediaUtils.formatAiringAt(
+                                        context,
+                                        nextEpisodeAiringAt * 1000L
+                                    )
+                                }
+
+                                val remainingTime = remember {
+                                    MediaUtils.formatRemainingTime(nextEpisodeAiringAt * 1000L)
+                                }
+
+                                Text(
+                                    text = stringResource(
+                                        R.string.anime_media_next_airing_episode,
+                                        nextEpisode,
+                                        airingAt,
+                                        remainingTime,
+                                    ),
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = MaterialTheme.colorScheme.surfaceTint,
+                                    modifier = Modifier
+                                        .wrapContentHeight(Alignment.Bottom)
+                                        .padding(horizontal = 16.dp, vertical = 4.dp)
+                                )
+                            }
+                        }
+                    }
+
+                    if (menuContent != null) {
+                        menuContent()
+                    }
                 }
             }
         }

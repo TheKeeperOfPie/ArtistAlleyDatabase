@@ -275,6 +275,7 @@
     <string name="anime_media_details_song_spoiler">Spoiler</string>
     <string name="anime_media_details_song_spoiler_content_description">Song is spoiler</string>
 
+    <string name="anime_media_details_links_label">Links</string>
     <string name="anime_media_details_social_links_label">Socials</string>
     <string name="anime_media_details_streaming_links_label">Streaming</string>
     <string name="anime_media_details_other_links_label">Links</string>
@@ -344,6 +345,9 @@
     <string name="anime_media_details_reviews_rating_amount_content_description">Review rating population indicator</string>
 
     <string name="anime_media_details_view_all_content_description">View all</string>
+    <string name="anime_media_details_more_actions_content_description">More actions</string>
+    <string name="anime_media_details_open_external">Open in external</string>
+    <string name="anime_media_details_open_external_icon_content_description">Open in external</string>
 
     <string name="anime_media_edit_date_today_content_description">Set to today</string>
     <string name="anime_media_edit_date_start_date_label">Start</string>

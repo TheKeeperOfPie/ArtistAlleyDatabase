@@ -109,9 +109,10 @@ fun SortFilterOptionsPanel(
 @Composable
 fun SortFilterBottomScaffoldNoAppBarOffset(
     sortFilterController: SortFilterController?,
+    modifier: Modifier = Modifier,
     topBar: @Composable (() -> Unit)? = null,
     bottomNavigationState: BottomNavigationState? = null,
-    content: @Composable (PaddingValues) -> Unit
+    content: @Composable (PaddingValues) -> Unit,
 ) {
     val scaffoldState = rememberBottomSheetScaffoldState(
         rememberStandardBottomSheetState(
@@ -121,10 +122,9 @@ fun SortFilterBottomScaffoldNoAppBarOffset(
     )
 
     val scope = rememberCoroutineScope()
-    BackHandler(enabled = scaffoldState.bottomSheetState.currentValue == SheetValue.Expanded) {
-        scope.launch {
-            scaffoldState.bottomSheetState.partialExpand()
-        }
+    val bottomSheetState = scaffoldState.bottomSheetState
+    BackHandler(enabled = bottomSheetState.currentValue == SheetValue.Expanded) {
+        scope.launch { bottomSheetState.partialExpand() }
     }
 
     BottomSheetScaffoldNoAppBarOffset(
@@ -138,7 +138,14 @@ fun SortFilterBottomScaffoldNoAppBarOffset(
         sheetDragHandle = {
             SheetDragHandle(
                 sortFilterController = sortFilterController,
-                targetValue = { scaffoldState.bottomSheetState.targetValue },
+                targetValue = { bottomSheetState.targetValue },
+                onClick = {
+                    if (bottomSheetState.currentValue == SheetValue.Expanded) {
+                        scope.launch { bottomSheetState.partialExpand() }
+                    } else {
+                        scope.launch { bottomSheetState.expand() }
+                    }
+                },
             )
         },
         sheetContent = {
@@ -150,6 +157,7 @@ fun SortFilterBottomScaffoldNoAppBarOffset(
         sheetTonalElevation = 4.dp,
         sheetShadowElevation = 4.dp,
         topBar = topBar,
+        modifier = modifier,
         content = content,
         // TODO: Error state
         // snackbarHost = {},
@@ -161,7 +169,7 @@ fun SortFilterBottomScaffold(
     sortFilterController: SortFilterController?,
     topBar: @Composable (() -> Unit)? = null,
     bottomNavigationState: BottomNavigationState? = null,
-    content: @Composable (PaddingValues) -> Unit
+    content: @Composable (PaddingValues) -> Unit,
 ) {
     val scaffoldState = androidx.compose.material3.rememberBottomSheetScaffoldState(
         androidx.compose.material3.rememberStandardBottomSheetState(
@@ -171,10 +179,9 @@ fun SortFilterBottomScaffold(
     )
 
     val scope = rememberCoroutineScope()
-    BackHandler(enabled = scaffoldState.bottomSheetState.currentValue == SheetValue.Expanded) {
-        scope.launch {
-            scaffoldState.bottomSheetState.partialExpand()
-        }
+    val bottomSheetState = scaffoldState.bottomSheetState
+    BackHandler(enabled = bottomSheetState.currentValue == SheetValue.Expanded) {
+        scope.launch { bottomSheetState.partialExpand() }
     }
 
     BottomSheetScaffold(
@@ -188,7 +195,14 @@ fun SortFilterBottomScaffold(
         sheetDragHandle = {
             SheetDragHandle(
                 sortFilterController = sortFilterController,
-                targetValue = { scaffoldState.bottomSheetState.targetValue },
+                targetValue = { bottomSheetState.targetValue },
+                onClick = {
+                    if (bottomSheetState.currentValue == SheetValue.Expanded) {
+                        scope.launch { bottomSheetState.partialExpand() }
+                    } else {
+                        scope.launch { bottomSheetState.expand() }
+                    }
+                },
             )
         },
         sheetContent = {
@@ -209,9 +223,14 @@ fun SortFilterBottomScaffold(
 @Composable
 private fun SheetDragHandle(
     sortFilterController: SortFilterController?,
-    targetValue: () -> SheetValue
+    targetValue: () -> SheetValue,
+    onClick: () -> Unit,
 ) {
-    Box(Modifier.fillMaxWidth()) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+    ) {
         BottomSheetDefaults.DragHandle(modifier = Modifier.align(Alignment.Center))
 
         val collapseOnClose = sortFilterController?.collapseOnClose()

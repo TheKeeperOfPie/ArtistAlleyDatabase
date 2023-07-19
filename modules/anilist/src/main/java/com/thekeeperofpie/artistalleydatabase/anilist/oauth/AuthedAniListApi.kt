@@ -81,7 +81,6 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import java.io.IOException
 import java.time.LocalDate
-import java.time.ZoneOffset
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
@@ -221,8 +220,8 @@ open class AuthedAniListApi(
         scoreRaw: Int,
         progress: Int,
         progressVolumes: Int?,
-        repeat: Int?,
-        priority: Int?,
+        repeat: Int,
+        priority: Int,
         private: Boolean,
         startedAt: LocalDate?,
         completedAt: LocalDate?,
@@ -399,23 +398,20 @@ open class AuthedAniListApi(
     )
 
     open suspend fun airingSchedule(
-        date: LocalDate,
+        startTime: Long,
+        endTime: Long,
         sort: AiringSort,
         perPage: Int,
         page: Int,
-    ): AiringScheduleQuery.Data {
-        val startTime = date.atStartOfDay().toInstant(ZoneOffset.UTC).epochSecond - 1
-        val endTime = date.plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC).epochSecond
-        return query(
-            AiringScheduleQuery(
-                startTime = startTime.toInt(),
-                endTime = endTime.toInt(),
-                perPage = perPage,
-                page = page,
-                sort = listOf(sort),
-            )
+    ) = query(
+        AiringScheduleQuery(
+            startTime = startTime.toInt(),
+            endTime = endTime.toInt(),
+            perPage = perPage,
+            page = page,
+            sort = listOf(sort),
         )
-    }
+    )
 
     open suspend fun toggleFollow(userId: Int) =
         apolloClient.mutation(ToggleFollowMutation(userId)).execute().dataOrThrow().toggleFollow

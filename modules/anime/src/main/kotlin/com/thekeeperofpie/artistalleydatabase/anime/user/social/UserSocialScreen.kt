@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ImageNotSupported
 import androidx.compose.material3.CircularProgressIndicator
@@ -24,6 +25,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -44,6 +46,7 @@ import com.anilist.fragment.UserNavigationData
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.material.placeholder
 import com.google.accompanist.placeholder.material.shimmer
+import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
 import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
 import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
@@ -61,6 +64,7 @@ object UserSocialScreen {
 
     @Composable
     operator fun invoke(
+        screenKey: String,
         userId: String?,
         colorCalculationState: ColorCalculationState,
         navigationCallback: AnimeNavigator.NavigationCallback,
@@ -97,6 +101,7 @@ object UserSocialScreen {
             }
 
             usersRow(
+                screenKey = screenKey,
                 key = "following",
                 data = following,
                 titleRes = R.string.anime_user_social_following,
@@ -107,6 +112,7 @@ object UserSocialScreen {
 
             if (followers.itemCount > 0) {
                 usersRow(
+                    screenKey = screenKey,
                     key = "followers",
                     data = followers,
                     titleRes = R.string.anime_user_social_followers,
@@ -119,6 +125,7 @@ object UserSocialScreen {
     }
 
     private fun LazyListScope.usersRow(
+        screenKey: String,
         key: String,
         data: LazyPagingItems<out UserNavigationData>,
         @StringRes titleRes: Int,
@@ -156,6 +163,7 @@ object UserSocialScreen {
                         contentType = data.itemContentType { "user" },
                     ) {
                         UserPreview(
+                            screenKey = screenKey,
                             user = data[it],
                             colorCalculationState = colorCalculationState,
                             navigationCallback = navigationCallback,
@@ -168,6 +176,7 @@ object UserSocialScreen {
 
     @Composable
     private fun UserPreview(
+        screenKey: String,
         user: UserNavigationData?,
         colorCalculationState: ColorCalculationState,
         navigationCallback: AnimeNavigator.NavigationCallback,
@@ -186,34 +195,37 @@ object UserSocialScreen {
             Box {
                 val dimension =
                     Dimension.Pixels(LocalDensity.current.run { USER_IMAGE_SIZE.roundToPx() })
-                AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(user?.avatar?.large)
-                        .crossfade(true)
-                        .allowHardware(colorCalculationState.hasColor(user?.id.toString()))
-                        .size(width = dimension, height = dimension)
-                        .build(),
-                    contentScale = ContentScale.Crop,
-                    fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
-                    onSuccess = {
-                        imageWidthToHeightRatio = it.widthToHeightRatio()
-                        user ?: return@AsyncImage
-                        ComposeColorUtils.calculatePalette(
-                            user.id.toString(),
-                            it,
-                            colorCalculationState,
-                        )
-                    },
-                    contentDescription = stringResource(R.string.anime_user_image),
-                    modifier = Modifier
-                        .background(MaterialTheme.colorScheme.surfaceVariant)
-                        .fillMaxHeight()
-                        .size(USER_IMAGE_SIZE)
-                        .placeholder(
-                            visible = user == null,
-                            highlight = PlaceholderHighlight.shimmer(),
-                        )
-                )
+                SharedElement(key = "anime_user_${user?.id}_image", screenKey = screenKey) {
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(user?.avatar?.large)
+                            .crossfade(true)
+                            .allowHardware(colorCalculationState.hasColor(user?.id.toString()))
+                            .size(width = dimension, height = dimension)
+                            .build(),
+                        contentScale = ContentScale.Crop,
+                        fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
+                        onSuccess = {
+                            imageWidthToHeightRatio = it.widthToHeightRatio()
+                            user ?: return@AsyncImage
+                            ComposeColorUtils.calculatePalette(
+                                user.id.toString(),
+                                it,
+                                colorCalculationState,
+                            )
+                        },
+                        contentDescription = stringResource(R.string.anime_user_image),
+                        modifier = Modifier
+                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                            .fillMaxHeight()
+                            .size(USER_IMAGE_SIZE)
+                            .placeholder(
+                                visible = user == null,
+                                highlight = PlaceholderHighlight.shimmer(),
+                            )
+                            .clip(RoundedCornerShape(12.dp))
+                    )
+                }
 
                 Text(
                     text = user?.name ?: "USERNAME",

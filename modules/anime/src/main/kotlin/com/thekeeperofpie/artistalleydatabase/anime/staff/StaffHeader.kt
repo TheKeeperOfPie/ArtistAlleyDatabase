@@ -23,6 +23,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.CoverAndBannerHeader
 import com.thekeeperofpie.artistalleydatabase.compose.AutoResizeHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
+import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 
@@ -30,6 +31,7 @@ import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 @Composable
 fun StaffHeader(
     staffId: String,
+    upIconOption: UpIconOption?,
     progress: Float,
     headerValues: StaffHeaderValues,
     colorCalculationState: ColorCalculationState,
@@ -37,6 +39,7 @@ fun StaffHeader(
 ) {
     CoverAndBannerHeader(
         screenKey = AnimeNavDestinations.STAFF_DETAILS.id,
+        upIconOption = upIconOption,
         entryId = EntryId("anime_staff", staffId),
         progress = progress,
         color = { headerValues.color(colorCalculationState) },

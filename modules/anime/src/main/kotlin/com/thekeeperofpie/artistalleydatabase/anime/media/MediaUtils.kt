@@ -43,6 +43,7 @@ import java.time.ZoneOffset
 import kotlin.math.absoluteValue
 import kotlin.math.roundToInt
 
+@Suppress("DEPRECATION")
 object MediaUtils {
 
     // No better alternative to FORMAT_UTC
@@ -386,19 +387,17 @@ object MediaUtils {
     fun formatShortDay(context: Context, localDate: LocalDate) =
         DateUtils.formatDateTime(
             context,
-            localDate.atStartOfDay()
-                .toInstant(ZoneOffset.UTC)
-                .toEpochMilli(),
-            BASE_DATE_FORMAT_FLAGS or DateUtils.FORMAT_SHOW_DATE
+            localDate.atStartOfDay(ZoneOffset.UTC)
+                .toEpochSecond() * 1000,
+            BASE_DATE_FORMAT_FLAGS or DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_UTC
         )!!
 
     fun formatShortWeekday(context: Context, localDate: LocalDate) =
         DateUtils.formatDateTime(
             context,
-            localDate.atStartOfDay()
-                .toInstant(ZoneOffset.UTC)
-                .toEpochMilli(),
-            BASE_DATE_FORMAT_FLAGS or DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_WEEKDAY
+            localDate.atStartOfDay(ZoneOffset.UTC)
+                .toEpochSecond() * 1000,
+            BASE_DATE_FORMAT_FLAGS or DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_WEEKDAY or DateUtils.FORMAT_UTC
         )!!
 
     fun twitterHashtagsLink(hashtags: List<String>) =

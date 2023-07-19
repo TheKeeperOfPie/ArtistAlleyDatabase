@@ -6,6 +6,7 @@ import com.anilist.AiringScheduleQuery
 import com.anilist.type.AiringSort
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import java.time.LocalDate
+import java.time.ZoneOffset
 
 class AiringSchedulePagingSource(
     private val aniListApi: AuthedAniListApi,
@@ -31,8 +32,12 @@ class AiringSchedulePagingSource(
         // AniList pages start at 1
         val page = params.key ?: 1
 
+        val date = refreshParams.day
+        val startTime = date.atStartOfDay(ZoneOffset.UTC).toEpochSecond() - 1
+        val endTime = date.plusDays(1).atStartOfDay(ZoneOffset.UTC).toEpochSecond()
         val result = aniListApi.airingSchedule(
-            date = refreshParams.day,
+            startTime = startTime,
+            endTime = endTime,
             sort = when (refreshParams.sort) {
                 AiringScheduleSort.POPULARITY,
                 AiringScheduleSort.TIME -> AiringSort.TIME_DESC

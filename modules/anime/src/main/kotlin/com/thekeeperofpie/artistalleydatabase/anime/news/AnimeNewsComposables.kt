@@ -90,7 +90,7 @@ fun AnimeNewsSmallCard(
                     Text(
                         text = it,
                         style = MaterialTheme.typography.labelMedium,
-                        maxLines = 1,
+                        maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
                         color = MaterialTheme.colorScheme.primary,
                     )

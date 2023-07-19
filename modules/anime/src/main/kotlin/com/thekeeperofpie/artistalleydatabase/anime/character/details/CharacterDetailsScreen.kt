@@ -63,6 +63,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.compose.DetailsSubsectionHeader
 import com.thekeeperofpie.artistalleydatabase.compose.InfoText
 import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
+import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.fadingEdgeBottom
 import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.twoColumnInfoText
@@ -76,6 +77,7 @@ object CharacterDetailsScreen {
     @Composable
     operator fun invoke(
         viewModel: AnimeCharacterDetailsViewModel = hiltViewModel(),
+        upIconOption: UpIconOption?,
         headerValues: CharacterHeaderValues,
         navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
@@ -101,6 +103,7 @@ object CharacterDetailsScreen {
                 ) {
                     CharacterHeader(
                         screenKey = SCREEN_KEY,
+                        upIconOption = upIconOption,
                         characterId = viewModel.characterId,
                         progress = it,
                         headerValues = headerValues,

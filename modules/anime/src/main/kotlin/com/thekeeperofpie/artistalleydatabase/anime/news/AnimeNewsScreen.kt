@@ -32,6 +32,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.compose.AppBar
+import com.thekeeperofpie.artistalleydatabase.compose.ClickableBottomSheetDragHandle
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterSection
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortAndFilterComposables
@@ -61,6 +62,9 @@ object AnimeNewsScreen {
 
         BottomSheetScaffold(
             scaffoldState = scaffoldState,
+            sheetDragHandle = {
+                ClickableBottomSheetDragHandle(scope, scaffoldState.bottomSheetState)
+            },
             sheetContent = { FilterPanel(viewModel.filterData) },
             sheetTonalElevation = 4.dp,
             sheetShadowElevation = 4.dp,

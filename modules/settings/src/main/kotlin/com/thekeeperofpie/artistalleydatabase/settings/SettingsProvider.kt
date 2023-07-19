@@ -96,6 +96,7 @@ class SettingsProvider(
     // Not exported
     var lastCrash = MutableStateFlow(deserialize("lastCrash") ?: "")
     var lastCrashShown = MutableStateFlow(deserialize("lastCrashShown") ?: false)
+    var screenshotMode = MutableStateFlow(deserialize("screenshotMode") ?: false)
 
     var unlockAllFeatures = MutableStateFlow(deserialize("unlockAllFeatures") ?: false)
 
@@ -187,6 +188,7 @@ class SettingsProvider(
         subscribeProperty(scope, ::hideStatusBar)
         subscribeProperty(scope, ::lastCrash)
         subscribeProperty(scope, ::lastCrashShown)
+        subscribeProperty(scope, ::screenshotMode)
         subscribeProperty(scope, ::unlockAllFeatures)
         subscribeProperty(scope, ::animeNewsNetworkRegion)
 

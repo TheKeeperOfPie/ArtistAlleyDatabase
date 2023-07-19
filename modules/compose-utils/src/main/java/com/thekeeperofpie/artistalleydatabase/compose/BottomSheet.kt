@@ -94,13 +94,16 @@ fun BottomSheetScaffoldNoAppBarOffset(
     sheetContentColor: Color = contentColorFor(sheetContainerColor),
     sheetTonalElevation: Dp = BottomSheetDefaults.Elevation,
     sheetShadowElevation: Dp = BottomSheetDefaults.Elevation,
-    sheetDragHandle: @Composable (() -> Unit)? = { BottomSheetDefaults.DragHandle() },
+    sheetDragHandle: @Composable (() -> Unit)? = {
+        val scope = rememberCoroutineScope()
+        ClickableBottomSheetDragHandle(scope, scaffoldState.bottomSheetState)
+    },
     sheetSwipeEnabled: Boolean = true,
     topBar: @Composable (() -> Unit)? = null,
     snackbarHost: @Composable (SnackbarHostState) -> Unit = { SnackbarHost(it) },
     containerColor: Color = MaterialTheme.colorScheme.surface,
     contentColor: Color = contentColorFor(containerColor),
-    content: @Composable (PaddingValues) -> Unit
+    content: @Composable (PaddingValues) -> Unit,
 ) {
     BottomSheetScaffoldLayout(
         modifier = modifier,
@@ -131,10 +134,11 @@ fun BottomSheetScaffoldNoAppBarOffset(
         }
     )
 }
+
 @Composable
 fun rememberBottomSheetScaffoldState(
     bottomSheetState: SheetState = rememberStandardBottomSheetState(),
-    snackbarHostState: SnackbarHostState = remember { SnackbarHostState() }
+    snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
 ): BottomSheetScaffoldState {
     return remember(bottomSheetState, snackbarHostState) {
         BottomSheetScaffoldState(
@@ -166,7 +170,7 @@ fun rememberStandardBottomSheetState(
 
 class BottomSheetScaffoldState(
     val bottomSheetState: SheetState,
-    val snackbarHostState: SnackbarHostState
+    val snackbarHostState: SnackbarHostState,
 )
 
 @Composable
@@ -181,7 +185,7 @@ private fun StandardBottomSheet(
     tonalElevation: Dp,
     shadowElevation: Dp,
     dragHandle: @Composable (() -> Unit)?,
-    content: @Composable ColumnScope.() -> Unit
+    content: @Composable ColumnScope.() -> Unit,
 ) {
     val scope = rememberCoroutineScope()
     val peekHeightPx = with(LocalDensity.current) { peekHeight.toPx() }
@@ -300,7 +304,7 @@ private class SwipeAnchorsModifier(
 
     override fun MeasureScope.measure(
         measurable: Measurable,
-        constraints: Constraints
+        constraints: Constraints,
     ): MeasureResult {
         if (density != lastDensity || fontScale != lastFontScale) {
             onDensityChanged(Density(density, fontScale))
@@ -324,7 +328,7 @@ private fun <T> Modifier.swipeableV2(
     orientation: Orientation,
     enabled: Boolean = true,
     reverseDirection: Boolean = false,
-    interactionSource: MutableInteractionSource? = null
+    interactionSource: MutableInteractionSource? = null,
 ) = draggable(
     state = state.swipeDraggableState,
     orientation = orientation,
@@ -532,7 +536,7 @@ class SheetState(
      */
     internal suspend fun animateTo(
         targetValue: SheetValue,
-        velocity: Float = swipeableState.lastVelocity
+        velocity: Float = swipeableState.lastVelocity,
     ) {
         swipeableState.animateTo(targetValue, velocity)
     }
@@ -570,7 +574,7 @@ class SheetState(
          */
         fun Saver(
             skipPartiallyExpanded: Boolean,
-            confirmValueChange: (SheetValue) -> Boolean
+            confirmValueChange: (SheetValue) -> Boolean,
         ) = Saver<SheetState, SheetValue>(
             save = { it.currentValue },
             restore = { savedValue ->
@@ -584,7 +588,7 @@ class SheetState(
 internal fun ConsumeSwipeWithinBottomSheetBoundsNestedScrollConnection(
     sheetState: SheetState,
     orientation: Orientation,
-    onFling: (velocity: Float) -> Unit
+    onFling: (velocity: Float) -> Unit,
 ): NestedScrollConnection = object : NestedScrollConnection {
     override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
         val delta = available.toFloat()
@@ -598,7 +602,7 @@ internal fun ConsumeSwipeWithinBottomSheetBoundsNestedScrollConnection(
     override fun onPostScroll(
         consumed: Offset,
         available: Offset,
-        source: NestedScrollSource
+        source: NestedScrollSource,
     ): Offset {
         return if (source == NestedScrollSource.Drag) {
             sheetState.swipeableState.dispatchRawDelta(available.toFloat()).toOffset()
@@ -660,6 +664,7 @@ internal val BottomSheetMaxWidth = 640.dp
 internal fun fixedPositionalThreshold(threshold: Dp): Density.(distance: Float) -> Float = {
     threshold.toPx()
 }
+
 internal object SwipeableV2Defaults {
     /**
      * The default animation used by [SwipeableV2State].
@@ -694,7 +699,7 @@ internal object SwipeableV2Defaults {
     private fun <T> ReconcileAnimationOnAnchorChangeHandler(
         state: SwipeableV2State<T>,
         animate: (target: T, velocity: Float) -> Unit,
-        snap: (target: T) -> Unit
+        snap: (target: T) -> Unit,
     ) = AnchorChangeHandler { previousTarget, previousAnchors, newAnchors ->
         val previousTargetOffset = previousAnchors[previousTarget]
         val newTargetOffset = newAnchors[previousTarget]
@@ -707,9 +712,10 @@ internal object SwipeableV2Defaults {
         }
     }
 }
+
 private fun <T> Map<T, Float>.closestAnchor(
     offset: Float = 0f,
-    searchUpwards: Boolean = false
+    searchUpwards: Boolean = false,
 ): T {
     require(isNotEmpty()) { "The anchors were empty when trying to find the closest anchor" }
     return minBy { (_, anchor) ->
@@ -717,6 +723,7 @@ private fun <T> Map<T, Float>.closestAnchor(
         if (delta < 0) Float.POSITIVE_INFINITY else delta
     }.key
 }
+
 private fun <T> Map<T, Float>.minOrNull() = minOfOrNull { (_, offset) -> offset }
 private fun <T> Map<T, Float>.maxOrNull() = maxOfOrNull { (_, offset) -> offset }
 
@@ -759,7 +766,7 @@ internal class InternalMutatorMutex {
      */
     suspend fun <R> mutate(
         priority: MutatePriority = MutatePriority.Default,
-        block: suspend () -> R
+        block: suspend () -> R,
     ) = coroutineScope {
         val mutator = Mutator(priority, coroutineContext[Job]!!)
 
@@ -798,7 +805,7 @@ internal class InternalMutatorMutex {
     suspend fun <T, R> mutateWith(
         receiver: T,
         priority: MutatePriority = MutatePriority.Default,
-        block: suspend T.() -> R
+        block: suspend T.() -> R,
     ) = coroutineScope {
         val mutator = Mutator(priority, coroutineContext[Job]!!)
 
@@ -860,7 +867,7 @@ internal class SwipeableV2State<T>(
 
         override suspend fun drag(
             dragPriority: MutatePriority,
-            block: suspend DragScope.() -> Unit
+            block: suspend DragScope.() -> Unit,
         ) {
             swipe(dragPriority) { dragScope.block() }
         }
@@ -1089,7 +1096,7 @@ internal class SwipeableV2State<T>(
     private fun computeTarget(
         offset: Float,
         currentValue: T,
-        velocity: Float
+        velocity: Float,
     ): T {
         val currentAnchors = anchors
         val currentAnchor = currentAnchors[currentValue]
@@ -1135,7 +1142,7 @@ internal class SwipeableV2State<T>(
 
     private suspend fun swipe(
         swipePriority: MutatePriority = MutatePriority.Default,
-        action: suspend () -> Unit
+        action: suspend () -> Unit,
     ): Unit = coroutineScope { swipeMutex.mutate(swipePriority, action) }
 
     /**
@@ -1166,7 +1173,7 @@ internal class SwipeableV2State<T>(
             animationSpec: AnimationSpec<Float>,
             confirmValueChange: (T) -> Boolean,
             positionalThreshold: Density.(distance: Float) -> Float,
-            velocityThreshold: Dp
+            velocityThreshold: Dp,
         ) = Saver<SwipeableV2State<T>, T>(
             save = { it.currentValue },
             restore = {
@@ -1187,7 +1194,7 @@ private fun interface AnchorChangeHandler<T> {
     fun onAnchorsChanged(
         previousTargetValue: T,
         previousAnchors: Map<T, Float>,
-        newAnchors: Map<T, Float>
+        newAnchors: Map<T, Float>,
     )
 }
 

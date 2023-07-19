@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.schedule
 
+import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -120,11 +121,12 @@ object AiringScheduleScreen {
                         val context = LocalContext.current
                         val dayData = remember(context) {
                             val today = LocalDate.now()
+                            Log.d("DateDebug", "today = $today")
                             val tomorrow = today.plusDays(1)
                             val startOfWeek = today.minusDays(today.dayOfWeek.value.toLong() - 1)
                             val endOfWeek = startOfWeek.plusWeeks(1)
                             val startDay = startOfWeek.minusWeeks(1)
-                            (0..30).map {
+                            (0 until pagerState.pageCount).map {
                                 when (val day = startDay.plusDays(it.toLong())) {
                                     today -> day to Either.Left<Int, String>(
                                         R.string.anime_airing_schedule_today
@@ -139,6 +141,8 @@ object AiringScheduleScreen {
                                         MediaUtils.formatShortDay(context, day)
                                     )
                                 }
+                            }.also {
+                                Log.d("DateDebug", "dayData = $it")
                             }
                         }
 

@@ -222,6 +222,9 @@ query MediaDetails($mediaId: Int!) {
         }
 
         relations {
+            pageInfo {
+                hasNextPage
+            }
             edges {
                 id
                 relationType

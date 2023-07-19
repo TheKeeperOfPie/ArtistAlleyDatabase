@@ -12,6 +12,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterListRow
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffHeader
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffHeaderValues
 import com.thekeeperofpie.artistalleydatabase.anime.utils.HeaderAndListScreen
+import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
 
 object StaffCharactersScreen {
@@ -21,6 +22,7 @@ object StaffCharactersScreen {
     @Composable
     operator fun invoke(
         viewModel: StaffCharactersViewModel,
+        upIconOption: UpIconOption?,
         headerValues: StaffHeaderValues,
         navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
@@ -32,6 +34,7 @@ object StaffCharactersScreen {
             header = {
                 StaffHeader(
                     staffId = viewModel.headerId,
+                    upIconOption = upIconOption,
                     progress = it,
                     headerValues = headerValues,
                     colorCalculationState = colorCalculationState,

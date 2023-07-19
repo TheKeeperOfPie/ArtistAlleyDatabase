@@ -262,100 +262,82 @@ fun <T> LazyListScope.listSection(
     @StringRes viewAllContentDescriptionTextRes: Int? = null,
     itemContent: @Composable LazyListScope.(T, paddingBottom: Dp, modifier: Modifier) -> Unit,
 ) {
-    if (values.isNotEmpty()) {
-        val hasMore = values.size > aboveFold
-        item("$titleRes-header") {
-            DetailsSectionHeader(
-                text = stringResource(titleRes),
-                modifier = Modifier.clickable(
-                    enabled = onClickViewAll != null,
-                    onClick = { onClickViewAll?.invoke() },
-                ),
-                onClickViewAll = onClickViewAll,
-                viewAllContentDescriptionTextRes = viewAllContentDescriptionTextRes
-            )
-        }
+    if (values.isEmpty()) return
+    val hasMore = values.size > aboveFold
+    item("$titleRes-header") {
+        DetailsSectionHeader(
+            text = stringResource(titleRes),
+            modifier = Modifier.clickable(
+                enabled = onClickViewAll != null,
+                onClick = { onClickViewAll?.invoke() },
+            ),
+            onClickViewAll = onClickViewAll,
+            viewAllContentDescriptionTextRes = viewAllContentDescriptionTextRes
+        )
+    }
 
-        if (hidden()) {
-            item("$titleRes-hidden") {
-                hiddenContent()
-            }
-            return
+    if (hidden()) {
+        item("$titleRes-hidden") {
+            hiddenContent()
         }
+        return
+    }
 
-        itemsIndexed(
-            values.take(aboveFold),
-            { index, item -> "$titleRes-${valueToId(item) ?: index}" },
-        ) { index, item ->
-            val paddingBottom = if (index == values.size
-                    .coerceAtMost(aboveFold) - 1
+    itemsIndexed(
+        values.take(aboveFold),
+        { index, item -> "$titleRes-${valueToId(item) ?: index}" },
+    ) { index, item ->
+        val paddingBottom = if (index == values.size
+                .coerceAtMost(aboveFold) - 1
+        ) {
+            if (hasMore || hasMoreValues) 16.dp else 0.dp
+        } else {
+            16.dp
+        }
+        this@listSection.itemContent(item, paddingBottom, Modifier.animateItemPlacement())
+    }
+
+    fun showAllButton() {
+        item("$titleRes-showAll") {
+            ElevatedCard(
+                onClick = { onClickViewAll?.invoke() },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+                    .animateItemPlacement()
             ) {
-                if (hasMore || hasMoreValues) 16.dp else 0.dp
-            } else {
-                16.dp
-            }
-            this@listSection.itemContent(item, paddingBottom, Modifier.animateItemPlacement())
-        }
-
-        fun showAllButton() {
-            item("$titleRes-showAll") {
-                ElevatedCard(
-                    onClick = { onClickViewAll?.invoke() },
+                Text(
+                    text = stringResource(UtilsStringR.view_all),
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
-                        .animateItemPlacement()
-                ) {
-                    Text(
-                        text = stringResource(UtilsStringR.view_all),
-                        modifier = Modifier
-                            .padding(horizontal = 16.dp, vertical = 10.dp)
-                            .align(Alignment.CenterHorizontally)
-                    )
-                }
+                        .padding(horizontal = 16.dp, vertical = 10.dp)
+                        .align(Alignment.CenterHorizontally)
+                )
             }
         }
+    }
 
-        if (hasMore) {
-            if (expanded()) {
-                itemsIndexed(
-                    values.drop(aboveFold),
-                    { index, item -> "$titleRes-${valueToId(item) ?: (index + aboveFold)}" },
-                ) { _, item ->
-                    this@listSection.itemContent(item, 16.dp, Modifier.animateItemPlacement())
-                }
+    if (hasMore) {
+        if (expanded()) {
+            itemsIndexed(
+                values.drop(aboveFold),
+                { index, item -> "$titleRes-${valueToId(item) ?: (index + aboveFold)}" },
+            ) { _, item ->
+                this@listSection.itemContent(item, 16.dp, Modifier.animateItemPlacement())
+            }
 
-                if (hasMoreValues) {
-                    showAllButton()
-                } else {
-                    item("$titleRes-showLess") {
-                        ElevatedCard(
-                            onClick = { onExpandedChange(false) },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp)
-                                .animateItemPlacement()
-                        ) {
-                            Text(
-                                text = stringResource(UtilsStringR.show_less),
-                                modifier = Modifier
-                                    .padding(horizontal = 16.dp, vertical = 10.dp)
-                                    .align(Alignment.CenterHorizontally)
-                            )
-                        }
-                    }
-                }
+            if (hasMoreValues) {
+                showAllButton()
             } else {
-                item("$titleRes-showMore") {
+                item("$titleRes-showLess") {
                     ElevatedCard(
-                        onClick = { onExpandedChange(true) },
+                        onClick = { onExpandedChange(false) },
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp)
                             .animateItemPlacement()
                     ) {
                         Text(
-                            text = stringResource(UtilsStringR.show_more),
+                            text = stringResource(UtilsStringR.show_less),
                             modifier = Modifier
                                 .padding(horizontal = 16.dp, vertical = 10.dp)
                                 .align(Alignment.CenterHorizontally)
@@ -363,9 +345,26 @@ fun <T> LazyListScope.listSection(
                     }
                 }
             }
-        } else if (hasMoreValues) {
-            showAllButton()
+        } else {
+            item("$titleRes-showMore") {
+                ElevatedCard(
+                    onClick = { onExpandedChange(true) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                        .animateItemPlacement()
+                ) {
+                    Text(
+                        text = stringResource(UtilsStringR.show_more),
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp, vertical = 10.dp)
+                            .align(Alignment.CenterHorizontally)
+                    )
+                }
+            }
         }
+    } else if (hasMoreValues) {
+        showAllButton()
     }
 }
 

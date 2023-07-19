@@ -1,7 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.review
 
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -16,6 +15,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeader
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderValues
 import com.thekeeperofpie.artistalleydatabase.anime.utils.HeaderAndListScreen
+import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
 
 object ReviewsScreen {
@@ -25,6 +25,7 @@ object ReviewsScreen {
     @Composable
     operator fun invoke(
         viewModel: ReviewsViewModel,
+        upIconOption: UpIconOption,
         headerValues: MediaHeaderValues,
         navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
@@ -41,6 +42,7 @@ object ReviewsScreen {
             header = {
                 MediaHeader(
                     screenKey = SCREEN_KEY,
+                    upIconOption = upIconOption,
                     mediaId = viewModel.headerId,
                     titles = entry?.titlesUnique,
                     averageScore = media?.averageScore,

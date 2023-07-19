@@ -8,7 +8,6 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
@@ -17,7 +16,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
@@ -54,7 +53,6 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.core.graphics.ColorUtils
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
@@ -75,11 +73,9 @@ import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toStatusIcon
 import com.thekeeperofpie.artistalleydatabase.anime.ui.listSection
-import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.DetailsSectionHeader
-import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.compose.fadingEdgeEnd
 import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
 
@@ -90,7 +86,7 @@ fun <T> LazyListScope.mediaListSection(
     values: Collection<T>,
     valueToEntry: (T) -> AnimeMediaListRow.Entry<*>,
     aboveFold: Int,
-    hasMoreValues: Boolean = false,
+    hasMoreValues: Boolean,
     expanded: () -> Boolean = { false },
     onExpandedChange: (Boolean) -> Unit = {},
     colorCalculationState: ColorCalculationState,
@@ -135,16 +131,18 @@ fun LazyListScope.mediaHorizontalRow(
     entries: List<MediaNavigationData>,
     onClickEntry: (MediaNavigationData, imageWidthToHeightRatio: Float) -> Unit,
     colorCalculationState: ColorCalculationState,
-    imageHeight: Dp = 180.dp,
     showTitle: Boolean = true,
     sectionTitle: @Composable () -> Unit = {
         DetailsSectionHeader(stringResource(titleRes))
     },
 ) {
     if (entries.isEmpty()) return
-    item { sectionTitle() }
+    item("$titleRes-header") { sectionTitle() }
 
-    item {
+    item("$titleRes-media") {
+        val density = LocalDensity.current
+        val coilWidth = Dimension.Pixels(density.run { 120.dp.roundToPx() })
+        val coilHeight = Dimension.Pixels(density.run { 180.dp.roundToPx() })
         LazyRow(
             contentPadding = PaddingValues(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -178,75 +176,48 @@ fun LazyListScope.mediaHorizontalRow(
                     colors = CardDefaults.elevatedCardColors(containerColor = containerColor),
                     modifier = Modifier.animateItemPlacement(),
                 ) {
-                    ConstraintLayout {
-                        val (image, title) = createRefs()
-                        Box(
-                            modifier = Modifier
-                                .constrainAs(image) {
-                                    height =
-                                        androidx.constraintlayout.compose.Dimension
-                                            .value(imageHeight)
-                                    width =
-                                        androidx.constraintlayout.compose.Dimension.wrapContent
-                                    linkTo(start = parent.start, end = parent.end)
-                                    top.linkTo(parent.top)
-                                }
-                        ) {
-                            SharedElement(
-                                key = "anime_media_${it.id}_image",
-                                screenKey = screenKey,
-                            ) {
-                                AsyncImage(
-                                    model = ImageRequest.Builder(LocalContext.current)
-                                        .data(it.coverImage?.extraLarge)
-                                        .crossfade(true)
-                                        .allowHardware(colorCalculationState.hasColor(id))
-                                        .size(
-                                            width = Dimension.Undefined,
-                                            height = Dimension.Pixels(
-                                                LocalDensity.current.run { imageHeight.roundToPx() }
-                                            ),
-                                        )
-                                        .build(),
-                                    contentScale = ContentScale.FillHeight,
-                                    contentDescription = stringResource(R.string.anime_media_cover_image_content_description),
-                                    onSuccess = {
-                                        widthToHeightRatio = it.widthToHeightRatio()
-                                        ComposeColorUtils.calculatePalette(
-                                            id = id,
-                                            success = it,
-                                            colorCalculationState = colorCalculationState,
-                                            heightStartThreshold = 3 / 4f,
-                                            selectMaxPopulation = true,
-                                        )
-                                    },
-                                    modifier = Modifier
-                                        .height(imageHeight)
-                                        .conditionally(widthToHeightRatio != null) {
-                                            widthIn(max = imageHeight)
-                                        }
+                    SharedElement(
+                        key = "anime_media_${it.id}_image",
+                        screenKey = screenKey,
+                    ) {
+                        AsyncImage(
+                            model = ImageRequest.Builder(LocalContext.current)
+                                .data(it.coverImage?.extraLarge)
+                                .crossfade(true)
+                                .allowHardware(colorCalculationState.hasColor(id))
+                                .size(width = coilWidth, height = coilHeight)
+                                .build(),
+                            contentScale = ContentScale.FillHeight,
+                            contentDescription = stringResource(R.string.anime_media_cover_image_content_description),
+                            onSuccess = {
+                                widthToHeightRatio = it.widthToHeightRatio()
+                                ComposeColorUtils.calculatePalette(
+                                    id = id,
+                                    success = it,
+                                    colorCalculationState = colorCalculationState,
+                                    heightStartThreshold = 3 / 4f,
+                                    selectMaxPopulation = true,
                                 )
-                            }
-                        }
+                            },
+                            modifier = Modifier
+                                .size(width = 120.dp, height = 180.dp)
+                                .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
+                        )
+                    }
 
-                        if (showTitle) {
-                            AutoHeightText(
-                                text = it.title?.userPreferred.orEmpty(),
-                                color = ComposeColorUtils.bestTextColor(containerColor)
-                                    ?: Color.Unspecified,
-                                maxLines = 2,
-                                minLines = 2,
-                                overflow = TextOverflow.Ellipsis,
-                                modifier = Modifier
-                                    .padding(horizontal = 8.dp, vertical = 8.dp)
-                                    .constrainAs(title) {
-                                        linkTo(start = image.start, end = image.end)
-                                        top.linkTo(image.bottom)
-                                        width =
-                                            androidx.constraintlayout.compose.Dimension.fillToConstraints
-                                    }
-                            )
-                        }
+                    if (showTitle) {
+                        Text(
+                            text = it.title?.userPreferred.orEmpty(),
+                            color = ComposeColorUtils.bestTextColor(containerColor)
+                                ?: Color.Unspecified,
+                            style = MaterialTheme.typography.bodyMedium,
+                            maxLines = 2,
+                            minLines = 2,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier
+                                .width(120.dp)
+                                .padding(horizontal = 8.dp, vertical = 8.dp)
+                        )
                     }
                 }
             }

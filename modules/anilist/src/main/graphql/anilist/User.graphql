@@ -27,6 +27,7 @@ fragment UserFavoriteMediaNode on Media {
 
 query UserById($id: Int!) {
     User(id: $id) {
+        ...UserNavigationData
         id
         name
         about(asHtml: true)

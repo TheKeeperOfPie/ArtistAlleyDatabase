@@ -19,6 +19,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeader
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderValues
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.utils.HeaderAndMediaListScreen
+import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
 
 object RecommendationsScreen {
@@ -28,6 +29,7 @@ object RecommendationsScreen {
     @Composable
     operator fun invoke(
         viewModel: RecommendationsViewModel,
+        upIconOption: UpIconOption,
         headerValues: MediaHeaderValues,
         navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
@@ -50,6 +52,7 @@ object RecommendationsScreen {
             header = {
                 MediaHeader(
                     screenKey = SCREEN_KEY,
+                    upIconOption = upIconOption,
                     mediaId = viewModel.headerId,
                     titles = entry?.titlesUnique,
                     averageScore = media?.averageScore,

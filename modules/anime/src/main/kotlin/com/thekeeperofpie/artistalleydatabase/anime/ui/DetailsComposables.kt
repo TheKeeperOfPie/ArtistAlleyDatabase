@@ -38,6 +38,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.graphics.BlendMode
@@ -68,12 +69,15 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.compose.AccelerateEasing
 import com.thekeeperofpie.artistalleydatabase.compose.CustomHtmlText
 import com.thekeeperofpie.artistalleydatabase.compose.ImageHtmlText
+import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
+import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.optionalClickable
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 
 @Composable
 internal fun CoverAndBannerHeader(
     screenKey: String,
+    upIconOption: UpIconOption?,
     entryId: EntryId?,
     coverImage: @Composable () -> String?,
     bannerImage: @Composable () -> String? = { null },
@@ -144,6 +148,16 @@ internal fun CoverAndBannerHeader(
                         } else this
                     }
             )
+
+            if (upIconOption != null && progress != 1f) {
+                UpIconButton(
+                    option = upIconOption, modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .alpha(1f - progress)
+                        .clip(RoundedCornerShape(bottomEnd = 12.dp))
+                        .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.25f))
+                )
+            }
 
             Row(
                 modifier = Modifier

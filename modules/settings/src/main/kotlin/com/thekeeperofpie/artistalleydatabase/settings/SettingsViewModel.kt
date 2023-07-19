@@ -48,6 +48,9 @@ class SettingsViewModel @Inject constructor(
     val hideStatusBar: StateFlow<Boolean>
         get() = settingsProvider.hideStatusBar
 
+    val screenshotMode: StateFlow<Boolean>
+        get() = settingsProvider.screenshotMode
+
     val unlockAllFeatures: StateFlow<Boolean>
         get() = settingsProvider.unlockAllFeatures
 
@@ -163,6 +166,10 @@ class SettingsViewModel @Inject constructor(
 
     fun onHideStatusBarChanged(hide: Boolean) {
         settingsProvider.hideStatusBar.value = hide
+    }
+
+    fun onScreenshotModeChanged(hide: Boolean) {
+        settingsProvider.screenshotMode.value = hide
     }
 
     fun onUnlockAllFeaturesChanged(hide: Boolean) {

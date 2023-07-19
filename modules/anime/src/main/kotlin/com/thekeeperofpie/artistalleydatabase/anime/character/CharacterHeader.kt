@@ -24,12 +24,14 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.CoverAndBannerHeader
 import com.thekeeperofpie.artistalleydatabase.compose.AutoResizeHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
+import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 
 @Composable
 fun CharacterHeader(
     screenKey: String,
+    upIconOption: UpIconOption?,
     characterId: String,
     progress: Float,
     headerValues: CharacterHeaderValues,
@@ -42,6 +44,7 @@ fun CharacterHeader(
     ) {
         CoverAndBannerHeader(
             screenKey = AnimeNavDestinations.CHARACTER_DETAILS.id,
+            upIconOption = upIconOption,
             entryId = EntryId("anime_character", characterId),
             progress = progress,
             color = { headerValues.color(colorCalculationState) },

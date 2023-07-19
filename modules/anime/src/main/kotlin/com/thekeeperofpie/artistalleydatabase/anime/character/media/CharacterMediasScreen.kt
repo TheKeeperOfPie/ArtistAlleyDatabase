@@ -19,6 +19,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterHeaderVal
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.utils.HeaderAndMediaListScreen
+import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
 
 object CharacterMediasScreen {
@@ -28,6 +29,7 @@ object CharacterMediasScreen {
     @Composable
     operator fun invoke(
         viewModel: CharacterMediasViewModel,
+        upIconOption: UpIconOption,
         headerValues: CharacterHeaderValues,
         navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
@@ -49,6 +51,7 @@ object CharacterMediasScreen {
             header = {
                 CharacterHeader(
                     screenKey = SCREEN_KEY,
+                    upIconOption = upIconOption,
                     characterId = viewModel.headerId,
                     progress = it,
                     headerValues = headerValues,

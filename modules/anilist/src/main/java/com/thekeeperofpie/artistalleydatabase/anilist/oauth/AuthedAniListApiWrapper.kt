@@ -136,8 +136,8 @@ class AuthedAniListApiWrapper(
         scoreRaw: Int,
         progress: Int,
         progressVolumes: Int?,
-        repeat: Int?,
-        priority: Int?,
+        repeat: Int,
+        priority: Int,
         private: Boolean,
         startedAt: LocalDate?,
         completedAt: LocalDate?,
@@ -254,11 +254,12 @@ class AuthedAniListApiWrapper(
     }
 
     override suspend fun airingSchedule(
-        date: LocalDate,
+        startTime: Long,
+        endTime: Long,
         sort: AiringSort,
         perPage: Int,
         page: Int,
-    ) = super.airingSchedule(date, sort, perPage, page).let {
+    ) = super.airingSchedule(startTime, endTime, sort, perPage, page).let {
         it.copy(page = it.page?.copy(airingSchedules = it.page.airingSchedules?.filter { it?.media?.isAdult == false }))
     }
 

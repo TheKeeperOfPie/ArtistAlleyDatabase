@@ -22,7 +22,6 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Tab
@@ -42,21 +41,18 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.anilist.UserByIdQuery.Data.User
 import com.anilist.fragment.UserMediaStatistics
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.staff.DetailsStaff
-import com.thekeeperofpie.artistalleydatabase.anime.ui.CoverAndBannerHeader
 import com.thekeeperofpie.artistalleydatabase.anime.user.social.UserSocialScreen
 import com.thekeeperofpie.artistalleydatabase.anime.user.stats.UserMediaScreen
-import com.thekeeperofpie.artistalleydatabase.compose.AutoResizeHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.compose.CollapsingToolbar
 import com.thekeeperofpie.artistalleydatabase.compose.NestedScrollSplitter
+import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
-import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 import com.thekeeperofpie.artistalleydatabase.entry.EntryStringR
 import kotlinx.coroutines.launch
 
@@ -69,6 +65,8 @@ object AniListUserScreen {
     @Composable
     operator fun invoke(
         viewModel: AniListUserViewModel,
+        upIconOption: UpIconOption?,
+        headerValues: UserHeaderValues,
         navigationCallback: AnimeNavigator.NavigationCallback,
         bottomNavigationState: BottomNavigationState? = null,
         showLogOut: Boolean = false,
@@ -84,30 +82,16 @@ object AniListUserScreen {
                     scrollBehavior = scrollBehavior,
                 ) {
                     val user = viewModel.entry?.user
-                    CoverAndBannerHeader(
-                        screenKey = AnimeNavDestinations.USER.id,
-                        entryId = user?.id?.let { EntryId("anime_user", it.toString()) },
+                    UserHeader(
+                        screenKey = viewModel.screenKey,
+                        upIconOption = upIconOption,
+                        userId = viewModel.userId.orEmpty(),
                         progress = it,
-                        coverImage = { user?.avatar?.large },
+                        name = { headerValues.name },
+                        coverImage = { headerValues.image },
+                        coverImageWidthToHeightRatio = headerValues.imageWidthToHeightRatio,
                         bannerImage = { user?.bannerImage },
-                        pinnedHeight = 104.dp,
-                        coverSize = 180.dp,
-                    ) {
-                        AutoResizeHeightText(
-                            text = user?.name.orEmpty(),
-                            style = MaterialTheme.typography.headlineLarge,
-                            maxLines = 1,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .weight(1f)
-                                .padding(
-                                    start = 16.dp,
-                                    end = 16.dp,
-                                    top = 10.dp,
-                                    bottom = 10.dp
-                                ),
-                        )
-                    }
+                    )
 
                     val actuallyShowLogOut = showLogOut || viewModel.viewer.collectAsState().value
                         .let { it != null && it.id == viewModel.entry?.user?.id }
@@ -240,6 +224,7 @@ object AniListUserScreen {
                                 bottomNavigationState = bottomNavigationState,
                             )
                             UserTab.SOCIAL -> UserSocialScreen(
+                                screenKey = viewModel.screenKey,
                                 userId = viewModel.userId,
                                 colorCalculationState = colorCalculationState,
                                 navigationCallback = navigationCallback,

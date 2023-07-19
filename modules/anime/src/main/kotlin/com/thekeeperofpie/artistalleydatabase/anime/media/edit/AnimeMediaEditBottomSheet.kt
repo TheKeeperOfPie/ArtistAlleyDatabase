@@ -411,7 +411,7 @@ object AnimeMediaEditBottomSheet {
                         val visible = priority.isNotBlank()
                                 && priority.toIntOrNull()?.let { it > 0 } == true
                         val alpha by animateFloatAsState(
-                            if (visible) 1f else 0f,
+                            if (visible) 1f else 0.38f,
                             label = "Priority decrement alpha",
                         )
                         IconButton(
@@ -466,7 +466,7 @@ object AnimeMediaEditBottomSheet {
                         val visible = repeat.isNotBlank()
                                 && repeat.toIntOrNull()?.let { it > 0 } == true
                         val alpha by animateFloatAsState(
-                            if (visible) 1f else 0f,
+                            if (visible) 1f else 0.38f,
                             label = "Repeat decrement alpha",
                         )
                         IconButton(
@@ -577,19 +577,33 @@ object AnimeMediaEditBottomSheet {
             value = progress,
             onValueChange = onProgressChange,
             singleLine = true,
+            placeholder = {
+                Text(
+                    text = progressMax.toString(),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f),
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            },
             textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
             keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
             leadingIcon = {
                 val visible = progress.isNotBlank()
                         && progress.toIntOrNull()?.let { it > 0 } == true
                 val alpha by animateFloatAsState(
-                    if (visible) 1f else 0f,
+                    if (visible) 1f else 0.38f,
                     label = "Progress decrement alpha",
                 )
                 IconButton(
                     enabled = visible,
                     onClick = {
-                        progress.toIntOrNull()?.let { onProgressChange((it - 1).toString()) }
+                        progress.toIntOrNull()?.let {
+                            if (it == 1) {
+                                onProgressChange("")
+                            } else {
+                                onProgressChange((it - 1).toString())
+                            }
+                        }
                     },
                     modifier = Modifier.alpha(alpha)
                 ) {
@@ -605,7 +619,7 @@ object AnimeMediaEditBottomSheet {
                 val visible =
                     progress.isBlank() || progress.toIntOrNull()?.let { it < progressMax } == true
                 val alpha by animateFloatAsState(
-                    if (visible) 1f else 0f,
+                    if (visible) 1f else 0.38f,
                     label = "Progress increment alpha",
                 )
                 IconButton(

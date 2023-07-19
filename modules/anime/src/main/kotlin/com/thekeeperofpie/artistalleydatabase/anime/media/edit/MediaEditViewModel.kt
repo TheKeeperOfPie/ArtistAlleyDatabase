@@ -108,10 +108,20 @@ class MediaEditViewModel @Inject constructor(
     }
 
     fun initialize(media: MediaNavigationData) {
-        val mediaId = media.id
+        val mediaId = media.id.toString()
         val initialParams = initialParams.value
-        if (initialParams?.mediaId != mediaId.toString()) {
+        if (initialParams?.mediaId != mediaId) {
             mediaEntryRequest.tryEmit(media)
+            initialize(
+                mediaId = mediaId,
+                media = media,
+                mediaListEntry = null,
+                mediaType = null,
+                status = null,
+                maxProgress = null,
+                maxProgressVolumes = null,
+                loading = true
+            )
         }
         editData.showing = true
     }
@@ -136,12 +146,12 @@ class MediaEditViewModel @Inject constructor(
             loading = loading,
         )
         editData.status = status
-        editData.progress = mediaListEntry?.progress?.toString().orEmpty()
-        editData.progressVolumes = mediaListEntry?.progressVolumes?.toString().orEmpty()
-        editData.repeat = mediaListEntry?.repeat?.toString().orEmpty()
+        editData.progress = mediaListEntry?.progress.takeUnless { it == 0 }?.toString().orEmpty()
+        editData.progressVolumes = mediaListEntry?.progressVolumes.takeUnless { it == 0 }?.toString().orEmpty()
+        editData.repeat = mediaListEntry?.repeat.takeUnless { it == 0 }?.toString().orEmpty()
         editData.startDate = MediaUtils.parseLocalDate(mediaListEntry?.startedAt)
         editData.endDate = MediaUtils.parseLocalDate(mediaListEntry?.completedAt)
-        editData.priority = mediaListEntry?.priority?.toString().orEmpty()
+        editData.priority = mediaListEntry?.priority.takeUnless { it == 0 }?.toString().orEmpty()
         editData.private = mediaListEntry?.private ?: false
         editData.updatedAt = mediaListEntry?.updatedAt?.toLong()
         editData.createdAt = mediaListEntry?.createdAt?.toLong()
@@ -258,15 +268,6 @@ class MediaEditViewModel @Inject constructor(
                 if (field.isBlank()) return SimpleResult.Success(0)
                 return SimpleResult.successIfNotNull(field.toIntOrNull())
             }
-            fun validateFieldAsNullableInt(field: String): SimpleResult<Int?> {
-                if (field.isBlank()) return SimpleResult.Success(null)
-                val asInt = field.toIntOrNull()
-                return if (asInt == null) {
-                    SimpleResult.Failure()
-                } else {
-                    SimpleResult.Success(asInt)
-                }
-            }
 
             if (scoreRaw is SimpleResult.Failure) {
                 withContext(CustomDispatchers.Main) {
@@ -298,7 +299,7 @@ class MediaEditViewModel @Inject constructor(
                 }
             } else null
 
-            val repeatAsInt = validateFieldAsNullableInt(repeat)
+            val repeatAsInt = validateFieldAsInt(repeat)
             if (repeatAsInt is SimpleResult.Failure) {
                 withContext(CustomDispatchers.Main) {
                     editData.saving = false
@@ -307,7 +308,7 @@ class MediaEditViewModel @Inject constructor(
                 return@launch
             }
 
-            val priorityAsInt = validateFieldAsNullableInt(priority)
+            val priorityAsInt = validateFieldAsInt(priority)
             if (priorityAsInt is SimpleResult.Failure) {
                 withContext(CustomDispatchers.Main) {
                     editData.saving = false

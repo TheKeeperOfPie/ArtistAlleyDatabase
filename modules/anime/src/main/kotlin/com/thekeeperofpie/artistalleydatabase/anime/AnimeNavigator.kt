@@ -63,6 +63,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.studio.StudioMediasScreen
 import com.thekeeperofpie.artistalleydatabase.anime.studio.StudioMediasViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserScreen
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.user.UserHeaderValues
 import com.thekeeperofpie.artistalleydatabase.cds.CdEntryNavigator
 import com.thekeeperofpie.artistalleydatabase.cds.grid.CdEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
@@ -198,6 +199,7 @@ object AnimeNavigator {
 
             AnimeMediaDetailsScreen(
                 viewModel = viewModel,
+                upIconOption = UpIconOption.Back(navHostController),
                 headerValues = headerValues,
                 entry = { viewModel.entry },
                 onGenreLongClick = { /*TODO*/ },
@@ -235,6 +237,7 @@ object AnimeNavigator {
 
             CharacterDetailsScreen(
                 viewModel = viewModel,
+                upIconOption = UpIconOption.Back(navHostController),
                 headerValues = headerValues,
                 navigationCallback = navigationCallback,
             )
@@ -259,6 +262,7 @@ object AnimeNavigator {
 
             CharacterMediasScreen(
                 viewModel = viewModel,
+                upIconOption = UpIconOption.Back(navHostController),
                 headerValues = headerValues,
                 navigationCallback = navigationCallback,
             )
@@ -287,6 +291,7 @@ object AnimeNavigator {
 
             StaffDetailsScreen(
                 viewModel = viewModel,
+                upIconOption = UpIconOption.Back(navHostController),
                 headerValues = headerValues,
                 navigationCallback = navigationCallback,
             )
@@ -310,6 +315,7 @@ object AnimeNavigator {
 
             StaffCharactersScreen(
                 viewModel = viewModel,
+                upIconOption = UpIconOption.Back(navHostController),
                 headerValues = headerValues,
                 navigationCallback = navigationCallback,
             )
@@ -317,7 +323,7 @@ object AnimeNavigator {
 
         navGraphBuilder.composable(
             route = AnimeNavDestinations.USER.id
-                    + "?userId={userId}",
+                    + "?userId={userId}${UserHeaderValues.routeSuffix}",
             deepLinks = listOf(
                 navDeepLink { uriPattern = "${AniListUtils.ANILIST_BASE_URL}/user/{userId}" },
                 navDeepLink { uriPattern = "${AniListUtils.ANILIST_BASE_URL}/user/{userId}/.*" },
@@ -327,11 +333,16 @@ object AnimeNavigator {
                     type = NavType.StringType
                     nullable = true
                 },
-            ),
+            ) + UserHeaderValues.navArguments(),
         ) {
             val userId = it.arguments?.getString("userId")
-            UserScreen(
-                userId = userId,
+            val viewModel = hiltViewModel<AniListUserViewModel>()
+                .apply { initialize(userId) }
+            val headerValues = UserHeaderValues(it.arguments) { viewModel.entry?.user }
+            AniListUserScreen(
+                viewModel = viewModel,
+                upIconOption = upIconOption,
+                headerValues = headerValues,
                 navigationCallback = navigationCallback,
             )
         }
@@ -422,6 +433,7 @@ object AnimeNavigator {
 
             CharactersScreen(
                 viewModel = viewModel,
+                upIconOption = UpIconOption.Back(navHostController),
                 headerValues = headerValues,
                 navigationCallback = navigationCallback,
             )
@@ -445,6 +457,7 @@ object AnimeNavigator {
 
             ReviewsScreen(
                 viewModel = viewModel,
+                upIconOption = UpIconOption.Back(navHostController),
                 headerValues = headerValues,
                 navigationCallback = navigationCallback,
             )
@@ -468,6 +481,7 @@ object AnimeNavigator {
 
             RecommendationsScreen(
                 viewModel = viewModel,
+                upIconOption = UpIconOption.Back(navHostController),
                 headerValues = headerValues,
                 navigationCallback = navigationCallback,
             )
@@ -496,6 +510,7 @@ object AnimeNavigator {
 
             ReviewDetailsScreen(
                 viewModel = viewModel,
+                upIconOption = UpIconOption.Back(navHostController),
                 headerValues = headerValues,
                 navigationCallback = navigationCallback,
             )
@@ -681,16 +696,17 @@ object AnimeNavigator {
         navHostController: NavHostController,
         user: UserNavigationData,
         imageWidthToHeightRatio: Float,
-    ) {
-        // TODO: Pass name and image
-        navHostController.navigate("${AnimeNavDestinations.USER.id}?userId=${user.id}")
-    }
+    ) = navHostController.navigate(
+        AnimeNavDestinations.USER.id +
+                "?userId=${user.id}" +
+                UserHeaderValues.routeSuffix(user, imageWidthToHeightRatio)
+    )
 
     fun onUserListClick(
         navHostController: NavHostController,
         userId: String,
         userName: String?,
-        mediaType: MediaType?
+        mediaType: MediaType?,
     ) {
         navHostController.navigate(
             AnimeNavDestinations.USER_LIST.id +
@@ -738,21 +754,6 @@ object AnimeNavigator {
             viewModel = viewModel,
             navigationCallback = navigationCallback,
             scrollStateSaver = scrollStateSaver,
-            bottomNavigationState = bottomNavigationState,
-        )
-    }
-
-    @Composable
-    fun UserScreen(
-        userId: String?,
-        navigationCallback: NavigationCallback,
-        bottomNavigationState: BottomNavigationState? = null,
-    ) {
-        val viewModel = hiltViewModel<AniListUserViewModel>()
-            .apply { initialize(userId) }
-        AniListUserScreen(
-            viewModel = viewModel,
-            navigationCallback = navigationCallback,
             bottomNavigationState = bottomNavigationState,
         )
     }
@@ -815,21 +816,21 @@ object AnimeNavigator {
 
         fun onMediaCharactersClick(
             media: AnimeMediaDetailsScreen.Entry,
-            imageWidthToHeightRatio: Float
+            imageWidthToHeightRatio: Float,
         ) {
             navHostController?.let { onMediaCharactersClick(it, media, imageWidthToHeightRatio) }
         }
 
         fun onMediaReviewsClick(
             media: AnimeMediaDetailsScreen.Entry,
-            imageWidthToHeightRatio: Float
+            imageWidthToHeightRatio: Float,
         ) {
             navHostController?.let { onMediaReviewsClick(it, media, imageWidthToHeightRatio) }
         }
 
         fun onMediaRecommendationsClick(
             media: AnimeMediaDetailsScreen.Entry,
-            imageWidthToHeightRatio: Float
+            imageWidthToHeightRatio: Float,
         ) {
             navHostController?.let {
                 onMediaRecommendationsClick(it, media, imageWidthToHeightRatio)
@@ -922,7 +923,7 @@ object AnimeNavigator {
         fun onReviewClick(
             reviewId: String,
             media: MediaHeaderData?,
-            imageWidthToHeightRatio: Float
+            imageWidthToHeightRatio: Float,
         ) {
             navHostController?.let { onReviewClick(it, reviewId, media, imageWidthToHeightRatio) }
         }

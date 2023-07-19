@@ -161,6 +161,7 @@ object AnimeRootScreen {
                             bottomNavigationState = bottomNavigationState,
                         )
                         NavDestinations.PROFILE -> AniListViewerProfileScreen(
+                            upIconOption = upIconOption,
                             needAuth = needAuth,
                             onClickAuth = onClickAuth,
                             onSubmitAuthToken = onSubmitAuthToken,

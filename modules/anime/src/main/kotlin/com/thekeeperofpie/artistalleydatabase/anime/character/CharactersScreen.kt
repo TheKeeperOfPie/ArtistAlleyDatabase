@@ -9,6 +9,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeader
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderValues
 import com.thekeeperofpie.artistalleydatabase.anime.utils.HeaderAndListScreen
+import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
 
 object CharactersScreen {
@@ -20,6 +21,7 @@ object CharactersScreen {
     @Composable
     operator fun invoke(
         viewModel: CharactersViewModel,
+        upIconOption: UpIconOption,
         headerValues: MediaHeaderValues,
         navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
@@ -33,6 +35,7 @@ object CharactersScreen {
             header = {
                 MediaHeader(
                     screenKey = SCREEN_KEY,
+                    upIconOption = upIconOption,
                     mediaId = viewModel.headerId,
                     titles = entry?.titlesUnique,
                     averageScore = media?.averageScore,

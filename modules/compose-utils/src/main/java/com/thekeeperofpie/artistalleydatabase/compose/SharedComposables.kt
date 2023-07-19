@@ -56,6 +56,7 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.OpenInNew
 import androidx.compose.material.icons.outlined.CheckCircle
+import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.DropdownMenuItem
@@ -71,6 +72,7 @@ import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SearchBar
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -89,7 +91,6 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableLongStateOf
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -135,9 +136,11 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.TextUnit
@@ -151,6 +154,8 @@ import coil.Coil
 import coil.request.ImageRequest
 import com.thekeeperofpie.compose_proxy.R
 import de.charlex.compose.toAnnotatedString
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -173,8 +178,8 @@ fun AppBar(
 }
 
 @Composable
-fun NavMenuIconButton(onClick: () -> Unit) {
-    IconButton(onClick = onClick) {
+fun NavMenuIconButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
+    IconButton(onClick = onClick, modifier = modifier) {
         Icon(
             imageVector = Icons.Default.Menu,
             contentDescription = stringResource(
@@ -396,7 +401,7 @@ fun Modifier.border(
     startOffsetX: ContentDrawScope.() -> Float,
     startOffsetY: ContentDrawScope.() -> Float,
     endOffsetX: ContentDrawScope.() -> Float,
-    endOffsetY: ContentDrawScope.() -> Float
+    endOffsetY: ContentDrawScope.() -> Float,
 ): Modifier = composed(
     factory = {
         this.then(
@@ -530,14 +535,6 @@ fun AutoResizeHeightText(
     text: String,
     modifier: Modifier = Modifier,
     color: Color = Color.Unspecified,
-    fontSize: TextUnit = TextUnit.Unspecified,
-    fontStyle: FontStyle? = null,
-    fontWeight: FontWeight? = null,
-    fontFamily: FontFamily? = null,
-    letterSpacing: TextUnit = TextUnit.Unspecified,
-    textDecoration: TextDecoration? = null,
-    textAlign: TextAlign? = null,
-    lineHeight: TextUnit = TextUnit.Unspecified,
     overflow: TextOverflow = TextOverflow.Clip,
     softWrap: Boolean = true,
     maxLines: Int = Int.MAX_VALUE,
@@ -545,88 +542,64 @@ fun AutoResizeHeightText(
     style: TextStyle = LocalTextStyle.current,
     minTextSizeSp: Float = 2f,
 ) {
-    val initialFontSize = fontSize.takeOrElse { style.fontSize }.value
+    val initialFontSize = style.fontSize
     var realFontSize by remember { mutableStateOf(initialFontSize) }
-    val initialLineHeight = lineHeight.takeOrElse { style.lineHeight }.value
+    val initialLineHeight = style.lineHeight
     var realLineHeight by remember { mutableStateOf(initialLineHeight) }
-    var readyToDraw by remember { mutableStateOf(false) }
 
-    var stillCalculating by remember { mutableStateOf(true) }
-    var decreasing by remember { mutableStateOf(true) }
-
-    val cachedFontSizes = remember { mutableStateMapOf<IntSize, Float>() }
-    var lastSize by remember { mutableStateOf<IntSize?>(null) }
-    var boxSize by remember { mutableStateOf(IntSize(0, 0)) }
+    val textMeasurer = rememberTextMeasurer()
 
     Box(
         contentAlignment = Alignment.CenterStart,
         modifier = modifier
             .onSizeChanged {
-                lastSize = boxSize
-                val cachedFontSize = cachedFontSizes[boxSize]
-                if (cachedFontSize != null) {
-                    realFontSize = cachedFontSize
-                    realLineHeight = cachedFontSize / initialFontSize * initialLineHeight
-                    boxSize = it
-                    stillCalculating = false
-                    return@onSizeChanged
+                var fontSize = initialFontSize
+                var lineHeight = initialLineHeight
+                val constraints = Constraints(
+                    minWidth = it.width,
+                    maxWidth = it.width,
+                    minHeight = it.height,
+                    maxHeight = it.height,
+                )
+                var result = textMeasurer.measure(
+                    text = text,
+                    style = style,
+                    overflow = overflow,
+                    maxLines = maxLines,
+                    constraints = constraints,
+                )
+                var attempts = 0
+                while (attempts++ < 25
+                    && (result.didOverflowWidth || result.didOverflowHeight)
+                    && fontSize > minTextSizeSp.sp
+                ) {
+                    fontSize *= 0.95f
+                    lineHeight *= 0.95f
+                    result = textMeasurer.measure(
+                        text = text,
+                        style = style.copy(fontSize = fontSize, lineHeight = lineHeight),
+                        overflow = overflow,
+                        maxLines = maxLines,
+                        constraints = constraints,
+                    )
                 }
-                decreasing = it.height < boxSize.height || it.width < boxSize.width
-                stillCalculating = true
-                boxSize = it
+                realFontSize = fontSize
+                realLineHeight = lineHeight
             }
     ) {
         Text(
             text = text,
             color = color,
-            fontSize = realFontSize.sp,
-            fontStyle = fontStyle,
-            fontWeight = fontWeight,
-            fontFamily = fontFamily,
-            letterSpacing = letterSpacing,
-            textDecoration = textDecoration,
-            textAlign = textAlign,
-            lineHeight = realLineHeight.sp,
+            fontSize = realFontSize,
+            lineHeight = realLineHeight,
             overflow = overflow,
             softWrap = softWrap,
             maxLines = maxLines,
             minLines = minLines,
-            onTextLayout = onTextLayout@{
-                if (stillCalculating) {
-                    val scale = if (it.didOverflowHeight
-                        || (it.lineCount == 1 && it.didOverflowWidth)
-                    ) {
-                        if (decreasing) {
-                            0.9f
-                        } else {
-                            // Reset to decreasing if overflowed since
-                            // it doesn't make sense to increase from here
-                            decreasing = true
-                            0.9f
-                        }
-                    } else if (!decreasing) {
-                        1 / 0.9f
-                    } else 1f
-
-                    if (scale != 1f) {
-                        val nextSize = realFontSize * scale
-                        if (nextSize > minTextSizeSp && nextSize <= initialFontSize) {
-                            realFontSize = nextSize
-                            realLineHeight *= scale
-                            return@onTextLayout
-                        }
-                    }
-
-                    stillCalculating = false
-                    cachedFontSizes.putIfAbsent(boxSize, realFontSize)
-                    readyToDraw = true
-                }
-            },
             style = style,
             modifier = Modifier
                 .wrapContentHeight()
                 .fillMaxWidth()
-                .drawWithCache { onDrawWithContent { if (readyToDraw) drawContent() } }
         )
     }
 }
@@ -1130,7 +1103,7 @@ fun DetailsSectionHeader(
     @StringRes viewAllContentDescriptionTextRes: Int? = null,
 ) {
     if (onClickViewAll != null) {
-        Row(modifier = modifier) {
+        Row(modifier = modifier.background(MaterialTheme.colorScheme.surface)) {
             Text(
                 text = text,
                 style = MaterialTheme.typography.titleMedium,
@@ -1156,6 +1129,7 @@ fun DetailsSectionHeader(
             style = MaterialTheme.typography.titleMedium,
             modifier = modifier
                 .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.surface)
                 .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 10.dp),
         )
     }
@@ -1180,7 +1154,7 @@ fun DetailsSubsectionHeader(text: String, modifier: Modifier = Modifier) {
 fun twoColumnInfoText(
     labelOne: String, bodyOne: String?, onClickOne: (() -> Unit)? = null,
     labelTwo: String, bodyTwo: String?, onClickTwo: (() -> Unit)? = null,
-    showDividerAbove: Boolean = true
+    showDividerAbove: Boolean = true,
 ): Boolean {
     if (!bodyOne.isNullOrBlank() && !bodyTwo.isNullOrBlank()) {
         if (showDividerAbove) {
@@ -1253,7 +1227,7 @@ fun <T> expandableListInfoText(
     valueToText: @Composable (T) -> String,
     onClick: ((T) -> Unit)? = null,
     showDividerAbove: Boolean = true,
-    allowExpand: Boolean = values.size > 3
+    allowExpand: Boolean = values.size > 3,
 ): Boolean {
     if (values.isEmpty()) return false
 
@@ -1452,7 +1426,7 @@ fun MinWidthTextField(
     fun TextFieldColors.textColor(
         enabled: Boolean,
         isError: Boolean,
-        interactionSource: InteractionSource
+        interactionSource: InteractionSource,
     ): State<Color> {
         val focused by interactionSource.collectIsFocusedAsState()
 
@@ -1520,3 +1494,51 @@ fun MinWidthTextField(
         )
     }
 }
+
+@Composable
+fun ClickableBottomSheetDragHandle(scope: CoroutineScope, sheetState: SheetState) {
+    Box(contentAlignment = Alignment.Center, modifier = Modifier
+        .fillMaxWidth()
+        .clickable {
+            if (sheetState.currentValue == SheetValue.Expanded) {
+                scope.launch {
+                    try {
+                        sheetState.hide()
+                    } catch (ignored: Throwable) {
+                        sheetState.partialExpand()
+                    }
+                }
+            } else {
+                scope.launch { sheetState.expand() }
+            }
+        }
+    ) {
+        BottomSheetDefaults.DragHandle()
+    }
+}
+
+@Composable
+fun ClickableBottomSheetDragHandle(
+    scope: CoroutineScope,
+    sheetState: androidx.compose.material3.SheetState,
+) {
+    Box(contentAlignment = Alignment.Center, modifier = Modifier
+        .fillMaxWidth()
+        .clickable {
+            if (sheetState.currentValue == SheetValue.Expanded) {
+                scope.launch {
+                    try {
+                        sheetState.hide()
+                    } catch (ignored: Throwable) {
+                        sheetState.partialExpand()
+                    }
+                }
+            } else {
+                scope.launch { sheetState.expand() }
+            }
+        }
+    ) {
+        BottomSheetDefaults.DragHandle()
+    }
+}
+

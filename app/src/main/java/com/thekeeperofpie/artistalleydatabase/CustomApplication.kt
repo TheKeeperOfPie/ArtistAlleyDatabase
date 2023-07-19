@@ -15,9 +15,12 @@ import coil.memory.MemoryCache
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.android_utils.notification.NotificationChannels
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListOAuthStore
+import com.thekeeperofpie.artistalleydatabase.settings.SettingsProvider
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.MainScope
+import okhttp3.Call
 import okhttp3.OkHttpClient
+import okhttp3.Request
 import javax.inject.Inject
 
 @HiltAndroidApp
@@ -36,6 +39,9 @@ class CustomApplication : Application(), Configuration.Provider, ScopedApplicati
 
     @Inject
     lateinit var workerFactory: HiltWorkerFactory
+
+    @Inject
+    lateinit var settings: SettingsProvider
 
     private lateinit var audioManager: AudioManager
 
@@ -97,7 +103,20 @@ class CustomApplication : Application(), Configuration.Provider, ScopedApplicati
     }
 
     override fun newImageLoader() = ImageLoader.Builder(this)
-        .okHttpClient(okHttpClient)
+        .okHttpClient(
+            if (settings.screenshotMode.value) {
+                // Fails all calls, required in production to allow exact screenshots for release
+                object : OkHttpClient() {
+                    override fun newCall(request: Request): Call {
+                        return okHttpClient.newCall(
+                            request.newBuilder().get().url("127.0.0.1").build()
+                        )
+                    }
+                }
+            } else {
+                okHttpClient
+            }
+        )
         .memoryCache {
             MemoryCache.Builder(this)
                 .maxSizePercent(0.25)
@@ -109,6 +128,7 @@ class CustomApplication : Application(), Configuration.Provider, ScopedApplicati
                 .maxSizePercent(0.02)
                 .build()
         }
+        .crossfade(true)
         .build()
 
     override fun getSystemService(name: String): Any? {

@@ -37,6 +37,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.character.DetailsCharacter
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.compose.CollapsingToolbar
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
+import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
 import kotlinx.coroutines.launch
 
@@ -46,6 +47,7 @@ object StaffDetailsScreen {
     @Composable
     operator fun invoke(
         viewModel: StaffDetailsViewModel = hiltViewModel(),
+        upIconOption: UpIconOption?,
         headerValues: StaffHeaderValues,
         navigationCallback: AnimeNavigator.NavigationCallback =
             AnimeNavigator.NavigationCallback(null),
@@ -67,6 +69,7 @@ object StaffDetailsScreen {
                 ) {
                     StaffHeader(
                         staffId = viewModel.staffId,
+                        upIconOption = upIconOption,
                         progress = it,
                         headerValues = headerValues,
                         colorCalculationState = colorCalculationState,

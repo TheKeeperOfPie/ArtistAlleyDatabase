@@ -36,8 +36,11 @@ fun LazyListScope.staffSection(
     roleLines: Int = 1,
 ) {
     if (staff.isEmpty()) return
-    item {
+    item("$titleRes-header") {
         DetailsSectionHeader(stringResource(titleRes))
+    }
+
+    item("$titleRes-section") {
         LazyRow(
             contentPadding = PaddingValues(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp),

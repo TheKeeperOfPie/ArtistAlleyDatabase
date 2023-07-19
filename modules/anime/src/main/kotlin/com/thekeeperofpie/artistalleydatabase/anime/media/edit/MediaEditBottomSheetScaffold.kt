@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.compose.BottomSheetScaffoldNoAppBarOffset
+import com.thekeeperofpie.artistalleydatabase.compose.ClickableBottomSheetDragHandle
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.SheetState
 import com.thekeeperofpie.artistalleydatabase.compose.rememberBottomSheetScaffoldState
@@ -95,6 +96,7 @@ object MediaEditBottomSheetScaffold {
             scaffoldState = bottomSheetScaffoldState,
             topBar = topBar,
             sheetPeekHeight = 0.dp,
+            sheetDragHandle = { ClickableBottomSheetDragHandle(scope, sheetState) },
             snackbarHost = {
                 SnackbarHost(it, modifier = Modifier.padding(bottom = bottomPadding))
             },

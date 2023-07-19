@@ -38,6 +38,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ImageNotSupported
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.OpenInBrowser
 import androidx.compose.material.icons.filled.PauseCircleOutline
 import androidx.compose.material.icons.filled.Person
@@ -45,6 +46,8 @@ import androidx.compose.material.icons.filled.PlayCircleOutline
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Divider
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
@@ -64,6 +67,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -105,7 +109,6 @@ import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTube
 import com.thekeeperofpie.artistalleydatabase.android_utils.UriUtils
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils
@@ -141,6 +144,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.DetailsSubsectionHeader
 import com.thekeeperofpie.artistalleydatabase.compose.InfoText
 import com.thekeeperofpie.artistalleydatabase.compose.PieChart
 import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
+import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.assistChipColors
 import com.thekeeperofpie.artistalleydatabase.compose.expandableListInfoText
 import com.thekeeperofpie.artistalleydatabase.compose.multiplyCoerceSaturation
@@ -150,6 +154,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.showFloatingActionButtonOn
 import com.thekeeperofpie.artistalleydatabase.compose.twoColumnInfoText
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGrid
+import kotlinx.coroutines.launch
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.math.roundToInt
 
@@ -159,8 +164,6 @@ import kotlin.math.roundToInt
     ExperimentalFoundationApi::class
 )
 object AnimeMediaDetailsScreen {
-
-    private val SCREEN_KEY = AnimeNavDestinations.MEDIA_DETAILS.id
 
     private const val RELATIONS_ABOVE_FOLD = 3
     private const val RECOMMENDATIONS_ABOVE_FOLD = 3
@@ -189,6 +192,7 @@ object AnimeMediaDetailsScreen {
     @Composable
     operator fun invoke(
         viewModel: AnimeMediaDetailsViewModel = hiltViewModel(),
+        upIconOption: UpIconOption,
         headerValues: MediaHeaderValues,
         entry: @Composable () -> Entry? = { null },
         onGenreLongClick: (String) -> Unit = {},
@@ -199,15 +203,21 @@ object AnimeMediaDetailsScreen {
     ) {
         val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
         val lazyListState = rememberLazyListState()
+        val scope = rememberCoroutineScope()
         val colorCalculationState = rememberColorCalculationState(viewModel.colorMap)
 
         var coverImageWidthToHeightRatio by remember {
             mutableFloatStateOf(headerValues.coverImageWidthToHeightRatio)
         }
+        val entry = entry()
+        val expandedState = rememberExpandedState()
+        val animeSongs = viewModel.animeSongs
+        val sectionIndexInfo =
+            buildSectionIndexInfo(entry, expandedState, animeSongs, viewModel.cdEntries)
 
         val editViewModel = hiltViewModel<MediaEditViewModel>()
         MediaEditBottomSheetScaffold(
-            screenKey = SCREEN_KEY,
+            screenKey = viewModel.screenKey,
             viewModel = editViewModel,
             colorCalculationState = colorCalculationState,
             navigationCallback = navigationCallback,
@@ -219,7 +229,8 @@ object AnimeMediaDetailsScreen {
                 ) {
                     val entry = entry()
                     MediaHeader(
-                        screenKey = SCREEN_KEY,
+                        screenKey = viewModel.screenKey,
+                        upIconOption = upIconOption,
                         mediaId = viewModel.mediaId,
                         titles = entry?.titlesUnique,
                         averageScore = entry?.media?.averageScore,
@@ -228,6 +239,59 @@ object AnimeMediaDetailsScreen {
                         headerValues = headerValues,
                         colorCalculationState = colorCalculationState,
                         onImageWidthToHeightRatioAvailable = { coverImageWidthToHeightRatio = it },
+                        menuContent = {
+                            Box {
+                                var showMenu by remember { mutableStateOf(false) }
+                                IconButton(onClick = { showMenu = true }) {
+                                    Icon(
+                                        imageVector = Icons.Filled.MoreVert,
+                                        contentDescription = stringResource(
+                                            R.string.anime_media_details_more_actions_content_description,
+                                        ),
+                                    )
+                                }
+
+                                val uriHandler = LocalUriHandler.current
+                                DropdownMenu(
+                                    expanded = showMenu,
+                                    onDismissRequest = { showMenu = false },
+                                ) {
+                                    DropdownMenuItem(
+                                        text = { Text(stringResource(R.string.anime_media_details_open_external)) },
+                                        leadingIcon = {
+                                            Icon(
+                                                imageVector = Icons.Filled.OpenInBrowser,
+                                                contentDescription = stringResource(
+                                                    R.string.anime_media_details_open_external_icon_content_description
+                                                )
+                                            )
+                                        },
+                                        onClick = {
+                                            showMenu = false
+                                            uriHandler.openUri(
+                                                AniListUtils.mediaUrl(
+                                                    // TODO: Pass media type if known so that open external works even if entry can't be loaded?
+                                                    entry?.media?.type ?: MediaType.ANIME,
+                                                    viewModel.mediaId,
+                                                ) + "?${UriUtils.FORCE_EXTERNAL_URI_PARAM}=true"
+                                            )
+                                        }
+                                    )
+
+                                    sectionIndexInfo.sections.forEach { (section, index) ->
+                                        DropdownMenuItem(
+                                            text = { Text(stringResource(section.titleRes)) },
+                                            onClick = {
+                                                showMenu = false
+                                                scope.launch {
+                                                    lazyListState.animateScrollToItem(index, 0)
+                                                }
+                                            }
+                                        )
+                                    }
+                                }
+                            }
+                        }
                     )
                 }
             },
@@ -318,9 +382,7 @@ object AnimeMediaDetailsScreen {
                     .nestedScroll(scrollBehavior.nestedScrollConnection)
                     .fillMaxSize()
             ) { scaffoldPadding ->
-                val entry = entry()
                 val viewer by viewModel.viewer.collectAsState()
-                val expandedState = rememberExpandedState()
                 Crossfade(targetState = entry, label = "Media details crossfade") {
                     if (it == null) {
                         DetailsLoadingOrError(
@@ -381,7 +443,7 @@ object AnimeMediaDetailsScreen {
         )
 
         charactersSection(
-            screenKey = SCREEN_KEY,
+            screenKey = viewModel.screenKey,
             titleRes = R.string.anime_media_details_characters_label,
             characters = entry.characters,
             onCharacterClick = navigationCallback::onCharacterClick,
@@ -397,6 +459,7 @@ object AnimeMediaDetailsScreen {
         )
 
         relationsSection(
+            screenKey = viewModel.screenKey,
             viewer = viewer,
             entry = entry,
             relationsExpanded = expandedState::relations,
@@ -417,12 +480,13 @@ object AnimeMediaDetailsScreen {
         )
 
         cdsSection(
+            screenKey = viewModel.screenKey,
             cdEntries = viewModel.cdEntries,
             onEntryClick = { navigationCallback.onCdEntryClick(model = it, imageCornerDp = 12.dp) },
         )
 
         staffSection(
-            screenKey = SCREEN_KEY,
+            screenKey = viewModel.screenKey,
             titleRes = R.string.anime_media_details_staff_label,
             staff = entry.staff,
             onStaffClick = navigationCallback::onStaffClick,
@@ -458,6 +522,7 @@ object AnimeMediaDetailsScreen {
         otherLinksSection(entry = entry)
 
         recommendationsSection(
+            screenKey = viewModel.screenKey,
             viewer = viewer,
             entry = entry,
             coverImageWidthToHeightRatio = coverImageWidthToHeightRatio,
@@ -482,7 +547,7 @@ object AnimeMediaDetailsScreen {
     private fun LazyListScope.genreSection(
         entry: Entry,
         onGenreClick: (String) -> Unit,
-        onGenreLongClick: (String) -> Unit
+        onGenreLongClick: (String) -> Unit,
     ) {
         if (entry.genres.isNotEmpty()) {
             item("genreSection") {
@@ -514,6 +579,7 @@ object AnimeMediaDetailsScreen {
     }
 
     private fun LazyListScope.relationsSection(
+        screenKey: String,
         viewer: AuthedUserQuery.Data.Viewer?,
         entry: Entry,
         relationsExpanded: () -> Boolean,
@@ -525,12 +591,13 @@ object AnimeMediaDetailsScreen {
         navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
         mediaListSection(
-            screenKey = SCREEN_KEY,
+            screenKey = screenKey,
             viewer = viewer,
             titleRes = R.string.anime_media_details_relations_label,
             values = entry.relations,
             valueToEntry = { it.entry },
             aboveFold = RELATIONS_ABOVE_FOLD,
+            hasMoreValues = entry.relationsHasMore,
             expanded = relationsExpanded,
             onExpandedChange = onRelationsExpandedChange,
             colorCalculationState = colorCalculationState,
@@ -1057,6 +1124,7 @@ object AnimeMediaDetailsScreen {
     }
 
     private fun LazyListScope.cdsSection(
+        screenKey: String,
         cdEntries: List<CdEntryGridModel>,
         onEntryClick: (CdEntryGridModel) -> Unit,
     ) {
@@ -1083,7 +1151,7 @@ object AnimeMediaDetailsScreen {
                         shape = RoundedCornerShape(cornerDp),
                     ) {
                         EntryGrid.Entry(
-                            imageScreenKey = SCREEN_KEY,
+                            imageScreenKey = screenKey,
                             expectedWidth = width,
                             index = index,
                             entry = cdEntry,
@@ -1097,6 +1165,7 @@ object AnimeMediaDetailsScreen {
     }
 
     private fun LazyListScope.recommendationsSection(
+        screenKey: String,
         viewer: AuthedUserQuery.Data.Viewer?,
         entry: Entry,
         coverImageWidthToHeightRatio: () -> Float,
@@ -1109,7 +1178,7 @@ object AnimeMediaDetailsScreen {
         onTagLongClick: (String) -> Unit,
     ) {
         mediaListSection(
-            screenKey = SCREEN_KEY,
+            screenKey = screenKey,
             viewer = viewer,
             titleRes = R.string.anime_media_details_recommendations_label,
             values = entry.recommendations,
@@ -1343,7 +1412,7 @@ object AnimeMediaDetailsScreen {
                                             AbstractYouTubePlayerListener() {
                                             override fun onCurrentSecond(
                                                 youTubePlayer: YouTubePlayer,
-                                                second: Float
+                                                second: Float,
                                             ) {
                                                 onPlaybackPositionUpdate(second)
                                             }
@@ -1693,6 +1762,8 @@ object AnimeMediaDetailsScreen {
         val reviews = media.reviews?.nodes?.filterNotNull().orEmpty()
         val reviewsHasMore = media.reviews?.pageInfo?.hasNextPage ?: true
 
+        val relationsHasMore = media.relations?.pageInfo?.hasNextPage ?: true
+
         data class Genre(
             val name: String,
             val color: Color = MediaUtils.genreColor(name),
@@ -1764,7 +1835,7 @@ object AnimeMediaDetailsScreen {
         recommendations: Boolean = false,
         songs: Boolean = false,
         streamingEpisodes: Boolean = false,
-        streamingEpisodesHidden: Boolean = false,
+        streamingEpisodesHidden: Boolean = true,
         reviews: Boolean = false,
     ) {
         var description by mutableStateOf(description)
@@ -1774,5 +1845,169 @@ object AnimeMediaDetailsScreen {
         var streamingEpisodes by mutableStateOf(streamingEpisodes)
         var streamingEpisodesHidden by mutableStateOf(streamingEpisodesHidden)
         var reviews by mutableStateOf(reviews)
+
+        fun allValues() = listOf(
+            description,
+            relations,
+            recommendations,
+            songs,
+            streamingEpisodes,
+            streamingEpisodesHidden,
+        )
+    }
+
+    // TODO: Fix a better mechanism; currently manually synced with screen logic
+    @Composable
+    private fun buildSectionIndexInfo(
+        entry: Entry?,
+        expandedState: ExpandedState,
+        animeSongs: AnimeMediaDetailsViewModel.AnimeSongs?,
+        cdEntries: List<CdEntryGridModel>,
+    ) = remember(entry, animeSongs, expandedState.allValues()) {
+        if (entry == null) return@remember SectionIndexInfo(emptyList())
+        val list = mutableListOf<Pair<SectionIndexInfo.Section, Int>>()
+        var currentIndex = 0
+        if (entry.genres.isNotEmpty()) currentIndex += 1
+        if (!entry.media.description.isNullOrEmpty()) currentIndex += 1
+        if (entry.characters.isNotEmpty()) {
+            list += SectionIndexInfo.Section.CHARACTERS to currentIndex
+            currentIndex += 2
+        }
+        fun runListSection(size: Int, aboveFold: Int, expanded: Boolean, hasMore: Boolean) {
+            currentIndex += 1
+            currentIndex += size.coerceAtMost(aboveFold)
+
+            if (size > aboveFold) {
+                if (expanded) {
+                    currentIndex += size - aboveFold
+                }
+                currentIndex += 1
+            } else if (hasMore) {
+                currentIndex += 1
+            }
+        }
+
+        if (entry.relations.isNotEmpty()) {
+            list += SectionIndexInfo.Section.RELATIONS to currentIndex
+            runListSection(
+                size = entry.relations.size,
+                aboveFold = RELATIONS_ABOVE_FOLD,
+                expanded = expandedState.relations,
+                hasMore = entry.relationsHasMore,
+            )
+        }
+
+        list += SectionIndexInfo.Section.INFO to currentIndex
+        currentIndex += 4
+
+        if (animeSongs != null && animeSongs.entries.isNotEmpty()) {
+            list += SectionIndexInfo.Section.SONGS to currentIndex
+            runListSection(
+                size = animeSongs.entries.size,
+                aboveFold = SONGS_ABOVE_FOLD,
+                expanded = expandedState.songs,
+                hasMore = false,
+            )
+        }
+
+        if (cdEntries.isNotEmpty()) {
+            list += SectionIndexInfo.Section.CDS to currentIndex
+            currentIndex += 2
+        }
+
+        if (entry.staff.isNotEmpty()) {
+            list += SectionIndexInfo.Section.STAFF to currentIndex
+            currentIndex += 2
+        }
+
+        list += SectionIndexInfo.Section.STATS to currentIndex
+        currentIndex += 2
+
+        if (entry.tags.isNotEmpty()) {
+            list += SectionIndexInfo.Section.TAGS to currentIndex
+            currentIndex += 2
+        }
+
+        val trailer = entry.media.trailer
+        if (trailer != null && (trailer.site == "youtube" || trailer.site == "dailymotion")) {
+            list += SectionIndexInfo.Section.TRAILER to currentIndex
+            currentIndex += 2
+        }
+
+        val streamingEpisodes = entry.media.streamingEpisodes?.filterNotNull().orEmpty()
+        if (streamingEpisodes.isNotEmpty()) {
+            list += SectionIndexInfo.Section.EPISODES to currentIndex
+            if (expandedState.streamingEpisodesHidden) {
+                currentIndex += 2
+            } else {
+                runListSection(
+                    size = streamingEpisodes.size,
+                    aboveFold = STREAMING_EPISODES_ABOVE_FOLD,
+                    expanded = expandedState.streamingEpisodes,
+                    hasMore = false,
+                )
+            }
+        }
+
+        if (entry.socialLinks.isNotEmpty()
+            || entry.streamingLinks.isNotEmpty()
+            || entry.otherLinks.isNotEmpty()) {
+            list += SectionIndexInfo.Section.LINKS to currentIndex
+        }
+
+        if (entry.socialLinks.isNotEmpty()) {
+            currentIndex += 2
+        }
+
+        if (entry.streamingLinks.isNotEmpty()) {
+            currentIndex += 2
+        }
+
+        if (entry.otherLinks.isNotEmpty()) {
+            currentIndex += 2
+        }
+
+        val recommendations = entry.recommendations
+        if (recommendations.isNotEmpty()) {
+            list += SectionIndexInfo.Section.RECOMMENDATIONS to currentIndex
+            runListSection(
+                size = recommendations.size,
+                aboveFold = RECOMMENDATIONS_ABOVE_FOLD,
+                expanded = expandedState.recommendations,
+                hasMore = entry.recommendationsHasMore,
+            )
+        }
+
+        val reviews = entry.reviews
+        if (reviews.isNotEmpty()) {
+            list += SectionIndexInfo.Section.REVIEWS to currentIndex
+            runListSection(
+                size = reviews.size,
+                aboveFold = REVIEWS_ABOVE_FOLD,
+                expanded = expandedState.reviews,
+                hasMore = entry.reviewsHasMore,
+            )
+        }
+
+        SectionIndexInfo(list)
+    }
+
+    private data class SectionIndexInfo(val sections: List<Pair<Section, Int>>) {
+
+        enum class Section(@StringRes val titleRes: Int) {
+            CHARACTERS(R.string.anime_media_details_characters_label),
+            RELATIONS(R.string.anime_media_details_relations_label),
+            INFO(R.string.anime_media_details_information_label),
+            SONGS(R.string.anime_media_details_songs_label),
+            CDS(R.string.anime_media_details_cds_label),
+            STAFF(R.string.anime_media_details_staff_label),
+            STATS(R.string.anime_media_details_stats_label),
+            TAGS(R.string.anime_media_details_tags_label),
+            TRAILER(R.string.anime_media_details_trailer_label),
+            EPISODES(R.string.anime_media_details_episodes_label),
+            LINKS(R.string.anime_media_details_links_label),
+            RECOMMENDATIONS(R.string.anime_media_details_recommendations_label),
+            REVIEWS(R.string.anime_media_details_reviews_label),
+        }
     }
 }

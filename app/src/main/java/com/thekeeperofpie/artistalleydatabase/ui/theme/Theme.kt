@@ -30,7 +30,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.UriUtils
 fun ArtistAlleyDatabaseTheme(
     navHostController: NavHostController,
     darkTheme: Boolean = isSystemInDarkTheme(),
-    content: @Composable () -> Unit
+    content: @Composable () -> Unit,
 ) {
     val context = LocalContext.current
 
@@ -43,11 +43,9 @@ fun ArtistAlleyDatabaseTheme(
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
-            (view.context as Activity).window.statusBarColor = colorScheme.primary.toArgb()
-            WindowCompat.getInsetsController(
-                (view.context as Activity).window,
-                view
-            ).isAppearanceLightStatusBars = darkTheme
+            (view.context as Activity).window.statusBarColor = colorScheme.surface.toArgb()
+            WindowCompat.getInsetsController((view.context as Activity).window, view)
+                .isAppearanceLightStatusBars = !darkTheme
         }
     }
 
@@ -60,7 +58,8 @@ fun ArtistAlleyDatabaseTheme(
                 ) {
                     navHostController.navigate(deepLinkUri)
                 } else {
-                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(uri)))
+                    val strippedUri = uri.replace("${UriUtils.FORCE_EXTERNAL_URI_PARAM}=true", "")
+                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(strippedUri)))
                 }
             } catch (e: Exception) {
                 Log.d(CustomApplication.TAG, "Error launching URI $uri", e)
