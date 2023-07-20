@@ -1,24 +1,51 @@
-# Artist Alley Database
+# Anichive
 
-This app is designed to catalog art prints obtained from anime conventions in an easily searchable
+Anime Archive (Anichive, formerly Artist Alley Database), is an app in two parts. It is an
+UNOFFICIAL client for [AniList.co](https://anilist.co), which allows the user to search and track
+anime/manga.
+
+It is also an app to catalog art prints obtained from anime conventions in an easily searchable
 format with support for tagging metadata like the series, characters, and artists of each piece.
 
-This app includes an integration with the
-[AniList API](https://anilist.gitbook.io/anilist-apiv2-docs/) to allow easy searching of
-media/characters, and to provide images. Note that is app is **UNOFFICIAL** and is not supported or
-endorsed by AniList.co whatsoever.
+## Disclaimers
 
-## Disclaimer
+Use of this app requires usage of the
+[AniList GraphQL API](https://anilist.gitbook.io/anilist-apiv2-docs/), and by using it, the user
+accepts the AniList [terms of service](https://anilist.co/terms).
 
-This app does not yet implement a toggle for AniList's `isAdult` flag, and all results are returned.
-By using this application, you attest you are 18+ and comply with all AniList's content guidelines.
-No downloads are supplied, and the app must be built from source.
+Release builds designed to be shipped to stores filter based on AniList's `isAdult` flag, but this
+is disabled when building debug/internal from source.
 
 There is no guarantee that imports and exports will work across versions until the format is
 stabilized, nor that the data is safe from corruption or bugs. Use and update at your own risk.
 
+All source is open and available on GitHub except signing keys and API secrets.
+
 ## Features
 
+### AniList client
+Free features:
+- Full featured anime/manga search and filter
+- View details of anime, manga, characters, staff, studios, users, etc.
+- Get news through AnimeNewsNetwork and Crunchyroll News RSS integrations
+- See global user activity
+
+Features if optional ads are enabled:
+- Log in to AniList account
+- Edit and rate anime/manga entries
+- Search characters, staff, studios, users, activity
+- Watching/reading and user lists
+- Requires persistent banner ad on bottom of screen
+
+Features under paid subscription:
+- Completely remove ads
+- Databasing features used to track art prints, CDs, or merch in general from anime conventions
+- Import/export support for database
+- Comprehensive integration with AniList API to tag art/CDs with characters and staff
+- Search to quickly pull up art at conventions to prevent duplicates
+- These features are experimental
+
+### Databasing
 - Image associated with entry, which is copied into the application's private data dir
 - Fields including:
   - Series (manga, anime, custom text)
@@ -36,7 +63,7 @@ stabilized, nor that the data is safe from corruption or bugs. Use and update at
 ## Screenshots
 
 TODO: Need to find an artist willing to license their work to be displayed in this repository.
-(If you draw anime art and are willing, please contact my GitHub email.)
+(If you draw anime art and are willing, please contact my GitHub email)
 
 ## Build
 
@@ -85,7 +112,9 @@ This module serves as a way to generate verification metadata for artifacts whic
 Android Studio but aren't used in the app build. For things like instrumentation testing that
 require additional dependencies.
 
-## License
+## Licensing
 
-Eventually an open source license will be added to this repository, but for now you are only allowed
-to clone and build the application as described above. No warranty, no support, etc.
+TODO: Add a real license
+All rights reserved, no warranty or support provided, no commercial derivatives allowed. Individuals
+are allowed to edit and build the app for personal use, but cannot distribute copies. If you build
+this app to avoid ads/monetization, please consider donating. 

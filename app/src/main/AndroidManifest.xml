@@ -28,32 +28,34 @@
             </intent-filter>
 
             <intent-filter tools:ignore="AppLinkUrlError">
-                <action android:name="android.intent.action.VIEW"/>
-                <category android:name="android.intent.category.DEFAULT"/>
-                <category android:name="android.intent.category.BROWSABLE"/>
-                <data android:scheme="http"/>
-                <data android:scheme="https"/>
-                <data android:host="anilist.co"/>
-                <data android:path="/"/>
-                <data android:pathAdvancedPattern="/anime/[0-9]+/.*"/>
-                <data android:pathAdvancedPattern="/anime/[0-9]+"/>
-                <data android:pathAdvancedPattern="/manga/[0-9]+"/>
-                <data android:pathAdvancedPattern="/manga/[0-9]+/.*"/>
-                <data android:pathAdvancedPattern="/character/[0-9]+"/>
-                <data android:pathAdvancedPattern="/character/[0-9]+/.*"/>
-                <data android:pathAdvancedPattern="/staff/[0-9]+"/>
-                <data android:pathAdvancedPattern="/staff/[0-9]+/.*"/>
-                <data android:pathAdvancedPattern="/user/[0-9]+"/>
-                <data android:pathAdvancedPattern="/user/[0-9]+/.*"/>
-                <data android:pathAdvancedPattern="/studio/[0-9]+"/>
-                <data android:pathAdvancedPattern="/studio/[0-9]+/.*"/>
-                <data android:pathAdvancedPattern="/review/[0-9]+"/>
-                <data android:pathAdvancedPattern="/review/[0-9]+/.*"/>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="http" />
+                <data android:scheme="https" />
+                <data android:host="anilist.co" />
+                <data android:path="/" />
+                <data android:pathAdvancedPattern="/anime/[0-9]+/.*" />
+                <data android:pathAdvancedPattern="/anime/[0-9]+" />
+                <data android:pathAdvancedPattern="/manga/[0-9]+" />
+                <data android:pathAdvancedPattern="/manga/[0-9]+/.*" />
+                <data android:pathAdvancedPattern="/character/[0-9]+" />
+                <data android:pathAdvancedPattern="/character/[0-9]+/.*" />
+                <data android:pathAdvancedPattern="/staff/[0-9]+" />
+                <data android:pathAdvancedPattern="/staff/[0-9]+/.*" />
+                <data android:pathAdvancedPattern="/user/[0-9]+" />
+                <data android:pathAdvancedPattern="/user/[0-9]+/.*" />
+                <data android:pathAdvancedPattern="/studio/[0-9]+" />
+                <data android:pathAdvancedPattern="/studio/[0-9]+/.*" />
+                <data android:pathAdvancedPattern="/review/[0-9]+" />
+                <data android:pathAdvancedPattern="/review/[0-9]+/.*" />
             </intent-filter>
 
             <intent-filter>
-                <action android:name="${applicationId}.INTERNAL"/>
-                <data android:scheme="${applicationId}"/>
+                <action android:name="${applicationId}.INTERNAL" />
+                <data android:scheme="${applicationId}" />
             </intent-filter>
         </activity>
 
@@ -72,6 +74,13 @@
                 <data android:mimeType="image/*" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name="com.google.android.gms.oss.licenses.OssLicensesMenuActivity"
+            android:theme="@style/Theme.AppCompat.DayNight" />
+        <activity
+            android:name="com.google.android.gms.oss.licenses.OssLicensesActivity"
+            android:theme="@style/Theme.AppCompat.DayNight" />
 
         <provider
             android:name="androidx.startup.InitializationProvider"

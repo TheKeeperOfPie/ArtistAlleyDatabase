@@ -8,6 +8,7 @@ plugins {
     id("com.google.devtools.ksp")
     alias(libs.plugins.org.jetbrains.kotlin.plugin.serialization)
     alias(libs.plugins.com.jaredsburrows.license)
+    id("com.google.android.gms.oss-licenses-plugin")
 }
 
 licenseReport {
@@ -25,7 +26,7 @@ android {
         minSdk = 29
         targetSdk = 33
         versionCode = 1
-        versionName = "1.0"
+        versionName = "0.39"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -247,6 +248,8 @@ dependencies {
 
     implementation(libs.commons.compress)
     implementation(libs.coil.compose)
+
+    implementation(libs.play.services.oss.licenses)
 }
 
 afterEvaluate {

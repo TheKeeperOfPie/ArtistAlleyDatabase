@@ -55,6 +55,7 @@ object SettingsScreen {
         viewModel: SettingsViewModel = hiltViewModel<SettingsViewModel>(),
         upIconOption: UpIconOption? = UpIconOption.Back {},
         onClickShowLastCrash: () -> Unit = {},
+        onClickShowLicenses: () -> Unit = {},
     ) {
         Scaffold(
             topBar = {
@@ -168,6 +169,14 @@ object SettingsScreen {
                     titleRes = R.string.settings_screenshot_mode,
                     checked = { screenshotMode },
                     onCheckedChange = viewModel::onScreenshotModeChanged,
+                )
+
+                Divider()
+
+                ButtonRow(
+                    titleRes = R.string.settings_show_licenses,
+                    buttonTextRes = UtilsStringR.open,
+                    onClick = onClickShowLicenses,
                 )
 
                 Divider()
@@ -344,10 +353,4 @@ object SettingsScreen {
         VGMDB_ARTISTS(VgmdbStringR.vgmdb_artists),
         MUSICAL_ARTISTS(MusicalArtistsStringR.musical_artists),
     }
-}
-
-@Preview
-@Composable
-fun Preview() {
-    SettingsScreen()
 }

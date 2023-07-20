@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase
 
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.view.WindowInsets
@@ -57,6 +58,7 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.OutOfQuotaPolicy
+import com.google.android.gms.oss.licenses.OssLicensesMenuActivity
 import com.mxalbert.sharedelements.SharedElementsRoot
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListOAuthStore
@@ -170,7 +172,8 @@ class MainActivity : ComponentActivity() {
                                                 }
                                             }
                                             if (startDestinationFromIntent == null
-                                                && navDrawerItem != NavDrawerItems.SETTINGS) {
+                                                && navDrawerItem != NavDrawerItems.SETTINGS
+                                            ) {
                                                 settings.navDrawerStartDestination.value =
                                                     navDrawerItem.id
                                             }
@@ -448,6 +451,15 @@ class MainActivity : ComponentActivity() {
                                 onClickShowLastCrash = {
                                     navHostController.navigate(AppNavDestinations.CRASH.id)
                                 },
+                                onClickShowLicenses = {
+                                    // TODO: Better UI for licenses
+                                    startActivity(
+                                        Intent(
+                                            this@MainActivity,
+                                            OssLicensesMenuActivity::class.java,
+                                        )
+                                    )
+                                }
                             )
                         }
 
