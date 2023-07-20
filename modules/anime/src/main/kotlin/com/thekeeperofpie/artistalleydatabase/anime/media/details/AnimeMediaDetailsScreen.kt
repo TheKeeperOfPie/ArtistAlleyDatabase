@@ -119,6 +119,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeader
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderValues
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toColor
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toFavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toStatusIcon
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toStatusText
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
@@ -237,6 +238,13 @@ object AnimeMediaDetailsScreen {
                         popularity = entry?.media?.popularity,
                         progress = it,
                         headerValues = headerValues,
+                        onFavoriteChanged = {
+                            viewModel.favoritesToggleHelper.set(
+                                headerValues.type.toFavoriteType(),
+                                viewModel.mediaId,
+                                it,
+                            )
+                        },
                         colorCalculationState = colorCalculationState,
                         onImageWidthToHeightRatioAvailable = { coverImageWidthToHeightRatio = it },
                         menuContent = {
@@ -451,7 +459,11 @@ object AnimeMediaDetailsScreen {
             onStaffClick = navigationCallback::onStaffClick,
             onClickViewAll = {
                 viewModel.entry?.let {
-                    navigationCallback.onMediaCharactersClick(it, coverImageWidthToHeightRatio())
+                    navigationCallback.onMediaCharactersClick(
+                        it,
+                        viewModel.favoritesToggleHelper.favorite,
+                        coverImageWidthToHeightRatio(),
+                    )
                 }
             },
             viewAllContentDescriptionTextRes = R.string.anime_media_details_view_all_content_description,
@@ -523,6 +535,7 @@ object AnimeMediaDetailsScreen {
 
         recommendationsSection(
             screenKey = viewModel.screenKey,
+            viewModel = viewModel,
             viewer = viewer,
             entry = entry,
             coverImageWidthToHeightRatio = coverImageWidthToHeightRatio,
@@ -536,6 +549,7 @@ object AnimeMediaDetailsScreen {
         )
 
         reviewsSection(
+            viewModel = viewModel,
             entry = entry,
             coverImageWidthToHeightRatio = coverImageWidthToHeightRatio,
             expanded = expandedState::reviews,
@@ -1166,6 +1180,7 @@ object AnimeMediaDetailsScreen {
 
     private fun LazyListScope.recommendationsSection(
         screenKey: String,
+        viewModel: AnimeMediaDetailsViewModel,
         viewer: AuthedUserQuery.Data.Viewer?,
         entry: Entry,
         coverImageWidthToHeightRatio: () -> Float,
@@ -1196,6 +1211,7 @@ object AnimeMediaDetailsScreen {
                 entry.let {
                     navigationCallback.onMediaRecommendationsClick(
                         it,
+                        viewModel.favoritesToggleHelper.favorite,
                         coverImageWidthToHeightRatio()
                     )
                 }
@@ -1608,6 +1624,7 @@ object AnimeMediaDetailsScreen {
     }
 
     private fun LazyListScope.reviewsSection(
+        viewModel: AnimeMediaDetailsViewModel,
         entry: Entry,
         coverImageWidthToHeightRatio: () -> Float,
         expanded: () -> Boolean,
@@ -1626,7 +1643,11 @@ object AnimeMediaDetailsScreen {
             onExpandedChange = onExpandedChange,
             onClickViewAll = {
                 entry.let {
-                    navigationCallback.onMediaReviewsClick(it, coverImageWidthToHeightRatio())
+                    navigationCallback.onMediaReviewsClick(
+                        it,
+                        viewModel.favoritesToggleHelper.favorite,
+                        coverImageWidthToHeightRatio(),
+                    )
                 }
             },
             viewAllContentDescriptionTextRes = R.string.anime_media_details_view_all_content_description,
@@ -1637,6 +1658,7 @@ object AnimeMediaDetailsScreen {
                     navigationCallback.onReviewClick(
                         reviewId = item.id.toString(),
                         media = entry.media,
+                        viewModel.favoritesToggleHelper.favorite,
                         imageWidthToHeightRatio = coverImageWidthToHeightRatio()
                     )
                 },
@@ -1951,7 +1973,8 @@ object AnimeMediaDetailsScreen {
 
         if (entry.socialLinks.isNotEmpty()
             || entry.streamingLinks.isNotEmpty()
-            || entry.otherLinks.isNotEmpty()) {
+            || entry.otherLinks.isNotEmpty()
+        ) {
             list += SectionIndexInfo.Section.LINKS to currentIndex
         }
 

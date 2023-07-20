@@ -494,6 +494,8 @@ fragment MediaHeaderData on Media {
         episode
         airingAt
     }
+    isFavourite
+    type
 }
 
 fragment MediaAndReviewsReview on Review {

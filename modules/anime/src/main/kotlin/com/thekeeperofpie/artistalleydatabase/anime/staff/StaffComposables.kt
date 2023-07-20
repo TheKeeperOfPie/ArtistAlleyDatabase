@@ -30,7 +30,7 @@ fun LazyListScope.staffSection(
     screenKey: String,
     @StringRes titleRes: Int,
     staff: List<DetailsStaff>,
-    onStaffClick: (StaffNavigationData, imageWidthToHeightRatio: Float, color: Color?) -> Unit,
+    onStaffClick: (StaffNavigationData, favorite: Boolean?, imageWidthToHeightRatio: Float, color: Color?) -> Unit,
     onStaffLongClick: (String) -> Unit,
     colorCalculationState: ColorCalculationState,
     roleLines: Int = 1,
@@ -55,6 +55,7 @@ fun LazyListScope.staffSection(
                     onClick = {
                         onStaffClick(
                             it.staff,
+                            null,
                             imageWidthToHeightRatio,
                             colorCalculationState.getColors(it.id).first,
                         )

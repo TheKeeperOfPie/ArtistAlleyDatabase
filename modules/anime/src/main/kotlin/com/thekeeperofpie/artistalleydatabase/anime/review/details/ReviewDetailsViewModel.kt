@@ -12,6 +12,9 @@ import com.anilist.type.ReviewRating
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoritesController
+import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoritesToggleHelper
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toFavoriteType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -28,6 +31,7 @@ import javax.inject.Inject
 @HiltViewModel
 class ReviewDetailsViewModel @Inject constructor(
     private val aniListApi: AuthedAniListApi,
+    favoritesController: FavoritesController,
 ) : ViewModel() {
 
     var reviewId by mutableStateOf("")
@@ -45,6 +49,9 @@ class ReviewDetailsViewModel @Inject constructor(
 
     var userRating by mutableStateOf(ReviewRating.NO_VOTE)
     private val userRatingUpdates = MutableSharedFlow<ReviewRating>(1, 1)
+
+    val favoritesToggleHelper =
+        FavoritesToggleHelper(aniListApi, favoritesController, viewModelScope)
 
     init {
         viewModelScope.launch(CustomDispatchers.IO) {
@@ -99,6 +106,13 @@ class ReviewDetailsViewModel @Inject constructor(
 
     fun initialize(reviewId: String) {
         this.reviewId = reviewId
+        favoritesToggleHelper.initializeTracking(
+            viewModel = this,
+            entryToId = { it.review.media?.id.toString() },
+            entry = { snapshotFlow { entry } },
+            entryToType = { it.review.media?.type.toFavoriteType() },
+            entryToFavorite = { it.review.media?.isFavourite ?: false },
+        )
     }
 
     fun onUserRating(upvote: Boolean?) {

@@ -76,6 +76,7 @@ object StaffListRow {
             if (entry != null) {
                 navigationCallback.onStaffClick(
                     entry.staff,
+                    null,
                     imageWidthToHeightRatio,
                     colorCalculationState.getColors(entry.staff.id.toString()).first,
                 )
@@ -250,6 +251,7 @@ object StaffListRow {
                         onClick = { ratio ->
                             navigationCallback.onCharacterClick(
                                 it,
+                                null,
                                 ratio,
                                 colorCalculationState.getColors(it.id.toString()).first,
                             )

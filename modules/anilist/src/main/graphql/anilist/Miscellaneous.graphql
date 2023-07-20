@@ -48,3 +48,77 @@ mutation RateReview($id: Int!, $rating: ReviewRating!) {
         userRating @nonnull
     }
 }
+
+mutation ToggleAnimeFavorite($id: Int!) {
+    ToggleFavourite(animeId: $id) {
+        anime(perPage: 1) {
+            pageInfo {
+                hasNextPage
+            }
+        }
+    }
+}
+
+mutation ToggleMangaFavorite($id: Int!) {
+    ToggleFavourite(mangaId: $id) {
+        manga(perPage: 1) {
+            pageInfo {
+                hasNextPage
+            }
+        }
+    }
+}
+
+query ToggleMediaResult($id: Int!) {
+    Media(id: $id) @nonnull {
+        isFavourite
+    }
+}
+
+mutation ToggleCharacterFavorite($id: Int!) {
+    ToggleFavourite(characterId: $id) {
+        characters(perPage: 1) {
+            pageInfo {
+                hasNextPage
+            }
+        }
+    }
+}
+
+query ToggleCharacterResult($id: Int!) {
+    Character(id: $id) @nonnull {
+        isFavourite
+    }
+}
+
+mutation ToggleStaffFavorite($id: Int!) {
+    ToggleFavourite(staffId: $id) {
+        staff(perPage: 1) {
+            pageInfo {
+                hasNextPage
+            }
+        }
+    }
+}
+
+query ToggleStaffResult($id: Int!) {
+    Staff(id: $id) @nonnull {
+        isFavourite
+    }
+}
+
+mutation ToggleStudioFavorite($id: Int!) {
+    ToggleFavourite(studioId: $id) {
+        studios(perPage: 1) {
+            pageInfo {
+                hasNextPage
+            }
+        }
+    }
+}
+
+query ToggleStudioResult($id: Int!) {
+    Studio(id: $id) @nonnull {
+        isFavourite
+    }
+}

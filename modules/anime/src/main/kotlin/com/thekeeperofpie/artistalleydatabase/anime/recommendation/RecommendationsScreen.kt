@@ -17,6 +17,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeader
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderValues
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toFavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.utils.HeaderAndMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
@@ -59,6 +60,13 @@ object RecommendationsScreen {
                     popularity = media?.popularity,
                     progress = it,
                     headerValues = headerValues,
+                    onFavoriteChanged = {
+                        viewModel.favoritesToggleHelper.set(
+                            headerValues.type.toFavoriteType(),
+                            viewModel.headerId,
+                            it,
+                        )
+                    },
                     colorCalculationState = colorCalculationState,
                     enableCoverImageSharedElement = false,
                     onImageWidthToHeightRatioAvailable = {

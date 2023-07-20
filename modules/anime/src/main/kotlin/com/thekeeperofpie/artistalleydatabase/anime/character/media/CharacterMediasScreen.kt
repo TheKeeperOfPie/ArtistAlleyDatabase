@@ -16,6 +16,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterHeader
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterHeaderValues
+import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.utils.HeaderAndMediaListScreen
@@ -55,6 +56,10 @@ object CharacterMediasScreen {
                     characterId = viewModel.headerId,
                     progress = it,
                     headerValues = headerValues,
+                    onFavoriteChanged = {
+                        viewModel.favoritesToggleHelper
+                            .set(FavoriteType.CHARACTER, viewModel.headerId, it)
+                    },
                     colorCalculationState = colorCalculationState,
                     onImageWidthToHeightRatioAvailable = {
                         characterImageWidthToHeightRatio = it

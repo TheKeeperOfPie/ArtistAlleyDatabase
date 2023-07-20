@@ -4,6 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -14,6 +15,9 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatc
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoriteType
+import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoritesController
+import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoritesToggleHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -29,6 +33,7 @@ import javax.inject.Inject
 class StaffDetailsViewModel @Inject constructor(
     private val aniListApi: AuthedAniListApi,
     private val animeSettings: AnimeSettings,
+    favoritesController: FavoritesController,
 ) : ViewModel() {
 
     lateinit var staffId: String
@@ -46,6 +51,9 @@ class StaffDetailsViewModel @Inject constructor(
     var staffTimeline = MutableStateFlow(StaffTimeline())
     private val staffTimelineLastRequestedYear = MutableStateFlow<Int?>(null)
     private var staffTimelineResults = MutableStateFlow(emptyList<StaffDetailsStaffMediaPage>())
+
+    val favoritesToggleHelper =
+        FavoritesToggleHelper(aniListApi, favoritesController, viewModelScope)
 
     fun initialize(staffId: String) {
         if (::staffId.isInitialized) return
@@ -172,6 +180,14 @@ class StaffDetailsViewModel @Inject constructor(
                     }
                 }
         }
+
+        favoritesToggleHelper.initializeTracking(
+            viewModel = this,
+            entry = { snapshotFlow { entry } },
+            entryToId = { it.staff.id.toString() },
+            entryToType = { FavoriteType.STAFF },
+            entryToFavorite = { it.staff.isFavourite },
+        )
     }
 
     fun onRequestMediaYear(year: Int?) {

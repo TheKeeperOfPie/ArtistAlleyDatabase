@@ -9,6 +9,7 @@ import com.anilist.fragment.MediaDetailsListEntry
 import com.anilist.fragment.MediaPreview
 import com.anilist.type.MediaListStatus
 import com.apollographql.apollo3.api.Optional
+import com.hoc081098.flowext.startWith
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -23,8 +24,7 @@ import kotlinx.coroutines.flow.runningFold
 
 class MediaListStatusController {
 
-    val updates = MutableSharedFlow<Update>(replay = 5, extraBufferCapacity = 5)
-        .apply { tryEmit(Update(mediaId = "")) }
+    private val updates = MutableSharedFlow<Update>(replay = 0, extraBufferCapacity = 5)
 
     suspend fun onUpdate(
         mediaId: String,
@@ -46,7 +46,7 @@ class MediaListStatusController {
 
     fun allChanges(filterMediaId: String) = updates
         .filter { it.mediaId == filterMediaId }
-        .runningFold(null as Update?) { acc, value -> value }
+        .startWith(null)
 
     data class Update(
         val mediaId: String,

@@ -8,6 +8,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeader
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderValues
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toFavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.utils.HeaderAndListScreen
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
@@ -42,6 +43,13 @@ object CharactersScreen {
                     popularity = media?.popularity,
                     progress = it,
                     headerValues = headerValues,
+                    onFavoriteChanged = {
+                        viewModel.favoritesToggleHelper.set(
+                            headerValues.type.toFavoriteType(),
+                            viewModel.headerId,
+                            it,
+                        )
+                    },
                     colorCalculationState = colorCalculationState,
                     enableCoverImageSharedElement = false,
                 )

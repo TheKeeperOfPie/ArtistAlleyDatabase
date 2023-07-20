@@ -35,7 +35,16 @@ import com.anilist.StaffSearchQuery
 import com.anilist.StudioMediasPaginationQuery
 import com.anilist.StudioMediasQuery
 import com.anilist.StudioSearchQuery
+import com.anilist.ToggleAnimeFavoriteMutation
+import com.anilist.ToggleCharacterFavoriteMutation
+import com.anilist.ToggleCharacterResultQuery
 import com.anilist.ToggleFollowMutation
+import com.anilist.ToggleMangaFavoriteMutation
+import com.anilist.ToggleMediaResultQuery
+import com.anilist.ToggleStaffFavoriteMutation
+import com.anilist.ToggleStaffResultQuery
+import com.anilist.ToggleStudioFavoriteMutation
+import com.anilist.ToggleStudioResultQuery
 import com.anilist.UserByIdQuery
 import com.anilist.UserMediaListQuery
 import com.anilist.UserSearchQuery
@@ -607,6 +616,36 @@ open class AuthedAniListApi(
             mediasPerPage = mediasPerPage,
         )
     )
+
+    open suspend fun toggleAnimeFavorite(id: String): Boolean {
+        val idAsInt = id.toInt()
+        apolloClient.mutation(ToggleAnimeFavoriteMutation(id = idAsInt)).execute().dataOrThrow()
+        return query(ToggleMediaResultQuery(id = idAsInt)).media.isFavourite
+    }
+
+    open suspend fun toggleMangaFavorite(id: String): Boolean {
+        val idAsInt = id.toInt()
+        apolloClient.mutation(ToggleMangaFavoriteMutation(id = idAsInt)).execute().dataOrThrow()
+        return query(ToggleMediaResultQuery(id = idAsInt)).media.isFavourite
+    }
+
+    open suspend fun toggleCharacterFavorite(id: String): Boolean {
+        val idAsInt = id.toInt()
+        apolloClient.mutation(ToggleCharacterFavoriteMutation(id = idAsInt)).execute().dataOrThrow()
+        return query(ToggleCharacterResultQuery(id = idAsInt)).character.isFavourite
+    }
+
+    open suspend fun toggleStaffFavorite(id: String): Boolean {
+        val idAsInt = id.toInt()
+        apolloClient.mutation(ToggleStaffFavoriteMutation(id = idAsInt)).execute().dataOrThrow()
+        return query(ToggleStaffResultQuery(id = idAsInt)).staff.isFavourite
+    }
+
+    open suspend fun toggleStudioFavorite(id: String): Boolean {
+        val idAsInt = id.toInt()
+        apolloClient.mutation(ToggleStudioFavoriteMutation(id = idAsInt)).execute().dataOrThrow()
+        return query(ToggleStudioResultQuery(id = idAsInt)).studio.isFavourite
+    }
 
     protected suspend fun <D : Query.Data> query(query: Query<D>) =
         apolloClient.query(query).execute().dataOrThrow()

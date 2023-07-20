@@ -118,6 +118,7 @@ object UserMediaScreen {
                     onValueClick = { value, imageWidthToHeightRatio ->
                         navigationCallback.onStaffClick(
                             value.voiceActor!!,
+                            null,
                             imageWidthToHeightRatio,
                             colorCalculationState.getColors(value.voiceActor!!.id.toString()).first,
                         )
@@ -162,6 +163,7 @@ object UserMediaScreen {
                     onValueClick = { value, imageWidthToHeightRatio ->
                         navigationCallback.onStaffClick(
                             value.staff!!,
+                            null,
                             imageWidthToHeightRatio,
                             colorCalculationState.getColors(value.staff!!.id.toString()).first,
                         )

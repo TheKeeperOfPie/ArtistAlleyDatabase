@@ -9,6 +9,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterListRow
+import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffHeader
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffHeaderValues
 import com.thekeeperofpie.artistalleydatabase.anime.utils.HeaderAndListScreen
@@ -37,6 +38,10 @@ object StaffCharactersScreen {
                     upIconOption = upIconOption,
                     progress = it,
                     headerValues = headerValues,
+                    onFavoriteChanged = {
+                        viewModel.favoritesToggleHelper
+                            .set(FavoriteType.STAFF, viewModel.headerId, it)
+                    },
                     colorCalculationState = colorCalculationState,
                 )
             },

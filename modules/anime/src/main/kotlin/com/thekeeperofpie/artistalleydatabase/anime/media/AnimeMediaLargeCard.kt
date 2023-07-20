@@ -45,9 +45,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import coil.size.Dimension
-import com.anilist.AuthedUserQuery
 import com.anilist.fragment.MediaNavigationData
-import com.anilist.fragment.MediaPreview
 import com.anilist.fragment.MediaPreviewWithDescription
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.material.placeholder

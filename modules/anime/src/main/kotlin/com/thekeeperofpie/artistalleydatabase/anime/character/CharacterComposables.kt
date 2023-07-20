@@ -231,9 +231,9 @@ fun LazyListScope.charactersSection(
     screenKey: String,
     @StringRes titleRes: Int,
     characters: List<DetailsCharacter>,
-    onCharacterClick: (CharacterNavigationData, imageWidthToHeightRatio: Float, color: Color?) -> Unit,
+    onCharacterClick: (CharacterNavigationData, favorite: Boolean?, imageWidthToHeightRatio: Float, color: Color?) -> Unit,
     onCharacterLongClick: (String) -> Unit,
-    onStaffClick: (StaffNavigationData, imageWidthToHeightRatio: Float, color: Color?) -> Unit,
+    onStaffClick: (StaffNavigationData, favorite: Boolean?, imageWidthToHeightRatio: Float, color: Color?) -> Unit,
     onClickViewAll: (() -> Unit)? = null,
     @StringRes viewAllContentDescriptionTextRes: Int? = null,
     colorCalculationState: ColorCalculationState,
@@ -266,6 +266,7 @@ fun LazyListScope.charactersSection(
                         it.character?.let {
                             onCharacterClick(
                                 it,
+                                null,
                                 imageWidthToHeightRatio,
                                 colorCalculationState.getColors(it.id.toString()).first,
                             )
@@ -277,6 +278,7 @@ fun LazyListScope.charactersSection(
                         {
                             onStaffClick(
                                 voiceActor.staff,
+                                null,
                                 innerImageWidthToHeightRatio,
                                 colorCalculationState.getColors(voiceActor.id).first,
                             )
@@ -324,6 +326,7 @@ fun CharacterCard(
             character?.character?.let {
                 navigationCallback.onCharacterClick(
                     it,
+                    null,
                     imageWidthToHeightRatio,
                     colorCalculationState.getColors(it.id.toString()).first,
                 )
@@ -463,6 +466,7 @@ fun CharacterCard(
                                 if (voiceActor != null) {
                                     navigationCallback.onStaffClick(
                                         voiceActor.staff,
+                                        null,
                                         voiceActorImageWidthToHeightRatio,
                                         colorCalculationState.getColors(
                                             voiceActor.staff.id.toString()

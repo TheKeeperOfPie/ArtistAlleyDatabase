@@ -1,13 +1,18 @@
 package com.thekeeperofpie.artistalleydatabase.anime.recommendation
 
+import androidx.compose.runtime.snapshotFlow
+import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import com.anilist.fragment.MediaAndRecommendationsRecommendation
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoritesController
+import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoritesToggleHelper
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toFavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaStatusChanges
 import com.thekeeperofpie.artistalleydatabase.anime.utils.HeaderAndListViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -20,6 +25,7 @@ class RecommendationsViewModel @Inject constructor(
     private val statusController: MediaListStatusController,
     private val ignoreList: AnimeMediaIgnoreList,
     private val settings: AnimeSettings,
+    favoritesController: FavoritesController,
 ) : HeaderAndListViewModel<RecommendationsScreen.Entry, MediaAndRecommendationsRecommendation,
         RecommendationEntry, RecommendationsSortOption>(
     aniListApi = aniListApi,
@@ -27,6 +33,19 @@ class RecommendationsViewModel @Inject constructor(
     sortOptionEnumDefault = RecommendationsSortOption.RATING,
     loadingErrorTextRes = R.string.anime_recommendations_error_loading
 ) {
+    val favoritesToggleHelper =
+        FavoritesToggleHelper(aniListApi, favoritesController, viewModelScope)
+
+    override fun initialize(headerId: String) {
+        super.initialize(headerId)
+        favoritesToggleHelper.initializeTracking(
+            viewModel = this,
+            entry = { snapshotFlow { entry } },
+            entryToId = { it.media.id.toString() },
+            entryToType = { it.media.type.toFavoriteType() },
+            entryToFavorite = { it.media.isFavourite },
+        )
+    }
 
     override fun makeEntry(item: MediaAndRecommendationsRecommendation) = RecommendationEntry(item)
 

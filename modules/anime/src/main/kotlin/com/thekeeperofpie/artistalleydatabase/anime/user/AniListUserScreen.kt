@@ -188,6 +188,10 @@ object AniListUserScreen {
                         )
                     }
                 } else {
+                    val pullRefreshState = rememberPullRefreshState(
+                        refreshing = viewModel.entry == null,
+                        onRefresh = { viewModel.refresh() },
+                    )
                     HorizontalPager(
                         state = pagerState,
                         userScrollEnabled = false,
@@ -195,40 +199,49 @@ object AniListUserScreen {
                             scrollBehavior.nestedScrollConnection,
                             bottomNavigationState?.nestedScrollConnection,
                         ),
+                        modifier = Modifier.pullRefresh(pullRefreshState)
                     ) {
-                        val user = viewModel.entry?.user
-                        when (UserTab.values()[it]) {
-                            UserTab.OVERVIEW -> UserOverviewScreen(
-                                entry = entry,
-                                viewer = viewModel.viewer.collectAsState(null).value,
-                                isFollowing = { viewModel.isFollowing },
-                                onFollowingClick = viewModel::toggleFollow,
-                                colorCalculationState = colorCalculationState,
-                                navigationCallback = navigationCallback,
-                                bottomNavigationState = bottomNavigationState,
-                            )
-                            UserTab.ANIME_STATS -> UserMediaScreen(
-                                user = { user },
-                                statistics = { viewModel.entry?.statisticsAnime },
-                                state = viewModel.animeStates,
-                                colorCalculationState = colorCalculationState,
-                                navigationCallback = navigationCallback,
-                                bottomNavigationState = bottomNavigationState,
-                            )
-                            UserTab.MANGA_STATS -> UserMediaScreen(
-                                user = { user },
-                                statistics = { viewModel.entry?.statisticsManga },
-                                state = viewModel.mangaStates,
-                                colorCalculationState = colorCalculationState,
-                                navigationCallback = navigationCallback,
-                                bottomNavigationState = bottomNavigationState,
-                            )
-                            UserTab.SOCIAL -> UserSocialScreen(
-                                screenKey = viewModel.screenKey,
-                                userId = viewModel.userId,
-                                colorCalculationState = colorCalculationState,
-                                navigationCallback = navigationCallback,
-                                bottomNavigationState = bottomNavigationState,
+                        Box {
+                            val user = viewModel.entry?.user
+                            when (UserTab.values()[it]) {
+                                UserTab.OVERVIEW -> UserOverviewScreen(
+                                    entry = entry,
+                                    viewer = viewModel.viewer.collectAsState(null).value,
+                                    isFollowing = { viewModel.isFollowing },
+                                    onFollowingClick = viewModel::toggleFollow,
+                                    colorCalculationState = colorCalculationState,
+                                    navigationCallback = navigationCallback,
+                                    bottomNavigationState = bottomNavigationState,
+                                )
+                                UserTab.ANIME_STATS -> UserMediaScreen(
+                                    user = { user },
+                                    statistics = { viewModel.entry?.statisticsAnime },
+                                    state = viewModel.animeStates,
+                                    colorCalculationState = colorCalculationState,
+                                    navigationCallback = navigationCallback,
+                                    bottomNavigationState = bottomNavigationState,
+                                )
+                                UserTab.MANGA_STATS -> UserMediaScreen(
+                                    user = { user },
+                                    statistics = { viewModel.entry?.statisticsManga },
+                                    state = viewModel.mangaStates,
+                                    colorCalculationState = colorCalculationState,
+                                    navigationCallback = navigationCallback,
+                                    bottomNavigationState = bottomNavigationState,
+                                )
+                                UserTab.SOCIAL -> UserSocialScreen(
+                                    screenKey = viewModel.screenKey,
+                                    userId = viewModel.userId,
+                                    colorCalculationState = colorCalculationState,
+                                    navigationCallback = navigationCallback,
+                                    bottomNavigationState = bottomNavigationState,
+                                )
+                            }
+
+                            PullRefreshIndicator(
+                                refreshing = viewModel.entry == null,
+                                state = pullRefreshState,
+                                modifier = Modifier.align(Alignment.TopCenter)
                             )
                         }
                     }

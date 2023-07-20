@@ -27,14 +27,18 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.ViewModel
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import com.anilist.fragment.MediaHeaderData
 import com.anilist.type.MediaSeason
+import com.anilist.type.MediaType
 import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.ui.CoverAndBannerHeader
+import com.thekeeperofpie.artistalleydatabase.anime.ui.FavoriteIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.AutoResizeHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
@@ -52,6 +56,7 @@ fun MediaHeader(
     popularity: Int?,
     progress: Float,
     headerValues: MediaHeaderValues,
+    onFavoriteChanged: (Boolean) -> Unit,
     colorCalculationState: ColorCalculationState,
     onImageWidthToHeightRatioAvailable: (Float) -> Unit = {},
     enableCoverImageSharedElement: Boolean = true,
@@ -85,7 +90,13 @@ fun MediaHeader(
                 if (mediaId != null) {
                     ComposeColorUtils.calculatePalette(mediaId, it, colorCalculationState)
                 }
-            }
+            },
+            menuContent = {
+                FavoriteIconButton(
+                    favorite = headerValues.favorite,
+                    onFavoriteChanged = onFavoriteChanged,
+                )
+            },
         ) {
             Column {
                 Row(modifier = Modifier.weight(1f)) {
@@ -205,7 +216,10 @@ class MediaHeaderValues(
     private val _color: Color? = arguments.getString("color")
         ?.toIntOrNull()
         ?.let(::Color),
+    private val _favorite: Boolean? = arguments.getString("favorite")?.toBooleanStrictOrNull(),
+    private val _type: MediaType = MediaType.safeValueOf(arguments.getString("type").orEmpty()),
     private val media: () -> MediaHeaderData?,
+    private val favoriteUpdate: () -> Boolean?,
 ) {
     companion object {
         const val routeSuffix = "&title={title}" +
@@ -218,9 +232,30 @@ class MediaHeaderValues(
                 "&coverImage={coverImage}" +
                 "&coverImageWidthToHeightRatio={coverImageWidthToHeightRatio}" +
                 "&color={color}" +
-                "&bannerImage={bannerImage}"
+                "&bannerImage={bannerImage}" +
+                "&favorite={favorite}" +
+                "&type={type}"
 
-        fun routeSuffix(media: MediaHeaderData?, imageWidthToHeightRatio: Float) =
+        @Composable
+        inline fun <reified ViewModelType : ViewModel> createViewModel(
+            arguments: Bundle,
+            crossinline media: ViewModelType.() -> MediaHeaderData?,
+            crossinline favoriteUpdate: ViewModelType.() -> Boolean?,
+        ): Pair<ViewModelType, MediaHeaderValues> {
+            val viewModel = hiltViewModel<ViewModelType>()
+            val headerValues = MediaHeaderValues(
+                arguments = arguments,
+                media = { viewModel.media() },
+                favoriteUpdate = { viewModel.favoriteUpdate() },
+            )
+            return viewModel to headerValues
+        }
+
+        fun routeSuffix(
+            media: MediaHeaderData?,
+            favorite: Boolean?,
+            imageWidthToHeightRatio: Float,
+        ) =
             if (media == null) {
                 ""
             } else {
@@ -236,7 +271,9 @@ class MediaHeaderValues(
                         "&coverImageWidthToHeightRatio=$imageWidthToHeightRatio" +
                         "&color=${
                             media.coverImage?.color?.let(ComposeColorUtils::hexToColor)?.toArgb()
-                        }"
+                        }" +
+                        "&favorite=$favorite" +
+                        "&type=${media.type?.name}"
             }
 
         fun navArguments() = listOf(
@@ -251,6 +288,8 @@ class MediaHeaderValues(
             "coverImageWidthToHeightRatio",
             "bannerImage",
             "color",
+            "favorite",
+            "type",
         ).map {
             navArgument(it) {
                 type = NavType.StringType
@@ -275,6 +314,10 @@ class MediaHeaderValues(
     val nextEpisodeAiringAt
         get() = media()?.nextAiringEpisode?.airingAt
             ?: _nextEpisodeAiringAt
+    val favorite
+        get() = favoriteUpdate() ?: media()?.isFavourite ?: _favorite
+    val type
+        get() = media()?.type ?: _type
 
     @Composable
     fun subtitleText() = media()?.let {

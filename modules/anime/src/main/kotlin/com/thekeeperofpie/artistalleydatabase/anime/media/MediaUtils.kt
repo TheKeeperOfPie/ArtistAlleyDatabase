@@ -31,6 +31,7 @@ import com.anilist.type.MediaStatus
 import com.anilist.type.MediaType
 import com.anilist.type.ScoreFormat
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AiringDate
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.TagSection
@@ -670,5 +671,11 @@ object MediaUtils {
     } else {
         media.episodes ?: media.nextAiringEpisode
             ?.episode?.let { (it - 1).coerceAtLeast(1) }
+    }
+
+    fun MediaType?.toFavoriteType() = if (this == MediaType.ANIME) {
+        FavoriteType.ANIME
+    } else {
+        FavoriteType.MANGA
     }
 }

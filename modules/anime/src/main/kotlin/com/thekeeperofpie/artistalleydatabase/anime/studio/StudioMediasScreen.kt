@@ -2,6 +2,8 @@ package com.thekeeperofpie.artistalleydatabase.anime.studio
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -11,10 +13,12 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.anilist.StudioMediasQuery
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
+import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.ui.FavoriteIconButton
 import com.thekeeperofpie.artistalleydatabase.anime.utils.HeaderAndMediaListScreen
-import com.thekeeperofpie.artistalleydatabase.compose.AppBar
+import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
 
@@ -29,6 +33,7 @@ object StudioMediasScreen {
         upIconOption: UpIconOption?,
         viewModel: StudioMediasViewModel,
         name: () -> String,
+        favorite: () -> Boolean?,
         navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
         val colorCalculationState = rememberColorCalculationState(viewModel.colorMap)
@@ -43,9 +48,22 @@ object StudioMediasScreen {
             navigationCallback = navigationCallback,
             headerTextRes = null,
             header = {
-                AppBar(
-                    text = name(),
-                    upIconOption = upIconOption,
+                TopAppBar(
+                    title = { Text(text = name(), maxLines = 1) },
+                    navigationIcon = {
+                        if (upIconOption != null) {
+                            UpIconButton(option = upIconOption)
+                        }
+                    },
+                    actions = {
+                        FavoriteIconButton(favorite = favorite(), onFavoriteChanged = {
+                            viewModel.favoritesToggleHelper.set(
+                                FavoriteType.STUDIO,
+                                viewModel.headerId,
+                                it
+                            )
+                        })
+                    }
                 )
             },
             itemKey = { it.media.id },

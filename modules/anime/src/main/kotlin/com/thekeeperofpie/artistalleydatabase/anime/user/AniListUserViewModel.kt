@@ -75,6 +75,9 @@ class AniListUserViewModel @Inject constructor(
         viewModelScope.launch(CustomDispatchers.IO) {
             combine(refreshUptimeMillis, aniListApi.authedUser, ::Pair)
                 .collectLatest { (_, viewer) ->
+                    withContext(CustomDispatchers.Main) {
+                        entry = null
+                    }
                     try {
                         val userOrViewerId = userId ?: viewer?.id?.toString()
                         if (userOrViewerId == null) {

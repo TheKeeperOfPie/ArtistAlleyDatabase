@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.utils
 
+import androidx.annotation.CallSuper
 import androidx.annotation.StringRes
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
@@ -80,8 +81,10 @@ abstract class HeaderAndListViewModel<EntryType, ListItemType : Any, ListEntryTy
                 .filterNotNull()
                 .flowOn(CustomDispatchers.Main)
                 .mapLatest { (headerId, sortOption, sortAscending) ->
-                    Result.success(initialRequest(headerId, sortOption, sortAscending))
+                    initialRequest(headerId, sortOption, sortAscending)
                 }
+                .transformEntry()
+                .mapLatest { Result.success(it) }
                 .catch { emit(Result.failure(it)) }
                 .collectLatest {
                     withContext(CustomDispatchers.Main) {
@@ -120,26 +123,29 @@ abstract class HeaderAndListViewModel<EntryType, ListItemType : Any, ListEntryTy
         }
     }
 
-    fun initialize(headerId: String) {
+    @CallSuper
+    open fun initialize(headerId: String) {
         this.headerId = headerId
     }
 
     protected abstract suspend fun initialRequest(
         headerId: String,
         sortOption: SortType,
-        sortAscending: Boolean
+        sortAscending: Boolean,
     ): EntryType
 
     protected abstract suspend fun pagedRequest(
         entry: EntryType,
         page: Int,
         sortOption: SortType,
-        sortAscending: Boolean
+        sortAscending: Boolean,
     ): Pair<PaginationInfo?, List<ListItemType>>
 
     protected abstract fun entryId(entry: ListEntryType): String
 
     protected abstract fun makeEntry(item: ListItemType): ListEntryType
+
+    protected open fun Flow<EntryType>.transformEntry(): Flow<EntryType> = this
 
     protected open fun Flow<PagingData<ListEntryType>>.transformFlow():
             Flow<PagingData<ListEntryType>> = this

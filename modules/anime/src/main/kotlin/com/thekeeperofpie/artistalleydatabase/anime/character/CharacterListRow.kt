@@ -88,6 +88,7 @@ object CharacterListRow {
             if (entry != null) {
                 navigationCallback.onCharacterClick(
                     entry.character,
+                    null,
                     imageWidthToHeightRatio,
                     colorCalculationState.getColors(entry.character.id.toString()).first,
                 )
@@ -313,6 +314,7 @@ object CharacterListRow {
                             onClick = { ratio ->
                                 navigationCallback.onStaffClick(
                                     entry.voiceActor,
+                                    null,
                                     ratio,
                                     colorCalculationState.getColors(
                                         staffId.toString()

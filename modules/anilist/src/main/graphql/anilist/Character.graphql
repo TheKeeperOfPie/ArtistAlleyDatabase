@@ -115,6 +115,7 @@ fragment CharacterHeaderData on Character {
     image {
         large
     }
+    isFavourite
 }
 
 query CharacterDetails($id: Int!) {

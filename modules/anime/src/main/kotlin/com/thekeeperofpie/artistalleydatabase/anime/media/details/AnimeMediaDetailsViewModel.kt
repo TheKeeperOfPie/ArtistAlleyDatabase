@@ -23,9 +23,12 @@ import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.AppMediaPlayer
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoritesController
+import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoritesToggleHelper
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toFavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaFiltering
 import com.thekeeperofpie.artistalleydatabase.animethemes.AnimeThemesApi
 import com.thekeeperofpie.artistalleydatabase.animethemes.AnimeThemesUtils
@@ -60,6 +63,7 @@ class AnimeMediaDetailsViewModel @Inject constructor(
     val statusController: MediaListStatusController,
     val ignoreList: AnimeMediaIgnoreList,
     val settings: AnimeSettings,
+    favoritesController: FavoritesController,
 ) : ViewModel(), DefaultLifecycleObserver {
 
     companion object {
@@ -71,6 +75,9 @@ class AnimeMediaDetailsViewModel @Inject constructor(
     val colorMap = mutableStateMapOf<String, Pair<Color, Color>>()
 
     lateinit var mediaId: String
+
+    val favoritesToggleHelper =
+        FavoritesToggleHelper(aniListApi, favoritesController, viewModelScope)
 
     val hasAuth = oAuthStore.hasAuth
 
@@ -89,6 +96,13 @@ class AnimeMediaDetailsViewModel @Inject constructor(
     fun initialize(mediaId: String) {
         if (::mediaId.isInitialized) return
         this.mediaId = mediaId
+        favoritesToggleHelper.initializeTracking(
+            viewModel = this,
+            entry = { snapshotFlow { entry } },
+            entryToId = { it.mediaId },
+            entryToType = { it.media.type.toFavoriteType() },
+            entryToFavorite = { it.media.isFavourite },
+        )
 
         viewModelScope.launch(CustomDispatchers.IO) {
             try {

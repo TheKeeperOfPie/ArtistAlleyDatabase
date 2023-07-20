@@ -48,6 +48,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterHeader
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterHeaderValues
+import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
@@ -107,6 +108,10 @@ object CharacterDetailsScreen {
                         characterId = viewModel.characterId,
                         progress = it,
                         headerValues = headerValues,
+                        onFavoriteChanged = {
+                            viewModel.favoritesToggleHelper
+                                .set(FavoriteType.CHARACTER, viewModel.characterId, it)
+                        },
                         colorCalculationState = colorCalculationState,
                         onImageWidthToHeightRatioAvailable = {
                             characterImageWidthToHeightRatio = it
@@ -383,6 +388,7 @@ object CharacterDetailsScreen {
                 entry.let {
                     navigationCallback.onCharacterMediasClick(
                         character = it.character,
+                        favorite = headerValues.favorite,
                         imageWidthToHeightRatio = characterImageWidthToHeightRatio(),
                         color = headerValues.color(colorCalculationState),
                     )
@@ -392,7 +398,10 @@ object CharacterDetailsScreen {
         )
     }
 
-    data class Entry(val character: Character, val media: List<AnimeMediaListRow.Entry<*>>) {
+    data class Entry(
+        val character: Character,
+        val media: List<AnimeMediaListRow.Entry<*>>,
+    ) {
         val voiceActors = character.media?.edges?.filterNotNull()
             ?.flatMap {
                 it.voiceActorRoles?.filterNotNull()

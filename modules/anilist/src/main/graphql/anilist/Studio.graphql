@@ -35,6 +35,7 @@ query StudioMedias(
         id
         name
         isAnimationStudio
+        isFavourite
 
         media(sort: $sort, page: 1, perPage: $mediasPerPage) {
             pageInfo @nonnull {

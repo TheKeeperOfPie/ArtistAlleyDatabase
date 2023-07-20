@@ -91,6 +91,7 @@ object StaffStaffScreen {
                                     it.character?.let {
                                         navigationCallback.onCharacterClick(
                                             it,
+                                            null,
                                             innerImageWidthToHeightRatio,
                                             colorCalculationState.getColors(it.id.toString()).first,
                                         )

@@ -4,6 +4,7 @@ package com.thekeeperofpie.artistalleydatabase.anime.ui
 
 import android.content.Context
 import androidx.annotation.StringRes
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -23,6 +24,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.OpenInNew
 import androidx.compose.material.icons.filled.PeopleAlt
 import androidx.compose.material.icons.filled.Person
@@ -415,7 +418,8 @@ fun ListRowSmallImage(
         contentScale = ContentScale.Crop,
         contentDescription = stringResource(contentDescriptionTextRes),
         onSuccess = { imageWidthToHeightRatio = it.widthToHeightRatio() },
-        modifier = Modifier.size(width = width, height = height)
+        modifier = Modifier
+            .size(width = width, height = height)
             .clip(RoundedCornerShape(12.dp))
             .background(MaterialTheme.colorScheme.surfaceColorAtElevation(4.dp))
             .clickable { onClick(imageWidthToHeightRatio ?: 1f) }
@@ -466,6 +470,34 @@ fun ListRowFavoritesSection(
                     highlight = PlaceholderHighlight.shimmer(),
                 ),
             )
+        }
+    }
+}
+
+@Composable
+fun FavoriteIconButton(
+    favorite: Boolean?,
+    onFavoriteChanged: (Boolean) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    AnimatedVisibility(visible = favorite != null, modifier = modifier) {
+        if (favorite != null) {
+            IconButton(onClick = { onFavoriteChanged(!favorite) }) {
+                Icon(
+                    imageVector = if (favorite) {
+                        Icons.Filled.Favorite
+                    } else {
+                        Icons.Filled.FavoriteBorder
+                    },
+                    contentDescription = stringResource(
+                        if (favorite) {
+                            R.string.anime_generic_favorite_is_favorite_icon_content_description
+                        } else {
+                            R.string.anime_generic_favorite_is_not_favorite_icon_content_description
+                        }
+                    )
+                )
+            }
         }
     }
 }

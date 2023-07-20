@@ -20,6 +20,7 @@ import com.anilist.fragment.StaffHeaderData
 import com.anilist.fragment.StaffNavigationData
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.ui.CoverAndBannerHeader
+import com.thekeeperofpie.artistalleydatabase.anime.ui.FavoriteIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.AutoResizeHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
@@ -34,6 +35,7 @@ fun StaffHeader(
     upIconOption: UpIconOption?,
     progress: Float,
     headerValues: StaffHeaderValues,
+    onFavoriteChanged: (Boolean) -> Unit,
     colorCalculationState: ColorCalculationState,
     onImageWidthToHeightRatioAvailable: (Float) -> Unit = {},
 ) {
@@ -48,7 +50,14 @@ fun StaffHeader(
         coverImageOnSuccess = {
             onImageWidthToHeightRatioAvailable(it.widthToHeightRatio())
             ComposeColorUtils.calculatePalette(staffId, it, colorCalculationState)
-        }
+        },
+        menuContent = {
+            FavoriteIconButton(
+                favorite = headerValues.favorite,
+                onFavoriteChanged = onFavoriteChanged,
+            )
+        },
+        fadeOutMenu = false,
     ) {
         AutoResizeHeightText(
             text = headerValues.name,
@@ -86,17 +95,21 @@ class StaffHeaderValues(
     private val _color: Color? = arguments.getString("color")
         ?.toIntOrNull()
         ?.let(::Color),
+    private val _favorite: Boolean? = arguments.getString("favorite")?.toBooleanStrictOrNull(),
     private val staff: () -> StaffHeaderData?,
+    private val favoriteUpdate: () -> Boolean?,
 ) {
     companion object {
         const val routeSuffix = "&name={name}" +
                 "&subtitle={subtitle}" +
                 "&image={image}" +
                 "&imageWidthToHeightRatio={imageWidthToHeightRatio}" +
-                "&color={color}"
+                "&color={color}" +
+                "&favorite={favorite}"
 
         fun routeSuffix(
             staff: StaffHeaderData?,
+            favorite: Boolean?,
             imageWidthToHeightRatio: Float,
             color: Color?,
         ) = if (staff == null) "" else routeSuffix(
@@ -109,10 +122,12 @@ class StaffHeaderValues(
             image = staff.image?.large,
             imageWidthToHeightRatio = imageWidthToHeightRatio,
             color = color,
+            favorite = favorite,
         )
 
         fun routeSuffix(
             staff: StaffNavigationData?,
+            favorite: Boolean?,
             imageWidthToHeightRatio: Float,
             color: Color?,
         ) = if (staff == null) "" else routeSuffix(
@@ -121,6 +136,7 @@ class StaffHeaderValues(
             image = staff.image?.large,
             imageWidthToHeightRatio = imageWidthToHeightRatio,
             color = color,
+            favorite = favorite,
         )
 
         private fun routeSuffix(
@@ -129,11 +145,13 @@ class StaffHeaderValues(
             image: String?,
             imageWidthToHeightRatio: Float,
             color: Color?,
+            favorite: Boolean?,
         ) = "&name=$name" +
                 "&subtitle=$subtitle" +
                 "&image=$image" +
                 "&imageWidthToHeightRatio=$imageWidthToHeightRatio" +
-                "&color=${color?.toArgb()}"
+                "&color=${color?.toArgb()}" +
+                "&favorite=$favorite"
 
         fun navArguments() = listOf(
             "name",
@@ -141,6 +159,7 @@ class StaffHeaderValues(
             "image",
             "imageWidthToHeightRatio",
             "color",
+            "favorite",
         ).map {
             navArgument(it) {
                 type = NavType.StringType
@@ -161,6 +180,8 @@ class StaffHeaderValues(
                 full = full,
             )
         } ?: _subtitle ?: ""
+    val favorite
+        get() = favoriteUpdate() ?: staff()?.isFavourite ?: _favorite
 
     fun color(colorCalculationState: ColorCalculationState) =
         colorCalculationState.getColors(staff()?.id?.toString()).first

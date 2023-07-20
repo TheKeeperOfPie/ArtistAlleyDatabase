@@ -85,6 +85,7 @@ object StaffMediaScreen {
                                 onClick = {
                                     navigationCallback.onCharacterClick(
                                         it.character,
+                                        null,
                                         imageWidthToHeightRatio,
                                         colorCalculationState.getColors(it.character.id.toString())
                                             .first,

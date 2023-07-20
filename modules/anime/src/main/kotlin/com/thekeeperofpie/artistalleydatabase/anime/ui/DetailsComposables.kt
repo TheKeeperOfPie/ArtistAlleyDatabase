@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -71,6 +72,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.CustomHtmlText
 import com.thekeeperofpie.artistalleydatabase.compose.ImageHtmlText
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
+import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.compose.optionalClickable
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 
@@ -89,6 +91,8 @@ internal fun CoverAndBannerHeader(
     onClickEnabled: Boolean = false,
     onClick: (() -> Unit)? = null,
     coverImageOnSuccess: (AsyncImagePainter.State.Success) -> Unit = {},
+    menuContent: (@Composable RowScope.() -> Unit)? = null,
+    fadeOutMenu: Boolean = true,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val elevation = lerp(0.dp, 16.dp, AccelerateEasing.transform(progress))
@@ -159,10 +163,33 @@ internal fun CoverAndBannerHeader(
                 )
             }
 
+            if (menuContent != null && (!fadeOutMenu || progress != 1f)) {
+                Row(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .conditionally(fadeOutMenu) { alpha(1f - progress) }
+                        .clip(RoundedCornerShape(bottomStart = 12.dp))
+                        .background(
+                            MaterialTheme.colorScheme.surface.copy(
+                                alpha = if (fadeOutMenu) 0.25f else (0.25f * (1f - progress))
+                            )
+                        )
+                ) {
+                    menuContent()
+                }
+            }
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = 16.dp, top = lerp(100.dp, 10.dp, progress), bottom = 10.dp)
+                    .padding(
+                        start = 16.dp,
+                        top = lerp(100.dp, 10.dp, progress),
+                        bottom = 10.dp,
+                        // Reserve some space if the menu should be retained,
+                        // currently only supports 1 option (40dp)
+                        end = if (fadeOutMenu) 0.dp else lerp(0.dp, 40.dp, progress)
+                    )
                     .height(lerp(coverSize, pinnedHeight, progress))
             ) {
                 SharedElement(

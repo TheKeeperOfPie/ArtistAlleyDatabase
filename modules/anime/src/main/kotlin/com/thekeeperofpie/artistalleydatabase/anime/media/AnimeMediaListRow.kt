@@ -91,6 +91,7 @@ object AnimeMediaListRow {
                     onClick = {
                         navigationCallback.onMediaClick(
                             entry!!,
+                            null,
                             imageWidthToHeightRatio
                         )
                     },
@@ -103,7 +104,7 @@ object AnimeMediaListRow {
                     viewer = viewer,
                     onClick = {
                         if (entry != null) {
-                            navigationCallback.onMediaClick(entry, imageWidthToHeightRatio)
+                            navigationCallback.onMediaClick(entry, null, imageWidthToHeightRatio)
                         }
                     },
                     onClickListEdit = onClickListEdit,

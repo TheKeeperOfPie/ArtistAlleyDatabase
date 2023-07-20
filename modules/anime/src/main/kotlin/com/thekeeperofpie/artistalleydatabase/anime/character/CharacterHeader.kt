@@ -21,6 +21,7 @@ import com.anilist.fragment.CharacterNavigationData
 import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.ui.CoverAndBannerHeader
+import com.thekeeperofpie.artistalleydatabase.anime.ui.FavoriteIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.AutoResizeHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
@@ -35,6 +36,7 @@ fun CharacterHeader(
     characterId: String,
     progress: Float,
     headerValues: CharacterHeaderValues,
+    onFavoriteChanged: (Boolean) -> Unit,
     colorCalculationState: ColorCalculationState,
     onImageWidthToHeightRatioAvailable: (Float) -> Unit = {},
 ) {
@@ -53,7 +55,14 @@ fun CharacterHeader(
             coverImageOnSuccess = {
                 onImageWidthToHeightRatioAvailable(it.widthToHeightRatio())
                 ComposeColorUtils.calculatePalette(characterId, it, colorCalculationState)
-            }
+            },
+            menuContent = {
+                FavoriteIconButton(
+                    favorite = headerValues.favorite,
+                    onFavoriteChanged = onFavoriteChanged,
+                )
+            },
+            fadeOutMenu = false,
         ) {
             AutoResizeHeightText(
                 text = headerValues.name,
@@ -65,7 +74,10 @@ fun CharacterHeader(
             )
 
             val subtitle = headerValues.subtitle
-            AnimatedVisibility(subtitle.isNotEmpty(), label = "Character details subtitle text") {
+            AnimatedVisibility(
+                subtitle.isNotEmpty(),
+                label = "Character details subtitle text"
+            ) {
                 if (subtitle.isNotEmpty()) {
                     Text(
                         text = subtitle,
@@ -88,21 +100,25 @@ class CharacterHeaderValues(
         ?.toFloatOrNull() ?: 1f,
     private val _name: String? = arguments.getString("name"),
     private val _subtitle: String? = arguments.getString("subtitle"),
+    private val _favorite: Boolean? = arguments.getString("favorite")?.toBooleanStrictOrNull(),
     private val _image: String? = arguments.getString("image"),
     private val _color: Color? = arguments.getString("color")
         ?.toIntOrNull()
         ?.let(::Color),
     private val character: () -> CharacterHeaderData?,
+    private val favoriteUpdate: () -> Boolean?,
 ) {
     companion object {
         const val routeSuffix = "&name={name}" +
                 "&subtitle={subtitle}" +
+                "&favorite={favorite}" +
                 "&image={image}" +
                 "&imageWidthToHeightRatio={imageWidthToHeightRatio}" +
                 "&color={color}"
 
         fun routeSuffix(
             character: CharacterHeaderData?,
+            favorite: Boolean?,
             imageWidthToHeightRatio: Float,
             color: Color?,
         ) = if (character == null) "" else routeSuffix(
@@ -112,6 +128,7 @@ class CharacterHeaderValues(
                 native = character.name?.native,
                 full = character.name?.full,
             ),
+            favorite = favorite,
             image = character.image?.large,
             imageWidthToHeightRatio = imageWidthToHeightRatio,
             color = color,
@@ -119,11 +136,13 @@ class CharacterHeaderValues(
 
         fun routeSuffix(
             character: CharacterNavigationData?,
+            favorite: Boolean?,
             imageWidthToHeightRatio: Float,
             color: Color?,
         ) = if (character == null) "" else routeSuffix(
             name = character.name?.userPreferred,
             subtitle = null,
+            favorite = favorite,
             image = character.image?.large,
             imageWidthToHeightRatio = imageWidthToHeightRatio,
             color = color,
@@ -132,11 +151,13 @@ class CharacterHeaderValues(
         private fun routeSuffix(
             name: String?,
             subtitle: String?,
+            favorite: Boolean?,
             image: String?,
             imageWidthToHeightRatio: Float,
             color: Color?,
         ) = "&name=$name" +
                 "&subtitle=$subtitle" +
+                "&favorite=$favorite" +
                 "&image=$image" +
                 "&imageWidthToHeightRatio=$imageWidthToHeightRatio" +
                 "&color=${color?.toArgb()}"
@@ -144,6 +165,7 @@ class CharacterHeaderValues(
         fun navArguments() = listOf(
             "name",
             "subtitle",
+            "favorite",
             "image",
             "imageWidthToHeightRatio",
             "color",
@@ -159,6 +181,8 @@ class CharacterHeaderValues(
         get() = character()?.image?.large ?: _image
     val name
         get() = character()?.name?.userPreferred ?: _name ?: ""
+    val favorite
+        get() = favoriteUpdate() ?: character()?.isFavourite ?: _favorite
     val subtitle
         get() = character()?.name?.run {
             CharacterUtils.subtitleName(

@@ -34,6 +34,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.anilist.StaffDetailsQuery.Data.Staff
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.character.DetailsCharacter
+import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.compose.CollapsingToolbar
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
@@ -72,6 +73,10 @@ object StaffDetailsScreen {
                         upIconOption = upIconOption,
                         progress = it,
                         headerValues = headerValues,
+                        onFavoriteChanged = {
+                            viewModel.favoritesToggleHelper
+                                .set(FavoriteType.STAFF, viewModel.staffId, it)
+                        },
                         colorCalculationState = colorCalculationState,
                         onImageWidthToHeightRatioAvailable = { staffImageWidthToHeightRatio = it },
                     )
@@ -135,6 +140,7 @@ object StaffDetailsScreen {
                     ) {
                         when (StaffTab.values()[it]) {
                             StaffTab.OVERVIEW -> StaffOverviewScreen(
+                                viewModel = viewModel,
                                 entry = entry,
                                 staffImageWidthToHeightRatio = { staffImageWidthToHeightRatio },
                                 colorCalculationState = colorCalculationState,

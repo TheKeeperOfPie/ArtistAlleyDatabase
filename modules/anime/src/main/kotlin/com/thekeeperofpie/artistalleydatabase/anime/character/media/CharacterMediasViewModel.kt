@@ -1,10 +1,15 @@
 package com.thekeeperofpie.artistalleydatabase.anime.character.media
 
+import androidx.compose.runtime.snapshotFlow
+import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import com.anilist.fragment.MediaPreview
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoriteType
+import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoritesController
+import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoritesToggleHelper
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
@@ -21,12 +26,26 @@ class CharacterMediasViewModel @Inject constructor(
     private val statusController: MediaListStatusController,
     private val ignoreList: AnimeMediaIgnoreList,
     private val settings: AnimeSettings,
+    favoritesController: FavoritesController,
 ) : HeaderAndListViewModel<CharacterMediasScreen.Entry, MediaPreview, AnimeMediaListRow.Entry<MediaPreview>, MediaSortOption>(
     aniListApi = aniListApi,
     sortOptionEnum = MediaSortOption::class,
     sortOptionEnumDefault = MediaSortOption.POPULARITY,
     loadingErrorTextRes = R.string.anime_character_medias_error_loading,
 ) {
+    val favoritesToggleHelper =
+        FavoritesToggleHelper(aniListApi, favoritesController, viewModelScope)
+
+    override fun initialize(headerId: String) {
+        super.initialize(headerId)
+        favoritesToggleHelper.initializeTracking(
+            viewModel = this,
+            entry = { snapshotFlow { entry } },
+            entryToId = { it.character.id.toString() },
+            entryToType = { FavoriteType.CHARACTER },
+            entryToFavorite = { it.character.isFavourite },
+        )
+    }
 
     override fun makeEntry(item: MediaPreview) = AnimeMediaListRow.Entry(item)
 

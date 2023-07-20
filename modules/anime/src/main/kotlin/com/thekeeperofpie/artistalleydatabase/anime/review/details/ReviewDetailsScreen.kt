@@ -53,6 +53,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeader
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderValues
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toFavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.review.ReviewRatingIconsSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.DetailsLoadingOrError
 import com.thekeeperofpie.artistalleydatabase.compose.AutoSizeText
@@ -96,6 +97,13 @@ object ReviewDetailsScreen {
                         popularity = media?.popularity,
                         progress = it,
                         headerValues = headerValues,
+                        onFavoriteChanged = {
+                            viewModel.favoritesToggleHelper.set(
+                                headerValues.type.toFavoriteType(),
+                                entry?.review?.media?.id.toString(),
+                                it,
+                            )
+                        },
                         colorCalculationState = colorCalculationState,
                         enableCoverImageSharedElement = false,
                     )

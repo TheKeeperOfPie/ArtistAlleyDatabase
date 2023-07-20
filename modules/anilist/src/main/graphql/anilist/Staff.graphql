@@ -154,6 +154,7 @@ fragment StaffHeaderData on Staff {
     image {
         large
     }
+    isFavourite
 }
 
 query StaffAndCharacters(

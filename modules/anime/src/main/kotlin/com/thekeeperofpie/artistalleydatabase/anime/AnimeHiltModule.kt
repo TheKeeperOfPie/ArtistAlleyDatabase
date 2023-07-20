@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.anime
 
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
+import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoritesController
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.UserMediaListController
@@ -63,4 +64,8 @@ object AnimeHiltModule {
         statusController = statusController,
         settings = settings,
     )
+
+    @Singleton
+    @Provides
+    fun provideFavoritesController() = FavoritesController()
 }

@@ -28,6 +28,7 @@ object StaffOverviewScreen {
 
     @Composable
     operator fun invoke(
+        viewModel: StaffDetailsViewModel,
         entry: StaffDetailsScreen.Entry,
         staffImageWidthToHeightRatio: () -> Float,
         colorCalculationState: ColorCalculationState,
@@ -54,6 +55,7 @@ object StaffOverviewScreen {
                 onClickViewAll = {
                     navigationCallback.onStaffCharactersClick(
                         entry.staff,
+                        viewModel.favoritesToggleHelper.favorite,
                         staffImageWidthToHeightRatio(),
                         colorCalculationState.getColors(entry.staff.id.toString()).first
                     )

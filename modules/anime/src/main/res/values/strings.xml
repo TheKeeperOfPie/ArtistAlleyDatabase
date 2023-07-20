@@ -642,6 +642,8 @@
     <string name="anime_generic_favorites_icon_content_description">Favorites</string>
     <string name="anime_generic_filter_advanced_group">Advanced</string>
     <string name="anime_generic_filter_advanced_group_expand_content_description">Advanced group expand</string>
+    <string name="anime_generic_favorite_is_favorite_icon_content_description">Is favorite</string>
+    <string name="anime_generic_favorite_is_not_favorite_icon_content_description">Is not favorite</string>
 
     <string name="anime_studio_sort_search_match">Search match</string>
     <string name="anime_studio_sort_id">Last added</string>

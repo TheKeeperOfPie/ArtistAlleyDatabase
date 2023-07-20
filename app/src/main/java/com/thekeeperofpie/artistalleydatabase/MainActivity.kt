@@ -246,7 +246,6 @@ class MainActivity : ComponentActivity() {
                 AnimeNavigator.NavigationCallback(
                     navHostController,
                     cdEntryNavigator,
-                    uriHandler::openUri,
                 )
             Box(
                 modifier = Modifier.weight(1f)
@@ -413,7 +412,7 @@ class MainActivity : ComponentActivity() {
                         }
 
                         composable(
-                            route = AppNavDestinations.SETTINGS.id,
+                            route = "${AppNavDestinations.SETTINGS.id}?root={root}",
                             arguments = listOf(
                                 navArgument("root") {
                                     type = NavType.StringType
