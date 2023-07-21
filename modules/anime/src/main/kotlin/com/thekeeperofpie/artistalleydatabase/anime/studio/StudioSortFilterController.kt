@@ -1,7 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anime.studio
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.unit.dp
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
@@ -15,9 +13,6 @@ import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(FlowPreview::class)
 class StudioSortFilterController(settings: AnimeSettings) : SortFilterController(settings) {
-
-    @Composable
-    override fun collapseOnClose() = settings.collapseAnimeFiltersOnClose.collectAsState().value
 
     private val sortSection = SortFilterSection.Sort(
         enumClass = StudioSortOption::class,

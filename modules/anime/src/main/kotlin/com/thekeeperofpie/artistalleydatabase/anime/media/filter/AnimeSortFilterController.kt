@@ -1,7 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media.filter
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -225,9 +224,6 @@ class AnimeSortFilterController<SortType : SortOption>(
             }
         )
     }
-
-    @Composable
-    override fun collapseOnClose() = settings.collapseAnimeFiltersOnClose.collectAsState().value
 
     @Composable
     override fun PromptDialog() {

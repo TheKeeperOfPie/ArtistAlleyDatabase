@@ -48,11 +48,12 @@ class AnimeHomeViewModel @Inject constructor(
         viewModelScope.launch(CustomDispatchers.IO) {
             combine(refreshUptimeMillis, aniListApi.authedUser, ::Pair)
                 .flatMapLatest { (_, viewer) ->
-                    Pager(config = PagingConfig(0)) {
+                    Pager(config = PagingConfig(3)) {
                         AniListPagingSource {
                             val result = aniListApi.userSocialActivity(
                                 isFollowing = viewer != null,
                                 page = it,
+                                perPage = 3,
                                 userIdNot = viewer?.id,
                             )
                             result.page?.pageInfo to

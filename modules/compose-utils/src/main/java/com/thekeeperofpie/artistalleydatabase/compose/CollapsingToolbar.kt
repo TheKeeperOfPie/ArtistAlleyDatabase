@@ -149,7 +149,7 @@ fun EnterAlwaysTopAppBarHeightChange(
     )
 
     Box(modifier = modifier.then(appBarDragModifier)) {
-        val height = LocalDensity.current.run { 64.dp + scrollBehavior.state.heightOffset.toDp() }
+        val height = LocalDensity.current.run { -heightOffsetLimit.toDp() + scrollBehavior.state.heightOffset.toDp() }
         Box(
             modifier = Modifier
                 .windowInsetsPadding(windowInsets)
@@ -159,7 +159,7 @@ fun EnterAlwaysTopAppBarHeightChange(
                         heightOffsetLimit = -it.height.toFloat()
                     }
                 }
-                .height(height),
+                .conditionally(heightOffsetLimit != 0f) { height(height) },
             content = content,
         )
     }

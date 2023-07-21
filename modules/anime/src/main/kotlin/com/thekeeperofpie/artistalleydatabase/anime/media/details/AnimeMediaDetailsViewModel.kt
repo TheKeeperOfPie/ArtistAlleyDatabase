@@ -124,11 +124,11 @@ class AnimeMediaDetailsViewModel @Inject constructor(
                 val recommendations = media.recommendations?.edges?.filterNotNull()
                     ?.mapNotNull {
                         val node = it.node ?: return@mapNotNull null
-                        val media = node.mediaRecommendation ?: return@mapNotNull null
+                        val mediaRecommendation = node.mediaRecommendation ?: return@mapNotNull null
                         AnimeMediaDetailsScreen.Entry.Recommendation(
                             node.id.toString(),
                             node.rating,
-                            AnimeMediaListRow.Entry(media)
+                            AnimeMediaListRow.Entry(mediaRecommendation)
                         )
                     }
                     .orEmpty()

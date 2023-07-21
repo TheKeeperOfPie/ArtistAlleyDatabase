@@ -1,7 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anime.news
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -68,9 +66,6 @@ class NewsSortFilterController(settings: AnimeSettings) : SortFilterController(s
         crunchyrollCategorySection,
         SortFilterSection.Spacer(height = 32.dp),
     )
-
-    @Composable
-    override fun collapseOnClose() = settings.collapseAnimeFiltersOnClose.collectAsState().value
 
     fun filterParams() = snapshotFlow {
         FilterParams(

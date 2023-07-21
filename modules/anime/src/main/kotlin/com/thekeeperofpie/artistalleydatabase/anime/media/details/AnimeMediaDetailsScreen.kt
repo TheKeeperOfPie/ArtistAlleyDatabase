@@ -565,7 +565,7 @@ object AnimeMediaDetailsScreen {
 
     private fun LazyListScope.genreSection(
         entry: Entry,
-        onGenreClick: (String) -> Unit,
+        onGenreClick: (MediaType, String) -> Unit,
         onGenreLongClick: (String) -> Unit,
     ) {
         if (entry.genres.isNotEmpty()) {
@@ -580,7 +580,12 @@ object AnimeMediaDetailsScreen {
                 ) {
                     entry.genres.forEach {
                         AssistChip(
-                            onClick = { onGenreClick(it.name) },
+                            onClick = {
+                                onGenreClick(
+                                    entry.media.type ?: MediaType.ANIME,
+                                    it.name
+                                )
+                            },
                             onLongClickLabel = stringResource(
                                 R.string.anime_media_tag_long_click_content_description
                             ),
@@ -1384,7 +1389,7 @@ object AnimeMediaDetailsScreen {
 
     private fun LazyListScope.tagsSection(
         entry: Entry,
-        onTagClick: (tagId: String, tagName: String) -> Unit = { _, _ -> },
+        onTagClick: (MediaType, tagId: String, tagName: String) -> Unit,
         onTagLongClick: (tagId: String) -> Unit = {},
         colorCalculationState: ColorCalculationState,
     ) {
@@ -1419,7 +1424,9 @@ object AnimeMediaDetailsScreen {
                                     )
                                 }
                             },
-                            onTagClick = onTagClick,
+                            onTagClick = { id, name ->
+                                onTagClick(entry.media.type ?: MediaType.ANIME, id, name)
+                            },
                             onTagLongClick = onTagLongClick,
                             containerColor = containerColor,
                             textColor = textColor,

@@ -1,7 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anime.character
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.unit.dp
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
@@ -18,9 +16,6 @@ class CharacterSortFilterController(
     settings: AnimeSettings,
     private val allowRelevanceSort: Boolean = false,
 ) : SortFilterController(settings) {
-
-    @Composable
-    override fun collapseOnClose() = settings.collapseAnimeFiltersOnClose.collectAsState().value
 
     private val sortSection = SortFilterSection.Sort(
         enumClass = CharacterSortOption::class,

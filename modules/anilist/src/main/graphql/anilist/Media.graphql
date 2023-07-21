@@ -139,6 +139,7 @@ fragment MediaNavigationData on Media {
     coverImage {
         extraLarge
     }
+    type
     isAdult
 }
 
@@ -451,9 +452,7 @@ query AiringSchedule(
 ) {
     Page(perPage: $perPage, page: $page) {
         pageInfo {
-            total
-            currentPage
-            hasNextPage
+            ...PaginationInfo
         }
         airingSchedules(
             airingAt_greater: $startTime,

@@ -47,7 +47,7 @@ class AnimeCharacterDetailsViewModel @Inject constructor(
     val favoritesToggleHelper =
         FavoritesToggleHelper(aniListApi, favoritesController, viewModelScope)
 
-    fun initialize(characterId: String, favorite: Boolean?) {
+    fun initialize(characterId: String) {
         if (::characterId.isInitialized) return
         this.characterId = characterId
 

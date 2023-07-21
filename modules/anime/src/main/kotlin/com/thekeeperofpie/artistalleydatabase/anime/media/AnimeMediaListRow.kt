@@ -139,7 +139,15 @@ object AnimeMediaListRow {
                         colorCalculationState.getColors(entry?.media?.id?.toString())
                     MediaTagRow(
                         tags = entry?.tags.orEmpty(),
-                        onTagClick = navigationCallback::onTagClick,
+                        onTagClick = { id, name ->
+                            if (entry != null) {
+                                navigationCallback.onTagClick(
+                                    entry.media.type ?: com.anilist.type.MediaType.ANIME,
+                                    id,
+                                    name
+                                )
+                            }
+                        },
                         onTagLongClick = onTagLongClick,
                         tagContainerColor = containerColor,
                         tagTextColor = textColor,

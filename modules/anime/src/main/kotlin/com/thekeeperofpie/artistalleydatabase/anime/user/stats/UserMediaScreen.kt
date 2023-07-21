@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.anilist.UserByIdQuery
 import com.anilist.fragment.UserMediaStatistics
+import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserScreen
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserViewModel
@@ -78,7 +79,12 @@ object UserMediaScreen {
                     valueToChaptersRead = UserMediaStatistics.Genre::chaptersRead,
                     valueToMeanScore = UserMediaStatistics.Genre::meanScore,
                     valueToMediaIds = { it.mediaIds.filterNotNull() },
-                    onValueClick = { value, _ -> navigationCallback.onGenreClick(value.genre!!) },
+                    onValueClick = { value, _ ->
+                        navigationCallback.onGenreClick(
+                            if (isAnime) MediaType.ANIME else MediaType.MANGA,
+                            value.genre!!,
+                        )
+                    },
                 )
                 UserStatsTab.TAGS -> UserStatsDetailScreen(
                     screenKey = SCREEN_KEY,
@@ -96,6 +102,7 @@ object UserMediaScreen {
                     valueToMediaIds = { it.mediaIds.filterNotNull() },
                     onValueClick = { value, _ ->
                         navigationCallback.onTagClick(
+                            if (isAnime) MediaType.ANIME else MediaType.MANGA,
                             value.tag?.id.toString(),
                             value.tag?.name.orEmpty()
                         )

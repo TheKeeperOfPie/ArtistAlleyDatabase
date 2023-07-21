@@ -24,6 +24,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.UserMediaListController
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaFiltering
+import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.seasonal.SeasonalViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -44,7 +45,7 @@ abstract class AnimeHomeMediaViewModel(
     protected val userMediaListController: UserMediaListController,
     private val statusController: MediaListStatusController,
     @StringRes val currentHeaderTextRes: Int,
-    private val mediaType: MediaType,
+    protected val mediaType: MediaType,
 ) : ViewModel() {
 
     var entry by mutableStateOf<AnimeHomeDataEntry?>(null)
@@ -176,8 +177,12 @@ abstract class AnimeHomeMediaViewModel(
             return listOf(
                 RowInput(
                     "anime_trending",
-                    R.string.anime_home_trending,
+                    R.string.anime_home_trending_row_label,
                     lists.trending?.media,
+                    viewAllRoute = AnimeNavDestinations.SEARCH_MEDIA.id
+                            + "?titleRes=${R.string.anime_home_trending_screen_title}"
+                            + "&mediaType=${mediaType.name}"
+                            + "&sort=${MediaSortOption.TRENDING}"
                 ),
                 RowInput(
                     "anime_popular_this_season",
@@ -199,10 +204,21 @@ abstract class AnimeHomeMediaViewModel(
                 ),
                 RowInput(
                     "anime_popular",
-                    R.string.anime_home_popular,
+                    R.string.anime_home_popular_row_label,
                     lists.popular?.media,
+                    viewAllRoute = AnimeNavDestinations.SEARCH_MEDIA.id
+                            + "?titleRes=${R.string.anime_home_popular_screen_title}"
+                            + "&mediaType=${mediaType.name}"
+                            + "&sort=${MediaSortOption.POPULARITY}"
                 ),
-                RowInput("anime_top", R.string.anime_home_top, lists.top?.media),
+                RowInput(
+                    "anime_top", R.string.anime_home_top_row_label,
+                    lists.top?.media,
+                    viewAllRoute = AnimeNavDestinations.SEARCH_MEDIA.id
+                            + "?titleRes=${R.string.anime_home_top_screen_title}"
+                            + "&mediaType=${mediaType.name}"
+                            + "&sort=${MediaSortOption.SCORE}"
+                ),
             )
         }
     }
@@ -231,15 +247,30 @@ abstract class AnimeHomeMediaViewModel(
             return listOf(
                 RowInput(
                     "manga_trending",
-                    R.string.anime_home_trending,
-                    lists.trending?.media
+                    R.string.anime_home_trending_row_label,
+                    lists.trending?.media,
+                    viewAllRoute = AnimeNavDestinations.SEARCH_MEDIA.id
+                            + "?titleRes=${R.string.anime_home_trending_screen_title}"
+                            + "&mediaType=${mediaType.name}"
+                            + "&sort=${MediaSortOption.TRENDING}"
                 ),
                 RowInput(
                     "manga_popular",
-                    R.string.anime_home_popular,
-                    lists.popular?.media
+                    R.string.anime_home_popular_row_label,
+                    lists.popular?.media,
+                    viewAllRoute = AnimeNavDestinations.SEARCH_MEDIA.id
+                            + "?titleRes=${R.string.anime_home_popular_screen_title}"
+                            + "&mediaType=${mediaType.name}"
+                            + "&sort=${MediaSortOption.POPULARITY}"
                 ),
-                RowInput("manga_top", R.string.anime_home_top, lists.top?.media),
+                RowInput(
+                    "manga_top", R.string.anime_home_top_row_label,
+                    lists.top?.media,
+                    viewAllRoute = AnimeNavDestinations.SEARCH_MEDIA.id
+                            + "?titleRes=${R.string.anime_home_top_screen_title}"
+                            + "&mediaType=${mediaType.name}"
+                            + "&sort=${MediaSortOption.SCORE}"
+                ),
             )
         }
     }

@@ -39,6 +39,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import coil.size.Dimension
 import com.anilist.fragment.MediaCompactWithTags
+import com.anilist.type.MediaType
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.material.placeholder
 import com.google.accompanist.placeholder.material.shimmer
@@ -105,7 +106,11 @@ object AnimeMediaCompactListRow {
                 )
 
                 Column(modifier = Modifier.height(DEFAULT_IMAGE_HEIGHT)) {
-                    Row(Modifier.fillMaxWidth().weight(1f)) {
+                    Row(
+                        Modifier
+                            .fillMaxWidth()
+                            .weight(1f)
+                    ) {
                         TitleText(entry, modifier = Modifier.weight(1f))
 
                         MediaRatingIconsSection(
@@ -122,7 +127,15 @@ object AnimeMediaCompactListRow {
                         colorCalculationState.getColors(entry?.media?.id?.toString())
                     MediaTagRow(
                         tags = entry?.tags.orEmpty(),
-                        onTagClick = navigationCallback::onTagClick,
+                        onTagClick = { id, name ->
+                            if (entry != null) {
+                                navigationCallback.onTagClick(
+                                    entry.media.type ?: MediaType.ANIME,
+                                    id,
+                                    name
+                                )
+                            }
+                        },
                         onTagLongClick = onTagLongClick,
                         tagContainerColor = containerColor,
                         tagTextColor = textColor,

@@ -47,6 +47,7 @@ import coil.request.ImageRequest
 import coil.size.Dimension
 import com.anilist.fragment.MediaNavigationData
 import com.anilist.fragment.MediaPreviewWithDescription
+import com.anilist.type.MediaType
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.material.placeholder
 import com.google.accompanist.placeholder.material.shimmer
@@ -140,7 +141,15 @@ object AnimeMediaLargeCard {
 
                     MediaTagRow(
                         tags = entry?.tags.orEmpty(),
-                        onTagClick = navigationCallback::onTagClick,
+                        onTagClick = { id, name ->
+                            if (entry != null) {
+                                navigationCallback.onTagClick(
+                                    entry.media.type ?: MediaType.ANIME,
+                                    id,
+                                    name
+                                )
+                            }
+                        },
                         onTagLongClick = onTagLongClick,
                         tagContainerColor = containerColor,
                         tagTextColor = textColor,

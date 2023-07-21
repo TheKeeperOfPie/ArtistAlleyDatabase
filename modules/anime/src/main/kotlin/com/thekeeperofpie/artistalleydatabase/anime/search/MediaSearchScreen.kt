@@ -97,7 +97,6 @@ object MediaSearchScreen {
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .align(Alignment.CenterHorizontally),
-//                                divider = { /* No divider, manually draw so that it's full width */ }
                             ) {
                                 Tab(
                                     selected = selectedIsAnime,
@@ -130,8 +129,6 @@ object MediaSearchScreen {
                                     }
                                 )
                             }
-
-//                            Divider()
                         }
                     }
                 },

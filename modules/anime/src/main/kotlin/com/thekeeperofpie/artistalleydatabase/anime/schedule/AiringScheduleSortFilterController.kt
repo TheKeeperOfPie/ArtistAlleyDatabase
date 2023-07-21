@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.anime.user
+package com.thekeeperofpie.artistalleydatabase.anime.schedule
 
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.unit.dp
@@ -12,23 +12,18 @@ import kotlinx.coroutines.flow.debounce
 import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(FlowPreview::class)
-class UserSortFilterController(settings: AnimeSettings) : SortFilterController(settings) {
+class AiringScheduleSortFilterController(
+    settings: AnimeSettings,
+) : SortFilterController(settings) {
 
     private val sortSection = SortFilterSection.Sort(
-        enumClass = UserSortOption::class,
-        defaultEnabled = UserSortOption.SEARCH_MATCH,
-        headerTextRes = R.string.anime_user_filter_sort_label,
+        AiringScheduleSortOption::class,
+        AiringScheduleSortOption.POPULARITY,
+        R.string.anime_airing_schedule_sort_label,
     )
 
-    private val moderatorSection = SortFilterSection.Switch(
-        titleRes = R.string.anime_user_filter_moderator_label,
-        enabled = false,
-    )
-
-    override var sections = listOf(
+    override val sections = listOf(
         sortSection,
-        moderatorSection,
-        advancedSection,
         SortFilterSection.Spacer(height = 32.dp),
     )
 
@@ -36,13 +31,11 @@ class UserSortFilterController(settings: AnimeSettings) : SortFilterController(s
         FilterParams(
             sort = sortSection.sortOptions,
             sortAscending = sortSection.sortAscending,
-            isModerator = moderatorSection.enabled,
         )
     }.debounce(500.milliseconds)
 
     data class FilterParams(
-        val sort: List<SortEntry<UserSortOption>>,
+        val sort: List<SortEntry<AiringScheduleSortOption>>,
         val sortAscending: Boolean,
-        val isModerator: Boolean,
     )
 }

@@ -4,7 +4,6 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -249,9 +248,6 @@ class MangaSortFilterController<SortType : SortOption>(
             releaseDate.copy(endDate = selectedDate)
         }
     }
-
-    @Composable
-    override fun collapseOnClose() = settings.collapseAnimeFiltersOnClose.collectAsState().value
 
     @Composable
     override fun PromptDialog() {

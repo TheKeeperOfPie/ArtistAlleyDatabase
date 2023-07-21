@@ -100,35 +100,59 @@ object AnimeNavigator {
         navGraphBuilder.composable(
             route = AnimeNavDestinations.SEARCH_MEDIA.id
                     + "?title={title}"
+                    + "&titleRes={titleRes}"
                     + "&tagId={tagId}"
-                    + "&genre={genre}",
+                    + "&genre={genre}"
+                    + "&mediaType={mediaType}"
+                    + "&sort={sort}",
             arguments = listOf(
-                navArgument("title") {
+                "title",
+                "titleRes",
+                "tagId",
+                "genre",
+                "mediaType",
+                "sort",
+            ).map {
+                navArgument(it) {
                     type = NavType.StringType
                     nullable = true
-                },
-                navArgument("tagId") {
-                    type = NavType.StringType
-                    nullable = true
-                },
-                navArgument("genre") {
-                    type = NavType.StringType
-                    nullable = true
-                },
-            )
+                }
+            }
         ) {
             val title = it.arguments?.getString("title")
+            val titleRes = it.arguments?.getString("titleRes")?.toIntOrNull()
             val tagId = it.arguments?.getString("tagId")
             val genre = it.arguments?.getString("genre")
+            val mediaType = it.arguments?.getString("mediaType")
+                ?.let { MediaType.safeValueOf(it).takeUnless { it == MediaType.UNKNOWN__ } }
+                ?: MediaType.ANIME
+            val sort = it.arguments?.getString("sort")
+                ?.let {
+                    try {
+                        MediaSortOption.valueOf(it)
+                    } catch (ignored: Throwable) {
+                        null
+                    }
+                }
+                ?: MediaSortOption.TRENDING
             val viewModel = hiltViewModel<AnimeSearchViewModel>().apply {
                 initialize(
-                    defaultMediaSort = MediaSortOption.TRENDING,
+                    defaultMediaSort = sort,
                     tagId = tagId,
                     genre = genre,
+                    searchType = if (mediaType == MediaType.MANGA) {
+                        AnimeSearchViewModel.SearchType.MANGA
+                    } else {
+                        AnimeSearchViewModel.SearchType.ANIME
+                    }
                 )
             }
             MediaSearchScreen(
-                title = Either.Right(title.orEmpty()),
+                title = if (titleRes != null) {
+                    Either.Left(titleRes)
+                } else {
+                    Either.Right(title.orEmpty())
+                },
                 upIconOption = UpIconOption.Back(navHostController),
                 viewModel = viewModel,
                 navigationCallback = navigationCallback,
@@ -245,10 +269,9 @@ object AnimeNavigator {
         ) {
             val arguments = it.arguments!!
             val characterId = arguments.getString("characterId")!!
-            val favorite = arguments.getString("favorite")?.toBooleanStrictOrNull()
 
             val viewModel = hiltViewModel<AnimeCharacterDetailsViewModel>()
-                .apply { initialize(characterId, favorite) }
+                .apply { initialize(characterId) }
             val headerValues = CharacterHeaderValues(
                 arguments,
                 character = { viewModel.entry?.character },
@@ -617,17 +640,22 @@ object AnimeNavigator {
         }
     }
 
-    fun onTagClick(navHostController: NavHostController, tagId: String, tagName: String) {
+    fun onTagClick(
+        navHostController: NavHostController,
+        mediaType: MediaType,
+        tagId: String,
+        tagName: String,
+    ) {
         navHostController.navigate(
             AnimeNavDestinations.SEARCH_MEDIA.id +
-                    "?title=$tagName&tagId=$tagId"
+                    "?title=$tagName&tagId=$tagId&mediaType=${mediaType.name}"
         )
     }
 
-    fun onGenreClick(navHostController: NavHostController, genre: String) {
+    fun onGenreClick(navHostController: NavHostController, mediaType: MediaType, genre: String) {
         navHostController.navigate(
             AnimeNavDestinations.SEARCH_MEDIA.id +
-                    "?title=$genre&genre=$genre"
+                    "?title=$genre&genre=$genre&mediaType=${mediaType.name}"
         )
     }
 
@@ -942,8 +970,8 @@ object AnimeNavigator {
             }
         }
 
-        fun onTagClick(id: String, name: String) {
-            navHostController?.let { onTagClick(it, id, name) }
+        fun onTagClick(mediaType: MediaType, id: String, name: String) {
+            navHostController?.let { onTagClick(it, mediaType, id, name) }
         }
 
         fun onUserListClick(userId: String, userName: String?, mediaType: MediaType?) {
@@ -1015,8 +1043,8 @@ object AnimeNavigator {
         fun onStudioClick(id: String, name: String) =
             navHostController?.let { onStudioClick(it, id, name) }
 
-        fun onGenreClick(genre: String) {
-            navHostController?.let { onGenreClick(it, genre) }
+        fun onGenreClick(mediaType: MediaType, genre: String) {
+            navHostController?.let { onGenreClick(it, mediaType, genre) }
         }
 
         fun onIgnoreListOpen(mediaType: MediaType?) {

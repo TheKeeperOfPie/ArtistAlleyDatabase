@@ -441,9 +441,11 @@ class AnimeSearchViewModel @Inject constructor(
         defaultMediaSort: MediaSortOption,
         tagId: String? = null,
         genre: String? = null,
+        searchType: SearchType = SearchType.ANIME,
     ) {
         if (initialized) return
         initialized = true
+        this.selectedType = searchType
         animeSortFilterController.initialize(
             viewModel = this,
             refreshUptimeMillis = refreshUptimeMillis,

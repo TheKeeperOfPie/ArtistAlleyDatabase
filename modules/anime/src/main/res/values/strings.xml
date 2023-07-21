@@ -532,12 +532,15 @@
 
     <string name="anime_home_tab_anime">Anime</string>
     <string name="anime_home_tab_manga">Manga</string>
-    <string name="anime_home_trending">TRENDING</string>
+    <string name="anime_home_trending_row_label">TRENDING</string>
+    <string name="anime_home_trending_screen_title">Trending</string>
     <string name="anime_home_popular_this_season">THIS SEASON</string>
     <string name="anime_home_popular_last_season">LAST SEASON</string>
     <string name="anime_home_popular_next_season">NEXT SEASON</string>
-    <string name="anime_home_popular">POPULAR</string>
-    <string name="anime_home_top">TOP ALL TIME</string>
+    <string name="anime_home_popular_row_label">POPULAR</string>
+    <string name="anime_home_popular_screen_title">Popular</string>
+    <string name="anime_home_top_row_label">TOP ALL TIME</string>
+    <string name="anime_home_top_screen_title">Top all time</string>
     <string name="anime_home_error_loading_anime">Error loading anime</string>
     <string name="anime_home_error_loading_manga">Error loading manga</string>
     <string name="anime_home_label">Home</string>
@@ -549,9 +552,11 @@
 
     <string name="anime_airing_schedule_label">Airing schedule</string>
     <string name="anime_airing_schedule_icon_content_description">Airing schedule</string>
+    <string name="anime_airing_schedule_sort_label">Sort</string>
     <string name="anime_airing_schedule_sort_popularity">Popularity</string>
     <string name="anime_airing_schedule_sort_id">Last added</string>
     <string name="anime_airing_schedule_sort_time">Time</string>
+    <string name="anime_airing_schedule_sort_episode">Episode</string>
     <string name="anime_airing_schedule_sort_content_description">Sort options</string>
     <string name="anime_airing_schedule_today">Today</string>
     <string name="anime_airing_schedule_tomorrow">Tomorrow</string>

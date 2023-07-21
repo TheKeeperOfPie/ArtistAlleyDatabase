@@ -24,6 +24,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
@@ -33,14 +34,10 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AcUnit
 import androidx.compose.material.icons.filled.CalendarMonth
-import androidx.compose.material.icons.filled.EnergySavingsLeaf
-import androidx.compose.material.icons.filled.Grass
 import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material.icons.filled.Monitor
 import androidx.compose.material.icons.filled.OpenInNew
-import androidx.compose.material.icons.filled.WbSunny
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
@@ -93,9 +90,7 @@ import com.anilist.UserSocialActivityQuery
 import com.anilist.fragment.MediaNavigationData
 import com.anilist.fragment.MediaPreview
 import com.anilist.type.MediaListStatus
-import com.anilist.type.MediaSeason
 import com.mxalbert.sharedelements.SharedElement
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
@@ -187,21 +182,6 @@ object AnimeHomeScreen {
                                 },
                                 contentDescription = stringResource(
                                     R.string.anime_home_media_type_switch_icon_content_description
-                                ),
-                            )
-                        }
-                        IconButton(onClick = navigationCallback::onSeasonalClick) {
-                            Icon(
-                                imageVector = when (AniListUtils.getCurrentSeasonYear().first) {
-                                    MediaSeason.WINTER -> Icons.Filled.AcUnit
-                                    MediaSeason.SPRING -> Icons.Filled.Grass
-                                    MediaSeason.SUMMER -> Icons.Filled.WbSunny
-                                    // TODO: Use a better leaf
-                                    MediaSeason.FALL -> Icons.Filled.EnergySavingsLeaf
-                                    MediaSeason.UNKNOWN__ -> TODO()
-                                },
-                                contentDescription = stringResource(
-                                    R.string.anime_seasonal_icon_content_description
                                 ),
                             )
                         }
@@ -428,13 +408,17 @@ object AnimeHomeScreen {
                     contentPadding = PaddingValues(horizontal = 16.dp),
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
                 ) {
-                    itemsIndexed(current, { _, item -> item.media.id }) { index, item ->
+                    items(
+                        items = current,
+                        key = { it.media.id },
+                        contentType = { "media" },
+                    ) {
                         MediaCard(
-                            media = item.media,
-                            listStatus = item.mediaListStatus,
-                            progress = item.progress,
-                            progressVolumes = item.progressVolumes,
-                            ignored = item.ignored,
+                            media = it.media,
+                            listStatus = it.mediaListStatus,
+                            progress = it.progress,
+                            progressVolumes = it.progressVolumes,
+                            ignored = it.ignored,
                             viewer = viewer,
                             cardOutlineBorder = cardOutlineBorder,
                             width = CURRENT_ROW_IMAGE_WIDTH,

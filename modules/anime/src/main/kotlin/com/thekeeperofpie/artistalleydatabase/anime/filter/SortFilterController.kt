@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.anime.filter
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.BuildConfig
 import com.thekeeperofpie.artistalleydatabase.anime.R
@@ -38,7 +39,7 @@ abstract class SortFilterController(protected val settings: AnimeSettings) {
     )
 
     @Composable
-    abstract fun collapseOnClose(): Boolean?
+    open fun collapseOnClose() = settings.collapseAnimeFiltersOnClose.collectAsState().value
 
     // TODO: Find a better way to do this
     @Composable
