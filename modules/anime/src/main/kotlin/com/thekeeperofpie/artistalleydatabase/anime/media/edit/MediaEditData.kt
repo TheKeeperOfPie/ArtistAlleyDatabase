@@ -99,8 +99,8 @@ class MediaEditData {
         val updatedAt: Int?,
         val createdAt: Int?,
         val mediaType: MediaType?,
-        val maxProgress: Int,
-        val maxProgressVolumes: Int,
+        val maxProgress: Int?,
+        val maxProgressVolumes: Int?,
         val loading: Boolean,
     ) {
         constructor(
@@ -108,8 +108,8 @@ class MediaEditData {
             media: MediaNavigationData?,
             mediaListEntry: MediaDetailsListEntry?,
             mediaType: MediaType?,
-            maxProgress: Int,
-            maxProgressVolumes: Int,
+            maxProgress: Int?,
+            maxProgressVolumes: Int?,
             loading: Boolean,
         ) : this(
             id = mediaListEntry?.id?.toString(),

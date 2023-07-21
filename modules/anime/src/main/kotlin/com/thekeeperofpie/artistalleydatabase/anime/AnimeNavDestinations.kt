@@ -4,6 +4,7 @@ enum class AnimeNavDestinations(val id: String) {
 
     HOME("anime_home"),
     SEARCH("anime_search"),
+    SEARCH_MEDIA("anime_search_media"),
     USER("anime_user"),
     USER_LIST("anime_user_list"),
     MEDIA_DETAILS("anime_media_details"),

@@ -51,6 +51,7 @@ fun CharacterHeader(
             progress = progress,
             color = { headerValues.color(colorCalculationState) },
             coverImage = { headerValues.image },
+            coverImageAllowHardware = colorCalculationState.hasColor(characterId),
             coverImageWidthToHeightRatio = headerValues.imageWidthToHeightRatio,
             coverImageOnSuccess = {
                 onImageWidthToHeightRatioAvailable(it.widthToHeightRatio())

@@ -592,11 +592,14 @@
     <string name="anime_news_crunchyroll_category_announcements">Announcements</string>
     <string name="anime_news_crunchyroll_category_quizzes">Quizzes</string>
 
-    <string name="anime_news_filter_anime_news_network_region_label">Anime News Network region</string>
+    <string name="anime_news_filter_anime_news_network_group_label">Anime News Network</string>
+    <string name="anime_news_filter_anime_news_network_group_content_description">Anime News Network group expand</string>
+
+    <string name="anime_news_filter_anime_news_network_region_label">Region</string>
     <string name="anime_news_filter_anime_news_network_region_content_description">Anime News Network region expand</string>
     <string name="anime_news_filter_anime_news_network_region_chip_state_content_description">Anime News Network region chip state</string>
 
-    <string name="anime_news_filter_anime_news_network_categories_label">Anime News Network categories</string>
+    <string name="anime_news_filter_anime_news_network_categories_label">Categories</string>
     <string name="anime_news_filter_anime_news_network_categories_content_description">Anime News Network categories expand</string>
     <string name="anime_news_filter_anime_news_network_categories_chip_state_content_description">Anime News Network category chip state</string>
 

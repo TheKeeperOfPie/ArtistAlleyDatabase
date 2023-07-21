@@ -19,6 +19,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.filter.SortFilterSection
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
+import com.thekeeperofpie.artistalleydatabase.anime.ui.StartEndDateDialog
 import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterEntry
 import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
 import com.thekeeperofpie.artistalleydatabase.compose.filter.RangeData
@@ -72,6 +73,13 @@ class AnimeSortFilterController<SortType : SortOption>(
     var airingDateShown by mutableStateOf<Boolean?>(null)
 
     private val airingDateSection = object : SortFilterSection.Custom("airingDate") {
+        override fun showingPreview() =
+            when (val data = if (airingDateIsAdvanced) airingDate.second else airingDate.first) {
+                is AiringDate.Advanced -> (data.startDate != null) || (data.endDate != null)
+                is AiringDate.Basic -> (data.season != null)
+                        || (data.seasonYear.toIntOrNull() != null)
+            }
+
         @Composable
         override fun Content(state: ExpandedState, showDivider: Boolean) {
             AiringDateSection(
@@ -100,6 +108,8 @@ class AnimeSortFilterController<SortType : SortOption>(
     )
 
     private val actionsSection = object : SortFilterSection.Custom("actions") {
+        override fun showingPreview() = false
+
         @Composable
         override fun Content(state: ExpandedState, showDivider: Boolean) {
             // TODO("Not yet implemented")
@@ -176,7 +186,8 @@ class AnimeSortFilterController<SortType : SortOption>(
                         FilterIncludeExcludeState.INCLUDE -> true
                         FilterIncludeExcludeState.EXCLUDE -> false
                         FilterIncludeExcludeState.DEFAULT,
-                        null -> null
+                        null,
+                        -> null
                     },
                     formats = formatSection.filterOptions,
                     averageScoreRange = averageScoreSection.data,
@@ -218,12 +229,20 @@ class AnimeSortFilterController<SortType : SortOption>(
     @Composable
     override fun collapseOnClose() = settings.collapseAnimeFiltersOnClose.collectAsState().value
 
+    @Composable
+    override fun PromptDialog() {
+        if (airingDateShown != null) {
+            StartEndDateDialog(
+                shownForStartDate = airingDateShown,
+                onShownForStartDateChange = { airingDateShown = it },
+                onDateChange = ::onAiringDateChange,
+            )
+        }
+    }
+
     data class InitialParams<SortType : SortOption>(
         override val tagId: String? = null,
-        override val tagsIncluded: Set<String> = emptySet(),
-        override val tagsExcluded: Set<String> = emptySet(),
-        override val genresIncluded: Set<String> = emptySet(),
-        override val genresExcluded: Set<String> = emptySet(),
+        override val genre: String? = null,
         val airingDateEnabled: Boolean = true,
         val onListEnabled: Boolean = true,
         val showIgnoredEnabled: Boolean = true,

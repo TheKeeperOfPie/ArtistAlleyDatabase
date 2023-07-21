@@ -2,17 +2,22 @@ package com.thekeeperofpie.artistalleydatabase.anime.ignore
 
 import androidx.collection.ArraySet
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
-import kotlinx.coroutines.flow.MutableSharedFlow
+import com.thekeeperofpie.artistalleydatabase.anime.BuildConfig
 
 class AnimeMediaIgnoreList(private val settings: AnimeSettings) {
 
-    val updates = MutableSharedFlow<Set<Int>>(replay = 5, extraBufferCapacity = 5)
-        .apply { tryEmit(settings.ignoredAniListMediaIds.value) }
+    companion object {
+        @Suppress("KotlinConstantConditions")
+        private val DISABLED = BuildConfig.BUILD_TYPE == "release"
+    }
 
-    private fun get(mediaId: Int) = settings.ignoredAniListMediaIds.value.contains(mediaId)
+    val updates = settings.ignoredAniListMediaIds
+
+    private fun get(mediaId: Int) = if (DISABLED) false else  settings.ignoredAniListMediaIds.value.contains(mediaId)
     private fun get(mediaId: String) = get(mediaId.toInt())
 
     private fun set(mediaId: String, ignored: Boolean) {
+        if (DISABLED) return
         val set = settings.ignoredAniListMediaIds.value
         val mediaIdAsInt = mediaId.toInt()
         if (set.contains(mediaIdAsInt) == ignored) return
@@ -26,8 +31,11 @@ class AnimeMediaIgnoreList(private val settings: AnimeSettings) {
             }
         }
         settings.ignoredAniListMediaIds.value = newSet
-        updates.tryEmit(newSet)
     }
 
-    fun toggle(mediaId: String) = set(mediaId, !get(mediaId))
+    fun toggle(mediaId: String) {
+        if (!DISABLED) {
+            set(mediaId, !get(mediaId))
+        }
+    }
 }

@@ -141,8 +141,8 @@ class MediaEditViewModel @Inject constructor(
             media = media,
             mediaListEntry = mediaListEntry,
             mediaType = mediaType,
-            maxProgress = maxProgress ?: 1,
-            maxProgressVolumes = maxProgressVolumes ?: 1,
+            maxProgress = maxProgress,
+            maxProgressVolumes = maxProgressVolumes,
             loading = loading,
         )
         editData.status = status

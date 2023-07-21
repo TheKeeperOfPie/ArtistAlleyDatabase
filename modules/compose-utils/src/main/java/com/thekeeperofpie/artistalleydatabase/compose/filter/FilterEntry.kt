@@ -5,6 +5,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 interface FilterEntry<T> {
     val value: T
     val state: FilterIncludeExcludeState
+    val clickable: Boolean
     val leadingIconVector: ImageVector? get() = null
     val leadingIconContentDescription: Int? get() = null
 
@@ -41,5 +42,6 @@ interface FilterEntry<T> {
     data class FilterEntryImpl<T>(
         override val value: T,
         override val state: FilterIncludeExcludeState = FilterIncludeExcludeState.DEFAULT,
+        override val clickable: Boolean = true,
     ) : FilterEntry<T>
 }

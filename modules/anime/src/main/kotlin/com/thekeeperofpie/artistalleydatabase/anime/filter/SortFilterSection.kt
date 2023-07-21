@@ -42,6 +42,8 @@ sealed class SortFilterSection(val id: String) {
 
     constructor(id: Int) : this(id.toString())
 
+    abstract fun showingPreview(): Boolean
+
     @Composable
     abstract fun Content(state: ExpandedState, showDivider: Boolean)
 
@@ -52,6 +54,9 @@ sealed class SortFilterSection(val id: String) {
     ) : SortFilterSection(headerTextRes) {
         var sortOptions by mutableStateOf(SortEntry.options(enumClass, defaultEnabled))
         var sortAscending by mutableStateOf(false)
+
+        override fun showingPreview() =
+            sortOptions.any { it.state != FilterIncludeExcludeState.DEFAULT }
 
         fun changeDefaultEnabled(defaultEnabled: SortType?) {
             this.defaultEnabled = defaultEnabled
@@ -99,10 +104,30 @@ sealed class SortFilterSection(val id: String) {
         @StringRes private val titleDropdownContentDescriptionRes: Int,
         @StringRes private val includeExcludeIconContentDescriptionRes: Int,
         values: List<FilterType>,
+        private val includedSetting: MutableStateFlow<FilterType>? = null,
+        private val includedSettings: MutableStateFlow<List<FilterType>>? = null,
+        private val excludedSettings: MutableStateFlow<List<FilterType>>? = null,
         private val valueToText: @Composable (FilterEntry.FilterEntryImpl<FilterType>) -> String,
-        var exclusive: Boolean = false,
+        var selectionMethod: SelectionMethod = SelectionMethod.ALLOW_EXCLUDE,
     ) : SortFilterSection(titleRes) {
-        var filterOptions by mutableStateOf(FilterEntry.values(values))
+        enum class SelectionMethod {
+            SINGLE_EXCLUSIVE,
+            ONLY_INCLUDE,
+            ALLOW_EXCLUDE,
+        }
+
+        var filterOptions by mutableStateOf(
+            FilterEntry.values(
+                values,
+                included = includedSetting?.value?.let(::listOf)
+                    ?: includedSettings?.value
+                    ?: emptyList(),
+                excluded = excludedSettings?.value ?: emptyList(),
+            )
+        )
+
+        override fun showingPreview() =
+            filterOptions.any { it.state != FilterIncludeExcludeState.DEFAULT }
 
         @Composable
         override fun Content(state: ExpandedState, showDivider: Boolean) {
@@ -111,35 +136,66 @@ sealed class SortFilterSection(val id: String) {
                 onExpandedChange = { state.expandedState[id] = it },
                 entries = { filterOptions },
                 onEntryClick = { selected ->
-                    filterOptions = filterOptions.toMutableList()
-                        .apply {
-                            if (exclusive) {
-                                replaceAll {
-                                    if (it.value == selected.value) {
-                                        val newState =
-                                            if (it.state != FilterIncludeExcludeState.INCLUDE) {
-                                                FilterIncludeExcludeState.INCLUDE
+                    if (selected.clickable) {
+                        filterOptions = filterOptions.toMutableList()
+                            .apply {
+                                when (selectionMethod) {
+                                    SelectionMethod.SINGLE_EXCLUSIVE -> {
+                                        val existing =
+                                            withIndex().first { it.value.value == selected.value }
+                                        val newOption =
+                                            if (existing.value.state == FilterIncludeExcludeState.INCLUDE) {
+                                                this[(existing.index + 1) % size].value
                                             } else {
-                                                FilterIncludeExcludeState.DEFAULT
+                                                selected.value
                                             }
-                                        it.copy(state = newState)
-                                    } else it.copy(state = FilterIncludeExcludeState.DEFAULT)
-                                }
-                            } else {
-                                replaceAll {
-                                    if (it.value == selected.value) {
-                                        it.copy(state = it.state.next())
-                                    } else it
+                                        replaceAll {
+                                            if (it.value == newOption) {
+                                                it.copy(state = FilterIncludeExcludeState.INCLUDE)
+                                            } else {
+                                                it.copy(state = FilterIncludeExcludeState.DEFAULT)
+                                            }
+                                        }
+                                    }
+                                    SelectionMethod.ONLY_INCLUDE -> replaceAll {
+                                        if (it.value == selected.value) {
+                                            val newState =
+                                                if (it.state != FilterIncludeExcludeState.INCLUDE) {
+                                                    FilterIncludeExcludeState.INCLUDE
+                                                } else {
+                                                    FilterIncludeExcludeState.DEFAULT
+                                                }
+                                            it.copy(state = newState)
+                                        } else it.copy(state = FilterIncludeExcludeState.DEFAULT)
+                                    }
+                                    SelectionMethod.ALLOW_EXCLUDE -> replaceAll {
+                                        if (it.value == selected.value) {
+                                            it.copy(state = it.state.next())
+                                        } else it
+                                    }
                                 }
                             }
+
+                        if (includedSetting != null) {
+                            includedSetting.value = filterOptions
+                                .first { it.state == FilterIncludeExcludeState.INCLUDE }
+                                .value
+                        } else {
+                            includedSettings?.value = filterOptions
+                                .filter { it.state == FilterIncludeExcludeState.INCLUDE }
+                                .map { it.value }
                         }
+                        excludedSettings?.value = filterOptions
+                            .filter { it.state == FilterIncludeExcludeState.EXCLUDE }
+                            .map { it.value }
+                    }
                 },
                 titleRes = titleRes,
                 titleDropdownContentDescriptionRes = titleDropdownContentDescriptionRes,
                 valueToText = valueToText,
                 includeExcludeIconContentDescriptionRes = includeExcludeIconContentDescriptionRes,
                 showDivider = showDivider,
-                showIcons = !exclusive,
+                showIcons = selectionMethod == SelectionMethod.ALLOW_EXCLUDE,
             )
         }
     }
@@ -152,6 +208,8 @@ sealed class SortFilterSection(val id: String) {
     ) : SortFilterSection(titleRes) {
 
         var data by mutableStateOf(data)
+
+        override fun showingPreview() = data.summaryText != null
 
         @Composable
         override fun Content(state: ExpandedState, showDivider: Boolean) {
@@ -179,6 +237,8 @@ sealed class SortFilterSection(val id: String) {
     ) : SortFilterSection(titleRes) {
         var enabled by mutableStateOf(enabled)
 
+        override fun showingPreview() = false
+
         @Composable
         override fun Content(state: ExpandedState, showDivider: Boolean) {
             SwitchRow(
@@ -196,7 +256,9 @@ sealed class SortFilterSection(val id: String) {
         property: (AnimeSettings) -> MutableStateFlow<Boolean>,
     ) : SortFilterSection(titleRes) {
 
-        val stateFlow = property(settings)
+        private val stateFlow = property(settings)
+
+        override fun showingPreview() = false
 
         @Composable
         override fun Content(state: ExpandedState, showDivider: Boolean) {
@@ -217,6 +279,8 @@ sealed class SortFilterSection(val id: String) {
     ) : SortFilterSection(titleRes) {
 
         var children by mutableStateOf(children)
+
+        override fun showingPreview() = children.any { it.showingPreview() }
 
         @Composable
         override fun Content(state: ExpandedState, showDivider: Boolean) {
@@ -243,10 +307,10 @@ sealed class SortFilterSection(val id: String) {
                 )
             }
 
-            if (expanded) {
+            if (expanded || showingPreview()) {
                 Column(modifier = Modifier.padding(start = 16.dp)) {
                     children.forEachIndexed { index, section ->
-                        section.Content(state = state, showDivider = false)
+                        section.Content(state = state, showDivider = index != children.lastIndex)
                     }
                 }
             }
@@ -258,6 +322,9 @@ sealed class SortFilterSection(val id: String) {
     }
 
     class Spacer(id: String = "spacer", val height: Dp) : SortFilterSection(id) {
+
+        override fun showingPreview() = false
+
         @Composable
         override fun Content(state: ExpandedState, showDivider: Boolean) {
             Spacer(Modifier.height(height))

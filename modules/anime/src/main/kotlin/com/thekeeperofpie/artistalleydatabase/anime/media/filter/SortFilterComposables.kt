@@ -17,7 +17,9 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
@@ -123,7 +125,8 @@ fun SortFilterBottomScaffoldNoAppBarOffset(
 
     val scope = rememberCoroutineScope()
     val bottomSheetState = scaffoldState.bottomSheetState
-    BackHandler(enabled = bottomSheetState.currentValue == SheetValue.Expanded) {
+    BackHandler(enabled = bottomSheetState.currentValue == SheetValue.Expanded
+            && !WindowInsets.isImeVisible) {
         scope.launch { bottomSheetState.partialExpand() }
     }
 
@@ -167,6 +170,7 @@ fun SortFilterBottomScaffoldNoAppBarOffset(
 @Composable
 fun SortFilterBottomScaffold(
     sortFilterController: SortFilterController?,
+    modifier: Modifier = Modifier,
     topBar: @Composable (() -> Unit)? = null,
     bottomNavigationState: BottomNavigationState? = null,
     content: @Composable (PaddingValues) -> Unit,
@@ -214,6 +218,7 @@ fun SortFilterBottomScaffold(
         sheetTonalElevation = 4.dp,
         sheetShadowElevation = 4.dp,
         topBar = topBar,
+        modifier = modifier,
         content = content,
         // TODO: Error state
         // snackbarHost = {},

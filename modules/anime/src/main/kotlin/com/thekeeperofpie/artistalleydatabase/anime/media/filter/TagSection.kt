@@ -98,7 +98,7 @@ sealed interface TagSection {
         val isAdult: Boolean?,
         override val value: MediaTagsQuery.Data.MediaTagCollection,
         override val state: FilterIncludeExcludeState = FilterIncludeExcludeState.DEFAULT,
-        val clickable: Boolean = true,
+        override val clickable: Boolean = true,
     ) : FilterEntry<MediaTagsQuery.Data.MediaTagCollection>, TagSection {
         override val leadingIconVector = MediaUtils.tagLeadingIcon(
             isAdult = isAdult,

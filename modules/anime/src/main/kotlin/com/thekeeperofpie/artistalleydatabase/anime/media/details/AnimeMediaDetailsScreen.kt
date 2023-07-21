@@ -74,6 +74,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -101,6 +102,7 @@ import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaRankType
 import com.anilist.type.MediaRelation
 import com.anilist.type.MediaType
+import com.mxalbert.sharedelements.SharedElement
 import com.neovisionaries.i18n.CountryCode
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
@@ -147,6 +149,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.PieChart
 import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.assistChipColors
+import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.compose.expandableListInfoText
 import com.thekeeperofpie.artistalleydatabase.compose.multiplyCoerceSaturation
 import com.thekeeperofpie.artistalleydatabase.compose.optionalClickable
@@ -438,6 +441,7 @@ object AnimeMediaDetailsScreen {
         colorCalculationState: ColorCalculationState,
         coverImageWidthToHeightRatio: () -> Float,
     ) {
+        val screenKey = viewModel.screenKey
         genreSection(
             entry = entry,
             onGenreClick = navigationCallback::onGenreClick,
@@ -451,7 +455,7 @@ object AnimeMediaDetailsScreen {
         )
 
         charactersSection(
-            screenKey = viewModel.screenKey,
+            screenKey = screenKey,
             titleRes = R.string.anime_media_details_characters_label,
             characters = entry.characters,
             onCharacterClick = navigationCallback::onCharacterClick,
@@ -471,7 +475,7 @@ object AnimeMediaDetailsScreen {
         )
 
         relationsSection(
-            screenKey = viewModel.screenKey,
+            screenKey = screenKey,
             viewer = viewer,
             entry = entry,
             relationsExpanded = expandedState::relations,
@@ -486,19 +490,20 @@ object AnimeMediaDetailsScreen {
         infoSection(entry)
 
         songsSection(
+            screenKey = screenKey,
             viewModel = viewModel,
             songsExpanded = expandedState::songs,
             onSongsExpandedChange = { expandedState.songs = it },
         )
 
         cdsSection(
-            screenKey = viewModel.screenKey,
+            screenKey = screenKey,
             cdEntries = viewModel.cdEntries,
             onEntryClick = { navigationCallback.onCdEntryClick(model = it, imageCornerDp = 12.dp) },
         )
 
         staffSection(
-            screenKey = viewModel.screenKey,
+            screenKey = screenKey,
             titleRes = R.string.anime_media_details_staff_label,
             staff = entry.staff,
             onStaffClick = navigationCallback::onStaffClick,
@@ -534,7 +539,7 @@ object AnimeMediaDetailsScreen {
         otherLinksSection(entry = entry)
 
         recommendationsSection(
-            screenKey = viewModel.screenKey,
+            screenKey = screenKey,
             viewModel = viewModel,
             viewer = viewer,
             entry = entry,
@@ -789,6 +794,7 @@ object AnimeMediaDetailsScreen {
     }
 
     private fun LazyListScope.songsSection(
+        screenKey: String,
         viewModel: AnimeMediaDetailsViewModel,
         songsExpanded: () -> Boolean,
         onSongsExpandedChange: (Boolean) -> Unit,
@@ -803,6 +809,7 @@ object AnimeMediaDetailsScreen {
             onExpandedChange = onSongsExpandedChange,
         ) { item, paddingBottom, modifier ->
             AnimeThemeRow(
+                screenKey,
                 viewModel = viewModel,
                 entry = item,
                 modifier = modifier.padding(start = 16.dp, end = 16.dp, bottom = paddingBottom)
@@ -812,6 +819,7 @@ object AnimeMediaDetailsScreen {
 
     @Composable
     private fun AnimeThemeRow(
+        screenKey: String,
         viewModel: AnimeMediaDetailsViewModel,
         entry: AnimeMediaDetailsViewModel.AnimeSongEntry,
         modifier: Modifier = Modifier,
@@ -1017,7 +1025,8 @@ object AnimeMediaDetailsScreen {
                 val uriHandler = LocalUriHandler.current
                 val artists = entry.artists
                 if (artists.isNotEmpty()) {
-                    artists.forEach { artist ->
+                    artists.forEachIndexed { index, artist ->
+                        val isLast = index == artists.lastIndex
                         Divider()
                         Row(
                             modifier = Modifier
@@ -1028,41 +1037,68 @@ object AnimeMediaDetailsScreen {
                             val characterImage = artist.character?.image
 
                             @Composable
-                            fun ArtistImage() {
-                                AsyncImage(
-                                    model = artistImage,
-                                    contentScale = ContentScale.FillHeight,
-                                    fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
-                                    contentDescription = stringResource(
-                                        if (artist.asCharacter) {
-                                            R.string.anime_media_voice_actor_image
-                                        } else {
-                                            R.string.anime_media_artist_image
-                                        }
-                                    ),
-                                    modifier = Modifier
-                                        .sizeIn(minWidth = 44.dp, minHeight = 64.dp)
-                                        .fillMaxHeight()
-                                )
+                            fun ArtistImage(modifier: Modifier) {
+                                val image = @Composable {
+                                    AsyncImage(
+                                        model = artistImage,
+                                        contentScale = ContentScale.FillHeight,
+                                        fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
+                                        contentDescription = stringResource(
+                                            if (artist.asCharacter) {
+                                                R.string.anime_media_voice_actor_image
+                                            } else {
+                                                R.string.anime_media_artist_image
+                                            }
+                                        ),
+                                        modifier = modifier
+                                            .sizeIn(minWidth = 44.dp, minHeight = 64.dp)
+                                            .fillMaxHeight()
+                                    )
+                                }
+                                if (artist.aniListId != null) {
+                                    SharedElement(
+                                        key = "anime_staff_${artist.aniListId}_image",
+                                        screenKey = screenKey
+                                    ) {
+                                        image()
+                                    }
+                                } else {
+                                    image()
+                                }
                             }
 
                             @Composable
-                            fun CharacterImage() {
-                                AsyncImage(
-                                    model = characterImage!!,
-                                    contentScale = ContentScale.FillHeight,
-                                    fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
-                                    contentDescription = stringResource(
-                                        R.string.anime_character_image_content_description
-                                    ),
-                                    modifier = Modifier
-                                        .sizeIn(minWidth = 44.dp, minHeight = 64.dp)
-                                        .fillMaxHeight()
-                                )
+                            fun CharacterImage(modifier: Modifier) {
+                                val image = @Composable { modifier: Modifier ->
+                                    AsyncImage(
+                                        model = characterImage!!,
+                                        contentScale = ContentScale.FillHeight,
+                                        fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
+                                        contentDescription = stringResource(
+                                            R.string.anime_character_image_content_description
+                                        ),
+                                        modifier = modifier
+                                            .sizeIn(minWidth = 44.dp, minHeight = 64.dp)
+                                            .fillMaxHeight()
+                                    )
+                                }
+                                if (artist.character?.aniListId != null) {
+                                    SharedElement(
+                                        key = "anime_character_${artist.character.aniListId}_image",
+                                        screenKey = screenKey
+                                    ) {
+                                        image(modifier.clickable {
+                                            // TODO: Use navigation callback
+                                            uriHandler.openUri(artist.character.link)
+                                        })
+                                    }
+                                } else {
+                                    image(modifier)
+                                }
                             }
 
-                            val firstImage: (@Composable () -> Unit)?
-                            val secondImage: (@Composable () -> Unit)?
+                            val firstImage: (@Composable (modifier: Modifier) -> Unit)?
+                            val secondImage: (@Composable (modifier: Modifier) -> Unit)?
 
                             val asCharacter = artist.asCharacter
                             if (asCharacter) {
@@ -1071,16 +1107,16 @@ object AnimeMediaDetailsScreen {
                                         firstImage = null
                                         secondImage = null
                                     } else {
-                                        firstImage = { ArtistImage() }
+                                        firstImage = { ArtistImage(it) }
                                         secondImage = null
                                     }
                                 } else {
-                                    firstImage = { CharacterImage() }
-                                    secondImage = { ArtistImage() }
+                                    firstImage = { CharacterImage(it) }
+                                    secondImage = { ArtistImage(it) }
                                 }
                             } else {
-                                firstImage = { ArtistImage() }
-                                secondImage = characterImage?.let { { CharacterImage() } }
+                                firstImage = { ArtistImage(it) }
+                                secondImage = characterImage?.let { { CharacterImage(it) } }
                             }
 
                             if (firstImage == null) {
@@ -1098,7 +1134,9 @@ object AnimeMediaDetailsScreen {
                                     )
                                 }
                             } else {
-                                firstImage()
+                                firstImage(Modifier.conditionally(isLast) {
+                                    clip(RoundedCornerShape(bottomStart = 12.dp))
+                                })
                             }
 
                             val artistText = if (artist.character == null) {
@@ -1128,7 +1166,9 @@ object AnimeMediaDetailsScreen {
                             )
 
                             if (secondImage != null) {
-                                secondImage()
+                                secondImage(Modifier.conditionally(isLast) {
+                                    clip(RoundedCornerShape(bottomEnd = 12.dp))
+                                })
                             }
                         }
                     }

@@ -39,4 +39,9 @@ abstract class SortFilterController(protected val settings: AnimeSettings) {
 
     @Composable
     abstract fun collapseOnClose(): Boolean?
+
+    // TODO: Find a better way to do this
+    @Composable
+    open fun PromptDialog() {
+    }
 }

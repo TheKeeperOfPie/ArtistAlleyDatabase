@@ -46,6 +46,7 @@ fun StaffHeader(
         progress = progress,
         color = { headerValues.color(colorCalculationState) },
         coverImage = { headerValues.image },
+        coverImageAllowHardware = colorCalculationState.hasColor(staffId),
         coverImageWidthToHeightRatio = headerValues.imageWidthToHeightRatio,
         coverImageOnSuccess = {
             onImageWidthToHeightRatioAvailable(it.widthToHeightRatio())

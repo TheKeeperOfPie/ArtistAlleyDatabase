@@ -261,6 +261,7 @@ fun <Entry : FilterEntry<*>> FilterSection(
                 FilterChip(
                     selected = it.state != FilterIncludeExcludeState.DEFAULT,
                     onClick = { onEntryClick(it) },
+                    enabled = it.clickable,
                     label = { Text(valueToText(it)) },
                     leadingIcon = if (!showIcons) null else {
                         {

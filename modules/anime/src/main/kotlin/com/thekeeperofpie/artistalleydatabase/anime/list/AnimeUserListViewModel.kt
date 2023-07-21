@@ -14,6 +14,7 @@ import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
 import com.hoc081098.flowext.startWith
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.mapLatestNotNull
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
@@ -109,7 +110,7 @@ class AnimeUserListViewModel @Inject constructor(
                     MediaType.ANIME,
                     MediaType.UNKNOWN__,
                     -> userMediaListController.anime
-                }.mapLatest { it!!.getOrThrow() }
+                }.mapLatestNotNull { it?.getOrNull() }
             } else {
                 refreshUptimeMillis.mapLatest {
                     aniListApi.userMediaList(userId = userId.toInt(), type = mediaType)

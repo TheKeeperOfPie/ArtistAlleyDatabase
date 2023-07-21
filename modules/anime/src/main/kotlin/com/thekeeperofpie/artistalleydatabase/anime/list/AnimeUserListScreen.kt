@@ -149,10 +149,10 @@ object AnimeUserListScreen {
                                     contentPadding = PaddingValues(
                                         start = 16.dp,
                                         end = 16.dp,
-                                        top = scrollBehavior.state.heightOffsetLimit
+                                        top = 16.dp + (scrollBehavior.state.heightOffsetLimit
                                             .takeUnless { it == -Float.MAX_VALUE }
                                             ?.let { LocalDensity.current.run { -it.toDp() } }
-                                            ?: 0.dp,
+                                            ?: 0.dp),
                                         bottom = scaffoldPadding.calculateBottomPadding()
                                     ),
                                     verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -241,10 +241,8 @@ object AnimeUserListScreen {
     private fun Header(header: Entry.Header) {
         Text(
             text = header.name,
-            style = MaterialTheme.typography.headlineMedium,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 16.dp, top = 24.dp, end = 24.dp, bottom = 10.dp)
+            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier.fillMaxWidth()
         )
     }
 

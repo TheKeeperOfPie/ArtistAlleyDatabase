@@ -32,6 +32,7 @@ fun UserHeader(
         entryId = EntryId("anime_user", userId),
         progress = progress,
         coverImage = coverImage,
+        coverImageAllowHardware = true,
         coverImageWidthToHeightRatio = coverImageWidthToHeightRatio,
         bannerImage = bannerImage,
         pinnedHeight = 104.dp,

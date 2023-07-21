@@ -430,7 +430,9 @@ class AnimeMediaDetailsViewModel @Inject constructor(
                 val aniListId: String,
                 val image: String?,
                 val name: String,
-            )
+            ) {
+                val link by lazy { AniListUtils.characterUrl(aniListId) }
+            }
         }
     }
 

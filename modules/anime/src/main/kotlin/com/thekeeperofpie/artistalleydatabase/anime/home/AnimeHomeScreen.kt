@@ -113,8 +113,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.GenericViewAllCard
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
-import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBar
-import com.thekeeperofpie.artistalleydatabase.compose.NestedScrollSplitter
 import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
@@ -165,98 +163,78 @@ object AnimeHomeScreen {
 
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
         val editViewModel = hiltViewModel<MediaEditViewModel>()
-        MediaEditBottomSheetScaffold.NoAppBarOffset(
+        MediaEditBottomSheetScaffold(
             screenKey = SCREEN_KEY,
             viewModel = editViewModel,
             colorCalculationState = colorCalculationState,
             navigationCallback = navigationCallback,
             bottomNavigationState = bottomNavigationState,
             topBar = {
-                EnterAlwaysTopAppBar(scrollBehavior = scrollBehavior) {
-                    TopAppBar(
-                        title = { Text(text = stringResource(R.string.anime_home_label)) },
-                        navigationIcon = {
-                            if (upIconOption != null) {
-                                UpIconButton(upIconOption)
-                            }
-                        },
-                        actions = {
-                            IconButton(onClick = { selectedIsAnime = !selectedIsAnime }) {
-                                Icon(
-                                    imageVector = if (selectedIsAnime) {
-                                        Icons.Filled.MenuBook
-                                    } else {
-                                        Icons.Filled.Monitor
-                                    },
-                                    contentDescription = stringResource(
-                                        R.string.anime_home_media_type_switch_icon_content_description
-                                    ),
-                                )
-                            }
-                            IconButton(onClick = navigationCallback::onSeasonalClick) {
-                                Icon(
-                                    imageVector = when (AniListUtils.getCurrentSeasonYear().first) {
-                                        MediaSeason.WINTER -> Icons.Filled.AcUnit
-                                        MediaSeason.SPRING -> Icons.Filled.Grass
-                                        MediaSeason.SUMMER -> Icons.Filled.WbSunny
-                                        // TODO: Use a better leaf
-                                        MediaSeason.FALL -> Icons.Filled.EnergySavingsLeaf
-                                        MediaSeason.UNKNOWN__ -> TODO()
-                                    },
-                                    contentDescription = stringResource(
-                                        R.string.anime_seasonal_icon_content_description
-                                    ),
-                                )
-                            }
-                            IconButton(onClick = navigationCallback::onAiringScheduleClick) {
-                                Icon(
-                                    imageVector = Icons.Filled.CalendarMonth,
-                                    contentDescription = stringResource(
-                                        R.string.anime_airing_schedule_icon_content_description
-                                    ),
-                                )
-                            }
-                        },
-                        colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(
-                                lerp(0.dp, 16.dp, scrollBehavior.state.overlappedFraction)
+                TopAppBar(
+                    title = { Text(text = stringResource(R.string.anime_home_label)) },
+                    navigationIcon = {
+                        if (upIconOption != null) {
+                            UpIconButton(upIconOption)
+                        }
+                    },
+                    actions = {
+                        IconButton(onClick = { selectedIsAnime = !selectedIsAnime }) {
+                            Icon(
+                                imageVector = if (selectedIsAnime) {
+                                    Icons.Filled.MenuBook
+                                } else {
+                                    Icons.Filled.Monitor
+                                },
+                                contentDescription = stringResource(
+                                    R.string.anime_home_media_type_switch_icon_content_description
+                                ),
                             )
+                        }
+                        IconButton(onClick = navigationCallback::onSeasonalClick) {
+                            Icon(
+                                imageVector = when (AniListUtils.getCurrentSeasonYear().first) {
+                                    MediaSeason.WINTER -> Icons.Filled.AcUnit
+                                    MediaSeason.SPRING -> Icons.Filled.Grass
+                                    MediaSeason.SUMMER -> Icons.Filled.WbSunny
+                                    // TODO: Use a better leaf
+                                    MediaSeason.FALL -> Icons.Filled.EnergySavingsLeaf
+                                    MediaSeason.UNKNOWN__ -> TODO()
+                                },
+                                contentDescription = stringResource(
+                                    R.string.anime_seasonal_icon_content_description
+                                ),
+                            )
+                        }
+                        IconButton(onClick = navigationCallback::onAiringScheduleClick) {
+                            Icon(
+                                imageVector = Icons.Filled.CalendarMonth,
+                                contentDescription = stringResource(
+                                    R.string.anime_airing_schedule_icon_content_description
+                                ),
+                            )
+                        }
+                    },
+                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(
+                            lerp(0.dp, 16.dp, scrollBehavior.state.overlappedFraction)
                         )
-                    )
-                }
+                    ),
+                    scrollBehavior = scrollBehavior
+                )
             },
+            modifier = Modifier
+                .nestedScroll(bottomNavigationState.nestedScrollConnection)
+                .nestedScroll(scrollBehavior.nestedScrollConnection)
         ) {
-            val density = LocalDensity.current
-            val topBarPadding by remember {
-                derivedStateOf {
-                    scrollBehavior.state.heightOffsetLimit
-                        .takeUnless { it == -Float.MAX_VALUE }
-                        ?.let { density.run { -it.toDp() } }
-                        ?: 0.dp
-                }
-            }
-            val topOffset by remember {
-                derivedStateOf {
-                    (topBarPadding + density.run { scrollBehavior.state.heightOffset.toDp() })
-                        .coerceAtLeast(0.dp)
-                }
-            }
             Box(
                 modifier = Modifier
+                    .padding(it)
                     .pullRefresh(pullRefreshState)
-                    .nestedScroll(
-                        NestedScrollSplitter(
-                            scrollBehavior.nestedScrollConnection,
-                            bottomNavigationState.nestedScrollConnection,
-                            consumeNone = true,
-                        )
-                    )
             ) {
                 val viewer by viewModel.viewer.collectAsState()
                 LazyColumn(
                     state = scrollStateSaver.lazyListState(),
                     contentPadding = PaddingValues(
-                        top = topBarPadding,
                         bottom = 16.dp + bottomNavigationState.bottomNavBarPadding()
                     ),
                     modifier = Modifier.fillMaxSize()
@@ -286,7 +264,6 @@ object AnimeHomeScreen {
                     refreshing = viewModel.loading,
                     state = pullRefreshState,
                     modifier = Modifier
-                        .padding(top = topOffset)
                         .align(Alignment.TopCenter)
                 )
             }

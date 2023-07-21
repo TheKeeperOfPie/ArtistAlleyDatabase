@@ -22,6 +22,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.filter.SortFilterSection
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
+import com.thekeeperofpie.artistalleydatabase.anime.ui.StartEndDateDialog
 import com.thekeeperofpie.artistalleydatabase.compose.filter.CustomFilterSection
 import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterEntry
 import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
@@ -72,6 +73,9 @@ class MangaSortFilterController<SortType : SortOption>(
     var releaseDateShown by mutableStateOf<Boolean?>(null)
 
     private val releaseDateSection = object : SortFilterSection.Custom("releaseDate") {
+
+        override fun showingPreview() = summaryText() != null
+
         @Composable
         override fun Content(state: ExpandedState, showDivider: Boolean) {
             val expanded = state.expandedState[id] ?: false
@@ -80,25 +84,7 @@ class MangaSortFilterController<SortType : SortOption>(
                 onExpandedChange = { state.expandedState[id] = it },
                 titleRes = R.string.anime_media_filter_release_date,
                 titleDropdownContentDescriptionRes = R.string.anime_media_filter_release_date_content_description,
-                summaryText = {
-                    val startDate =
-                        releaseDate.startDate?.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT))
-                    val endDate =
-                        releaseDate.endDate?.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT))
-
-                    when {
-                        startDate != null && endDate != null -> {
-                            if (releaseDate.startDate == releaseDate.endDate) {
-                                startDate
-                            } else {
-                                "$startDate - $endDate"
-                            }
-                        }
-                        startDate != null -> "≥ $startDate"
-                        endDate != null -> "≤ $endDate"
-                        else -> null
-                    }
-                },
+                summaryText = { summaryText() },
                 onSummaryClick = {
                     onReleaseDateChange(true, null)
                     onReleaseDateChange(false, null)
@@ -118,6 +104,26 @@ class MangaSortFilterController<SortType : SortOption>(
                 }
             }
         }
+
+        fun summaryText(): String? {
+            val startDate =
+                releaseDate.startDate?.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT))
+            val endDate =
+                releaseDate.endDate?.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT))
+
+            return when {
+                startDate != null && endDate != null -> {
+                    if (releaseDate.startDate == releaseDate.endDate) {
+                        startDate
+                    } else {
+                        "$startDate - $endDate"
+                    }
+                }
+                startDate != null -> "≥ $startDate"
+                endDate != null -> "≤ $endDate"
+                else -> null
+            }
+        }
     }
 
     // TODO: Fix volumes/chapters range search
@@ -129,6 +135,8 @@ class MangaSortFilterController<SortType : SortOption>(
     )
 
     private val actionsSection = object : SortFilterSection.Custom("actions") {
+        override fun showingPreview() = true
+
         @Composable
         override fun Content(state: ExpandedState, showDivider: Boolean) {
             // TODO("Not yet implemented")
@@ -245,12 +253,20 @@ class MangaSortFilterController<SortType : SortOption>(
     @Composable
     override fun collapseOnClose() = settings.collapseAnimeFiltersOnClose.collectAsState().value
 
+    @Composable
+    override fun PromptDialog() {
+        if (releaseDateShown != null) {
+            StartEndDateDialog(
+                shownForStartDate = releaseDateShown,
+                onShownForStartDateChange = { releaseDateShown = it },
+                onDateChange = ::onReleaseDateChange,
+            )
+        }
+    }
+
     data class InitialParams<SortType : SortOption>(
         override val tagId: String? = null,
-        override val tagsIncluded: Set<String> = emptySet(),
-        override val tagsExcluded: Set<String> = emptySet(),
-        override val genresIncluded: Set<String> = emptySet(),
-        override val genresExcluded: Set<String> = emptySet(),
+        override val genre: String? = null,
         val airingDateEnabled: Boolean = true,
         val onListEnabled: Boolean = true,
         val showIgnoredEnabled: Boolean = true,

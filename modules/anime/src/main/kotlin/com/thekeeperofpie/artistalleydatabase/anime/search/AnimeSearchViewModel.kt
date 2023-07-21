@@ -107,7 +107,8 @@ class AnimeSearchViewModel @Inject constructor(
             SearchType.values().map {
                 it to when (it) {
                     SearchType.ANIME,
-                    SearchType.MANGA -> PagingData.empty<AnimeSearchEntry.Media<Medium>>(loadStates)
+                    SearchType.MANGA,
+                    -> PagingData.empty<AnimeSearchEntry.Media<Medium>>(loadStates)
                     SearchType.CHARACTER -> PagingData.empty<AnimeSearchEntry.Character>(loadStates)
                     SearchType.STAFF -> PagingData.empty<AnimeSearchEntry.Staff>(loadStates)
                     SearchType.STUDIO -> PagingData.empty<AnimeSearchEntry.Studio>(loadStates)
@@ -436,7 +437,11 @@ class AnimeSearchViewModel @Inject constructor(
         }
     }
 
-    fun initialize(tagId: String?) {
+    fun initialize(
+        defaultMediaSort: MediaSortOption,
+        tagId: String? = null,
+        genre: String? = null,
+    ) {
         if (initialized) return
         initialized = true
         animeSortFilterController.initialize(
@@ -444,7 +449,8 @@ class AnimeSearchViewModel @Inject constructor(
             refreshUptimeMillis = refreshUptimeMillis,
             initialParams = AnimeSortFilterController.InitialParams(
                 tagId = tagId,
-                defaultSort = MediaSortOption.SEARCH_MATCH,
+                genre = genre,
+                defaultSort = defaultMediaSort,
             ),
             tagLongClickListener = ::onTagLongClick,
         )
@@ -453,7 +459,8 @@ class AnimeSearchViewModel @Inject constructor(
             refreshUptimeMillis = refreshUptimeMillis,
             initialParams = MangaSortFilterController.InitialParams(
                 tagId = tagId,
-                defaultSort = MediaSortOption.SEARCH_MATCH,
+                genre = genre,
+                defaultSort = defaultMediaSort,
             ),
             tagLongClickListener = ::onTagLongClick,
         )

@@ -129,6 +129,8 @@ abstract class MediaSortFilterController<SortType : SortOption, ParamsType : Med
     var tagRank by mutableStateOf("0")
 
     protected val tagSection = object : SortFilterSection.Custom("tag") {
+        override fun showingPreview() = true
+
         @Composable
         override fun Content(state: ExpandedState, showDivider: Boolean) {
             TagSection(
@@ -182,10 +184,12 @@ abstract class MediaSortFilterController<SortType : SortOption, ParamsType : Med
             MediaSource.WEB_NOVEL,
         ),
         valueToText = { stringResource(it.value.toTextRes()) },
-        exclusive = true,
+        selectionMethod = SortFilterSection.Filter.SelectionMethod.ONLY_INCLUDE,
     )
 
     private val actionsSection = object : SortFilterSection.Custom("actions") {
+        override fun showingPreview() = false
+
         @Composable
         override fun Content(state: ExpandedState, showDivider: Boolean) {
             // TODO("Not yet implemented")
@@ -201,6 +205,9 @@ abstract class MediaSortFilterController<SortType : SortOption, ParamsType : Med
         tagLongClickListener: (String) -> Unit = { /* TODO */ },
     ) {
         this.tagLongClickListener = tagLongClickListener
+        if (initialParams.tagId != null) {
+            tagRank = "60"
+        }
         viewModel.viewModelScope.launch(CustomDispatchers.Main) {
             refreshUptimeMillis.mapLatest {
                 aniListApi.genres()
@@ -210,11 +217,15 @@ abstract class MediaSortFilterController<SortType : SortOption, ParamsType : Med
             }
                 .flatMapLatest { genres ->
                     settings.showAdult.mapLatest { showAdult ->
-                        FilterEntry.values(
-                            values = genres.filter { showAdult || it != "Hentai" },
-                            included = initialParams.genresIncluded,
-                            excluded = initialParams.genresExcluded,
-                        )
+                        FilterEntry.values(genres.filter { showAdult || it != "Hentai" })
+                            .map {
+                                it.transformIf(it.value == initialParams.genre) {
+                                    copy(
+                                        state = FilterIncludeExcludeState.INCLUDE,
+                                        clickable = false,
+                                    )
+                                }
+                            }
                     }
                 }
                 .catch { /* TODO: Error message */ }
@@ -279,10 +290,7 @@ abstract class MediaSortFilterController<SortType : SortOption, ParamsType : Med
 
     interface InitialParams<SortType : SortOption> {
         val tagId: String?
-        val tagsIncluded: Set<String>
-        val tagsExcluded: Set<String>
-        val genresIncluded: Set<String>
-        val genresExcluded: Set<String>
+        val genre: String?
     }
 
     data class FilterParams<SortType : SortOption>(

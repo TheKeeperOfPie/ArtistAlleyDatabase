@@ -27,7 +27,10 @@ import com.thekeeperofpie.artistalleydatabase.art.persistence.ArtSettings
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySettings
 import com.thekeeperofpie.artistalleydatabase.network_utils.NetworkSettings
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
@@ -64,7 +67,37 @@ class SettingsProvider(
         deserialize("networkLoggingLevel") ?: NetworkSettings.NetworkLoggingLevel.NONE
     )
     override var savedAnimeFilters = MutableStateFlow(deserializeAnimeFilters())
-    override var showAdult = MutableStateFlow(deserialize("showAdult") ?: false)
+
+    @Suppress("KotlinConstantConditions")
+    override var showAdult = if (BuildConfig.BUILD_TYPE == "release") {
+        val flow = MutableStateFlow(false)
+        object : MutableStateFlow<Boolean> {
+            override val replayCache: List<Boolean>
+                get() = flow.replayCache
+            override val subscriptionCount: StateFlow<Int>
+                get() = flow.subscriptionCount
+            override var value: Boolean
+                get() = flow.value
+                set(value) {
+                    // Do not set anything on release
+                }
+
+            override suspend fun collect(collector: FlowCollector<Boolean>) =
+                flow.collect(collector)
+
+            override fun compareAndSet(expect: Boolean, update: Boolean) = true
+
+            @ExperimentalCoroutinesApi
+            override fun resetReplayCache() = Unit
+
+            override fun tryEmit(value: Boolean) = true
+
+            override suspend fun emit(value: Boolean) = Unit
+        }
+    } else {
+        MutableStateFlow(deserialize("showAdult") ?: false)
+    }
+
     override var collapseAnimeFiltersOnClose = MutableStateFlow(
         deserialize("collapseAnimeFiltersOnClose") ?: true
     )

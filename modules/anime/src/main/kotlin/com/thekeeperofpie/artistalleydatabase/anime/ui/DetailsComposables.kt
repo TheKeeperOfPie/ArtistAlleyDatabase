@@ -82,6 +82,7 @@ internal fun CoverAndBannerHeader(
     upIconOption: UpIconOption?,
     entryId: EntryId?,
     coverImage: @Composable () -> String?,
+    coverImageAllowHardware: Boolean,
     bannerImage: @Composable () -> String? = { null },
     pinnedHeight: Dp = 120.dp,
     progress: Float = 0f,
@@ -203,6 +204,7 @@ internal fun CoverAndBannerHeader(
                             model = ImageRequest.Builder(LocalContext.current)
                                 .data(coverImage())
                                 .crossfade(true)
+                                .allowHardware(coverImageAllowHardware)
                                 .size(
                                     width = Dimension.Undefined,
                                     height = Dimension.Pixels(

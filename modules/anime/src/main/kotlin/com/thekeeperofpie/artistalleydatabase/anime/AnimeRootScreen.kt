@@ -27,8 +27,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anime.home.AnimeHomeScreen
+import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortOption
+import com.thekeeperofpie.artistalleydatabase.anime.search.AnimeSearchScreen
+import com.thekeeperofpie.artistalleydatabase.anime.search.AnimeSearchViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.user.viewer.AniListViewerProfileScreen
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysNavigationBar
@@ -149,17 +153,21 @@ object AnimeRootScreen {
                             ),
                             bottomNavigationState = bottomNavigationState,
                         )
-                        NavDestinations.SEARCH -> AnimeNavigator.SearchScreen(
-                            title = null,
-                            tagId = null,
-                            upIconOption = upIconOption,
-                            navigationCallback = navigationCallback,
-                            scrollStateSaver = ScrollStateSaver.fromMap(
-                                NavDestinations.SEARCH.id,
-                                scrollPositions
-                            ),
-                            bottomNavigationState = bottomNavigationState,
-                        )
+                        NavDestinations.SEARCH -> {
+                            val viewModel = hiltViewModel<AnimeSearchViewModel>().apply {
+                                initialize(defaultMediaSort = MediaSortOption.SEARCH_MATCH)
+                            }
+                            AnimeSearchScreen(
+                                upIconOption = upIconOption,
+                                viewModel = viewModel,
+                                navigationCallback = navigationCallback,
+                                scrollStateSaver = ScrollStateSaver.fromMap(
+                                    NavDestinations.SEARCH.id,
+                                    scrollPositions
+                                ),
+                                bottomNavigationState = bottomNavigationState,
+                            )
+                        }
                         NavDestinations.PROFILE -> AniListViewerProfileScreen(
                             upIconOption = upIconOption,
                             needAuth = needAuth,

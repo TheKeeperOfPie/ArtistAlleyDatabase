@@ -368,7 +368,7 @@ object AnimeMediaEditBottomSheet {
                 columnOneContent = {
                     ProgressSection(
                         progress = viewModel.editData.progress,
-                        progressMax = initialParams?.maxProgress ?: 1,
+                        progressMax = initialParams?.maxProgress,
                         onProgressChange = { viewModel.editData.progress = it },
                     )
                 },
@@ -570,21 +570,25 @@ object AnimeMediaEditBottomSheet {
     @Composable
     private fun ProgressSection(
         progress: String,
-        progressMax: Int,
+        progressMax: Int?,
         onProgressChange: (String) -> Unit,
     ) {
-        TextField(
-            value = progress,
-            onValueChange = onProgressChange,
-            singleLine = true,
-            placeholder = {
+        val placeholder: (@Composable () -> Unit)? = if (progressMax != null) {
+            {
                 Text(
                     text = progressMax.toString(),
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f),
                     textAlign = TextAlign.Center,
                     modifier = Modifier.fillMaxWidth()
                 )
-            },
+            }
+        } else null
+
+        TextField(
+            value = progress,
+            onValueChange = onProgressChange,
+            singleLine = true,
+            placeholder = placeholder,
             textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
             keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
             leadingIcon = {
@@ -616,8 +620,12 @@ object AnimeMediaEditBottomSheet {
                 }
             },
             trailingIcon = {
-                val visible =
-                    progress.isBlank() || progress.toIntOrNull()?.let { it < progressMax } == true
+                val progressAsInt = progress.toIntOrNull()
+                val visible = if (progressAsInt == null) {
+                    progress.isBlank()
+                } else {
+                    progressMax == null || progressAsInt < progressMax
+                }
                 val alpha by animateFloatAsState(
                     if (visible) 1f else 0.38f,
                     label = "Progress increment alpha",

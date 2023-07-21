@@ -42,6 +42,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderValues
 import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDetailsViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationsViewModel
@@ -50,8 +51,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.review.ReviewsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.review.details.ReviewDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.review.details.ReviewDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.schedule.AiringScheduleScreen
-import com.thekeeperofpie.artistalleydatabase.anime.search.AnimeSearchScreen
 import com.thekeeperofpie.artistalleydatabase.anime.search.AnimeSearchViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.search.MediaSearchScreen
 import com.thekeeperofpie.artistalleydatabase.anime.seasonal.SeasonalScreen
 import com.thekeeperofpie.artistalleydatabase.anime.seasonal.SeasonalViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffDetailsScreen
@@ -97,9 +98,10 @@ object AnimeNavigator {
         }
 
         navGraphBuilder.composable(
-            route = AnimeNavDestinations.SEARCH.id
+            route = AnimeNavDestinations.SEARCH_MEDIA.id
                     + "?title={title}"
-                    + "&tagId={tagId}",
+                    + "&tagId={tagId}"
+                    + "&genre={genre}",
             arguments = listOf(
                 navArgument("title") {
                     type = NavType.StringType
@@ -109,17 +111,26 @@ object AnimeNavigator {
                     type = NavType.StringType
                     nullable = true
                 },
-                navArgument("sort") {
+                navArgument("genre") {
                     type = NavType.StringType
                     nullable = true
                 },
             )
         ) {
             val title = it.arguments?.getString("title")
-            SearchScreen(
-                title = title,
-                tagId = it.arguments?.getString("tagId"),
+            val tagId = it.arguments?.getString("tagId")
+            val genre = it.arguments?.getString("genre")
+            val viewModel = hiltViewModel<AnimeSearchViewModel>().apply {
+                initialize(
+                    defaultMediaSort = MediaSortOption.TRENDING,
+                    tagId = tagId,
+                    genre = genre,
+                )
+            }
+            MediaSearchScreen(
+                title = Either.Right(title.orEmpty()),
                 upIconOption = UpIconOption.Back(navHostController),
+                viewModel = viewModel,
                 navigationCallback = navigationCallback,
                 scrollStateSaver = ScrollStateSaver(),
             )
@@ -608,8 +619,15 @@ object AnimeNavigator {
 
     fun onTagClick(navHostController: NavHostController, tagId: String, tagName: String) {
         navHostController.navigate(
-            AnimeNavDestinations.SEARCH.id +
+            AnimeNavDestinations.SEARCH_MEDIA.id +
                     "?title=$tagName&tagId=$tagId"
+        )
+    }
+
+    fun onGenreClick(navHostController: NavHostController, genre: String) {
+        navHostController.navigate(
+            AnimeNavDestinations.SEARCH_MEDIA.id +
+                    "?title=$genre&genre=$genre"
         )
     }
 
@@ -826,28 +844,6 @@ object AnimeNavigator {
     )
 
     @Composable
-    fun SearchScreen(
-        title: String?,
-        tagId: String?,
-        upIconOption: UpIconOption?,
-        navigationCallback: NavigationCallback,
-        scrollStateSaver: ScrollStateSaver,
-        bottomNavigationState: BottomNavigationState? = null,
-    ) {
-        val viewModel = hiltViewModel<AnimeSearchViewModel>()
-            .apply { initialize(tagId) }
-        AnimeSearchScreen(
-            upIconOption = upIconOption,
-            isRoot = title == null,
-            title = title?.let { Either.Right(it) },
-            viewModel = viewModel,
-            navigationCallback = navigationCallback,
-            scrollStateSaver = scrollStateSaver,
-            bottomNavigationState = bottomNavigationState,
-        )
-    }
-
-    @Composable
     fun UserListScreen(
         userId: String?,
         userName: String?,
@@ -1020,7 +1016,7 @@ object AnimeNavigator {
             navHostController?.let { onStudioClick(it, id, name) }
 
         fun onGenreClick(genre: String) {
-            // TODO
+            navHostController?.let { onGenreClick(it, genre) }
         }
 
         fun onIgnoreListOpen(mediaType: MediaType?) {

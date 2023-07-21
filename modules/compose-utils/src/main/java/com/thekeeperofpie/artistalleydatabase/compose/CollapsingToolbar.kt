@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -123,6 +124,48 @@ fun EnterAlwaysTopAppBar(
 }
 
 @Composable
+fun EnterAlwaysTopAppBarHeightChange(
+    scrollBehavior: TopAppBarScrollBehavior,
+    modifier: Modifier = Modifier,
+    windowInsets: WindowInsets = TopAppBarDefaults.windowInsets,
+    content: @Composable BoxScope.() -> Unit,
+) {
+    var heightOffsetLimit by remember { mutableFloatStateOf(0f) }
+    LaunchedEffect(heightOffsetLimit) {
+        scrollBehavior.state.heightOffsetLimit = heightOffsetLimit
+    }
+
+    val appBarDragModifier = Modifier.draggable(
+        orientation = Orientation.Vertical,
+        state = rememberDraggableState { scrollBehavior.state.heightOffset += it },
+        onDragStopped = { velocity ->
+            settle(
+                scrollBehavior.state,
+                velocity,
+                scrollBehavior.snapAnimationSpec,
+                scrollBehavior.flingAnimationSpec,
+            )
+        }
+    )
+
+    Box(modifier = modifier.then(appBarDragModifier)) {
+        val height = LocalDensity.current.run { 64.dp + scrollBehavior.state.heightOffset.toDp() }
+        Box(
+            modifier = Modifier
+                .windowInsetsPadding(windowInsets)
+                .clipToBounds()
+                .onSizeChanged {
+                    if (heightOffsetLimit == 0f) {
+                        heightOffsetLimit = -it.height.toFloat()
+                    }
+                }
+                .height(height),
+            content = content,
+        )
+    }
+}
+
+@Composable
 fun EnterAlwaysNavigationBar(
     scrollBehavior: NavigationBarEnterAlwaysScrollBehavior,
     modifier: Modifier = Modifier,
@@ -175,7 +218,7 @@ fun EnterAlwaysNavigationBar(
 fun navigationBarEnterAlwaysScrollBehavior(
     canScroll: () -> Boolean = { true },
     snapAnimationSpec: AnimationSpec<Float>? = spring(stiffness = Spring.StiffnessMediumLow),
-    flingAnimationSpec: DecayAnimationSpec<Float>? = rememberSplineBasedDecay()
+    flingAnimationSpec: DecayAnimationSpec<Float>? = rememberSplineBasedDecay(),
 ) = NavigationBarEnterAlwaysScrollBehavior(
     state = rememberTopAppBarState(),
     snapAnimationSpec = snapAnimationSpec,
@@ -187,7 +230,7 @@ class NavigationBarEnterAlwaysScrollBehavior(
     val state: TopAppBarState,
     val snapAnimationSpec: AnimationSpec<Float>?,
     val flingAnimationSpec: DecayAnimationSpec<Float>?,
-    val canScroll: () -> Boolean = { true }
+    val canScroll: () -> Boolean = { true },
 ) {
 
     var nestedScrollConnection =
@@ -201,7 +244,7 @@ class NavigationBarEnterAlwaysScrollBehavior(
             override fun onPostScroll(
                 consumed: Offset,
                 available: Offset,
-                source: NestedScrollSource
+                source: NestedScrollSource,
             ): Offset {
                 if (!canScroll()) return Offset.Zero
                 state.heightOffset += consumed.y
@@ -258,7 +301,7 @@ class NestedScrollSplitter(
     override fun onPostScroll(
         consumed: Offset,
         available: Offset,
-        source: NestedScrollSource
+        source: NestedScrollSource,
     ) = (primary?.onPostScroll(consumed, available, source)
         ?.also { secondary?.onPostScroll(consumed, available, source) }
         ?: secondary?.onPostScroll(consumed, available, source)

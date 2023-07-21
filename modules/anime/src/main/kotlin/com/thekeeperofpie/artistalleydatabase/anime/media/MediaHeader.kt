@@ -78,6 +78,7 @@ fun MediaHeader(
             progress = progress,
             color = { headerValues.color },
             coverImage = { headerValues.coverImage },
+            coverImageAllowHardware = colorCalculationState.hasColor(mediaId),
             coverImageWidthToHeightRatio = headerValues.coverImageWidthToHeightRatio,
             bannerImage = { headerValues.bannerImage },
             onClickEnabled = (titles?.size ?: 0) > 1,

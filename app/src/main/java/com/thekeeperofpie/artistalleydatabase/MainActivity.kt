@@ -18,6 +18,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeContentPadding
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.Icon
@@ -70,6 +72,7 @@ import com.thekeeperofpie.artistalleydatabase.browse.BrowseScreen
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseViewModel
 import com.thekeeperofpie.artistalleydatabase.cds.CdEntryNavigator
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
+import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils.navToEntryDetails
 import com.thekeeperofpie.artistalleydatabase.export.ExportScreen
 import com.thekeeperofpie.artistalleydatabase.export.ExportViewModel
@@ -114,11 +117,8 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val hideStatusBar = settings.hideStatusBar.value
-        if (BuildConfig.DEBUG && hideStatusBar) {
-            // TODO: On release, the lack of this prevents WindowInsets.isImeVisible from working
-            WindowCompat.setDecorFitsSystemWindows(window, false)
-        }
+        val hideStatusBar = BuildConfig.DEBUG && settings.hideStatusBar.value
+        WindowCompat.setDecorFitsSystemWindows(window, false)
 
         val startDestinationFromIntent = intent.getStringExtra(STARTING_NAV_DESTINATION)
         val startDestinationFromSettings = settings.navDrawerStartDestination.value
@@ -130,7 +130,8 @@ class MainActivity : ComponentActivity() {
         setContent {
             val navHostController = rememberNavController()
             ArtistAlleyDatabaseTheme(navHostController) {
-                Surface {
+                // TODO: Draw inside insets for applicable screens
+                Surface(modifier = Modifier.safeDrawingPadding()) {
                     val drawerState = rememberDrawerState(DrawerValue.Closed)
                     val scope = rememberCoroutineScope()
                     val navDrawerItems = NavDrawerItems.values()

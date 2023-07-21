@@ -5,6 +5,7 @@ import kotlin.reflect.KClass
 data class SortEntry<T : SortOption>(
     override val value: T,
     override val state: FilterIncludeExcludeState = FilterIncludeExcludeState.DEFAULT,
+    override val clickable: Boolean = true,
 ) : FilterEntry<T> {
     companion object {
         fun <T : SortOption> options(enumClass: KClass<T>, defaultEnabled: T?) =
