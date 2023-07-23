@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.anime.media.activity
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
@@ -41,6 +42,7 @@ object MediaActivitiesScreen {
         }
 
         val editViewModel = hiltViewModel<MediaEditViewModel>()
+        val viewer by viewModel.viewer.collectAsState()
         HeaderAndMediaListScreen(
             screenKey = SCREEN_KEY,
             viewModel = viewModel,
@@ -76,11 +78,13 @@ object MediaActivitiesScreen {
             item = {
                 ListActivitySmallCard(
                     screenKey = SCREEN_KEY,
+                    viewer = viewer,
                     activity = it?.activity,
                     entry = it,
                     onActivityStatusUpdate = viewModel.activityToggleHelper::toggle,
                     colorCalculationState = colorCalculationState,
                     navigationCallback = navigationCallback,
+                    clickable = true,
                     modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
                 )
             }

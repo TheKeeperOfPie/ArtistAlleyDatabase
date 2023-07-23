@@ -33,6 +33,7 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
+import com.anilist.AuthedUserQuery
 import com.anilist.UserSocialActivityQuery.Data.Page.ListActivityActivity
 import com.anilist.UserSocialActivityQuery.Data.Page.MessageActivityActivity
 import com.anilist.UserSocialActivityQuery.Data.Page.OtherActivity
@@ -141,6 +142,7 @@ object AnimeActivityScreen {
                     else -> throw IllegalArgumentException("Invalid page")
                 }
                 ActivityList(
+                    viewer = viewer,
                     activities = activities,
                     topBarPadding = topBarPadding,
                     onActivityStatusUpdate = viewModel.activityToggleHelper::toggle,
@@ -153,6 +155,7 @@ object AnimeActivityScreen {
 
     @Composable
     private fun ActivityList(
+        viewer: AuthedUserQuery.Data.Viewer?,
         activities: LazyPagingItems<AnimeActivityViewModel.ActivityEntry>,
         topBarPadding: Dp,
         onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
@@ -186,19 +189,24 @@ object AnimeActivityScreen {
                             val entry = activities[it]
                             when (val activity = entry?.activity) {
                                 is TextActivityActivity -> TextActivitySmallCard(
+                                    viewer = viewer,
                                     activity = activity,
                                     entry = entry,
                                     onActivityStatusUpdate = onActivityStatusUpdate,
+                                    navigationCallback = navigationCallback,
+                                    clickable = true,
                                     modifier = Modifier.fillMaxWidth()
                                 )
                                 is ListActivityActivity -> ListActivitySmallCard(
                                     screenKey = AnimeNavDestinations.ACTIVITY.id,
+                                    viewer = viewer,
                                     activity = activity,
                                     media = activity.media,
                                     entry = entry,
                                     onActivityStatusUpdate = onActivityStatusUpdate,
                                     colorCalculationState = colorCalculationState,
                                     navigationCallback = navigationCallback,
+                                    clickable = true,
                                     modifier = Modifier.fillMaxWidth()
                                 )
                                 is MessageActivityActivity,
@@ -206,8 +214,10 @@ object AnimeActivityScreen {
                                 null,
                                 -> TextActivitySmallCard(
                                     activity = null,
+                                    viewer = viewer,
                                     entry = null,
                                     onActivityStatusUpdate = onActivityStatusUpdate,
+                                    navigationCallback = navigationCallback,
                                     modifier = Modifier.fillMaxWidth()
                                 )
                             }

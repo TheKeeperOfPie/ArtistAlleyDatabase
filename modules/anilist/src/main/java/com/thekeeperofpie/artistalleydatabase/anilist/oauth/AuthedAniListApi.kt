@@ -1,6 +1,8 @@
 package com.thekeeperofpie.artistalleydatabase.anilist.oauth
 
 import android.util.Log
+import com.anilist.ActivityDetailsQuery
+import com.anilist.ActivityDetailsRepliesQuery
 import com.anilist.AiringScheduleQuery
 import com.anilist.AuthedUserQuery
 import com.anilist.CharacterAdvancedSearchQuery
@@ -38,6 +40,8 @@ import com.anilist.StudioMediasPaginationQuery
 import com.anilist.StudioMediasQuery
 import com.anilist.StudioSearchQuery
 import com.anilist.ToggleActivityLikeMutation
+import com.anilist.ToggleActivityReplyLikeMutation
+import com.anilist.ToggleActivityReplyLikeMutation.Data.ToggleLikeV2.Companion.asActivityReply
 import com.anilist.ToggleActivitySubscribeMutation
 import com.anilist.ToggleAnimeFavoriteMutation
 import com.anilist.ToggleCharacterFavoriteMutation
@@ -712,6 +716,16 @@ open class AuthedAniListApi(
         is ToggleActivitySubscribeMutation.Data.TextActivityToggleActivitySubscription -> result.isSubscribed
         is ToggleActivitySubscribeMutation.Data.OtherToggleActivitySubscription -> false
     } ?: false
+
+    open suspend fun activityDetails(id: String) =
+        query(ActivityDetailsQuery(activityId = id.toInt()))
+
+    open suspend fun activityReplies(id: String, page: Int, perPage: Int = 10) =
+        query(ActivityDetailsRepliesQuery(activityId = id.toInt(), page = page, perPage = perPage))
+
+    open suspend fun toggleActivityReplyLike(id: String) =
+        apolloClient.mutation(ToggleActivityReplyLikeMutation(id = id.toInt())).execute()
+            .dataOrThrow().toggleLikeV2.asActivityReply()!!.isLiked
 
     protected suspend fun <D : Query.Data> query(query: Query<D>) =
         apolloClient.query(query).execute().dataOrThrow()

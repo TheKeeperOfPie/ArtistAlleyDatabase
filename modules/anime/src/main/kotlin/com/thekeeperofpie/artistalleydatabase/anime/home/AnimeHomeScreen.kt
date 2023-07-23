@@ -227,6 +227,7 @@ object AnimeHomeScreen {
                     )
 
                     activityRow(
+                        viewer = viewer,
                         data = activity,
                         onActivityStatusUpdate = viewModel.activityToggleHelper::toggle,
                         colorCalculationState = colorCalculationState,
@@ -325,6 +326,7 @@ object AnimeHomeScreen {
     }
 
     private fun LazyListScope.activityRow(
+        viewer: AuthedUserQuery.Data.Viewer?,
         data: LazyPagingItems<AnimeActivityViewModel.ActivityEntry>,
         onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
         colorCalculationState: ColorCalculationState,
@@ -352,29 +354,36 @@ object AnimeHomeScreen {
                 when (val activity = entry?.activity) {
                     is UserSocialActivityQuery.Data.Page.TextActivityActivity ->
                         TextActivitySmallCard(
+                            viewer = viewer,
                             activity = activity,
                             entry = entry,
                             onActivityStatusUpdate = onActivityStatusUpdate,
+                            navigationCallback = navigationCallback,
+                            clickable = true,
                             modifier = Modifier.fillMaxWidth()
                         )
                     is UserSocialActivityQuery.Data.Page.ListActivityActivity ->
                         ListActivitySmallCard(
                             screenKey = SCREEN_KEY,
+                            viewer = viewer,
                             activity = activity,
                             media = activity.media,
                             entry = entry,
                             onActivityStatusUpdate = onActivityStatusUpdate,
                             colorCalculationState = colorCalculationState,
                             navigationCallback = navigationCallback,
+                            clickable = true,
                             modifier = Modifier.fillMaxWidth()
                         )
                     is UserSocialActivityQuery.Data.Page.MessageActivityActivity,
                     is UserSocialActivityQuery.Data.Page.OtherActivity,
                     null,
                     -> TextActivitySmallCard(
+                        viewer = viewer,
                         activity = null,
                         entry = null,
                         onActivityStatusUpdate = onActivityStatusUpdate,
+                        navigationCallback = navigationCallback,
                         modifier = Modifier.fillMaxWidth()
                     )
                 }

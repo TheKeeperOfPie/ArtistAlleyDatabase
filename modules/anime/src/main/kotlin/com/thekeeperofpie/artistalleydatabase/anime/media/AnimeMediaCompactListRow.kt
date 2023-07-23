@@ -226,6 +226,7 @@ object AnimeMediaCompactListRow {
     ) {
         val tags = media.tags?.filterNotNull()
             ?.map { AnimeMediaTagEntry(it, isMediaSpoiler = it.isMediaSpoiler, rank = it.rank) }
+            ?.distinctBy { it.id }
             .orEmpty()
         val ignored by mutableStateOf(ignored)
     }

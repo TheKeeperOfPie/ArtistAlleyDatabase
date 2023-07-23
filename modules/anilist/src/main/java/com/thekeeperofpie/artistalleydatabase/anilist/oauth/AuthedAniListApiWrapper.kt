@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anilist.oauth
 
+import com.anilist.ActivityDetailsQuery
 import com.anilist.UserSocialActivityQuery
 import com.anilist.type.ActivitySort
 import com.anilist.type.ActivityType
@@ -477,4 +478,20 @@ class AuthedAniListApiWrapper(
 
     override suspend fun toggleActivitySubscribe(id: String, subscribe: Boolean) =
         super.toggleActivitySubscribe(id, subscribe)
+
+    override suspend fun activityDetails(id: String) = super.activityDetails(id).also {
+        if (it.activity is ActivityDetailsQuery.Data.ListActivityActivity
+            && it.activity.media?.isAdult != false
+        ) {
+            throw IOException("Cannot load this media")
+        }
+    }
+
+    override suspend fun activityReplies(
+        id: String,
+        page: Int,
+        perPage: Int,
+    ) = super.activityReplies(id, page, perPage)
+
+    override suspend fun toggleActivityReplyLike(id: String) = super.toggleActivityReplyLike(id)
 }

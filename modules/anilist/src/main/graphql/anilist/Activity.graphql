@@ -1,0 +1,141 @@
+query ActivityDetails($activityId: Int!) {
+    Activity(id: $activityId) @nonnull {
+        ... on TextActivity {
+            ...TextActivityFragment
+        }
+        ... on ListActivity {
+            user {
+                ...UserNavigationData
+            }
+            ...ListActivityWithoutMedia
+            isLocked
+            media {
+                ...MediaWithListStatus
+                ...MediaCompactWithTags
+            }
+        }
+        ... on MessageActivity {
+            replyCount
+            message(asHtml: true)
+            isLocked
+            isSubscribed
+            likeCount
+            isLiked
+            isPrivate
+            createdAt
+            recipient {
+                ...UserNavigationData
+            }
+            messenger {
+                ...UserNavigationData
+            }
+        }
+    }
+}
+
+query ActivityDetailsReplies($activityId: Int!, $page: Int!, $perPage: Int!) {
+    Page(page: $page, perPage: $perPage) {
+        pageInfo {
+            ...PaginationInfo
+        }
+        activityReplies(activityId: $activityId) {
+            id
+            text(asHtml: true)
+            likeCount
+            isLiked
+            createdAt
+            user {
+                ...UserNavigationData
+            }
+        }
+    }
+}
+
+fragment ListActivityWithoutMedia on ListActivity {
+    createdAt
+    id
+    isLiked
+    isSubscribed
+    likeCount
+    progress
+    replyCount
+    replies {
+        id
+        text
+        user {
+            ...UserNavigationData
+        }
+    }
+    status
+    type
+    user {
+        ...UserNavigationData
+    }
+}
+
+fragment TextActivityFragment on TextActivity {
+    id
+    user {
+        ...UserNavigationData
+    }
+    text(asHtml: true)
+    isLocked
+    isSubscribed
+    likeCount
+    isLiked
+    createdAt
+    replyCount
+}
+
+fragment MessageActivityFragment on MessageActivity {
+    id
+    recipient {
+        ...UserNavigationData
+    }
+    messenger {
+        ...UserNavigationData
+    }
+    message(asHtml: true)
+    isLocked
+    isSubscribed
+    likeCount
+    isLiked
+    createdAt
+    replyCount
+}
+
+mutation ToggleActivityLike($id: Int!) {
+    ToggleLikeV2(id: $id, type: ACTIVITY) {
+        ... on TextActivity {
+            isLiked
+        }
+        ... on ListActivity {
+            isLiked
+        }
+        ... on MessageActivity {
+            isLiked
+        }
+    }
+}
+
+mutation ToggleActivitySubscribe($id: Int!, $subscribe: Boolean!) {
+    ToggleActivitySubscription(activityId: $id, subscribe: $subscribe) {
+        ... on TextActivity {
+            isSubscribed
+        }
+        ... on ListActivity {
+            isSubscribed
+        }
+        ... on MessageActivity {
+            isSubscribed
+        }
+    }
+}
+
+mutation ToggleActivityReplyLike($id: Int!) {
+    ToggleLikeV2(id: $id, type: ACTIVITY_REPLY) @nonnull {
+        ... on ActivityReply {
+            isLiked
+        }
+    }
+}

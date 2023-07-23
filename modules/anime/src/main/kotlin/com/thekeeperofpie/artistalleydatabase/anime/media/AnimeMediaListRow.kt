@@ -284,6 +284,7 @@ object AnimeMediaListRow {
         override val ignored: Boolean = false,
     ) : MediaStatusAware where MediaType : MediaPreview, MediaType : MediaHeaderData {
         val color = media.coverImage?.color?.let(ComposeColorUtils::hexToColor)
-        val tags = media.tags?.filterNotNull()?.map(::AnimeMediaTagEntry).orEmpty()
+        val tags = media.tags?.filterNotNull()?.map(::AnimeMediaTagEntry)
+            ?.distinctBy { it.id }.orEmpty()
     }
 }

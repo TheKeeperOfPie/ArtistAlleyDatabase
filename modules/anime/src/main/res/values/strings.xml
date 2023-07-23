@@ -646,6 +646,12 @@
     <string name="anime_activity_type_media_list">Anime/Manga</string>
     <string name="anime_activity_type_unknown">Unknown</string>
 
+    <string name="anime_activity_details_error_loading">Error loading activity</string>
+    <string name="anime_activity_details_title">Activity details</string>
+    <string name="anime_activity_details_error_loading_replies">Error loading replies</string>
+    <string name="anime_activity_details_no_replies">No replies</string>
+    <string name="anime_activity_reply_like_icon_content_description">Reply liked</string>
+
     <string name="anime_reviews_sort_id">Last added</string>
     <string name="anime_reviews_sort_score">Score</string>
     <string name="anime_reviews_sort_rating">Rating</string>

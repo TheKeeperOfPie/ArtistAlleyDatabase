@@ -562,6 +562,7 @@ object AnimeMediaDetailsScreen {
 
         activitiesSection(
             screenKey = screenKey,
+            viewer = viewer,
             viewModel = viewModel,
             expanded = expandedState::activities,
             onExpandedChange = { expandedState.activities = it },
@@ -1697,6 +1698,7 @@ object AnimeMediaDetailsScreen {
 
     private fun LazyListScope.activitiesSection(
         screenKey: String,
+        viewer: AuthedUserQuery.Data.Viewer?,
         viewModel: AnimeMediaDetailsViewModel,
         expanded: () -> Boolean,
         onExpandedChange: (Boolean) -> Unit,
@@ -1717,11 +1719,13 @@ object AnimeMediaDetailsScreen {
         ) { item, paddingBottom, modifier ->
             ListActivitySmallCard(
                 screenKey = screenKey,
+                viewer = viewer,
                 activity = item.activity,
                 entry = item,
                 onActivityStatusUpdate = viewModel.activityToggleHelper::toggle,
                 colorCalculationState = colorCalculationState,
                 navigationCallback = navigationCallback,
+                clickable = true,
                 modifier = modifier
                     .fillMaxWidth()
                     .padding(start = 16.dp, end = 16.dp, bottom = paddingBottom)

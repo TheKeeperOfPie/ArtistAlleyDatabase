@@ -27,6 +27,8 @@ import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anime.activity.AnimeActivityScreen
+import com.thekeeperofpie.artistalleydatabase.anime.activity.details.ActivityDetailsScreen
+import com.thekeeperofpie.artistalleydatabase.anime.activity.details.ActivityDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterHeaderValues
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharactersScreen
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharactersViewModel
@@ -668,6 +670,33 @@ object AnimeNavigator {
                 navigationCallback = navigationCallback,
             )
         }
+
+        navGraphBuilder.composable(
+            route = AnimeNavDestinations.ACTIVITY_DETAILS.id + "?activityId={activityId}",
+            deepLinks = listOf(
+                navDeepLink { uriPattern = "${AniListUtils.ANILIST_BASE_URL}/activity/{activityId}" },
+                navDeepLink {
+                    uriPattern = "${AniListUtils.ANILIST_BASE_URL}/activity/{activityId}/.*"
+                },
+            ),
+            arguments = listOf(
+                navArgument("activityId") {
+                    type = NavType.StringType
+                    nullable = false
+                },
+            ),
+        ) {
+            val arguments = it.arguments!!
+            val activityId = arguments.getString("activityId")!!
+
+            val viewModel = hiltViewModel<ActivityDetailsViewModel>().apply { initialize(activityId) }
+
+            ActivityDetailsScreen(
+                upIconOption = UpIconOption.Back(navHostController),
+                viewModel = viewModel,
+                navigationCallback = navigationCallback,
+            )
+        }
     }
 
     fun onTagClick(
@@ -912,6 +941,13 @@ object AnimeNavigator {
                 "?studioId=$studioId&name=$name"
     )
 
+    fun onActivityDetailsClick(
+        navHostController: NavHostController,
+        activityId: String,
+    ) = navHostController.navigate(
+        AnimeNavDestinations.ACTIVITY_DETAILS.id + "?activityId=$activityId"
+    )
+
     @Composable
     fun UserListScreen(
         userId: String?,
@@ -1130,6 +1166,12 @@ object AnimeNavigator {
                     favorite,
                     imageWidthToHeightRatio,
                 )
+            }
+        }
+
+        fun onActivityDetailsClick(activityId: String) {
+            navHostController?.let {
+                onActivityDetailsClick(it, activityId)
             }
         }
 

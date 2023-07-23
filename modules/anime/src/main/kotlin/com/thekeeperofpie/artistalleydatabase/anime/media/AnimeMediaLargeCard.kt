@@ -278,6 +278,7 @@ object AnimeMediaLargeCard {
             get() = media.nextAiringEpisode
 
         val tags: List<AnimeMediaTagEntry>
-            get() = media.tags?.filterNotNull()?.map(::AnimeMediaTagEntry).orEmpty()
+            get() = media.tags?.filterNotNull()?.map(::AnimeMediaTagEntry)?.distinctBy { it.id }
+                .orEmpty()
     }
 }
