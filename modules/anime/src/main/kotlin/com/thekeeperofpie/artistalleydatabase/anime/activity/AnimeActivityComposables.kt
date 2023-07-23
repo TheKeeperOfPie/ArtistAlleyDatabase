@@ -12,14 +12,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Comment
 import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.filled.NotificationsNone
 import androidx.compose.material.icons.filled.ThumbUp
+import androidx.compose.material.icons.outlined.ModeComment
 import androidx.compose.material.icons.outlined.ThumbUp
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -27,6 +30,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -41,6 +45,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaCompactListRow
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
+import com.thekeeperofpie.artistalleydatabase.compose.ImageHtmlText
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import java.time.Instant
 import java.time.ZoneOffset
@@ -48,6 +53,8 @@ import java.time.ZoneOffset
 @Composable
 fun TextActivitySmallCard(
     activity: UserSocialActivityQuery.Data.Page.TextActivityActivity?,
+    entry: ActivityStatusAware?,
+    onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     ElevatedCard(
@@ -78,16 +85,27 @@ fun TextActivitySmallCard(
             Text(
                 text = activity?.user?.name ?: "USERNAME",
                 modifier = Modifier
+                    .weight(1f)
                     .placeholder(
                         visible = activity == null,
                         highlight = PlaceholderHighlight.shimmer(),
                     )
             )
+
+            ActivityStatusIcons(
+                activityId = activity?.id?.toString(),
+                replies = activity?.replyCount,
+                liked = entry?.liked ?: false,
+                subscribed = entry?.subscribed ?: false,
+                onActivityStatusUpdate = onActivityStatusUpdate,
+            )
         }
 
         if (activity == null || activity.text != null) {
-            Text(
+            ImageHtmlText(
                 text = activity?.text ?: "Placeholder text",
+                color = MaterialTheme.typography.bodySmall.color
+                    .takeOrElse { LocalContentColor.current },
                 modifier = Modifier
                     .padding(horizontal = 16.dp, vertical = 8.dp)
                     .conditionally(activity == null) { fillMaxWidth() }
@@ -237,57 +255,13 @@ private fun ListActivitySmallCard(
                 }
             }
 
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(end = 4.dp)
-            ) {
-                IconButton(
-                    onClick = {
-                        if (activity != null) {
-                            onActivityStatusUpdate(
-                                ActivityToggleUpdate.Liked(
-                                    id = activity.id.toString(),
-                                    liked = !liked,
-                                    subscribed = subscribed,
-                                )
-                            )
-                        }
-                    }, modifier = Modifier.size(36.dp)
-                ) {
-                    Icon(
-                        imageVector = if (liked) Icons.Filled.ThumbUp else Icons.Outlined.ThumbUp,
-                        contentDescription = stringResource(
-                            R.string.anime_activity_like_icon_content_description
-                        ),
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-                IconButton(
-                    onClick = {
-                        if (activity != null) {
-                            onActivityStatusUpdate(
-                                ActivityToggleUpdate.Subscribe(
-                                    id = activity.id.toString(),
-                                    liked = liked,
-                                    subscribed = !subscribed,
-                                )
-                            )
-                        }
-                    }, modifier = Modifier.size(36.dp)
-                ) {
-                    Icon(
-                        imageVector = if (subscribed) {
-                            Icons.Filled.NotificationsActive
-                        } else {
-                            Icons.Filled.NotificationsNone
-                        },
-                        contentDescription = stringResource(
-                            R.string.anime_activity_like_icon_content_description
-                        ),
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-            }
+            ActivityStatusIcons(
+                activityId = activity?.id?.toString(),
+                replies = activity?.replyCount,
+                liked = liked,
+                subscribed = subscribed,
+                onActivityStatusUpdate = onActivityStatusUpdate,
+            )
         }
 
         if (showMedia) {
@@ -309,6 +283,91 @@ private fun ListActivitySmallCard(
                 colorCalculationState = colorCalculationState,
                 navigationCallback = navigationCallback,
                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
+            )
+        }
+    }
+}
+
+@Composable
+fun ActivityStatusIcons(
+    activityId: String?,
+    replies: Int?,
+    liked: Boolean,
+    subscribed: Boolean,
+    onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.padding(end = 4.dp)
+    ) {
+        val replyCount = replies ?: 0
+        if (activityId == null || replyCount > 0) {
+            Text(
+                text = replyCount.toString(),
+                style = MaterialTheme.typography.labelSmall,
+                modifier = Modifier.placeholder(
+                    visible = activityId == null,
+                    highlight = PlaceholderHighlight.shimmer(),
+                )
+            )
+        }
+        Icon(
+            imageVector = if (replyCount == 0) {
+                Icons.Outlined.ModeComment
+            } else {
+                Icons.Filled.Comment
+            },
+            contentDescription = stringResource(
+                R.string.anime_activity_replies_icon_content_description
+            ),
+            modifier = Modifier
+                .size(36.dp)
+                .padding(8.dp)
+        )
+        IconButton(
+            onClick = {
+                if (activityId != null) {
+                    onActivityStatusUpdate(
+                        ActivityToggleUpdate.Liked(
+                            id = activityId.toString(),
+                            liked = !liked,
+                            subscribed = subscribed,
+                        )
+                    )
+                }
+            }, modifier = Modifier.size(36.dp)
+        ) {
+            Icon(
+                imageVector = if (liked) Icons.Filled.ThumbUp else Icons.Outlined.ThumbUp,
+                contentDescription = stringResource(
+                    R.string.anime_activity_like_icon_content_description
+                ),
+                modifier = Modifier.size(20.dp)
+            )
+        }
+        IconButton(
+            onClick = {
+                if (activityId != null) {
+                    onActivityStatusUpdate(
+                        ActivityToggleUpdate.Subscribe(
+                            id = activityId.toString(),
+                            liked = liked,
+                            subscribed = !subscribed,
+                        )
+                    )
+                }
+            }, modifier = Modifier.size(36.dp)
+        ) {
+            Icon(
+                imageVector = if (subscribed) {
+                    Icons.Filled.NotificationsActive
+                } else {
+                    Icons.Filled.NotificationsNone
+                },
+                contentDescription = stringResource(
+                    R.string.anime_activity_subscribe_icon_content_description
+                ),
+                modifier = Modifier.size(20.dp)
             )
         }
     }

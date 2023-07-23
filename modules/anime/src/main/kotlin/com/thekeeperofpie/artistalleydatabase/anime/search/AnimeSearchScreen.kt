@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anime.search
 
-import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -259,7 +258,6 @@ object AnimeSearchScreen {
     ) {
         EnterAlwaysTopAppBar(scrollBehavior = scrollBehavior) {
             val isNotEmpty by remember { derivedStateOf { viewModel.query.isNotEmpty() } }
-            Log.d("BackDebug", "oneTarget = ${sheetStateOne.targetValue}, two = ${sheetStateTwo.targetValue}")
             BackHandler(
                 isNotEmpty && !WindowInsets.isImeVisible
                         // Need to manually check sheet state because top bar

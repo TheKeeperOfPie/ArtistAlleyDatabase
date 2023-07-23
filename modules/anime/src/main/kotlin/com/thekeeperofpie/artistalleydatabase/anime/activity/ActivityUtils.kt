@@ -1,6 +1,8 @@
 package com.thekeeperofpie.artistalleydatabase.anime.activity
 
 import com.anilist.UserSocialActivityQuery
+import com.anilist.type.ActivityType
+import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 
 object ActivityUtils {
@@ -35,4 +37,13 @@ object ActivityUtils {
             is UserSocialActivityQuery.Data.Page.TextActivityActivity -> this.isSubscribed
             is UserSocialActivityQuery.Data.Page.OtherActivity -> false
         } ?: false
+
+    fun ActivityType.toTextRes() = when (this) {
+        ActivityType.TEXT -> R.string.anime_activity_type_text
+        ActivityType.ANIME_LIST -> R.string.anime_activity_type_anime_list
+        ActivityType.MANGA_LIST -> R.string.anime_activity_type_manga_list
+        ActivityType.MESSAGE -> R.string.anime_activity_type_message
+        ActivityType.MEDIA_LIST -> R.string.anime_activity_type_media_list
+        ActivityType.UNKNOWN__ -> R.string.anime_activity_type_unknown
+    }
 }

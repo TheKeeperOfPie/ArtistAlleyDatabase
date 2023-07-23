@@ -38,8 +38,6 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.ZoneOffset
-import java.time.format.DateTimeFormatter
-import java.time.format.FormatStyle
 import kotlin.reflect.KClass
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -73,7 +71,7 @@ class MangaSortFilterController<SortType : SortOption>(
 
     private val releaseDateSection = object : SortFilterSection.Custom("releaseDate") {
 
-        override fun showingPreview() = summaryText() != null
+        override fun showingPreview() = releaseDate.summaryText() != null
 
         @Composable
         override fun Content(state: ExpandedState, showDivider: Boolean) {
@@ -83,7 +81,7 @@ class MangaSortFilterController<SortType : SortOption>(
                 onExpandedChange = { state.expandedState[id] = it },
                 titleRes = R.string.anime_media_filter_release_date,
                 titleDropdownContentDescriptionRes = R.string.anime_media_filter_release_date_content_description,
-                summaryText = { summaryText() },
+                summaryText = { releaseDate.summaryText() },
                 onSummaryClick = {
                     onReleaseDateChange(true, null)
                     onReleaseDateChange(false, null)
@@ -101,26 +99,6 @@ class MangaSortFilterController<SortType : SortOption>(
                         onDateChange = ::onReleaseDateChange,
                     )
                 }
-            }
-        }
-
-        fun summaryText(): String? {
-            val startDate =
-                releaseDate.startDate?.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT))
-            val endDate =
-                releaseDate.endDate?.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT))
-
-            return when {
-                startDate != null && endDate != null -> {
-                    if (releaseDate.startDate == releaseDate.endDate) {
-                        startDate
-                    } else {
-                        "$startDate - $endDate"
-                    }
-                }
-                startDate != null -> "≥ $startDate"
-                endDate != null -> "≤ $endDate"
-                else -> null
             }
         }
     }

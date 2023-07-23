@@ -342,6 +342,7 @@ sealed class SortFilterSection(val id: String) {
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
+                .clickable { onEnabledChanged(!enabled()) }
         ) {
             Text(
                 text = stringResource(titleRes),

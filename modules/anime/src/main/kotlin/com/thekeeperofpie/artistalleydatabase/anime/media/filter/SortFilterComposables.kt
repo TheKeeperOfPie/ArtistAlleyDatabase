@@ -84,8 +84,6 @@ import com.thekeeperofpie.artistalleydatabase.compose.filter.IncludeExcludeIcon
 import com.thekeeperofpie.artistalleydatabase.compose.rememberBottomSheetScaffoldState
 import com.thekeeperofpie.artistalleydatabase.compose.rememberStandardBottomSheetState
 import kotlinx.coroutines.launch
-import java.time.format.DateTimeFormatter
-import java.time.format.FormatStyle
 import java.util.Calendar
 import kotlin.math.roundToInt
 
@@ -337,25 +335,7 @@ fun AiringDateSection(
                         else -> null
                     }
                 }
-                is AiringDate.Advanced -> {
-                    val startDate =
-                        data.startDate?.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT))
-                    val endDate =
-                        data.endDate?.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT))
-
-                    when {
-                        startDate != null && endDate != null -> {
-                            if (data.startDate == data.endDate) {
-                                startDate
-                            } else {
-                                "$startDate - $endDate"
-                            }
-                        }
-                        startDate != null -> "≥ $startDate"
-                        endDate != null -> "≤ $endDate"
-                        else -> null
-                    }
-                }
+                is AiringDate.Advanced -> data.summaryText()
             }
         },
         onSummaryClick = {

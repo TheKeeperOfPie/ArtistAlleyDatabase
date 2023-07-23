@@ -619,6 +619,7 @@
     <string name="anime_news_filter_crunchyroll_news_categories_chip_state_content_description">Crunchyroll News category chip state</string>
     <string name="anime_news_filter_sort_label">Sort</string>
 
+    <string name="anime_activity_tab_own">Me</string>
     <string name="anime_activity_tab_following">Following</string>
     <string name="anime_activity_tab_global">Global</string>
     <string name="anime_activity_title">Activity</string>
@@ -626,9 +627,24 @@
     <string name="anime_activity_sort_newest">Newest</string>
     <string name="anime_activity_sort_oldest">Oldest</string>
     <string name="anime_activity_sort_pinned">Pinned</string>
+    <string name="anime_activity_replies_icon_content_description">Activity replies</string>
     <string name="anime_activity_like_icon_content_description">Activity liked</string>
     <string name="anime_activity_subscribe_icon_content_description">Activity subscribed</string>
     <string name="anime_activity_status_with_timestamp">%1$s • %2$s</string>
+    <string name="anime_activity_sort_label">Sort</string>
+    <string name="anime_activity_filter_type_dropdown_content_description">Type dropdown expand</string>
+    <string name="anime_activity_filter_type_include_exclude_icon_content_description">Include/exclude type</string>
+    <string name="anime_activity_filter_type_label">Type</string>
+    <string name="anime_activity_filter_has_replies_label">Has replies</string>
+    <string name="anime_activity_filter_date">Date</string>
+    <string name="anime_activity_filter_date_content_description">Date expand</string>
+
+    <string name="anime_activity_type_text">Text</string>
+    <string name="anime_activity_type_anime_list">Anime</string>
+    <string name="anime_activity_type_manga_list">Manga</string>
+    <string name="anime_activity_type_message">Message</string>
+    <string name="anime_activity_type_media_list">Anime/Manga</string>
+    <string name="anime_activity_type_unknown">Unknown</string>
 
     <string name="anime_reviews_sort_id">Last added</string>
     <string name="anime_reviews_sort_score">Score</string>

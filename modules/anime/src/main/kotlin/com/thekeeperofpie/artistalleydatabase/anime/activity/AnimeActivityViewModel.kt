@@ -29,6 +29,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusControl
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaStatusAware
 import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIntIds
 import com.thekeeperofpie.artistalleydatabase.anime.utils.mapNotNull
+import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
+import com.thekeeperofpie.artistalleydatabase.compose.filter.selectedOption
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -41,6 +43,9 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
+import java.time.Instant
+import java.time.ZoneId
+import java.time.temporal.ChronoUnit
 import javax.inject.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -59,6 +64,8 @@ class AnimeActivityViewModel @Inject constructor(
     val activityToggleHelper =
         ActivityToggleHelper(aniListApi, activityStatusController, viewModelScope)
 
+    val sortFilterController = ActivitySortFilterController(settings)
+
     private val refreshUptimeMillis = MutableStateFlow(-1L)
 
     private val globalActivity =
@@ -69,10 +76,25 @@ class AnimeActivityViewModel @Inject constructor(
         MutableStateFlow(PagingData.empty<ActivityEntry>())
     private var followingActivityJob: Job? = null
 
+    private val ownActivity =
+        MutableStateFlow(PagingData.empty<ActivityEntry>())
+    private var ownActivityJob: Job? = null
+
+    private val offset = ZoneId.systemDefault().rules.getOffset(Instant.now())
+
+    fun ownActivity(): StateFlow<PagingData<ActivityEntry>> {
+        if (ownActivityJob == null) {
+            // TODO: React to user changes?
+            ownActivityJob = activity(ownActivity, following = false, filterToViewer = true)
+        }
+
+        return ownActivity
+    }
+
     fun followingActivity(): StateFlow<PagingData<ActivityEntry>> {
         if (followingActivityJob == null) {
             // TODO: React to user changes?
-            followingActivityJob = activity(followingActivity, true)
+            followingActivityJob = activity(followingActivity, following = true)
         }
 
         return followingActivity
@@ -80,7 +102,7 @@ class AnimeActivityViewModel @Inject constructor(
 
     fun globalActivity(): StateFlow<PagingData<ActivityEntry>> {
         if (globalActivityJob == null) {
-            globalActivityJob = activity(globalActivity, false)
+            globalActivityJob = activity(globalActivity, following = false)
         }
 
         return globalActivity
@@ -89,19 +111,43 @@ class AnimeActivityViewModel @Inject constructor(
     fun activity(
         target: MutableStateFlow<PagingData<ActivityEntry>>,
         following: Boolean,
+        filterToViewer: Boolean = false,
     ) = viewModelScope.launch(CustomDispatchers.IO) {
         aniListApi.authedUser.flatMapLatest { viewer ->
             combine(
                 settings.showAdult,
+                sortFilterController.filterParams(),
                 refreshUptimeMillis,
-                ::Pair
-            ).flatMapLatest { (showAdult, _) ->
+                ::Triple
+            ).flatMapLatest { (showAdult, filterParams) ->
                 Pager(config = PagingConfig(10)) {
                     AniListPagingSource {
                         val result = aniListApi.userSocialActivity(
                             isFollowing = following,
                             page = it,
-                            userIdNot = viewer?.id,
+                            userId = if (filterToViewer) viewer?.id else null,
+                            userIdNot = if (filterToViewer) null else viewer?.id,
+                            sort = filterParams.sort
+                                .selectedOption(ActivitySortOption.NEWEST)
+                                .toApiValue(),
+                            typeIn = filterParams.type
+                                .filter { it.state == FilterIncludeExcludeState.INCLUDE }
+                                .map { it.value }
+                                .ifEmpty { null },
+                            typeNotIn = filterParams.type
+                                .filter { it.state == FilterIncludeExcludeState.EXCLUDE }
+                                .map { it.value }
+                                .ifEmpty { null },
+                            hasReplies = if (filterParams.hasReplies) true else null,
+                            createdAtGreater = filterParams.date.startDate
+                                ?.atStartOfDay()
+                                ?.toEpochSecond(offset)
+                                ?.toInt(),
+                            createdAtLesser = filterParams.date.endDate
+                                ?.plus(1, ChronoUnit.DAYS)
+                                ?.atStartOfDay()
+                                ?.toEpochSecond(offset)
+                                ?.toInt(),
                         )
                         result.page?.pageInfo to
                                 result.page?.activities?.filterNotNull().orEmpty()

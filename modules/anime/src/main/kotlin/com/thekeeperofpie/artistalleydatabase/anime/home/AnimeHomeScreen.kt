@@ -141,9 +141,6 @@ object AnimeHomeScreen {
         val colorCalculationState = rememberColorCalculationState(viewModel.colorMap)
         val selectedItemTracker = remember { SelectedItemTracker() }
 
-        // TODO: Handle LoadStates
-        val activity = viewModel.activity.collectAsLazyPagingItems()
-
         val mediaViewModel = if (selectedIsAnime) {
             hiltViewModel<AnimeHomeMediaViewModel.Anime>()
         } else {
@@ -214,6 +211,9 @@ object AnimeHomeScreen {
                     .pullRefresh(pullRefreshState)
             ) {
                 val viewer by viewModel.viewer.collectAsState()
+
+                // TODO: Handle LoadStates
+                val activity = viewModel.activity.collectAsLazyPagingItems()
                 LazyColumn(
                     state = scrollStateSaver.lazyListState(),
                     contentPadding = PaddingValues(
@@ -336,8 +336,9 @@ object AnimeHomeScreen {
             viewAllRoute = AnimeNavDestinations.ACTIVITY.id
         )
 
-        if (data.itemCount == 0) return
+        // Always show the item, or otherwise scroll position gets screwed up when returning
         item("activityRow") {
+            if (data.itemCount == 0) return@item
             val pagerState = rememberPagerState(pageCount = { data.itemCount })
             val targetWidth = 350.coerceAtLeast(LocalConfiguration.current.screenWidthDp - 72).dp
             HorizontalPager(
@@ -352,6 +353,8 @@ object AnimeHomeScreen {
                     is UserSocialActivityQuery.Data.Page.TextActivityActivity ->
                         TextActivitySmallCard(
                             activity = activity,
+                            entry = entry,
+                            onActivityStatusUpdate = onActivityStatusUpdate,
                             modifier = Modifier.fillMaxWidth()
                         )
                     is UserSocialActivityQuery.Data.Page.ListActivityActivity ->
@@ -370,6 +373,8 @@ object AnimeHomeScreen {
                     null,
                     -> TextActivitySmallCard(
                         activity = null,
+                        entry = null,
+                        onActivityStatusUpdate = onActivityStatusUpdate,
                         modifier = Modifier.fillMaxWidth()
                     )
                 }

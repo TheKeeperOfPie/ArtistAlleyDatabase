@@ -56,6 +56,7 @@ import com.anilist.UserSocialActivityQuery
 import com.anilist.UserSocialFollowersQuery
 import com.anilist.UserSocialFollowingQuery
 import com.anilist.type.ActivitySort
+import com.anilist.type.ActivityType
 import com.anilist.type.AiringSort
 import com.anilist.type.CharacterSort
 import com.anilist.type.FuzzyDateInput
@@ -440,14 +441,26 @@ open class AuthedAniListApi(
         page: Int,
         perPage: Int = 10,
         sort: List<ActivitySort> = listOf(ActivitySort.PINNED, ActivitySort.ID_DESC),
+        userId: Int? = null,
         userIdNot: Int? = null,
+        typeIn: List<ActivityType>? = null,
+        typeNotIn: List<ActivityType>? = null,
+        hasReplies: Boolean? = null,
+        createdAtGreater: Int? = null,
+        createdAtLesser: Int? = null,
     ) = query(
         UserSocialActivityQuery(
             isFollowing = isFollowing,
             sort = sort,
             perPage = perPage,
             page = page,
-            userIdNotIn = Optional.presentIfNotNull(userIdNot?.let(::listOf))
+            userId = Optional.presentIfNotNull(userId),
+            userIdNotIn = Optional.presentIfNotNull(userIdNot?.let(::listOf)),
+            typeIn = Optional.presentIfNotNull(typeIn),
+            typeNotIn = Optional.presentIfNotNull(typeNotIn),
+            hasReplies = Optional.presentIfNotNull(hasReplies),
+            createdAtGreater = Optional.presentIfNotNull(createdAtGreater),
+            createdAtLesser = Optional.presentIfNotNull(createdAtLesser),
         )
     )
 

@@ -247,7 +247,7 @@ query UserSocialFollowing($userId: Int!, $perPage: Int!, $page: Int!) {
             ...PaginationInfo
         }
         following(userId: $userId) {
-           ...UserNavigationData
+            ...UserNavigationData
         }
     }
 }
@@ -258,7 +258,7 @@ query UserSocialFollowers($userId: Int!, $perPage: Int!, $page: Int!) {
             ...PaginationInfo
         }
         followers(userId: $userId) {
-           ...UserNavigationData
+            ...UserNavigationData
         }
     }
 }
@@ -291,6 +291,7 @@ fragment ActivityItem on ActivityUnion {
         isLiked
         likeCount
         isSubscribed
+        replyCount
         replies {
             id
             likeCount
@@ -304,7 +305,7 @@ fragment ActivityItem on ActivityUnion {
             ...UserNavigationData
         }
         createdAt
-        text
+        text(asHtml: true)
     }
     ... on ListActivity {
         ...ListActivityWithoutMedia
@@ -319,6 +320,7 @@ fragment ActivityItem on ActivityUnion {
         isLiked
         likeCount
         isSubscribed
+        replyCount
         replies {
             user {
                 ...UserNavigationData
@@ -346,13 +348,29 @@ query UserSocialActivity(
     $sort: [ActivitySort]!,
     $perPage: Int!,
     $page: Int!,
+    $userId: Int,
     $userIdNotIn: [Int],
+    $typeIn: [ActivityType],
+    $typeNotIn: [ActivityType],
+    $hasReplies: Boolean,
+    $createdAtGreater: Int,
+    $createdAtLesser: Int,
 ) {
     Page(perPage: $perPage, page: $page) {
         pageInfo @nonnull {
             ...PaginationInfo
         }
-        activities(isFollowing: $isFollowing, sort: $sort, userId_not_in: $userIdNotIn) {
+        activities(
+            isFollowing: $isFollowing,
+            sort: $sort,
+            userId: $userId,
+            userId_not_in: $userIdNotIn,
+            type_in: $typeIn,
+            type_not_in: $typeNotIn,
+            hasReplies: $hasReplies,
+            createdAt_greater: $createdAtGreater,
+            createdAt_lesser: $createdAtLesser
+        ) {
             ...ActivityItem
         }
     }

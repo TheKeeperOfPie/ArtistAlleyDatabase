@@ -530,6 +530,7 @@ fun <T> ItemDropdown(
     }
 }
 
+// TODO: Replace other autosize methods
 @Composable
 fun AutoResizeHeightText(
     text: String,

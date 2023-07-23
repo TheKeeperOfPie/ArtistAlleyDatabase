@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.anilist.oauth
 
 import com.anilist.UserSocialActivityQuery
 import com.anilist.type.ActivitySort
+import com.anilist.type.ActivityType
 import com.anilist.type.AiringSort
 import com.anilist.type.CharacterSort
 import com.anilist.type.MediaFormat
@@ -282,8 +283,26 @@ class AuthedAniListApiWrapper(
         page: Int,
         perPage: Int,
         sort: List<ActivitySort>,
+        userId: Int?,
         userIdNot: Int?,
-    ) = super.userSocialActivity(isFollowing, page, perPage, sort, userIdNot).let {
+        typeIn: List<ActivityType>?,
+        typeNotIn: List<ActivityType>?,
+        hasReplies: Boolean?,
+        createdAtGreater: Int?,
+        createdAtLesser: Int?,
+    ) = super.userSocialActivity(
+        isFollowing,
+        page,
+        perPage,
+        sort,
+        userId,
+        userIdNot,
+        typeIn,
+        typeNotIn,
+        hasReplies,
+        createdAtGreater,
+        createdAtLesser
+    ).let {
         it.copy(page = it.page?.copy(activities = it.page.activities?.filter {
             when (it) {
                 is UserSocialActivityQuery.Data.Page.ListActivityActivity -> it.media?.isAdult == false

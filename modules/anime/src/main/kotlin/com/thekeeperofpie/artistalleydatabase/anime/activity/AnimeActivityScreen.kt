@@ -41,11 +41,11 @@ import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
+import com.thekeeperofpie.artistalleydatabase.anime.media.filter.SortFilterBottomScaffoldNoAppBarOffset
 import com.thekeeperofpie.artistalleydatabase.compose.AppBar
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBar
 import com.thekeeperofpie.artistalleydatabase.compose.NestedScrollSplitter
-import com.thekeeperofpie.artistalleydatabase.compose.ScaffoldNoAppBarOffset
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
 import kotlinx.coroutines.launch
@@ -60,14 +60,16 @@ object AnimeActivityScreen {
         navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
         val colorCalculationState = rememberColorCalculationState(viewModel.colorMap)
-        val globalActivity = viewModel.globalActivity().collectAsLazyPagingItems()
-        val followingActivity = viewModel.followingActivity().collectAsLazyPagingItems()
 
         val viewer by viewModel.viewer.collectAsState()
-        val pagerState = rememberPagerState(pageCount = { if (viewer == null) 1 else 2 })
+        val pagerState = rememberPagerState(
+            initialPage = if (viewer == null) 0 else 1,
+            pageCount = { if (viewer == null) 1 else 3 },
+        )
 
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
-        ScaffoldNoAppBarOffset(
+        SortFilterBottomScaffoldNoAppBarOffset(
+            sortFilterController = viewModel.sortFilterController,
             topBar = {
                 if (viewer == null) {
                     AppBar(
@@ -90,13 +92,21 @@ object AnimeActivityScreen {
                                         scope.launch { pagerState.animateScrollToPage(0) }
                                     },
                                     text = {
+                                        Text(text = stringResource(R.string.anime_activity_tab_own))
+                                    }
+                                )
+                                Tab(selected = pagerState.targetPage == 1,
+                                    onClick = {
+                                        scope.launch { pagerState.animateScrollToPage(1) }
+                                    },
+                                    text = {
                                         Text(text = stringResource(R.string.anime_activity_tab_following))
                                     }
                                 )
                                 Tab(
-                                    selected = pagerState.targetPage == 1,
+                                    selected = pagerState.targetPage == 2,
                                     onClick = {
-                                        scope.launch { pagerState.animateScrollToPage(1) }
+                                        scope.launch { pagerState.animateScrollToPage(2) }
                                     },
                                     text = { Text(text = stringResource(R.string.anime_activity_tab_global)) }
                                 )
@@ -122,10 +132,13 @@ object AnimeActivityScreen {
                 }
             }
             HorizontalPager(state = pagerState) {
-                val activities = if (viewer == null || it == 1) {
-                    globalActivity
-                } else {
-                    followingActivity
+                val activities = if (viewer == null) {
+                    viewModel.globalActivity().collectAsLazyPagingItems()
+                } else when (it) {
+                    0 -> viewModel.ownActivity().collectAsLazyPagingItems()
+                    1 -> viewModel.followingActivity().collectAsLazyPagingItems()
+                    2 -> viewModel.globalActivity().collectAsLazyPagingItems()
+                    else -> throw IllegalArgumentException("Invalid page")
                 }
                 ActivityList(
                     activities = activities,
@@ -174,6 +187,8 @@ object AnimeActivityScreen {
                             when (val activity = entry?.activity) {
                                 is TextActivityActivity -> TextActivitySmallCard(
                                     activity = activity,
+                                    entry = entry,
+                                    onActivityStatusUpdate = onActivityStatusUpdate,
                                     modifier = Modifier.fillMaxWidth()
                                 )
                                 is ListActivityActivity -> ListActivitySmallCard(
@@ -191,6 +206,8 @@ object AnimeActivityScreen {
                                 null,
                                 -> TextActivitySmallCard(
                                     activity = null,
+                                    entry = null,
+                                    onActivityStatusUpdate = onActivityStatusUpdate,
                                     modifier = Modifier.fillMaxWidth()
                                 )
                             }
