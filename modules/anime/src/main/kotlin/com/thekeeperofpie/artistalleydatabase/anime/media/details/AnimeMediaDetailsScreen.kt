@@ -113,6 +113,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.activity.ListActivitySmallCard
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils
 import com.thekeeperofpie.artistalleydatabase.anime.character.charactersSection
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
@@ -174,6 +175,7 @@ object AnimeMediaDetailsScreen {
     private const val SONGS_ABOVE_FOLD = 3
     private const val STREAMING_EPISODES_ABOVE_FOLD = 3
     private const val REVIEWS_ABOVE_FOLD = 3
+    private const val ACTIVITIES_ABOVE_FOLD = 3
 
     // Sorted by most relevant for an anime-first viewer
     val RELATION_SORT_ORDER = listOf(
@@ -216,8 +218,13 @@ object AnimeMediaDetailsScreen {
         val entry = entry()
         val expandedState = rememberExpandedState()
         val animeSongs = viewModel.animeSongs
-        val sectionIndexInfo =
-            buildSectionIndexInfo(entry, expandedState, animeSongs, viewModel.cdEntries)
+        val sectionIndexInfo = buildSectionIndexInfo(
+            entry,
+            expandedState,
+            animeSongs,
+            viewModel.cdEntries,
+            viewModel.activities,
+        )
 
         val editViewModel = hiltViewModel<MediaEditViewModel>()
         MediaEditBottomSheetScaffold(
@@ -551,6 +558,24 @@ object AnimeMediaDetailsScreen {
             onClickListEdit = onClickListEdit,
             onLongClick = viewModel::onMediaLongClick,
             onTagLongClick = onTagLongClick,
+        )
+
+        activitiesSection(
+            screenKey = screenKey,
+            viewModel = viewModel,
+            expanded = expandedState::activities,
+            onExpandedChange = { expandedState.activities = it },
+            onClickViewAll = {
+                entry.let {
+                    navigationCallback.onMediaActivitiesClick(
+                        it,
+                        viewModel.favoritesToggleHelper.favorite,
+                        coverImageWidthToHeightRatio()
+                    )
+                }
+            },
+            colorCalculationState = colorCalculationState,
+            navigationCallback = navigationCallback,
         )
 
         reviewsSection(
@@ -1670,6 +1695,40 @@ object AnimeMediaDetailsScreen {
         }
     }
 
+    private fun LazyListScope.activitiesSection(
+        screenKey: String,
+        viewModel: AnimeMediaDetailsViewModel,
+        expanded: () -> Boolean,
+        onExpandedChange: (Boolean) -> Unit,
+        onClickViewAll: () -> Unit,
+        colorCalculationState: ColorCalculationState,
+        navigationCallback: AnimeNavigator.NavigationCallback,
+    ) {
+        listSection(
+            titleRes = R.string.anime_media_details_activities_label,
+            values = viewModel.activities,
+            valueToId = { it.activityId },
+            aboveFold = ACTIVITIES_ABOVE_FOLD,
+            hasMoreValues = true,
+            expanded = expanded,
+            onExpandedChange = onExpandedChange,
+            onClickViewAll = onClickViewAll,
+            viewAllContentDescriptionTextRes = R.string.anime_media_details_view_all_content_description,
+        ) { item, paddingBottom, modifier ->
+            ListActivitySmallCard(
+                screenKey = screenKey,
+                activity = item.activity,
+                entry = item,
+                onActivityStatusUpdate = viewModel.activityToggleHelper::toggle,
+                colorCalculationState = colorCalculationState,
+                navigationCallback = navigationCallback,
+                modifier = modifier
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, end = 16.dp, bottom = paddingBottom)
+            )
+        }
+    }
+
     private fun LazyListScope.reviewsSection(
         viewModel: AnimeMediaDetailsViewModel,
         entry: Entry,
@@ -1880,7 +1939,8 @@ object AnimeMediaDetailsScreen {
                 it.songs,
                 it.streamingEpisodes,
                 it.streamingEpisodesHidden,
-                it.reviews
+                it.reviews,
+                it.activities,
             )
         },
         restore = {
@@ -1892,6 +1952,7 @@ object AnimeMediaDetailsScreen {
                 streamingEpisodes = it[4],
                 streamingEpisodesHidden = it[5],
                 reviews = it[6],
+                activities = it[7],
             )
         }
     )) {
@@ -1906,6 +1967,7 @@ object AnimeMediaDetailsScreen {
         streamingEpisodes: Boolean = false,
         streamingEpisodesHidden: Boolean = true,
         reviews: Boolean = false,
+        activities: Boolean = false,
     ) {
         var description by mutableStateOf(description)
         var relations by mutableStateOf(relations)
@@ -1914,6 +1976,7 @@ object AnimeMediaDetailsScreen {
         var streamingEpisodes by mutableStateOf(streamingEpisodes)
         var streamingEpisodesHidden by mutableStateOf(streamingEpisodesHidden)
         var reviews by mutableStateOf(reviews)
+        var activities by mutableStateOf(activities)
 
         fun allValues() = listOf(
             description,
@@ -1922,6 +1985,7 @@ object AnimeMediaDetailsScreen {
             songs,
             streamingEpisodes,
             streamingEpisodesHidden,
+            activities,
         )
     }
 
@@ -1932,6 +1996,7 @@ object AnimeMediaDetailsScreen {
         expandedState: ExpandedState,
         animeSongs: AnimeMediaDetailsViewModel.AnimeSongs?,
         cdEntries: List<CdEntryGridModel>,
+        activities: List<AnimeMediaDetailsViewModel.ActivityEntry>?,
     ) = remember(entry, animeSongs, expandedState.allValues()) {
         if (entry == null) return@remember SectionIndexInfo(emptyList())
         val list = mutableListOf<Pair<SectionIndexInfo.Section, Int>>()
@@ -2048,6 +2113,16 @@ object AnimeMediaDetailsScreen {
             )
         }
 
+        if (!activities.isNullOrEmpty()) {
+            list += SectionIndexInfo.Section.ACTIVITIES to currentIndex
+            runListSection(
+                size = activities.size,
+                aboveFold = ACTIVITIES_ABOVE_FOLD,
+                expanded = expandedState.activities,
+                hasMore = true,
+            )
+        }
+
         val reviews = entry.reviews
         if (reviews.isNotEmpty()) {
             list += SectionIndexInfo.Section.REVIEWS to currentIndex
@@ -2078,6 +2153,7 @@ object AnimeMediaDetailsScreen {
             LINKS(R.string.anime_media_details_links_label),
             RECOMMENDATIONS(R.string.anime_media_details_recommendations_label),
             REVIEWS(R.string.anime_media_details_reviews_label),
+            ACTIVITIES(R.string.anime_media_details_activities_label),
         }
     }
 }

@@ -55,8 +55,10 @@ abstract class AnimeHomeMediaViewModel(
 
     init {
         viewModelScope.launch(CustomDispatchers.IO) {
+            // TODO: Error handling for individual pieces
             combine(
-                refreshUptimeMillis.mapLatest { rows() }.startWith(item = null),
+                refreshUptimeMillis.mapLatest { rows() }.catch { emit(emptyList()) }
+                    .startWith(item = null),
                 statusController.allChanges(),
                 ignoreList.updates,
                 settings.showAdult,
@@ -68,6 +70,7 @@ abstract class AnimeHomeMediaViewModel(
                             ?.entries
                             ?: emptyList()
                     }
+                    .catch { emit(emptyList()) }
                     .startWith(
                         // If there's no user logged in, emit an empty list to hide the section
                         aniListApi.hasAuthToken.take(1)

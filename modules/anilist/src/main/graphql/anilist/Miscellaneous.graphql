@@ -122,3 +122,31 @@ query ToggleStudioResult($id: Int!) {
         isFavourite
     }
 }
+
+mutation ToggleActivityLike($id: Int!) {
+    ToggleLikeV2(id: $id, type: ACTIVITY) {
+        ... on TextActivity {
+            isLiked
+        }
+        ... on ListActivity {
+            isLiked
+        }
+        ... on MessageActivity {
+            isLiked
+        }
+    }
+}
+
+mutation ToggleActivitySubscribe($id: Int!, $subscribe: Boolean!) {
+    ToggleActivitySubscription(activityId: $id, subscribe: $subscribe) {
+        ... on TextActivity {
+            isSubscribed
+        }
+        ... on ListActivity {
+            isSubscribed
+        }
+        ... on MessageActivity {
+            isSubscribed
+        }
+    }
+}

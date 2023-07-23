@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
+import java.util.Collections
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class FavoritesToggleHelper(
@@ -35,13 +36,14 @@ class FavoritesToggleHelper(
 
     private var initializedTracking = false
 
-    private val jobs = mutableMapOf<Pair<FavoriteType, String>, Job>()
+    private val jobs = Collections.synchronizedMap(mutableMapOf<Pair<FavoriteType, String>, Job>())
 
     fun set(type: FavoriteType, id: String, favorite: Boolean) {
         val update = FavoritesController.Update(type, id, favorite, pending = true)
         favoritesController.onUpdate(update)
-        val job = jobs[type to id]
-        jobs[type to id] = scope.launch(CustomDispatchers.IO) {
+        val jobKey = type to id
+        val job = jobs[jobKey]
+        jobs[jobKey] = scope.launch(CustomDispatchers.IO) {
             job?.cancelAndJoin()
             try {
                 val result = when (type) {
@@ -58,6 +60,7 @@ class FavoritesToggleHelper(
                     update.copy(favorite = !favorite, pending = false, error = e)
                 )
             }
+            jobs.remove(jobKey)
         }
     }
 

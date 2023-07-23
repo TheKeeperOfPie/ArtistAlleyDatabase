@@ -164,6 +164,7 @@ class MediaEditViewModel @Inject constructor(
     }
 
     fun onEditSheetValueChange(sheetValue: SheetValue): Boolean {
+        if (sheetValue == SheetValue.PartiallyExpanded) return false
         if (sheetValue != SheetValue.Hidden) return true
         if (editData.isEqualTo(initialParams.value, scoreFormat.value)) return true
         editData.showConfirmClose = true

@@ -11,6 +11,8 @@ import com.anilist.DeleteMediaListEntryMutation
 import com.anilist.GenresQuery
 import com.anilist.HomeAnimeQuery
 import com.anilist.HomeMangaQuery
+import com.anilist.MediaActivityPageQuery
+import com.anilist.MediaActivityQuery
 import com.anilist.MediaAdvancedSearchQuery
 import com.anilist.MediaAndCharactersPaginationQuery
 import com.anilist.MediaAndCharactersQuery
@@ -35,6 +37,8 @@ import com.anilist.StaffSearchQuery
 import com.anilist.StudioMediasPaginationQuery
 import com.anilist.StudioMediasQuery
 import com.anilist.StudioSearchQuery
+import com.anilist.ToggleActivityLikeMutation
+import com.anilist.ToggleActivitySubscribeMutation
 import com.anilist.ToggleAnimeFavoriteMutation
 import com.anilist.ToggleCharacterFavoriteMutation
 import com.anilist.ToggleCharacterResultQuery
@@ -646,6 +650,55 @@ open class AuthedAniListApi(
         apolloClient.mutation(ToggleStudioFavoriteMutation(id = idAsInt)).execute().dataOrThrow()
         return query(ToggleStudioResultQuery(id = idAsInt)).studio.isFavourite
     }
+
+    open suspend fun mediaActivities(
+        id: String,
+        sort: List<ActivitySort>,
+        activitiesPerPage: Int = 10,
+    ) = query(
+        MediaActivityQuery(
+            mediaId = id.toInt(),
+            sort = sort,
+            activitiesPerPage = activitiesPerPage,
+        )
+    )
+
+    open suspend fun mediaActivitiesPage(
+        id: String,
+        sort: List<ActivitySort>,
+        page: Int,
+        activitiesPerPage: Int = 10,
+    ) = query(
+        MediaActivityPageQuery(
+            mediaId = id.toInt(),
+            sort = sort,
+            page = page,
+            activitiesPerPage = activitiesPerPage,
+        )
+    )
+
+    open suspend fun toggleActivityLike(id: String) = when (val result =
+        apolloClient.mutation(ToggleActivityLikeMutation(id = id.toInt())).execute()
+            .dataOrThrow().toggleLikeV2!!) {
+        is ToggleActivityLikeMutation.Data.ListActivityToggleLikeV2 -> result.isLiked
+        is ToggleActivityLikeMutation.Data.MessageActivityToggleLikeV2 -> result.isLiked
+        is ToggleActivityLikeMutation.Data.TextActivityToggleLikeV2 -> result.isLiked
+        is ToggleActivityLikeMutation.Data.OtherToggleLikeV2 -> false
+    } ?: false
+
+    open suspend fun toggleActivitySubscribe(id: String, subscribe: Boolean) = when (val result =
+        apolloClient.mutation(
+            ToggleActivitySubscribeMutation(
+                id = id.toInt(),
+                subscribe = subscribe
+            )
+        ).execute()
+            .dataOrThrow().toggleActivitySubscription!!) {
+        is ToggleActivitySubscribeMutation.Data.ListActivityToggleActivitySubscription -> result.isSubscribed
+        is ToggleActivitySubscribeMutation.Data.MessageActivityToggleActivitySubscription -> result.isSubscribed
+        is ToggleActivitySubscribeMutation.Data.TextActivityToggleActivitySubscription -> result.isSubscribed
+        is ToggleActivitySubscribeMutation.Data.OtherToggleActivitySubscription -> false
+    } ?: false
 
     protected suspend fun <D : Query.Data> query(query: Query<D>) =
         apolloClient.query(query).execute().dataOrThrow()

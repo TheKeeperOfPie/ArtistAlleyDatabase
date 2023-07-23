@@ -1,0 +1,98 @@
+package com.thekeeperofpie.artistalleydatabase.anime.activity
+
+import com.anilist.fragment.MediaWithListStatus
+import com.anilist.type.MediaListStatus
+import com.hoc081098.flowext.startWith
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaStatusAware
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.runningFold
+
+class ActivityStatusController {
+
+    private val updates = MutableSharedFlow<Update>(replay = 0, extraBufferCapacity = 5)
+
+    fun onUpdate(update: Update) = updates.tryEmit(update)
+
+    fun allChanges() = updates.runningFold(emptyMap<String, Update>()) { acc, value ->
+        acc + (value.activityId to value)
+    }
+
+    fun allChanges(filterIds: Set<String>) =
+        updates.runningFold(emptyMap<String, Update>()) { acc, value ->
+            if (filterIds.contains(value.activityId)) {
+                acc + (value.activityId to value)
+            } else {
+                acc
+            }
+        }
+
+    fun allChanges(filterActivityId: String) = updates
+        .filter { it.activityId == filterActivityId }
+        .startWith(null)
+
+    data class Update(
+        val activityId: String,
+        val liked: Boolean?,
+        val subscribed: Boolean?,
+        val pending: Boolean = false,
+        val error: Throwable? = null,
+    )
+}
+
+fun <ActivityEntry> applyActivityFiltering(
+    mediaListStatuses: Map<String, MediaListStatusController.Update>,
+    activityStatuses: Map<String, ActivityStatusController.Update>,
+    ignoredIds: Set<Int>,
+    showAdult: Boolean,
+    showIgnored: Boolean,
+    entry: ActivityEntry,
+    activityId: String,
+    activityLiked: Boolean,
+    activitySubscribed: Boolean,
+    media: MediaWithListStatus?,
+    mediaStatusAware: MediaStatusAware?,
+    copyMedia: ActivityEntry.(status: MediaListStatus?, progress: Int?, progressVolumes: Int?, ignored: Boolean) -> ActivityEntry,
+    copyActivity: ActivityEntry.(liked: Boolean, subscribed: Boolean) -> ActivityEntry,
+): ActivityEntry? {
+    if (!showAdult && media?.isAdult == true) return null
+    val activityUpdate = activityStatuses[activityId]
+    val currentlyLiked = activityUpdate?.liked ?: activityLiked
+    val currentlySubscribed = activityUpdate?.subscribed ?: activitySubscribed
+
+    var copiedEntry = entry
+    if (media != null && mediaStatusAware != null) {
+        val ignored = ignoredIds.contains(media.id)
+        if (!showIgnored && ignored) return null
+
+        val status: MediaListStatus?
+        val progress: Int?
+        val progressVolumes: Int?
+        val mediaId = media.id.toString()
+        if (mediaListStatuses.containsKey(mediaId)) {
+            val mediaUpdate = mediaListStatuses[media.toString()]?.entry
+            status = mediaUpdate?.status
+            progress = mediaUpdate?.progress
+            progressVolumes = mediaUpdate?.progressVolumes
+        } else {
+            status = media.mediaListEntry?.status
+            progress = media.mediaListEntry?.progress
+            progressVolumes = media.mediaListEntry?.progressVolumes
+        }
+        if (mediaStatusAware.mediaListStatus != status
+            || mediaStatusAware.ignored != ignored
+            || mediaStatusAware.progress != progress
+            || mediaStatusAware.progressVolumes != progressVolumes
+            || activityLiked != currentlyLiked
+        ) {
+            copiedEntry = entry.copyMedia(status, progress, progressVolumes, ignored)
+        }
+    }
+
+    return if (activityLiked == currentlyLiked && activitySubscribed == currentlySubscribed) {
+        copiedEntry
+    } else {
+        copiedEntry.copyActivity(currentlyLiked, currentlySubscribed)
+    }
+}

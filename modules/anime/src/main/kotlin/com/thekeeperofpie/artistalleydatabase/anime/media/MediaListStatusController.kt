@@ -3,15 +3,13 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media
 
 import androidx.paging.PagingData
-import androidx.paging.filter
-import androidx.paging.map
 import com.anilist.fragment.MediaDetailsListEntry
 import com.anilist.fragment.MediaPreview
 import com.anilist.type.MediaListStatus
-import com.apollographql.apollo3.api.Optional
 import com.hoc081098.flowext.startWith
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
+import com.thekeeperofpie.artistalleydatabase.anime.utils.mapNotNull
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -110,24 +108,19 @@ fun <T : MediaStatusAware> Flow<PagingData<T>>.applyMediaStatusChanges(
         ::MediaStatusParams,
     ).mapLatest {
         val (statuses, ignoredIds, showIgnored, showAdult) = it
-        pagingData
-            .map {
-                val mediaPreview = media(it)
-                Optional.presentIfNotNull(
-                    applyMediaFiltering(
-                        statuses = statuses,
-                        ignoredIds = ignoredIds,
-                        showAdult = showAdult,
-                        showIgnored = showIgnored,
-                        entry = it,
-                        transform = { it },
-                        media = mediaPreview,
-                        copy = copy,
-                    )
-                )
-            }
-            .filter { it is Optional.Present }
-            .map { it.getOrThrow() }
+        pagingData.mapNotNull {
+            val mediaPreview = media(it)
+            applyMediaFiltering(
+                statuses = statuses,
+                ignoredIds = ignoredIds,
+                showAdult = showAdult,
+                showIgnored = showIgnored,
+                entry = it,
+                transform = { it },
+                media = mediaPreview,
+                copy = copy,
+            )
+        }
     }
 }
 

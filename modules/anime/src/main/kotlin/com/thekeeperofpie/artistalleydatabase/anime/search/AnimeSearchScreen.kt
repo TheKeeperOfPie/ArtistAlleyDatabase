@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.search
 
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -19,10 +20,13 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ScrollableTabRow
+import androidx.compose.material3.SheetState
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
+import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
@@ -79,9 +83,15 @@ object AnimeSearchScreen {
         val colorCalculationState = rememberColorCalculationState(viewModel.colorMap)
 
         val editViewModel = hiltViewModel<MediaEditViewModel>()
+        val editSheetState = rememberStandardBottomSheetState(
+            initialValue = SheetValue.Hidden,
+            confirmValueChange = editViewModel::onEditSheetValueChange,
+            skipHiddenState = false,
+        )
         MediaEditBottomSheetScaffold(
             screenKey = AnimeNavDestinations.SEARCH.id,
             viewModel = editViewModel,
+            sheetState = editSheetState,
             colorCalculationState = colorCalculationState,
             navigationCallback = navigationCallback,
             bottomNavigationState = bottomNavigationState,
@@ -96,9 +106,23 @@ object AnimeSearchScreen {
             }
             sortFilterController.PromptDialog()
 
+            val sheetState: com.thekeeperofpie.artistalleydatabase.compose.SheetState =
+                com.thekeeperofpie.artistalleydatabase.compose.rememberStandardBottomSheetState(
+                    confirmValueChange = { it != SheetValue.Hidden },
+                    skipHiddenState = true,
+                )
             SortFilterBottomScaffoldNoAppBarOffset(
                 sortFilterController = sortFilterController,
-                topBar = { TopBar(viewModel, upIconOption, scrollBehavior) },
+                topBar = {
+                    TopBar(
+                        viewModel,
+                        upIconOption,
+                        scrollBehavior,
+                        editSheetState,
+                        sheetState,
+                    )
+                },
+                sheetState = sheetState,
                 bottomNavigationState = bottomNavigationState,
             ) { scaffoldPadding ->
                 val content = viewModel.content.collectAsLazyPagingItems()
@@ -230,10 +254,19 @@ object AnimeSearchScreen {
         viewModel: AnimeSearchViewModel,
         upIconOption: UpIconOption? = null,
         scrollBehavior: TopAppBarScrollBehavior,
+        sheetStateOne: SheetState,
+        sheetStateTwo: com.thekeeperofpie.artistalleydatabase.compose.SheetState,
     ) {
         EnterAlwaysTopAppBar(scrollBehavior = scrollBehavior) {
             val isNotEmpty by remember { derivedStateOf { viewModel.query.isNotEmpty() } }
-            BackHandler(isNotEmpty && !WindowInsets.isImeVisible) {
+            Log.d("BackDebug", "oneTarget = ${sheetStateOne.targetValue}, two = ${sheetStateTwo.targetValue}")
+            BackHandler(
+                isNotEmpty && !WindowInsets.isImeVisible
+                        // Need to manually check sheet state because top bar
+                        // takes precedence over all other handlers
+                        && sheetStateOne.targetValue != SheetValue.Expanded
+                        && sheetStateTwo.targetValue != SheetValue.Expanded
+            ) {
                 viewModel.query = ""
             }
             Column {

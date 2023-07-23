@@ -315,12 +315,20 @@ fun MediaNextAiringSection(nextAiringEpisode: MediaPreview.NextAiringEpisode) {
     }
 
     Text(
-        text = stringResource(
-            R.string.anime_media_next_airing_episode,
-            nextAiringEpisode.episode,
-            airingAt,
-            remainingTime,
-        ),
+        text = if (airingAt.contains(remainingTime)) {
+            stringResource(
+                R.string.anime_media_next_airing_episode,
+                nextAiringEpisode.episode,
+                airingAt,
+            )
+        } else {
+            stringResource(
+                R.string.anime_media_next_airing_episode_with_relative,
+                nextAiringEpisode.episode,
+                airingAt,
+                remainingTime,
+            )
+        },
         style = MaterialTheme.typography.labelSmall,
         color = MaterialTheme.typography.labelSmall.color
             .takeOrElse { LocalContentColor.current }

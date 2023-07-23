@@ -2,6 +2,7 @@
 
 package com.thekeeperofpie.artistalleydatabase.anime.activity
 
+import android.text.format.DateUtils
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -10,11 +11,20 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.NotificationsActive
+import androidx.compose.material.icons.filled.NotificationsNone
+import androidx.compose.material.icons.filled.ThumbUp
+import androidx.compose.material.icons.outlined.ThumbUp
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
@@ -22,6 +32,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.anilist.UserSocialActivityQuery
+import com.anilist.fragment.ListActivityWithoutMedia
+import com.anilist.fragment.MediaCompactWithTags
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.material.placeholder
 import com.google.accompanist.placeholder.material.shimmer
@@ -30,6 +42,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaCompactListRow
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
+import java.time.Instant
+import java.time.ZoneOffset
 
 @Composable
 fun TextActivitySmallCard(
@@ -89,7 +103,61 @@ fun TextActivitySmallCard(
 @Composable
 fun ListActivitySmallCard(
     screenKey: String,
-    activity: UserSocialActivityQuery.Data.Page.ListActivityActivity?,
+    activity: ListActivityWithoutMedia?,
+    entry: ActivityStatusAware?,
+    onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
+    colorCalculationState: ColorCalculationState,
+    navigationCallback: AnimeNavigator.NavigationCallback,
+    modifier: Modifier = Modifier,
+) {
+    ListActivitySmallCard(
+        screenKey = screenKey,
+        activity = activity,
+        showMedia = false,
+        media = null,
+        liked = entry?.liked ?: false,
+        subscribed = entry?.subscribed ?: false,
+        onActivityStatusUpdate = onActivityStatusUpdate,
+        colorCalculationState = colorCalculationState,
+        navigationCallback = navigationCallback,
+        modifier = modifier,
+    )
+}
+
+@Composable
+fun ListActivitySmallCard(
+    screenKey: String,
+    activity: ListActivityWithoutMedia?,
+    media: MediaCompactWithTags?,
+    entry: ActivityStatusAware?,
+    onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
+    colorCalculationState: ColorCalculationState,
+    navigationCallback: AnimeNavigator.NavigationCallback,
+    modifier: Modifier = Modifier,
+) {
+    ListActivitySmallCard(
+        screenKey = screenKey,
+        activity = activity,
+        showMedia = true,
+        media = media,
+        liked = entry?.liked ?: false,
+        subscribed = entry?.subscribed ?: false,
+        onActivityStatusUpdate = onActivityStatusUpdate,
+        colorCalculationState = colorCalculationState,
+        navigationCallback = navigationCallback,
+        modifier = modifier,
+    )
+}
+
+@Composable
+private fun ListActivitySmallCard(
+    screenKey: String,
+    activity: ListActivityWithoutMedia?,
+    showMedia: Boolean,
+    media: MediaCompactWithTags?,
+    liked: Boolean,
+    subscribed: Boolean,
+    onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
     colorCalculationState: ColorCalculationState,
     navigationCallback: AnimeNavigator.NavigationCallback,
     modifier: Modifier = Modifier,
@@ -101,8 +169,8 @@ fun ListActivitySmallCard(
         modifier = modifier
     ) {
         Row(
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier.padding(start = 8.dp, top = 8.dp, bottom = 8.dp)
         ) {
             val image = activity?.user?.avatar?.large
             if (activity == null || image != null) {
@@ -121,7 +189,7 @@ fun ListActivitySmallCard(
                 )
             }
 
-            Column {
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = activity?.user?.name ?: "USERNAME",
                     style = MaterialTheme.typography.bodyLarge,
@@ -137,12 +205,30 @@ fun ListActivitySmallCard(
                 val progress =
                     if (activity?.status == "plans to watch") null else activity?.progress
                 val status = listOfNotNull(activity?.status, progress).joinToString(separator = " ")
-                if (activity == null || status.isNotBlank()) {
+                val timestamp = remember(activity) {
+                    activity?.let {
+                        DateUtils.getRelativeTimeSpanString(
+                            it.createdAt * 1000L,
+                            Instant.now().atOffset(ZoneOffset.UTC).toEpochSecond() * 1000,
+                            0,
+                            DateUtils.FORMAT_ABBREV_ALL,
+                        )
+                    }
+                }
+                val summaryText = if (status.isNotBlank()) {
+                    stringResource(
+                        R.string.anime_activity_status_with_timestamp,
+                        status,
+                        timestamp.toString()
+                    )
+                } else {
+                    timestamp
+                }
+                if (activity == null || summaryText != null) {
                     Text(
-                        text = status.ifBlank { "Placeholder text" },
-                        style = MaterialTheme.typography.bodySmall,
+                        text = summaryText.toString(),
+                        style = MaterialTheme.typography.labelSmall,
                         modifier = Modifier
-                            .conditionally(activity == null) { fillMaxWidth() }
                             .placeholder(
                                 visible = activity == null,
                                 highlight = PlaceholderHighlight.shimmer(),
@@ -150,26 +236,80 @@ fun ListActivitySmallCard(
                     )
                 }
             }
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(end = 4.dp)
+            ) {
+                IconButton(
+                    onClick = {
+                        if (activity != null) {
+                            onActivityStatusUpdate(
+                                ActivityToggleUpdate.Liked(
+                                    id = activity.id.toString(),
+                                    liked = !liked,
+                                    subscribed = subscribed,
+                                )
+                            )
+                        }
+                    }, modifier = Modifier.size(36.dp)
+                ) {
+                    Icon(
+                        imageVector = if (liked) Icons.Filled.ThumbUp else Icons.Outlined.ThumbUp,
+                        contentDescription = stringResource(
+                            R.string.anime_activity_like_icon_content_description
+                        ),
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+                IconButton(
+                    onClick = {
+                        if (activity != null) {
+                            onActivityStatusUpdate(
+                                ActivityToggleUpdate.Subscribe(
+                                    id = activity.id.toString(),
+                                    liked = liked,
+                                    subscribed = !subscribed,
+                                )
+                            )
+                        }
+                    }, modifier = Modifier.size(36.dp)
+                ) {
+                    Icon(
+                        imageVector = if (subscribed) {
+                            Icons.Filled.NotificationsActive
+                        } else {
+                            Icons.Filled.NotificationsNone
+                        },
+                        contentDescription = stringResource(
+                            R.string.anime_activity_like_icon_content_description
+                        ),
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
         }
 
-        AnimeMediaCompactListRow(
-            screenKey = screenKey,
-            entry = activity?.media?.let {
-                // TODO: Ignored
-                AnimeMediaCompactListRow.Entry(it, false)
-            },
-            onLongClick = {
-                // TODO: Ignored
-            },
-            onTagLongClick = {
-                // TODO: Tag long click
-            },
-            onLongPressImage = {
-                // TODO: Image long click
-            },
-            colorCalculationState = colorCalculationState,
-            navigationCallback = navigationCallback,
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
-        )
+        if (showMedia) {
+            AnimeMediaCompactListRow(
+                screenKey = screenKey,
+                entry = media?.let {
+                    // TODO: Ignored
+                    AnimeMediaCompactListRow.Entry(it, false)
+                },
+                onLongClick = {
+                    // TODO: Ignored
+                },
+                onTagLongClick = {
+                    // TODO: Tag long click
+                },
+                onLongPressImage = {
+                    // TODO: Image long click
+                },
+                colorCalculationState = colorCalculationState,
+                navigationCallback = navigationCallback,
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
+            )
+        }
     }
 }

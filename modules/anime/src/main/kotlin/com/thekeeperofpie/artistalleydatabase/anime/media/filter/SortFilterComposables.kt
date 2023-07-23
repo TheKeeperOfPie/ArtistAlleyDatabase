@@ -76,6 +76,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.CustomOutlinedTextField
 import com.thekeeperofpie.artistalleydatabase.compose.FilterChip
 import com.thekeeperofpie.artistalleydatabase.compose.ItemDropdown
 import com.thekeeperofpie.artistalleydatabase.compose.MinWidthTextField
+import com.thekeeperofpie.artistalleydatabase.compose.SheetState
 import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.filter.CustomFilterSection
 import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
@@ -113,20 +114,18 @@ fun SortFilterBottomScaffoldNoAppBarOffset(
     sortFilterController: SortFilterController?,
     modifier: Modifier = Modifier,
     topBar: @Composable (() -> Unit)? = null,
+    sheetState: SheetState = rememberStandardBottomSheetState(
+        confirmValueChange = { it != SheetValue.Hidden },
+        skipHiddenState = true,
+    ),
     bottomNavigationState: BottomNavigationState? = null,
     content: @Composable (PaddingValues) -> Unit,
 ) {
-    val scaffoldState = rememberBottomSheetScaffoldState(
-        rememberStandardBottomSheetState(
-            confirmValueChange = { it != SheetValue.Hidden },
-            skipHiddenState = true,
-        )
-    )
+    val scaffoldState = rememberBottomSheetScaffoldState(sheetState)
 
     val scope = rememberCoroutineScope()
     val bottomSheetState = scaffoldState.bottomSheetState
-    BackHandler(enabled = bottomSheetState.currentValue == SheetValue.Expanded
-            && !WindowInsets.isImeVisible) {
+    BackHandler(bottomSheetState.targetValue == SheetValue.Expanded && !WindowInsets.isImeVisible) {
         scope.launch { bottomSheetState.partialExpand() }
     }
 
@@ -184,7 +183,7 @@ fun SortFilterBottomScaffold(
 
     val scope = rememberCoroutineScope()
     val bottomSheetState = scaffoldState.bottomSheetState
-    BackHandler(enabled = bottomSheetState.currentValue == SheetValue.Expanded) {
+    BackHandler(enabled = bottomSheetState.targetValue == SheetValue.Expanded) {
         scope.launch { bottomSheetState.partialExpand() }
     }
 

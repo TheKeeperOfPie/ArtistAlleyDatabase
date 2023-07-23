@@ -94,6 +94,8 @@ import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityToggleUpdate
+import com.thekeeperofpie.artistalleydatabase.anime.activity.AnimeActivityViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ListActivitySmallCard
 import com.thekeeperofpie.artistalleydatabase.anime.activity.TextActivitySmallCard
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaLargeCard
@@ -226,6 +228,7 @@ object AnimeHomeScreen {
 
                     activityRow(
                         data = activity,
+                        onActivityStatusUpdate = viewModel.activityToggleHelper::toggle,
                         colorCalculationState = colorCalculationState,
                         navigationCallback = navigationCallback,
                     )
@@ -322,7 +325,8 @@ object AnimeHomeScreen {
     }
 
     private fun LazyListScope.activityRow(
-        data: LazyPagingItems<UserSocialActivityQuery.Data.Page.Activity>,
+        data: LazyPagingItems<AnimeActivityViewModel.ActivityEntry>,
+        onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
         colorCalculationState: ColorCalculationState,
         navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
@@ -343,7 +347,8 @@ object AnimeHomeScreen {
                 pageSize = PageSize.Fixed(targetWidth),
                 verticalAlignment = Alignment.Top,
             ) {
-                when (val activity = data[it]) {
+                val entry = data[it]
+                when (val activity = entry?.activity) {
                     is UserSocialActivityQuery.Data.Page.TextActivityActivity ->
                         TextActivitySmallCard(
                             activity = activity,
@@ -353,6 +358,9 @@ object AnimeHomeScreen {
                         ListActivitySmallCard(
                             screenKey = SCREEN_KEY,
                             activity = activity,
+                            media = activity.media,
+                            entry = entry,
+                            onActivityStatusUpdate = onActivityStatusUpdate,
                             colorCalculationState = colorCalculationState,
                             navigationCallback = navigationCallback,
                             modifier = Modifier.fillMaxWidth()

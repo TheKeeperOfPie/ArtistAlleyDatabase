@@ -31,7 +31,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
-import com.anilist.UserSocialActivityQuery.Data.Page.Activity
+import androidx.paging.compose.itemContentType
+import androidx.paging.compose.itemKey
 import com.anilist.UserSocialActivityQuery.Data.Page.ListActivityActivity
 import com.anilist.UserSocialActivityQuery.Data.Page.MessageActivityActivity
 import com.anilist.UserSocialActivityQuery.Data.Page.OtherActivity
@@ -129,6 +130,7 @@ object AnimeActivityScreen {
                 ActivityList(
                     activities = activities,
                     topBarPadding = topBarPadding,
+                    onActivityStatusUpdate = viewModel.activityToggleHelper::toggle,
                     colorCalculationState = colorCalculationState,
                     navigationCallback = navigationCallback,
                 )
@@ -138,8 +140,9 @@ object AnimeActivityScreen {
 
     @Composable
     private fun ActivityList(
-        activities: LazyPagingItems<Activity>,
+        activities: LazyPagingItems<AnimeActivityViewModel.ActivityEntry>,
         topBarPadding: Dp,
+        onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
         colorCalculationState: ColorCalculationState,
         navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
@@ -164,31 +167,11 @@ object AnimeActivityScreen {
                     ) {
                         items(
                             count = activities.itemCount,
-                            key = { index ->
-                                val item = activities.peek(index)
-                                if (item == null) {
-                                    "placeholder_$index"
-                                } else {
-                                    when (item) {
-                                        is ListActivityActivity -> item.id
-                                        is MessageActivityActivity -> item.id
-                                        is TextActivityActivity -> item.id
-                                        is OtherActivity -> "other_$index"
-                                    }
-                                }
-                            },
-                            contentType = {
-                                when (activities[it]) {
-                                    is ListActivityActivity -> "list"
-                                    is MessageActivityActivity -> "message"
-                                    is TextActivityActivity -> "text"
-                                    is OtherActivity,
-                                    null,
-                                    -> null
-                                }
-                            }
+                            key = activities.itemKey { it.activityId.scopedId },
+                            contentType = activities.itemContentType { it.activityId.type }
                         ) {
-                            when (val activity = activities[it]) {
+                            val entry = activities[it]
+                            when (val activity = entry?.activity) {
                                 is TextActivityActivity -> TextActivitySmallCard(
                                     activity = activity,
                                     modifier = Modifier.fillMaxWidth()
@@ -196,6 +179,9 @@ object AnimeActivityScreen {
                                 is ListActivityActivity -> ListActivitySmallCard(
                                     screenKey = AnimeNavDestinations.ACTIVITY.id,
                                     activity = activity,
+                                    media = activity.media,
+                                    entry = entry,
+                                    onActivityStatusUpdate = onActivityStatusUpdate,
                                     colorCalculationState = colorCalculationState,
                                     navigationCallback = navigationCallback,
                                     modifier = Modifier.fillMaxWidth()

@@ -1,7 +1,11 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media.edit
 
+import android.util.Log
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -26,7 +30,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.rememberBottomSheetScaffol
 import com.thekeeperofpie.artistalleydatabase.compose.rememberStandardBottomSheetState
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 object MediaEditBottomSheetScaffold {
 
     @Composable
@@ -69,7 +73,8 @@ object MediaEditBottomSheetScaffold {
         }
 
         val scope = rememberCoroutineScope()
-        BackHandler(enabled = sheetState.currentValue != SheetValue.Hidden) {
+        BackHandler(enabled = sheetState.targetValue == SheetValue.Expanded
+                && !WindowInsets.isImeVisible) {
             if (viewModel.onEditSheetValueChange(SheetValue.Hidden)) {
                 scope.launch { sheetState.hide() }
                     .invokeOnCompletion { viewModel.hide() }
@@ -162,7 +167,8 @@ object MediaEditBottomSheetScaffold {
         }
 
         val scope = rememberCoroutineScope()
-        BackHandler(enabled = sheetState.currentValue != SheetValue.Hidden) {
+        BackHandler(enabled = sheetState.targetValue == SheetValue.Expanded
+                && !WindowInsets.isImeVisible) {
             if (viewModel.onEditSheetValueChange(SheetValue.Hidden)) {
                 scope.launch { sheetState.hide() }
                     .invokeOnCompletion { viewModel.hide() }

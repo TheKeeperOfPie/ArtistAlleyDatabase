@@ -147,7 +147,8 @@
     <string name="anime_media_tag_is_spoiler">Spoiler warning</string>
     <string name="anime_media_tag_spoiler">Spoiler</string>
 
-    <string name="anime_media_next_airing_episode">Ep. %1$s: %2$s (%3$s)</string>
+    <string name="anime_media_next_airing_episode">Ep. %1$s: %2$s</string>
+    <string name="anime_media_next_airing_episode_with_relative">Ep. %1$s: %2$s (%3$s)</string>
     <string name="anime_media_rating_icon_content_description">Rating</string>
     <string name="anime_media_rating_population_icon_content_description">Users</string>
 
@@ -338,6 +339,8 @@
     <string name="anime_media_details_fab_user_status_repeating_icon_content_description">Repeating icon</string>
     <string name="anime_media_details_fab_user_status_edit_icon_content_description">Edit entry icon</string>
 
+    <string name="anime_media_details_activities_label">Activity</string>
+
     <string name="anime_media_details_reviews_label">Reviews</string>
     <string name="anime_media_details_reviews_user_avatar_content_description">Review author avatar</string>
     <string name="anime_media_details_reviews_rating_upvote_content_description">Review rating upvotes</string>
@@ -463,6 +466,9 @@
     <string name="anime_media_ignore_title_manga">Ignored manga</string>
     <string name="anime_media_ignore_search_anime">Search anime…</string>
     <string name="anime_media_ignore_search_manga">Search manga…</string>
+
+    <string name="anime_media_activities_header">Activity</string>
+    <string name="anime_media_activities_error_loading">Error loading activity</string>
 
     <string name="anime_character_filter_sort_label">Sort</string>
 
@@ -617,6 +623,12 @@
     <string name="anime_activity_tab_global">Global</string>
     <string name="anime_activity_title">Activity</string>
     <string name="anime_activity_global_title">Global activity</string>
+    <string name="anime_activity_sort_newest">Newest</string>
+    <string name="anime_activity_sort_oldest">Oldest</string>
+    <string name="anime_activity_sort_pinned">Pinned</string>
+    <string name="anime_activity_like_icon_content_description">Activity liked</string>
+    <string name="anime_activity_subscribe_icon_content_description">Activity subscribed</string>
+    <string name="anime_activity_status_with_timestamp">%1$s • %2$s</string>
 
     <string name="anime_reviews_sort_id">Last added</string>
     <string name="anime_reviews_sort_score">Score</string>

@@ -430,4 +430,32 @@ class AuthedAniListApiWrapper(
     ) = super.studioMediasPage(studioId, sort, page, mediasPerPage).let {
         it.copy(studio = it.studio.copy(media = it.studio.media?.copy(nodes = it.studio.media.nodes?.filter { it?.isAdult == false })))
     }
+
+    override suspend fun toggleAnimeFavorite(id: String) = super.toggleAnimeFavorite(id)
+
+    override suspend fun toggleMangaFavorite(id: String) = super.toggleMangaFavorite(id)
+
+    override suspend fun toggleCharacterFavorite(id: String) = super.toggleCharacterFavorite(id)
+
+    override suspend fun toggleStaffFavorite(id: String) = super.toggleStaffFavorite(id)
+
+    override suspend fun toggleStudioFavorite(id: String) = super.toggleStudioFavorite(id)
+
+    override suspend fun mediaActivities(
+        id: String,
+        sort: List<ActivitySort>,
+        activitiesPerPage: Int,
+    ) = super.mediaActivities(id, sort, activitiesPerPage)
+
+    override suspend fun mediaActivitiesPage(
+        id: String,
+        sort: List<ActivitySort>,
+        page: Int,
+        activitiesPerPage: Int,
+    ) = super.mediaActivitiesPage(id, sort, page, activitiesPerPage)
+
+    override suspend fun toggleActivityLike(id: String) = super.toggleActivityLike(id)
+
+    override suspend fun toggleActivitySubscribe(id: String, subscribe: Boolean) =
+        super.toggleActivitySubscribe(id, subscribe)
 }

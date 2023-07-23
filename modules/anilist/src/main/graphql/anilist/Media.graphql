@@ -17,10 +17,18 @@ fragment AniListMedia on Media {
     synonyms
 }
 
-fragment MediaPreview on Media {
+fragment MediaWithListStatus on Media {
     ...MediaNavigationData
+    mediaListEntry {
+        status
+        progressVolumes
+        progress
+    }
+}
+
+fragment MediaPreview on Media {
     ...MediaHeaderData
-    id
+    ...MediaWithListStatus
     bannerImage
     coverImage {
         color
@@ -40,14 +48,6 @@ fragment MediaPreview on Media {
     chapters
     format
     genres
-    mediaListEntry {
-        status
-        progress
-        progressVolumes
-    }
-
-    # TODO: Type can probably be inferred by other means
-    type
     season
     seasonYear
     source
@@ -471,17 +471,14 @@ query AiringSchedule(
 
 fragment MediaHeaderData on Media {
     ...MediaNavigationData
-    id
     bannerImage
     coverImage {
         color
-        extraLarge
     }
     title {
         romaji
         english
         native
-        userPreferred
     }
     format
     status
@@ -494,7 +491,6 @@ fragment MediaHeaderData on Media {
         airingAt
     }
     isFavourite
-    type
 }
 
 fragment MediaAndReviewsReview on Review {
@@ -607,6 +603,39 @@ query MediaListEntry($id: Int!) {
         }
         mediaListEntry {
             ...MediaDetailsListEntry
+        }
+    }
+}
+
+
+fragment MediaListActivityItem on ActivityUnion {
+    ... on ListActivity {
+        ...ListActivityWithoutMedia
+    }
+}
+
+query MediaActivity($mediaId: Int!, $sort: [ActivitySort]!, $activitiesPerPage: Int!) {
+    Media(id: $mediaId) @nonnull {
+        ...MediaHeaderData
+    }
+
+    Page(page: 1, perPage: $activitiesPerPage) @nonnull {
+        pageInfo @nonnull {
+            ...PaginationInfo
+        }
+        activities(mediaId: $mediaId, sort: $sort) @nonnull {
+            ...MediaListActivityItem
+        }
+    }
+}
+
+query MediaActivityPage($mediaId: Int!, $sort: [ActivitySort]!, $page: Int!, $activitiesPerPage: Int!) {
+    Page(page: $page, perPage: $activitiesPerPage) @nonnull {
+        pageInfo @nonnull {
+            ...PaginationInfo
+        }
+        activities(mediaId: $mediaId, sort: $sort) @nonnull {
+            ...MediaListActivityItem
         }
     }
 }

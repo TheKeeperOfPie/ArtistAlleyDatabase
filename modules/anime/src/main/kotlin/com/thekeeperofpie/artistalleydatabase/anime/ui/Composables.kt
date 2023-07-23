@@ -253,7 +253,7 @@ fun StartEndDateDialog(
 
 fun <T> LazyListScope.listSection(
     @StringRes titleRes: Int,
-    values: Collection<T>,
+    values: Collection<T>?,
     valueToId: (T) -> String?,
     aboveFold: Int,
     hasMoreValues: Boolean = false,
@@ -265,8 +265,7 @@ fun <T> LazyListScope.listSection(
     @StringRes viewAllContentDescriptionTextRes: Int? = null,
     itemContent: @Composable LazyListScope.(T, paddingBottom: Dp, modifier: Modifier) -> Unit,
 ) {
-    if (values.isEmpty()) return
-    val hasMore = values.size > aboveFold
+    if (values != null && values.isEmpty()) return
     item("$titleRes-header") {
         DetailsSectionHeader(
             text = stringResource(titleRes),
@@ -278,6 +277,8 @@ fun <T> LazyListScope.listSection(
             viewAllContentDescriptionTextRes = viewAllContentDescriptionTextRes
         )
     }
+    if (values == null) return
+    val hasMore = values.size > aboveFold
 
     if (hidden()) {
         item("$titleRes-hidden") {

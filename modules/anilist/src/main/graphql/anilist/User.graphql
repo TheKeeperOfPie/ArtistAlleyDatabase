@@ -263,11 +263,34 @@ query UserSocialFollowers($userId: Int!, $perPage: Int!, $page: Int!) {
     }
 }
 
+fragment ListActivityWithoutMedia on ListActivity {
+    createdAt
+    id
+    isLiked
+    isSubscribed
+    likeCount
+    progress
+    replyCount
+    replies {
+        id
+        text
+        user {
+            ...UserNavigationData
+        }
+    }
+    status
+    type
+    user {
+        ...UserNavigationData
+    }
+}
+
 fragment ActivityItem on ActivityUnion {
     ... on TextActivity {
         id
         isLiked
         likeCount
+        isSubscribed
         replies {
             id
             likeCount
@@ -284,26 +307,10 @@ fragment ActivityItem on ActivityUnion {
         text
     }
     ... on ListActivity {
-        createdAt
-        id
-        isLiked
-        likeCount
+        ...ListActivityWithoutMedia
         media {
             ...MediaCompactWithTags
-        }
-        progress
-        replyCount
-        replies {
-            id
-            text
-            user {
-                ...UserNavigationData
-            }
-        }
-        status
-        type
-        user {
-            ...UserNavigationData
+            ...MediaWithListStatus
         }
     }
     ... on MessageActivity {
@@ -311,6 +318,7 @@ fragment ActivityItem on ActivityUnion {
         id
         isLiked
         likeCount
+        isSubscribed
         replies {
             user {
                 ...UserNavigationData

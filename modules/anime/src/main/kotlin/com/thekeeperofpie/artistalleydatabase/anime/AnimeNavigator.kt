@@ -40,6 +40,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.list.AnimeUserListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.list.AnimeUserListViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderValues
+import com.thekeeperofpie.artistalleydatabase.anime.media.activity.MediaActivitiesScreen
+import com.thekeeperofpie.artistalleydatabase.anime.media.activity.MediaActivitiesViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortOption
@@ -562,6 +564,34 @@ object AnimeNavigator {
         }
 
         navGraphBuilder.composable(
+            route = AnimeNavDestinations.MEDIA_ACTIVITIES.id
+                    + "?mediaId={mediaId}${MediaHeaderValues.routeSuffix}",
+            arguments = listOf(
+                navArgument("mediaId") {
+                    type = NavType.StringType
+                    nullable = false
+                }
+            ) + MediaHeaderValues.navArguments()
+        ) {
+            val arguments = it.arguments!!
+            val mediaId = arguments.getString("mediaId")!!
+
+            val viewModel = hiltViewModel<MediaActivitiesViewModel>().apply { initialize(mediaId) }
+            val headerValues = MediaHeaderValues(
+                arguments = arguments,
+                media = { viewModel.entry?.data?.media },
+                favoriteUpdate = { viewModel.favoritesToggleHelper.favorite },
+            )
+
+            MediaActivitiesScreen(
+                viewModel = viewModel,
+                upIconOption = UpIconOption.Back(navHostController),
+                headerValues = headerValues,
+                navigationCallback = navigationCallback,
+            )
+        }
+
+        navGraphBuilder.composable(
             route = AnimeNavDestinations.REVIEW_DETAILS.id + "?reviewId={reviewId}",
             deepLinks = listOf(
                 navDeepLink { uriPattern = "${AniListUtils.ANILIST_BASE_URL}/review/{reviewId}" },
@@ -699,6 +729,17 @@ object AnimeNavigator {
         imageWidthToHeightRatio: Float,
     ) = navHostController.navigate(
         AnimeNavDestinations.MEDIA_RECOMMENDATIONS.id +
+                "?mediaId=${entry.mediaId}" +
+                MediaHeaderValues.routeSuffix(entry.media, favorite, imageWidthToHeightRatio)
+    )
+
+    fun onMediaActivitiesClick(
+        navHostController: NavHostController,
+        entry: AnimeMediaDetailsScreen.Entry,
+        favorite: Boolean?,
+        imageWidthToHeightRatio: Float,
+    ) = navHostController.navigate(
+        AnimeNavDestinations.MEDIA_ACTIVITIES.id +
                 "?mediaId=${entry.mediaId}" +
                 MediaHeaderValues.routeSuffix(entry.media, favorite, imageWidthToHeightRatio)
     )
@@ -967,6 +1008,16 @@ object AnimeNavigator {
         ) {
             navHostController?.let {
                 onMediaRecommendationsClick(it, media, favorite, imageWidthToHeightRatio)
+            }
+        }
+
+        fun onMediaActivitiesClick(
+            media: AnimeMediaDetailsScreen.Entry,
+            favorite: Boolean?,
+            imageWidthToHeightRatio: Float,
+        ) {
+            navHostController?.let {
+                onMediaActivitiesClick(it, media, favorite, imageWidthToHeightRatio)
             }
         }
 

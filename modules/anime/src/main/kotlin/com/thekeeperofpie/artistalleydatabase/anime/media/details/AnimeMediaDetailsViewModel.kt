@@ -12,7 +12,9 @@ import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.anilist.MediaActivityPageQuery
 import com.anilist.MediaDetailsQuery
+import com.anilist.type.ActivitySort
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
@@ -23,6 +25,9 @@ import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.AppMediaPlayer
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityStatusAware
+import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityStatusController
+import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityToggleHelper
 import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoritesController
 import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoritesToggleHelper
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
@@ -64,6 +69,7 @@ class AnimeMediaDetailsViewModel @Inject constructor(
     val ignoreList: AnimeMediaIgnoreList,
     val settings: AnimeSettings,
     favoritesController: FavoritesController,
+    private val activityStatusController: ActivityStatusController,
 ) : ViewModel(), DefaultLifecycleObserver {
 
     companion object {
@@ -79,11 +85,15 @@ class AnimeMediaDetailsViewModel @Inject constructor(
     val favoritesToggleHelper =
         FavoritesToggleHelper(aniListApi, favoritesController, viewModelScope)
 
+    val activityToggleHelper =
+        ActivityToggleHelper(aniListApi, activityStatusController, viewModelScope)
+
     val hasAuth = oAuthStore.hasAuth
 
     var loading by mutableStateOf(true)
     var entry by mutableStateOf<AnimeMediaDetailsScreen.Entry?>(null)
     var listStatus by mutableStateOf<MediaListStatusController.Update?>(null)
+    var activities by mutableStateOf<List<ActivityEntry>?>(null)
 
     var errorResource by mutableStateOf<Pair<Int, Exception?>?>(null)
     var animeSongs by mutableStateOf<AnimeSongs?>(null)
@@ -287,6 +297,37 @@ class AnimeMediaDetailsViewModel @Inject constructor(
                     }
                 }
         }
+
+        viewModelScope.launch(CustomDispatchers.Main) {
+            snapshotFlow { entry }
+                .filterNotNull()
+                .flowOn(CustomDispatchers.Main)
+                .mapLatest {
+                    aniListApi.mediaActivitiesPage(
+                        id = it.mediaId,
+                        page = 1,
+                        sort = listOf(ActivitySort.PINNED),
+                        activitiesPerPage = 10,
+                    )
+                        .page.activities
+                        .filterIsInstance<MediaActivityPageQuery.Data.Page.ListActivityActivity>()
+                }
+                .flatMapLatest { activities ->
+                    activityStatusController.allChanges(activities.map { it.id.toString() }.toSet())
+                        .mapLatest { updates ->
+                            activities.map {
+                                ActivityEntry(
+                                    it,
+                                    liked = updates[it.id.toString()]?.liked ?: it.isLiked ?: false,
+                                    subscribed = updates[it.id.toString()]?.subscribed
+                                        ?: it.isSubscribed ?: false,
+                                )
+                            }
+                        }
+                }
+                .flowOn(CustomDispatchers.IO)
+                .collectLatest { activities = it }
+        }
     }
 
     // TODO: Something better than exact string matching
@@ -450,4 +491,11 @@ class AnimeMediaDetailsViewModel @Inject constructor(
             this._expanded = expanded
         }
     }
+
+    data class ActivityEntry(
+        val activity: MediaActivityPageQuery.Data.Page.ListActivityActivity,
+        val activityId: String = activity.id.toString(),
+        override val liked: Boolean,
+        override val subscribed: Boolean,
+    ) : ActivityStatusAware
 }
