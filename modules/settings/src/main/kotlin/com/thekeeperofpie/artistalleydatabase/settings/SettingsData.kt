@@ -29,4 +29,6 @@ data class SettingsData(
     val crunchyrollNewsCategoriesExcluded: List<CrunchyrollNewsCategory> = emptyList(),
     val navDrawerStartDestination: String? = null,
     val hideStatusBar: Boolean = false,
+    val adsEnabled: Boolean = false,
+    val subscribed: Boolean = false,
 )

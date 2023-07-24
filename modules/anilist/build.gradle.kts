@@ -1,4 +1,4 @@
-import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
+
 import com.apollographql.apollo3.annotations.ApolloExperimental
 import com.apollographql.apollo3.compiler.hooks.ApolloCompilerKotlinHooks.FileInfo
 import com.apollographql.apollo3.compiler.hooks.DefaultApolloCompilerKotlinHooks
@@ -13,19 +13,15 @@ plugins {
     alias(libs.plugins.com.apollographql.apollo3.external)
     id("com.google.devtools.ksp")
     alias(libs.plugins.org.jetbrains.kotlin.plugin.serialization)
+    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
+}
+
+secrets {
+    propertiesFileName = "secrets.properties"
 }
 
 android {
     namespace = "com.thekeeperofpie.artistalleydatabase.anilist"
-
-    defaultConfig {
-        val localProperties = gradleLocalProperties(projectDir)
-        val aniListClientId = localProperties.getProperty("aniList.clientId")
-        val aniListClientSecret = localProperties.getProperty("aniList.clientSecret")
-
-        buildConfigField("String", "ANILIST_CLIENT_ID", "\"$aniListClientId\"")
-        buildConfigField("String", "ANILIST_CLIENT_SECRET", "\"$aniListClientSecret\"")
-    }
 }
 
 val aniListSchemaFile: File = project.file("src/main/graphql/anilist/schema.graphqls")

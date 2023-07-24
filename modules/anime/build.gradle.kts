@@ -15,6 +15,7 @@ dependencies {
     api(project(":modules:animethemes"))
     api(project(":modules:compose-utils"))
     api(project(":modules:cds"))
+    api(project(":modules:monetization"))
     implementation(project(":modules:network-utils"))
 
     implementation(libs.kotlinx.serialization.json)

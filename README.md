@@ -74,10 +74,9 @@ Instructions assume Windows 11 environment using the latest Android Studio Canar
    - SNAPSHOT version, so can't use stable version code for dependency verification.  
    ```https://s01.oss.sonatype.org/content/repositories/snapshots/com/mxalbert/sharedelements/shared-elements/0.1.0-SNAPSHOT/shared-elements-0.1.0-20221204.093513-11.aar```
 3. Generate an AniList API client by following the API instructions [here](https://anilist.gitbook.io/anilist-apiv2-docs/overview/oauth/getting-started#using-oauth)
-4. Create `/modules/anilist/local.properties` and insert the client ID/secret as properties:
+4. Create `/secrets.properties` and insert the client ID as a property:
     ```
     aniList.clientId=$CLIENT_ID
-    aniList.clientSecret=$CLIENT_SECRET
     ```
 5. Install like any other Android application via `./gradlew :app:installDebug`
 
@@ -103,6 +102,8 @@ build can be tested, where Gradle cannot reference anything it used previously.
 
 This must be done each time a dependency is added/changed. Disabling dependency verification can be
 done by deleting `./gradle/verification-metadata.xml`.
+
+[//]: # (TODO: Full clean build is starting to get annoying, need better way to regenerate metadata)
 
 `./gradlew --write-verification-metadata sha256 generateVerificationMetadata`
 

@@ -94,6 +94,7 @@ dependencyAnalysis {
                     ":modules:data",
                     ":modules:dependencies",
                     ":modules:entry",
+                    ":modules:monetization",
                     ":modules:musical-artists",
                     ":modules:network-utils",
                     ":modules:settings",

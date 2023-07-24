@@ -12,14 +12,10 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.CryptoUtils
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListDatabase
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListJson
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryDatabase
-import com.thekeeperofpie.artistalleydatabase.art.persistence.ArtSettings
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDatabase
-import com.thekeeperofpie.artistalleydatabase.entry.EntrySettings
 import com.thekeeperofpie.artistalleydatabase.json.AppMoshi
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistDatabase
-import com.thekeeperofpie.artistalleydatabase.network_utils.NetworkSettings
 import com.thekeeperofpie.artistalleydatabase.settings.SettingsProvider
 import com.thekeeperofpie.artistalleydatabase.utils.PendingIntentRequestCodes
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbDatabase
@@ -32,7 +28,7 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-class AppHiltModule {
+object AppHiltModule {
 
     @Singleton
     @Provides
@@ -124,22 +120,4 @@ class AppHiltModule {
     @Singleton
     @Provides
     fun provideVgmdbJson(appJson: AppJson) = VgmdbJson(appJson.json)
-
-    @Singleton
-    @Provides
-    fun provideArtSettings(settingsProvider: SettingsProvider) = settingsProvider as ArtSettings
-
-    @Singleton
-    @Provides
-    fun provideEntrySettings(settingsProvider: SettingsProvider) = settingsProvider as EntrySettings
-
-    @Singleton
-    @Provides
-    fun provideNetworkSettings(settingsProvider: SettingsProvider) =
-        settingsProvider as NetworkSettings
-
-    @Singleton
-    @Provides
-    fun provideAnimeSettings(settingsProvider: SettingsProvider) =
-        settingsProvider as AnimeSettings
 }

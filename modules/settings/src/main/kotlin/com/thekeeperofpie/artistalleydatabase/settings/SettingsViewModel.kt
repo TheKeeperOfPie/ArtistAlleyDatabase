@@ -10,6 +10,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaEntryDao
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListOAuthStore
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntry
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDao
+import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationController
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtist
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistDao
 import com.thekeeperofpie.artistalleydatabase.network_utils.NetworkSettings
@@ -19,7 +20,6 @@ import com.thekeeperofpie.artistalleydatabase.vgmdb.album.AlbumEntryDao
 import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.VgmdbArtistDao
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -36,23 +36,18 @@ class SettingsViewModel @Inject constructor(
     private val settingsProvider: SettingsProvider,
     private val vgmdbApi: VgmdbApi,
     private val aniListOAuthStore: AniListOAuthStore,
+    private val monetizationController: MonetizationController,
 ) : ViewModel() {
 
     companion object {
         private const val TAG = "SettingsViewModel"
     }
 
-    val networkLoggingLevel: StateFlow<NetworkSettings.NetworkLoggingLevel>
-        get() = settingsProvider.networkLoggingLevel
-
-    val hideStatusBar: StateFlow<Boolean>
-        get() = settingsProvider.hideStatusBar
-
-    val screenshotMode: StateFlow<Boolean>
-        get() = settingsProvider.screenshotMode
-
-    val unlockAllFeatures: StateFlow<Boolean>
-        get() = settingsProvider.unlockAllFeatures
+    val networkLoggingLevel = settingsProvider.networkLoggingLevel
+    val hideStatusBar = settingsProvider.hideStatusBar
+    val screenshotMode = settingsProvider.screenshotMode
+    val unlockAllFeatures = settingsProvider.unlockAllFeatures
+    val adsEnabled = monetizationController.adsEnabled
 
     private var onClickDatabaseFetch: (WorkManager) -> Unit = {}
 
@@ -174,6 +169,10 @@ class SettingsViewModel @Inject constructor(
 
     fun onUnlockAllFeaturesChanged(hide: Boolean) {
         settingsProvider.unlockAllFeatures.value = hide
+    }
+
+    fun onAdsEnabledChange(enabled: Boolean) {
+        monetizationController.adsEnabled.value = enabled
     }
 
     fun checkMismatchedCdEntryData() {

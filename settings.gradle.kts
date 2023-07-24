@@ -154,6 +154,7 @@ include(
     ":modules:data",
     ":modules:dependencies",
     ":modules:entry",
+    ":modules:monetization",
     ":modules:musical-artists",
     ":modules:network-utils",
     ":modules:settings",
@@ -170,7 +171,7 @@ data class Prefix(val prefix: String, val builder: VersionCatalogBuilder)
 fun VersionCatalogBuilder.library(
     gav: String,
     alias: String? = null,
-    prefix: String? = null
+    prefix: String? = null,
 ) {
     val realPrefix = if (prefix == null) "" else "$prefix."
     val artifact = gav.substringAfter(":").substringBefore(":")

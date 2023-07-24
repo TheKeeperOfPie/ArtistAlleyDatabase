@@ -28,6 +28,7 @@
     <string name="anime_screen_manga">Manga</string>
     <string name="anime_screen_search">Search</string>
     <string name="anime_screen_profile">Profile</string>
+    <string name="anime_screen_unlock">Unlock</string>
     <string name="anime_description_spoiler">[Spoiler]</string>
 
     <string name="anime_media_sort_default">Default</string>

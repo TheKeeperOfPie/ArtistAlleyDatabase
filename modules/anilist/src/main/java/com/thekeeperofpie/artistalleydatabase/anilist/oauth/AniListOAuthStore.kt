@@ -46,7 +46,7 @@ class AniListOAuthStore(
         }
 
         const val ANILIST_OAUTH_URL = "https://anilist.co/api/v2/oauth/authorize" +
-                "?client_id=${BuildConfig.ANILIST_CLIENT_ID}" +
+                "?client_id=${BuildConfig.aniListclientId}" +
                 "&response_type=token"
     }
 

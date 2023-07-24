@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="monetization_feature_tiers_header">Anichive has 3 feature tiers</string>
+    <string name="monetization_feature_tier_free_header">Free</string>
+    <string name="monetization_feature_tier_free_body">
+        - Fully featured anime/manga search
+        \n- Detailed view of anime, manga, characters, staff, studios, users, etc.
+        \n- News RSS feeds from AnimeNewsNetwork and Crunchyroll News
+        \n- Global user activity
+    </string>
+    <string name="monetization_feature_tier_ads_header">Ad supported</string>
+    <string name="monetization_feature_tier_ads_body">
+        - AniList account log in
+        \n- Edit, rate, favorite anime/manga/etc.
+        \n- Search more types like characters, staff, studios, users
+        \n- Watching/reading and user lists
+    </string>
+    <string name="monetization_enable_ads_button">Enable ads</string>
+    <string name="monetization_enable_ads_button_completed">Thanks, you\'ve enabled ads!</string>
+    <string name="monetization_feature_tier_subscription_header">Subscription</string>
+    <string name="monetization_feature_tier_subscription_body">
+        - Completely remove ads
+        \n- Unlocks experimental database features:
+        \n\t- Track art prints, CDs, or merch in general from anime conventions
+        \n\t- Import/export
+        \n\t- Integration with AniList API to tag art/CDs with characters and staff
+        \n\t- Tag and search with artist, convention source, sizing, characters, media, etc.
+    </string>
+    <string name="monetization_subscribe_button">Subscribe</string>
+    <string name="monetization_subscribe_button_completed">Thanks, you\'re subscribed!</string>
+</resources>

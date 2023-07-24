@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.LibraryBooks
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.VideoLibrary
@@ -17,6 +18,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.Saver
@@ -40,13 +42,14 @@ import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.navigationBarEnterAlwaysScrollBehavior
+import com.thekeeperofpie.artistalleydatabase.monetization.UnlockScreen
 
 object AnimeRootScreen {
 
     @Composable
     operator fun invoke(
         upIconOption: UpIconOption?,
-        needAuth: @Composable () -> Boolean,
+        viewModel: AnimeRootViewModel,
         onClickAuth: () -> Unit,
         onSubmitAuthToken: (String) -> Unit,
         navigationCallback: AnimeNavigator.NavigationCallback,
@@ -64,6 +67,7 @@ object AnimeRootScreen {
 
         val scrollBehavior = navigationBarEnterAlwaysScrollBehavior()
         val bottomNavigationState = BottomNavigationState(scrollBehavior)
+        val needsAuth by viewModel.needsAuth.collectAsState(true)
 
         @Suppress("UnusedMaterial3ScaffoldPaddingParameter")
         Scaffold(
@@ -75,12 +79,15 @@ object AnimeRootScreen {
                 )
             },
             bottomBar = {
-                val needsAuth = needAuth()
+                val unlocked by viewModel.unlocked.collectAsState(initial = false)
                 EnterAlwaysNavigationBar(
                     scrollBehavior = scrollBehavior,
                     modifier = Modifier.height(56.dp)
                 ) {
-                    NavDestinations.values().filter { !it.needsAuth || !needsAuth }
+                    NavDestinations.values()
+                        .filter { !it.requiresAuth || !needsAuth }
+                        .filter { !it.requiresUnlock || unlocked }
+                        .filter { it != NavDestinations.UNLOCK || !unlocked }
                         .forEach { destination ->
                             NavigationBarItem(
                                 icon = { Icon(destination.icon, contentDescription = null) },
@@ -170,11 +177,14 @@ object AnimeRootScreen {
                         }
                         NavDestinations.PROFILE -> AniListViewerProfileScreen(
                             upIconOption = upIconOption,
-                            needAuth = needAuth,
+                            needsAuth = { needsAuth },
                             onClickAuth = onClickAuth,
                             onSubmitAuthToken = onSubmitAuthToken,
                             onClickSettings = onClickSettings,
                             navigationCallback = navigationCallback,
+                            bottomNavigationState = bottomNavigationState,
+                        )
+                        NavDestinations.UNLOCK -> UnlockScreen(
                             bottomNavigationState = bottomNavigationState,
                         )
                     }
@@ -187,7 +197,8 @@ object AnimeRootScreen {
         val id: String,
         val icon: ImageVector,
         @StringRes val textRes: Int,
-        val needsAuth: Boolean = false,
+        val requiresAuth: Boolean = false,
+        val requiresUnlock: Boolean = false,
     ) {
         HOME(
             "home",
@@ -198,15 +209,23 @@ object AnimeRootScreen {
             "anime_list",
             Icons.Filled.VideoLibrary,
             R.string.anime_screen_anime,
-            needsAuth = true,
+            requiresAuth = true,
+            requiresUnlock = true,
         ),
         MANGA(
             "manga_list",
             Icons.Filled.LibraryBooks,
             R.string.anime_screen_manga,
-            needsAuth = true,
+            requiresAuth = true,
+            requiresUnlock = true,
         ),
         SEARCH("anime_search", Icons.Filled.Search, R.string.anime_screen_search),
-        PROFILE("anime_profile", Icons.Filled.Person, R.string.anime_screen_profile),
+        PROFILE(
+            id = "anime_profile",
+            icon = Icons.Filled.Person,
+            textRes = R.string.anime_screen_profile,
+            requiresUnlock = true,
+        ),
+        UNLOCK("anime_unlock", Icons.Filled.Lock, R.string.anime_screen_unlock),
     }
 }

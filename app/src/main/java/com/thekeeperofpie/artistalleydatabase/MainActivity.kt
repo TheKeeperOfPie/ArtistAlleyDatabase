@@ -18,11 +18,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
@@ -41,7 +41,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.intl.Locale
@@ -72,12 +72,12 @@ import com.thekeeperofpie.artistalleydatabase.browse.BrowseScreen
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseViewModel
 import com.thekeeperofpie.artistalleydatabase.cds.CdEntryNavigator
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
-import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils.navToEntryDetails
 import com.thekeeperofpie.artistalleydatabase.export.ExportScreen
 import com.thekeeperofpie.artistalleydatabase.export.ExportViewModel
 import com.thekeeperofpie.artistalleydatabase.importing.ImportScreen
 import com.thekeeperofpie.artistalleydatabase.importing.ImportViewModel
+import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationController
 import com.thekeeperofpie.artistalleydatabase.navigation.NavDrawerItems
 import com.thekeeperofpie.artistalleydatabase.search.advanced.AdvancedSearchScreen
 import com.thekeeperofpie.artistalleydatabase.search.advanced.AdvancedSearchViewModel
@@ -113,6 +113,12 @@ class MainActivity : ComponentActivity() {
 
     @Inject
     lateinit var aniListOAuthStore: AniListOAuthStore
+
+    @Inject
+    lateinit var monetizationController: MonetizationController
+
+    @Suppress("KotlinConstantConditions")
+    private val isReleaseBuild = BuildConfig.BUILD_TYPE == "release"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -245,7 +251,24 @@ class MainActivity : ComponentActivity() {
     ) {
         val navDrawerUpIconOption = UpIconOption.NavDrawer(onClickNav).takeIf { unlockAllFeatures }
         Column(modifier = Modifier.fillMaxSize()) {
-            val uriHandler = LocalUriHandler.current
+            val adsEnabled by monetizationController.adsEnabled.collectAsState(false)
+            if (adsEnabled) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.fillMaxWidth()
+                        .height(104.dp)
+                        .background(Color.Black)
+                        .padding(vertical = 16.dp)
+                        .background(MaterialTheme.colorScheme.primaryContainer)
+                ) {
+                    Text(
+                        text = "INSERT AD HERE",
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    )
+                }
+            }
+
             val navigationCallback =
                 AnimeNavigator.NavigationCallback(
                     navHostController,
@@ -498,8 +521,7 @@ class MainActivity : ComponentActivity() {
                 )
             }
 
-            @Suppress("KotlinConstantConditions")
-            if (BuildConfig.BUILD_TYPE != "release") {
+            if (!isReleaseBuild) {
                 Box(
                     modifier = Modifier
                         .background(colorResource(R.color.launcher_background))

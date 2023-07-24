@@ -25,6 +25,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.news.CrunchyrollNewsCategory
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntry
 import com.thekeeperofpie.artistalleydatabase.art.persistence.ArtSettings
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySettings
+import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationSettings
 import com.thekeeperofpie.artistalleydatabase.network_utils.NetworkSettings
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -45,7 +46,7 @@ class SettingsProvider(
     private val appJson: AppJson,
     sharedPreferencesFileName: String = PREFERENCES_NAME,
     private val crashNotificationContentIntent: PendingIntent?,
-) : ArtSettings, EntrySettings, NetworkSettings, AnimeSettings {
+) : ArtSettings, EntrySettings, NetworkSettings, AnimeSettings, MonetizationSettings {
 
     companion object {
         const val EXPORT_FILE_NAME = "settings.json"
@@ -120,6 +121,9 @@ class SettingsProvider(
     override val crunchyrollNewsCategoriesExcluded = MutableStateFlow(
         deserialize("crunchyrollNewsCategoriesExcluded") ?: emptyList<CrunchyrollNewsCategory>()
     )
+
+    override val adsEnabled = MutableStateFlow(deserialize("adsEnabled") ?: false)
+    override val subscribed = MutableStateFlow(deserialize("subscribed") ?: false)
 
     var searchQuery = MutableStateFlow<ArtEntry?>(deserialize("searchQuery"))
     var navDrawerStartDestination =
@@ -206,6 +210,8 @@ class SettingsProvider(
             crunchyrollNewsCategoriesExcluded = crunchyrollNewsCategoriesExcluded.value,
             navDrawerStartDestination = navDrawerStartDestination.value,
             hideStatusBar = hideStatusBar.value,
+            adsEnabled = adsEnabled.value,
+            subscribed = subscribed.value,
         )
 
     // Initialization separated into its own method so that tests can cancel the StateFlow job
@@ -224,6 +230,8 @@ class SettingsProvider(
         subscribeProperty(scope, ::screenshotMode)
         subscribeProperty(scope, ::unlockAllFeatures)
         subscribeProperty(scope, ::animeNewsNetworkRegion)
+        subscribeProperty(scope, ::adsEnabled)
+        subscribeProperty(scope, ::subscribed)
 
         scope.launch(CustomDispatchers.IO) {
             ignoredAniListMediaIds.drop(1).collectLatest {
@@ -277,7 +285,7 @@ class SettingsProvider(
 
     private inline fun <reified T> subscribeProperty(
         scope: CoroutineScope,
-        property: KProperty0<MutableStateFlow<T>>
+        property: KProperty0<MutableStateFlow<T>>,
     ) = scope.launch(CustomDispatchers.IO) {
         property.get().drop(1).collectLatest {
             serialize(property.name, it)
@@ -301,6 +309,8 @@ class SettingsProvider(
         crunchyrollNewsCategoriesExcluded.emit(data.crunchyrollNewsCategoriesExcluded)
         navDrawerStartDestination.emit(data.navDrawerStartDestination)
         hideStatusBar.emit(data.hideStatusBar)
+        adsEnabled.emit(data.adsEnabled)
+        subscribed.emit(data.subscribed)
     }
 
     private inline fun <reified T> deserialize(name: String): T? {

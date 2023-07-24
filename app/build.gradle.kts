@@ -9,6 +9,11 @@ plugins {
     alias(libs.plugins.org.jetbrains.kotlin.plugin.serialization)
     alias(libs.plugins.com.jaredsburrows.license)
     id("com.google.android.gms.oss-licenses-plugin")
+    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
+}
+
+secrets {
+    propertiesFileName = "secrets.properties"
 }
 
 licenseReport {
@@ -197,6 +202,7 @@ dependencies {
     implementation(project(":modules:compose-utils"))
     implementation(project(":modules:data"))
     implementation(project(":modules:entry"))
+    implementation(project(":modules:monetization"))
     implementation(project(":modules:settings"))
 
     runtimeOnly(kotlin("reflect"))

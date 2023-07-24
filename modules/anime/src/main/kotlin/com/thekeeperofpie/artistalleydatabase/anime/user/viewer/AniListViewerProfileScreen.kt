@@ -55,14 +55,14 @@ object AniListViewerProfileScreen {
     @Composable
     operator fun invoke(
         upIconOption: UpIconOption?,
-        needAuth: @Composable () -> Boolean,
+        needsAuth: @Composable () -> Boolean,
         onClickAuth: () -> Unit,
         onSubmitAuthToken: (String) -> Unit,
         onClickSettings: () -> Unit,
         navigationCallback: AnimeNavigator.NavigationCallback,
         bottomNavigationState: BottomNavigationState? = null,
     ) {
-        if (needAuth()) {
+        if (needsAuth()) {
             AuthPrompt(
                 onClickAuth = onClickAuth,
                 onSubmitAuthToken = onSubmitAuthToken,
@@ -129,7 +129,9 @@ object AniListViewerProfileScreen {
                     AnimatedVisibility(visible = showWhy) {
                         Text(
                             stringResource(R.string.anime_auth_prompt_why),
-                            modifier = Modifier.padding(vertical = 8.dp)
+                            modifier = Modifier
+                                .widthIn(min = 300.dp)
+                                .padding(vertical = 8.dp)
                         )
                     }
 

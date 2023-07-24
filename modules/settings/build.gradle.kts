@@ -15,6 +15,7 @@ dependencies {
     api(project(":modules:anime"))
     api(project(":modules:art"))
     api(project(":modules:cds"))
+    api(project(":modules:monetization"))
 
     implementation(libs.kotlinx.serialization.json)
     runtimeOnly(libs.kotlinx.coroutines.android)

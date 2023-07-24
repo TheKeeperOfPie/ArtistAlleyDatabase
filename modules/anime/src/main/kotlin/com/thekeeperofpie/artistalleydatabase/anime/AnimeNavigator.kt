@@ -2,7 +2,6 @@ package com.thekeeperofpie.artistalleydatabase.anime
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalLifecycleOwner
@@ -93,7 +92,7 @@ object AnimeNavigator {
             val viewModel = hiltViewModel<AnimeRootViewModel>()
             AnimeRootScreen(
                 upIconOption = upIconOption,
-                needAuth = { viewModel.needsAuth.collectAsState(true).value },
+                viewModel = viewModel,
                 onClickAuth = onClickAuth,
                 onSubmitAuthToken = viewModel::onSubmitAuthToken,
                 navigationCallback = navigationCallback,
