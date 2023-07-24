@@ -127,16 +127,18 @@ abstract class MediaSortFilterController<SortType : SortOption, ParamsType : Med
         }
     }
     var tagRank by mutableStateOf("0")
+    var tagSearchQuery by mutableStateOf("")
 
     protected val tagSection = object : SortFilterSection.Custom("tag") {
         override fun showingPreview() = true
 
         @Composable
         override fun Content(state: ExpandedState, showDivider: Boolean) {
+            val tagsByCategoryFiltered by tagsByCategoryFiltered.collectAsState(emptyMap())
             TagSection(
                 expanded = { state.expandedState[id] ?: false },
                 onExpandedChange = { state.expandedState[id] = it },
-                tags = { tagsByCategoryFiltered.collectAsState(emptyMap()).value },
+                tags = { tagsByCategoryFiltered },
                 onTagClick = { tagId ->
                     if (tagId != initialParams?.tagId) {
                         tagsByCategory.value = tagsByCategory.value
@@ -151,6 +153,8 @@ abstract class MediaSortFilterController<SortType : SortOption, ParamsType : Med
                 onTagLongClick = tagLongClickListener,
                 tagRank = { tagRank },
                 onTagRankChange = { tagRank = it },
+                query = tagSearchQuery,
+                onQueryChange = { tagSearchQuery = it },
                 showDivider = showDivider,
             )
         }

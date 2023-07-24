@@ -9,8 +9,6 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.anilist.UserMediaListQuery.Data.MediaListCollection.List.Entry.Media
-import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
 import com.hoc081098.flowext.startWith
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
@@ -127,8 +125,6 @@ class AnimeUserListViewModel @Inject constructor(
                 sortFilterController.filterParams(),
                 ::FilterParams
             ).map { (lists, query, filterParams) ->
-                val sortOption = filterParams.sort
-                    .find { it.state == FilterIncludeExcludeState.INCLUDE }?.value
                 lists.filter {
                     val listStatuses = filterParams.listStatuses
                         .filter { it.state == FilterIncludeExcludeState.INCLUDE }
@@ -139,21 +135,8 @@ class AnimeUserListViewModel @Inject constructor(
                         listStatuses.contains(it.status)
                     }
                 }
-                    .let {
-                        if (sortOption == null) {
-                            // If default sort, force COMPLETED list to top
-                            val index =
-                                it.indexOfFirst { it.status == MediaListStatus.COMPLETED }
-                            if (index >= 0) {
-                                val mutableList = it.toMutableList()
-                                val completedList = mutableList.removeAt(index)
-                                mutableList.add(0, completedList)
-                                mutableList
-                            } else it
-                        } else it
-                    }
                     .map { toFilteredEntries(query, filterParams, it) }
-                    .flatten()
+                    .distinctBy { it.name }
                     .let(AnimeUserListScreen.ContentState::Success)
             }
                 .startWith(AnimeUserListScreen.ContentState.LoadingEmpty)
@@ -179,14 +162,14 @@ class AnimeUserListViewModel @Inject constructor(
             .firstOrNull()
     }
 
-    fun onMediaLongClick(entry: AnimeMediaListRow.Entry<Media>) =
+    fun onMediaLongClick(entry: AnimeMediaListRow.Entry<*>) =
         ignoreList.toggle(entry.media.id.toString())
 
     private fun toFilteredEntries(
         query: String,
         filterParams: MediaSortFilterController.FilterParams<MediaListSortOption>,
         list: UserMediaListController.ListEntry,
-    ): List<AnimeUserListScreen.Entry> {
+    ): AnimeUserListScreen.ContentState.Success.ListEntry {
         val entries = list.entries
 
         var filteredEntries = MediaUtils.filterEntries(
@@ -246,16 +229,18 @@ class AnimeUserListViewModel @Inject constructor(
             filteredEntries = filteredEntries.sortedWith(comparator)
         }
 
-        return if (filteredEntries.isEmpty()) {
-            filteredEntries.map(AnimeUserListScreen.Entry::Item)
-        } else {
-            mutableListOf(
-                AnimeUserListScreen.Entry.Header(
-                    list.name,
-                    list.status,
+        return AnimeUserListScreen.ContentState.Success.ListEntry(
+            name = list.name,
+            entries = filteredEntries.map {
+                AnimeMediaListRow.Entry(
+                    media = it.media,
+                    mediaListStatus = it.mediaListStatus,
+                    progress = it.progress,
+                    progressVolumes = it.progressVolumes,
+                    ignored = it.ignored,
                 )
-            ) + filteredEntries.map(AnimeUserListScreen.Entry::Item)
-        }
+            }.distinctBy { it.media.id },
+        )
     }
 
     private data class FilterParams(

@@ -141,10 +141,12 @@ open class AuthedAniListApi(
     open suspend fun userMediaList(
         userId: Int,
         type: MediaType,
+        status: MediaListStatus? = null,
     ) = query(
         UserMediaListQuery(
             userId = userId,
             type = type,
+            status = Optional.presentIfNotNull(status),
         )
     ).mediaListCollection
 

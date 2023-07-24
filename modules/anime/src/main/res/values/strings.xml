@@ -11,10 +11,6 @@
     <string name="anime_auth_prompt_paste">Or paste in an auth token</string>
     <string name="anime_auth_button_log_in">Log in</string>
     <string name="anime_auth_button_why">Why?</string>
-    <string name="anime_user_list_user_name_anime_search">Search %1$s\'s anime list…</string>
-    <string name="anime_user_list_user_name_manga_search">Search %1$s\'s manga list…</string>
-    <string name="anime_user_list_anime_search">Search anime list…</string>
-    <string name="anime_user_list_manga_search">Search manga list…</string>
     <string name="anime_media_banner_image">Media banner image</string>
     <string name="anime_media_cover_image_content_description">Media cover image</string>
     <string name="anime_media_banner_image_content_description">Media banner image</string>
@@ -146,6 +142,7 @@
     <string name="anime_media_tag_adult">Adult</string>
     <string name="anime_media_tag_is_spoiler">Spoiler warning</string>
     <string name="anime_media_tag_spoiler">Spoiler</string>
+    <string name="anime_media_tag_search_placeholder">Search tag…</string>
 
     <string name="anime_media_next_airing_episode">Ep. %1$s: %2$s</string>
     <string name="anime_media_next_airing_episode_with_relative">Ep. %1$s: %2$s (%3$s)</string>
@@ -462,6 +459,12 @@
     <string name="anime_user_filter_sort_label">Sort</string>
     <string name="anime_user_filter_moderator_label">Moderator</string>
 
+    <string name="anime_user_list_user_name_anime_search">Search %1$s\'s anime list…</string>
+    <string name="anime_user_list_user_name_manga_search">Search %1$s\'s manga list…</string>
+    <string name="anime_user_list_anime_search">Search anime list…</string>
+    <string name="anime_user_list_manga_search">Search manga list…</string>
+    <string name="anime_user_list_header_expand_content_description">Expand list</string>
+
     <string name="anime_media_ignore_title_anime">Ignored anime</string>
     <string name="anime_media_ignore_title_manga">Ignored manga</string>
     <string name="anime_media_ignore_search_anime">Search anime…</string>
@@ -693,4 +696,5 @@
     <string name="anime_studio_sort_favorites">Favorites</string>
     <string name="anime_studio_filter_sort_label">Sort</string>
     <string name="anime_studio_medias_error_loading">Error loading medias</string>
+    <string name="anime_media_tag_search_clear_content_description">Clear query</string>
 </resources>

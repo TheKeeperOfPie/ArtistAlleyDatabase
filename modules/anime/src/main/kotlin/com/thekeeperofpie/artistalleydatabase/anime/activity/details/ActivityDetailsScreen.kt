@@ -95,7 +95,6 @@ object ActivityDetailsScreen {
                                 navigationCallback = navigationCallback,
                             )
                         }
-                        is ActivityDetailsQuery.Data.MessageActivityActivity -> TODO()
                         is ActivityDetailsQuery.Data.TextActivityActivity -> {
                             TextActivitySmallCard(
                                 activity = activity,
@@ -104,6 +103,9 @@ object ActivityDetailsScreen {
                                 onActivityStatusUpdate = viewModel.toggleHelper::toggle,
                                 navigationCallback = navigationCallback,
                             )
+                        }
+                        is ActivityDetailsQuery.Data.MessageActivityActivity -> {
+                            // TODO: Message type
                         }
                         is ActivityDetailsQuery.Data.OtherActivity,
                         null,

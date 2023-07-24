@@ -338,9 +338,9 @@ object AnimeHomeScreen {
             viewAllRoute = AnimeNavDestinations.ACTIVITY.id
         )
 
+        // TODO: This still doesn't work perfectly
         // Always show the item, or otherwise scroll position gets screwed up when returning
         item("activityRow") {
-            if (data.itemCount == 0) return@item
             val pagerState = rememberPagerState(pageCount = { data.itemCount })
             val targetWidth = 350.coerceAtLeast(LocalConfiguration.current.screenWidthDp - 72).dp
             HorizontalPager(

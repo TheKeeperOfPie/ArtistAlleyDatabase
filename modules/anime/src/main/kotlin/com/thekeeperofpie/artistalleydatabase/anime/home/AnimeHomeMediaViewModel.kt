@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalCoroutinesApi::class)
-
 package com.thekeeperofpie.artistalleydatabase.anime.home
 
 import android.os.SystemClock
@@ -14,6 +12,7 @@ import com.anilist.fragment.MediaPreviewWithDescription
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
 import com.hoc081098.flowext.combine
+import com.hoc081098.flowext.flowFromSuspend
 import com.hoc081098.flowext.startWith
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
@@ -28,16 +27,18 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.seasonal.SeasonalViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
+@OptIn(ExperimentalCoroutinesApi::class)
 abstract class AnimeHomeMediaViewModel(
     protected val aniListApi: AuthedAniListApi,
     protected val settings: AnimeSettings,
@@ -146,7 +147,28 @@ abstract class AnimeHomeMediaViewModel(
 
     protected abstract suspend fun rows(): List<RowInput>
 
-    protected abstract suspend fun current(): Flow<Result<List<UserMediaListController.ListEntry>>?>
+    // It is faster to load the specific current list,
+    // but this duplicates with the full user media lists
+    // TODO: Make this more efficient when user list caching is available
+    suspend fun current() = aniListApi.authedUser.flatMapLatest {
+        if (it == null) {
+            emptyFlow()
+        } else {
+            flowFromSuspend {
+                aniListApi.userMediaList(
+                    userId = it.id,
+                    type = mediaType,
+                    status = MediaListStatus.CURRENT
+                ).lists
+                    ?.filterNotNull()
+                    ?.map(UserMediaListController::ListEntry)
+                    .orEmpty()
+            }
+                .mapLatest { Result.success(it) }
+                .catch { emit(Result.failure(it)) }
+                .startWith(item = null)
+        }
+    }
 
     fun onLongClickEntry(media: MediaNavigationData) = ignoreList.toggle(media.id.toString())
 
@@ -172,8 +194,6 @@ abstract class AnimeHomeMediaViewModel(
         currentHeaderTextRes = R.string.anime_home_anime_current_header,
         mediaType = MediaType.ANIME,
     ) {
-
-        override suspend fun current() = userMediaListController.anime
 
         override suspend fun rows(): List<RowInput> {
             val lists = aniListApi.homeAnime()
@@ -242,8 +262,6 @@ abstract class AnimeHomeMediaViewModel(
         currentHeaderTextRes = R.string.anime_home_manga_current_header,
         mediaType = MediaType.MANGA,
     ) {
-
-        override suspend fun current() = userMediaListController.manga
 
         override suspend fun rows(): List<RowInput> {
             val lists = aniListApi.homeManga()

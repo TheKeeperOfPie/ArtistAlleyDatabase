@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalCoroutinesApi::class)
-
 package com.thekeeperofpie.artistalleydatabase.anime.media
 
 import android.os.SystemClock
@@ -29,6 +27,7 @@ import kotlinx.coroutines.flow.shareIn
  * This also allows for easier caching/offline syncing from a central location, although that's not
  * implemented.
  */
+@OptIn(ExperimentalCoroutinesApi::class)
 class UserMediaListController(
     private val scopedApplication: ScopedApplication,
     private val aniListApi: AuthedAniListApi,

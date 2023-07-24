@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.anilist.oauth
 
 import com.anilist.ActivityDetailsQuery
+import com.anilist.UserMediaListQuery
 import com.anilist.UserSocialActivityQuery
 import com.anilist.type.ActivitySort
 import com.anilist.type.ActivityType
@@ -38,7 +39,8 @@ class AuthedAniListApiWrapper(
     override suspend fun userMediaList(
         userId: Int,
         type: MediaType,
-    ) = super.userMediaList(userId, type).let {
+        status: MediaListStatus?,
+    ) = super.userMediaList(userId, type, status).let {
         it.copy(lists = it.lists?.map {
             it?.copy(entries = it.entries?.filter { it?.media?.isAdult == false })
         })

@@ -47,6 +47,7 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -523,6 +524,8 @@ fun TagSection(
     onTagLongClick: (String) -> Unit,
     tagRank: @Composable () -> String,
     onTagRankChange: (String) -> Unit,
+    query: String,
+    onQueryChange: (String) -> Unit,
     showDivider: Boolean,
 ) {
     @Suppress("NAME_SHADOWING")
@@ -544,6 +547,29 @@ fun TagSection(
         showDivider = showDivider,
     ) {
         Column(modifier = Modifier.animateContentSize()) {
+            if (expanded) {
+                TextField(
+                    value = query,
+                    placeholder = {
+                        Text(text = stringResource(R.string.anime_media_tag_search_placeholder))
+                    },
+                    trailingIcon = {
+                        IconButton(onClick = { onQueryChange("") }) {
+                            Icon(
+                                imageVector = Icons.Filled.Clear,
+                                contentDescription = stringResource(
+                                    R.string.anime_media_tag_search_clear_content_description
+                                ),
+                            )
+                        }
+                    },
+                    onValueChange = onQueryChange,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                )
+            }
+
             @Suppress("NAME_SHADOWING")
             val tags = tags()
             val children =
@@ -561,8 +587,17 @@ fun TagSection(
             val subcategoriesToShow = if (expanded) {
                 tags.values
             } else {
-                tags.values.mapNotNull {
-                    it.filter { it.state != FilterIncludeExcludeState.DEFAULT }
+                if (query.isNotBlank()) {
+                    tags.values.mapNotNull {
+                        it.filter {
+                            it.state != FilterIncludeExcludeState.DEFAULT
+                                    || it.name.contains(query, ignoreCase = true)
+                        }
+                    }
+                } else {
+                    tags.values.mapNotNull {
+                        it.filter { it.state != FilterIncludeExcludeState.DEFAULT }
+                    }
                 }
             }.filterIsInstance<TagSection.Category>()
 
@@ -574,6 +609,7 @@ fun TagSection(
                     level = 0,
                     onTagClick = onTagClick,
                     onTagLongClick = onTagLongClick,
+                    query = query,
                     showDivider = expanded || index != subcategoriesToShow.size - 1,
                 )
             }
@@ -631,6 +667,7 @@ private fun TagSubsection(
     level: Int,
     onTagClick: (String) -> Unit,
     onTagLongClick: (String) -> Unit,
+    query: String,
     showDivider: Boolean,
 ) {
     var expanded by remember(name) { mutableStateOf(false) }
@@ -670,7 +707,14 @@ private fun TagSubsection(
     val tagsToShow = if (expanded) {
         tags
     } else {
-        tags.filter { it.state != FilterIncludeExcludeState.DEFAULT }
+        if (query.isNotBlank()) {
+            tags.filter {
+                it.state != FilterIncludeExcludeState.DEFAULT
+                        || it.name.contains(query, ignoreCase = true)
+            }
+        } else {
+            tags.filter { it.state != FilterIncludeExcludeState.DEFAULT }
+        }
     }
 
     val subcategories =
@@ -678,9 +722,17 @@ private fun TagSubsection(
     val subcategoriesToShow = if (expanded) {
         subcategories
     } else {
-        subcategories.mapNotNull {
-            it.filter { it.state != FilterIncludeExcludeState.DEFAULT }
-                    as? TagSection.Category
+        if (query.isNotBlank()) {
+            subcategories.mapNotNull {
+                it.filter {
+                    it.state != FilterIncludeExcludeState.DEFAULT
+                            || it.name.contains(query, ignoreCase = true)
+                } as? TagSection.Category
+            }
+        } else {
+            subcategories.mapNotNull {
+                it.filter { it.state != FilterIncludeExcludeState.DEFAULT } as? TagSection.Category
+            }
         }
     }
 
@@ -709,6 +761,7 @@ private fun TagSubsection(
                 level + 1,
                 onTagClick,
                 onTagLongClick,
+                query = query,
                 showDivider = index != subcategoriesToShow.size - 1,
             )
         }
@@ -735,7 +788,7 @@ private fun TagChips(
             .animateContentSize(),
     ) {
         tags.forEach {
-            if (!parentExpanded && it.state == FilterIncludeExcludeState.DEFAULT) return@forEach
+//            if (!parentExpanded && it.state == FilterIncludeExcludeState.DEFAULT) return@forEach
             FilterChip(
                 selected = it.state != FilterIncludeExcludeState.DEFAULT,
                 onClick = { onTagClick(it.id) },
