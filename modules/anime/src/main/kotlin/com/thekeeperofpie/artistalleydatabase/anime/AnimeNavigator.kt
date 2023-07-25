@@ -422,7 +422,7 @@ object AnimeNavigator {
             val viewModel = hiltViewModel<AnimeMediaIgnoreViewModel>()
                 .apply { initialize(mediaType) }
             AnimeIgnoreScreen(
-                onClickBack = { navHostController.popBackStack() },
+                onClickBack = { navHostController.navigateUp() },
                 titleRes = if (mediaType == MediaType.ANIME) {
                     R.string.anime_media_ignore_title_anime
                 } else {
@@ -435,7 +435,7 @@ object AnimeNavigator {
 
         navGraphBuilder.composable(route = AnimeNavDestinations.AIRING_SCHEDULE.id) {
             AiringScheduleScreen(
-                onClickBack = { navHostController.popBackStack() },
+                onClickBack = { navHostController.navigateUp() },
                 navigationCallback = navigationCallback,
             )
         }
@@ -1176,6 +1176,6 @@ object AnimeNavigator {
 
         fun navigate(route: String) = navHostController?.navigate(route)
 
-        fun popUp() = navHostController?.popBackStack()
+        fun navigateUp() = navHostController?.navigateUp()
     }
 }

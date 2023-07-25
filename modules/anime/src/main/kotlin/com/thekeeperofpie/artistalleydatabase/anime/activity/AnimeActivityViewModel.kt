@@ -166,7 +166,6 @@ class AnimeActivityViewModel @Inject constructor(
                 }
             }
             .mapLatest { it.map(::ActivityEntry) }
-            .cachedIn(viewModelScope)
             .flatMapLatest { pagingData ->
                 combine(
                     mediaListStatusController.allChanges(),
@@ -206,6 +205,7 @@ class AnimeActivityViewModel @Inject constructor(
                     }
                 }
             }
+            .cachedIn(viewModelScope)
             .collectLatest(target::emit)
     }
 

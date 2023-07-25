@@ -426,11 +426,11 @@ class AnimeSearchViewModel @Inject constructor(
                     val seenIds = mutableSetOf<Int>()
                     it.filter { seenIds.add(id(it)) }.map { entry(it) }
                 }
-                .cachedIn(viewModelScope)
                 .run {
                     if (filter != null) flatMapLatest { filter(it) } else this
                 }
                 .run(finalTransform)
+                .cachedIn(viewModelScope)
                 .collectLatest {
                     results[searchType]!!.emit(it)
                 }

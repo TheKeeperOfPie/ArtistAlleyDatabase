@@ -501,7 +501,7 @@ class MainActivity : ComponentActivity() {
                             SideEffect { settings.lastCrashShown.value = true }
                             CrashScreen(
                                 settings = settings,
-                                onClickBack = { navHostController.popBackStack() },
+                                onClickBack = { navHostController.navigateUp() },
                             )
                         }
                     }

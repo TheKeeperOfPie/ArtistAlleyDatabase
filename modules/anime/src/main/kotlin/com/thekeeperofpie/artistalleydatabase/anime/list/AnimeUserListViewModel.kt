@@ -10,9 +10,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.anilist.type.MediaType
-import com.hoc081098.flowext.startWith
+import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
-import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.mapLatestNotNull
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
@@ -28,10 +27,10 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
@@ -52,9 +51,7 @@ class AnimeUserListViewModel @Inject constructor(
 
     val viewer = aniListApi.authedUser
     var query by mutableStateOf("")
-    var content by mutableStateOf<AnimeUserListScreen.ContentState>(
-        AnimeUserListScreen.ContentState.LoadingEmpty
-    )
+    var content by mutableStateOf<LoadingResult<List<ListEntry>>>(LoadingResult.loading())
     var tagShown by mutableStateOf<TagSection.Tag?>(null)
     val colorMap = mutableStateMapOf<String, Pair<Color, Color>>()
 
@@ -108,13 +105,16 @@ class AnimeUserListViewModel @Inject constructor(
                     MediaType.ANIME,
                     MediaType.UNKNOWN__,
                     -> userMediaListController.anime
-                }.mapLatestNotNull { it?.getOrNull() }
+                }
             } else {
-                refreshUptimeMillis.mapLatest {
+                refreshUptimeMillis.flatMapLatest {
                     aniListApi.userMediaList(userId = userId.toInt(), type = mediaType)
-                        .let {
-                            it.lists?.filterNotNull()?.map(UserMediaListController::ListEntry)
-                                .orEmpty()
+                        .mapLatest {
+                            it.transformResult {
+                                it.lists?.filterNotNull()
+                                    ?.map(UserMediaListController::ListEntry)
+                                    .orEmpty()
+                            }
                         }
                 }
             }
@@ -125,22 +125,21 @@ class AnimeUserListViewModel @Inject constructor(
                 sortFilterController.filterParams(),
                 ::FilterParams
             ).map { (lists, query, filterParams) ->
-                lists.filter {
-                    val listStatuses = filterParams.listStatuses
-                        .filter { it.state == FilterIncludeExcludeState.INCLUDE }
-                        .map { it.value }
-                    if (listStatuses.isEmpty()) {
-                        true
-                    } else {
-                        listStatuses.contains(it.status)
+                lists.transformResult {
+                    it.filter {
+                        val listStatuses = filterParams.listStatuses
+                            .filter { it.state == FilterIncludeExcludeState.INCLUDE }
+                            .map { it.value }
+                        if (listStatuses.isEmpty()) {
+                            true
+                        } else {
+                            listStatuses.contains(it.status)
+                        }
                     }
+                        .map { toFilteredEntries(query, filterParams, it) }
+                        .distinctBy { it.name }
                 }
-                    .map { toFilteredEntries(query, filterParams, it) }
-                    .distinctBy { it.name }
-                    .let(AnimeUserListScreen.ContentState::Success)
             }
-                .startWith(AnimeUserListScreen.ContentState.LoadingEmpty)
-                .catch { emit(AnimeUserListScreen.ContentState.Error(exception = it)) }
                 .flowOn(CustomDispatchers.IO)
                 .collectLatest { content = it }
         }
@@ -169,7 +168,7 @@ class AnimeUserListViewModel @Inject constructor(
         query: String,
         filterParams: MediaSortFilterController.FilterParams<MediaListSortOption>,
         list: UserMediaListController.ListEntry,
-    ): AnimeUserListScreen.ContentState.Success.ListEntry {
+    ): ListEntry {
         val entries = list.entries
 
         var filteredEntries = MediaUtils.filterEntries(
@@ -229,7 +228,7 @@ class AnimeUserListViewModel @Inject constructor(
             filteredEntries = filteredEntries.sortedWith(comparator)
         }
 
-        return AnimeUserListScreen.ContentState.Success.ListEntry(
+        return ListEntry(
             name = list.name,
             entries = filteredEntries.map {
                 AnimeMediaListRow.Entry(
@@ -244,8 +243,13 @@ class AnimeUserListViewModel @Inject constructor(
     }
 
     private data class FilterParams(
-        val response: List<UserMediaListController.ListEntry>,
+        val response: LoadingResult<List<UserMediaListController.ListEntry>>,
         val query: String,
         val filterParams: MediaSortFilterController.FilterParams<MediaListSortOption>,
+    )
+
+    data class ListEntry(
+        val name: String,
+        val entries: List<AnimeMediaListRow.Entry<*>>,
     )
 }

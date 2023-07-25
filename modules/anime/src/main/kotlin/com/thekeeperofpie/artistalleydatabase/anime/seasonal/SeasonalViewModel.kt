@@ -168,7 +168,6 @@ class SeasonalViewModel @Inject constructor(
                     }
                     .enforceUniqueIntIds { it.id }
                     .map { it.map { MediaEntry(it) } }
-                    .cachedIn(viewModelScope)
                     .applyMediaStatusChanges(
                         statusController = statusController,
                         ignoreList = ignoreList,
@@ -185,6 +184,7 @@ class SeasonalViewModel @Inject constructor(
                         },
                     )
                     .flatMapLatest { sortFilterController.filterMedia(it) { it.media } }
+                    .cachedIn(viewModelScope)
                     .flowOn(CustomDispatchers.IO)
                     .collectLatest(content::emit)
             }

@@ -182,7 +182,7 @@ abstract class EntryDetailsViewModel<Entry : Any, Model>(
             deleteEntry(entryId)
             withContext(CustomDispatchers.Main) {
                 initialEntryHashCode = null
-                navHostController.popBackStack()
+                navHostController.navigateUp()
             }
         }
     }
@@ -204,7 +204,7 @@ abstract class EntryDetailsViewModel<Entry : Any, Model>(
             withContext(CustomDispatchers.Main) {
                 if (success) {
                     initialEntryHashCode = null
-                    navHostController.popBackStack()
+                    navHostController.navigateUp()
                 } else {
                     saving = false
                 }

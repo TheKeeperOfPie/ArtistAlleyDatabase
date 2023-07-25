@@ -37,7 +37,7 @@ object NetworkUtilsHiltModule {
             .cache(
                 Cache(
                     directory = File(application.cacheDir, "okhttp"),
-                    maxSize = 500L * 1024L * 1024L // 500 MiB
+                    maxSize = 100L * 1024L * 1024L // 100 MiB
                 )
             )
             .addInterceptor(Interceptor { chain ->

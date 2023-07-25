@@ -109,7 +109,7 @@ class MainActivity : ComponentActivity() {
                                             }
                                         ArtistDetailsScreen(
                                             viewModel,
-                                            onClickBack = { navController.popBackStack() },
+                                            onClickBack = { navController.navigateUp() },
                                             initialImageIndex = imageIndex,
                                         )
                                     }

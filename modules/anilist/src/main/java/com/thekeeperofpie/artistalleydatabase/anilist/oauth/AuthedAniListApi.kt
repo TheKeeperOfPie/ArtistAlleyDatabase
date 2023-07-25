@@ -80,14 +80,24 @@ import com.anilist.type.UserSort
 import com.apollographql.apollo3.ApolloClient
 import com.apollographql.apollo3.api.Optional
 import com.apollographql.apollo3.api.Query
+import com.apollographql.apollo3.cache.normalized.FetchPolicy
+import com.apollographql.apollo3.cache.normalized.api.MemoryCacheFactory
+import com.apollographql.apollo3.cache.normalized.fetchPolicy
+import com.apollographql.apollo3.cache.normalized.normalizedCache
+import com.apollographql.apollo3.cache.normalized.sql.SqlNormalizedCacheFactory
 import com.apollographql.apollo3.network.http.DefaultHttpEngine
+import com.hoc081098.flowext.startWith
+import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
+import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.addLoggingInterceptors
 import com.thekeeperofpie.artistalleydatabase.network_utils.NetworkSettings
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -110,16 +120,25 @@ open class AuthedAniListApi(
 ) {
     companion object {
         private const val TAG = "AuthedAniListApi"
+        private const val MEMORY_CACHE_BYTE_SIZE = 100 * 1024 * 1024 // 100 MB
     }
 
+    private val memoryThenDiskCache = MemoryCacheFactory(MEMORY_CACHE_BYTE_SIZE)
+        .chain(
+            SqlNormalizedCacheFactory(
+                scopedApplication.app,
+                "apollo.db",
+                useNoBackupDirectory = true,
+            )
+        )
     private val apolloClient = ApolloClient.Builder()
         .serverUrl(AniListUtils.GRAPHQL_API_URL)
         .httpEngine(DefaultHttpEngine(okHttpClient))
         .addLoggingInterceptors(TAG, networkSettings)
+        .normalizedCache(memoryThenDiskCache, writeToCacheAsynchronously = true)
         .build()
 
     val authedUser = MutableStateFlow<AuthedUserQuery.Data.Viewer?>(null)
-    val hasAuthToken = oAuthStore.authToken.map { !it.isNullOrEmpty() }
 
     init {
         scopedApplication.scope.launch(CustomDispatchers.IO) {
@@ -142,13 +161,13 @@ open class AuthedAniListApi(
         userId: Int,
         type: MediaType,
         status: MediaListStatus? = null,
-    ) = query(
+    ) = queryCacheAndNetwork(
         UserMediaListQuery(
             userId = userId,
             type = type,
             status = Optional.presentIfNotNull(status),
         )
-    ).mediaListCollection
+    ).map { it.transformResult { it.mediaListCollection } }
 
     open suspend fun searchMedia(
         query: String,
@@ -730,5 +749,40 @@ open class AuthedAniListApi(
             .dataOrThrow().toggleLikeV2.asActivityReply()!!.isLiked
 
     protected suspend fun <D : Query.Data> query(query: Query<D>) =
-        apolloClient.query(query).execute().dataOrThrow()
+        apolloClient.query(query).fetchPolicy(FetchPolicy.NetworkFirst).execute().dataOrThrow()
+
+    private fun <D : Query.Data> queryCacheAndNetwork(query: Query<D>) = combine(
+        // TODO: Cancel the cache query if network returns first
+        apolloClient.query(query).fetchPolicy(FetchPolicy.CacheOnly).toFlow()
+            .flowOn(CustomDispatchers.IO)
+            .startWith(null),
+        apolloClient.query(query).fetchPolicy(FetchPolicy.NetworkOnly).toFlow()
+            .flowOn(CustomDispatchers.IO)
+            .startWith(null),
+    ) { cache, network ->
+        if (network != null) {
+            val networkHasErrors = network.hasErrors()
+            LoadingResult(
+                success = !networkHasErrors,
+                result = network.data ?: cache?.data,
+                error = if (networkHasErrors) {
+                    UtilsStringR.error_loading_from_network to network.exception
+                } else {
+                    null
+                },
+            )
+        } else {
+            val cacheHasErrors = cache != null && cache.hasErrors()
+            LoadingResult(
+                loading = true,
+                success = !cacheHasErrors,
+                result = cache?.data,
+                error = if (cacheHasErrors) {
+                    UtilsStringR.error_loading_from_cache to cache?.exception
+                } else {
+                    null
+                }
+            )
+        }
+    }
 }

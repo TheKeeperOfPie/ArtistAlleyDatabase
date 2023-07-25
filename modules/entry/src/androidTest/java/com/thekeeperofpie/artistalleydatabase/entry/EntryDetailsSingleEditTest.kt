@@ -23,7 +23,7 @@ class EntryDetailsSingleEditTest : EntryDetailsTestBase() {
         }
 
         assertModel(viewModel.entries.values.single(), "newData")
-        verify(navHostController).popBackStack()
+        verify(navHostController).navigateUp()
     }
 
     @Test
@@ -41,6 +41,6 @@ class EntryDetailsSingleEditTest : EntryDetailsTestBase() {
         }
 
         assertModel(viewModel.entries.values.single(), "testData")
-        verify(navHostController, Mockito.never()).popBackStack()
+        verify(navHostController, Mockito.never()).navigateUp()
     }
 }

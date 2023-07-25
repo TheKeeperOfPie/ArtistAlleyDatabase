@@ -81,6 +81,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
 import androidx.core.graphics.ColorUtils
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import coil.compose.AsyncImage
@@ -91,6 +92,7 @@ import com.anilist.fragment.MediaNavigationData
 import com.anilist.fragment.MediaPreview
 import com.anilist.type.MediaListStatus
 import com.mxalbert.sharedelements.SharedElement
+import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
@@ -147,8 +149,12 @@ object AnimeHomeScreen {
             hiltViewModel<AnimeHomeMediaViewModel.Manga>()
         }
 
+        val activity = viewModel.activity.collectAsLazyPagingItems()
+        val refreshing = activity.loadState.refresh == LoadState.Loading
+                || mediaViewModel.entry.loading
+                || mediaViewModel.current.loading
         val pullRefreshState = rememberPullRefreshState(
-            refreshing = viewModel.loading,
+            refreshing = refreshing,
             onRefresh = {
                 viewModel.refresh()
                 mediaViewModel.refresh()
@@ -212,8 +218,6 @@ object AnimeHomeScreen {
             ) {
                 val viewer by viewModel.viewer.collectAsState()
 
-                // TODO: Handle LoadStates
-                val activity = viewModel.activity.collectAsLazyPagingItems()
                 LazyColumn(
                     state = scrollStateSaver.lazyListState(),
                     contentPadding = PaddingValues(
@@ -245,7 +249,7 @@ object AnimeHomeScreen {
                 }
 
                 PullRefreshIndicator(
-                    refreshing = viewModel.loading,
+                    refreshing = refreshing,
                     state = pullRefreshState,
                     modifier = Modifier
                         .align(Alignment.TopCenter)
@@ -263,35 +267,25 @@ object AnimeHomeScreen {
         navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
         val entry = mediaViewModel.entry
-        if (entry == null) {
-            loading("entry-loading")
-        } else {
-            val loadingShown = currentMediaRow(
-                headerTextRes = mediaViewModel.currentHeaderTextRes,
-                current = entry.current,
+        currentMediaRow(
+            headerTextRes = mediaViewModel.currentHeaderTextRes,
+            current = mediaViewModel.current,
+            viewer = viewer,
+            onClickListEdit = onClickListEdit,
+            colorCalculationState = colorCalculationState,
+            navigationCallback = navigationCallback
+        )
+
+        entry.result?.lists?.forEach {
+            mediaRow(
+                data = it,
                 viewer = viewer,
                 onClickListEdit = onClickListEdit,
+                onLongClickEntry = mediaViewModel::onLongClickEntry,
+                selectedItemTracker = selectedItemTracker,
+                navigationCallback = navigationCallback,
                 colorCalculationState = colorCalculationState,
-                navigationCallback = navigationCallback
             )
-
-            if (entry.lists == null) {
-                if (!loadingShown) {
-                    loading("entry-loading")
-                }
-            } else {
-                entry.lists.forEach {
-                    mediaRow(
-                        data = it,
-                        viewer = viewer,
-                        onClickListEdit = onClickListEdit,
-                        onLongClickEntry = mediaViewModel::onLongClickEntry,
-                        selectedItemTracker = selectedItemTracker,
-                        navigationCallback = navigationCallback,
-                        colorCalculationState = colorCalculationState,
-                    )
-                }
-            }
         }
     }
 
@@ -338,8 +332,7 @@ object AnimeHomeScreen {
             viewAllRoute = AnimeNavDestinations.ACTIVITY.id
         )
 
-        // TODO: This still doesn't work perfectly
-        // Always show the item, or otherwise scroll position gets screwed up when returning
+        if (data.itemCount == 0) return
         item("activityRow") {
             val pagerState = rememberPagerState(pageCount = { data.itemCount })
             val targetWidth = 350.coerceAtLeast(LocalConfiguration.current.screenWidthDp - 72).dp
@@ -396,68 +389,64 @@ object AnimeHomeScreen {
      */
     private fun LazyListScope.currentMediaRow(
         @StringRes headerTextRes: Int,
-        current: List<UserMediaListController.MediaEntry>?,
+        current: LoadingResult<List<UserMediaListController.MediaEntry>>,
         viewer: AuthedUserQuery.Data.Viewer?,
         onClickListEdit: (MediaPreview) -> Unit,
         colorCalculationState: ColorCalculationState,
         navigationCallback: AnimeNavigator.NavigationCallback,
-    ): Boolean {
-        if (current == null || current.isNotEmpty()) {
-            rowHeader(
-                titleRes = headerTextRes,
-                navigationCallback = navigationCallback,
-                viewAllRoute = null, // TODO: full current lists
+    ) {
+        val result = current.result
+        if (result.isNullOrEmpty()) return
+        rowHeader(
+            titleRes = headerTextRes,
+            navigationCallback = navigationCallback,
+            viewAllRoute = null, // TODO: full current lists
+        )
+
+        item("$headerTextRes-current") {
+            val listState = rememberLazyListState()
+            val colorPrimary = MaterialTheme.colorScheme.primary
+            val cardOutlineBorder = remember { BorderStroke(1.5.dp, colorPrimary) }
+
+            val density = LocalDensity.current
+            val coilWidth = coil.size.Dimension.Pixels(
+                density.run { CURRENT_ROW_IMAGE_WIDTH.roundToPx() / 4 * 3 }
             )
-        }
+            val coilHeight = coil.size.Dimension.Pixels(
+                density.run { CURRENT_ROW_IMAGE_HEIGHT.roundToPx() / 4 * 3 }
+            )
 
-        if (current == null) {
-            loading("$headerTextRes-loading")
-            return true
-        } else {
-            item("$headerTextRes-current") {
-                val listState = rememberLazyListState()
-                val colorPrimary = MaterialTheme.colorScheme.primary
-                val cardOutlineBorder = remember { BorderStroke(1.5.dp, colorPrimary) }
-
-                val density = LocalDensity.current
-                val coilWidth =
-                    coil.size.Dimension.Pixels(density.run { CURRENT_ROW_IMAGE_WIDTH.roundToPx() })
-                val coilHeight =
-                    coil.size.Dimension.Pixels(density.run { CURRENT_ROW_IMAGE_HEIGHT.roundToPx() })
-
-                LazyRow(
-                    state = listState,
-                    contentPadding = PaddingValues(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+            LazyRow(
+                state = listState,
+                contentPadding = PaddingValues(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
+                items(
+                    items = result,
+                    key = { it.media.id },
+                    contentType = { "media" },
                 ) {
-                    items(
-                        items = current,
-                        key = { it.media.id },
-                        contentType = { "media" },
-                    ) {
-                        MediaCard(
-                            media = it.media,
-                            listStatus = it.mediaListStatus,
-                            progress = it.progress,
-                            progressVolumes = it.progressVolumes,
-                            ignored = it.ignored,
-                            viewer = viewer,
-                            cardOutlineBorder = cardOutlineBorder,
-                            width = CURRENT_ROW_IMAGE_WIDTH,
-                            height = CURRENT_ROW_IMAGE_HEIGHT,
-                            coilWidth = coilWidth,
-                            coilHeight = coilHeight,
-                            selected = false,
-                            onClickListEdit = onClickListEdit,
-                            onLongClickEntry = { /* TODO */ },
-                            colorCalculationState = colorCalculationState,
-                            navigationCallback = navigationCallback,
-                            modifier = Modifier.animateItemPlacement(),
-                        )
-                    }
+                    MediaCard(
+                        media = it.media,
+                        listStatus = it.mediaListStatus,
+                        progress = it.progress,
+                        progressVolumes = it.progressVolumes,
+                        ignored = it.ignored,
+                        viewer = viewer,
+                        cardOutlineBorder = cardOutlineBorder,
+                        width = CURRENT_ROW_IMAGE_WIDTH,
+                        height = CURRENT_ROW_IMAGE_HEIGHT,
+                        coilWidth = coilWidth,
+                        coilHeight = coilHeight,
+                        selected = false,
+                        onClickListEdit = onClickListEdit,
+                        onLongClickEntry = { /* TODO */ },
+                        colorCalculationState = colorCalculationState,
+                        navigationCallback = navigationCallback,
+                        modifier = Modifier.animateItemPlacement(),
+                    )
                 }
             }
-            return false
         }
     }
 
@@ -481,9 +470,11 @@ object AnimeHomeScreen {
     ) {
         item("header_$titleRes") {
             Row(
-                modifier = Modifier.clickable(enabled = viewAllRoute != null) {
-                    navigationCallback.navigate(viewAllRoute!!)
-                }
+                modifier = Modifier
+                    .clickable(enabled = viewAllRoute != null) {
+                        navigationCallback.navigate(viewAllRoute!!)
+                    }
+                    .animateItemPlacement()
             ) {
                 Text(
                     text = stringResource(titleRes),
@@ -558,10 +549,12 @@ object AnimeHomeScreen {
             val cardOutlineBorder = remember { BorderStroke(1.5.dp, colorPrimary) }
 
             val density = LocalDensity.current
-            val coilWidth =
-                coil.size.Dimension.Pixels(density.run { MEDIA_ROW_IMAGE_WIDTH.roundToPx() })
-            val coilHeight =
-                coil.size.Dimension.Pixels(density.run { MEDIA_ROW_IMAGE_HEIGHT.roundToPx() })
+            val coilWidth = coil.size.Dimension.Pixels(
+                density.run { MEDIA_ROW_IMAGE_WIDTH.roundToPx() / 4 * 3 }
+            )
+            val coilHeight = coil.size.Dimension.Pixels(
+                density.run { MEDIA_ROW_IMAGE_HEIGHT.roundToPx() / 4 * 3 }
+            )
 
             LazyRow(
                 state = listState,

@@ -36,6 +36,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
@@ -54,6 +55,7 @@ abstract class MediaSortFilterController<SortType : SortOption, ParamsType : Med
 ) : SortFilterController(settings) {
     var tagLongClickListener: (String) -> Unit = {}
 
+    private var initialized = false
     protected var initialParams by mutableStateOf<ParamsType?>(null)
 
     protected val sortSection = SortFilterSection.Sort(
@@ -208,6 +210,8 @@ abstract class MediaSortFilterController<SortType : SortOption, ParamsType : Med
         initialParams: InitialParams<SortType>,
         tagLongClickListener: (String) -> Unit = { /* TODO */ },
     ) {
+        if (initialized) return
+        initialized = true
         this.tagLongClickListener = tagLongClickListener
         if (initialParams.tagId != null) {
             tagRank = "60"
@@ -219,6 +223,7 @@ abstract class MediaSortFilterController<SortType : SortOption, ParamsType : Med
                     ?.filterNotNull()
                     .orEmpty()
             }
+                .distinctUntilChanged()
                 .flatMapLatest { genres ->
                     settings.showAdult.mapLatest { showAdult ->
                         FilterEntry.values(genres.filter { showAdult || it != "Hentai" })

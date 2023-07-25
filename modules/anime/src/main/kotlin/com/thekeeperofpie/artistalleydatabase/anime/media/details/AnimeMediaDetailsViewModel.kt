@@ -306,7 +306,7 @@ class AnimeMediaDetailsViewModel @Inject constructor(
                     aniListApi.mediaActivitiesPage(
                         id = it.mediaId,
                         page = 1,
-                        sort = listOf(ActivitySort.PINNED),
+                        sort = listOf(ActivitySort.PINNED, ActivitySort.ID_DESC),
                         activitiesPerPage = 10,
                     )
                         .page.activities

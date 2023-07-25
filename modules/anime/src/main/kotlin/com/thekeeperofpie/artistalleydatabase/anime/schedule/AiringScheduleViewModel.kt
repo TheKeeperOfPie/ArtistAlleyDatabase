@@ -79,7 +79,6 @@ class AiringScheduleViewModel @Inject constructor(
             )
                 .flatMapLatest { (_, filterParams) -> buildPagingData(index, filterParams) }
                 .map { it.map { Entry(data = it) } }
-                .cachedIn(viewModelScope)
                 .applyMediaStatusChanges(
                     statusController = statusController,
                     ignoreList = ignoreList,
@@ -94,6 +93,7 @@ class AiringScheduleViewModel @Inject constructor(
                         )
                     },
                 )
+                .cachedIn(viewModelScope)
                 .collectLatest(dayFlows[index]::emit)
         }
     }

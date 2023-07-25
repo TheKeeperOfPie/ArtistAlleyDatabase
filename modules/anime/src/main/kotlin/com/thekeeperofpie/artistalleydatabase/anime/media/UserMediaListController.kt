@@ -4,8 +4,10 @@ import android.os.SystemClock
 import com.anilist.UserMediaListQuery
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
+import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.transformIf
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
@@ -16,8 +18,10 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.runningFold
 import kotlinx.coroutines.flow.shareIn
 
 /**
@@ -38,10 +42,10 @@ class UserMediaListController(
     private val refreshAnime = MutableStateFlow(-1L)
     private val refreshManga = MutableStateFlow(-1L)
 
-    var anime: Flow<Result<List<ListEntry>>?>
+    var anime: Flow<LoadingResult<List<ListEntry>>>
         private set
 
-    var manga: Flow<Result<List<ListEntry>>?>
+    var manga: Flow<LoadingResult<List<ListEntry>>>
         private set
 
     init {
@@ -51,14 +55,19 @@ class UserMediaListController(
 
     private fun loadMedia(refresh: StateFlow<Long>, mediaType: MediaType) =
         combine(aniListApi.authedUser, refresh, ::Pair)
-            .mapLatest { (viewer) ->
-                if (viewer == null) return@mapLatest null
-                try {
-                    aniListApi.userMediaList(viewer.id, mediaType)
-                        .let { it.lists?.filterNotNull()?.map(UserMediaListController::ListEntry).orEmpty() }
-                        .let(Result.Companion::success)
-                } catch (t: Throwable) {
-                    Result.failure(t)
+            .flatMapLatest { (viewer) ->
+                if (viewer == null) return@flatMapLatest flowOf(LoadingResult.empty())
+                aniListApi.userMediaList(viewer.id, mediaType)
+                    .map {
+                        it.transformResult {
+                            it.lists?.filterNotNull()?.map(::ListEntry)
+                                .orEmpty()
+                        }
+                    }
+            }
+            .runningFold(LoadingResult<List<ListEntry>>(loading = true, success = true)) { accumulator, value ->
+                value.transformIf(value.loading && value.result == null) {
+                    copy(result = accumulator.result)
                 }
             }
             .flatMapLatest { entry ->
@@ -85,32 +94,30 @@ class UserMediaListController(
         showAdult: Boolean,
         showIgnored: Boolean,
         ignoredIds: Set<Int>,
-        result: Result<List<ListEntry>>?,
-    ) = if (result?.isSuccess != true) result else {
-        result.getOrThrow()
-            .map {
-                it.copy(entries = it.entries.mapNotNull {
-                    applyMediaFiltering(
-                        statuses = statuses,
-                        ignoredIds = ignoredIds,
-                        showAdult = showAdult,
-                        showIgnored = showIgnored,
-                        entry = it,
-                        transform = { it },
-                        media = it.media,
-                        copy = { mediaListStatus, progress, progressVolumes, ignored ->
-                            MediaEntry(
-                                media = media,
-                                mediaListStatus = mediaListStatus,
-                                progress = progress,
-                                progressVolumes = progressVolumes,
-                                ignored = ignored,
-                            )
-                        }
-                    )
-                })
-            }
-            .let(Result.Companion::success)
+        result: LoadingResult<List<ListEntry>>,
+    ) = result.transformResult {
+        it.map {
+            it.copy(entries = it.entries.mapNotNull {
+                applyMediaFiltering(
+                    statuses = statuses,
+                    ignoredIds = ignoredIds,
+                    showAdult = showAdult,
+                    showIgnored = showIgnored,
+                    entry = it,
+                    transform = { it },
+                    media = it.media,
+                    copy = { mediaListStatus, progress, progressVolumes, ignored ->
+                        MediaEntry(
+                            media = media,
+                            mediaListStatus = mediaListStatus,
+                            progress = progress,
+                            progressVolumes = progressVolumes,
+                            ignored = ignored,
+                        )
+                    }
+                )
+            })
+        }
     }
 
     fun refresh(mediaType: MediaType) {

@@ -155,7 +155,7 @@ class ArtEntryNavigator : BrowseSelectionNavigator {
                 EntryDetailsScreen(
                     screenKey = ArtNavDestinations.ENTRY_DETAILS.id,
                     viewModel = viewModel,
-                    onClickBack = { navHostController.popBackStack() },
+                    onClickBack = { navHostController.navigateUp() },
                     imageCornerDp = imageCornerDp,
                     onImageClickOpen = {
                         viewModel.entryImageController.onImageClickOpen(navHostController, it)

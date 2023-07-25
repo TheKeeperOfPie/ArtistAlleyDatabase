@@ -3,11 +3,9 @@ package com.thekeeperofpie.artistalleydatabase.anime.home
 import com.anilist.fragment.MediaPreviewWithDescription
 import com.anilist.type.MediaListStatus
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaLargeCard
-import com.thekeeperofpie.artistalleydatabase.anime.media.UserMediaListController
 
 data class AnimeHomeDataEntry(
     val lists: List<RowData>?,
-    val current: List<UserMediaListController.MediaEntry>?,
 ) {
     data class MediaEntry(
         override val media: MediaPreviewWithDescription,

@@ -97,7 +97,6 @@ class AnimeMediaIgnoreViewModel @Inject constructor(
                         AnimeMediaIgnorePagingSource(aniListApi, it)
                     }.flow
                 }
-                .cachedIn(viewModelScope)
                 .map { it.map { AnimeMediaListRow.Entry(it, ignored = false) } }
                 .applyMediaStatusChanges(
                     statusController = statusController,
@@ -157,6 +156,7 @@ class AnimeMediaIgnoreViewModel @Inject constructor(
                             }
                     }
                 }
+                .cachedIn(viewModelScope)
                 .flowOn(CustomDispatchers.IO)
                 .collectLatest(content::emit)
         }

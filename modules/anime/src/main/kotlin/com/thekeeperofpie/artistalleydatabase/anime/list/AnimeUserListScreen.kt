@@ -1,38 +1,37 @@
 package com.thekeeperofpie.artistalleydatabase.anime.list
 
 import androidx.activity.compose.BackHandler
-import androidx.annotation.StringRes
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
@@ -61,6 +60,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
+import kotlinx.coroutines.launch
 
 @OptIn(
     ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class,
@@ -81,12 +81,15 @@ object AnimeUserListScreen {
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
         val colorCalculationState = rememberColorCalculationState(viewModel.colorMap)
         val editViewModel = hiltViewModel<MediaEditViewModel>()
+        val snackbarHostState = remember { SnackbarHostState() }
+        val scope = rememberCoroutineScope()
         MediaEditBottomSheetScaffold(
             screenKey = AnimeNavDestinations.USER_LIST.id,
             viewModel = editViewModel,
             colorCalculationState = colorCalculationState,
             navigationCallback = navigationCallback,
             bottomNavigationState = bottomNavigationState,
+            snackbarHostState = snackbarHostState,
         ) {
             val sortFilterController = viewModel.sortFilterController
             if (sortFilterController.airingDateShown != null) {
@@ -104,10 +107,18 @@ object AnimeUserListScreen {
                 bottomNavigationState = bottomNavigationState,
             ) { scaffoldPadding ->
                 val content = viewModel.content
-                val refreshing = when (content) {
-                    ContentState.LoadingEmpty -> true
-                    is ContentState.Success -> content.loading
-                    is ContentState.Error -> false
+                val error = content.error
+                val errorText = error?.first?.let { stringResource(it) }
+                LaunchedEffect(error) {
+                    if (errorText != null) {
+                        scope.launch {
+                            snackbarHostState.showSnackbar(
+                                message = errorText,
+                                withDismissAction = true,
+                                duration = SnackbarDuration.Long
+                            )
+                        }
+                    }
                 }
                 val density = LocalDensity.current
                 val topBarPadding by remember {
@@ -130,7 +141,7 @@ object AnimeUserListScreen {
                 )) { mutableStateMapOf<String, Boolean>() }
 
                 AnimeMediaListScreen(
-                    refreshing = refreshing,
+                    refreshing = content.loading,
                     onRefresh = viewModel::onRefresh,
                     tagShown = viewModel::tagShown,
                     onTagDismiss = { viewModel.tagShown = null },
@@ -143,22 +154,18 @@ object AnimeUserListScreen {
                         )
                     )
                 ) { onLongPressImage ->
-                    when (content) {
-                        is ContentState.Error -> AnimeMediaListScreen.Error(
-                            errorTextRes = content.errorRes,
-                            exception = content.exception,
-                            modifier = Modifier.padding(top = topBarPadding),
-                        )
-                        ContentState.LoadingEmpty ->
-                            // Empty column to allow pull refresh to work
-                            Column(
+                    val hasItems = content.result?.sumOf { it.entries.size } != 0
+                    when {
+                        !content.loading && !content.success && !hasItems ->
+                            AnimeMediaListScreen.Error(
+                                errorTextRes = error?.first,
+                                exception = error?.second,
                                 modifier = Modifier
-                                    .fillMaxSize()
-                                    .verticalScroll(rememberScrollState()),
-                            ) {
-                            }
-                        is ContentState.Success -> {
-                            if (content.lists.sumOf { it.entries.size } == 0) {
+                                    .fillMaxWidth()
+                                    .padding(top = topBarPadding),
+                            )
+                        else -> {
+                            if (!content.loading && !hasItems) {
                                 AnimeMediaListScreen.NoResults(Modifier.padding(top = topBarPadding))
                             } else {
                                 LazyColumn(
@@ -172,7 +179,7 @@ object AnimeUserListScreen {
                                     ),
                                     verticalArrangement = Arrangement.spacedBy(16.dp),
                                 ) {
-                                    content.lists.forEach {
+                                    content.result?.forEach {
                                         if (it.entries.isNotEmpty()) {
                                             val expanded = expandedState[it.name] ?: true
                                             item("header-${it.name}") {
@@ -204,7 +211,8 @@ object AnimeUserListScreen {
                                                         onLongPressImage = onLongPressImage,
                                                         colorCalculationState = colorCalculationState,
                                                         navigationCallback = navigationCallback,
-                                                        modifier = Modifier.animateItemPlacement()
+                                                        modifier = Modifier
+                                                            .animateItemPlacement()
                                                             .padding(horizontal = 16.dp),
                                                     )
                                                 }
@@ -306,24 +314,5 @@ object AnimeUserListScreen {
                 onClick = onClick,
             )
         }
-    }
-
-    sealed interface ContentState {
-        data object LoadingEmpty : ContentState
-
-        data class Success(
-            val lists: List<ListEntry>,
-            val loading: Boolean = false,
-        ) : ContentState {
-            data class ListEntry(
-                val name: String,
-                val entries: List<AnimeMediaListRow.Entry<*>>,
-            )
-        }
-
-        data class Error(
-            @StringRes val errorRes: Int? = null,
-            val exception: Throwable? = null,
-        ) : ContentState
     }
 }

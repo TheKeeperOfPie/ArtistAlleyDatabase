@@ -1,7 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anilist.oauth
 
 import com.anilist.ActivityDetailsQuery
-import com.anilist.UserMediaListQuery
 import com.anilist.UserSocialActivityQuery
 import com.anilist.type.ActivitySort
 import com.anilist.type.ActivityType
@@ -22,6 +21,7 @@ import com.anilist.type.StudioSort
 import com.anilist.type.UserSort
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.network_utils.NetworkSettings
+import kotlinx.coroutines.flow.map
 import okhttp3.OkHttpClient
 import java.io.IOException
 import java.time.LocalDate
@@ -40,10 +40,12 @@ class AuthedAniListApiWrapper(
         userId: Int,
         type: MediaType,
         status: MediaListStatus?,
-    ) = super.userMediaList(userId, type, status).let {
-        it.copy(lists = it.lists?.map {
-            it?.copy(entries = it.entries?.filter { it?.media?.isAdult == false })
-        })
+    ) = super.userMediaList(userId, type, status).map {
+        it.transformResult {
+            it.copy(lists = it.lists?.map {
+                it?.copy(entries = it.entries?.filter { it?.media?.isAdult == false })
+            })
+        }
     }
 
     override suspend fun searchMedia(

@@ -3,10 +3,7 @@
 package com.thekeeperofpie.artistalleydatabase.anime.home
 
 import android.os.SystemClock
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -29,7 +26,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.activity.AnimeActivityViewMo
 import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsController
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
@@ -37,7 +33,6 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import kotlin.time.Duration.Companion.milliseconds
 
 @HiltViewModel
 class AnimeHomeViewModel @Inject constructor(
@@ -47,8 +42,6 @@ class AnimeHomeViewModel @Inject constructor(
 ) : ViewModel() {
 
     val viewer = aniListApi.authedUser
-    var loading by mutableStateOf(false)
-        private set
     val colorMap = mutableStateMapOf<String, Pair<Color, Color>>()
     val activityToggleHelper =
         ActivityToggleHelper(aniListApi, activityStatusController, viewModelScope)
@@ -85,7 +78,6 @@ class AnimeHomeViewModel @Inject constructor(
                         )
                     }
                 }
-                .cachedIn(viewModelScope)
                 .flatMapLatest { pagingData ->
                     activityStatusController.allChanges()
                         .mapLatest { updates ->
@@ -99,19 +91,13 @@ class AnimeHomeViewModel @Inject constructor(
                             }
                         }
                 }
+                .cachedIn(viewModelScope)
                 .collectLatest(activity::emit)
         }
     }
 
     fun refresh() {
-        loading = true
         newsController.refresh()
         refreshUptimeMillis.value = SystemClock.uptimeMillis()
-
-        // Fake the refresh, since the actual state requires combining too many loading states
-        viewModelScope.launch {
-            delay(250.milliseconds)
-            loading = false
-        }
     }
 }

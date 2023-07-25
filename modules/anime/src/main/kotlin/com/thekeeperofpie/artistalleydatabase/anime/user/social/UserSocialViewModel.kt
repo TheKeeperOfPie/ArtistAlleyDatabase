@@ -56,10 +56,10 @@ abstract class UserSocialViewModel<T : Any>(
                                 }.flow
                             }
                     }
-                    .cachedIn(viewModelScope)
                     .catch {
                         // TODO: Error message
                     }
+                    .cachedIn(viewModelScope)
                     .collectLatest(data::emit)
             }
         }

@@ -63,7 +63,7 @@ object AnimeNewsScreen {
             topBar = {
                 AppBar(
                     text = stringResource(R.string.anime_news_title),
-                    upIconOption = UpIconOption.Back { navigationCallback.popUp() },
+                    upIconOption = UpIconOption.Back { navigationCallback.navigateUp() },
                     scrollBehavior = scrollBehavior,
                 )
             },

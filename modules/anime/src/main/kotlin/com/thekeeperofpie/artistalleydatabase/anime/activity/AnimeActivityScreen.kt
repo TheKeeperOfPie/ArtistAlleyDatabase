@@ -75,7 +75,7 @@ object AnimeActivityScreen {
                 if (viewer == null) {
                     AppBar(
                         text = stringResource(R.string.anime_activity_global_title),
-                        upIconOption = UpIconOption.Back { navigationCallback.popUp() },
+                        upIconOption = UpIconOption.Back { navigationCallback.navigateUp() },
                         scrollBehavior = scrollBehavior,
                     )
                 } else {
@@ -83,7 +83,7 @@ object AnimeActivityScreen {
                         Column {
                             AppBar(
                                 text = stringResource(R.string.anime_activity_title),
-                                upIconOption = UpIconOption.Back { navigationCallback.popUp() },
+                                upIconOption = UpIconOption.Back { navigationCallback.navigateUp() },
                             )
 
                             val scope = rememberCoroutineScope()

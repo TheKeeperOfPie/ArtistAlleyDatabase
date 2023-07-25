@@ -10,6 +10,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
+import androidx.paging.cachedIn
 import androidx.paging.map
 import com.anilist.ActivityDetailsQuery
 import com.anilist.ActivityDetailsRepliesQuery
@@ -143,15 +144,18 @@ class ActivityDetailsViewModel @Inject constructor(
                             .orEmpty()
                     }
                 }.flow
-            }.flatMapLatest { pagingData ->
-                replyStatusController.allChanges()
-                    .mapLatest { updates ->
-                        pagingData.map {
-                            val liked = updates[it.id.toString()]?.liked ?: it.isLiked ?: false
-                            Entry.ReplyEntry(reply = it, liked = liked)
+            }
+                .flatMapLatest { pagingData ->
+                    replyStatusController.allChanges()
+                        .mapLatest { updates ->
+                            pagingData.map {
+                                val liked = updates[it.id.toString()]?.liked ?: it.isLiked ?: false
+                                Entry.ReplyEntry(reply = it, liked = liked)
+                            }
                         }
-                    }
-            }.collect(replies::emit)
+                }
+                .cachedIn(viewModelScope)
+                .collect(replies::emit)
         }
     }
 

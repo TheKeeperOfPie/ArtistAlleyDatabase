@@ -24,7 +24,7 @@ class EntryDetailsAddTest : EntryDetailsTestBase() {
         }
 
         assertModel(viewModel.entries.values.single())
-        verify(navHostController).popBackStack()
+        verify(navHostController).navigateUp()
     }
 
     @Test
@@ -37,7 +37,7 @@ class EntryDetailsAddTest : EntryDetailsTestBase() {
         }
 
         assertThat(viewModel.entries).isEmpty()
-        verify(navHostController, never()).popBackStack()
+        verify(navHostController, never()).navigateUp()
     }
 
     @Test
@@ -50,7 +50,7 @@ class EntryDetailsAddTest : EntryDetailsTestBase() {
         }
 
         assertModel(viewModel.entries.values.single(), skipIgnoreableErrors = true)
-        verify(navHostController).popBackStack()
+        verify(navHostController).navigateUp()
     }
 
     @Test
@@ -63,7 +63,7 @@ class EntryDetailsAddTest : EntryDetailsTestBase() {
         }
 
         assertModel(viewModel.entries.values.single(), skipIgnoreableErrors = true)
-        verify(navHostController).popBackStack()
+        verify(navHostController).navigateUp()
     }
 
     @Test
@@ -79,6 +79,6 @@ class EntryDetailsAddTest : EntryDetailsTestBase() {
         }
 
         assertThat(viewModel.entries).isEmpty()
-        verify(navHostController, never()).popBackStack()
+        verify(navHostController, never()).navigateUp()
     }
 }

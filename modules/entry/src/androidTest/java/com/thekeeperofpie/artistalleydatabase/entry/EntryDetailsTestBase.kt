@@ -27,7 +27,7 @@ abstract class EntryDetailsTestBase : TestBase() {
 
     protected val navHostController by delegate {
         mockStrict<NavHostController> {
-            whenever(popBackStack()) { true }
+            whenever(navigateUp()) { true }
         }
     }
 
@@ -57,7 +57,7 @@ abstract class EntryDetailsTestBase : TestBase() {
         }
 
         if (success) {
-            await().untilCalled(navHostController, NavHostController::popBackStack)
+            await().untilCalled(navHostController, NavHostController::navigateUp)
             await().atLeast(1.seconds).during(1.seconds).until { saving }
         } else {
             await().until { !saving }

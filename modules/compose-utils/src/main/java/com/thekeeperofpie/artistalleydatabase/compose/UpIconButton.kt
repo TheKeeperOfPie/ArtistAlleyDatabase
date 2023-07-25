@@ -15,7 +15,7 @@ fun UpIconButton(option: UpIconOption, modifier: Modifier = Modifier) {
 sealed interface UpIconOption {
     class Back(val onClick: () -> Unit) : UpIconOption {
         constructor(navHostController: NavHostController) :
-                this(onClick = { navHostController.popBackStack() })
+                this(onClick = { navHostController.navigateUp() })
     }
 
     class NavDrawer(val onClick: () -> Unit) : UpIconOption

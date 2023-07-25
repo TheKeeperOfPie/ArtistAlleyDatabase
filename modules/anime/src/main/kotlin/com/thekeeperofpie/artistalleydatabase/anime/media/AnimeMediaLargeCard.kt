@@ -182,7 +182,9 @@ object AnimeMediaLargeCard {
                     .allowHardware(colorCalculationState.hasColor(entry?.id?.valueId))
                     .size(
                         width = Dimension.Undefined,
-                        height = Dimension.Pixels(LocalDensity.current.run { HEIGHT.roundToPx() }),
+                        height = Dimension.Pixels(
+                            LocalDensity.current.run { HEIGHT.roundToPx() / 4 * 3 }
+                        ),
                     )
                     .build(),
                 contentScale = ContentScale.Crop,

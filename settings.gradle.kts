@@ -80,6 +80,8 @@ dependencyResolutionManagement {
             library("androidx.work:work-runtime-ktx:2.9.0-alpha01")
             library("androidx.work:work-runtime:2.9.0-alpha01")
             library("com.apollographql.apollo3:apollo-runtime:4.0.0-alpha.2")
+            library("com.apollographql.apollo3:apollo-normalized-cache:4.0.0-alpha.2")
+            library("com.apollographql.apollo3:apollo-normalized-cache-sqlite:4.0.0-alpha.2")
             library("com.google.accompanist:accompanist-flowlayout:0.31.5-beta")
             library("com.google.accompanist:accompanist-placeholder-material:0.31.5-beta")
             library("com.google.accompanist:accompanist-navigation-animation:0.31.5-beta")

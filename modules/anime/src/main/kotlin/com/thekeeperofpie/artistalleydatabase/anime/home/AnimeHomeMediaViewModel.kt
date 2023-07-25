@@ -11,9 +11,9 @@ import com.anilist.fragment.MediaNavigationData
 import com.anilist.fragment.MediaPreviewWithDescription
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
-import com.hoc081098.flowext.combine
 import com.hoc081098.flowext.flowFromSuspend
-import com.hoc081098.flowext.startWith
+import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
+import com.thekeeperofpie.artistalleydatabase.android_utils.flowForRefreshableContent
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
@@ -28,14 +28,13 @@ import com.thekeeperofpie.artistalleydatabase.anime.seasonal.SeasonalViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.mapLatest
-import kotlinx.coroutines.flow.take
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -47,102 +46,19 @@ abstract class AnimeHomeMediaViewModel(
     private val statusController: MediaListStatusController,
     @StringRes val currentHeaderTextRes: Int,
     protected val mediaType: MediaType,
+    @StringRes private val errorTextRes: Int,
 ) : ViewModel() {
 
-    var entry by mutableStateOf<AnimeHomeDataEntry?>(null)
-    var errorResource by mutableStateOf<Pair<Int, Throwable?>?>(null)
+    var entry by mutableStateOf<LoadingResult<AnimeHomeDataEntry>>(LoadingResult.loading())
+    var current by mutableStateOf<LoadingResult<List<UserMediaListController.MediaEntry>>>(
+        LoadingResult.loading()
+    )
 
-    private val refreshUptimeMillis = MutableStateFlow(-1L)
+    private val refresh = MutableStateFlow(-1L)
 
     init {
-        viewModelScope.launch(CustomDispatchers.IO) {
-            // TODO: Error handling for individual pieces
-            combine(
-                refreshUptimeMillis.mapLatest { rows() }.catch { emit(emptyList()) }
-                    .startWith(item = null),
-                statusController.allChanges(),
-                ignoreList.updates,
-                settings.showAdult,
-                settings.showIgnored,
-                current()
-                    .mapLatest {
-                        it?.getOrNull()
-                            ?.find { it.status == MediaListStatus.CURRENT }
-                            ?.entries
-                            ?: emptyList()
-                    }
-                    .catch { emit(emptyList()) }
-                    .startWith(
-                        // If there's no user logged in, emit an empty list to hide the section
-                        aniListApi.hasAuthToken.take(1)
-                            .mapLatest { if (it) null else emptyList() }
-                    ),
-            ) { rows, statuses, ignoredIds, showAdult, showIgnored, current ->
-                AnimeHomeDataEntry(
-                    lists = rows?.map {
-                        AnimeHomeDataEntry.RowData(
-                            id = it.id,
-                            titleRes = it.titleRes,
-                            entries = it.list?.filterNotNull()?.map(AnimeHomeDataEntry::MediaEntry)
-                                .orEmpty()
-                                .mapNotNull {
-                                    applyMediaFiltering(
-                                        statuses = statuses,
-                                        ignoredIds = ignoredIds,
-                                        showAdult = showAdult,
-                                        showIgnored = showIgnored,
-                                        entry = it,
-                                        transform = { it },
-                                        media = it.media,
-                                        copy = { mediaListStatus, progress, progressVolumes, ignored ->
-                                            AnimeHomeDataEntry.MediaEntry(
-                                                media = media,
-                                                mediaListStatus = mediaListStatus,
-                                                progress = progress,
-                                                progressVolumes = progressVolumes,
-                                                ignored = ignored,
-                                            )
-                                        }
-                                    )
-                                },
-                            viewAllRoute = it.viewAllRoute,
-                        )
-                    },
-                    current = current?.mapNotNull {
-                        applyMediaFiltering(
-                            statuses = statuses,
-                            ignoredIds = ignoredIds,
-                            showAdult = showAdult,
-                            showIgnored = showIgnored,
-                            entry = it,
-                            transform = { it },
-                            media = it.media,
-                            copy = { mediaListStatus, progress, progressVolumes, ignored ->
-                                UserMediaListController.MediaEntry(
-                                    media = media,
-                                    mediaListStatus = mediaListStatus,
-                                    progress = progress,
-                                    progressVolumes = progressVolumes,
-                                    ignored = ignored,
-                                )
-                            }
-                        )
-                    },
-                )
-            }
-                .mapLatest { Result.success(it) }
-                .catch { emit(Result.failure(it)) }
-                .collectLatest {
-                    withContext(CustomDispatchers.Main) {
-                        if (it.isFailure) {
-                            errorResource =
-                                R.string.anime_home_error_loading_anime to it.exceptionOrNull()
-                        } else {
-                            entry = it.getOrNull()
-                        }
-                    }
-                }
-        }
+        collectCurrent()
+        collectMedia()
     }
 
     protected abstract suspend fun rows(): List<RowInput>
@@ -154,19 +70,19 @@ abstract class AnimeHomeMediaViewModel(
         if (it == null) {
             emptyFlow()
         } else {
-            flowFromSuspend {
-                aniListApi.userMediaList(
-                    userId = it.id,
-                    type = mediaType,
-                    status = MediaListStatus.CURRENT
-                ).lists
-                    ?.filterNotNull()
-                    ?.map(UserMediaListController::ListEntry)
-                    .orEmpty()
+            aniListApi.userMediaList(
+                userId = it.id,
+                type = mediaType,
+                status = MediaListStatus.CURRENT
+            ).map {
+                it.transformResult {
+                    it.lists
+                        ?.find { it?.status == MediaListStatus.CURRENT }
+                        ?.let(UserMediaListController::ListEntry)
+                        ?.entries
+                        .orEmpty()
+                }
             }
-                .mapLatest { Result.success(it) }
-                .catch { emit(Result.failure(it)) }
-                .startWith(item = null)
         }
     }
 
@@ -175,7 +91,98 @@ abstract class AnimeHomeMediaViewModel(
     fun refresh() {
         val refresh = SystemClock.uptimeMillis()
         userMediaListController.refresh(mediaType)
-        refreshUptimeMillis.value = refresh
+        this.refresh.value = refresh
+    }
+
+    private fun collectCurrent() {
+        viewModelScope.launch(CustomDispatchers.Main) {
+            refresh.flatMapLatest { current() }
+                .flatMapLatest { current ->
+                    combine(
+                        statusController.allChanges(),
+                        ignoreList.updates,
+                        settings.showAdult,
+                        settings.showIgnored,
+                    ) { mediaStatusUpdates, ignoredIds, showAdult, showIgnored ->
+                        current.copy(
+                            result = current.result?.mapNotNull {
+                                applyMediaFiltering(
+                                    statuses = mediaStatusUpdates,
+                                    ignoredIds = ignoredIds,
+                                    showAdult = showAdult,
+                                    showIgnored = showIgnored,
+                                    entry = it,
+                                    transform = { it },
+                                    media = it.media,
+                                    copy = { mediaListStatus, progress, progressVolumes, ignored ->
+                                        UserMediaListController.MediaEntry(
+                                            media = media,
+                                            mediaListStatus = mediaListStatus,
+                                            progress = progress,
+                                            progressVolumes = progressVolumes,
+                                            ignored = ignored,
+                                        )
+                                    }
+                                )
+                            },
+                            error = current.error?.copy(first = errorTextRes),
+                        )
+                    }
+                }
+                .flowOn(CustomDispatchers.IO)
+                .collectLatest { current = it }
+        }
+    }
+
+    private fun collectMedia() {
+        viewModelScope.launch(CustomDispatchers.Main) {
+            flowForRefreshableContent(refresh, errorTextRes) { flowFromSuspend { rows() } }
+                .flatMapLatest { mediaResult ->
+                    combine(
+                        statusController.allChanges(),
+                        ignoreList.updates,
+                        settings.showAdult,
+                        settings.showIgnored,
+                    ) { mediaStatusUpdates, ignoredIds, showAdult, showIgnored ->
+                        mediaResult.transformResult { rows ->
+                            AnimeHomeDataEntry(
+                                lists = rows.map {
+                                    AnimeHomeDataEntry.RowData(
+                                        id = it.id,
+                                        titleRes = it.titleRes,
+                                        entries = it.list?.filterNotNull()
+                                            ?.map(AnimeHomeDataEntry::MediaEntry)
+                                            .orEmpty()
+                                            .mapNotNull {
+                                                applyMediaFiltering(
+                                                    statuses = mediaStatusUpdates,
+                                                    ignoredIds = ignoredIds,
+                                                    showAdult = showAdult,
+                                                    showIgnored = showIgnored,
+                                                    entry = it,
+                                                    transform = { it },
+                                                    media = it.media,
+                                                    copy = { mediaListStatus, progress, progressVolumes, ignored ->
+                                                        AnimeHomeDataEntry.MediaEntry(
+                                                            media = media,
+                                                            mediaListStatus = mediaListStatus,
+                                                            progress = progress,
+                                                            progressVolumes = progressVolumes,
+                                                            ignored = ignored,
+                                                        )
+                                                    }
+                                                )
+                                            },
+                                        viewAllRoute = it.viewAllRoute,
+                                    )
+                                },
+                            )
+                        }
+                    }
+                }
+                .flowOn(CustomDispatchers.IO)
+                .collectLatest { entry = it }
+        }
     }
 
     @HiltViewModel
@@ -193,6 +200,7 @@ abstract class AnimeHomeMediaViewModel(
         statusController = statusController,
         currentHeaderTextRes = R.string.anime_home_anime_current_header,
         mediaType = MediaType.ANIME,
+        errorTextRes = R.string.anime_home_error_loading_anime,
     ) {
 
         override suspend fun rows(): List<RowInput> {
@@ -261,6 +269,7 @@ abstract class AnimeHomeMediaViewModel(
         statusController = statusController,
         currentHeaderTextRes = R.string.anime_home_manga_current_header,
         mediaType = MediaType.MANGA,
+        errorTextRes = R.string.anime_home_error_loading_manga,
     ) {
 
         override suspend fun rows(): List<RowInput> {

@@ -67,6 +67,7 @@ dependencyAnalysis {
                     "androidx.navigation:navigation-compose",
                     "androidx.test.ext:junit",
                     "androidx.test:runner",
+                    "com.apollographql.apollo3:apollo-normalized-cache-sqlite",
                     "com.google.dagger:hilt-android",
                     "com.google.truth:truth",
                     "com.squareup.moshi:moshi-kotlin",
