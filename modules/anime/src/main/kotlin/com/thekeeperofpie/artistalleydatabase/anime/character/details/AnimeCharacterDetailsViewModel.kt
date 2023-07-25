@@ -8,7 +8,13 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import androidx.paging.cachedIn
+import androidx.paging.flatMap
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListPagingSource
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
@@ -19,13 +25,22 @@ import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaFiltering
+import com.thekeeperofpie.artistalleydatabase.anime.staff.DetailsStaff
+import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIds
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class AnimeCharacterDetailsViewModel @Inject constructor(
     private val aniListApi: AuthedAniListApi,
@@ -43,6 +58,8 @@ class AnimeCharacterDetailsViewModel @Inject constructor(
     var loading by mutableStateOf(true)
     var errorResource by mutableStateOf<Pair<Int, Throwable?>?>(null)
     val colorMap = mutableStateMapOf<String, Pair<Color, Color>>()
+
+    val voiceActors = MutableStateFlow(PagingData.empty<DetailsStaff>())
 
     val favoritesToggleHelper =
         FavoritesToggleHelper(aniListApi, favoritesController, viewModelScope)
@@ -102,6 +119,47 @@ class AnimeCharacterDetailsViewModel @Inject constructor(
                     loading = false
                 }
             }
+        }
+
+        viewModelScope.launch(CustomDispatchers.IO) {
+            snapshotFlow { entry?.character }
+                .filterNotNull()
+                .flowOn(CustomDispatchers.Main)
+                .flatMapLatest { character ->
+                    Pager(config = PagingConfig(10)) {
+                        AniListPagingSource {
+                            if (it == 1) {
+                                character.media?.pageInfo to character.media?.edges?.filterNotNull()
+                                    .orEmpty()
+                            } else {
+                                val result = aniListApi.characterDetailsMediaPage(
+                                    character.id.toString(),
+                                    it
+                                ).media
+                                result.pageInfo to result.edges.filterNotNull()
+                            }
+                        }
+                    }.flow
+                }
+                .map {
+                    it.flatMap {
+                        it.voiceActorRoles?.filterNotNull()
+                            ?.mapNotNull { it.voiceActor }
+                            ?.map {
+                                DetailsStaff(
+                                    id = it.id.toString(),
+                                    name = it.name?.userPreferred,
+                                    image = it.image?.large,
+                                    role = it.languageV2,
+                                    staff = it,
+                                )
+                            }
+                            .orEmpty()
+                    }
+                }
+                .enforceUniqueIds { it.id }
+                .cachedIn(viewModelScope)
+                .collectLatest(voiceActors::emit)
         }
 
         favoritesToggleHelper.initializeTracking(

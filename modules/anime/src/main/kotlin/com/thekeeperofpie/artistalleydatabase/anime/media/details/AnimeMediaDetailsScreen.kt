@@ -92,6 +92,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.media3.common.util.RepeatModeUtil
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
 import coil.compose.AsyncImage
 import coil.size.Dimension
 import com.anilist.AuthedUserQuery
@@ -114,7 +116,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ListActivitySmallCard
-import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils
+import com.thekeeperofpie.artistalleydatabase.anime.character.DetailsCharacter
 import com.thekeeperofpie.artistalleydatabase.anime.character.charactersSection
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaTagEntry
@@ -216,10 +218,14 @@ object AnimeMediaDetailsScreen {
             mutableFloatStateOf(headerValues.coverImageWidthToHeightRatio)
         }
         val entry = entry()
+        val characters = viewModel.characters.collectAsLazyPagingItems()
+        val staff = viewModel.staff.collectAsLazyPagingItems()
         val expandedState = rememberExpandedState()
         val animeSongs = viewModel.animeSongs
         val sectionIndexInfo = buildSectionIndexInfo(
             entry,
+            characters,
+            staff,
             expandedState,
             animeSongs,
             viewModel.cdEntries,
@@ -417,6 +423,8 @@ object AnimeMediaDetailsScreen {
                                 viewModel = viewModel,
                                 viewer = viewer,
                                 entry = it,
+                                characters = characters,
+                                staff = staff,
                                 onClickListEdit = { editViewModel.initialize(it.media) },
                                 onGenreLongClick = onGenreLongClick,
                                 onCharacterLongClick = onCharacterLongClick,
@@ -438,6 +446,8 @@ object AnimeMediaDetailsScreen {
         viewModel: AnimeMediaDetailsViewModel,
         viewer: AuthedUserQuery.Data.Viewer?,
         entry: Entry,
+        characters: LazyPagingItems<DetailsCharacter>,
+        staff: LazyPagingItems<DetailsStaff>,
         onClickListEdit: (AnimeMediaListRow.Entry<*>) -> Unit,
         onGenreLongClick: (String) -> Unit,
         onCharacterLongClick: (String) -> Unit,
@@ -464,7 +474,7 @@ object AnimeMediaDetailsScreen {
         charactersSection(
             screenKey = screenKey,
             titleRes = R.string.anime_media_details_characters_label,
-            characters = entry.characters,
+            characters = characters,
             onCharacterClick = navigationCallback::onCharacterClick,
             onCharacterLongClick = onCharacterLongClick,
             onStaffClick = navigationCallback::onStaffClick,
@@ -512,7 +522,7 @@ object AnimeMediaDetailsScreen {
         staffSection(
             screenKey = screenKey,
             titleRes = R.string.anime_media_details_staff_label,
-            staff = entry.staff,
+            staffList = staff,
             onStaffClick = navigationCallback::onStaffClick,
             onStaffLongClick = onStaffLongClick,
             colorCalculationState = colorCalculationState,
@@ -1808,21 +1818,6 @@ object AnimeMediaDetailsScreen {
 
         val genres = media.genres?.filterNotNull().orEmpty().map(::Genre)
 
-        val characters = CharacterUtils.toDetailsCharacters(media.characters?.edges)
-
-        val staff = media.staff?.edges?.filterNotNull()?.mapNotNull {
-            val role = it.role
-            it.node?.let {
-                DetailsStaff(
-                    id = it.id.toString(),
-                    name = it.name?.userPreferred,
-                    image = it.image?.large,
-                    role = role,
-                    staff = it,
-                )
-            }
-        }.orEmpty().distinctBy { it.id }
-
         val recommendationsHasMore = media.recommendations?.pageInfo?.hasNextPage ?: true
 
         val tags = media.tags?.filterNotNull()?.map(::AnimeMediaTagEntry).orEmpty()
@@ -1997,6 +1992,8 @@ object AnimeMediaDetailsScreen {
     @Composable
     private fun buildSectionIndexInfo(
         entry: Entry?,
+        characters: LazyPagingItems<DetailsCharacter>,
+        staff: LazyPagingItems<DetailsStaff>,
         expandedState: ExpandedState,
         animeSongs: AnimeMediaDetailsViewModel.AnimeSongs?,
         cdEntries: List<CdEntryGridModel>,
@@ -2007,7 +2004,7 @@ object AnimeMediaDetailsScreen {
         var currentIndex = 0
         if (entry.genres.isNotEmpty()) currentIndex += 1
         if (!entry.media.description.isNullOrEmpty()) currentIndex += 1
-        if (entry.characters.isNotEmpty()) {
+        if (characters.itemCount > 0) {
             list += SectionIndexInfo.Section.CHARACTERS to currentIndex
             currentIndex += 2
         }
@@ -2053,7 +2050,7 @@ object AnimeMediaDetailsScreen {
             currentIndex += 2
         }
 
-        if (entry.staff.isNotEmpty()) {
+        if (staff.itemCount > 0) {
             list += SectionIndexInfo.Section.STAFF to currentIndex
             currentIndex += 2
         }

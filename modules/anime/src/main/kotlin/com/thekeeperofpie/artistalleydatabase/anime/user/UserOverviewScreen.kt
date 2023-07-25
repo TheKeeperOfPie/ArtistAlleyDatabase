@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anime.user
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -28,14 +27,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.itemContentType
+import androidx.paging.compose.itemKey
 import com.anilist.AuthedUserQuery
 import com.anilist.UserByIdQuery
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.charactersSection
 import com.thekeeperofpie.artistalleydatabase.anime.media.mediaHorizontalRow
 import com.thekeeperofpie.artistalleydatabase.anime.staff.staffSection
+import com.thekeeperofpie.artistalleydatabase.anime.studio.StudioListRow
 import com.thekeeperofpie.artistalleydatabase.anime.ui.descriptionSection
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
@@ -48,6 +51,7 @@ object UserOverviewScreen {
     @Composable
     operator fun invoke(
         entry: AniListUserScreen.Entry,
+        viewModel: AniListUserViewModel,
         viewer: AuthedUserQuery.Data.Viewer?,
         isFollowing: @Composable () -> Boolean,
         onFollowingClick: () -> Unit,
@@ -58,6 +62,11 @@ object UserOverviewScreen {
     ) {
         val user = entry.user
         var descriptionExpanded by remember { mutableStateOf(false) }
+        val anime = viewModel.anime.collectAsLazyPagingItems()
+        val manga = viewModel.manga.collectAsLazyPagingItems()
+        val characters = viewModel.characters.collectAsLazyPagingItems()
+        val staff = viewModel.staff.collectAsLazyPagingItems()
+        val studios = viewModel.studios.collectAsLazyPagingItems()
         LazyColumn(
             contentPadding = PaddingValues(
                 bottom = 16.dp + (bottomNavigationState?.bottomNavBarPadding() ?: 0.dp)
@@ -79,25 +88,25 @@ object UserOverviewScreen {
             )
 
             mediaHorizontalRow(
-                screenKey = AnimeNavDestinations.USER.id,
+                screenKey = viewModel.screenKey,
                 titleRes = R.string.anime_user_favorite_anime_label,
-                entries = entry.anime,
+                entries = anime,
                 onClickEntry = navigationCallback::onMediaClick,
                 colorCalculationState = colorCalculationState,
             )
 
             mediaHorizontalRow(
-                screenKey = AnimeNavDestinations.USER.id,
+                screenKey = viewModel.screenKey,
                 titleRes = R.string.anime_user_favorite_manga_label,
-                entries = entry.manga,
+                entries = manga,
                 onClickEntry = navigationCallback::onMediaClick,
                 colorCalculationState = colorCalculationState,
             )
 
             charactersSection(
-                screenKey = AnimeNavDestinations.USER.id,
+                screenKey = viewModel.screenKey,
                 titleRes = R.string.anime_user_favorite_characters_label,
-                characters = entry.characters,
+                characters = characters,
                 onCharacterClick = navigationCallback::onCharacterClick,
                 onCharacterLongClick = navigationCallback::onCharacterLongClick,
                 onStaffClick = navigationCallback::onStaffClick,
@@ -105,17 +114,18 @@ object UserOverviewScreen {
             )
 
             staffSection(
-                screenKey = AnimeNavDestinations.USER.id,
+                screenKey = viewModel.screenKey,
                 titleRes = R.string.anime_user_favorite_staff_label,
-                staff = entry.staff,
+                staffList = staff,
                 onStaffClick = navigationCallback::onStaffClick,
                 onStaffLongClick = navigationCallback::onStaffLongClick,
                 colorCalculationState = colorCalculationState,
             )
 
             favoriteStudiosSection(
-                studios = entry.studios,
-                onClick = navigationCallback::onStudioClick,
+                screenKey = viewModel.screenKey,
+                studios = studios,
+                navigationCallback = navigationCallback,
             )
 
             previousNamesSection(
@@ -187,35 +197,35 @@ object UserOverviewScreen {
     }
 
     private fun LazyListScope.favoriteStudiosSection(
-        studios: List<AniListUserScreen.Entry.Studio>,
-        onClick: (id: String, name: String) -> Unit,
+        screenKey: String,
+        studios: LazyPagingItems<StudioListRow.Entry>,
+        navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
-        if (studios.isEmpty()) return
+        if (studios.itemCount == 0) return
         item {
             DetailsSectionHeader(stringResource(R.string.anime_user_favorite_studios_label))
         }
 
-        item {
-            ElevatedCard(
+        items(
+            count = studios.itemCount,
+            key = studios.itemKey { it.studio.id },
+            contentType = studios.itemContentType { "studio" },
+        ) {
+            val studio = studios[it]
+            StudioListRow(
+                screenKey = screenKey,
+                entry = studio,
+                navigationCallback = navigationCallback,
+                mediaWidth = 64.dp,
+                mediaHeight = 96.dp,
                 modifier = Modifier
-                    .padding(horizontal = 16.dp)
                     .fillMaxWidth()
-            ) {
-                studios.forEachIndexed { index, studio ->
-                    if (index != 0) {
-                        Divider()
-                    }
-
-                    Text(
-                        text = studio.name,
-                        style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { onClick(studio.id, studio.name) }
-                            .padding(horizontal = 16.dp, vertical = 10.dp)
+                    .padding(
+                        start = 16.dp,
+                        end = 16.dp,
+                        bottom = if (it == studios.itemCount - 1) 0.dp else 16.dp,
                     )
-                }
-            }
+            )
         }
     }
 

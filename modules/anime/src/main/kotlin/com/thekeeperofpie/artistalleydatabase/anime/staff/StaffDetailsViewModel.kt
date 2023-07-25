@@ -8,27 +8,40 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import androidx.paging.map
 import com.anilist.fragment.StaffDetailsCharacterMediaPage
 import com.anilist.fragment.StaffDetailsStaffMediaPage
 import com.anilist.type.CharacterRole
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListPagingSource
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.character.DetailsCharacter
 import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoritesController
 import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoritesToggleHelper
+import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIds
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class StaffDetailsViewModel @Inject constructor(
     private val aniListApi: AuthedAniListApi,
@@ -43,6 +56,8 @@ class StaffDetailsViewModel @Inject constructor(
     var errorResource by mutableStateOf<Pair<Int, Exception?>?>(null)
     val colorMap = mutableStateMapOf<String, Pair<Color, Color>>()
     val showAdult get() = animeSettings.showAdult
+
+    val characters = MutableStateFlow(PagingData.empty<DetailsCharacter>())
 
     val mediaTimeline = MutableStateFlow(MediaTimeline())
     private val mediaTimelineLastRequestedYear = MutableStateFlow<Int?>(null)
@@ -77,6 +92,41 @@ class StaffDetailsViewModel @Inject constructor(
                     loading = false
                 }
             }
+        }
+
+        viewModelScope.launch(CustomDispatchers.IO) {
+            snapshotFlow { entry }
+                .filterNotNull()
+                .flowOn(CustomDispatchers.Main)
+                .flatMapLatest { entry ->
+                    Pager(config = PagingConfig(10)) {
+                        AniListPagingSource {
+                            if (it == 1) {
+                                entry.staff.characters.let {
+                                    it?.pageInfo to it?.nodes?.filterNotNull().orEmpty()
+                                }
+                            } else {
+                                val result = aniListApi.staffDetailsCharactersPage(
+                                    staffId = entry.staff.id.toString(),
+                                    page = it,
+                                )
+                                result.pageInfo to result.nodes.filterNotNull()
+                            }
+                        }
+                    }.flow
+                }
+                .mapLatest {
+                    it.map {
+                        DetailsCharacter(
+                            id = it.id.toString(),
+                            name = it.name?.userPreferred,
+                            image = it.image?.large,
+                            character = it,
+                        )
+                    }
+                }
+                .enforceUniqueIds { it.id }
+                .collectLatest(characters::emit)
         }
 
         // TODO: More robust pagination

@@ -43,44 +43,45 @@ query UserById($id: Int!) {
         }
 
         favourites {
-            anime {
-                edges {
-                    favouriteOrder
-                    node {
-                        ...UserFavoriteMediaNode
-                    }
+            anime(page: 1, perPage: 10) {
+                pageInfo {
+                    ...PaginationInfo
+                }
+                nodes {
+                    ...UserFavoriteMediaNode
                 }
             }
-            manga {
-                edges {
-                    favouriteOrder
-                    node {
-                        ...UserFavoriteMediaNode
-                    }
+            manga(page: 1, perPage: 10) {
+                pageInfo {
+                    ...PaginationInfo
+                }
+                nodes {
+                    ...UserFavoriteMediaNode
                 }
             }
-            characters {
+            characters(page: 1, perPage: 10) {
+                pageInfo {
+                    ...PaginationInfo
+                }
                 edges {
                     ...DetailsCharacterEdge
-                    favouriteOrder
                 }
             }
-            staff {
-                edges {
-                    favouriteOrder
-                    node {
-                        ...StaffNavigationData
-                        primaryOccupations
-                    }
+            staff(page: 1, perPage: 10) {
+                pageInfo {
+                    ...PaginationInfo
+                }
+                nodes {
+                    ...StaffNavigationData
+                    primaryOccupations
                 }
             }
-            studios {
-                edges {
-                    favouriteOrder
-                    node {
-                        id
-                        name
-                    }
+            studios(page: 1, perPage: 10) {
+                pageInfo {
+                    ...PaginationInfo
+                }
+                nodes {
+                    ...StudioListRowFragment
                 }
             }
         }
@@ -97,6 +98,82 @@ query UserById($id: Int!) {
                 meanScore
                 chaptersRead
                 ...UserMediaStatistics
+            }
+        }
+    }
+}
+
+query UserDetailsAnimePage($userId: Int!, $page: Int!, $perPage: Int!) {
+    User(id: $userId) @nonnull {
+        favourites @nonnull {
+            anime(page: $page, perPage: $perPage) @nonnull {
+                pageInfo @nonnull {
+                    ...PaginationInfo
+                }
+                nodes @nonnull {
+                    ...UserFavoriteMediaNode
+                }
+            }
+        }
+    }
+}
+
+query UserDetailsMangaPage($userId: Int!, $page: Int!, $perPage: Int!) {
+    User(id: $userId) @nonnull {
+        favourites @nonnull {
+            manga(page: $page, perPage: $perPage) @nonnull {
+                pageInfo @nonnull {
+                    ...PaginationInfo
+                }
+                nodes @nonnull {
+                    ...UserFavoriteMediaNode
+                }
+            }
+        }
+    }
+}
+
+query UserDetailsCharactersPage($userId: Int!, $page: Int!, $perPage: Int!) {
+    User(id: $userId) @nonnull {
+        favourites @nonnull {
+            characters(page: $page, perPage: $perPage) @nonnull {
+                pageInfo @nonnull {
+                    ...PaginationInfo
+                }
+                edges @nonnull {
+                    ...DetailsCharacterEdge
+                }
+            }
+        }
+    }
+}
+
+query UserDetailsStaffPage($userId: Int!, $page: Int!, $perPage: Int!) {
+    User(id: $userId) @nonnull {
+        favourites @nonnull {
+            staff(page: $page, perPage: $perPage) @nonnull {
+                pageInfo @nonnull {
+                    ...PaginationInfo
+                }
+                nodes @nonnull {
+                    ...StaffNavigationData
+                    primaryOccupations
+                }
+            }
+        }
+    }
+}
+
+query UserDetailsStudiosPage($userId: Int!, $page: Int!, $perPage: Int!) {
+    User(id: $userId) @nonnull {
+        favourites @nonnull {
+            studios(page: $page, perPage: $perPage) @nonnull {
+                pageInfo @nonnull {
+                    ...PaginationInfo
+                }
+                nodes @nonnull {
+                    ...StudioListRowFragment
+                }
             }
         }
     }

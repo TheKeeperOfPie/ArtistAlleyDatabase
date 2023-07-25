@@ -159,8 +159,10 @@ query MediaDetails($mediaId: Int!) {
             userPreferred
         }
 
-        # TODO: Handle pagination
-        characters(sort: [RELEVANCE, ROLE, FAVOURITES_DESC], perPage: 25) {
+        characters(sort: [RELEVANCE, ROLE, FAVOURITES_DESC], page: 1, perPage: 10) {
+            pageInfo {
+                ...PaginationInfo
+            }
             edges {
                 ...DetailsCharacterEdge
             }
@@ -172,7 +174,10 @@ query MediaDetails($mediaId: Int!) {
         duration
         favourites
         source
-        staff(sort: [RELEVANCE, ROLE, FAVOURITES_DESC]) {
+        staff(sort: [RELEVANCE, ROLE, FAVOURITES_DESC], page: 1, perPage: 10) {
+            pageInfo {
+                ...PaginationInfo
+            }
             edges {
                 role
                 node {
@@ -302,6 +307,37 @@ query MediaDetails($mediaId: Int!) {
         type
         volumes
         chapters
+    }
+}
+
+query MediaDetailsCharactersPage($mediaId: Int!, $page: Int!, $perPage: Int!) {
+    Media(id: $mediaId) @nonnull {
+        isAdult
+        characters(sort: [RELEVANCE, ROLE, FAVOURITES_DESC], page: $page, perPage: $perPage) @nonnull {
+            pageInfo @nonnull {
+                ...PaginationInfo
+            }
+            edges @nonnull {
+                ...DetailsCharacterEdge
+            }
+        }
+    }
+}
+
+query MediaDetailsStaffPage($mediaId: Int!, $page: Int!, $perPage: Int!) {
+    Media(id: $mediaId) @nonnull {
+        isAdult
+        staff(sort: [RELEVANCE, ROLE, FAVOURITES_DESC], page: $page, perPage: $perPage) @nonnull {
+            pageInfo @nonnull {
+                ...PaginationInfo
+            }
+            edges @nonnull{
+                role
+                node @nonnull {
+                    ...StaffNavigationData
+                }
+            }
+        }
     }
 }
 

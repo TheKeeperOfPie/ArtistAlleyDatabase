@@ -133,35 +133,52 @@ query CharacterDetails($id: Int!) {
         favourites
 
         # TODO: Pagination
-        media(sort: [POPULARITY_DESC], perPage: 5) {
+        media(sort: [POPULARITY_DESC], page: 1, perPage: 5) {
             pageInfo {
-                hasNextPage
+                ...PaginationInfo
             }
             edges {
-                characterName
-                characterRole
-                voiceActorRoles {
-                    voiceActor {
-                        ...StaffNavigationData
-                        name {
-                            full
-                        }
-                        languageV2
-                        favourites
-                    }
-
-                    # TODO: roleNotes, dubGroup?
-                    # roleNotes
-                    # dubGroup
-                }
-
-                node {
-                    ...MediaPreview
-                }
+                ...CharacterDetailsMediaEdge
             }
         }
 
         # TODO: Favorite
+    }
+}
+
+fragment CharacterDetailsMediaEdge on MediaEdge {
+    characterName
+    characterRole
+    voiceActorRoles {
+        voiceActor {
+            ...StaffNavigationData
+            name {
+                full
+            }
+            languageV2
+            favourites
+        }
+
+        # TODO: roleNotes, dubGroup?
+        # roleNotes
+        # dubGroup
+    }
+
+    node {
+        ...MediaPreview
+    }
+}
+
+query CharacterDetailsMediaPage($characterId: Int!, $page: Int!, $perPage: Int!) {
+    Character(id: $characterId) @nonnull {
+        media(sort: [POPULARITY_DESC], page: $page, perPage: $perPage) @nonnull {
+            pageInfo @nonnull {
+                ...PaginationInfo
+            }
+            edges @nonnull {
+                ...CharacterDetailsMediaEdge
+            }
+        }
     }
 }
 

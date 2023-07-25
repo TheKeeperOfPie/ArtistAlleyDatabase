@@ -24,7 +24,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ImageNotSupported
@@ -54,6 +53,9 @@ import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.ColorUtils
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.itemContentType
+import androidx.paging.compose.itemKey
 import coil.compose.AsyncImage
 import coil.compose.AsyncImagePainter
 import coil.request.ImageRequest
@@ -230,7 +232,7 @@ fun CharacterSmallCard(
 fun LazyListScope.charactersSection(
     screenKey: String,
     @StringRes titleRes: Int,
-    characters: List<DetailsCharacter>,
+    characters: LazyPagingItems<DetailsCharacter>,
     onCharacterClick: (CharacterNavigationData, favorite: Boolean?, imageWidthToHeightRatio: Float, color: Color?) -> Unit,
     onCharacterLongClick: (String) -> Unit,
     onStaffClick: (StaffNavigationData, favorite: Boolean?, imageWidthToHeightRatio: Float, color: Color?) -> Unit,
@@ -238,7 +240,7 @@ fun LazyListScope.charactersSection(
     @StringRes viewAllContentDescriptionTextRes: Int? = null,
     colorCalculationState: ColorCalculationState,
 ) {
-    if (characters.isEmpty()) return
+    if (characters.itemCount == 0) return
     item("charactersHeader-$titleRes") {
         DetailsSectionHeader(
             stringResource(titleRes),
@@ -252,23 +254,28 @@ fun LazyListScope.charactersSection(
             contentPadding = PaddingValues(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            items(characters, { it.id }) {
+            items(
+                count = characters.itemCount,
+                key = characters.itemKey { it.id },
+                contentType = characters.itemContentType { "character" },
+            ) {
+                val character = characters[it]
                 var imageWidthToHeightRatio by remember { MutableSingle(1f) }
                 var innerImageWidthToHeightRatio by remember { MutableSingle(1f) }
-                val voiceActor = (it.languageToVoiceActor["Japanese"]
-                    ?: it.languageToVoiceActor.values.firstOrNull())
+                val voiceActor = (character?.languageToVoiceActor?.get("Japanese")
+                    ?: character?.languageToVoiceActor?.values?.firstOrNull())
                 CharacterSmallCard(
                     screenKey = screenKey,
-                    id = EntryId("anime_character", it.id),
-                    image = it.image,
+                    id = EntryId("anime_character", character?.id.orEmpty()),
+                    image = character?.image,
                     colorCalculationState = colorCalculationState,
                     onClick = {
-                        it.character?.let {
+                        character?.character?.let {
                             onCharacterClick(
-                                it,
+                                character.character,
                                 null,
                                 imageWidthToHeightRatio,
-                                colorCalculationState.getColors(it.id.toString()).first,
+                                colorCalculationState.getColors(character.id).first,
                             )
                         }
                     },
@@ -290,7 +297,7 @@ fun LazyListScope.charactersSection(
                     },
                 ) { textColor ->
                     AutoHeightText(
-                        text = it.name.orEmpty(),
+                        text = character?.name.orEmpty(),
                         color = textColor,
                         style = MaterialTheme.typography.bodyMedium.copy(
                             lineBreak = LineBreak(

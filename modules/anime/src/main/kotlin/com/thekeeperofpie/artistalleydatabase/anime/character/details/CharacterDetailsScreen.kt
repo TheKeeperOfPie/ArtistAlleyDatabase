@@ -41,6 +41,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
 import com.anilist.AuthedUserQuery
 import com.anilist.CharacterDetailsQuery.Data.Character
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
@@ -130,6 +132,7 @@ object CharacterDetailsScreen {
                         errorResource = { viewModel.errorResource },
                     )
                 } else {
+                    val voiceActors = viewModel.voiceActors.collectAsLazyPagingItems()
                     LazyColumn(
                         contentPadding = PaddingValues(bottom = 16.dp),
                         modifier = Modifier
@@ -141,6 +144,7 @@ object CharacterDetailsScreen {
                             editViewModel = editViewModel,
                             headerValues = headerValues,
                             entry = it,
+                            voiceActors = voiceActors,
                             viewer = viewer,
                             characterImageWidthToHeightRatio = { characterImageWidthToHeightRatio },
                             expandedState = expandedState,
@@ -158,6 +162,7 @@ object CharacterDetailsScreen {
         editViewModel: MediaEditViewModel,
         headerValues: CharacterHeaderValues,
         entry: Entry,
+        voiceActors: LazyPagingItems<DetailsStaff>,
         viewer: AuthedUserQuery.Data.Viewer?,
         characterImageWidthToHeightRatio: () -> Float,
         expandedState: ExpandedState,
@@ -173,7 +178,7 @@ object CharacterDetailsScreen {
         staffSection(
             screenKey = AnimeNavDestinations.CHARACTER_DETAILS.id,
             titleRes = R.string.anime_character_details_voice_actors_label,
-            staff = entry.voiceActors,
+            staffList = voiceActors,
             onStaffClick = navigationCallback::onStaffClick,
             onStaffLongClick = navigationCallback::onStaffLongClick,
             colorCalculationState = colorCalculationState,
@@ -402,22 +407,7 @@ object CharacterDetailsScreen {
         val character: Character,
         val media: List<AnimeMediaListRow.Entry<*>>,
     ) {
-        val voiceActors = character.media?.edges?.filterNotNull()
-            ?.flatMap {
-                it.voiceActorRoles?.filterNotNull()
-                    ?.mapNotNull { it.voiceActor }
-                    ?.map {
-                        DetailsStaff(
-                            id = it.id.toString(),
-                            name = it.name?.userPreferred,
-                            image = it.image?.large,
-                            role = it.languageV2,
-                            staff = it,
-                        )
-                    }
-                    .orEmpty()
-            }.orEmpty()
-            .distinctBy { it.id }
+        val voiceActors = character.media?.edges
 
         val mediaHasMore = character.media?.pageInfo?.hasNextPage == true
     }

@@ -12,12 +12,18 @@ import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import androidx.paging.cachedIn
+import androidx.paging.map
 import com.anilist.MediaActivityPageQuery
 import com.anilist.MediaDetailsQuery
 import com.anilist.type.ActivitySort
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListPagingSource
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListOAuthStore
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
@@ -28,6 +34,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityStatusAware
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityToggleHelper
+import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils
+import com.thekeeperofpie.artistalleydatabase.anime.character.DetailsCharacter
 import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoritesController
 import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoritesToggleHelper
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
@@ -35,6 +43,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toFavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaFiltering
+import com.thekeeperofpie.artistalleydatabase.anime.staff.DetailsStaff
+import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIds
 import com.thekeeperofpie.artistalleydatabase.animethemes.AnimeThemesApi
 import com.thekeeperofpie.artistalleydatabase.animethemes.AnimeThemesUtils
 import com.thekeeperofpie.artistalleydatabase.animethemes.models.AnimeTheme
@@ -42,6 +52,7 @@ import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDao
 import com.thekeeperofpie.artistalleydatabase.cds.grid.CdEntryGridModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
@@ -94,6 +105,8 @@ class AnimeMediaDetailsViewModel @Inject constructor(
     var entry by mutableStateOf<AnimeMediaDetailsScreen.Entry?>(null)
     var listStatus by mutableStateOf<MediaListStatusController.Update?>(null)
     var activities by mutableStateOf<List<ActivityEntry>?>(null)
+    val characters = MutableStateFlow(PagingData.empty<DetailsCharacter>())
+    val staff = MutableStateFlow(PagingData.empty<DetailsStaff>())
 
     var errorResource by mutableStateOf<Pair<Int, Exception?>?>(null)
     var animeSongs by mutableStateOf<AnimeSongs?>(null)
@@ -237,6 +250,71 @@ class AnimeMediaDetailsViewModel @Inject constructor(
                         listStatus = it
                     }
                 }
+        }
+
+        viewModelScope.launch(CustomDispatchers.IO) {
+            snapshotFlow { entry?.media?.let { it.id.toString() to it.characters } }
+                .filterNotNull()
+                .flowOn(CustomDispatchers.Main)
+                .flatMapLatest { (mediaId, characters) ->
+                    Pager(config = PagingConfig(10)) {
+                        AniListPagingSource {
+                            if (it == 1) {
+                                characters?.pageInfo to characters?.edges?.filterNotNull().orEmpty()
+                            } else {
+                                val result =
+                                    aniListApi.mediaDetailsCharactersPage(mediaId, it).characters
+                                result.pageInfo to result.edges.filterNotNull()
+                            }
+                        }
+                    }.flow
+                }
+                .mapLatest { it.map(CharacterUtils::toDetailsCharacter) }
+                .enforceUniqueIds { it.id }
+                .cachedIn(viewModelScope)
+                .collectLatest(characters::emit)
+        }
+
+        viewModelScope.launch(CustomDispatchers.IO) {
+            snapshotFlow { entry?.media?.let { it.id.toString() to it.staff } }
+                .filterNotNull()
+                .flowOn(CustomDispatchers.Main)
+                .flatMapLatest { (mediaId, staff) ->
+                    Pager(config = PagingConfig(10)) {
+                        AniListPagingSource {
+                            if (it == 1) {
+                                staff?.pageInfo to staff?.edges?.filterNotNull().orEmpty()
+                                    .mapNotNull {
+                                        val role = it.role
+                                        it.node?.let {
+                                            DetailsStaff(
+                                                id = it.id.toString(),
+                                                name = it.name?.userPreferred,
+                                                image = it.image?.large,
+                                                role = role,
+                                                staff = it
+                                            )
+                                        }
+                                    }
+                            } else {
+                                val result =
+                                    aniListApi.mediaDetailsStaffPage(mediaId, it).staff
+                                result.pageInfo to result.edges.filterNotNull().map {
+                                    DetailsStaff(
+                                        id = it.node.id.toString(),
+                                        name = it.node.name?.userPreferred,
+                                        image = it.node.image?.large,
+                                        role = it.role,
+                                        staff = it.node,
+                                    )
+                                }
+                            }
+                        }
+                    }.flow
+                }
+                .enforceUniqueIds { it.id }
+                .cachedIn(viewModelScope)
+                .collectLatest(staff::emit)
         }
 
         viewModelScope.launch(CustomDispatchers.IO) {

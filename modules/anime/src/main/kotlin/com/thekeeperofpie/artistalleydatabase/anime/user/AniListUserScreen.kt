@@ -43,9 +43,7 @@ import com.anilist.UserByIdQuery.Data.User
 import com.anilist.fragment.UserMediaStatistics
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
-import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
-import com.thekeeperofpie.artistalleydatabase.anime.staff.DetailsStaff
 import com.thekeeperofpie.artistalleydatabase.anime.user.social.UserSocialScreen
 import com.thekeeperofpie.artistalleydatabase.anime.user.stats.UserMediaScreen
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
@@ -206,6 +204,7 @@ object AniListUserScreen {
                             when (UserTab.values()[it]) {
                                 UserTab.OVERVIEW -> UserOverviewScreen(
                                     entry = entry,
+                                    viewModel = viewModel,
                                     viewer = viewModel.viewer.collectAsState(null).value,
                                     isFollowing = { viewModel.isFollowing },
                                     onFollowingClick = viewModel::toggleFollow,
@@ -216,7 +215,7 @@ object AniListUserScreen {
                                 UserTab.ANIME_STATS -> UserMediaScreen(
                                     user = { user },
                                     statistics = { viewModel.entry?.statisticsAnime },
-                                    state = viewModel.animeStates,
+                                    state = viewModel.animeStats,
                                     colorCalculationState = colorCalculationState,
                                     navigationCallback = navigationCallback,
                                     bottomNavigationState = bottomNavigationState,
@@ -224,7 +223,7 @@ object AniListUserScreen {
                                 UserTab.MANGA_STATS -> UserMediaScreen(
                                     user = { user },
                                     statistics = { viewModel.entry?.statisticsManga },
-                                    state = viewModel.mangaStates,
+                                    state = viewModel.mangaStats,
                                     colorCalculationState = colorCalculationState,
                                     navigationCallback = navigationCallback,
                                     bottomNavigationState = bottomNavigationState,
@@ -254,43 +253,6 @@ object AniListUserScreen {
     data class Entry(
         val user: User,
     ) {
-        val anime = user.favourites?.anime?.edges
-            ?.sortedBy { it?.favouriteOrder ?: 0 }
-            ?.mapNotNull { it?.node }
-            .orEmpty()
-
-        val manga = user.favourites?.manga?.edges
-            ?.sortedBy { it?.favouriteOrder ?: 0 }
-            ?.mapNotNull { it?.node }
-            .orEmpty()
-
-        val characters = user.favourites?.characters?.edges
-            ?.sortedBy { it?.favouriteOrder ?: 0 }
-            .let(CharacterUtils::toDetailsCharacters)
-
-        val staff = user.favourites?.staff?.edges?.filterNotNull()
-            ?.sortedBy { it.favouriteOrder ?: 0 }
-            ?.mapNotNull { it.node }
-            ?.map {
-                DetailsStaff(
-                    id = it.id.toString(),
-                    name = it.name?.userPreferred,
-                    image = it.image?.large,
-                    role = it.primaryOccupations?.filterNotNull()?.firstOrNull(),
-                    staff = it,
-                )
-            }.orEmpty().distinctBy { it.id }
-
-        val studios = user.favourites?.studios?.edges?.filterNotNull()
-            ?.sortedBy { it.favouriteOrder ?: 0 }
-            ?.mapNotNull {
-                Studio(
-                    id = it.node?.id?.toString() ?: return@mapNotNull null,
-                    name = it.node?.name ?: return@mapNotNull null,
-                )
-            }
-            .orEmpty()
-
         val statisticsAnime = user.statistics?.anime?.let(::Statistics)
         val statisticsManga = user.statistics?.manga?.let(::Statistics)
 

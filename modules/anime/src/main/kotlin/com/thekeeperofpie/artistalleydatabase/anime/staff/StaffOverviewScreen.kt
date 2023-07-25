@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.paging.compose.collectAsLazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
@@ -35,6 +36,7 @@ object StaffOverviewScreen {
         expandedState: StaffDetailsScreen.ExpandedState,
         navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
+        val characters = viewModel.characters.collectAsLazyPagingItems()
         LazyColumn(
             contentPadding = PaddingValues(bottom = 16.dp),
             modifier = Modifier.fillMaxSize()
@@ -48,7 +50,7 @@ object StaffOverviewScreen {
             charactersSection(
                 screenKey = AnimeNavDestinations.STAFF_DETAILS.id,
                 titleRes = R.string.anime_staff_details_characters_label,
-                characters = entry.characters,
+                characters = characters,
                 onCharacterClick = navigationCallback::onCharacterClick,
                 onCharacterLongClick = navigationCallback::onCharacterLongClick,
                 onStaffClick = navigationCallback::onStaffClick,

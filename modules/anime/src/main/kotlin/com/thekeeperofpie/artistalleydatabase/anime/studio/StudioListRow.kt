@@ -21,9 +21,10 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.anilist.StudioSearchQuery
 import com.anilist.fragment.MediaNavigationData
+import com.anilist.fragment.StudioListRowFragment
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.material.placeholder
 import com.google.accompanist.placeholder.material.shimmer
@@ -41,9 +42,10 @@ object StudioListRow {
     operator fun invoke(
         screenKey: String,
         entry: Entry?,
+        navigationCallback: AnimeNavigator.NavigationCallback,
         modifier: Modifier = Modifier,
-        navigationCallback: AnimeNavigator.NavigationCallback =
-            AnimeNavigator.NavigationCallback(null),
+        mediaWidth: Dp = 120.dp,
+        mediaHeight: Dp = 180.dp,
     ) {
         ElevatedCard(
             onClick = {
@@ -77,6 +79,8 @@ object StudioListRow {
                 MediaRow(
                     screenKey = screenKey,
                     entry = entry,
+                    mediaWidth = mediaWidth,
+                    mediaHeight = mediaHeight,
                     navigationCallback = navigationCallback,
                 )
             }
@@ -102,6 +106,8 @@ object StudioListRow {
     private fun MediaRow(
         screenKey: String,
         entry: Entry?,
+        mediaWidth: Dp,
+        mediaHeight: Dp,
         navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
         val media = entry?.media?.takeIf { it.isNotEmpty() }
@@ -114,7 +120,7 @@ object StudioListRow {
             modifier = Modifier
                 // SubcomposeLayout doesn't support fill max width, so use a really large number.
                 // The parent will clamp the actual width so all content still fits on screen.
-                .size(width = LocalConfiguration.current.screenWidthDp.dp, height = 180.dp)
+                .size(width = LocalConfiguration.current.screenWidthDp.dp, height = mediaHeight)
                 .fadingEdgeEnd()
         ) {
             itemsIndexed(
@@ -133,8 +139,8 @@ object StudioListRow {
                                 navigationCallback.onMediaClick(item.media, ratio)
                             }
                         },
-                        width = 120.dp,
-                        height = 180.dp,
+                        width = mediaWidth,
+                        height = mediaHeight,
                     )
                 }
             }
@@ -142,7 +148,7 @@ object StudioListRow {
     }
 
     data class Entry(
-        val studio: StudioSearchQuery.Data.Page.Studio,
+        val studio: StudioListRowFragment,
         val media: List<MediaEntry>,
     ) {
         data class MediaEntry(

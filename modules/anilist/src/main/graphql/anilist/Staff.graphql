@@ -40,8 +40,24 @@ query StaffDetails($id: Int!) {
             day
         }
         # TODO: Handle pagination
-        characters(sort: [FAVOURITES_DESC], perPage: 25) {
+        characters(sort: [FAVOURITES_DESC], page: 1, perPage: 10) {
+            pageInfo {
+                ...PaginationInfo
+            }
             nodes {
+                ...CharacterNavigationData
+            }
+        }
+    }
+}
+
+query StaffDetailsCharactersPage($staffId: Int!, $page: Int!, $perPage: Int!) {
+    Staff(id: $staffId) @nonnull {
+        characters(sort: [FAVOURITES_DESC], page: $page, perPage: $perPage) @nonnull {
+            pageInfo @nonnull {
+                ...PaginationInfo
+            }
+            nodes @nonnull {
                 ...CharacterNavigationData
             }
         }

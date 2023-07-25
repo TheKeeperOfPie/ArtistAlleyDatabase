@@ -33,7 +33,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.anilist.StaffDetailsQuery.Data.Staff
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
-import com.thekeeperofpie.artistalleydatabase.anime.character.DetailsCharacter
 import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.compose.CollapsingToolbar
@@ -166,16 +165,7 @@ object StaffDetailsScreen {
         }
     }
 
-    data class Entry(val staff: Staff, val showAdult: Boolean) {
-        val characters = staff.characters?.nodes?.filterNotNull().orEmpty().map {
-            DetailsCharacter(
-                id = it.id.toString(),
-                name = it.name?.userPreferred,
-                image = it.image?.large,
-                character = it,
-            )
-        }
-    }
+    data class Entry(val staff: Staff, val showAdult: Boolean)
 
     @Composable
     private fun rememberExpandedState() = rememberSaveable(saver = listSaver(

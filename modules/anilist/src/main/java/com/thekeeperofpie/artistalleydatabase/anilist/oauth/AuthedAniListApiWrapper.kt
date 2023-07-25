@@ -124,6 +124,19 @@ class AuthedAniListApiWrapper(
         )
     }
 
+    override suspend fun mediaDetailsCharactersPage(
+        mediaId: String,
+        page: Int,
+        perPage: Int,
+    ) = super.mediaDetailsCharactersPage(mediaId, page, perPage).also {
+        if (it.isAdult != false) throw IOException("Cannot load this media")
+    }
+
+    override suspend fun mediaDetailsStaffPage(mediaId: String, page: Int, perPage: Int) =
+        super.mediaDetailsStaffPage(mediaId, page, perPage).also {
+            if (it.isAdult != false) throw IOException("Cannot load this media")
+        }
+
     override suspend fun mediaTitlesAndImages(mediaIds: List<Int>) =
         super.mediaTitlesAndImages(mediaIds).let {
             it.filter { it.isAdult == false }
@@ -202,6 +215,12 @@ class AuthedAniListApiWrapper(
 
     override suspend fun staffDetails(id: String) = super.staffDetails(id)
 
+    override suspend fun staffDetailsCharactersPage(
+        staffId: String,
+        page: Int,
+        perPage: Int,
+    ) = super.staffDetailsCharactersPage(staffId, page, perPage)
+
     override suspend fun staffDetailsCharacterMediaPagination(
         id: String,
         page: Int,
@@ -234,11 +253,42 @@ class AuthedAniListApiWrapper(
     override suspend fun user(id: String) = super.user(id).let {
         it?.copy(
             favourites = it?.favourites?.copy(
-                anime = it.favourites.anime?.copy(edges = it.favourites.anime.edges?.filter { it?.node?.isAdult == false }),
-                manga = it.favourites.manga?.copy(edges = it.favourites.manga.edges?.filter { it?.node?.isAdult == false }),
+                anime = it.favourites.anime?.copy(nodes = it.favourites.anime.nodes?.filter { it?.isAdult == false }),
+                manga = it.favourites.manga?.copy(nodes = it.favourites.manga.nodes?.filter { it?.isAdult == false }),
             )
         )
     }
+
+    override suspend fun userDetailsAnimePage(
+        userId: String,
+        page: Int,
+        perPage: Int,
+    ) = super.userDetailsAnimePage(userId, page, perPage).let {
+        it.copy(nodes = it.nodes.filter { it?.isAdult == false })
+    }
+
+    override suspend fun userDetailsMangaPage(
+        userId: String,
+        page: Int,
+        perPage: Int,
+    ) = super.userDetailsMangaPage(userId, page, perPage).let {
+        it.copy(nodes = it.nodes.filter { it?.isAdult == false })
+    }
+
+    override suspend fun userDetailsCharactersPage(userId: String, page: Int, perPage: Int) =
+        super.userDetailsCharactersPage(userId, page, perPage)
+
+    override suspend fun userDetailsStaffPage(
+        userId: String,
+        page: Int,
+        perPage: Int,
+    ) = super.userDetailsStaffPage(userId, page, perPage)
+
+    override suspend fun userDetailsStudiosPage(
+        userId: String,
+        page: Int,
+        perPage: Int,
+    ) = super.userDetailsStudiosPage(userId, page, perPage)
 
     override suspend fun homeAnime(perPage: Int) = super.homeAnime(perPage).let {
         it.copy(

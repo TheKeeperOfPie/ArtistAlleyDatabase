@@ -54,6 +54,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.ColorUtils
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.itemContentType
+import androidx.paging.compose.itemKey
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import coil.size.Dimension
@@ -128,7 +131,7 @@ fun <T> LazyListScope.mediaListSection(
 fun LazyListScope.mediaHorizontalRow(
     screenKey: String,
     @StringRes titleRes: Int,
-    entries: List<MediaNavigationData>,
+    entries: LazyPagingItems<out MediaNavigationData>,
     onClickEntry: (MediaNavigationData, imageWidthToHeightRatio: Float) -> Unit,
     colorCalculationState: ColorCalculationState,
     showTitle: Boolean = true,
@@ -136,7 +139,7 @@ fun LazyListScope.mediaHorizontalRow(
         DetailsSectionHeader(stringResource(titleRes))
     },
 ) {
-    if (entries.isEmpty()) return
+    if (entries.itemCount == 0) return
     item("$titleRes-header") { sectionTitle() }
 
     item("$titleRes-media") {
@@ -147,9 +150,14 @@ fun LazyListScope.mediaHorizontalRow(
             contentPadding = PaddingValues(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            items(entries, { it.id }) {
-                val id = it.id.toString()
-                val colors = colorCalculationState.colorMap[id]
+            items(
+                count = entries.itemCount,
+                key = entries.itemKey { it.id },
+                contentType = entries.itemContentType { "media" },
+            ) {
+                val media = entries[it]
+                val mediaId = media?.id?.toString()
+                val colors = colorCalculationState.colorMap[mediaId]
                 val animationProgress by animateIntAsState(
                     if (colors == null) 0 else 255,
                     label = "Media card color fade in",
@@ -172,32 +180,38 @@ fun LazyListScope.mediaHorizontalRow(
 
                 var widthToHeightRatio by remember { MutableSingle<Float?>(null) }
                 ElevatedCard(
-                    onClick = { onClickEntry(it, widthToHeightRatio ?: 1f) },
+                    onClick = {
+                        if (media != null) {
+                            onClickEntry(media, widthToHeightRatio ?: 1f)
+                        }
+                    },
                     colors = CardDefaults.elevatedCardColors(containerColor = containerColor),
                     modifier = Modifier.animateItemPlacement(),
                 ) {
                     SharedElement(
-                        key = "anime_media_${it.id}_image",
+                        key = "anime_media_${media?.id}_image",
                         screenKey = screenKey,
                     ) {
                         AsyncImage(
                             model = ImageRequest.Builder(LocalContext.current)
-                                .data(it.coverImage?.extraLarge)
+                                .data(media?.coverImage?.extraLarge)
                                 .crossfade(true)
-                                .allowHardware(colorCalculationState.hasColor(id))
+                                .allowHardware(colorCalculationState.hasColor(mediaId))
                                 .size(width = coilWidth, height = coilHeight)
                                 .build(),
                             contentScale = ContentScale.FillHeight,
                             contentDescription = stringResource(R.string.anime_media_cover_image_content_description),
                             onSuccess = {
                                 widthToHeightRatio = it.widthToHeightRatio()
-                                ComposeColorUtils.calculatePalette(
-                                    id = id,
-                                    success = it,
-                                    colorCalculationState = colorCalculationState,
-                                    heightStartThreshold = 3 / 4f,
-                                    selectMaxPopulation = true,
-                                )
+                                if (mediaId != null) {
+                                    ComposeColorUtils.calculatePalette(
+                                        id = mediaId,
+                                        success = it,
+                                        colorCalculationState = colorCalculationState,
+                                        heightStartThreshold = 3 / 4f,
+                                        selectMaxPopulation = true,
+                                    )
+                                }
                             },
                             modifier = Modifier
                                 .size(width = 120.dp, height = 180.dp)
@@ -207,7 +221,7 @@ fun LazyListScope.mediaHorizontalRow(
 
                     if (showTitle) {
                         Text(
-                            text = it.title?.userPreferred.orEmpty(),
+                            text = media?.title?.userPreferred.orEmpty(),
                             color = ComposeColorUtils.bestTextColor(containerColor)
                                 ?: Color.Unspecified,
                             style = MaterialTheme.typography.bodyMedium,

@@ -8,6 +8,7 @@ import com.anilist.AuthedUserQuery
 import com.anilist.CharacterAdvancedSearchQuery
 import com.anilist.CharacterAndMediasPaginationQuery
 import com.anilist.CharacterAndMediasQuery
+import com.anilist.CharacterDetailsMediaPageQuery
 import com.anilist.CharacterDetailsQuery
 import com.anilist.DeleteMediaListEntryMutation
 import com.anilist.GenresQuery
@@ -23,7 +24,9 @@ import com.anilist.MediaAndRecommendationsQuery
 import com.anilist.MediaAndReviewsPaginationQuery
 import com.anilist.MediaAndReviewsQuery
 import com.anilist.MediaByIdsQuery
+import com.anilist.MediaDetailsCharactersPageQuery
 import com.anilist.MediaDetailsQuery
+import com.anilist.MediaDetailsStaffPageQuery
 import com.anilist.MediaListEntryQuery
 import com.anilist.MediaTagsQuery
 import com.anilist.MediaTitlesAndImagesQuery
@@ -33,6 +36,7 @@ import com.anilist.SaveMediaListEntryMutation
 import com.anilist.StaffAndCharactersPaginationQuery
 import com.anilist.StaffAndCharactersQuery
 import com.anilist.StaffDetailsCharacterMediaPaginationQuery
+import com.anilist.StaffDetailsCharactersPageQuery
 import com.anilist.StaffDetailsQuery
 import com.anilist.StaffDetailsStaffMediaPaginationQuery
 import com.anilist.StaffSearchQuery
@@ -54,6 +58,11 @@ import com.anilist.ToggleStaffResultQuery
 import com.anilist.ToggleStudioFavoriteMutation
 import com.anilist.ToggleStudioResultQuery
 import com.anilist.UserByIdQuery
+import com.anilist.UserDetailsAnimePageQuery
+import com.anilist.UserDetailsCharactersPageQuery
+import com.anilist.UserDetailsMangaPageQuery
+import com.anilist.UserDetailsStaffPageQuery
+import com.anilist.UserDetailsStudiosPageQuery
 import com.anilist.UserMediaListQuery
 import com.anilist.UserSearchQuery
 import com.anilist.UserSocialActivityQuery
@@ -241,6 +250,24 @@ open class AuthedAniListApi(
 
     open suspend fun mediaDetails(id: String) = query(MediaDetailsQuery(id.toInt())).media!!
 
+    open suspend fun mediaDetailsCharactersPage(mediaId: String, page: Int, perPage: Int = 10) =
+        query(
+            MediaDetailsCharactersPageQuery(
+                mediaId = mediaId.toInt(),
+                page = page,
+                perPage = perPage,
+            )
+        ).media
+
+    open suspend fun mediaDetailsStaffPage(mediaId: String, page: Int, perPage: Int = 10) =
+        query(
+            MediaDetailsStaffPageQuery(
+                mediaId = mediaId.toInt(),
+                page = page,
+                perPage = perPage,
+            )
+        ).media
+
     open suspend fun mediaTitlesAndImages(mediaIds: List<Int>) =
         query(MediaTitlesAndImagesQuery(ids = Optional.present(mediaIds)))
             .page?.media?.filterNotNull().orEmpty()
@@ -318,6 +345,10 @@ open class AuthedAniListApi(
     open suspend fun characterDetails(id: String) = query(CharacterDetailsQuery(id.toInt()))
         .character!!
 
+    open suspend fun characterDetailsMediaPage(characterId: String, page: Int, perPage: Int = 5,) =
+        query(CharacterDetailsMediaPageQuery(characterId = characterId.toInt(), page = page, perPage = perPage))
+            .character!!
+
     open suspend fun searchStaff(
         query: String,
         page: Int? = null,
@@ -335,6 +366,15 @@ open class AuthedAniListApi(
     )
 
     open suspend fun staffDetails(id: String) = query(StaffDetailsQuery(id.toInt())).staff!!
+
+    open suspend fun staffDetailsCharactersPage(staffId: String, page: Int, perPage: Int = 10) =
+        query(
+            StaffDetailsCharactersPageQuery(
+                staffId = staffId.toInt(),
+                page = page,
+                perPage = perPage,
+            )
+        ).staff.characters
 
     open suspend fun staffDetailsCharacterMediaPagination(id: String, page: Int) =
         query(
@@ -369,6 +409,51 @@ open class AuthedAniListApi(
     )
 
     open suspend fun user(id: String) = query(UserByIdQuery(id.toInt())).user
+
+    open suspend fun userDetailsAnimePage(userId: String, page: Int, perPage: Int = 10) =
+        query(
+            UserDetailsAnimePageQuery(
+                userId = userId.toInt(),
+                page = page,
+                perPage = perPage,
+            )
+        ).user.favourites.anime
+
+    open suspend fun userDetailsMangaPage(userId: String, page: Int, perPage: Int = 10) =
+        query(
+            UserDetailsMangaPageQuery(
+                userId = userId.toInt(),
+                page = page,
+                perPage = perPage,
+            )
+        ).user.favourites.manga
+
+    open suspend fun userDetailsCharactersPage(userId: String, page: Int, perPage: Int = 10) =
+        query(
+            UserDetailsCharactersPageQuery(
+                userId = userId.toInt(),
+                page = page,
+                perPage = perPage,
+            )
+        ).user.favourites.characters
+
+    open suspend fun userDetailsStaffPage(userId: String, page: Int, perPage: Int = 10) =
+        query(
+            UserDetailsStaffPageQuery(
+                userId = userId.toInt(),
+                page = page,
+                perPage = perPage,
+            )
+        ).user.favourites.staff
+
+    open suspend fun userDetailsStudiosPage(userId: String, page: Int, perPage: Int = 10) =
+        query(
+            UserDetailsStudiosPageQuery(
+                userId = userId.toInt(),
+                page = page,
+                perPage = perPage,
+            )
+        ).user.favourites.studios
 
     fun logOut() {
         scopedApplication.scope.launch(CustomDispatchers.IO) {

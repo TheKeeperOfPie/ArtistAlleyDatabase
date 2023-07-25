@@ -3,6 +3,17 @@ fragment StudioNavigationData on Studio {
     name
 }
 
+fragment StudioListRowFragment on Studio {
+    ...StudioNavigationData
+    isAnimationStudio
+    favourites
+    media(sort: [FAVOURITES_DESC], perPage: 5, isMain: true) {
+        nodes {
+            ...MediaNavigationData
+        }
+    }
+}
+
 query StudioSearch(
     $page: Int!,
     $perPage: Int!,
@@ -15,17 +26,11 @@ query StudioSearch(
         }
 
         studios(search: $search, sort: $sort) {
-            ...StudioNavigationData
-            isAnimationStudio
-            favourites
-            media(sort: [FAVOURITES_DESC], perPage: 5, isMain: true) {
-                nodes {
-                    ...MediaNavigationData
-                }
-            }
+            ...StudioListRowFragment
         }
     }
 }
+
 query StudioMedias(
     $studioId: Int!,
     $sort: [MediaSort]!,

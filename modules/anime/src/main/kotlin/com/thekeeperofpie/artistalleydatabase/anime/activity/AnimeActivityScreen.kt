@@ -3,6 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.anime.activity
 import android.annotation.SuppressLint
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -10,6 +11,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
@@ -21,6 +26,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
@@ -51,7 +57,10 @@ import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@OptIn(
+    ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class,
+    ExperimentalMaterialApi::class
+)
 object AnimeActivityScreen {
 
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -83,7 +92,9 @@ object AnimeActivityScreen {
                         Column {
                             AppBar(
                                 text = stringResource(R.string.anime_activity_title),
-                                upIconOption = UpIconOption.Back { navigationCallback.navigateUp() },
+                                upIconOption = UpIconOption.Back {
+                                    navigationCallback.navigateUp()
+                                },
                             )
 
                             val scope = rememberCoroutineScope()
@@ -101,7 +112,11 @@ object AnimeActivityScreen {
                                         scope.launch { pagerState.animateScrollToPage(1) }
                                     },
                                     text = {
-                                        Text(text = stringResource(R.string.anime_activity_tab_following))
+                                        Text(
+                                            text = stringResource(
+                                                R.string.anime_activity_tab_following
+                                            )
+                                        )
                                     }
                                 )
                                 Tab(
@@ -109,7 +124,13 @@ object AnimeActivityScreen {
                                     onClick = {
                                         scope.launch { pagerState.animateScrollToPage(2) }
                                     },
-                                    text = { Text(text = stringResource(R.string.anime_activity_tab_global)) }
+                                    text = {
+                                        Text(
+                                            text = stringResource(
+                                                R.string.anime_activity_tab_global
+                                            )
+                                        )
+                                    }
                                 )
                             }
                         }
@@ -172,66 +193,82 @@ object AnimeActivityScreen {
                 if (activities.itemCount == 0) {
                     AnimeMediaListScreen.NoResults(modifier = Modifier.padding(top = topBarPadding))
                 } else {
-                    LazyColumn(
-                        contentPadding = PaddingValues(
-                            start = 16.dp,
-                            end = 16.dp,
-                            top = 16.dp + topBarPadding,
-                            bottom = 72.dp,
-                        ),
-                        verticalArrangement = Arrangement.spacedBy(16.dp),
-                    ) {
-                        items(
-                            count = activities.itemCount,
-                            key = activities.itemKey { it.activityId.scopedId },
-                            contentType = activities.itemContentType { it.activityId.type }
+                    val refreshing = activities.loadState.refresh is LoadState.Loading
+                    val pullRefreshState = rememberPullRefreshState(
+                        refreshing = refreshing,
+                        onRefresh = { activities.refresh() },
+                    )
+                    Box {
+                        LazyColumn(
+                            contentPadding = PaddingValues(
+                                start = 16.dp,
+                                end = 16.dp,
+                                top = 16.dp + topBarPadding,
+                                bottom = 72.dp,
+                            ),
+                            verticalArrangement = Arrangement.spacedBy(16.dp),
+                            modifier = Modifier.pullRefresh(state = pullRefreshState)
                         ) {
-                            val entry = activities[it]
-                            when (val activity = entry?.activity) {
-                                is TextActivityActivity -> TextActivitySmallCard(
-                                    viewer = viewer,
-                                    activity = activity,
-                                    entry = entry,
-                                    onActivityStatusUpdate = onActivityStatusUpdate,
-                                    navigationCallback = navigationCallback,
-                                    clickable = true,
-                                    modifier = Modifier.fillMaxWidth()
-                                )
-                                is ListActivityActivity -> ListActivitySmallCard(
-                                    screenKey = AnimeNavDestinations.ACTIVITY.id,
-                                    viewer = viewer,
-                                    activity = activity,
-                                    media = activity.media,
-                                    entry = entry,
-                                    onActivityStatusUpdate = onActivityStatusUpdate,
-                                    colorCalculationState = colorCalculationState,
-                                    navigationCallback = navigationCallback,
-                                    clickable = true,
-                                    modifier = Modifier.fillMaxWidth()
-                                )
-                                is MessageActivityActivity,
-                                is OtherActivity,
-                                null,
-                                -> TextActivitySmallCard(
-                                    activity = null,
-                                    viewer = viewer,
-                                    entry = null,
-                                    onActivityStatusUpdate = onActivityStatusUpdate,
-                                    navigationCallback = navigationCallback,
-                                    modifier = Modifier.fillMaxWidth()
-                                )
+                            items(
+                                count = activities.itemCount,
+                                key = activities.itemKey { it.activityId.scopedId },
+                                contentType = activities.itemContentType { it.activityId.type }
+                            ) {
+                                val entry = activities[it]
+                                when (val activity = entry?.activity) {
+                                    is TextActivityActivity -> TextActivitySmallCard(
+                                        viewer = viewer,
+                                        activity = activity,
+                                        entry = entry,
+                                        onActivityStatusUpdate = onActivityStatusUpdate,
+                                        navigationCallback = navigationCallback,
+                                        clickable = true,
+                                        modifier = Modifier.fillMaxWidth()
+                                    )
+                                    is ListActivityActivity -> ListActivitySmallCard(
+                                        screenKey = AnimeNavDestinations.ACTIVITY.id,
+                                        viewer = viewer,
+                                        activity = activity,
+                                        media = activity.media,
+                                        entry = entry,
+                                        onActivityStatusUpdate = onActivityStatusUpdate,
+                                        colorCalculationState = colorCalculationState,
+                                        navigationCallback = navigationCallback,
+                                        clickable = true,
+                                        modifier = Modifier.fillMaxWidth()
+                                    )
+                                    is MessageActivityActivity,
+                                    is OtherActivity,
+                                    null,
+                                    -> TextActivitySmallCard(
+                                        activity = null,
+                                        viewer = viewer,
+                                        entry = null,
+                                        onActivityStatusUpdate = onActivityStatusUpdate,
+                                        navigationCallback = navigationCallback,
+                                        modifier = Modifier.fillMaxWidth()
+                                    )
+                                }
+                            }
+
+                            when (activities.loadState.append) {
+                                is LoadState.Loading -> item("load_more_append") {
+                                    AnimeMediaListScreen.LoadingMore()
+                                }
+                                is LoadState.Error -> item("load_more_error") {
+                                    AnimeMediaListScreen.AppendError { activities.retry() }
+                                }
+                                is LoadState.NotLoading -> Unit
                             }
                         }
 
-                        when (activities.loadState.append) {
-                            is LoadState.Loading -> item("load_more_append") {
-                                AnimeMediaListScreen.LoadingMore()
-                            }
-                            is LoadState.Error -> item("load_more_error") {
-                                AnimeMediaListScreen.AppendError { activities.retry() }
-                            }
-                            is LoadState.NotLoading -> Unit
-                        }
+                        PullRefreshIndicator(
+                            refreshing = refreshing,
+                            state = pullRefreshState,
+                            modifier = Modifier
+                                .padding(topBarPadding)
+                                .align(Alignment.TopCenter)
+                        )
                     }
                 }
             }
