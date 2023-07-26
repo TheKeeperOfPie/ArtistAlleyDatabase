@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalCoroutinesApi::class)
+
 package com.thekeeperofpie.artistalleydatabase.anilist.oauth
 
 import android.util.Log
@@ -103,11 +105,17 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatc
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.addLoggingInterceptors
 import com.thekeeperofpie.artistalleydatabase.network_utils.NetworkSettings
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import okhttp3.Call
@@ -152,19 +160,19 @@ open class AuthedAniListApi(
     init {
         scopedApplication.scope.launch(CustomDispatchers.IO) {
             oAuthStore.authToken
-                .map {
-                    try {
-                        viewer()
-                    } catch (e: Exception) {
-                        Log.d(TAG, "Error loading authed user")
-                        null
+                .flatMapLatest {
+                    if (it == null) {
+                        flowOf(null)
+                    } else {
+                        queryCacheAndNetwork(AuthedUserQuery())
+                            .mapNotNull { it.result?.viewer }
+                            .distinctUntilChanged()
                     }
                 }
+                .catch { Log.d(TAG, "Error loading authed user") }
                 .collectLatest(authedUser::emit)
         }
     }
-
-    private suspend fun viewer() = query(AuthedUserQuery()).viewer
 
     open suspend fun userMediaList(
         userId: Int,
@@ -248,7 +256,7 @@ open class AuthedAniListApi(
 
     open suspend fun tags() = query(MediaTagsQuery())
 
-    open suspend fun mediaDetails(id: String) = query(MediaDetailsQuery(id.toInt())).media!!
+    open suspend fun mediaDetails(id: String) = queryCacheAndNetwork(MediaDetailsQuery(id.toInt()))
 
     open suspend fun mediaDetailsCharactersPage(mediaId: String, page: Int, perPage: Int = 10) =
         query(
@@ -345,9 +353,15 @@ open class AuthedAniListApi(
     open suspend fun characterDetails(id: String) = query(CharacterDetailsQuery(id.toInt()))
         .character!!
 
-    open suspend fun characterDetailsMediaPage(characterId: String, page: Int, perPage: Int = 5,) =
-        query(CharacterDetailsMediaPageQuery(characterId = characterId.toInt(), page = page, perPage = perPage))
-            .character!!
+    open suspend fun characterDetailsMediaPage(characterId: String, page: Int, perPage: Int = 5) =
+        query(
+            CharacterDetailsMediaPageQuery(
+                characterId = characterId.toInt(),
+                page = page,
+                perPage = perPage
+            )
+        )
+            .character
 
     open suspend fun searchStaff(
         query: String,
@@ -833,6 +847,7 @@ open class AuthedAniListApi(
         apolloClient.mutation(ToggleActivityReplyLikeMutation(id = id.toInt())).execute()
             .dataOrThrow().toggleLikeV2.asActivityReply()!!.isLiked
 
+    // TODO: Use queryCacheAndNetwork for everything
     protected suspend fun <D : Query.Data> query(query: Query<D>) =
         apolloClient.query(query).fetchPolicy(FetchPolicy.NetworkFirst).execute().dataOrThrow()
 
@@ -846,10 +861,10 @@ open class AuthedAniListApi(
             .startWith(null),
     ) { cache, network ->
         if (network != null) {
-            val networkHasErrors = network.hasErrors()
+            val networkHasErrors = network.exception != null
             LoadingResult(
                 success = !networkHasErrors,
-                result = network.data ?: cache?.data,
+                result = if (networkHasErrors) cache?.data else network.data,
                 error = if (networkHasErrors) {
                     UtilsStringR.error_loading_from_network to network.exception
                 } else {
@@ -857,7 +872,7 @@ open class AuthedAniListApi(
                 },
             )
         } else {
-            val cacheHasErrors = cache != null && cache.hasErrors()
+            val cacheHasErrors = cache?.exception != null
             LoadingResult(
                 loading = true,
                 success = !cacheHasErrors,

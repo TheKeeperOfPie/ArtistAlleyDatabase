@@ -21,7 +21,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.ui.descriptionSection
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.DetailsSectionHeader
-import com.thekeeperofpie.artistalleydatabase.compose.InfoText
 import com.thekeeperofpie.artistalleydatabase.compose.expandableListInfoText
 import com.thekeeperofpie.artistalleydatabase.compose.twoColumnInfoText
 
@@ -122,14 +121,14 @@ object StaffOverviewScreen {
                     )
                     else -> null
                 }
-                if (yearsActiveText != null) {
-                    InfoText(
-                        label = stringResource(R.string.anime_staff_details_years_active_label),
-                        body = yearsActiveText,
-                        showDividerAbove = contentShown,
-                    )
-                    contentShown = true
-                }
+
+                contentShown = twoColumnInfoText(
+                    labelOne = stringResource(R.string.anime_staff_details_years_active_label),
+                    bodyOne = yearsActiveText,
+                    labelTwo = stringResource(R.string.anime_staff_details_favorites_label),
+                    bodyTwo = (entry.staff.favourites ?: 0).toString(),
+                    showDividerAbove = contentShown,
+                ) || contentShown
 
                 expandableListInfoText(
                     labelTextRes = R.string.anime_staff_details_primary_occupations_label,

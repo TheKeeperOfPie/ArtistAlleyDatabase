@@ -112,7 +112,12 @@ object StaffDetailsScreen {
                         )
                     }
                 } else {
-                    val pagerState = rememberPagerState(pageCount = { StaffTab.values().size })
+                    val mediaTimeline by viewModel.mediaTimeline.collectAsState()
+                    val staffTimeline by viewModel.staffTimeline.collectAsState()
+                    val staffTabs = StaffTab.values()
+                        .filter { it != StaffTab.MEDIA || mediaTimeline.yearsToCharacters.isNotEmpty() }
+                        .filter { it != StaffTab.STAFF || staffTimeline.yearsToMedia.isNotEmpty() }
+                    val pagerState = rememberPagerState(pageCount = { staffTabs.size })
                     val scope = rememberCoroutineScope()
                     ScrollableTabRow(
                         selectedTabIndex = pagerState.currentPage,
@@ -121,7 +126,7 @@ object StaffDetailsScreen {
                             .align(Alignment.CenterHorizontally),
                         divider = { /* No divider, manually draw so that it's full width */ }
                     ) {
-                        StaffTab.values().forEachIndexed { index, tab ->
+                        staffTabs.forEachIndexed { index, tab ->
                             Tab(
                                 selected = pagerState.currentPage == index,
                                 onClick = { scope.launch { pagerState.animateScrollToPage(index) } },
@@ -137,7 +142,7 @@ object StaffDetailsScreen {
                         userScrollEnabled = false,
                         pageNestedScrollConnection = scrollBehavior.nestedScrollConnection,
                     ) {
-                        when (StaffTab.values()[it]) {
+                        when (staffTabs[it]) {
                             StaffTab.OVERVIEW -> StaffOverviewScreen(
                                 viewModel = viewModel,
                                 entry = entry,
@@ -147,13 +152,13 @@ object StaffDetailsScreen {
                                 navigationCallback = navigationCallback,
                             )
                             StaffTab.MEDIA -> StaffMediaScreen(
-                                mediaTimeline = viewModel.mediaTimeline.collectAsState().value,
+                                mediaTimeline = mediaTimeline,
                                 onRequestYear = viewModel::onRequestMediaYear,
                                 colorCalculationState = colorCalculationState,
                                 navigationCallback = navigationCallback,
                             )
                             StaffTab.STAFF -> StaffStaffScreen(
-                                staffTimeline = viewModel.staffTimeline.collectAsState().value,
+                                staffTimeline = staffTimeline,
                                 onRequestYear = viewModel::onRequestStaffYear,
                                 colorCalculationState = colorCalculationState,
                                 navigationCallback = navigationCallback,

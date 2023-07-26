@@ -36,6 +36,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ImageNotSupported
 import androidx.compose.material.icons.filled.MoreVert
@@ -44,6 +45,9 @@ import androidx.compose.material.icons.filled.PauseCircleOutline
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PlayCircleOutline
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
@@ -61,6 +65,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -119,6 +124,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.activity.ListActivitySmallCa
 import com.thekeeperofpie.artistalleydatabase.anime.character.DetailsCharacter
 import com.thekeeperofpie.artistalleydatabase.anime.character.charactersSection
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
+import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaTagEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeader
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderValues
@@ -134,7 +140,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.mediaListSection
 import com.thekeeperofpie.artistalleydatabase.anime.review.ReviewSmallCard
 import com.thekeeperofpie.artistalleydatabase.anime.staff.DetailsStaff
 import com.thekeeperofpie.artistalleydatabase.anime.staff.staffSection
-import com.thekeeperofpie.artistalleydatabase.anime.ui.DetailsLoadingOrError
 import com.thekeeperofpie.artistalleydatabase.anime.ui.descriptionSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.listSection
 import com.thekeeperofpie.artistalleydatabase.animethemes.models.AnimeTheme
@@ -161,14 +166,16 @@ import com.thekeeperofpie.artistalleydatabase.compose.showFloatingActionButtonOn
 import com.thekeeperofpie.artistalleydatabase.compose.twoColumnInfoText
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGrid
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.math.roundToInt
+import kotlin.time.Duration.Companion.seconds
 
 @Suppress("NAME_SHADOWING")
 @OptIn(
     ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class,
-    ExperimentalFoundationApi::class
+    ExperimentalFoundationApi::class, ExperimentalMaterialApi::class
 )
 object AnimeMediaDetailsScreen {
 
@@ -202,7 +209,6 @@ object AnimeMediaDetailsScreen {
         viewModel: AnimeMediaDetailsViewModel = hiltViewModel(),
         upIconOption: UpIconOption,
         headerValues: MediaHeaderValues,
-        entry: @Composable () -> Entry? = { null },
         onGenreLongClick: (String) -> Unit = {},
         onCharacterLongClick: (String) -> Unit = {},
         onStaffLongClick: (String) -> Unit = {},
@@ -217,13 +223,14 @@ object AnimeMediaDetailsScreen {
         var coverImageWidthToHeightRatio by remember {
             mutableFloatStateOf(headerValues.coverImageWidthToHeightRatio)
         }
-        val entry = entry()
+        var headerTransitionFinished by remember { mutableStateOf(false) }
+        val entry = viewModel.entry
         val characters = viewModel.characters.collectAsLazyPagingItems()
         val staff = viewModel.staff.collectAsLazyPagingItems()
         val expandedState = rememberExpandedState()
         val animeSongs = viewModel.animeSongs
         val sectionIndexInfo = buildSectionIndexInfo(
-            entry,
+            entry.result,
             characters,
             staff,
             expandedState,
@@ -232,213 +239,243 @@ object AnimeMediaDetailsScreen {
             viewModel.activities,
         )
 
-        val editViewModel = hiltViewModel<MediaEditViewModel>()
-        MediaEditBottomSheetScaffold(
-            screenKey = viewModel.screenKey,
-            viewModel = editViewModel,
-            colorCalculationState = colorCalculationState,
-            navigationCallback = navigationCallback,
-            topBar = {
-                CollapsingToolbar(
-                    maxHeight = 356.dp,
-                    pinnedHeight = 120.dp,
-                    scrollBehavior = scrollBehavior,
-                ) {
-                    val entry = entry()
-                    MediaHeader(
-                        screenKey = viewModel.screenKey,
-                        upIconOption = upIconOption,
-                        mediaId = viewModel.mediaId,
-                        titles = entry?.titlesUnique,
-                        averageScore = entry?.media?.averageScore,
-                        popularity = entry?.media?.popularity,
-                        progress = it,
-                        headerValues = headerValues,
-                        onFavoriteChanged = {
-                            viewModel.favoritesToggleHelper.set(
-                                headerValues.type.toFavoriteType(),
-                                viewModel.mediaId,
-                                it,
-                            )
-                        },
-                        colorCalculationState = colorCalculationState,
-                        onImageWidthToHeightRatioAvailable = { coverImageWidthToHeightRatio = it },
-                        menuContent = {
-                            Box {
-                                var showMenu by remember { mutableStateOf(false) }
-                                IconButton(onClick = { showMenu = true }) {
-                                    Icon(
-                                        imageVector = Icons.Filled.MoreVert,
-                                        contentDescription = stringResource(
-                                            R.string.anime_media_details_more_actions_content_description,
-                                        ),
-                                    )
+        var loadingThresholdPassed by remember { mutableStateOf(false) }
+        val refreshing = headerTransitionFinished && entry.loading && loadingThresholdPassed
+        val pullRefreshState = rememberPullRefreshState(
+            refreshing = refreshing,
+            onRefresh = viewModel::refresh,
+        )
+        LaunchedEffect(pullRefreshState) {
+            delay(1.seconds)
+            loadingThresholdPassed = true
+        }
+
+        Box(
+            modifier = Modifier
+            .fillMaxSize()
+            .pullRefresh(state = pullRefreshState)
+        ) {
+            val editViewModel = hiltViewModel<MediaEditViewModel>()
+            MediaEditBottomSheetScaffold(
+                screenKey = viewModel.screenKey,
+                viewModel = editViewModel,
+                colorCalculationState = colorCalculationState,
+                navigationCallback = navigationCallback,
+                topBar = {
+                    CollapsingToolbar(
+                        maxHeight = 356.dp,
+                        pinnedHeight = 120.dp,
+                        scrollBehavior = scrollBehavior,
+                    ) {
+                        MediaHeader(
+                            screenKey = viewModel.screenKey,
+                            upIconOption = upIconOption,
+                            mediaId = viewModel.mediaId,
+                            titles = entry.result?.titlesUnique,
+                            averageScore = entry.result?.media?.averageScore,
+                            popularity = entry.result?.media?.popularity,
+                            progress = it,
+                            headerValues = headerValues,
+                            onFavoriteChanged = {
+                                viewModel.favoritesToggleHelper.set(
+                                    headerValues.type.toFavoriteType(),
+                                    viewModel.mediaId,
+                                    it,
+                                )
+                            },
+                            colorCalculationState = colorCalculationState,
+                            onImageWidthToHeightRatioAvailable = {
+                                coverImageWidthToHeightRatio = it
+                            },
+                            onCoverImageSharedElementFractionChanged = {
+                                if (it == 0f) {
+                                    headerTransitionFinished = true
                                 }
+                            },
+                            menuContent = {
+                                Box {
+                                    var showMenu by remember { mutableStateOf(false) }
+                                    IconButton(onClick = { showMenu = true }) {
+                                        Icon(
+                                            imageVector = Icons.Filled.MoreVert,
+                                            contentDescription = stringResource(
+                                                R.string.anime_media_details_more_actions_content_description,
+                                            ),
+                                        )
+                                    }
 
-                                val uriHandler = LocalUriHandler.current
-                                DropdownMenu(
-                                    expanded = showMenu,
-                                    onDismissRequest = { showMenu = false },
-                                ) {
-                                    DropdownMenuItem(
-                                        text = { Text(stringResource(R.string.anime_media_details_open_external)) },
-                                        leadingIcon = {
-                                            Icon(
-                                                imageVector = Icons.Filled.OpenInBrowser,
-                                                contentDescription = stringResource(
-                                                    R.string.anime_media_details_open_external_icon_content_description
-                                                )
-                                            )
-                                        },
-                                        onClick = {
-                                            showMenu = false
-                                            uriHandler.openUri(
-                                                AniListUtils.mediaUrl(
-                                                    // TODO: Pass media type if known so that open external works even if entry can't be loaded?
-                                                    entry?.media?.type ?: MediaType.ANIME,
-                                                    viewModel.mediaId,
-                                                ) + "?${UriUtils.FORCE_EXTERNAL_URI_PARAM}=true"
-                                            )
-                                        }
-                                    )
-
-                                    sectionIndexInfo.sections.forEach { (section, index) ->
+                                    val uriHandler = LocalUriHandler.current
+                                    DropdownMenu(
+                                        expanded = showMenu,
+                                        onDismissRequest = { showMenu = false },
+                                    ) {
                                         DropdownMenuItem(
-                                            text = { Text(stringResource(section.titleRes)) },
+                                            text = { Text(stringResource(R.string.anime_media_details_open_external)) },
+                                            leadingIcon = {
+                                                Icon(
+                                                    imageVector = Icons.Filled.OpenInBrowser,
+                                                    contentDescription = stringResource(
+                                                        R.string.anime_media_details_open_external_icon_content_description
+                                                    )
+                                                )
+                                            },
                                             onClick = {
                                                 showMenu = false
-                                                scope.launch {
-                                                    lazyListState.animateScrollToItem(index, 0)
-                                                }
+                                                uriHandler.openUri(
+                                                    AniListUtils.mediaUrl(
+                                                        // TODO: Pass media type if known so that open external works even if entry can't be loaded?
+                                                        entry.result?.media?.type
+                                                            ?: MediaType.ANIME,
+                                                        viewModel.mediaId,
+                                                    ) + "?${UriUtils.FORCE_EXTERNAL_URI_PARAM}=true"
+                                                )
                                             }
                                         )
+
+                                        sectionIndexInfo.sections.forEach { (section, index) ->
+                                            DropdownMenuItem(
+                                                text = { Text(stringResource(section.titleRes)) },
+                                                onClick = {
+                                                    showMenu = false
+                                                    scope.launch {
+                                                        lazyListState.animateScrollToItem(index, 0)
+                                                    }
+                                                }
+                                            )
+                                        }
                                     }
                                 }
                             }
-                        }
-                    )
-                }
-            },
-        ) {
-            Scaffold(
-                floatingActionButton = {
-                    val entry = entry()
-                    if (entry != null) {
-                        val media = entry.media
-                        val expanded by remember {
-                            derivedStateOf { scrollBehavior.state.collapsedFraction == 0f }
-                        }
-
-                        val showFloatingActionButton =
-                            viewModel.hasAuth.collectAsState(initial = false).value &&
-                                    lazyListState.showFloatingActionButtonOnVerticalScroll()
-                        AnimatedVisibility(
-                            visible = showFloatingActionButton,
-                            enter = fadeIn(),
-                            exit = fadeOut(),
-                        ) {
-                            val containerColor = headerValues.color
-                                ?: FloatingActionButtonDefaults.containerColor
-                            val contentColor =
-                                ComposeColorUtils.bestTextColor(containerColor)
-                                    ?: contentColorFor(containerColor)
-
-                            val listStatus = viewModel.listStatus
-                            val status = listStatus?.entry?.status
-                            ExtendedFloatingActionButton(
-                                text = {
-                                    val progress = if (media.type == MediaType.ANIME) {
-                                        listStatus?.entry?.progress
-                                    } else {
-                                        listStatus?.entry?.progressVolumes
-                                    } ?: 0
-
-                                    val progressMax = if (media.type == MediaType.ANIME) {
-                                        media.episodes
-                                    } else {
-                                        media.volumes
-                                    }
-
-                                    Text(
-                                        status.toStatusText(
-                                            mediaType = media.type,
-                                            progress = progress,
-                                            progressMax = progressMax,
-                                            score = listStatus?.entry?.score,
-                                            scoreFormat = editViewModel.scoreFormat
-                                                .collectAsState().value,
-                                        )
-                                    )
-                                },
-                                icon = {
-                                    val (vector, contentDescription) = status
-                                        .toStatusIcon(mediaType = media.type)
-                                    Icon(
-                                        imageVector = vector,
-                                        contentDescription = stringResource(contentDescription),
-                                    )
-                                },
-                                expanded = status
-                                    ?.takeUnless { it == MediaListStatus.UNKNOWN__ }
-                                    ?.takeIf { expanded } != null,
-                                containerColor = containerColor,
-                                contentColor = contentColor,
-                                onClick = {
-                                    if (showFloatingActionButton) {
-
-                                        editViewModel.initialize(
-                                            mediaId = media.id.toString(),
-                                            media = null,
-                                            mediaListEntry = listStatus?.entry,
-                                            mediaType = media.type,
-                                            status = listStatus?.entry?.status,
-                                            maxProgress = MediaUtils.maxProgress(media),
-                                            maxProgressVolumes = media.volumes,
-                                        )
-                                        editViewModel.editData.showing = true
-                                    }
-                                },
-                            )
-                        }
+                        )
                     }
                 },
-                modifier = Modifier
-                    .nestedScroll(scrollBehavior.nestedScrollConnection)
-                    .fillMaxSize()
-            ) { scaffoldPadding ->
-                val viewer by viewModel.viewer.collectAsState()
-                Crossfade(targetState = entry, label = "Media details crossfade") {
-                    if (it == null) {
-                        DetailsLoadingOrError(
-                            loading = viewModel.loading,
-                            errorResource = { viewModel.errorResource },
-                        )
-                    } else {
-                        LazyColumn(
-                            state = lazyListState,
-                            contentPadding = PaddingValues(bottom = 16.dp),
-                            modifier = Modifier.padding(scaffoldPadding)
-                        ) {
-                            content(
-                                viewModel = viewModel,
-                                viewer = viewer,
-                                entry = it,
-                                characters = characters,
-                                staff = staff,
-                                onClickListEdit = { editViewModel.initialize(it.media) },
-                                onGenreLongClick = onGenreLongClick,
-                                onCharacterLongClick = onCharacterLongClick,
-                                onStaffLongClick = onStaffLongClick,
-                                onTagLongClick = onTagLongClick,
-                                navigationCallback = navigationCallback,
-                                expandedState = expandedState,
-                                colorCalculationState = colorCalculationState,
-                                coverImageWidthToHeightRatio = { coverImageWidthToHeightRatio },
+            ) {
+                Scaffold(
+                    floatingActionButton = {
+                        val media = entry.result?.media
+                        if (media != null) {
+                            val expanded by remember {
+                                derivedStateOf { scrollBehavior.state.collapsedFraction == 0f }
+                            }
+
+                            val showFloatingActionButton =
+                                viewModel.hasAuth.collectAsState(initial = false).value &&
+                                        lazyListState.showFloatingActionButtonOnVerticalScroll()
+                            AnimatedVisibility(
+                                visible = showFloatingActionButton,
+                                enter = fadeIn(),
+                                exit = fadeOut(),
+                            ) {
+                                val containerColor = headerValues.color
+                                    ?: FloatingActionButtonDefaults.containerColor
+                                val contentColor =
+                                    ComposeColorUtils.bestTextColor(containerColor)
+                                        ?: contentColorFor(containerColor)
+
+                                val listStatus = viewModel.listStatus
+                                val status = listStatus?.entry?.status
+                                ExtendedFloatingActionButton(
+                                    text = {
+                                        val progress = if (media.type == MediaType.ANIME) {
+                                            listStatus?.entry?.progress
+                                        } else {
+                                            listStatus?.entry?.progressVolumes
+                                        } ?: 0
+
+                                        val progressMax = if (media.type == MediaType.ANIME) {
+                                            media.episodes
+                                        } else {
+                                            media.volumes
+                                        }
+
+                                        Text(
+                                            status.toStatusText(
+                                                mediaType = media.type,
+                                                progress = progress,
+                                                progressMax = progressMax,
+                                                score = listStatus?.entry?.score,
+                                                scoreFormat = editViewModel.scoreFormat
+                                                    .collectAsState().value,
+                                            )
+                                        )
+                                    },
+                                    icon = {
+                                        val (vector, contentDescription) = status
+                                            .toStatusIcon(mediaType = media.type)
+                                        Icon(
+                                            imageVector = vector,
+                                            contentDescription = stringResource(contentDescription),
+                                        )
+                                    },
+                                    expanded = status
+                                        ?.takeUnless { it == MediaListStatus.UNKNOWN__ }
+                                        ?.takeIf { expanded } != null,
+                                    containerColor = containerColor,
+                                    contentColor = contentColor,
+                                    onClick = {
+                                        if (showFloatingActionButton) {
+
+                                            editViewModel.initialize(
+                                                mediaId = media.id.toString(),
+                                                media = null,
+                                                mediaListEntry = listStatus?.entry,
+                                                mediaType = media.type,
+                                                status = listStatus?.entry?.status,
+                                                maxProgress = MediaUtils.maxProgress(media),
+                                                maxProgressVolumes = media.volumes,
+                                            )
+                                            editViewModel.editData.showing = true
+                                        }
+                                    },
+                                )
+                            }
+                        }
+                    },
+                    modifier = Modifier
+                        .nestedScroll(scrollBehavior.nestedScrollConnection)
+                        .fillMaxSize()
+                ) { scaffoldPadding ->
+                    val viewer by viewModel.viewer.collectAsState()
+                    val finalError = entry.result == null && !entry.loading
+                    Crossfade(targetState = finalError, label = "Media details crossfade") {
+                        if (it) {
+                            AnimeMediaListScreen.Error(
+                                errorTextRes = entry.error?.first,
+                                exception = entry.error?.second,
                             )
+                        } else if (entry.result != null) {
+                            LazyColumn(
+                                state = lazyListState,
+                                contentPadding = PaddingValues(bottom = 16.dp),
+                                modifier = Modifier.padding(scaffoldPadding)
+                            ) {
+                                content(
+                                    viewModel = viewModel,
+                                    viewer = viewer,
+                                    entry = entry.result!!,
+                                    characters = characters,
+                                    staff = staff,
+                                    onClickListEdit = { editViewModel.initialize(it.media) },
+                                    onGenreLongClick = onGenreLongClick,
+                                    onCharacterLongClick = onCharacterLongClick,
+                                    onStaffLongClick = onStaffLongClick,
+                                    onTagLongClick = onTagLongClick,
+                                    navigationCallback = navigationCallback,
+                                    expandedState = expandedState,
+                                    colorCalculationState = colorCalculationState,
+                                    coverImageWidthToHeightRatio = { coverImageWidthToHeightRatio },
+                                )
+                            }
                         }
                     }
                 }
             }
+
+            PullRefreshIndicator(
+                refreshing = refreshing,
+                state = pullRefreshState,
+                modifier = Modifier.align(Alignment.TopCenter)
+            )
         }
     }
 
@@ -479,13 +516,11 @@ object AnimeMediaDetailsScreen {
             onCharacterLongClick = onCharacterLongClick,
             onStaffClick = navigationCallback::onStaffClick,
             onClickViewAll = {
-                viewModel.entry?.let {
-                    navigationCallback.onMediaCharactersClick(
-                        it,
-                        viewModel.favoritesToggleHelper.favorite,
-                        coverImageWidthToHeightRatio(),
-                    )
-                }
+                navigationCallback.onMediaCharactersClick(
+                    entry,
+                    viewModel.favoritesToggleHelper.favorite,
+                    coverImageWidthToHeightRatio(),
+                )
             },
             viewAllContentDescriptionTextRes = R.string.anime_media_details_view_all_content_description,
             colorCalculationState = colorCalculationState,
@@ -1998,7 +2033,15 @@ object AnimeMediaDetailsScreen {
         animeSongs: AnimeMediaDetailsViewModel.AnimeSongs?,
         cdEntries: List<CdEntryGridModel>,
         activities: List<AnimeMediaDetailsViewModel.ActivityEntry>?,
-    ) = remember(entry, animeSongs, expandedState.allValues()) {
+    ) = remember(
+        entry,
+        characters.itemCount,
+        staff.itemCount,
+        expandedState.allValues(),
+        animeSongs,
+        cdEntries,
+        activities,
+    ) {
         if (entry == null) return@remember SectionIndexInfo(emptyList())
         val list = mutableListOf<Pair<SectionIndexInfo.Section, Int>>()
         var currentIndex = 0

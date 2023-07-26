@@ -30,8 +30,8 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -68,7 +68,7 @@ abstract class AnimeHomeMediaViewModel(
     // TODO: Make this more efficient when user list caching is available
     suspend fun current() = aniListApi.authedUser.flatMapLatest {
         if (it == null) {
-            emptyFlow()
+            flowOf(LoadingResult.empty())
         } else {
             aniListApi.userMediaList(
                 userId = it.id,

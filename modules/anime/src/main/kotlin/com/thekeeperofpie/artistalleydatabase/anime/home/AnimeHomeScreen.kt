@@ -109,6 +109,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewMode
 import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsArticleEntry
 import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsSmallCard
 import com.thekeeperofpie.artistalleydatabase.anime.ui.GenericViewAllCard
+import com.thekeeperofpie.artistalleydatabase.compose.AutoResizeHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
@@ -694,6 +695,7 @@ object AnimeHomeScreen {
                         if (widthToHeightRatio == null) 0f else 1f,
                         label = "Cover image alpha",
                     )
+                    var showTitle by remember(media) { mutableStateOf(false) }
                     AsyncImage(
                         model = ImageRequest.Builder(LocalContext.current)
                             .data(media.coverImage?.extraLarge)
@@ -713,12 +715,25 @@ object AnimeHomeScreen {
                                 selectMaxPopulation = true,
                             )
                         },
+                        onError = { showTitle = true },
                         modifier = Modifier
                             .clip(RoundedCornerShape(12.dp))
                             .alpha(alpha)
                             .size(width = width, height = height)
                             .animateContentSize()
                     )
+
+                    if (showTitle) {
+                        AutoResizeHeightText(
+                            text = media.title?.userPreferred.orEmpty(),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = ComposeColorUtils.bestTextColor(containerColor)
+                                ?: Color.Unspecified,
+                            modifier = Modifier
+                                .size(width = width, height = height)
+                                .padding(start = 8.dp, end = 8.dp, top = 8.dp, bottom = 40.dp)
+                        )
+                    }
 
                     if (viewer != null) {
                         MediaListQuickEditIconButton(

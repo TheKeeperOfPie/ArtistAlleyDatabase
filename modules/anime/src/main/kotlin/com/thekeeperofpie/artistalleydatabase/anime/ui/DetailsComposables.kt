@@ -94,6 +94,7 @@ internal fun CoverAndBannerHeader(
     coverImageOnSuccess: (AsyncImagePainter.State.Success) -> Unit = {},
     menuContent: (@Composable RowScope.() -> Unit)? = null,
     fadeOutMenu: Boolean = true,
+    onCoverImageSharedElementFractionChanged: ((Float) -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val elevation = lerp(0.dp, 16.dp, AccelerateEasing.transform(progress))
@@ -196,6 +197,7 @@ internal fun CoverAndBannerHeader(
                 SharedElement(
                     key = "${entryId?.scopedId}_image",
                     screenKey = screenKey,
+                    onFractionChanged = onCoverImageSharedElementFractionChanged,
                 ) {
                     ElevatedCard {
                         var success by remember { mutableStateOf(false) }

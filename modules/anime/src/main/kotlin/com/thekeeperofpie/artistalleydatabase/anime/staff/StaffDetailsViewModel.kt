@@ -11,6 +11,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
+import androidx.paging.cachedIn
 import androidx.paging.map
 import com.anilist.fragment.StaffDetailsCharacterMediaPage
 import com.anilist.fragment.StaffDetailsStaffMediaPage
@@ -126,6 +127,7 @@ class StaffDetailsViewModel @Inject constructor(
                     }
                 }
                 .enforceUniqueIds { it.id }
+                .cachedIn(viewModelScope)
                 .collectLatest(characters::emit)
         }
 

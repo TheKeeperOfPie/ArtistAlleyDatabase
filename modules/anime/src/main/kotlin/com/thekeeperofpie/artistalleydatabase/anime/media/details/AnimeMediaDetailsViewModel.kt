@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media.details
 
 import android.app.Application
+import android.os.SystemClock
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
@@ -12,6 +13,8 @@ import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.paging.LoadState
+import androidx.paging.LoadStates
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
@@ -22,6 +25,8 @@ import com.anilist.MediaDetailsQuery
 import com.anilist.type.ActivitySort
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
+import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
+import com.thekeeperofpie.artistalleydatabase.android_utils.foldPreviousResult
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListPagingSource
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
@@ -30,7 +35,6 @@ import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.AppMediaPlayer
-import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityStatusAware
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityToggleHelper
@@ -59,9 +63,11 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.IOException
 import java.util.UUID
 import javax.inject.Inject
 
@@ -101,14 +107,14 @@ class AnimeMediaDetailsViewModel @Inject constructor(
 
     val hasAuth = oAuthStore.hasAuth
 
-    var loading by mutableStateOf(true)
-    var entry by mutableStateOf<AnimeMediaDetailsScreen.Entry?>(null)
+    val refresh = MutableStateFlow(-1L)
+
+    var entry by mutableStateOf<LoadingResult<AnimeMediaDetailsScreen.Entry>>(LoadingResult.loading())
     var listStatus by mutableStateOf<MediaListStatusController.Update?>(null)
     var activities by mutableStateOf<List<ActivityEntry>?>(null)
     val characters = MutableStateFlow(PagingData.empty<DetailsCharacter>())
     val staff = MutableStateFlow(PagingData.empty<DetailsStaff>())
 
-    var errorResource by mutableStateOf<Pair<Int, Exception?>?>(null)
     var animeSongs by mutableStateOf<AnimeSongs?>(null)
     var cdEntries by mutableStateOf(emptyList<CdEntryGridModel>())
 
@@ -121,118 +127,150 @@ class AnimeMediaDetailsViewModel @Inject constructor(
         this.mediaId = mediaId
         favoritesToggleHelper.initializeTracking(
             viewModel = this,
-            entry = { snapshotFlow { entry } },
+            entry = { snapshotFlow { entry.result } },
             entryToId = { it.mediaId },
             entryToType = { it.media.type.toFavoriteType() },
             entryToFavorite = { it.media.isFavourite },
         )
 
-        viewModelScope.launch(CustomDispatchers.IO) {
-            try {
-                val media = aniListApi.mediaDetails(mediaId)
-                    .takeIf { it.isAdult == false || settings.showAdult.value }!!
-                val relations = media.relations?.edges?.filterNotNull()
-                    ?.mapNotNull {
-                        val node = it.node ?: return@mapNotNull null
-                        val relation = it.relationType ?: return@mapNotNull null
-                        AnimeMediaDetailsScreen.Entry.Relation(
-                            it.id.toString(),
-                            relation,
-                            AnimeMediaListRow.Entry(node)
-                        )
+        viewModelScope.launch(CustomDispatchers.Main) {
+            refresh.flatMapLatest {
+                aniListApi.mediaDetails(mediaId)
+                    .map {
+                        val result = it.result
+                        if (result != null && result.media?.isAdult != false
+                            && !settings.showAdult.value
+                        ) {
+                            throw IOException("Cannot load media")
+                        }
+                        it
                     }
-                    .orEmpty()
-                    .sortedBy { AnimeMediaDetailsScreen.RELATION_SORT_ORDER.indexOf(it.relation) }
+                    .flatMapLatest { loadingResult ->
+                        val media = loadingResult.result?.media
+                        if (media == null) {
+                            flowOf(loadingResult
+                                .transformResult<AnimeMediaDetailsScreen.Entry> { null })
+                        } else {
+                            val relations = media.relations?.edges?.filterNotNull()
+                                ?.mapNotNull {
+                                    val node = it.node ?: return@mapNotNull null
+                                    val relation = it.relationType ?: return@mapNotNull null
+                                    AnimeMediaDetailsScreen.Entry.Relation(
+                                        it.id.toString(),
+                                        relation,
+                                        AnimeMediaListRow.Entry(node)
+                                    )
+                                }
+                                .orEmpty()
+                                .sortedBy { AnimeMediaDetailsScreen.RELATION_SORT_ORDER.indexOf(it.relation) }
 
-                val recommendations = media.recommendations?.edges?.filterNotNull()
-                    ?.mapNotNull {
-                        val node = it.node ?: return@mapNotNull null
-                        val mediaRecommendation = node.mediaRecommendation ?: return@mapNotNull null
-                        AnimeMediaDetailsScreen.Entry.Recommendation(
-                            node.id.toString(),
-                            node.rating,
-                            AnimeMediaListRow.Entry(mediaRecommendation)
-                        )
-                    }
-                    .orEmpty()
+                            val recommendations = media.recommendations?.edges?.filterNotNull()
+                                ?.mapNotNull {
+                                    val node = it.node ?: return@mapNotNull null
+                                    val mediaRecommendation =
+                                        node.mediaRecommendation ?: return@mapNotNull null
+                                    AnimeMediaDetailsScreen.Entry.Recommendation(
+                                        node.id.toString(),
+                                        node.rating,
+                                        AnimeMediaListRow.Entry(mediaRecommendation)
+                                    )
+                                }
+                                .orEmpty()
 
-                val mediaIds = setOf(media.id.toString()) +
-                        relations.map { it.entry.media.id.toString() } +
-                        recommendations.map { it.entry.media.id.toString() }
-                combine(
-                    statusController.allChanges(mediaIds),
-                    ignoreList.updates,
-                    settings.showAdult,
-                    ::Triple,
-                )
-                    .mapLatest { (statuses, ignoredIds, showAdult) ->
-                        AnimeMediaDetailsScreen.Entry(
-                            mediaId,
-                            media,
-                            relations = relations.mapNotNull {
-                                applyMediaFiltering(
-                                    statuses = statuses,
-                                    ignoredIds = ignoredIds,
-                                    showAdult = showAdult,
-                                    showIgnored = true,
-                                    entry = it,
-                                    transform = { it.entry },
-                                    media = it.entry.media,
-                                    copy = { mediaListStatus, progress, progressVolumes, ignored ->
-                                        copy(
-                                            entry = AnimeMediaListRow.Entry(
-                                                media = it.entry.media,
-                                                mediaListStatus = mediaListStatus,
-                                                progress = progress,
-                                                progressVolumes = progressVolumes,
-                                                ignored = ignored,
-                                            )
+                            val mediaIds = setOf(media.id.toString()) +
+                                    relations.map { it.entry.media.id.toString() } +
+                                    recommendations.map { it.entry.media.id.toString() }
+                            combine(
+                                statusController.allChanges(mediaIds),
+                                ignoreList.updates,
+                                settings.showAdult,
+                                ::Triple,
+                            )
+                                .mapLatest { (statuses, ignoredIds, showAdult) ->
+                                    loadingResult.transformResult {
+                                        AnimeMediaDetailsScreen.Entry(
+                                            mediaId,
+                                            media,
+                                            relations = relations.mapNotNull {
+                                                applyMediaFiltering(
+                                                    statuses = statuses,
+                                                    ignoredIds = ignoredIds,
+                                                    showAdult = showAdult,
+                                                    showIgnored = true,
+                                                    entry = it,
+                                                    transform = { it.entry },
+                                                    media = it.entry.media,
+                                                    copy = { mediaListStatus, progress, progressVolumes, ignored ->
+                                                        copy(
+                                                            entry = AnimeMediaListRow.Entry(
+                                                                media = it.entry.media,
+                                                                mediaListStatus = mediaListStatus,
+                                                                progress = progress,
+                                                                progressVolumes = progressVolumes,
+                                                                ignored = ignored,
+                                                            )
+                                                        )
+                                                    }
+                                                )
+                                            },
+                                            recommendations = recommendations.mapNotNull {
+                                                applyMediaFiltering(
+                                                    statuses = statuses,
+                                                    ignoredIds = ignoredIds,
+                                                    showAdult = showAdult,
+                                                    showIgnored = true,
+                                                    entry = it,
+                                                    transform = { it.entry },
+                                                    media = it.entry.media,
+                                                    copy = { mediaListStatus, progress, progressVolumes, ignored ->
+                                                        copy(
+                                                            entry = AnimeMediaListRow.Entry(
+                                                                media = it.entry.media,
+                                                                mediaListStatus = mediaListStatus,
+                                                                progress = progress,
+                                                                progressVolumes = progressVolumes,
+                                                                ignored = ignored,
+                                                            )
+                                                        )
+                                                    }
+                                                )
+                                            }
                                         )
                                     }
-                                )
-                            },
-                            recommendations = recommendations.mapNotNull {
-                                applyMediaFiltering(
-                                    statuses = statuses,
-                                    ignoredIds = ignoredIds,
-                                    showAdult = showAdult,
-                                    showIgnored = true,
-                                    entry = it,
-                                    transform = { it.entry },
-                                    media = it.entry.media,
-                                    copy = { mediaListStatus, progress, progressVolumes, ignored ->
-                                        copy(
-                                            entry = AnimeMediaListRow.Entry(
-                                                media = it.entry.media,
-                                                mediaListStatus = mediaListStatus,
-                                                progress = progress,
-                                                progressVolumes = progressVolumes,
-                                                ignored = ignored,
-                                            )
-                                        )
-                                    }
-                                )
-                            }
-                        )
-                    }
-                    .collectLatest {
-                        withContext(CustomDispatchers.Main) {
-                            entry = it
+                                }
                         }
                     }
-            } catch (e: Exception) {
-                withContext(CustomDispatchers.Main) {
-                    errorResource = R.string.anime_media_error_loading_details to e
-                }
-            } finally {
-                withContext(CustomDispatchers.Main) {
-                    loading = false
-                }
             }
+                .foldPreviousResult()
+                .flowOn(CustomDispatchers.IO)
+                .collectLatest {
+                    val mediaCharacters = entry.result?.media?.characters
+                    if (mediaCharacters != null) {
+                        val hasMoreCharacters = mediaCharacters.pageInfo?.hasNextPage == true
+                        characters.emit(
+                            PagingData.from(
+                                CharacterUtils.toDetailsCharacters(
+                                    entry.result?.media?.characters?.edges?.filterNotNull()
+                                        .orEmpty()
+                                ),
+                                sourceLoadStates = LoadStates(
+                                    refresh = LoadState.NotLoading(
+                                        endOfPaginationReached = !hasMoreCharacters
+                                    ),
+                                    prepend = LoadState.NotLoading(true),
+                                    append = LoadState.NotLoading(
+                                        endOfPaginationReached = !hasMoreCharacters
+                                    )
+                                )
+                            )
+                        )
+                    }
+                    entry = it
+                }
         }
 
         viewModelScope.launch(CustomDispatchers.IO) {
-            snapshotFlow { entry }
+            snapshotFlow { entry.result }
                 .flowOn(CustomDispatchers.Main)
                 .filterNotNull()
                 .flatMapLatest {
@@ -253,7 +291,7 @@ class AnimeMediaDetailsViewModel @Inject constructor(
         }
 
         viewModelScope.launch(CustomDispatchers.IO) {
-            snapshotFlow { entry?.media?.let { it.id.toString() to it.characters } }
+            snapshotFlow { entry.result?.media?.let { it.id.toString() to it.characters } }
                 .filterNotNull()
                 .flowOn(CustomDispatchers.Main)
                 .flatMapLatest { (mediaId, characters) ->
@@ -276,7 +314,7 @@ class AnimeMediaDetailsViewModel @Inject constructor(
         }
 
         viewModelScope.launch(CustomDispatchers.IO) {
-            snapshotFlow { entry?.media?.let { it.id.toString() to it.staff } }
+            snapshotFlow { entry.result?.media?.let { it.id.toString() to it.staff } }
                 .filterNotNull()
                 .flowOn(CustomDispatchers.Main)
                 .flatMapLatest { (mediaId, staff) ->
@@ -329,7 +367,7 @@ class AnimeMediaDetailsViewModel @Inject constructor(
             snapshotFlow { entry }
                 .flowOn(CustomDispatchers.Main)
                 .collectLatest {
-                    val media = it?.media
+                    val media = it.result?.media
                     if (media?.type == MediaType.ANIME) {
                         try {
                             val anime = animeThemesApi.getAnime(mediaId)
@@ -377,14 +415,14 @@ class AnimeMediaDetailsViewModel @Inject constructor(
         }
 
         viewModelScope.launch(CustomDispatchers.Main) {
-            snapshotFlow { entry }
+            snapshotFlow { entry.result }
                 .filterNotNull()
                 .flowOn(CustomDispatchers.Main)
                 .mapLatest {
                     aniListApi.mediaActivitiesPage(
                         id = it.mediaId,
                         page = 1,
-                        sort = listOf(ActivitySort.PINNED, ActivitySort.ID_DESC),
+                        sort = listOf(/*ActivitySort.PINNED, */ActivitySort.ID_DESC),
                         activitiesPerPage = 10,
                     )
                         .page.activities
@@ -503,6 +541,10 @@ class AnimeMediaDetailsViewModel @Inject constructor(
     override fun onCleared() {
         animeSongStates.forEach { mediaPlayer.stop(it.key) }
         super.onCleared()
+    }
+
+    fun refresh() {
+        refresh.value = SystemClock.uptimeMillis()
     }
 
     fun animeSongsCollapseAll() {

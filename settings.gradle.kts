@@ -97,6 +97,9 @@ dependencyResolutionManagement {
                 alias = "androidyoutubeplayer"
             )
             library("com.rometools:rome:2.1.0")
+            library("com.squareup.leakcanary:leakcanary-android:2.12")
+            library("com.squareup.leakcanary:leakcanary-android-release:2.12")
+            library("com.squareup.leakcanary:leakcanary-object-watcher-android:2.12")
             library("com.squareup.moshi:moshi-kotlin:1.15.0")
             library("com.squareup.okhttp3:okhttp:5.0.0-alpha.11")
             library("com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.11", prefix = "okhttp3")

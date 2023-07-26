@@ -70,6 +70,7 @@ dependencyAnalysis {
                     "com.apollographql.apollo3:apollo-normalized-cache-sqlite",
                     "com.google.dagger:hilt-android",
                     "com.google.truth:truth",
+                    "com.squareup.leakcanary:leakcanary-android",
                     "com.squareup.moshi:moshi-kotlin",
                     "de.mannodermaus.junit5:android-test-core",
                     "org.jetbrains.kotlinx:kotlinx-serialization-json",

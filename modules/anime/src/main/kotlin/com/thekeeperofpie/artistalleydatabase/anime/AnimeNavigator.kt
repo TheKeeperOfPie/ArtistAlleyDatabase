@@ -225,7 +225,7 @@ object AnimeNavigator {
                 .apply { initialize(mediaId) }
             val headerValues = MediaHeaderValues(
                 arguments = arguments,
-                media = { viewModel.entry?.media },
+                media = { viewModel.entry.result?.media },
                 favoriteUpdate = { viewModel.favoritesToggleHelper.favorite },
             )
 
@@ -243,7 +243,6 @@ object AnimeNavigator {
                 viewModel = viewModel,
                 upIconOption = UpIconOption.Back(navHostController),
                 headerValues = headerValues,
-                entry = { viewModel.entry },
                 onGenreLongClick = { /*TODO*/ },
                 onCharacterLongClick = { /*TODO*/ },
                 onStaffLongClick = { /*TODO*/ },

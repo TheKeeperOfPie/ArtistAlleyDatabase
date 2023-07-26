@@ -11,7 +11,7 @@ data class LoadingResult<T>(
         fun <T> empty() = LoadingResult<T>()
     }
 
-    fun <Output> transformResult(transform: (T) -> Output): LoadingResult<Output> {
+    fun <Output> transformResult(transform: (T) -> Output?): LoadingResult<Output> {
         val newResult = result?.let(transform)
         return LoadingResult(
             loading = loading,

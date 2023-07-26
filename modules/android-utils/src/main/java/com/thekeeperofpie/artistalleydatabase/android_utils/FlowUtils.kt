@@ -44,7 +44,14 @@ fun <T> flowForRefreshableContent(
             .startWith(LoadingResult(loading = true, success = true))
     }
     .distinctUntilChanged()
-    .runningFold(LoadingResult<T>(loading = true, success = true)) { accumulator, value ->
+    .runningFold(LoadingResult.loading<T>()) { accumulator, value ->
+        value.transformIf(value.loading && value.result == null) {
+            copy(result = accumulator.result)
+        }
+    }
+
+fun <T> Flow<LoadingResult<T>>.foldPreviousResult() =
+    runningFold(LoadingResult.loading<T>()) { accumulator, value ->
         value.transformIf(value.loading && value.result == null) {
             copy(result = accumulator.result)
         }

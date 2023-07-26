@@ -154,7 +154,7 @@ object AnimeUserListScreen {
                         )
                     )
                 ) { onLongPressImage ->
-                    val hasItems = content.result?.sumOf { it.entries.size } != 0
+                    val hasItems = (content.result?.sumOf { it.entries.size } ?: 0) != 0
                     when {
                         !content.loading && !content.success && !hasItems ->
                             AnimeMediaListScreen.Error(
@@ -175,7 +175,7 @@ object AnimeUserListScreen {
                                             .takeUnless { it == -Float.MAX_VALUE }
                                             ?.let { LocalDensity.current.run { -it.toDp() } }
                                             ?: 0.dp),
-                                        bottom = scaffoldPadding.calculateBottomPadding()
+                                        bottom = 88.dp + scaffoldPadding.calculateBottomPadding()
                                     ),
                                     verticalArrangement = Arrangement.spacedBy(16.dp),
                                 ) {

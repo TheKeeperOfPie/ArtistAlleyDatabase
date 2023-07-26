@@ -256,6 +256,8 @@ dependencies {
     implementation(libs.coil.compose)
 
     implementation(libs.play.services.oss.licenses)
+
+    debugImplementation(libs.leakcanary.android)
 }
 
 afterEvaluate {

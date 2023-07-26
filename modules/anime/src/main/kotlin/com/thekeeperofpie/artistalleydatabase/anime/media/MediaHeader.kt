@@ -60,6 +60,7 @@ fun MediaHeader(
     colorCalculationState: ColorCalculationState,
     onImageWidthToHeightRatioAvailable: (Float) -> Unit = {},
     enableCoverImageSharedElement: Boolean = true,
+    onCoverImageSharedElementFractionChanged: ((Float) -> Unit)? = null,
     menuContent: (@Composable () -> Unit)? = null,
 ) {
     var preferredTitle by remember { mutableStateOf<Int?>(null) }
@@ -92,6 +93,7 @@ fun MediaHeader(
                     ComposeColorUtils.calculatePalette(mediaId, it, colorCalculationState)
                 }
             },
+            onCoverImageSharedElementFractionChanged = onCoverImageSharedElementFractionChanged,
             menuContent = {
                 FavoriteIconButton(
                     favorite = headerValues.favorite,
