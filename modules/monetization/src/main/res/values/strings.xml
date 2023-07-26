@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="monetization_feature_tiers_header">Anichive has 3 feature tiers</string>
+    <string name="monetization_feature_tiers_header">Feature tiers</string>
     <string name="monetization_feature_tier_free_header">Free</string>
     <string name="monetization_feature_tier_free_body">
         - Fully featured anime/manga search
@@ -28,4 +28,5 @@
     </string>
     <string name="monetization_subscribe_button">Subscribe</string>
     <string name="monetization_subscribe_button_completed">Thanks, you\'re subscribed!</string>
+    <string name="monetization_settings_content_description">Settings</string>
 </resources>

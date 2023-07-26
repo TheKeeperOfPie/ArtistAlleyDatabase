@@ -185,7 +185,9 @@ object AnimeRootScreen {
                             bottomNavigationState = bottomNavigationState,
                         )
                         NavDestinations.UNLOCK -> UnlockScreen(
+                            upIconOption = upIconOption,
                             bottomNavigationState = bottomNavigationState,
+                            onClickSettings = onClickSettings,
                         )
                     }
                 }

@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media.edit
 
-import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
@@ -95,8 +94,7 @@ object MediaEditBottomSheetScaffold {
             }
         }
 
-        val bottomPadding = bottomNavigationState
-            ?.run { bottomNavBarPadding() + bottomOffset() } ?: 0.dp
+        val bottomPadding = bottomNavigationState?.bottomOffsetPadding() ?: 0.dp
         BottomSheetScaffold(
             scaffoldState = bottomSheetScaffoldState,
             topBar = topBar,
@@ -189,8 +187,7 @@ object MediaEditBottomSheetScaffold {
             }
         }
 
-        val bottomPadding = bottomNavigationState
-            ?.run { bottomNavBarPadding() + bottomOffset() } ?: 0.dp
+        val bottomPadding = bottomNavigationState?.bottomOffsetPadding() ?: 0.dp
         BottomSheetScaffoldNoAppBarOffset(
             scaffoldState = bottomSheetScaffoldState,
             topBar = topBar,

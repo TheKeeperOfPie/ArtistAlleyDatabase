@@ -86,7 +86,9 @@ dependencyResolutionManagement {
             library("com.google.accompanist:accompanist-placeholder-material:0.31.5-beta")
             library("com.google.accompanist:accompanist-navigation-animation:0.31.5-beta")
             library("com.google.accompanist:accompanist-pager-indicators:0.31.5-beta")
+            library("com.google.android.gms:play-services-ads:22.2.0")
             library("com.google.android.gms:play-services-oss-licenses:17.0.1")
+            library("com.google.android.ump:user-messaging-platform:2.1.0")
             library("com.google.dagger:hilt-android:2.47")
             library("com.google.net.cronet:cronet-okhttp:0.1.0")
             library("com.google.truth:truth:1.1.5")
@@ -162,6 +164,7 @@ include(
     ":modules:monetization",
     ":modules:musical-artists",
     ":modules:network-utils",
+    ":modules:play",
     ":modules:settings",
     ":modules:test-utils",
     ":modules:vgmdb",

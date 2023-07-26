@@ -22,7 +22,6 @@ import androidx.paging.cachedIn
 import androidx.paging.map
 import com.anilist.MediaActivityPageQuery
 import com.anilist.MediaDetailsQuery
-import com.anilist.type.ActivitySort
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
@@ -35,6 +34,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.AppMediaPlayer
+import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivitySortOption
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityStatusAware
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityToggleHelper
@@ -422,7 +422,7 @@ class AnimeMediaDetailsViewModel @Inject constructor(
                     aniListApi.mediaActivitiesPage(
                         id = it.mediaId,
                         page = 1,
-                        sort = listOf(/*ActivitySort.PINNED, */ActivitySort.ID_DESC),
+                        sort = ActivitySortOption.PINNED.toApiValue(),
                         activitiesPerPage = 10,
                     )
                         .page.activities

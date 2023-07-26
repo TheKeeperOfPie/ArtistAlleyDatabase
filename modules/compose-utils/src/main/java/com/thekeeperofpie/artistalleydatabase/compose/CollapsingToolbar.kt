@@ -44,6 +44,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.Velocity
+import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
 import kotlin.math.abs
 
@@ -92,20 +93,7 @@ fun EnterAlwaysTopAppBar(
         scrollBehavior.state.heightOffsetLimit = heightOffsetLimit
     }
 
-    val appBarDragModifier = Modifier.draggable(
-        orientation = Orientation.Vertical,
-        state = rememberDraggableState { scrollBehavior.state.heightOffset += it },
-        onDragStopped = { velocity ->
-            settle(
-                scrollBehavior.state,
-                velocity,
-                scrollBehavior.snapAnimationSpec,
-                scrollBehavior.flingAnimationSpec,
-            )
-        }
-    )
-
-    Box(modifier = modifier.then(appBarDragModifier)) {
+    Box(modifier = modifier) {
         Box(
             modifier = Modifier
                 .windowInsetsPadding(windowInsets)
@@ -135,20 +123,7 @@ fun EnterAlwaysTopAppBarHeightChange(
         scrollBehavior.state.heightOffsetLimit = heightOffsetLimit
     }
 
-    val appBarDragModifier = Modifier.draggable(
-        orientation = Orientation.Vertical,
-        state = rememberDraggableState { scrollBehavior.state.heightOffset += it },
-        onDragStopped = { velocity ->
-            settle(
-                scrollBehavior.state,
-                velocity,
-                scrollBehavior.snapAnimationSpec,
-                scrollBehavior.flingAnimationSpec,
-            )
-        }
-    )
-
-    Box(modifier = modifier.then(appBarDragModifier)) {
+    Box(modifier = modifier) {
         val height = LocalDensity.current.run { -heightOffsetLimit.toDp() + scrollBehavior.state.heightOffset.toDp() }
         Box(
             modifier = Modifier
@@ -284,6 +259,9 @@ class BottomNavigationState(private val scrollBehavior: NavigationBarEnterAlways
             }
         }.value
     }
+
+    @Composable
+    fun bottomOffsetPadding() = (bottomNavBarPadding() + bottomOffset()).coerceAtLeast(0.dp)
 }
 
 class NestedScrollSplitter(

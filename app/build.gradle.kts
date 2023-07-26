@@ -203,6 +203,7 @@ dependencies {
     implementation(project(":modules:data"))
     implementation(project(":modules:entry"))
     implementation(project(":modules:monetization"))
+    releaseImplementation(project(":modules:play"))
     implementation(project(":modules:settings"))
 
     runtimeOnly(kotlin("reflect"))

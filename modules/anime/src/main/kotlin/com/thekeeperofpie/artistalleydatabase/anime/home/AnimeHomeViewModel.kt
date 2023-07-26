@@ -78,6 +78,7 @@ class AnimeHomeViewModel @Inject constructor(
                         )
                     }
                 }
+                .cachedIn(viewModelScope)
                 .flatMapLatest { pagingData ->
                     activityStatusController.allChanges()
                         .mapLatest { updates ->

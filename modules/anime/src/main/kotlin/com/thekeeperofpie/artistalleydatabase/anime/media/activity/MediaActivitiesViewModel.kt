@@ -4,9 +4,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.map
-import com.anilist.MediaActivityPageQuery
 import com.anilist.fragment.ListActivityWithoutMedia
-import com.anilist.fragment.MediaListActivityItem
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.transformIf
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.R
@@ -31,7 +29,7 @@ class MediaActivitiesViewModel @Inject constructor(
     aniListApi: AuthedAniListApi,
     favoritesController: FavoritesController,
     private val activityStatusController: ActivityStatusController,
-) : HeaderAndListViewModel<MediaActivitiesScreen.Entry, MediaListActivityItem,
+) : HeaderAndListViewModel<MediaActivitiesScreen.Entry, ListActivityWithoutMedia,
         MediaActivitiesViewModel.Entry, ActivitySortOption>(
     aniListApi = aniListApi,
     sortOptionEnum = ActivitySortOption::class,
@@ -54,8 +52,8 @@ class MediaActivitiesViewModel @Inject constructor(
         )
     }
 
-    override fun makeEntry(item: MediaListActivityItem) = Entry(
-        activity = item as MediaActivityPageQuery.Data.Page.ListActivityActivity,
+    override fun makeEntry(item: ListActivityWithoutMedia) = Entry(
+        activity = item,
         liked = item.isLiked ?: false,
         subscribed = item.isSubscribed ?: false,
     )
@@ -81,7 +79,7 @@ class MediaActivitiesViewModel @Inject constructor(
     ) = if (page == 1) {
         val result = entry.data.page
         result.pageInfo to result.activities
-            .filterIsInstance<MediaActivityPageQuery.Data.Page.ListActivityActivity>()
+            .filterIsInstance<ListActivityWithoutMedia>()
     } else {
         val result = aniListApi.mediaActivitiesPage(
             id = entry.data.media.id.toString(),
@@ -89,7 +87,7 @@ class MediaActivitiesViewModel @Inject constructor(
             page = page,
         ).page
         result.pageInfo to result.activities
-            .filterIsInstance<MediaActivityPageQuery.Data.Page.ListActivityActivity>()
+            .filterIsInstance<ListActivityWithoutMedia>()
     }
 
     override fun Flow<PagingData<Entry>>.transformFlow() = flatMapLatest { pagingData ->

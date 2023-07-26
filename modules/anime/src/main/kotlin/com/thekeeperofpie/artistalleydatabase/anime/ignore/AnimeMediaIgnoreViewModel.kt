@@ -98,6 +98,7 @@ class AnimeMediaIgnoreViewModel @Inject constructor(
                     }.flow
                 }
                 .map { it.map { AnimeMediaListRow.Entry(it, ignored = false) } }
+                .cachedIn(viewModelScope)
                 .applyMediaStatusChanges(
                     statusController = statusController,
                     ignoreList = ignoreList,
@@ -115,6 +116,7 @@ class AnimeMediaIgnoreViewModel @Inject constructor(
                     },
                 )
                 .flowOn(CustomDispatchers.IO)
+                .cachedIn(viewModelScope)
                 .flatMapLatest { pagingData ->
                     combine(
                         snapshotFlow { query }.debounce(500.milliseconds)

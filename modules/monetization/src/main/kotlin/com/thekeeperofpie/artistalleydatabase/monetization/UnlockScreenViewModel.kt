@@ -6,14 +6,14 @@ import javax.inject.Inject
 
 @HiltViewModel
 class UnlockScreenViewModel @Inject constructor(
-    private val monetizationController: MonetizationController
+    monetizationController: MonetizationController
 ) : ViewModel() {
 
     val adsEnabled = monetizationController.adsEnabled
     val subscribed = monetizationController.subscribed
 
-    fun onEnableAdsClick() {
-        monetizationController.adsEnabled.value = true
+    fun enableAdsDebug() {
+        adsEnabled.value = true
     }
 
     fun onSubscribeClick() {

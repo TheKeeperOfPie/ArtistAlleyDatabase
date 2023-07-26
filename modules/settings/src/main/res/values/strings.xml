@@ -18,5 +18,7 @@
     <string name="settings_show_last_crash">Show last crash</string>
     <string name="settings_show_licenses">Show licenses</string>
     <string name="settings_unlock_all_features">Unlock all features</string>
-    <string name="settings_ads_enabled">Enable ads</string>
+    <string name="settings_ads_enabled">Ads are enabled</string>
+    <string name="settings_ads_disabled">Ads are disabled</string>
+    <string name="settings_ads_disable_button">Disable</string>
 </resources>

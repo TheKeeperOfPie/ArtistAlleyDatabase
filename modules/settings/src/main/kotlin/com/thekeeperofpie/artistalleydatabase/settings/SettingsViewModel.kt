@@ -171,8 +171,8 @@ class SettingsViewModel @Inject constructor(
         settingsProvider.unlockAllFeatures.value = hide
     }
 
-    fun onAdsEnabledChange(enabled: Boolean) {
-        monetizationController.adsEnabled.value = enabled
+    fun disableAds() {
+        settingsProvider.adsEnabled.value = false
     }
 
     fun checkMismatchedCdEntryData() {

@@ -133,8 +133,7 @@ fun SortFilterBottomScaffoldNoAppBarOffset(
         sheetPeekHeight = if (sortFilterController == null) {
             0.dp
         } else {
-            56.dp + (bottomNavigationState?.run { bottomNavBarPadding() + bottomOffset() }
-                ?: 0.dp)
+            56.dp + (bottomNavigationState?.bottomOffsetPadding() ?: 0.dp)
         },
         sheetDragHandle = {
             SheetDragHandle(
@@ -191,8 +190,7 @@ fun SortFilterBottomScaffold(
         sheetPeekHeight = if (sortFilterController == null) {
             0.dp
         } else {
-            56.dp + (bottomNavigationState?.run { bottomNavBarPadding() + bottomOffset() }
-                ?: 0.dp)
+            56.dp + (bottomNavigationState?.bottomOffsetPadding() ?: 0.dp)
         },
         sheetDragHandle = {
             SheetDragHandle(
@@ -294,8 +292,7 @@ private fun SheetContent(
             sections = { sortFilterController.sections },
             sectionState = { sortFilterController.state },
             modifier = Modifier.padding(
-                bottom = bottomNavigationState
-                    ?.run { bottomNavBarPadding() + bottomOffset() } ?: 0.dp
+                bottom = bottomNavigationState?.bottomOffsetPadding() ?: 0.dp
             )
         )
     }

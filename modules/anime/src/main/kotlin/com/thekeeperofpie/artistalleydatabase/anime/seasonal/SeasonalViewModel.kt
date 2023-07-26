@@ -168,6 +168,7 @@ class SeasonalViewModel @Inject constructor(
                     }
                     .enforceUniqueIntIds { it.id }
                     .map { it.map { MediaEntry(it) } }
+                    .cachedIn(viewModelScope)
                     .applyMediaStatusChanges(
                         statusController = statusController,
                         ignoreList = ignoreList,

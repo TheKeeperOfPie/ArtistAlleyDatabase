@@ -31,6 +31,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -77,7 +78,9 @@ import com.thekeeperofpie.artistalleydatabase.export.ExportScreen
 import com.thekeeperofpie.artistalleydatabase.export.ExportViewModel
 import com.thekeeperofpie.artistalleydatabase.importing.ImportScreen
 import com.thekeeperofpie.artistalleydatabase.importing.ImportViewModel
+import com.thekeeperofpie.artistalleydatabase.monetization.LocalMonetizationProvider
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationController
+import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationProvider
 import com.thekeeperofpie.artistalleydatabase.navigation.NavDrawerItems
 import com.thekeeperofpie.artistalleydatabase.search.advanced.AdvancedSearchScreen
 import com.thekeeperofpie.artistalleydatabase.search.advanced.AdvancedSearchViewModel
@@ -90,7 +93,9 @@ import com.thekeeperofpie.artistalleydatabase.ui.theme.ArtistAlleyDatabaseTheme
 import com.thekeeperofpie.artistalleydatabase.utils.DatabaseSyncWorker
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import java.util.Optional
 import javax.inject.Inject
+import kotlin.jvm.optionals.getOrNull
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -117,6 +122,9 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var monetizationController: MonetizationController
 
+    @Inject
+    lateinit var monetizationProviderOptional: Optional<MonetizationProvider>
+
     @Suppress("KotlinConstantConditions")
     private val isReleaseBuild = BuildConfig.BUILD_TYPE == "release"
 
@@ -133,77 +141,84 @@ class MainActivity : ComponentActivity() {
             ?: startDestinationFromSettings)
             ?.let { startId -> NavDrawerItems.values().find { it.id == startId }?.id }
             ?: AnimeNavDestinations.HOME.id
+        val monetizationProvider = monetizationProviderOptional.getOrNull()
+        monetizationProvider?.initialize(this)
+
         setContent {
             val navHostController = rememberNavController()
             ArtistAlleyDatabaseTheme(navHostController) {
-                // TODO: Draw inside insets for applicable screens
-                Surface(modifier = Modifier.safeDrawingPadding()) {
-                    val drawerState = rememberDrawerState(DrawerValue.Closed)
-                    val scope = rememberCoroutineScope()
-                    val navDrawerItems = NavDrawerItems.values()
+                CompositionLocalProvider(
+                    LocalMonetizationProvider provides monetizationProvider
+                ) {
+                    // TODO: Draw inside insets for applicable screens
+                    Surface(modifier = Modifier.safeDrawingPadding()) {
+                        val drawerState = rememberDrawerState(DrawerValue.Closed)
+                        val scope = rememberCoroutineScope()
+                        val navDrawerItems = NavDrawerItems.values()
 
-                    fun onClickNav() = scope.launch { drawerState.open() }
-                    val unlockAllFeatures = settings.unlockAllFeatures.collectAsState().value
+                        fun onClickNav() = scope.launch { drawerState.open() }
+                        val unlockAllFeatures = settings.unlockAllFeatures.collectAsState().value
 
-                    if (unlockAllFeatures) {
-                        ModalNavigationDrawer(
-                            drawerState = drawerState,
-                            drawerContent = {
-                                // TODO: This is not a good way to to infer the selected root
-                                var selectedRouteIndex by rememberSaveable {
-                                    mutableIntStateOf(
-                                        NavDrawerItems.values()
-                                            .indexOfFirst { it.id == startDestination })
-                                }
+                        if (unlockAllFeatures) {
+                            ModalNavigationDrawer(
+                                drawerState = drawerState,
+                                drawerContent = {
+                                    // TODO: This is not a good way to to infer the selected root
+                                    var selectedRouteIndex by rememberSaveable {
+                                        mutableIntStateOf(
+                                            NavDrawerItems.values()
+                                                .indexOfFirst { it.id == startDestination })
+                                    }
 
-                                StartDrawer(
-                                    navDrawerItems = { navDrawerItems },
-                                    selectedIndex = { selectedRouteIndex },
-                                    onSelectIndex = {
-                                        if (selectedRouteIndex == it) {
-                                            scope.launch { drawerState.close() }
-                                        } else {
-                                            selectedRouteIndex = it
-                                            val navDrawerItem = navDrawerItems[it]
-                                            navHostController.navigate(navDrawerItem.route) {
-                                                launchSingleTop = true
-                                                restoreState = true
-                                                val rootRoute =
-                                                    navHostController.currentBackStackEntry
-                                                        ?.destination?.route
-                                                if (rootRoute != null) {
-                                                    popUpTo(rootRoute) {
-                                                        inclusive = true
-                                                        saveState = true
+                                    StartDrawer(
+                                        navDrawerItems = { navDrawerItems },
+                                        selectedIndex = { selectedRouteIndex },
+                                        onSelectIndex = {
+                                            if (selectedRouteIndex == it) {
+                                                scope.launch { drawerState.close() }
+                                            } else {
+                                                selectedRouteIndex = it
+                                                val navDrawerItem = navDrawerItems[it]
+                                                navHostController.navigate(navDrawerItem.route) {
+                                                    launchSingleTop = true
+                                                    restoreState = true
+                                                    val rootRoute =
+                                                        navHostController.currentBackStackEntry
+                                                            ?.destination?.route
+                                                    if (rootRoute != null) {
+                                                        popUpTo(rootRoute) {
+                                                            inclusive = true
+                                                            saveState = true
+                                                        }
                                                     }
                                                 }
+                                                if (startDestinationFromIntent == null
+                                                    && navDrawerItem != NavDrawerItems.SETTINGS
+                                                ) {
+                                                    settings.navDrawerStartDestination.value =
+                                                        navDrawerItem.id
+                                                }
                                             }
-                                            if (startDestinationFromIntent == null
-                                                && navDrawerItem != NavDrawerItems.SETTINGS
-                                            ) {
-                                                settings.navDrawerStartDestination.value =
-                                                    navDrawerItem.id
-                                            }
-                                        }
-                                    },
-                                    onCloseDrawer = { scope.launch { drawerState.close() } },
+                                        },
+                                        onCloseDrawer = { scope.launch { drawerState.close() } },
+                                    )
+                                }
+                            ) {
+                                Content(
+                                    navHostController = navHostController,
+                                    unlockAllFeatures = true,
+                                    onClickNav = ::onClickNav,
+                                    startDestination = startDestination,
                                 )
                             }
-                        ) {
+                        } else {
                             Content(
                                 navHostController = navHostController,
-                                unlockAllFeatures = true,
+                                unlockAllFeatures = false,
                                 onClickNav = ::onClickNav,
                                 startDestination = startDestination,
                             )
                         }
-                    } else {
-                        Content(
-                            navHostController = navHostController,
-                            unlockAllFeatures = false,
-                            onClickNav = ::onClickNav,
-                            startDestination = startDestination,
-                        )
                     }
                 }
             }
@@ -255,17 +270,14 @@ class MainActivity : ComponentActivity() {
             if (adsEnabled) {
                 Box(
                     contentAlignment = Alignment.Center,
-                    modifier = Modifier.fillMaxWidth()
-                        .height(104.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(82.dp)
                         .background(Color.Black)
                         .padding(vertical = 16.dp)
                         .background(MaterialTheme.colorScheme.primaryContainer)
                 ) {
-                    Text(
-                        text = "INSERT AD HERE",
-                        style = MaterialTheme.typography.headlineMedium,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                    )
+                    LocalMonetizationProvider.current?.BannerAdView()
                 }
             }
 

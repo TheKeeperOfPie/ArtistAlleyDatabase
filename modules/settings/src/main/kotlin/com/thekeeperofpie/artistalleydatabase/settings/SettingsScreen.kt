@@ -42,6 +42,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.AppBar
 import com.thekeeperofpie.artistalleydatabase.compose.ItemDropdown
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.entry.EntryStringR
+import com.thekeeperofpie.artistalleydatabase.monetization.LocalMonetizationProvider
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistsStringR
 import com.thekeeperofpie.artistalleydatabase.network_utils.NetworkSettings
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbStringR
@@ -70,11 +71,35 @@ object SettingsScreen {
                     .verticalScroll(rememberScrollState())
             ) {
                 val adsEnabled by viewModel.adsEnabled.collectAsState()
-                SwitchRow(
-                    titleRes = R.string.settings_ads_enabled,
-                    checked = { adsEnabled },
-                    onCheckedChange = viewModel::onAdsEnabledChange,
-                )
+                val monetizationProvider = LocalMonetizationProvider.current
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(
+                        start = 16.dp,
+                        end = 16.dp,
+                        top = 10.dp,
+                        bottom = 10.dp
+                    )
+                ) {
+                    Text(
+                        text = stringResource(
+                            if (adsEnabled) {
+                                R.string.settings_ads_enabled
+                            } else {
+                                R.string.settings_ads_disabled
+                            }
+                        ),
+                        Modifier.weight(1f)
+                    )
+                    FilledTonalButton(
+                        onClick = {
+                            monetizationProvider?.onAdsRevoked() ?: viewModel.disableAds()
+                        },
+                        enabled = adsEnabled,
+                    ) {
+                        Text(text = stringResource(R.string.settings_ads_disable_button))
+                    }
+                }
 
                 Divider()
 
@@ -196,7 +221,7 @@ object SettingsScreen {
     private fun ButtonRow(
         @StringRes titleRes: Int,
         @StringRes buttonTextRes: Int,
-        onClick: () -> Unit
+        onClick: () -> Unit,
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,

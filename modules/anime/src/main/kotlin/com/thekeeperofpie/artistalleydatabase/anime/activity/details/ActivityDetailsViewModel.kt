@@ -144,6 +144,7 @@ class ActivityDetailsViewModel @Inject constructor(
                             .orEmpty()
                     }
                 }.flow
+                    .cachedIn(viewModelScope)
             }
                 .flatMapLatest { pagingData ->
                     replyStatusController.allChanges()

@@ -117,6 +117,7 @@ abstract class HeaderAndListViewModel<EntryType, ListItemType : Any, ListEntryTy
                 }
                 .map { it.map { makeEntry(it) } }
                 .enforceUniqueIds { entryId(it) }
+                .cachedIn(viewModelScope)
                 .transformFlow()
                 .cachedIn(viewModelScope)
                 .collectLatest(items::emit)

@@ -6,8 +6,9 @@ class MonetizationController(settings: MonetizationSettings) {
 
     val unlocked = combine(
         settings.adsEnabled,
-        settings.subscribed
-    ) { adsEnabled, subscribed -> adsEnabled || subscribed }
+        settings.subscribed,
+        settings.unlockAllFeatures,
+    ) { adsEnabled, subscribed, unlockAllFeatures -> adsEnabled || subscribed || unlockAllFeatures }
 
     var adsEnabled = settings.adsEnabled
     var subscribed = settings.subscribed

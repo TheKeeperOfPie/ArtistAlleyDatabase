@@ -10,13 +10,24 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -24,18 +35,70 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
+import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
+import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 
+@OptIn(ExperimentalMaterial3Api::class)
 object UnlockScreen {
 
     private val MIN_WIDTH = 300.dp
 
     @Composable
     operator fun invoke(
+        upIconOption: UpIconOption?,
         viewModel: UnlockScreenViewModel = hiltViewModel(),
+        onClickSettings: () -> Unit,
         bottomNavigationState: BottomNavigationState?,
     ) {
+        // TODO: Show error message if monetization not available
+        val monetizationProvider = LocalMonetizationProvider.current
+        val snackbarHostState = remember { SnackbarHostState() }
+        val error = monetizationProvider?.error?.let { stringResource(it.first) }
+        LaunchedEffect(error) {
+            if (error != null) {
+                snackbarHostState.showSnackbar(
+                    message = error,
+                    withDismissAction = true,
+                    duration = SnackbarDuration.Indefinite,
+                )
+            }
+        }
+
         Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = {
+                        Text(
+                            text = stringResource(R.string.monetization_feature_tiers_header),
+                            maxLines = 1
+                        )
+                    },
+                    navigationIcon = {
+                        if (upIconOption != null) {
+                            UpIconButton(option = upIconOption)
+                        }
+                    },
+                    actions = {
+                        IconButton(onClick = onClickSettings) {
+                            Icon(
+                                imageVector = Icons.Filled.Settings,
+                                contentDescription = stringResource(
+                                    R.string.monetization_settings_content_description
+                                )
+                            )
+                        }
+                    }
+                )
+            },
+            snackbarHost = {
+                SnackbarHost(
+                    snackbarHostState,
+                    modifier = Modifier.padding(
+                        bottom = bottomNavigationState?.bottomOffsetPadding() ?: 0.dp
+                    )
+                )
+            },
             modifier = Modifier.conditionally(bottomNavigationState != null) {
                 nestedScroll(bottomNavigationState!!.nestedScrollConnection)
             }
@@ -55,12 +118,6 @@ object UnlockScreen {
                         .fillMaxSize()
                         .verticalScroll(rememberScrollState())
                 ) {
-                    Text(
-                        text = stringResource(R.string.monetization_feature_tiers_header),
-                        style = MaterialTheme.typography.headlineSmall,
-                        modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 8.dp)
-                    )
-
                     TierSection(
                         header = stringResource(R.string.monetization_feature_tier_free_header),
                         body = stringResource(R.string.monetization_feature_tier_free_body),
@@ -81,7 +138,9 @@ object UnlockScreen {
                             )
                         }
                     } else {
-                        Button(onClick = viewModel::onEnableAdsClick) {
+                        Button(onClick = {
+                            monetizationProvider?.requestEnableAds() ?: viewModel.enableAdsDebug()
+                        }) {
                             Text(text = stringResource(R.string.monetization_enable_ads_button))
                         }
                     }

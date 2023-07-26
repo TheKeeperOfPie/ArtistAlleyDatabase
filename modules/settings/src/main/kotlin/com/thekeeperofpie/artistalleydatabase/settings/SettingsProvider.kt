@@ -135,7 +135,7 @@ class SettingsProvider(
     var lastCrashShown = MutableStateFlow(deserialize("lastCrashShown") ?: false)
     var screenshotMode = MutableStateFlow(deserialize("screenshotMode") ?: false)
 
-    var unlockAllFeatures = MutableStateFlow(deserialize("unlockAllFeatures") ?: false)
+    override var unlockAllFeatures = MutableStateFlow(deserialize("unlockAllFeatures") ?: false)
 
     init {
         val mainThreadId = Looper.getMainLooper().thread.id

@@ -99,6 +99,7 @@ dependencyAnalysis {
                     ":modules:monetization",
                     ":modules:musical-artists",
                     ":modules:network-utils",
+                    ":modules:play",
                     ":modules:settings",
                     ":modules:test-utils",
                     ":modules:vgmdb",
