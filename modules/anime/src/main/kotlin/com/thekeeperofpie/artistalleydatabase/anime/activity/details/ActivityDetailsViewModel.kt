@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.activity.details
 
+import android.os.SystemClock
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
@@ -15,6 +16,10 @@ import androidx.paging.map
 import com.anilist.ActivityDetailsQuery
 import com.anilist.ActivityDetailsRepliesQuery
 import com.anilist.type.MediaListStatus
+import com.hoc081098.flowext.flowFromSuspend
+import com.thekeeperofpie.artistalleydatabase.android_utils.Either
+import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
+import com.thekeeperofpie.artistalleydatabase.android_utils.flowForRefreshableContent
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListPagingSource
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
@@ -30,7 +35,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaStatusAware
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
@@ -38,6 +42,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -55,9 +60,11 @@ class ActivityDetailsViewModel @Inject constructor(
     val viewer = aniListApi.authedUser
     val colorMap = mutableStateMapOf<String, Pair<Color, Color>>()
     val refresh = MutableStateFlow(-1L)
-    var entry by mutableStateOf<Entry?>(null)
+    var entry by mutableStateOf<LoadingResult<Entry>>(LoadingResult.loading())
     var replies = MutableStateFlow(PagingData.empty<Entry.ReplyEntry>())
-    var error by mutableStateOf<Pair<Int, Throwable?>?>(null)
+
+    var replying by mutableStateOf(false)
+    var deleting by mutableStateOf(false)
 
     val toggleHelper = ActivityToggleHelper(aniListApi, statusController, viewModelScope)
     val replyToggleHelper =
@@ -68,11 +75,15 @@ class ActivityDetailsViewModel @Inject constructor(
         this.activityId = id
 
         viewModelScope.launch(CustomDispatchers.Main) {
-            refresh.mapLatest { aniListApi.activityDetails(activityId).activity }
+            flowForRefreshableContent(refresh, R.string.anime_activity_details_error_loading) {
+                flowFromSuspend {
+                    aniListApi.activityDetails(activityId).activity
+                }
+            }
                 .flatMapLatest { activity ->
                     combine(
                         statusController.allChanges(activityId),
-                        if (activity is ActivityDetailsQuery.Data.ListActivityActivity) {
+                        if (activity.result is ActivityDetailsQuery.Data.ListActivityActivity) {
                             mediaListStatusController.allChanges(activityId)
                         } else {
                             flowOf(null)
@@ -81,25 +92,24 @@ class ActivityDetailsViewModel @Inject constructor(
                         ::Triple
                     )
                         .mapLatest { (activityUpdates, mediaListUpdate, ignoredIds) ->
-
-                            val liked = activityUpdates?.liked ?: when (activity) {
-                                is ActivityDetailsQuery.Data.ListActivityActivity -> activity.isLiked
-                                is ActivityDetailsQuery.Data.MessageActivityActivity -> activity.isLiked
-                                is ActivityDetailsQuery.Data.TextActivityActivity -> activity.isLiked
-                                is ActivityDetailsQuery.Data.OtherActivity -> false
-                            } ?: false
-                            val subscribed = activityUpdates?.subscribed ?: when (activity) {
-                                is ActivityDetailsQuery.Data.ListActivityActivity -> activity.isSubscribed
-                                is ActivityDetailsQuery.Data.MessageActivityActivity -> activity.isSubscribed
-                                is ActivityDetailsQuery.Data.TextActivityActivity -> activity.isSubscribed
-                                is ActivityDetailsQuery.Data.OtherActivity -> false
-                            } ?: false
-                            Result.success(
+                            activity.transformResult {
+                                val liked = activityUpdates?.liked ?: when (it) {
+                                    is ActivityDetailsQuery.Data.ListActivityActivity -> it.isLiked
+                                    is ActivityDetailsQuery.Data.MessageActivityActivity -> it.isLiked
+                                    is ActivityDetailsQuery.Data.TextActivityActivity -> it.isLiked
+                                    is ActivityDetailsQuery.Data.OtherActivity -> false
+                                } ?: false
+                                val subscribed = activityUpdates?.subscribed ?: when (it) {
+                                    is ActivityDetailsQuery.Data.ListActivityActivity -> it.isSubscribed
+                                    is ActivityDetailsQuery.Data.MessageActivityActivity -> it.isSubscribed
+                                    is ActivityDetailsQuery.Data.TextActivityActivity -> it.isSubscribed
+                                    is ActivityDetailsQuery.Data.OtherActivity -> false
+                                } ?: false
                                 Entry(
-                                    activity = activity,
+                                    activity = it,
                                     liked = liked,
                                     subscribed = subscribed,
-                                    mediaEntry = (activity as? ActivityDetailsQuery.Data.ListActivityActivity)?.media?.let {
+                                    mediaEntry = (it as? ActivityDetailsQuery.Data.ListActivityActivity)?.media?.let {
                                         if (mediaListUpdate == null) {
                                             Entry.MediaEntry(
                                                 media = it,
@@ -119,20 +129,12 @@ class ActivityDetailsViewModel @Inject constructor(
                                         }
                                     }
                                 )
-                            )
+                            }
                         }
 
                 }
-                .catch { emit(Result.failure(it)) }
                 .flowOn(CustomDispatchers.IO)
-                .collectLatest {
-                    if (it.isSuccess) {
-                        entry = it.getOrThrow()
-                    } else {
-                        error =
-                            R.string.anime_activity_details_error_loading to it.exceptionOrNull()
-                    }
-                }
+                .collectLatest { entry = it }
         }
 
         viewModelScope.launch(CustomDispatchers.Main) {
@@ -157,6 +159,38 @@ class ActivityDetailsViewModel @Inject constructor(
                 }
                 .cachedIn(viewModelScope)
                 .collect(replies::emit)
+        }
+    }
+
+    fun refresh() {
+        refresh.value = SystemClock.uptimeMillis()
+    }
+
+    fun delete(deletePromptData: Either<Unit, Entry.ReplyEntry>) {
+        if (deleting) return
+        deleting = true
+        viewModelScope.launch(CustomDispatchers.IO) {
+            if (deletePromptData is Either.Right) {
+                aniListApi.deleteActivityReply(deletePromptData.value.reply.id.toString())
+            } else {
+                aniListApi.deleteActivity(activityId)
+            }
+            withContext(CustomDispatchers.Main) {
+                refresh.emit(SystemClock.uptimeMillis())
+                deleting = false
+            }
+        }
+    }
+
+    fun sendReply(reply: String) {
+        if (replying) return
+        replying = true
+        viewModelScope.launch(CustomDispatchers.IO) {
+            aniListApi.saveActivityReply(activityId = activityId, replyId = null, text = reply)
+            withContext(CustomDispatchers.Main) {
+                refresh.emit(SystemClock.uptimeMillis())
+                replying = false
+            }
         }
     }
 

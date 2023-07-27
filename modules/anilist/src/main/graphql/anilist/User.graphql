@@ -352,20 +352,7 @@ fragment ActivityItem on ActivityUnion {
         }
     }
     ... on MessageActivity {
-        createdAt
-        id
-        isLiked
-        likeCount
-        isSubscribed
-        replyCount
-        message
-        messenger {
-            ...UserNavigationData
-        }
-        recipient {
-            ...UserNavigationData
-        }
-        type
+        ...MessageActivityFragment
     }
 }
 

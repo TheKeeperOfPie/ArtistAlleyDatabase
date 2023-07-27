@@ -15,21 +15,19 @@ query ActivityDetails($activityId: Int!) {
             }
         }
         ... on MessageActivity {
-            replyCount
-            message(asHtml: true)
-            isLocked
-            isSubscribed
-            likeCount
-            isLiked
-            isPrivate
-            createdAt
-            recipient {
-                ...UserNavigationData
-            }
-            messenger {
-                ...UserNavigationData
-            }
+            ...MessageActivityFragment
         }
+    }
+}
+
+fragment ActivityReplyFragment on ActivityReply {
+    id
+    text(asHtml: true)
+    likeCount
+    isLiked
+    createdAt
+    user {
+        ...UserNavigationData
     }
 }
 
@@ -39,14 +37,7 @@ query ActivityDetailsReplies($activityId: Int!, $page: Int!, $perPage: Int!) {
             ...PaginationInfo
         }
         activityReplies(activityId: $activityId) {
-            id
-            text(asHtml: true)
-            likeCount
-            isLiked
-            createdAt
-            user {
-                ...UserNavigationData
-            }
+            ...ActivityReplyFragment
         }
     }
 }
@@ -137,5 +128,25 @@ mutation ToggleActivityReplyLike($id: Int!) {
         ... on ActivityReply {
             isLiked
         }
+    }
+}
+
+mutation DeleteActivity($id: Int!) {
+    DeleteActivity(id: $id) @nonnull {
+        deleted
+    }
+}
+
+mutation DeleteActivityReply($id: Int!) {
+    DeleteActivityReply(id: $id) @nonnull {
+        deleted
+    }
+}
+
+# TODO: Support editing activity in general
+mutation SaveActivityReply($activityId: Int!, $replyId: Int, $text: String!) {
+    # TODO: Support asMod
+    SaveActivityReply(id: $replyId, activityId: $activityId, text: $text) {
+        ...ActivityReplyFragment
     }
 }

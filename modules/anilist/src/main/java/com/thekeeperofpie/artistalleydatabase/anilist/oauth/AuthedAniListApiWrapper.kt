@@ -203,8 +203,16 @@ class AuthedAniListApiWrapper(
         }))
     }
 
-    override suspend fun characterDetails(id: String) = super.characterDetails(id).let {
-        it.copy(media = it.media?.copy(edges = it.media.edges?.filter { it?.node?.isAdult == false }))
+    override suspend fun characterDetails(id: String) = super.characterDetails(id).map {
+        it.transformResult {
+            it.copy(
+                character = it.character?.copy(
+                    media = it.character.media?.copy(
+                        edges = it.character.media.edges?.filter { it?.node?.isAdult == false }
+                    )
+                )
+            )
+        }
     }
 
     override suspend fun characterDetailsMediaPage(
@@ -565,4 +573,14 @@ class AuthedAniListApiWrapper(
     ) = super.activityReplies(id, page, perPage)
 
     override suspend fun toggleActivityReplyLike(id: String) = super.toggleActivityReplyLike(id)
+
+    override suspend fun deleteActivity(id: String) = super.deleteActivity(id)
+
+    override suspend fun deleteActivityReply(id: String) = super.deleteActivityReply(id)
+
+    override suspend fun saveActivityReply(
+        activityId: String,
+        replyId: String?,
+        text: String,
+    ) = super.saveActivityReply(activityId, replyId, text)
 }

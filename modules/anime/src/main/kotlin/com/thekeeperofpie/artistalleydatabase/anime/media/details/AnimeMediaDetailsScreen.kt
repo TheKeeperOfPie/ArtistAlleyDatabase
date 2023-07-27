@@ -97,6 +97,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.media3.common.util.RepeatModeUtil
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
+import androidx.paging.LoadState
+import androidx.paging.LoadStates
+import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import coil.compose.AsyncImage
@@ -121,6 +124,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ListActivitySmallCard
+import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils
 import com.thekeeperofpie.artistalleydatabase.anime.character.DetailsCharacter
 import com.thekeeperofpie.artistalleydatabase.anime.character.charactersSection
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
@@ -167,6 +171,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.twoColumnInfoText
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGrid
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.math.roundToInt
@@ -225,7 +230,9 @@ object AnimeMediaDetailsScreen {
         }
         var headerTransitionFinished by remember { mutableStateOf(false) }
         val entry = viewModel.entry
-        val characters = viewModel.characters.collectAsLazyPagingItems()
+        val charactersInitial = (entry.result?.charactersInitial ?: MutableStateFlow(PagingData.empty())).collectAsLazyPagingItems()
+        val charactersDeferred = viewModel.charactersDeferred.collectAsLazyPagingItems()
+        val characters = charactersDeferred.takeIf { it.itemCount > 0 } ?: charactersInitial
         val staff = viewModel.staff.collectAsLazyPagingItems()
         val expandedState = rememberExpandedState()
         val animeSongs = viewModel.animeSongs
@@ -503,7 +510,7 @@ object AnimeMediaDetailsScreen {
         )
 
         descriptionSection(
-            htmlText = entry.media.description,
+            markdownText = entry.media.description,
             expanded = expandedState::description,
             onExpandedChange = { expandedState.description = it },
         )
@@ -1829,6 +1836,23 @@ object AnimeMediaDetailsScreen {
         val relations: List<Relation>,
         val recommendations: List<Recommendation>,
     ) {
+        val charactersInitial = MutableStateFlow(
+            PagingData.from(
+                CharacterUtils.toDetailsCharacters(
+                    media.characters?.edges?.filterNotNull().orEmpty()
+                ),
+                sourceLoadStates = LoadStates(
+                    refresh = LoadState.NotLoading(
+                        endOfPaginationReached = media.characters?.pageInfo?.hasNextPage != true
+                    ),
+                    prepend = LoadState.NotLoading(true),
+                    append = LoadState.NotLoading(
+                        endOfPaginationReached = media.characters?.pageInfo?.hasNextPage != true
+                    )
+                )
+            )
+        )
+
         val id = EntryId("media", mediaId)
         val titlesUnique = media.title
             ?.run { listOfNotNull(romaji, english, native) }

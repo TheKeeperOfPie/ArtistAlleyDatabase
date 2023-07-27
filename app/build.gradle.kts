@@ -28,7 +28,7 @@ android {
 
     defaultConfig {
         applicationId = "com.thekeeperofpie.artistalleydatabase"
-        minSdk = 29
+        minSdk = 28
         targetSdk = 33
         versionCode = 1
         versionName = "0.39"

@@ -2,14 +2,25 @@
 
 package com.thekeeperofpie.artistalleydatabase.compose
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.DrawableWrapper
+import android.os.Build
 import android.os.SystemClock
 import android.text.Html
+import android.text.NoCopySpan
+import android.text.Selection
+import android.text.Spannable
 import android.text.TextUtils
+import android.text.method.ScrollingMovementMethod
+import android.text.method.Touch
+import android.text.style.ClickableSpan
 import android.util.Log
+import android.view.KeyEvent
+import android.view.MotionEvent
+import android.view.View
 import android.widget.TextView
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
@@ -148,14 +159,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.takeOrElse
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.os.BuildCompat
 import androidx.core.text.HtmlCompat
-import androidx.core.text.method.LinkMovementMethodCompat
 import coil.Coil
 import coil.request.ImageRequest
 import com.thekeeperofpie.compose_proxy.R
 import de.charlex.compose.toAnnotatedString
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -1054,6 +1066,249 @@ private class ImageGetterWrapper(var delegate: Html.ImageGetter? = null) : Html.
         source?.let { delegate?.getDrawable(source) } ?: CustomDrawableWrapper.EMPTY
 }
 
+class LinkMovementMethodWithOnClick(private val onClickFallback: () -> Unit) :
+    ScrollingMovementMethod() {
+    override fun canSelectArbitrarily(): Boolean {
+        return true
+    }
+
+    override fun handleMovementKey(
+        widget: TextView, buffer: Spannable, keyCode: Int,
+        movementMetaState: Int, event: KeyEvent,
+    ): Boolean {
+        when (keyCode) {
+            KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER -> if (KeyEvent.metaStateHasNoModifiers(
+                    movementMetaState
+                )
+            ) {
+                if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0 && action(
+                        CLICK,
+                        widget,
+                        buffer
+                    )
+                ) {
+                    return true
+                }
+            }
+        }
+        return super.handleMovementKey(widget, buffer, keyCode, movementMetaState, event)
+    }
+
+    override fun up(widget: TextView, buffer: Spannable): Boolean {
+        return if (action(UP, widget, buffer)) true else super.up(widget, buffer)
+    }
+
+    override fun down(widget: TextView, buffer: Spannable): Boolean {
+        return if (action(DOWN, widget, buffer)) true else super.down(widget, buffer)
+    }
+
+    override fun left(widget: TextView, buffer: Spannable): Boolean {
+        return if (action(UP, widget, buffer)) true else super.left(widget, buffer)
+    }
+
+    override fun right(widget: TextView, buffer: Spannable): Boolean {
+        return if (action(DOWN, widget, buffer)) true else super.right(widget, buffer)
+    }
+
+    private fun action(what: Int, widget: TextView, buffer: Spannable): Boolean {
+        val layout = widget.layout
+        val padding = widget.totalPaddingTop +
+                widget.totalPaddingBottom
+        val areaTop = widget.scrollY
+        val areaBot = areaTop + widget.height - padding
+        val lineTop = layout.getLineForVertical(areaTop)
+        val lineBot = layout.getLineForVertical(areaBot)
+        val first = layout.getLineStart(lineTop)
+        val last = layout.getLineEnd(lineBot)
+        val candidates = buffer.getSpans(
+            first, last,
+            ClickableSpan::class.java
+        )
+        val a = Selection.getSelectionStart(buffer)
+        val b = Selection.getSelectionEnd(buffer)
+        var selStart = Math.min(a, b)
+        var selEnd = Math.max(a, b)
+        if (selStart < 0) {
+            if (buffer.getSpanStart(FROM_BELOW) >= 0) {
+                selEnd = buffer.length
+                selStart = selEnd
+            }
+        }
+        if (selStart > last) {
+            selEnd = Int.MAX_VALUE
+            selStart = selEnd
+        }
+        if (selEnd < first) {
+            selEnd = -1
+            selStart = selEnd
+        }
+        var bestStart: Int
+        var bestEnd: Int
+        when (what) {
+            CLICK -> {
+                if (selStart == selEnd) {
+                    return false
+                }
+                val links = buffer.getSpans(
+                    selStart, selEnd,
+                    ClickableSpan::class.java
+                )
+                if (links.size != 1) {
+                    return false
+                }
+                val link = links[0]
+//                if (link is TextLinkSpan) {
+//                    link.onClick(widget, TextLinkSpan.INVOCATION_METHOD_KEYBOARD)
+//                } else {
+                link.onClick(widget)
+//                }
+            }
+            UP -> {
+                bestStart = -1
+                bestEnd = -1
+                var i = 0
+                while (i < candidates.size) {
+                    val end = buffer.getSpanEnd(candidates[i])
+                    if (end < selEnd || selStart == selEnd) {
+                        if (end > bestEnd) {
+                            bestStart = buffer.getSpanStart(candidates[i])
+                            bestEnd = end
+                        }
+                    }
+                    i++
+                }
+                if (bestStart >= 0) {
+                    Selection.setSelection(buffer, bestEnd, bestStart)
+                    return true
+                }
+            }
+            DOWN -> {
+                bestStart = Int.MAX_VALUE
+                bestEnd = Int.MAX_VALUE
+                var i = 0
+                while (i < candidates.size) {
+                    val start = buffer.getSpanStart(candidates[i])
+                    if (start > selStart || selStart == selEnd) {
+                        if (start < bestStart) {
+                            bestStart = start
+                            bestEnd = buffer.getSpanEnd(candidates[i])
+                        }
+                    }
+                    i++
+                }
+                if (bestEnd < Int.MAX_VALUE) {
+                    Selection.setSelection(buffer, bestStart, bestEnd)
+                    return true
+                }
+            }
+        }
+        return false
+    }
+
+    @SuppressLint("UnsafeOptInUsageError")
+    override fun onTouchEvent(widget: TextView, buffer: Spannable, event: MotionEvent): Boolean {
+        if (!BuildCompat.isAtLeastV()) {
+            val action = event.action
+            if (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_DOWN) {
+                var x = event.x.toInt()
+                var y = event.y.toInt()
+                x -= widget.totalPaddingLeft
+                y -= widget.totalPaddingTop
+                x += widget.scrollX
+                y += widget.scrollY
+                val layout = widget.layout
+                val isOutOfLineBounds: Boolean = if (y < 0 || y > layout.height) {
+                    true
+                } else {
+                    val line = layout.getLineForVertical(y)
+                    (x < layout.getLineLeft(line)
+                            || x > layout.getLineRight(line))
+                }
+                if (isOutOfLineBounds) {
+                    Selection.removeSelection(buffer)
+                    if (action == MotionEvent.ACTION_UP) {
+                        onClickFallback()
+                    }
+
+                    // The same as super.onTouchEvent() in LinkMovementMethod.onTouchEvent(), i.e.
+                    // ScrollingMovementMethod.onTouchEvent().
+                    return Touch.onTouchEvent(widget, buffer, event)
+                }
+            }
+        }
+        val action = event.action
+        if (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_DOWN) {
+            var x = event.x.toInt()
+            var y = event.y.toInt()
+            x -= widget.totalPaddingLeft
+            y -= widget.totalPaddingTop
+            x += widget.scrollX
+            y += widget.scrollY
+            val layout = widget.layout
+            val line = layout.getLineForVertical(y)
+            val off = layout.getOffsetForHorizontal(line, x.toFloat())
+            val links = buffer.getSpans(
+                off, off,
+                ClickableSpan::class.java
+            )
+            if (links.isNotEmpty()) {
+                val link = links[0]
+                if (action == MotionEvent.ACTION_UP) {
+//                    if (link is TextLinkSpan) {
+//                        link.onClick(
+//                            widget, TextLinkSpan.INVOCATION_METHOD_TOUCH
+//                        )
+//                    } else {
+                    link.onClick(widget)
+//                    }
+                } else {
+                    if (widget.context.applicationInfo.targetSdkVersion
+                        >= Build.VERSION_CODES.P
+                    ) {
+                        // Selection change will reposition the toolbar. Hide it for a few ms for a
+                        // smoother transition.
+//                        widget.hideFloatingToolbar(HIDE_FLOATING_TOOLBAR_DELAY_MS)
+                    }
+                    Selection.setSelection(
+                        buffer,
+                        buffer.getSpanStart(link),
+                        buffer.getSpanEnd(link)
+                    )
+                }
+                return true
+            } else {
+                Selection.removeSelection(buffer)
+                if (action == MotionEvent.ACTION_UP) {
+                    onClickFallback()
+                }
+            }
+        }
+        return super.onTouchEvent(widget, buffer, event)
+    }
+
+    override fun initialize(widget: TextView, text: Spannable) {
+        Selection.removeSelection(text)
+        text.removeSpan(FROM_BELOW)
+    }
+
+    override fun onTakeFocus(view: TextView, text: Spannable, dir: Int) {
+        Selection.removeSelection(text)
+        if (dir and View.FOCUS_BACKWARD != 0) {
+            text.setSpan(FROM_BELOW, 0, 0, Spannable.SPAN_POINT_POINT)
+        } else {
+            text.removeSpan(FROM_BELOW)
+        }
+    }
+
+    companion object {
+        private const val CLICK = 1
+        private const val UP = 2
+        private const val DOWN = 3
+//        private const val HIDE_FLOATING_TOOLBAR_DELAY_MS = 200
+        private val FROM_BELOW: Any = NoCopySpan.Concrete()
+    }
+}
+
 /**
  * [Text] doesn't support images, so instead use a [TextView].
  */
@@ -1063,6 +1318,7 @@ fun ImageHtmlText(
     text: String,
     color: Color,
     maxLines: Int? = null,
+    onClickFallback: () -> Unit = {},
 ) {
     val context = LocalContext.current
     var updateMillis by remember { mutableLongStateOf(-1L) }
@@ -1080,18 +1336,21 @@ fun ImageHtmlText(
             .trim()
     }
 
+    val linkMovementMethod = remember { LinkMovementMethodWithOnClick(onClickFallback) }
     AndroidView(
         modifier = modifier,
-        factory = ::TextView,
+        factory = {
+            TextView(it).apply {
+                if (maxLines != null) {
+                    this.maxLines = maxLines
+                }
+                setTextColor(color.toArgb())
+                ellipsize = TextUtils.TruncateAt.END
+                movementMethod = linkMovementMethod
+            }
+        },
         update = {
             it.text = htmlText
-            if (maxLines != null) {
-                it.maxLines = maxLines
-            }
-            it.setTextColor(color.toArgb())
-            it.ellipsize = TextUtils.TruncateAt.END
-            it.movementMethod = LinkMovementMethodCompat.getInstance()
-            it.setTextIsSelectable(true)
         }
     )
 }

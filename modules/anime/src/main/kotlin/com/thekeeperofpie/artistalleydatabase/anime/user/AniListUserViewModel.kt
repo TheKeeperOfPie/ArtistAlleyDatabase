@@ -198,7 +198,7 @@ class AniListUserViewModel @Inject constructor(
                     staff = staff,
                 )
             },
-            id = { it.id },
+            id = { it.idWithRole },
             property = staff,
         )
 

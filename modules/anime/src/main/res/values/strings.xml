@@ -655,7 +655,16 @@
     <string name="anime_activity_details_title">Activity details</string>
     <string name="anime_activity_details_error_loading_replies">Error loading replies</string>
     <string name="anime_activity_details_no_replies">No replies</string>
+    <string name="anime_activity_message_arrow_recipient_icon_content_description">Sent to recipient</string>
+    <string name="anime_activity_delete_content_description">Delete activity</string>
+    <string name="anime_activity_open_in_browser_content_description">Open in browser</string>
+    <string name="anime_activity_delete_confirmation">Delete activity?</string>
+
     <string name="anime_activity_reply_like_icon_content_description">Reply liked</string>
+    <string name="anime_activity_reply_delete_content_description">Delete activity reply</string>
+    <string name="anime_activity_reply_fab_content_description">Reply</string>
+    <string name="anime_activity_reply_send_button">Send</string>
+    <string name="anime_activity_reply_delete_confirmation">Delete reply?</string>
 
     <string name="anime_reviews_sort_id">Last added</string>
     <string name="anime_reviews_sort_score">Score</string>

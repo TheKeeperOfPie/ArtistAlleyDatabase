@@ -62,6 +62,7 @@ object UnlockScreen {
                     withDismissAction = true,
                     duration = SnackbarDuration.Indefinite,
                 )
+                monetizationProvider.error = null
             }
         }
 

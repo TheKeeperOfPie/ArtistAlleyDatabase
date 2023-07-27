@@ -58,7 +58,7 @@ fun ArtistAlleyDatabaseTheme(
                 ) {
                     navHostController.navigate(deepLinkUri)
                 } else {
-                    val strippedUri = uri.replace("${UriUtils.FORCE_EXTERNAL_URI_PARAM}=true", "")
+                    val strippedUri = uri.replace("?${UriUtils.FORCE_EXTERNAL_URI_PARAM}=true", "")
                     context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(strippedUri)))
                 }
             } catch (e: Exception) {

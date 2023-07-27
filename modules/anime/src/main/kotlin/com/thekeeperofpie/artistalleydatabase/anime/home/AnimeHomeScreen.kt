@@ -99,6 +99,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityToggleUpdate
 import com.thekeeperofpie.artistalleydatabase.anime.activity.AnimeActivityViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ListActivitySmallCard
+import com.thekeeperofpie.artistalleydatabase.anime.activity.MessageActivitySmallCard
 import com.thekeeperofpie.artistalleydatabase.anime.activity.TextActivitySmallCard
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaLargeCard
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListQuickEditIconButton
@@ -369,7 +370,16 @@ object AnimeHomeScreen {
                             clickable = true,
                             modifier = Modifier.fillMaxWidth()
                         )
-                    is UserSocialActivityQuery.Data.Page.MessageActivityActivity,
+                    is UserSocialActivityQuery.Data.Page.MessageActivityActivity ->
+                        MessageActivitySmallCard(
+                            viewer = viewer,
+                            activity = activity,
+                            entry = entry,
+                            onActivityStatusUpdate = onActivityStatusUpdate,
+                            navigationCallback = navigationCallback,
+                            clickable = true,
+                            modifier = Modifier.fillMaxWidth()
+                        )
                     is UserSocialActivityQuery.Data.Page.OtherActivity,
                     null,
                     -> TextActivitySmallCard(

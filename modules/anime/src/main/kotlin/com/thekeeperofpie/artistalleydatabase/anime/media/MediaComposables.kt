@@ -408,7 +408,7 @@ fun MediaListQuickEditIconButton(
         horizontalArrangement = Arrangement.spacedBy(4.dp),
         modifier = modifier
             .clip(RoundedCornerShape(topEnd = 12.dp))
-            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.5f))
+            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.66f))
             .padding(8.dp)
             .clickable(onClick = onClick)
     ) {

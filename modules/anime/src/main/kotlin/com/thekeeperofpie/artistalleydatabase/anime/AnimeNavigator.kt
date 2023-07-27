@@ -276,7 +276,7 @@ object AnimeNavigator {
                 .apply { initialize(characterId) }
             val headerValues = CharacterHeaderValues(
                 arguments,
-                character = { viewModel.entry?.character },
+                character = { viewModel.entry.result?.character },
                 favoriteUpdate = { viewModel.favoritesToggleHelper.favorite },
             )
 

@@ -146,7 +146,7 @@ query CharacterDetails($id: Int!) {
     }
 }
 
-fragment CharacterDetailsMediaEdge on MediaEdge {
+fragment CharacterDetailsVoiceActorEdge on MediaEdge {
     characterName
     characterRole
     voiceActorRoles {
@@ -163,6 +163,10 @@ fragment CharacterDetailsMediaEdge on MediaEdge {
         # roleNotes
         # dubGroup
     }
+}
+
+fragment CharacterDetailsMediaEdge on MediaEdge {
+    ...CharacterDetailsVoiceActorEdge
 
     node {
         ...MediaPreview
@@ -176,7 +180,10 @@ query CharacterDetailsMediaPage($characterId: Int!, $page: Int!, $perPage: Int!)
                 ...PaginationInfo
             }
             edges @nonnull {
-                ...CharacterDetailsMediaEdge
+                ...CharacterDetailsVoiceActorEdge
+                node {
+                    isAdult
+                }
             }
         }
     }

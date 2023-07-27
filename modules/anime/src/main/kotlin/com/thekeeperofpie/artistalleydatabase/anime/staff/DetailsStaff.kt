@@ -8,4 +8,6 @@ data class DetailsStaff(
     val image: String?,
     val role: String?,
     val staff: StaffNavigationData,
-)
+) {
+    val idWithRole = "$id-$role"
+}

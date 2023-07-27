@@ -161,7 +161,7 @@ internal fun CoverAndBannerHeader(
                         .align(Alignment.TopStart)
                         .alpha(1f - progress)
                         .clip(RoundedCornerShape(bottomEnd = 12.dp))
-                        .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.25f))
+                        .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.66f))
                 )
             }
 
@@ -173,7 +173,7 @@ internal fun CoverAndBannerHeader(
                         .clip(RoundedCornerShape(bottomStart = 12.dp))
                         .background(
                             MaterialTheme.colorScheme.surface.copy(
-                                alpha = if (fadeOutMenu) 0.25f else (0.25f * (1f - progress))
+                                alpha = if (fadeOutMenu) 0.66f else (0.66f * (1f - progress))
                             )
                         )
                 ) {
@@ -311,12 +311,12 @@ internal fun LazyListScope.detailsLoadingOrError(
 }
 
 internal fun LazyListScope.descriptionSection(
-    htmlText: String?,
+    markdownText: String?,
     expanded: () -> Boolean,
     onExpandedChange: (Boolean) -> Unit,
     imagesSupported: Boolean = false,
 ) {
-    htmlText?.takeUnless(String::isEmpty) ?: return
+    markdownText?.takeUnless(String::isEmpty) ?: return
     item("descriptionSection") {
         ElevatedCard(
             onClick = { onExpandedChange(!expanded()) },
@@ -330,7 +330,7 @@ internal fun LazyListScope.descriptionSection(
 
             if (imagesSupported) {
                 ImageHtmlText(
-                    text = htmlText.replaceSpoilers(),
+                    text = markdownText.replaceSpoilers(),
                     maxLines = if (expanded) Int.MAX_VALUE else 4,
                     color = style.color.takeOrElse { LocalContentColor.current },
                     modifier = Modifier
@@ -339,7 +339,7 @@ internal fun LazyListScope.descriptionSection(
                 )
             } else {
                 CustomHtmlText(
-                    text = htmlText.replaceSpoilers(),
+                    text = markdownText.replaceSpoilers(),
                     maxLines = if (expanded) Int.MAX_VALUE else 4,
                     style = style,
                     color = style.color.takeOrElse { LocalContentColor.current },

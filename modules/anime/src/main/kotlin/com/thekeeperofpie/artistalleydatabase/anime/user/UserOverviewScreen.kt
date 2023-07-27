@@ -81,7 +81,7 @@ object UserOverviewScreen {
             )
 
             descriptionSection(
-                htmlText = user.about?.trim(),
+                markdownText = user.about?.trim(),
                 expanded = { descriptionExpanded },
                 onExpandedChange = { descriptionExpanded = it },
                 imagesSupported = true,

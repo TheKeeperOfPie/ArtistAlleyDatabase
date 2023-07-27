@@ -49,7 +49,7 @@ fun LazyListScope.staffSection(
         ) {
             items(
                 count = staffList.itemCount,
-                key = staffList.itemKey { it.id },
+                key = staffList.itemKey { it.idWithRole },
                 contentType = staffList.itemContentType { "staff" },
             ) {
                 val staff = staffList[it]

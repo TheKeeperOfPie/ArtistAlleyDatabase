@@ -13,8 +13,6 @@ import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.paging.LoadState
-import androidx.paging.LoadStates
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
@@ -91,6 +89,7 @@ class AnimeMediaDetailsViewModel @Inject constructor(
 
     companion object {
         private const val TAG = "AnimeMediaDetailsViewModel"
+        private var counter = 0
     }
 
     val screenKey = "${AnimeNavDestinations.MEDIA_DETAILS.id}-${UUID.randomUUID()}"
@@ -112,7 +111,7 @@ class AnimeMediaDetailsViewModel @Inject constructor(
     var entry by mutableStateOf<LoadingResult<AnimeMediaDetailsScreen.Entry>>(LoadingResult.loading())
     var listStatus by mutableStateOf<MediaListStatusController.Update?>(null)
     var activities by mutableStateOf<List<ActivityEntry>?>(null)
-    val characters = MutableStateFlow(PagingData.empty<DetailsCharacter>())
+    val charactersDeferred = MutableStateFlow(PagingData.empty<DetailsCharacter>())
     val staff = MutableStateFlow(PagingData.empty<DetailsStaff>())
 
     var animeSongs by mutableStateOf<AnimeSongs?>(null)
@@ -243,30 +242,7 @@ class AnimeMediaDetailsViewModel @Inject constructor(
             }
                 .foldPreviousResult()
                 .flowOn(CustomDispatchers.IO)
-                .collectLatest {
-                    val mediaCharacters = entry.result?.media?.characters
-                    if (mediaCharacters != null) {
-                        val hasMoreCharacters = mediaCharacters.pageInfo?.hasNextPage == true
-                        characters.emit(
-                            PagingData.from(
-                                CharacterUtils.toDetailsCharacters(
-                                    entry.result?.media?.characters?.edges?.filterNotNull()
-                                        .orEmpty()
-                                ),
-                                sourceLoadStates = LoadStates(
-                                    refresh = LoadState.NotLoading(
-                                        endOfPaginationReached = !hasMoreCharacters
-                                    ),
-                                    prepend = LoadState.NotLoading(true),
-                                    append = LoadState.NotLoading(
-                                        endOfPaginationReached = !hasMoreCharacters
-                                    )
-                                )
-                            )
-                        )
-                    }
-                    entry = it
-                }
+                .collectLatest { entry = it }
         }
 
         viewModelScope.launch(CustomDispatchers.IO) {
@@ -296,12 +272,12 @@ class AnimeMediaDetailsViewModel @Inject constructor(
                 .flowOn(CustomDispatchers.Main)
                 .flatMapLatest { (mediaId, characters) ->
                     Pager(config = PagingConfig(10)) {
-                        AniListPagingSource {
-                            if (it == 1) {
+                        AniListPagingSource { page ->
+                            if (page == 1) {
                                 characters?.pageInfo to characters?.edges?.filterNotNull().orEmpty()
                             } else {
                                 val result =
-                                    aniListApi.mediaDetailsCharactersPage(mediaId, it).characters
+                                    aniListApi.mediaDetailsCharactersPage(mediaId, page).characters
                                 result.pageInfo to result.edges.filterNotNull()
                             }
                         }
@@ -310,7 +286,7 @@ class AnimeMediaDetailsViewModel @Inject constructor(
                 .mapLatest { it.map(CharacterUtils::toDetailsCharacter) }
                 .enforceUniqueIds { it.id }
                 .cachedIn(viewModelScope)
-                .collectLatest(characters::emit)
+                .collectLatest(charactersDeferred::emit)
         }
 
         viewModelScope.launch(CustomDispatchers.IO) {
@@ -350,7 +326,7 @@ class AnimeMediaDetailsViewModel @Inject constructor(
                         }
                     }.flow
                 }
-                .enforceUniqueIds { it.id }
+                .enforceUniqueIds { it.idWithRole }
                 .cachedIn(viewModelScope)
                 .collectLatest(staff::emit)
         }

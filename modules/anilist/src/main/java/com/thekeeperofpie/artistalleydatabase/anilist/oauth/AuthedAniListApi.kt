@@ -12,6 +12,8 @@ import com.anilist.CharacterAndMediasPaginationQuery
 import com.anilist.CharacterAndMediasQuery
 import com.anilist.CharacterDetailsMediaPageQuery
 import com.anilist.CharacterDetailsQuery
+import com.anilist.DeleteActivityMutation
+import com.anilist.DeleteActivityReplyMutation
 import com.anilist.DeleteMediaListEntryMutation
 import com.anilist.GenresQuery
 import com.anilist.HomeAnimeQuery
@@ -34,6 +36,7 @@ import com.anilist.MediaTagsQuery
 import com.anilist.MediaTitlesAndImagesQuery
 import com.anilist.RateReviewMutation
 import com.anilist.ReviewDetailsQuery
+import com.anilist.SaveActivityReplyMutation
 import com.anilist.SaveMediaListEntryMutation
 import com.anilist.StaffAndCharactersPaginationQuery
 import com.anilist.StaffAndCharactersQuery
@@ -89,6 +92,7 @@ import com.anilist.type.StaffSort
 import com.anilist.type.StudioSort
 import com.anilist.type.UserSort
 import com.apollographql.apollo3.ApolloClient
+import com.apollographql.apollo3.api.Mutation
 import com.apollographql.apollo3.api.Optional
 import com.apollographql.apollo3.api.Query
 import com.apollographql.apollo3.cache.normalized.FetchPolicy
@@ -283,8 +287,7 @@ open class AuthedAniListApi(
     open suspend fun mediaListEntry(id: String) = query(MediaListEntryQuery(id.toInt()))
 
     open suspend fun deleteMediaListEntry(id: String) =
-        apolloClient.mutation(DeleteMediaListEntryMutation(id = id.toInt()))
-            .execute().dataOrThrow()
+        mutate(DeleteMediaListEntryMutation(id = id.toInt()))
 
     // TODO: Progress is broken for volume/chapter entries
     open suspend fun saveMediaListEntry(
@@ -300,7 +303,7 @@ open class AuthedAniListApi(
         startedAt: LocalDate?,
         completedAt: LocalDate?,
         hiddenFromStatusLists: Boolean?,
-    ) = apolloClient.mutation(
+    ) = mutate(
         SaveMediaListEntryMutation(
             id = Optional.presentIfNotNull(id?.toIntOrNull()),
             mediaId = mediaId.toInt(),
@@ -327,7 +330,7 @@ open class AuthedAniListApi(
             }),
             hiddenFromStatusLists = Optional.presentIfNotNull(hiddenFromStatusLists),
         )
-    ).execute().dataOrThrow().saveMediaListEntry!!
+    ).saveMediaListEntry!!
 
     open suspend fun mediaByIds(ids: List<Int>) =
         query(MediaByIdsQuery(ids = Optional.present(ids)))
@@ -350,8 +353,8 @@ open class AuthedAniListApi(
         )
     )
 
-    open suspend fun characterDetails(id: String) = query(CharacterDetailsQuery(id.toInt()))
-        .character!!
+    open suspend fun characterDetails(id: String) =
+        queryCacheAndNetwork(CharacterDetailsQuery(id.toInt()))
 
     open suspend fun characterDetailsMediaPage(characterId: String, page: Int, perPage: Int = 5) =
         query(
@@ -551,8 +554,7 @@ open class AuthedAniListApi(
         )
     )
 
-    open suspend fun toggleFollow(userId: Int) =
-        apolloClient.mutation(ToggleFollowMutation(userId)).execute().dataOrThrow().toggleFollow
+    open suspend fun toggleFollow(userId: Int) = mutate(ToggleFollowMutation(userId)).toggleFollow
 
     open suspend fun userSocialFollowers(userId: Int, page: Int, perPage: Int = 10) =
         query(UserSocialFollowersQuery(userId = userId, perPage = perPage, page = page))
@@ -637,8 +639,7 @@ open class AuthedAniListApi(
         query(ReviewDetailsQuery(reviewId.toInt())).review
 
     open suspend fun rateReview(reviewId: String, rating: ReviewRating) =
-        apolloClient.mutation(RateReviewMutation(id = reviewId.toInt(), rating = rating)).execute()
-            .dataOrThrow().rateReview.userRating
+        mutate(RateReviewMutation(id = reviewId.toInt(), rating = rating)).rateReview.userRating
 
     open suspend fun mediaAndRecommendations(
         mediaId: String,
@@ -760,31 +761,31 @@ open class AuthedAniListApi(
 
     open suspend fun toggleAnimeFavorite(id: String): Boolean {
         val idAsInt = id.toInt()
-        apolloClient.mutation(ToggleAnimeFavoriteMutation(id = idAsInt)).execute().dataOrThrow()
+        mutate(ToggleAnimeFavoriteMutation(id = idAsInt))
         return query(ToggleMediaResultQuery(id = idAsInt)).media.isFavourite
     }
 
     open suspend fun toggleMangaFavorite(id: String): Boolean {
         val idAsInt = id.toInt()
-        apolloClient.mutation(ToggleMangaFavoriteMutation(id = idAsInt)).execute().dataOrThrow()
+        mutate(ToggleMangaFavoriteMutation(id = idAsInt))
         return query(ToggleMediaResultQuery(id = idAsInt)).media.isFavourite
     }
 
     open suspend fun toggleCharacterFavorite(id: String): Boolean {
         val idAsInt = id.toInt()
-        apolloClient.mutation(ToggleCharacterFavoriteMutation(id = idAsInt)).execute().dataOrThrow()
+        mutate(ToggleCharacterFavoriteMutation(id = idAsInt))
         return query(ToggleCharacterResultQuery(id = idAsInt)).character.isFavourite
     }
 
     open suspend fun toggleStaffFavorite(id: String): Boolean {
         val idAsInt = id.toInt()
-        apolloClient.mutation(ToggleStaffFavoriteMutation(id = idAsInt)).execute().dataOrThrow()
+        mutate(ToggleStaffFavoriteMutation(id = idAsInt))
         return query(ToggleStaffResultQuery(id = idAsInt)).staff.isFavourite
     }
 
     open suspend fun toggleStudioFavorite(id: String): Boolean {
         val idAsInt = id.toInt()
-        apolloClient.mutation(ToggleStudioFavoriteMutation(id = idAsInt)).execute().dataOrThrow()
+        mutate(ToggleStudioFavoriteMutation(id = idAsInt))
         return query(ToggleStudioResultQuery(id = idAsInt)).studio.isFavourite
     }
 
@@ -814,23 +815,21 @@ open class AuthedAniListApi(
         )
     )
 
-    open suspend fun toggleActivityLike(id: String) = when (val result =
-        apolloClient.mutation(ToggleActivityLikeMutation(id = id.toInt())).execute()
-            .dataOrThrow().toggleLikeV2!!) {
-        is ToggleActivityLikeMutation.Data.ListActivityToggleLikeV2 -> result.isLiked
-        is ToggleActivityLikeMutation.Data.MessageActivityToggleLikeV2 -> result.isLiked
-        is ToggleActivityLikeMutation.Data.TextActivityToggleLikeV2 -> result.isLiked
-        is ToggleActivityLikeMutation.Data.OtherToggleLikeV2 -> false
-    } ?: false
+    open suspend fun toggleActivityLike(id: String) =
+        when (val result = mutate(ToggleActivityLikeMutation(id = id.toInt())).toggleLikeV2!!) {
+            is ToggleActivityLikeMutation.Data.ListActivityToggleLikeV2 -> result.isLiked
+            is ToggleActivityLikeMutation.Data.MessageActivityToggleLikeV2 -> result.isLiked
+            is ToggleActivityLikeMutation.Data.TextActivityToggleLikeV2 -> result.isLiked
+            is ToggleActivityLikeMutation.Data.OtherToggleLikeV2 -> false
+        } ?: false
 
     open suspend fun toggleActivitySubscribe(id: String, subscribe: Boolean) = when (val result =
-        apolloClient.mutation(
+        mutate(
             ToggleActivitySubscribeMutation(
                 id = id.toInt(),
                 subscribe = subscribe
             )
-        ).execute()
-            .dataOrThrow().toggleActivitySubscription!!) {
+        ).toggleActivitySubscription!!) {
         is ToggleActivitySubscribeMutation.Data.ListActivityToggleActivitySubscription -> result.isSubscribed
         is ToggleActivitySubscribeMutation.Data.MessageActivityToggleActivitySubscription -> result.isSubscribed
         is ToggleActivitySubscribeMutation.Data.TextActivityToggleActivitySubscription -> result.isSubscribed
@@ -844,12 +843,30 @@ open class AuthedAniListApi(
         query(ActivityDetailsRepliesQuery(activityId = id.toInt(), page = page, perPage = perPage))
 
     open suspend fun toggleActivityReplyLike(id: String) =
-        apolloClient.mutation(ToggleActivityReplyLikeMutation(id = id.toInt())).execute()
-            .dataOrThrow().toggleLikeV2.asActivityReply()!!.isLiked
+        mutate(ToggleActivityReplyLikeMutation(id = id.toInt()))
+            .toggleLikeV2.asActivityReply()!!.isLiked
+
+    open suspend fun deleteActivity(id: String) =
+        mutate(DeleteActivityMutation(id = id.toInt())).deleteActivity.deleted
+
+    open suspend fun deleteActivityReply(id: String) =
+        mutate(DeleteActivityReplyMutation(id = id.toInt())).deleteActivityReply.deleted
+
+    open suspend fun saveActivityReply(activityId: String, replyId: String?, text: String) =
+        mutate(
+            SaveActivityReplyMutation(
+                activityId = activityId.toInt(),
+                replyId = Optional.presentIfNotNull(replyId?.toInt()),
+                text = text,
+            )
+        ).saveActivityReply
 
     // TODO: Use queryCacheAndNetwork for everything
-    protected suspend fun <D : Query.Data> query(query: Query<D>) =
+    private suspend fun <D : Query.Data> query(query: Query<D>) =
         apolloClient.query(query).fetchPolicy(FetchPolicy.NetworkFirst).execute().dataOrThrow()
+
+    private suspend fun <D : Mutation.Data> mutate(mutation: Mutation<D>) =
+        apolloClient.mutation(mutation).execute().dataOrThrow()
 
     private fun <D : Query.Data> queryCacheAndNetwork(query: Query<D>) = combine(
         // TODO: Cancel the cache query if network returns first

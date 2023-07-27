@@ -39,6 +39,7 @@ fun CharacterHeader(
     onFavoriteChanged: (Boolean) -> Unit,
     colorCalculationState: ColorCalculationState,
     onImageWidthToHeightRatioAvailable: (Float) -> Unit = {},
+    onCoverImageSharedElementFractionChanged: ((Float) -> Unit)? = null,
 ) {
     SharedElement(
         key = "anime_character_${characterId}_header",
@@ -57,6 +58,7 @@ fun CharacterHeader(
                 onImageWidthToHeightRatioAvailable(it.widthToHeightRatio())
                 ComposeColorUtils.calculatePalette(characterId, it, colorCalculationState)
             },
+            onCoverImageSharedElementFractionChanged = onCoverImageSharedElementFractionChanged,
             menuContent = {
                 FavoriteIconButton(
                     favorite = headerValues.favorite,

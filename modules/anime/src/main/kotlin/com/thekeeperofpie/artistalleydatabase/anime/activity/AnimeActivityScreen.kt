@@ -237,7 +237,15 @@ object AnimeActivityScreen {
                                         clickable = true,
                                         modifier = Modifier.fillMaxWidth()
                                     )
-                                    is MessageActivityActivity,
+                                    is MessageActivityActivity -> MessageActivitySmallCard(
+                                        viewer = viewer,
+                                        activity = activity,
+                                        entry = entry,
+                                        onActivityStatusUpdate = onActivityStatusUpdate,
+                                        navigationCallback = navigationCallback,
+                                        clickable = true,
+                                        modifier = Modifier.fillMaxWidth()
+                                    )
                                     is OtherActivity,
                                     null,
                                     -> TextActivitySmallCard(

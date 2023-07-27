@@ -15,8 +15,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -25,6 +29,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -41,6 +46,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.anilist.AuthedUserQuery
@@ -52,13 +58,13 @@ import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterHeader
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterHeaderValues
 import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
+import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.mediaListSection
 import com.thekeeperofpie.artistalleydatabase.anime.staff.DetailsStaff
 import com.thekeeperofpie.artistalleydatabase.anime.staff.staffSection
-import com.thekeeperofpie.artistalleydatabase.anime.ui.DetailsLoadingOrError
 import com.thekeeperofpie.artistalleydatabase.anime.ui.descriptionSection
 import com.thekeeperofpie.artistalleydatabase.compose.CollapsingToolbar
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
@@ -70,8 +76,11 @@ import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.fadingEdgeBottom
 import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.twoColumnInfoText
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlin.time.Duration.Companion.seconds
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 object CharacterDetailsScreen {
 
     private val SCREEN_KEY = AnimeNavDestinations.CHARACTER_DETAILS.id
@@ -91,69 +100,103 @@ object CharacterDetailsScreen {
             mutableFloatStateOf(headerValues.imageWidthToHeightRatio)
         }
 
+        val entry = viewModel.entry
+        var headerTransitionFinished by remember { mutableStateOf(false) }
         val viewer by viewModel.viewer.collectAsState()
-        val editViewModel = hiltViewModel<MediaEditViewModel>()
-        MediaEditBottomSheetScaffold(
-            screenKey = AnimeNavDestinations.SEARCH.id,
-            viewModel = editViewModel,
-            colorCalculationState = colorCalculationState,
-            navigationCallback = navigationCallback,
-            topBar = {
-                CollapsingToolbar(
-                    maxHeight = 356.dp,
-                    pinnedHeight = 120.dp,
-                    scrollBehavior = scrollBehavior,
-                ) {
-                    CharacterHeader(
-                        screenKey = SCREEN_KEY,
-                        upIconOption = upIconOption,
-                        characterId = viewModel.characterId,
-                        progress = it,
-                        headerValues = headerValues,
-                        onFavoriteChanged = {
-                            viewModel.favoritesToggleHelper
-                                .set(FavoriteType.CHARACTER, viewModel.characterId, it)
-                        },
-                        colorCalculationState = colorCalculationState,
-                        onImageWidthToHeightRatioAvailable = {
-                            characterImageWidthToHeightRatio = it
-                        },
-                    )
-                }
-            },
-            modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
-        ) { scaffoldPadding ->
-            val expandedState = rememberExpandedState()
-            val entry = viewModel.entry
-            Crossfade(targetState = entry, label = "Character details crossfade") {
-                if (it == null) {
-                    DetailsLoadingOrError(
-                        loading = viewModel.loading,
-                        errorResource = { viewModel.errorResource },
-                    )
-                } else {
-                    val voiceActors = viewModel.voiceActors.collectAsLazyPagingItems()
-                    LazyColumn(
-                        contentPadding = PaddingValues(bottom = 16.dp),
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(scaffoldPadding)
+        var loadingThresholdPassed by remember { mutableStateOf(false) }
+        val refreshing = headerTransitionFinished && entry.loading && loadingThresholdPassed
+        val pullRefreshState = rememberPullRefreshState(
+            refreshing = refreshing,
+            onRefresh = viewModel::refresh,
+        )
+        LaunchedEffect(pullRefreshState) {
+            delay(1.seconds)
+            loadingThresholdPassed = true
+        }
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .pullRefresh(state = pullRefreshState)
+        ) {
+            val editViewModel = hiltViewModel<MediaEditViewModel>()
+            MediaEditBottomSheetScaffold(
+                screenKey = AnimeNavDestinations.SEARCH.id,
+                viewModel = editViewModel,
+                colorCalculationState = colorCalculationState,
+                navigationCallback = navigationCallback,
+                topBar = {
+                    CollapsingToolbar(
+                        maxHeight = 356.dp,
+                        pinnedHeight = 120.dp,
+                        scrollBehavior = scrollBehavior,
                     ) {
-                        content(
-                            viewModel = viewModel,
-                            editViewModel = editViewModel,
+                        CharacterHeader(
+                            screenKey = SCREEN_KEY,
+                            upIconOption = upIconOption,
+                            characterId = viewModel.characterId,
+                            progress = it,
                             headerValues = headerValues,
-                            entry = it,
-                            voiceActors = voiceActors,
-                            viewer = viewer,
-                            characterImageWidthToHeightRatio = { characterImageWidthToHeightRatio },
-                            expandedState = expandedState,
-                            navigationCallback = navigationCallback,
+                            onFavoriteChanged = {
+                                viewModel.favoritesToggleHelper
+                                    .set(FavoriteType.CHARACTER, viewModel.characterId, it)
+                            },
                             colorCalculationState = colorCalculationState,
+                            onImageWidthToHeightRatioAvailable = {
+                                characterImageWidthToHeightRatio = it
+                            },
+                            onCoverImageSharedElementFractionChanged = {
+                                if (it == 0f) {
+                                    headerTransitionFinished = true
+                                }
+                            },
                         )
+                    }
+                },
+                modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
+            ) { scaffoldPadding ->
+                val expandedState = rememberExpandedState()
+                val finalError = entry.result == null && !entry.loading
+                Crossfade(targetState = finalError, label = "Character details crossfade") {
+                    if (it) {
+                        AnimeMediaListScreen.Error(
+                            errorTextRes = entry.error?.first,
+                            exception = entry.error?.second,
+                        )
+                    } else if (entry.result != null) {
+                        val voiceActorsInitial = (entry.result?.voiceActorsInitial
+                            ?: MutableStateFlow(PagingData.empty())).collectAsLazyPagingItems()
+                        val voiceActorsDeferred =
+                            viewModel.voiceActorsDeferred.collectAsLazyPagingItems()
+                        val voiceActors =
+                            voiceActorsDeferred.takeIf { it.itemCount > 0 } ?: voiceActorsInitial
+                        LazyColumn(
+                            contentPadding = PaddingValues(bottom = 16.dp),
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(scaffoldPadding)
+                        ) {
+                            content(
+                                viewModel = viewModel,
+                                editViewModel = editViewModel,
+                                headerValues = headerValues,
+                                entry = entry.result!!,
+                                voiceActors = voiceActors,
+                                viewer = viewer,
+                                characterImageWidthToHeightRatio = { characterImageWidthToHeightRatio },
+                                expandedState = expandedState,
+                                navigationCallback = navigationCallback,
+                                colorCalculationState = colorCalculationState,
+                            )
+                        }
                     }
                 }
             }
+
+            PullRefreshIndicator(
+                refreshing = refreshing,
+                state = pullRefreshState,
+                modifier = Modifier.align(Alignment.TopCenter)
+            )
         }
     }
 
@@ -170,7 +213,7 @@ object CharacterDetailsScreen {
         colorCalculationState: ColorCalculationState,
     ) {
         descriptionSection(
-            htmlText = entry.character.description,
+            markdownText = entry.character.description,
             expanded = expandedState::description,
             onExpandedChange = { expandedState.description = it },
         )
@@ -407,7 +450,25 @@ object CharacterDetailsScreen {
         val character: Character,
         val media: List<AnimeMediaListRow.Entry<*>>,
     ) {
-        val voiceActors = character.media?.edges
+        val voiceActorsInitial = MutableStateFlow(
+            PagingData.from(
+                character.media?.edges?.filterNotNull()?.flatMap {
+                    it.voiceActorRoles?.filterNotNull()
+                        ?.mapNotNull { it.voiceActor }
+                        ?.map {
+                            DetailsStaff(
+                                id = it.id.toString(),
+                                name = it.name?.userPreferred,
+                                image = it.image?.large,
+                                role = it.languageV2,
+                                staff = it,
+                            )
+                        }
+                        .orEmpty()
+                }.orEmpty()
+                    .distinctBy { it.idWithRole }
+            )
+        )
 
         val mediaHasMore = character.media?.pageInfo?.hasNextPage == true
     }

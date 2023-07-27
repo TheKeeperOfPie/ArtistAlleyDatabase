@@ -1,5 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.android_utils
 
+import androidx.annotation.StringRes
+
 data class LoadingResult<T>(
     val loading: Boolean = false,
     val success: Boolean = false,
@@ -9,6 +11,8 @@ data class LoadingResult<T>(
     companion object {
         fun <T> loading() = LoadingResult<T>(loading = true)
         fun <T> empty() = LoadingResult<T>()
+        fun <T> error(@StringRes errorTextRes: Int, throwable: Throwable? = null) =
+            LoadingResult<T>(error = errorTextRes to throwable)
     }
 
     fun <Output> transformResult(transform: (T) -> Output?): LoadingResult<Output> {
