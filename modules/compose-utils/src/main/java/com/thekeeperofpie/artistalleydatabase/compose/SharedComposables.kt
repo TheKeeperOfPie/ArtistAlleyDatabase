@@ -1205,6 +1205,8 @@ class LinkMovementMethodWithOnClick(private val onClickFallback: () -> Unit) :
         return false
     }
 
+    @BuildCompat.PrereleaseSdkCheck
+    @OptIn(BuildCompat.PrereleaseSdkCheck::class)
     @SuppressLint("UnsafeOptInUsageError")
     override fun onTouchEvent(widget: TextView, buffer: Spannable, event: MotionEvent): Boolean {
         if (!BuildCompat.isAtLeastV()) {

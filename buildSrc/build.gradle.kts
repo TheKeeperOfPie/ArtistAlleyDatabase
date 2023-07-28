@@ -9,9 +9,9 @@ repositories {
 }
 
 dependencies {
-    implementation("com.android.tools.build:gradle:8.2.0-alpha12")
+    implementation("com.android.tools.build:gradle:8.2.0-alpha14")
     implementation("org.jetbrains.kotlin.android:org.jetbrains.kotlin.android.gradle.plugin:1.9.0")
-    implementation("com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin:1.9.0-1.0.11")
+    implementation("com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin:1.9.0-1.0.12")
     implementation("com.squareup:javapoet:1.13.0")
     implementation("com.google.android.gms:oss-licenses-plugin:0.10.6")
     implementation("com.google.android.libraries.mapsplatform.secrets-gradle-plugin:secrets-gradle-plugin:2.0.1")
