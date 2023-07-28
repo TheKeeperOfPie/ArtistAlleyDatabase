@@ -18,8 +18,10 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyListState
@@ -663,13 +665,15 @@ object AnimeHomeScreen {
         }
 
         val baseModifier = modifier
-            .size(width = width, height = height)
+            .height(height)
+            .widthIn(min = width)
             .clip(RoundedCornerShape(12.dp))
             .combinedClickable(
                 onClick = onClick,
                 onLongClick = { onLongClickEntry(media) },
             )
             .alpha(if (ignored) 0.38f else 1f)
+            .padding(2.dp)
 
         val card: @Composable (@Composable ColumnScope.() -> Unit) -> Unit =
             if (selected) {

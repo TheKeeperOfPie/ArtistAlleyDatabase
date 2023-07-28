@@ -321,9 +321,9 @@ internal fun LazyListScope.descriptionSection(
         ElevatedCard(
             onClick = { onExpandedChange(!expanded()) },
             modifier = Modifier
-                .padding(start = 16.dp, end = 16.dp, top = 10.dp)
+                .animateContentSize()
+                .padding(start = 16.dp, end = 16.dp, top = 10.dp, bottom = 2.dp)
                 .fillMaxWidth()
-                .animateContentSize(),
         ) {
             val style = MaterialTheme.typography.bodyMedium
             val expanded = expanded()

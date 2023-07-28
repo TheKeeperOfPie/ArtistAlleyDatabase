@@ -135,7 +135,7 @@ fun CharacterSmallCard(
     ElevatedCard(
         onClick = onClick,
         colors = CardDefaults.elevatedCardColors(containerColor = containerColor),
-        modifier = Modifier.width(width),
+        modifier = Modifier.width(width).padding(bottom = 2.dp),
     ) {
         Box {
             val density = LocalDensity.current

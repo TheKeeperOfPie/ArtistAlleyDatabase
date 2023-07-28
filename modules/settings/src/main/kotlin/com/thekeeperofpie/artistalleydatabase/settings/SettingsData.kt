@@ -31,4 +31,5 @@ data class SettingsData(
     val hideStatusBar: Boolean = false,
     val adsEnabled: Boolean = false,
     val subscribed: Boolean = false,
+    val appTheme: AppThemeSetting = AppThemeSetting.AUTO,
 )

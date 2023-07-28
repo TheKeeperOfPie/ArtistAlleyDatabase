@@ -230,7 +230,8 @@ object AnimeMediaDetailsScreen {
         }
         var headerTransitionFinished by remember { mutableStateOf(false) }
         val entry = viewModel.entry
-        val charactersInitial = (entry.result?.charactersInitial ?: MutableStateFlow(PagingData.empty())).collectAsLazyPagingItems()
+        val charactersInitial = (entry.result?.charactersInitial
+            ?: MutableStateFlow(PagingData.empty())).collectAsLazyPagingItems()
         val charactersDeferred = viewModel.charactersDeferred.collectAsLazyPagingItems()
         val characters = charactersDeferred.takeIf { it.itemCount > 0 } ?: charactersInitial
         val staff = viewModel.staff.collectAsLazyPagingItems()
@@ -259,8 +260,8 @@ object AnimeMediaDetailsScreen {
 
         Box(
             modifier = Modifier
-            .fillMaxSize()
-            .pullRefresh(state = pullRefreshState)
+                .fillMaxSize()
+                .pullRefresh(state = pullRefreshState)
         ) {
             val editViewModel = hiltViewModel<MediaEditViewModel>()
             MediaEditBottomSheetScaffold(
@@ -724,9 +725,9 @@ object AnimeMediaDetailsScreen {
         item("infoSectionOne") {
             ElevatedCard(
                 modifier = Modifier
-                    .padding(horizontal = 16.dp)
                     .animateContentSize()
-                    .animateItemPlacement(),
+                    .animateItemPlacement()
+                    .padding(start = 16.dp, end = 16.dp, bottom = 2.dp)
             ) {
                 twoColumnInfoText(
                     labelOne = stringResource(R.string.anime_media_details_format_label),
@@ -780,9 +781,9 @@ object AnimeMediaDetailsScreen {
         item("infoSectionTwo") {
             ElevatedCard(
                 modifier = Modifier
-                    .padding(start = 16.dp, end = 16.dp, top = 16.dp)
                     .animateContentSize()
-                    .animateItemPlacement(),
+                    .animateItemPlacement()
+                    .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 2.dp)
             ) {
                 var shown = twoColumnInfoText(
                     labelOne = stringResource(R.string.anime_media_details_average_score_label),
@@ -819,8 +820,13 @@ object AnimeMediaDetailsScreen {
 
             ElevatedCard(
                 modifier = Modifier
-                    .padding(start = 16.dp, end = 16.dp, top = if (showTopPadding) 16.dp else 0.dp)
                     .animateContentSize()
+                    .padding(
+                        start = 16.dp,
+                        end = 16.dp,
+                        top = if (showTopPadding) 16.dp else 0.dp,
+                        bottom = 2.dp,
+                    )
                     .animateItemPlacement(),
             ) {
                 var shown = twoColumnInfoText(
@@ -916,7 +922,7 @@ object AnimeMediaDetailsScreen {
         val playing = active && playingState.second
 
         ElevatedCard(
-            modifier = modifier.animateContentSize(),
+            modifier = Modifier.animateContentSize().then(modifier),
         ) {
             var hidden by remember { mutableStateOf(entry.spoiler && !active) }
             if (hidden) {
@@ -1370,7 +1376,7 @@ object AnimeMediaDetailsScreen {
         item("statsSection") {
             ElevatedCard(
                 modifier = Modifier
-                    .padding(horizontal = 16.dp)
+                    .padding(start = 16.dp, end = 16.dp, bottom = 2.dp)
                     .animateItemPlacement()
             ) {
                 expandableListInfoText(

@@ -184,13 +184,13 @@ object AnimeActivityScreen {
         navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
         when (val refreshState = activities.loadState.refresh) {
-            LoadState.Loading -> Unit
             is LoadState.Error -> AnimeMediaListScreen.Error(
                 exception = refreshState.error,
                 modifier = Modifier.padding(top = topBarPadding)
             )
-            is LoadState.NotLoading -> {
-                if (activities.itemCount == 0) {
+            else -> {
+                if (activities.itemCount == 0
+                    && activities.loadState.refresh is LoadState.NotLoading) {
                     AnimeMediaListScreen.NoResults(modifier = Modifier.padding(top = topBarPadding))
                 } else {
                     val refreshing = activities.loadState.refresh is LoadState.Loading
@@ -198,7 +198,7 @@ object AnimeActivityScreen {
                         refreshing = refreshing,
                         onRefresh = { activities.refresh() },
                     )
-                    Box {
+                    Box(modifier = Modifier.fillMaxWidth()) {
                         LazyColumn(
                             contentPadding = PaddingValues(
                                 start = 16.dp,

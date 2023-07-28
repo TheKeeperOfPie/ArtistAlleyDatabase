@@ -253,8 +253,8 @@ object CharacterDetailsScreen {
         item {
             ElevatedCard(
                 modifier = Modifier
-                    .padding(horizontal = 16.dp)
-                    .animateContentSize(),
+                    .animateContentSize()
+                    .padding(start = 16.dp, end = 16.dp, bottom = 2.dp)
             ) {
                 var contentShown = twoColumnInfoText(
                     labelOne = stringResource(R.string.anime_character_details_age_label),

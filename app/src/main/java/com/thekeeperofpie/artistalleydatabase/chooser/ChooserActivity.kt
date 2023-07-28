@@ -15,13 +15,18 @@ import androidx.navigation.compose.rememberNavController
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.mxalbert.sharedelements.SharedElementsRoot
 import com.thekeeperofpie.artistalleydatabase.navigation.NavDestinations
+import com.thekeeperofpie.artistalleydatabase.settings.SettingsProvider
 import com.thekeeperofpie.artistalleydatabase.ui.theme.ArtistAlleyDatabaseTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class ChooserActivity : ComponentActivity() {
+
+    @Inject
+    lateinit var settings: SettingsProvider
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,7 +41,7 @@ class ChooserActivity : ComponentActivity() {
 
         setContent {
             val navController = rememberNavController()
-            ArtistAlleyDatabaseTheme(navController) {
+            ArtistAlleyDatabaseTheme(settings = settings, navHostController = navController) {
                 Surface {
                     SharedElementsRoot {
                         NavHost(

@@ -146,7 +146,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val navHostController = rememberNavController()
-            ArtistAlleyDatabaseTheme(navHostController) {
+            ArtistAlleyDatabaseTheme(settings = settings, navHostController = navHostController) {
                 CompositionLocalProvider(
                     LocalMonetizationProvider provides monetizationProvider
                 ) {

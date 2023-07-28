@@ -186,7 +186,7 @@ fun LazyListScope.mediaHorizontalRow(
                         }
                     },
                     colors = CardDefaults.elevatedCardColors(containerColor = containerColor),
-                    modifier = Modifier.animateItemPlacement(),
+                    modifier = Modifier.animateItemPlacement().padding(2.dp),
                 ) {
                     SharedElement(
                         key = "anime_media_${media?.id}_image",

@@ -1,6 +1,27 @@
 package com.thekeeperofpie.artistalleydatabase.settings
 
 import android.util.Log
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Build
+import androidx.compose.material.icons.filled.ColorLens
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
@@ -10,6 +31,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaEntryDao
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListOAuthStore
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntry
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDao
+import com.thekeeperofpie.artistalleydatabase.monetization.LocalMonetizationProvider
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationController
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtist
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistDao
@@ -33,7 +55,7 @@ class SettingsViewModel @Inject constructor(
     private val vgmdbArtistDao: VgmdbArtistDao,
     private val vgmdbJson: VgmdbJson,
     private val workManager: WorkManager,
-    private val settingsProvider: SettingsProvider,
+    private val settings: SettingsProvider,
     private val vgmdbApi: VgmdbApi,
     private val aniListOAuthStore: AniListOAuthStore,
     private val monetizationController: MonetizationController,
@@ -43,37 +65,201 @@ class SettingsViewModel @Inject constructor(
         private const val TAG = "SettingsViewModel"
     }
 
-    val networkLoggingLevel = settingsProvider.networkLoggingLevel
-    val hideStatusBar = settingsProvider.hideStatusBar
-    val screenshotMode = settingsProvider.screenshotMode
-    val unlockAllFeatures = settingsProvider.unlockAllFeatures
-    val adsEnabled = monetizationController.adsEnabled
-
     private var onClickDatabaseFetch: (WorkManager) -> Unit = {}
+
+    private val themeSection = SettingsSection.Subsection(
+        icon = Icons.Filled.ColorLens,
+        labelTextRes = R.string.settings_subsection_theme_label,
+        children = listOf(
+            SettingsSection.Dropdown(
+                labelTextRes = R.string.settings_subsection_theme_label,
+                options = AppThemeSetting.values().toList(),
+                optionToText = { stringResource(it.textRes) },
+                property = settings.appTheme,
+            ),
+        )
+    )
+
+    private val aboutSection = SettingsSection.Subsection(
+        icon = Icons.Filled.Info,
+        labelTextRes = R.string.settings_subsection_about_label,
+        children = listOf(
+            SettingsSection.Text(
+                titleTextRes = R.string.settings_subsection_about_author_title,
+                descriptionTextRes = R.string.settings_subsection_about_author_description,
+            ),
+            SettingsSection.Button(
+                labelTextRes = R.string.settings_subsection_about_discord_label,
+                buttonTextRes = R.string.settings_open,
+                onClick = {
+                    // TODO: Create and link a community server
+                }
+            ),
+            SettingsSection.Placeholder(id = "showLicenses"),
+        )
+    )
+
+    private val debugSection = SettingsSection.Subsection(
+        icon = Icons.Filled.Build,
+        labelTextRes = R.string.settings_subsection_debug_label,
+        children = listOf(
+            SettingsSection.Button(
+                labelTextRes = R.string.settings_clear_aniList_cache,
+                buttonTextRes = R.string.settings_clear,
+                onClick = ::clearAniListCache,
+            ),
+            SettingsSection.Button(
+                labelTextRes = R.string.settings_clear_vgmdb_cache,
+                buttonTextRes = R.string.settings_clear,
+                onClick = ::clearVgmdbCache,
+            ),
+            SettingsSection.Button(
+                labelTextRes = R.string.settings_crop_clear,
+                buttonTextRes = R.string.settings_clear,
+                onClick = { settings.cropDocumentUri.value = null },
+            ),
+            SettingsSection.Button(
+                labelTextRes = R.string.settings_clear_aniList_oAuth,
+                buttonTextRes = R.string.settings_clear,
+                onClick = ::onClickClearAniListOAuth,
+            ),
+            SettingsSection.Switch(
+                labelTextRes = R.string.settings_unlock_all_features,
+                property = settings.unlockAllFeatures,
+            ),
+            SettingsSection.Switch(
+                labelTextRes = R.string.settings_hide_status_bar,
+                property = settings.hideStatusBar,
+            ),
+            SettingsSection.Switch(
+                labelTextRes = R.string.settings_screenshot_mode,
+                property = settings.screenshotMode,
+            ),
+            SettingsSection.Placeholder(id = "openLastCrash"),
+            SettingsSection.Button(
+                labelTextRes = R.string.settings_database_fetch,
+                buttonTextRes = R.string.settings_fetch,
+                onClick = { onClickDatabaseFetch(workManager) },
+            ),
+            SettingsSection.Dropdown(
+                labelTextRes = R.string.settings_network_logging_level_label,
+                options = NetworkSettings.NetworkLoggingLevel.values().toList(),
+                optionToText = { it.name },
+                property = settings.networkLoggingLevel,
+            ),
+            object : SettingsSection.Custom(id = "clearDatabaseById") {
+                private var selectedDatabase by mutableStateOf(SettingsScreen.DatabaseType.values()[0])
+                private val dropdown = Dropdown(
+                    labelTextRes = R.string.settings_database_type,
+                    options = SettingsScreen.DatabaseType.values().toList(),
+                    optionToText = { stringResource(it.labelRes) },
+                    onItemSelected = { selectedDatabase = it },
+                )
+
+                @Composable
+                override fun Content(modifier: Modifier) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = modifier.padding(end = 16.dp)
+                    ) {
+                        dropdown.Content(
+                            Modifier.weight(1f)
+                        )
+
+                        var clearDatabaseId by remember { mutableStateOf("") }
+                        TextField(
+                            value = clearDatabaseId,
+                            onValueChange = { clearDatabaseId = it },
+                            label = { Text(stringResource(id = R.string.settings_label_id)) },
+                            modifier = Modifier
+                                .width(120.dp)
+                                .padding(vertical = 10.dp),
+                        )
+
+                        FilledTonalButton(onClick = {
+                            onClickClearDatabaseById(selectedDatabase, clearDatabaseId)
+                        }) {
+                            Text(text = stringResource(R.string.settings_delete))
+                        }
+                    }
+                }
+            },
+            SettingsSection.Dropdown(
+                id = "rebuildDatabase",
+                labelTextRes = R.string.settings_database_type,
+                options = SettingsScreen.DatabaseType.values().toList(),
+                optionToText = { stringResource(it.labelRes) },
+                buttonTextRes = R.string.settings_rebuild,
+                onClickButton = ::onClickRebuildDatabase,
+            ),
+        )
+    )
+
+    val sections = listOfNotNull(
+        object : SettingsSection.Custom(id = "revokeAds") {
+            @Composable
+            override fun Content(modifier: Modifier) {
+                val adsEnabled by monetizationController.adsEnabled.collectAsState()
+                val monetizationProvider = LocalMonetizationProvider.current
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = modifier.padding(
+                        start = 16.dp,
+                        end = 16.dp,
+                        top = 10.dp,
+                        bottom = 10.dp
+                    )
+                ) {
+                    Text(
+                        text = stringResource(
+                            if (adsEnabled) {
+                                R.string.settings_ads_enabled
+                            } else {
+                                R.string.settings_ads_disabled
+                            }
+                        ),
+                        Modifier.weight(1f)
+                    )
+                    FilledTonalButton(
+                        onClick = {
+                            if (monetizationProvider != null) {
+                                monetizationProvider.onAdsRevoked()
+                            } else {
+                                settings.adsEnabled.value = false
+                            }
+                        },
+                        enabled = adsEnabled,
+                    ) {
+                        Text(text = stringResource(R.string.settings_ads_disable_button))
+                    }
+                }
+            }
+        },
+        themeSection,
+        aboutSection,
+        debugSection.takeIf { BuildConfig.DEBUG },
+    )
 
     fun initialize(onClickDatabaseFetch: (WorkManager) -> Unit) {
         this.onClickDatabaseFetch = onClickDatabaseFetch
     }
 
-    fun clearAniListCache() {
+    private fun clearAniListCache() {
         viewModelScope.launch(Dispatchers.IO) {
             mediaEntryDao.deleteAll()
             characterEntryDao.deleteAll()
         }
     }
 
-    fun clearVgmdbCache() {
+    private fun clearVgmdbCache() {
         viewModelScope.launch(Dispatchers.IO) {
             albumEntryDao.deleteAll()
             vgmdbArtistDao.deleteAll()
         }
     }
 
-    fun onClickDatabaseFetch() {
-        onClickDatabaseFetch(workManager)
-    }
-
-    fun onClickClearDatabaseById(databaseType: SettingsScreen.DatabaseType, id: String) {
+    private fun onClickClearDatabaseById(databaseType: SettingsScreen.DatabaseType, id: String) {
         viewModelScope.launch(Dispatchers.IO) {
             if (id.isBlank()) {
                 when (databaseType) {
@@ -95,13 +281,14 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
-    fun onClickRebuildDatabase(databaseType: SettingsScreen.DatabaseType) {
+    private fun onClickRebuildDatabase(databaseType: SettingsScreen.DatabaseType) {
         viewModelScope.launch(Dispatchers.IO) {
             when (databaseType) {
                 SettingsScreen.DatabaseType.ANILIST_CHARACTERS,
                 SettingsScreen.DatabaseType.ANILIST_MEDIA,
                 SettingsScreen.DatabaseType.VGMDB_ALBUMS,
-                SettingsScreen.DatabaseType.VGMDB_ARTISTS -> {
+                SettingsScreen.DatabaseType.VGMDB_ARTISTS,
+                -> {
                     // TODO: Rebuild?
                 }
                 SettingsScreen.DatabaseType.MUSICAL_ARTISTS -> {
@@ -145,34 +332,10 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
-    fun onClickCropClear() {
-        settingsProvider.cropDocumentUri.value = null
-    }
-
-    fun onClickClearAniListOAuth() {
+    private fun onClickClearAniListOAuth() {
         viewModelScope.launch {
             aniListOAuthStore.clearAuthToken()
         }
-    }
-
-    fun onChangeNetworkLoggingLevel(level: NetworkSettings.NetworkLoggingLevel) {
-        settingsProvider.networkLoggingLevel.value = level
-    }
-
-    fun onHideStatusBarChanged(hide: Boolean) {
-        settingsProvider.hideStatusBar.value = hide
-    }
-
-    fun onScreenshotModeChanged(hide: Boolean) {
-        settingsProvider.screenshotMode.value = hide
-    }
-
-    fun onUnlockAllFeaturesChanged(hide: Boolean) {
-        settingsProvider.unlockAllFeatures.value = hide
-    }
-
-    fun disableAds() {
-        settingsProvider.adsEnabled.value = false
     }
 
     fun checkMismatchedCdEntryData() {

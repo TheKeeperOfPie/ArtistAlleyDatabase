@@ -15,6 +15,8 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
@@ -25,27 +27,43 @@ import androidx.navigation.NavHostController
 import com.thekeeperofpie.artistalleydatabase.CustomApplication
 import com.thekeeperofpie.artistalleydatabase.R
 import com.thekeeperofpie.artistalleydatabase.android_utils.UriUtils
+import com.thekeeperofpie.artistalleydatabase.settings.AppThemeSetting
+import com.thekeeperofpie.artistalleydatabase.settings.SettingsProvider
 
 @Composable
 fun ArtistAlleyDatabaseTheme(
+    settings: SettingsProvider,
     navHostController: NavHostController,
-    darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit,
 ) {
     val context = LocalContext.current
 
-    val colorScheme = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-        if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-    } else {
-        if (darkTheme) darkColorScheme() else lightColorScheme()
+    val appTheme by settings.appTheme.collectAsState()
+    val systemInDarkTheme = isSystemInDarkTheme()
+    val colorScheme = when(appTheme) {
+        AppThemeSetting.AUTO -> {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                if (systemInDarkTheme) {
+                    dynamicDarkColorScheme(context)
+                } else {
+                    dynamicLightColorScheme(context)
+                }
+            } else {
+                if (systemInDarkTheme) darkColorScheme() else lightColorScheme()
+            }
+        }
+        AppThemeSetting.DARK -> darkColorScheme()
+        AppThemeSetting.LIGHT -> lightColorScheme()
     }
+    val isDarkTheme = appTheme == AppThemeSetting.DARK
+            || (appTheme == AppThemeSetting.AUTO && systemInDarkTheme)
 
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
             (view.context as Activity).window.statusBarColor = colorScheme.surface.toArgb()
             WindowCompat.getInsetsController((view.context as Activity).window, view)
-                .isAppearanceLightStatusBars = !darkTheme
+                .isAppearanceLightStatusBars = !isDarkTheme
         }
     }
 

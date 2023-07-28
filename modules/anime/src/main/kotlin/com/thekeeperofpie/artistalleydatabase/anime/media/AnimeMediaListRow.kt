@@ -83,6 +83,7 @@ object AnimeMediaListRow {
                 .fillMaxWidth()
                 .heightIn(min = 180.dp)
                 .alpha(if (entry?.ignored == true) 0.38f else 1f)
+                .padding(bottom = 2.dp)
         ) {
             Row(modifier = Modifier
                 .height(IntrinsicSize.Min)

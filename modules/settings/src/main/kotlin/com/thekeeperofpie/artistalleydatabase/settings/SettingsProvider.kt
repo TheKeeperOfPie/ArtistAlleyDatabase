@@ -129,6 +129,7 @@ class SettingsProvider(
     var navDrawerStartDestination =
         MutableStateFlow<String?>(deserialize("navDrawerStartDestination"))
     var hideStatusBar = MutableStateFlow(deserialize("hideStatusBar") ?: false)
+    var appTheme = MutableStateFlow(deserialize("appTheme") ?: AppThemeSetting.AUTO)
 
     // Not exported
     var lastCrash = MutableStateFlow(deserialize("lastCrash") ?: "")
@@ -212,6 +213,7 @@ class SettingsProvider(
             hideStatusBar = hideStatusBar.value,
             adsEnabled = adsEnabled.value,
             subscribed = subscribed.value,
+            appTheme = appTheme.value,
         )
 
     // Initialization separated into its own method so that tests can cancel the StateFlow job
@@ -232,6 +234,7 @@ class SettingsProvider(
         subscribeProperty(scope, ::animeNewsNetworkRegion)
         subscribeProperty(scope, ::adsEnabled)
         subscribeProperty(scope, ::subscribed)
+        subscribeProperty(scope, ::appTheme)
 
         scope.launch(CustomDispatchers.IO) {
             ignoredAniListMediaIds.drop(1).collectLatest {
@@ -311,6 +314,7 @@ class SettingsProvider(
         hideStatusBar.emit(data.hideStatusBar)
         adsEnabled.emit(data.adsEnabled)
         subscribed.emit(data.subscribed)
+        appTheme.emit(data.appTheme)
     }
 
     private inline fun <reified T> deserialize(name: String): T? {
