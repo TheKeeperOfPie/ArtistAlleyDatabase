@@ -3,21 +3,31 @@ package com.thekeeperofpie.artistalleydatabase.settings
 import androidx.activity.compose.BackHandler
 import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MonetizationOn
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListStringR
 import com.thekeeperofpie.artistalleydatabase.compose.AppBar
@@ -34,6 +44,7 @@ object SettingsScreen {
         upIconOption: UpIconOption?,
         onClickShowLastCrash: () -> Unit,
         onClickShowLicenses: () -> Unit,
+        onClickFeatureTiers: () -> Unit,
     ) {
         var currentSubsectionId by rememberSaveable { mutableStateOf<String?>(null) }
         val currentSubsection = remember(currentSubsectionId) {
@@ -80,6 +91,30 @@ object SettingsScreen {
                                 buttonTextRes = UtilsStringR.open,
                                 onClick = onClickShowLicenses,
                             )
+                            "featureTiers" -> {
+                                Row(
+                                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable(onClick = onClickFeatureTiers)
+                                        .padding(horizontal = 32.dp, vertical = 16.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Filled.MonetizationOn,
+                                        contentDescription = stringResource(
+                                            R.string.settings_subsection_feature_tiers
+                                        ),
+                                    )
+                                    Text(
+                                        text = stringResource(
+                                            R.string.settings_subsection_feature_tiers
+                                        ),
+                                        style = MaterialTheme.typography.titleMedium,
+                                        modifier = Modifier.fillMaxWidth()
+                                    )
+                                }
+                            }
                         }
                     } else if (section is SettingsSection.Subsection) {
                         section.Content(Modifier.clickable { currentSubsectionId = section.id })

@@ -45,7 +45,7 @@ sealed class SettingsSection(open val id: String) {
 
         @Composable
         override fun Content(modifier: Modifier) {
-            var checked = property.collectAsState().value
+            val checked by property.collectAsState()
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 10.dp, bottom = 10.dp)
@@ -55,7 +55,7 @@ sealed class SettingsSection(open val id: String) {
                     Modifier
                         .weight(1f)
                 )
-                Switch(checked = checked, onCheckedChange = { checked = it })
+                Switch(checked = checked, onCheckedChange = { property.value = it })
             }
         }
     }
@@ -174,6 +174,7 @@ sealed class SettingsSection(open val id: String) {
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .fillMaxWidth()
+                    .then(modifier)
                     .padding(horizontal = 32.dp, vertical = 16.dp)
             ) {
                 Icon(
@@ -185,7 +186,6 @@ sealed class SettingsSection(open val id: String) {
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .then(modifier)
                 )
             }
         }

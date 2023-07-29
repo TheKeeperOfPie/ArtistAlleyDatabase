@@ -27,6 +27,8 @@ dependencies {
     implementation(libs.material.icons.extended)
     implementation(libs.material3)
 
-    implementation(libs.user.messaging.platform)
-    implementation(libs.play.services.ads)
+//    implementation(libs.user.messaging.platform)
+//    implementation(libs.play.services.ads)
+
+    implementation(libs.billing.ktx)
 }

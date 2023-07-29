@@ -13,6 +13,7 @@ import androidx.core.content.ContextCompat
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
+import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.android_utils.notification.NotificationChannels
@@ -46,6 +47,7 @@ class SettingsProvider(
     private val appJson: AppJson,
     sharedPreferencesFileName: String = PREFERENCES_NAME,
     private val crashNotificationContentIntent: PendingIntent?,
+    private val featureOverrideProvider: FeatureOverrideProvider,
 ) : ArtSettings, EntrySettings, NetworkSettings, AnimeSettings, MonetizationSettings {
 
     companion object {
@@ -69,35 +71,7 @@ class SettingsProvider(
     )
     override var savedAnimeFilters = MutableStateFlow(deserializeAnimeFilters())
 
-    @Suppress("KotlinConstantConditions")
-    override var showAdult = if (BuildConfig.BUILD_TYPE == "release") {
-        val flow = MutableStateFlow(false)
-        object : MutableStateFlow<Boolean> {
-            override val replayCache: List<Boolean>
-                get() = flow.replayCache
-            override val subscriptionCount: StateFlow<Int>
-                get() = flow.subscriptionCount
-            override var value: Boolean
-                get() = flow.value
-                set(value) {
-                    // Do not set anything on release
-                }
-
-            override suspend fun collect(collector: FlowCollector<Boolean>) =
-                flow.collect(collector)
-
-            override fun compareAndSet(expect: Boolean, update: Boolean) = true
-
-            @ExperimentalCoroutinesApi
-            override fun resetReplayCache() = Unit
-
-            override fun tryEmit(value: Boolean) = true
-
-            override suspend fun emit(value: Boolean) = Unit
-        }
-    } else {
-        MutableStateFlow(deserialize("showAdult") ?: false)
-    }
+    override var showAdult = ignoreOnRelease("showAdult")
 
     override var collapseAnimeFiltersOnClose = MutableStateFlow(
         deserialize("collapseAnimeFiltersOnClose") ?: true
@@ -136,7 +110,7 @@ class SettingsProvider(
     var lastCrashShown = MutableStateFlow(deserialize("lastCrashShown") ?: false)
     var screenshotMode = MutableStateFlow(deserialize("screenshotMode") ?: false)
 
-    override var unlockAllFeatures = MutableStateFlow(deserialize("unlockAllFeatures") ?: false)
+    override var unlockAllFeatures = ignoreOnRelease("unlockAllFeatures")
 
     init {
         val mainThreadId = Looper.getMainLooper().thread.id
@@ -344,5 +318,36 @@ class SettingsProvider(
         }
         return sharedPreferences.edit()
             .putString(name, stringValue)
+    }
+
+    private fun ignoreOnRelease(booleanPropertyName: String) = if (featureOverrideProvider.isReleaseBuild) {
+        IgnoringMutableStateFlow()
+    } else {
+        MutableStateFlow(deserialize(booleanPropertyName) ?: false)
+    }
+
+    private class IgnoringMutableStateFlow : MutableStateFlow<Boolean> {
+        private val flow = MutableStateFlow(false)
+        override val replayCache: List<Boolean>
+            get() = flow.replayCache
+        override val subscriptionCount: StateFlow<Int>
+            get() = flow.subscriptionCount
+        override var value: Boolean
+            get() = flow.value
+            set(value) {
+                // Do not set anything on release
+            }
+
+        override suspend fun collect(collector: FlowCollector<Boolean>) =
+            flow.collect(collector)
+
+        override fun compareAndSet(expect: Boolean, update: Boolean) = true
+
+        @ExperimentalCoroutinesApi
+        override fun resetReplayCache() = Unit
+
+        override fun tryEmit(value: Boolean) = true
+
+        override suspend fun emit(value: Boolean) = Unit
     }
 }

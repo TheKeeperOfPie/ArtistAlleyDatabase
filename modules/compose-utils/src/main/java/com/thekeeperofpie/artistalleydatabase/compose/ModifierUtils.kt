@@ -49,7 +49,7 @@ fun Modifier.fadingEdgeEnd(
         }
 }
 
-fun Modifier.fadingEdgeBottom(show: Boolean = false, firstStop: Float = 0.8f) =
+fun Modifier.fadingEdgeBottom(show: Boolean = true, firstStop: Float = 0.8f) =
     graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }
         .drawWithCache {
             val brush = Brush.verticalGradient(

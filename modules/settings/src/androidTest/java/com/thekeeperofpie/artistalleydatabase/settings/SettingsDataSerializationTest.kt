@@ -6,6 +6,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.google.common.truth.Truth.assertThat
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.CryptoUtils
+import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.android_utils.encodeToString
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.to
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntry
@@ -65,6 +66,9 @@ class SettingsDataSerializationTest {
             appJson,
             sharedPreferencesFileName = "${SettingsProvider.PREFERENCES_NAME}-test",
             crashNotificationContentIntent = null,
+            object : FeatureOverrideProvider {
+                override val isReleaseBuild = false
+            }
         )
 
         // In case any old test state remains, clear it

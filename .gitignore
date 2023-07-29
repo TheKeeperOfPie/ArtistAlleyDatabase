@@ -11,3 +11,5 @@
 local.properties
 secrets.properties
 /libs
+default.jks
+keystore.properties

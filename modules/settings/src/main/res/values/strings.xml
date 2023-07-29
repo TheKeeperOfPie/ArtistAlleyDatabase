@@ -39,4 +39,6 @@
     <string name="settings_subsection_about_discord_label">Discord</string>
 
     <string name="settings_subsection_debug_label">Debug</string>
+
+    <string name="settings_subsection_feature_tiers">Feature tiers</string>
 </resources>

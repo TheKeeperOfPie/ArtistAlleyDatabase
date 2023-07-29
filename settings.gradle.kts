@@ -79,6 +79,7 @@ dependencyResolutionManagement {
             library("androidx.test:runner:1.6.0-alpha03", alias = "androidx.test.runner")
             library("androidx.work:work-runtime-ktx:2.9.0-alpha02")
             library("androidx.work:work-runtime:2.9.0-alpha02")
+            library("com.android.billingclient:billing-ktx:6.0.1")
             library("com.apollographql.apollo3:apollo-runtime:4.0.0-alpha.2")
             library("com.apollographql.apollo3:apollo-normalized-cache:4.0.0-alpha.2")
             library("com.apollographql.apollo3:apollo-normalized-cache-sqlite:4.0.0-alpha.2")

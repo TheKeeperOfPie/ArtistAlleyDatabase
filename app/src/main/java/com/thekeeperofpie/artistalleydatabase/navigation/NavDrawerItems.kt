@@ -12,7 +12,7 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.thekeeperofpie.artistalleydatabase.AppNavDestinations
-import com.thekeeperofpie.artistalleydatabase.R
+import com.thekeeperofpie.anichive.R
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.art.ArtNavDestinations
 import com.thekeeperofpie.artistalleydatabase.cds.CdNavDestinations

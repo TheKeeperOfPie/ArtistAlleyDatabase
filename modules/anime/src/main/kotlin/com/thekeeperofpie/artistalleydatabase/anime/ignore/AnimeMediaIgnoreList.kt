@@ -1,23 +1,26 @@
 package com.thekeeperofpie.artistalleydatabase.anime.ignore
 
 import androidx.collection.ArraySet
+import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
-import com.thekeeperofpie.artistalleydatabase.anime.BuildConfig
 
-class AnimeMediaIgnoreList(private val settings: AnimeSettings) {
-
-    companion object {
-        @Suppress("KotlinConstantConditions")
-        private val DISABLED = BuildConfig.BUILD_TYPE == "release"
-    }
+class AnimeMediaIgnoreList(
+    private val settings: AnimeSettings,
+    private val featureOverrideProvider: FeatureOverrideProvider,
+) {
 
     val updates = settings.ignoredAniListMediaIds
 
-    private fun get(mediaId: Int) = if (DISABLED) false else  settings.ignoredAniListMediaIds.value.contains(mediaId)
+    private fun get(mediaId: Int) = if (featureOverrideProvider.isReleaseBuild) {
+        false
+    } else {
+        settings.ignoredAniListMediaIds.value.contains(mediaId)
+    }
+
     private fun get(mediaId: String) = get(mediaId.toInt())
 
     private fun set(mediaId: String, ignored: Boolean) {
-        if (DISABLED) return
+        if (featureOverrideProvider.isReleaseBuild) return
         val set = settings.ignoredAniListMediaIds.value
         val mediaIdAsInt = mediaId.toInt()
         if (set.contains(mediaIdAsInt) == ignored) return
@@ -34,7 +37,7 @@ class AnimeMediaIgnoreList(private val settings: AnimeSettings) {
     }
 
     fun toggle(mediaId: String) {
-        if (!DISABLED) {
+        if (!featureOverrideProvider.isReleaseBuild) {
             set(mediaId, !get(mediaId))
         }
     }

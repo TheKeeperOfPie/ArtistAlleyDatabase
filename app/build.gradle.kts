@@ -23,11 +23,11 @@ licenseReport {
 }
 
 android {
-    namespace = "com.thekeeperofpie.artistalleydatabase"
+    namespace = "com.thekeeperofpie.anichive"
     compileSdkPreview = "UpsideDownCake"
 
     defaultConfig {
-        applicationId = "com.thekeeperofpie.artistalleydatabase"
+        applicationId = "com.thekeeperofpie.anichive"
         minSdk = 28
         targetSdk = 33
         versionCode = 1
@@ -90,7 +90,9 @@ android {
         getByName("release") {
             isDebuggable = false
             isMinifyEnabled = true
-            isShrinkResources = true
+
+            // Building a bundle with shrink resources is broken
+            isShrinkResources = false
             isCrunchPngs = true
             proguardFiles(*proguardFiles)
 
@@ -162,7 +164,7 @@ tasks.register("launchRelease") {
 
 tasks.register<Exec>("launchDebug") {
     dependsOn("installDebug")
-    launchActivity("com.thekeeperofpie.artistalleydatabase.debug")
+    launchActivity("com.thekeeperofpie.anichive.debug")
     finalizedBy("installRelease", "installInternal")
     outputs.upToDateWhen { false }
 }
@@ -172,14 +174,14 @@ tasks.register<Exec>("compileAndLaunchRelease") {
         "adb", "shell", "pm", "compile", "-f",
         "-m", "everything",
         "--check-prof", "false",
-        "com.thekeeperofpie.artistalleydatabase",
+        "com.thekeeperofpie.anichive",
     )
     finalizedBy("launchReleaseMainActivity")
     outputs.upToDateWhen { false }
 }
 
 tasks.register<Exec>("launchReleaseMainActivity") {
-    launchActivity("com.thekeeperofpie.artistalleydatabase")
+    launchActivity("com.thekeeperofpie.anichive")
     outputs.upToDateWhen { false }
 }
 

@@ -3,6 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.anilist
 import android.app.Application
 import androidx.security.crypto.MasterKey
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
+import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterEntryDao
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
@@ -39,7 +40,6 @@ class AniListHiltModule {
         okHttpClient: OkHttpClient,
     ) = AniListApi(application, networkSettings, okHttpClient)
 
-    @Suppress("KotlinConstantConditions")
     @Singleton
     @Provides
     fun provideAuthedAniListApi(
@@ -47,7 +47,8 @@ class AniListHiltModule {
         aniListOAuthStore: AniListOAuthStore,
         networkSettings: NetworkSettings,
         okHttpClient: OkHttpClient,
-    ) = if (BuildConfig.BUILD_TYPE == "release") {
+        featureOverrideProvider: FeatureOverrideProvider,
+    ) = if (featureOverrideProvider.isReleaseBuild) {
         AuthedAniListApiWrapper(
             scopedApplication,
             aniListOAuthStore,

@@ -9,6 +9,7 @@ import androidx.security.crypto.MasterKey
 import androidx.work.WorkManager
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.CryptoUtils
+import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListDatabase
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListJson
@@ -91,7 +92,8 @@ object AppHiltModule {
     fun provideSettingsProvider(
         scopedApplication: ScopedApplication,
         masterKey: MasterKey,
-        appJson: AppJson
+        appJson: AppJson,
+        featureOverrideProvider: FeatureOverrideProvider,
     ) = SettingsProvider(
         application = scopedApplication.app,
         masterKey = masterKey,
@@ -108,7 +110,8 @@ object AppHiltModule {
                 )
             },
             PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
+        ),
+        featureOverrideProvider = featureOverrideProvider,
     ).apply {
         initialize(scopedApplication.scope)
     }
@@ -120,4 +123,8 @@ object AppHiltModule {
     @Singleton
     @Provides
     fun provideVgmdbJson(appJson: AppJson) = VgmdbJson(appJson.json)
+
+    @Singleton
+    @Provides
+    fun provideFeatureOverrideProvider(): FeatureOverrideProvider = AppFeatureOverrideProvider()
 }

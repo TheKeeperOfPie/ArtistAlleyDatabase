@@ -63,6 +63,9 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.OutOfQuotaPolicy
 import com.google.android.gms.oss.licenses.OssLicensesMenuActivity
 import com.mxalbert.sharedelements.SharedElementsRoot
+import com.thekeeperofpie.anichive.BuildConfig
+import com.thekeeperofpie.anichive.R
+import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListOAuthStore
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
@@ -125,8 +128,8 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var monetizationProviderOptional: Optional<MonetizationProvider>
 
-    @Suppress("KotlinConstantConditions")
-    private val isReleaseBuild = BuildConfig.BUILD_TYPE == "release"
+    @Inject
+    lateinit var featureOverrideProvider: FeatureOverrideProvider
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -493,7 +496,15 @@ class MainActivity : ComponentActivity() {
                                         Intent(
                                             this@MainActivity,
                                             OssLicensesMenuActivity::class.java,
+                                        ).setClassName(
+                                            this@MainActivity,
+                                            OssLicensesMenuActivity::class.java.canonicalName!!,
                                         )
+                                    )
+                                },
+                                onClickFeatureTiers = {
+                                    navigationCallback.navigate(
+                                        AnimeNavDestinations.FEATURE_TIERS.id
                                     )
                                 }
                             )
@@ -533,7 +544,7 @@ class MainActivity : ComponentActivity() {
                 )
             }
 
-            if (!isReleaseBuild) {
+            if (!featureOverrideProvider.isReleaseBuild) {
                 Box(
                     modifier = Modifier
                         .background(colorResource(R.color.launcher_background))

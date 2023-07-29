@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime
 
+import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityReplyStatusController
@@ -29,8 +30,10 @@ object AnimeHiltModule {
 
     @Singleton
     @Provides
-    fun provideAnimeMediaIgnoreList(animeSettings: AnimeSettings) =
-        AnimeMediaIgnoreList(animeSettings)
+    fun provideAnimeMediaIgnoreList(
+        animeSettings: AnimeSettings,
+        featureOverrideProvider: FeatureOverrideProvider,
+    ) = AnimeMediaIgnoreList(animeSettings, featureOverrideProvider)
 
     @Singleton
     @Provides

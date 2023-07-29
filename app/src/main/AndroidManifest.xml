@@ -4,9 +4,19 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
 
+    <permission
+        android:name="${applicationId}.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+        android:protectionLevel="signature"
+        tools:node="remove" />
+
+    <uses-permission
+        android:name="${applicationId}.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+        tools:node="remove" />
+
+    <!-- TODO: Re-enable backup of user data -->
     <application
-        android:name=".CustomApplication"
-        android:allowBackup="true"
+        android:name="com.thekeeperofpie.artistalleydatabase.CustomApplication"
+        android:allowBackup="false"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:enableOnBackInvokedCallback="true"
         android:fullBackupContent="@xml/backup_rules"
@@ -17,7 +27,7 @@
         android:theme="@style/Theme.ArtistAlleyDatabase"
         tools:ignore="UnusedAttribute">
         <activity
-            android:name=".MainActivity"
+            android:name="com.thekeeperofpie.artistalleydatabase.MainActivity"
             android:exported="true"
             android:theme="@style/Theme.ArtistAlleyDatabase"
             android:windowSoftInputMode="adjustResize">
@@ -62,7 +72,7 @@
         </activity>
 
         <activity
-            android:name=".chooser.ChooserActivity"
+            android:name="com.thekeeperofpie.artistalleydatabase.chooser.ChooserActivity"
             android:exported="true"
             android:theme="@style/Theme.ArtistAlleyDatabase"
             android:windowSoftInputMode="adjustResize">
@@ -90,7 +100,7 @@
             tools:node="remove" />
 
         <provider
-            android:name=".AppFileProvider"
+            android:name="com.thekeeperofpie.artistalleydatabase.AppFileProvider"
             android:authorities="${applicationId}.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">

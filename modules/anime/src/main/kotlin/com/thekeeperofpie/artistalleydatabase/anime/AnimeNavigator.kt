@@ -74,6 +74,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
+import com.thekeeperofpie.artistalleydatabase.monetization.UnlockScreen
 
 object AnimeNavigator {
 
@@ -693,6 +694,13 @@ object AnimeNavigator {
                 upIconOption = UpIconOption.Back(navHostController),
                 viewModel = viewModel,
                 navigationCallback = navigationCallback,
+            )
+        }
+
+        navGraphBuilder.composable(route = AnimeNavDestinations.FEATURE_TIERS.id) {
+            UnlockScreen(
+                upIconOption = UpIconOption.Back(navHostController),
+                onClickSettings = onClickSettings,
             )
         }
     }

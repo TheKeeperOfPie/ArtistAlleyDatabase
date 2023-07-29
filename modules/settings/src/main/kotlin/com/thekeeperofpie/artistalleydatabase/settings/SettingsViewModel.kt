@@ -26,6 +26,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
+import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterEntryDao
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaEntryDao
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListOAuthStore
@@ -59,6 +60,7 @@ class SettingsViewModel @Inject constructor(
     private val vgmdbApi: VgmdbApi,
     private val aniListOAuthStore: AniListOAuthStore,
     private val monetizationController: MonetizationController,
+    featureOverrideProvider: FeatureOverrideProvider,
 ) : ViewModel() {
 
     companion object {
@@ -237,8 +239,9 @@ class SettingsViewModel @Inject constructor(
             }
         },
         themeSection,
+        SettingsSection.Placeholder(id = "featureTiers"),
         aboutSection,
-        debugSection.takeIf { BuildConfig.DEBUG },
+        debugSection.takeIf { !featureOverrideProvider.isReleaseBuild },
     )
 
     fun initialize(onClickDatabaseFetch: (WorkManager) -> Unit) {

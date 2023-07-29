@@ -24,8 +24,8 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.UriHandler
 import androidx.core.view.WindowCompat
 import androidx.navigation.NavHostController
+import com.thekeeperofpie.anichive.R
 import com.thekeeperofpie.artistalleydatabase.CustomApplication
-import com.thekeeperofpie.artistalleydatabase.R
 import com.thekeeperofpie.artistalleydatabase.android_utils.UriUtils
 import com.thekeeperofpie.artistalleydatabase.settings.AppThemeSetting
 import com.thekeeperofpie.artistalleydatabase.settings.SettingsProvider

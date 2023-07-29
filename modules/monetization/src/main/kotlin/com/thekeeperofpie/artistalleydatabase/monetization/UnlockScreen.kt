@@ -1,22 +1,33 @@
 package com.thekeeperofpie.artistalleydatabase.monetization
 
+import androidx.annotation.StringRes
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
@@ -32,24 +43,28 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.google.accompanist.pager.HorizontalPagerIndicator
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
+import com.thekeeperofpie.artistalleydatabase.compose.fadingEdgeBottom
+import com.thekeeperofpie.artistalleydatabase.monetization.UnlockScreen.AdsTier
+import com.thekeeperofpie.artistalleydatabase.monetization.UnlockScreen.FreeTier
+import com.thekeeperofpie.artistalleydatabase.monetization.UnlockScreen.SubscriptionTier
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 object UnlockScreen {
-
-    private val MIN_WIDTH = 300.dp
 
     @Composable
     operator fun invoke(
         upIconOption: UpIconOption?,
         viewModel: UnlockScreenViewModel = hiltViewModel(),
         onClickSettings: () -> Unit,
-        bottomNavigationState: BottomNavigationState?,
+        bottomNavigationState: BottomNavigationState? = null,
     ) {
         // TODO: Show error message if monetization not available
         val monetizationProvider = LocalMonetizationProvider.current
@@ -104,86 +119,300 @@ object UnlockScreen {
                 nestedScroll(bottomNavigationState!!.nestedScrollConnection)
             }
         ) {
+            val pagerState = rememberPagerState(pageCount = { 3 })
+            val adsEnabled by viewModel.adsEnabled.collectAsState()
+            val subscribed by viewModel.subscribed.collectAsState()
+            Box {
+                HorizontalPager(
+                    state = pagerState,
+                    contentPadding = PaddingValues(
+                        start = 24.dp,
+                        end = 24.dp,
+                        top = 24.dp,
+                        bottom = 88.dp,
+                    ),
+                    pageSpacing = 16.dp,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(it)
+                ) {
+                    when (it) {
+                        0 -> FreeTier()
+                        1 -> AdsTier(
+                            adsEnabled = { adsEnabled },
+                            onClickEnableAds = {
+                                monetizationProvider?.requestEnableAds()
+                                    ?: viewModel.enableAdsDebug()
+                            },
+                        )
+                        2 -> SubscriptionTier(
+                            subscribed = { subscribed },
+                            viewModel::onSubscribeClick
+                        )
+                    }
+                }
+
+                HorizontalPagerIndicator(
+                    pagerState = pagerState,
+                    pageCount = pagerState.pageCount,
+                    modifier = Modifier
+                        .padding(bottom = 104.dp)
+                        .align(Alignment.BottomCenter)
+                )
+            }
+        }
+    }
+
+    @Composable
+    private fun Tier(@StringRes headerTextRes: Int, content: @Composable ColumnScope.() -> Unit) {
+        val colorPrimary = MaterialTheme.colorScheme.primary
+        val cardBorder = remember { BorderStroke(2.dp, colorPrimary) }
+        OutlinedCard(
+            colors = CardDefaults.outlinedCardColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer
+            ),
+            border = cardBorder,
+        ) {
             Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier
+                contentAlignment = Alignment.Center, modifier = Modifier
                     .fillMaxSize()
-                    .padding(it)
+                    .fadingEdgeBottom(firstStop = 0.9f)
             ) {
                 Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center,
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp)
-                        .widthIn(min = MIN_WIDTH)
-                        .fillMaxSize()
-                        .verticalScroll(rememberScrollState())
+                    modifier = Modifier.verticalScroll(rememberScrollState())
                 ) {
-                    TierSection(
-                        header = stringResource(R.string.monetization_feature_tier_free_header),
-                        body = stringResource(R.string.monetization_feature_tier_free_body),
+                    Text(
+                        text = stringResource(headerTextRes),
+                        style = MaterialTheme.typography.headlineLarge,
+                        modifier = Modifier
+                            .padding(start = 32.dp, end = 32.dp, top = 32.dp, bottom = 16.dp)
+                            .align(Alignment.CenterHorizontally)
                     )
 
-                    TierSection(
-                        header = stringResource(R.string.monetization_feature_tier_ads_header),
-                        body = stringResource(R.string.monetization_feature_tier_ads_body),
-                    )
+                    // TODO: Move strings to resources
+                    content()
 
-                    val adsEnabled by viewModel.adsEnabled.collectAsState()
-                    if (adsEnabled) {
-                        Button(onClick = {}, enabled = false) {
-                            Text(
-                                text = stringResource(
-                                    R.string.monetization_enable_ads_button_completed
-                                )
-                            )
-                        }
-                    } else {
-                        Button(onClick = {
-                            monetizationProvider?.requestEnableAds() ?: viewModel.enableAdsDebug()
-                        }) {
-                            Text(text = stringResource(R.string.monetization_enable_ads_button))
-                        }
-                    }
-
-                    TierSection(
-                        header = stringResource(R.string.monetization_feature_tier_subscription_header),
-                        body = stringResource(R.string.monetization_feature_tier_subscription_body),
-                    )
-
-                    val subscribed by viewModel.subscribed.collectAsState()
-                    if (subscribed) {
-                        Button(onClick = {}, enabled = false) {
-                            Text(
-                                text = stringResource(
-                                    R.string.monetization_subscribe_button_completed
-                                )
-                            )
-                        }
-                    } else {
-                        Button(onClick = viewModel::onSubscribeClick) {
-                            Text(text = stringResource(R.string.monetization_subscribe_button))
-                        }
-                    }
-
-                    Spacer(Modifier.height(88.dp))
+                    Spacer(Modifier.height(16.dp))
                 }
             }
         }
     }
 
     @Composable
-    private fun TierSection(header: String, body: String) {
-        Text(
-            text = header,
-            style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp)
-        )
+    fun FreeTier() {
+        Tier(R.string.monetization_feature_tier_free_header) {
+            BulletPoint(
+                type = SupportedType.SUPPORTED,
+                text = "No ads"
+            )
 
-        Text(
-            text = body,
-            style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)
-        )
+            BulletPoint(
+                type = SupportedType.SUPPORTED,
+                text = "Anime/manga search and filter"
+            )
+            BulletPoint(
+                type = SupportedType.SUPPORTED,
+                text = "View details for anime, manga, characters, staff, etc."
+            )
+            BulletPoint(
+                type = SupportedType.SUPPORTED,
+                text = "News from AnimeNewsNetwork and Crunchyroll"
+            )
+            BulletPoint(type = SupportedType.SUPPORTED, text = "Global user activity")
+            BulletPoint(type = SupportedType.UNSUPPORTED, text = "AniList account log in")
+            BulletPoint(
+                type = SupportedType.UNSUPPORTED,
+                text = "Experimental database/catalog features"
+            )
+
+            Spacer(Modifier.height(32.dp))
+        }
     }
+
+    @Composable
+    fun AdsTier(adsEnabled: () -> Boolean, onClickEnableAds: () -> Unit, enabled: Boolean = true) {
+        Tier(R.string.monetization_feature_tier_ads_header) {
+            BulletPoint(
+                type = SupportedType.UNSUPPORTED,
+                text = "No ads"
+            )
+
+            BulletPoint(
+                type = SupportedType.FROM_PREVIOUS_TIER,
+                text = "Anime/manga search and filter, view details, news feeds, ..."
+            )
+            BulletPoint(type = SupportedType.SUPPORTED, text = "AniList account log in")
+            BulletPoint(
+                type = SupportedType.SUPPORTED,
+                text = "Edit, rate, favorite anime/manga/etc."
+            )
+            BulletPoint(
+                type = SupportedType.SUPPORTED,
+                text = "Search more types like characters, staff, studios, users"
+            )
+            BulletPoint(type = SupportedType.SUPPORTED, text = "Watching/reading and user lists")
+            BulletPoint(type = SupportedType.SUPPORTED, text = "Following and global user activity")
+            BulletPoint(
+                type = SupportedType.UNSUPPORTED,
+                text = "Experimental database/catalog features"
+            )
+
+            ActionButton(
+                enabled = enabled,
+                actionTextRes = R.string.monetization_enable_ads_button,
+                alreadyActionedTextRes = R.string.monetization_enable_ads_button_completed,
+                alreadyActioned = adsEnabled(),
+                onActionClick = onClickEnableAds
+            )
+        }
+    }
+
+    @Composable
+    fun SubscriptionTier(
+        subscribed: () -> Boolean,
+        onSubscribeClick: () -> Unit,
+        enabled: Boolean = true,
+    ) {
+        Tier(R.string.monetization_feature_tier_subscription_header) {
+            BulletPoint(
+                type = SupportedType.FROM_PREVIOUS_TIER,
+                text = "No ads"
+            )
+
+            BulletPoint(
+                type = SupportedType.FROM_PREVIOUS_TIER,
+                text = "Anime/manga search and filter, view details, news feeds, ...",
+            )
+            BulletPoint(
+                type = SupportedType.FROM_PREVIOUS_TIER,
+                text = "AniList account log in, edit entries/lists, comprehensive search, ...",
+            )
+            BulletPoint(
+                type = SupportedType.SUPPORTED,
+                text = "Experimental database/catalog features",
+            )
+
+            BulletPoint(
+                type = SupportedType.SUPPORTED,
+                text = "Track art prints/CDs/merch from anime conventions",
+            )
+
+            BulletPoint(
+                type = SupportedType.SUPPORTED,
+                text = "Import/export database data",
+            )
+
+            BulletPoint(
+                type = SupportedType.SUPPORTED,
+                text = "Tag and search metadata for artist, convention source, sizing, characters, media, etc.",
+            )
+
+            ActionButton(
+                enabled = enabled,
+                actionTextRes = R.string.monetization_subscribe_button,
+                alreadyActionedTextRes = R.string.monetization_subscribe_button_completed,
+                alreadyActioned = subscribed(),
+                onActionClick = onSubscribeClick
+            )
+        }
+    }
+
+    @Composable
+    private fun BulletPoint(type: SupportedType, text: String, modifier: Modifier = Modifier) {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier
+                .padding(horizontal = 32.dp, vertical = 10.dp)
+                .then(modifier)
+        ) {
+            Icon(
+                imageVector = when (type) {
+                    SupportedType.FROM_PREVIOUS_TIER,
+                    SupportedType.SUPPORTED,
+                    -> Icons.Filled.Check
+                    SupportedType.UNSUPPORTED -> Icons.Filled.Close
+                },
+                contentDescription = stringResource(
+                    when (type) {
+                        SupportedType.FROM_PREVIOUS_TIER,
+                        SupportedType.SUPPORTED,
+                        -> R.string.monetization_bullet_point_supported_icon_content_description
+                        SupportedType.UNSUPPORTED -> R.string.monetization_bullet_point_not_supported_icon_content_description
+                    }
+                ),
+                tint = when (type) {
+                    SupportedType.FROM_PREVIOUS_TIER -> MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+                    SupportedType.SUPPORTED -> MaterialTheme.colorScheme.primary
+                    SupportedType.UNSUPPORTED -> MaterialTheme.colorScheme.error
+                }
+            )
+
+            Text(
+                text = text,
+                style = MaterialTheme.typography.bodyLarge,
+            )
+        }
+    }
+
+    @Composable
+    private fun ColumnScope.ActionButton(
+        enabled: Boolean,
+        @StringRes actionTextRes: Int,
+        @StringRes alreadyActionedTextRes: Int,
+        alreadyActioned: Boolean,
+        onActionClick: () -> Unit,
+    ) {
+        if (!enabled) {
+            Button(
+                onClick = {},
+                enabled = false,
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .padding(top = 16.dp, bottom = 32.dp)
+            ) {
+                Text(text = stringResource(R.string.monetization_coming_soon))
+            }
+        } else if (alreadyActioned) {
+            Button(
+                onClick = {},
+                enabled = false,
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .padding(top = 16.dp, bottom = 32.dp)
+            ) {
+                Text(text = stringResource(alreadyActionedTextRes))
+            }
+        } else {
+            Button(
+                onClick = onActionClick,
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .padding(top = 16.dp, bottom = 32.dp)
+            ) {
+                Text(text = stringResource(actionTextRes))
+            }
+        }
+    }
+
+    private enum class SupportedType {
+        FROM_PREVIOUS_TIER, SUPPORTED, UNSUPPORTED,
+    }
+}
+
+@Composable
+@Preview
+private fun PreviewFree() {
+    FreeTier()
+}
+
+@Composable
+@Preview
+private fun PreviewAds() {
+    AdsTier(adsEnabled = { false }, onClickEnableAds = {})
+}
+
+@Composable
+@Preview
+private fun PreviewSubscription() {
+    SubscriptionTier(subscribed = { false }, onSubscribeClick = {})
 }
