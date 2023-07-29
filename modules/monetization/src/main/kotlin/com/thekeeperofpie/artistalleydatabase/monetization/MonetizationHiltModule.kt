@@ -12,6 +12,8 @@ object MonetizationHiltModule {
 
     @Singleton
     @Provides
-    fun provideMonetizationController(settings: MonetizationSettings) =
-        MonetizationController(settings)
+    fun provideMonetizationController(
+        settings: MonetizationSettings,
+        overrideProvider: MonetizationOverrideProvider,
+    ) = MonetizationController(settings, overrideProvider)
 }

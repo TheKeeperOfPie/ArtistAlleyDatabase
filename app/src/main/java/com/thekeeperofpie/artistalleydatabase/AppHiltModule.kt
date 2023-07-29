@@ -13,9 +13,11 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvi
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListDatabase
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListJson
+import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryDatabase
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDatabase
 import com.thekeeperofpie.artistalleydatabase.json.AppMoshi
+import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistDatabase
 import com.thekeeperofpie.artistalleydatabase.settings.SettingsProvider
 import com.thekeeperofpie.artistalleydatabase.utils.PendingIntentRequestCodes
@@ -102,7 +104,8 @@ object AppHiltModule {
             scopedApplication.app,
             PendingIntentRequestCodes.INFO_CRASH_MAIN_ACTIVITY_OPEN.code,
             Intent(scopedApplication.mainActivityInternalAction).apply {
-                data = Uri.parse("${scopedApplication.app.packageName}:///${AppNavDestinations.CRASH.id}")
+                data =
+                    Uri.parse("${scopedApplication.app.packageName}:///${AppNavDestinations.CRASH.id}")
                 setClass(scopedApplication.app, MainActivity::class.java)
                 putExtra(
                     MainActivity.STARTING_NAV_DESTINATION,
@@ -127,4 +130,10 @@ object AppHiltModule {
     @Singleton
     @Provides
     fun provideFeatureOverrideProvider(): FeatureOverrideProvider = AppFeatureOverrideProvider()
+
+    @Singleton
+    @Provides
+    fun provideMonetizationFeatureOverrideProvider(
+        aniListApi: AuthedAniListApi,
+    ): MonetizationOverrideProvider = AppMonetizationOverrideProvider(aniListApi)
 }

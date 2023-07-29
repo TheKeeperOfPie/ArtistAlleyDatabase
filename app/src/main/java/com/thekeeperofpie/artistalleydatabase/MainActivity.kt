@@ -160,9 +160,10 @@ class MainActivity : ComponentActivity() {
                         val navDrawerItems = NavDrawerItems.values()
 
                         fun onClickNav() = scope.launch { drawerState.open() }
-                        val unlockAllFeatures = settings.unlockAllFeatures.collectAsState().value
+                        val unlockDatabaseFeatures by monetizationController.unlockDatabaseFeatures
+                            .collectAsState(false)
 
-                        if (unlockAllFeatures) {
+                        if (unlockDatabaseFeatures) {
                             ModalNavigationDrawer(
                                 drawerState = drawerState,
                                 drawerContent = {
@@ -209,7 +210,7 @@ class MainActivity : ComponentActivity() {
                             ) {
                                 Content(
                                     navHostController = navHostController,
-                                    unlockAllFeatures = true,
+                                    unlockDatabaseFeatures = true,
                                     onClickNav = ::onClickNav,
                                     startDestination = startDestination,
                                 )
@@ -217,7 +218,7 @@ class MainActivity : ComponentActivity() {
                         } else {
                             Content(
                                 navHostController = navHostController,
-                                unlockAllFeatures = false,
+                                unlockDatabaseFeatures = false,
                                 onClickNav = ::onClickNav,
                                 startDestination = startDestination,
                             )
@@ -263,11 +264,11 @@ class MainActivity : ComponentActivity() {
     @Composable
     private fun Content(
         navHostController: NavHostController,
-        unlockAllFeatures: Boolean,
+        unlockDatabaseFeatures: Boolean,
         onClickNav: () -> Unit,
         startDestination: String,
     ) {
-        val navDrawerUpIconOption = UpIconOption.NavDrawer(onClickNav).takeIf { unlockAllFeatures }
+        val navDrawerUpIconOption = UpIconOption.NavDrawer(onClickNav).takeIf { unlockDatabaseFeatures }
         Column(modifier = Modifier.fillMaxSize()) {
             val adsEnabled by monetizationController.adsEnabled.collectAsState(false)
             if (adsEnabled) {
