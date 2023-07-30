@@ -4,13 +4,18 @@
     <string name="monetization_feature_tier_free_header">Free</string>
     <string name="monetization_feature_tier_ads_header">Basic</string>
     <string name="monetization_enable_ads_button">Enable ads</string>
-    <string name="monetization_enable_ads_button_completed">Thanks, you\'ve enabled ads!</string>
+    <string name="monetization_disable_ads_button">Disable ads</string>
+    <string name="monetization_enable_ads_completed">Thanks, you\'ve enabled ads!</string>
     <string name="monetization_feature_tier_subscription_header">Premium</string>
     <string name="monetization_subscribe_button">Subscribe</string>
-    <string name="monetization_subscribe_button_completed">Thanks, you\'re subscribed!</string>
+    <string name="monetization_manage_subscription_button">Manage</string>
+    <string name="monetization_subscribe_completed">Thanks, you\'re subscribed!</string>
     <string name="monetization_settings_content_description">Settings</string>
 
     <string name="monetization_bullet_point_supported_icon_content_description">Feature supported</string>
     <string name="monetization_bullet_point_not_supported_icon_content_description">Feature not supported</string>
     <string name="monetization_coming_soon">Coming soon…</string>
+
+    <string name="monetization_subscription_not_supported">Subscriptions not supported on this build</string>
+    <string name="monetization_subscribed_ads_not_needed">Thanks, you\'re subscribed. No ads needed!</string>
 </resources>

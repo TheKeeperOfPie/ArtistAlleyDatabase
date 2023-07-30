@@ -15,7 +15,7 @@ interface MonetizationProvider {
 
     fun requestEnableAds()
 
-    fun onAdsRevoked()
+    fun revokeAds()
 }
 
 val LocalMonetizationProvider = staticCompositionLocalOf<MonetizationProvider?> { null }

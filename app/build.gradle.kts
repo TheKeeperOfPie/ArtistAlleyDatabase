@@ -146,7 +146,7 @@ tasks.register("installAll") {
 
 fun Exec.launchActivity(
     packageName: String,
-    activityName: String = "com.thekeeperofpie.artistalleydatabase.MainActivity"
+    activityName: String = "com.thekeeperofpie.artistalleydatabase.MainActivity",
 ) {
     commandLine(
         "adb", "shell", "am", "start-activity",
@@ -205,7 +205,13 @@ dependencies {
     implementation(project(":modules:data"))
     implementation(project(":modules:entry"))
     implementation(project(":modules:monetization"))
-    releaseImplementation(project(":modules:play"))
+//    debugImplementation(project(":modules:monetization:debug"))
+
+    configurations["internalImplementation"].dependencies +=
+        create(project(":modules:monetization:debug"))
+
+    releaseImplementation(project(":modules:monetization:play"))
+    releaseImplementation(project(":modules:monetization:unity"))
     implementation(project(":modules:settings"))
 
     runtimeOnly(kotlin("reflect"))

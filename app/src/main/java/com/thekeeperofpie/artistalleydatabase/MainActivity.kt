@@ -82,8 +82,10 @@ import com.thekeeperofpie.artistalleydatabase.export.ExportViewModel
 import com.thekeeperofpie.artistalleydatabase.importing.ImportScreen
 import com.thekeeperofpie.artistalleydatabase.importing.ImportViewModel
 import com.thekeeperofpie.artistalleydatabase.monetization.LocalMonetizationProvider
+import com.thekeeperofpie.artistalleydatabase.monetization.LocalSubscriptionProvider
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationController
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationProvider
+import com.thekeeperofpie.artistalleydatabase.monetization.SubscriptionProvider
 import com.thekeeperofpie.artistalleydatabase.navigation.NavDrawerItems
 import com.thekeeperofpie.artistalleydatabase.search.advanced.AdvancedSearchScreen
 import com.thekeeperofpie.artistalleydatabase.search.advanced.AdvancedSearchViewModel
@@ -129,6 +131,9 @@ class MainActivity : ComponentActivity() {
     lateinit var monetizationProviderOptional: Optional<MonetizationProvider>
 
     @Inject
+    lateinit var subscriptionProviderOptional: Optional<SubscriptionProvider>
+
+    @Inject
     lateinit var featureOverrideProvider: FeatureOverrideProvider
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -146,12 +151,15 @@ class MainActivity : ComponentActivity() {
             ?: AnimeNavDestinations.HOME.id
         val monetizationProvider = monetizationProviderOptional.getOrNull()
         monetizationProvider?.initialize(this)
+        val subscriptionProvider = subscriptionProviderOptional.getOrNull()
+        subscriptionProvider?.initialize(this)
 
         setContent {
             val navHostController = rememberNavController()
             ArtistAlleyDatabaseTheme(settings = settings, navHostController = navHostController) {
                 CompositionLocalProvider(
-                    LocalMonetizationProvider provides monetizationProvider
+                    LocalMonetizationProvider provides monetizationProvider,
+                    LocalSubscriptionProvider provides subscriptionProvider,
                 ) {
                     // TODO: Draw inside insets for applicable screens
                     Surface(modifier = Modifier.safeDrawingPadding()) {

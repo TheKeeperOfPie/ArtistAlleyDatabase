@@ -9,6 +9,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hoc081098.flowext.startWith
+import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.compose.filter.selectedOption
@@ -27,9 +28,10 @@ import javax.inject.Inject
 class AnimeNewsViewModel @Inject constructor(
     settings: AnimeSettings,
     private val animeNewsController: AnimeNewsController,
+    featureOverrideProvider: FeatureOverrideProvider,
 ) : ViewModel() {
 
-    val sortFilterController = NewsSortFilterController(settings)
+    val sortFilterController = NewsSortFilterController(settings, featureOverrideProvider)
 
     var news by mutableStateOf<List<AnimeNewsArticleEntry>?>(null)
         private set

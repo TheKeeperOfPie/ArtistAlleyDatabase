@@ -23,6 +23,7 @@ import com.anilist.MediaAdvancedSearchQuery
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaSeason
 import com.anilist.type.MediaType
+import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
@@ -61,6 +62,7 @@ class SeasonalViewModel @Inject constructor(
     private val ignoreList: AnimeMediaIgnoreList,
     private val statusController: MediaListStatusController,
     private val mediaTagsController: MediaTagsController,
+    featureOverrideProvider: FeatureOverrideProvider,
 ) : ViewModel() {
 
     val viewer = aniListApi.authedUser
@@ -73,8 +75,13 @@ class SeasonalViewModel @Inject constructor(
     var tagShown by mutableStateOf<TagSection.Tag?>(null)
     val colorMap = mutableStateMapOf<String, Pair<Color, Color>>()
 
-    val sortFilterController =
-        AnimeSortFilterController(MediaSortOption::class, aniListApi, settings, mediaTagsController)
+    val sortFilterController = AnimeSortFilterController(
+        sortTypeEnumClass = MediaSortOption::class,
+        aniListApi = aniListApi,
+        settings = settings,
+        featureOverrideProvider = featureOverrideProvider,
+        mediaTagsController = mediaTagsController
+    )
 
     private val refreshUptimeMillis = MutableStateFlow(-1L)
 

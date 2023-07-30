@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.anime.studio
 
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.unit.dp
+import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.filter.SortFilterController
@@ -12,7 +13,10 @@ import kotlinx.coroutines.flow.debounce
 import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(FlowPreview::class)
-class StudioSortFilterController(settings: AnimeSettings) : SortFilterController(settings) {
+class StudioSortFilterController(
+    settings: AnimeSettings,
+    featureOverrideProvider: FeatureOverrideProvider,
+) : SortFilterController(settings, featureOverrideProvider) {
 
     private val sortSection = SortFilterSection.Sort(
         enumClass = StudioSortOption::class,

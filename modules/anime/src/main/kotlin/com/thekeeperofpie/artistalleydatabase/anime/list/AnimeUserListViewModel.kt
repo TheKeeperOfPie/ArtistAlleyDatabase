@@ -10,6 +10,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.anilist.type.MediaType
+import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
@@ -47,6 +48,7 @@ class AnimeUserListViewModel @Inject constructor(
     private val ignoreList: AnimeMediaIgnoreList,
     private val mediaTagsController: MediaTagsController,
     private val userMediaListController: UserMediaListController,
+    featureOverrideProvider: FeatureOverrideProvider,
 ) : ViewModel() {
 
     val viewer = aniListApi.authedUser
@@ -66,6 +68,7 @@ class AnimeUserListViewModel @Inject constructor(
         sortTypeEnumClass = MediaListSortOption::class,
         aniListApi = aniListApi,
         settings = settings,
+        featureOverrideProvider = featureOverrideProvider,
         mediaTagsController = mediaTagsController,
     )
 

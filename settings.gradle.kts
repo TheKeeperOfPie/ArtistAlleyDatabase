@@ -106,6 +106,7 @@ dependencyResolutionManagement {
             library("com.squareup.moshi:moshi-kotlin:1.15.0")
             library("com.squareup.okhttp3:okhttp:5.0.0-alpha.11")
             library("com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.11", prefix = "okhttp3")
+            library("com.unity3d.ads:unity-ads:4.7.0")
             library("de.charlex.compose:html-text:1.4.1")
             library("io.coil-kt:coil-compose:2.4.0")
             library("io.github.hoc081098:FlowExt:0.6.1")
@@ -163,9 +164,12 @@ include(
     ":modules:dependencies",
     ":modules:entry",
     ":modules:monetization",
+    ":modules:monetization:admob",
+    ":modules:monetization:debug",
+    ":modules:monetization:play",
+    ":modules:monetization:unity",
     ":modules:musical-artists",
     ":modules:network-utils",
-    ":modules:play",
     ":modules:settings",
     ":modules:test-utils",
     ":modules:vgmdb",

@@ -37,9 +37,12 @@
             <option value="$PROJECT_DIR$/modules/dependencies" />
             <option value="$PROJECT_DIR$/modules/entry" />
             <option value="$PROJECT_DIR$/modules/monetization" />
+            <option value="$PROJECT_DIR$/modules/monetization/admob" />
+            <option value="$PROJECT_DIR$/modules/monetization/debug" />
+            <option value="$PROJECT_DIR$/modules/monetization/play" />
+            <option value="$PROJECT_DIR$/modules/monetization/unity" />
             <option value="$PROJECT_DIR$/modules/musical-artists" />
             <option value="$PROJECT_DIR$/modules/network-utils" />
-            <option value="$PROJECT_DIR$/modules/play" />
             <option value="$PROJECT_DIR$/modules/settings" />
             <option value="$PROJECT_DIR$/modules/test-utils" />
             <option value="$PROJECT_DIR$/modules/vgmdb" />

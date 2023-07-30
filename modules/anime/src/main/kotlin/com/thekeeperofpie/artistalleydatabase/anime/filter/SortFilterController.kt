@@ -2,21 +2,22 @@ package com.thekeeperofpie.artistalleydatabase.anime.filter
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
-import com.thekeeperofpie.artistalleydatabase.anime.BuildConfig
 import com.thekeeperofpie.artistalleydatabase.anime.R
 
-abstract class SortFilterController(protected val settings: AnimeSettings) {
-
+abstract class SortFilterController(
+    protected val settings: AnimeSettings,
+    featureOverrideProvider: FeatureOverrideProvider,
+) {
     abstract val sections: List<SortFilterSection>
     val state = SortFilterSection.ExpandedState()
 
-    @Suppress("KotlinConstantConditions")
     protected val showAdultSection = SortFilterSection.SwitchBySetting(
         titleRes = R.string.anime_generic_filter_show_adult_content,
         settings = settings,
         property = { it.showAdult },
-    ).takeIf { BuildConfig.BUILD_TYPE != "release" }
+    ).takeUnless { featureOverrideProvider.isReleaseBuild }
 
     protected val collapseOnCloseSection = SortFilterSection.SwitchBySetting(
         titleRes = R.string.anime_generic_filter_collapse_on_close,
@@ -24,12 +25,11 @@ abstract class SortFilterController(protected val settings: AnimeSettings) {
         property = { it.collapseAnimeFiltersOnClose },
     )
 
-    @Suppress("KotlinConstantConditions")
     protected val showIgnoredSection = SortFilterSection.SwitchBySetting(
         titleRes = R.string.anime_generic_filter_show_ignored,
         settings = settings,
         property = { it.showIgnored },
-    ).takeIf { BuildConfig.BUILD_TYPE != "release" }
+    ).takeUnless { featureOverrideProvider.isReleaseBuild }
 
     // TODO: Actually de-dupe advanced section across controllers
     protected val advancedSection = SortFilterSection.Group(

@@ -22,6 +22,7 @@ import androidx.paging.map
 import com.anilist.MediaAdvancedSearchQuery.Data.Page.Medium
 import com.anilist.type.MediaType
 import com.anilist.type.StudioSort
+import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListPagingSource
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
@@ -70,6 +71,7 @@ class AnimeSearchViewModel @Inject constructor(
     val ignoreList: AnimeMediaIgnoreList,
     private val statusController: MediaListStatusController,
     private val mediaTagsController: MediaTagsController,
+    featureOverrideProvider: FeatureOverrideProvider,
 ) : ViewModel() {
 
     val viewer = aniListApi.authedUser
@@ -80,20 +82,30 @@ class AnimeSearchViewModel @Inject constructor(
 
     private var initialized = false
 
-    // TODO: Swap the sort based on selected tab
-    val animeSortFilterController =
-        AnimeSortFilterController(MediaSortOption::class, aniListApi, settings, mediaTagsController)
+    val animeSortFilterController = AnimeSortFilterController(
+        sortTypeEnumClass = MediaSortOption::class,
+        aniListApi = aniListApi,
+        settings = settings,
+        featureOverrideProvider = featureOverrideProvider,
+        mediaTagsController = mediaTagsController,
+    )
 
-    val mangaSortFilterController =
-        MangaSortFilterController(MediaSortOption::class, aniListApi, settings, mediaTagsController)
+    val mangaSortFilterController = MangaSortFilterController(
+        sortTypeEnumClass = MediaSortOption::class,
+        aniListApi = aniListApi,
+        settings = settings,
+        featureOverrideProvider = featureOverrideProvider,
+        mediaTagsController = mediaTagsController,
+    )
 
-    val characterSortFilterController = CharacterSortFilterController(settings)
+    val characterSortFilterController =
+        CharacterSortFilterController(settings, featureOverrideProvider)
 
-    val staffSortFilterController = StaffSortFilterController(settings)
+    val staffSortFilterController = StaffSortFilterController(settings, featureOverrideProvider)
 
-    val studioSortFilterController = StudioSortFilterController(settings)
+    val studioSortFilterController = StudioSortFilterController(settings, featureOverrideProvider)
 
-    val userSortFilterController = UserSortFilterController(settings)
+    val userSortFilterController = UserSortFilterController(settings, featureOverrideProvider)
 
     private val refreshUptimeMillis = MutableStateFlow(-1L)
 

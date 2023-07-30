@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="play_error_purchasing">Error processing purchase, please try again or contact the developer</string>
+    <string name="play_error_loading_subscription">Error loading subscription</string>
+</resources>

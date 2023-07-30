@@ -17,6 +17,7 @@ import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaSource
 import com.anilist.type.MediaStatus
 import com.anilist.type.MediaType
+import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.transformIf
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
@@ -50,9 +51,10 @@ abstract class MediaSortFilterController<SortType : SortOption, ParamsType : Med
     sortTypeEnumClass: KClass<SortType>,
     protected val aniListApi: AuthedAniListApi,
     settings: AnimeSettings,
+    featureOverrideProvider: FeatureOverrideProvider,
     private val mediaTagsController: MediaTagsController,
     private val mediaType: MediaType,
-) : SortFilterController(settings) {
+) : SortFilterController(settings, featureOverrideProvider) {
     var tagLongClickListener: (String) -> Unit = {}
 
     private var initialized = false

@@ -13,6 +13,8 @@ data class LoadingResult<T>(
         fun <T> empty() = LoadingResult<T>()
         fun <T> error(@StringRes errorTextRes: Int, throwable: Throwable? = null) =
             LoadingResult<T>(error = errorTextRes to throwable)
+
+        fun <T> success(value: T) = LoadingResult(loading = false, success = true, result = value)
     }
 
     fun <Output> transformResult(transform: (T) -> Output?): LoadingResult<Output> {

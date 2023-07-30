@@ -16,6 +16,7 @@ import com.anilist.UserSocialActivityQuery.Data.Page.MessageActivityActivity
 import com.anilist.UserSocialActivityQuery.Data.Page.OtherActivity
 import com.anilist.UserSocialActivityQuery.Data.Page.TextActivityActivity
 import com.anilist.type.MediaListStatus
+import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListPagingSource
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
@@ -56,6 +57,7 @@ class AnimeActivityViewModel @Inject constructor(
     private val activityStatusController: ActivityStatusController,
     private val mediaListStatusController: MediaListStatusController,
     private val ignoreList: AnimeMediaIgnoreList,
+    featureOverrideProvider: FeatureOverrideProvider,
 ) : ViewModel() {
 
     val colorMap = mutableStateMapOf<String, Pair<Color, Color>>()
@@ -64,7 +66,7 @@ class AnimeActivityViewModel @Inject constructor(
     val activityToggleHelper =
         ActivityToggleHelper(aniListApi, activityStatusController, viewModelScope)
 
-    val sortFilterController = ActivitySortFilterController(settings)
+    val sortFilterController = ActivitySortFilterController(settings, featureOverrideProvider)
 
     private val refreshUptimeMillis = MutableStateFlow(-1L)
 

@@ -3,6 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.anime.news
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
@@ -16,7 +17,10 @@ import kotlinx.coroutines.flow.flowOn
 import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(FlowPreview::class)
-class NewsSortFilterController(settings: AnimeSettings) : SortFilterController(settings) {
+class NewsSortFilterController(
+    settings: AnimeSettings,
+    featureOverrideProvider: FeatureOverrideProvider,
+) : SortFilterController(settings, featureOverrideProvider) {
 
     private val sortSection = SortFilterSection.Sort(
         AnimeNewsSortOption::class,

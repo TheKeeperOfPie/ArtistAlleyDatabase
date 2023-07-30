@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.anime.schedule
 
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.unit.dp
+import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.filter.SortFilterController
@@ -14,7 +15,8 @@ import kotlin.time.Duration.Companion.milliseconds
 @OptIn(FlowPreview::class)
 class AiringScheduleSortFilterController(
     settings: AnimeSettings,
-) : SortFilterController(settings) {
+    featureOverrideProvider: FeatureOverrideProvider,
+) : SortFilterController(settings, featureOverrideProvider) {
 
     private val sortSection = SortFilterSection.Sort(
         AiringScheduleSortOption::class,

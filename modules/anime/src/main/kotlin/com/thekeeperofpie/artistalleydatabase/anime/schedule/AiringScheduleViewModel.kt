@@ -17,6 +17,7 @@ import androidx.paging.map
 import com.anilist.AiringScheduleQuery
 import com.anilist.type.AiringSort
 import com.anilist.type.MediaListStatus
+import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListPagingSource
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
@@ -51,10 +52,11 @@ class AiringScheduleViewModel @Inject constructor(
     private val settings: AnimeSettings,
     private val ignoreList: AnimeMediaIgnoreList,
     private val statusController: MediaListStatusController,
+    featureOverrideProvider: FeatureOverrideProvider,
 ) : ViewModel() {
 
     val viewer = aniListApi.authedUser
-    var sortFilterController = AiringScheduleSortFilterController(settings)
+    var sortFilterController = AiringScheduleSortFilterController(settings, featureOverrideProvider)
     var refresh = MutableStateFlow(-1)
     val colorMap = mutableStateMapOf<String, Pair<Color, Color>>()
 

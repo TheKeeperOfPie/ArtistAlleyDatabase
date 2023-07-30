@@ -226,7 +226,7 @@ class SettingsViewModel @Inject constructor(
                     FilledTonalButton(
                         onClick = {
                             if (monetizationProvider != null) {
-                                monetizationProvider.onAdsRevoked()
+                                monetizationProvider.revokeAds()
                             } else {
                                 settings.adsEnabled.value = false
                             }

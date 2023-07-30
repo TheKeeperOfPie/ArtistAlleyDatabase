@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="unity_error_initializing_ads_generic">Error enabling ads</string>
+    <string name="unity_error_initializing_ads_ad_blocker_detected">Error enabling ads, blocker detected</string>
+</resources>

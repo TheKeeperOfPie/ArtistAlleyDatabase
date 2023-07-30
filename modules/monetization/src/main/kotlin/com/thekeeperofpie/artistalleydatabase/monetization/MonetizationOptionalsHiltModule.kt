@@ -11,4 +11,7 @@ interface MonetizationOptionalsHiltModule {
 
     @BindsOptionalOf
     fun bindOptionalMonetizationProvider(): MonetizationProvider
+
+    @BindsOptionalOf
+    fun bindOptionalSubscriptionProvider(): SubscriptionProvider
 }

@@ -12,6 +12,7 @@ import androidx.lifecycle.viewModelScope
 import com.anilist.type.MediaFormat
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
+import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
@@ -42,11 +43,13 @@ class AnimeSortFilterController<SortType : SortOption>(
     sortTypeEnumClass: KClass<SortType>,
     aniListApi: AuthedAniListApi,
     settings: AnimeSettings,
+    featureOverrideProvider: FeatureOverrideProvider,
     mediaTagsController: MediaTagsController,
 ) : MediaSortFilterController<SortType, AnimeSortFilterController.InitialParams<SortType>>(
     sortTypeEnumClass = sortTypeEnumClass,
     aniListApi = aniListApi,
     settings = settings,
+    featureOverrideProvider = featureOverrideProvider,
     mediaTagsController = mediaTagsController,
     mediaType = MediaType.ANIME,
 ) {

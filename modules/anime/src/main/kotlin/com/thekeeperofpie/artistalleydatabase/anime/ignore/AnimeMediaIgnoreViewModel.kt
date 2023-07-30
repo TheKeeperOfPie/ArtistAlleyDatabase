@@ -17,6 +17,7 @@ import androidx.paging.filter
 import androidx.paging.map
 import com.anilist.MediaByIdsQuery.Data.Page.Medium
 import com.anilist.type.MediaType
+import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
@@ -50,6 +51,7 @@ class AnimeMediaIgnoreViewModel @Inject constructor(
     private val ignoreList: AnimeMediaIgnoreList,
     private val statusController: MediaListStatusController,
     private val mediaTagsController: MediaTagsController,
+    featureOverrideProvider: FeatureOverrideProvider,
 ) : ViewModel() {
 
     val viewer = aniListApi.authedUser
@@ -65,6 +67,7 @@ class AnimeMediaIgnoreViewModel @Inject constructor(
         sortTypeEnumClass = MediaIgnoreSortOption::class,
         aniListApi = aniListApi,
         settings = settings,
+        featureOverrideProvider = featureOverrideProvider,
         mediaTagsController = mediaTagsController,
     )
 

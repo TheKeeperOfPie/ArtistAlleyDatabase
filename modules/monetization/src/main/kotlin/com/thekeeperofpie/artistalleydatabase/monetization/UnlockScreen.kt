@@ -3,10 +3,12 @@ package com.thekeeperofpie.artistalleydatabase.monetization
 import androidx.annotation.StringRes
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -23,6 +25,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -42,6 +45,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -56,6 +60,7 @@ import com.thekeeperofpie.artistalleydatabase.monetization.UnlockScreen.AdsTier
 import com.thekeeperofpie.artistalleydatabase.monetization.UnlockScreen.FreeTier
 import com.thekeeperofpie.artistalleydatabase.monetization.UnlockScreen.SubscriptionTier
 
+@Suppress("NAME_SHADOWING")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 object UnlockScreen {
 
@@ -121,7 +126,7 @@ object UnlockScreen {
         ) {
             val pagerState = rememberPagerState(pageCount = { 3 })
             val adsEnabled by viewModel.adsEnabled.collectAsState()
-            val subscribed by viewModel.subscribed.collectAsState()
+            val subscribed by viewModel.subscribed.collectAsState(false)
             Box {
                 HorizontalPager(
                     state = pagerState,
@@ -140,15 +145,18 @@ object UnlockScreen {
                         0 -> FreeTier()
                         1 -> AdsTier(
                             adsEnabled = { adsEnabled },
-                            onClickEnableAds = {
-                                monetizationProvider?.requestEnableAds()
-                                    ?: viewModel.enableAdsDebug()
+                            onChangeEnableAds = {
+                                if (it) {
+                                    monetizationProvider?.requestEnableAds()
+                                        ?: viewModel.enableAdsDebug()
+                                } else {
+                                    monetizationProvider?.revokeAds()
+                                        ?: viewModel.disableAdsDebug()
+                                }
                             },
-                        )
-                        2 -> SubscriptionTier(
                             subscribed = { subscribed },
-                            viewModel::onSubscribeClick
                         )
+                        2 -> SubscriptionTier(subscribed = { subscribed })
                     }
                 }
 
@@ -230,7 +238,11 @@ object UnlockScreen {
     }
 
     @Composable
-    fun AdsTier(adsEnabled: () -> Boolean, onClickEnableAds: () -> Unit, enabled: Boolean = true) {
+    fun AdsTier(
+        adsEnabled: () -> Boolean,
+        onChangeEnableAds: (Boolean) -> Unit,
+        subscribed: () -> Boolean,
+    ) {
         Tier(R.string.monetization_feature_tier_ads_header) {
             BulletPoint(
                 type = SupportedType.UNSUPPORTED,
@@ -257,22 +269,46 @@ object UnlockScreen {
                 text = "Experimental database/catalog features"
             )
 
-            ActionButton(
-                enabled = enabled,
-                actionTextRes = R.string.monetization_enable_ads_button,
-                alreadyActionedTextRes = R.string.monetization_enable_ads_button_completed,
-                alreadyActioned = adsEnabled(),
-                onActionClick = onClickEnableAds
-            )
+            if (subscribed()) {
+                Text(
+                    text = stringResource(R.string.monetization_subscribed_ads_not_needed),
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .padding(horizontal = 16.dp, vertical = 10.dp)
+                )
+            } else {
+                val adsEnabled = adsEnabled()
+                if (adsEnabled) {
+                    Text(
+                        text = stringResource(R.string.monetization_enable_ads_completed),
+                        modifier = Modifier
+                            .align(Alignment.CenterHorizontally)
+                            .padding(horizontal = 16.dp, vertical = 10.dp)
+                    )
+                }
+
+                Button(
+                    onClick = { onChangeEnableAds(!adsEnabled) },
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                ) {
+                    Text(
+                        text = stringResource(
+                            if (adsEnabled) {
+                                R.string.monetization_disable_ads_button
+                            } else {
+                                R.string.monetization_enable_ads_button
+                            }
+                        )
+                    )
+                }
+            }
+
+            Spacer(Modifier.height(32.dp))
         }
     }
 
     @Composable
-    fun SubscriptionTier(
-        subscribed: () -> Boolean,
-        onSubscribeClick: () -> Unit,
-        enabled: Boolean = true,
-    ) {
+    fun SubscriptionTier(subscribed: () -> Boolean) {
         Tier(R.string.monetization_feature_tier_subscription_header) {
             BulletPoint(
                 type = SupportedType.FROM_PREVIOUS_TIER,
@@ -299,21 +335,92 @@ object UnlockScreen {
 
             BulletPoint(
                 type = SupportedType.SUPPORTED,
-                text = "Import/export database data",
-            )
-
-            BulletPoint(
-                type = SupportedType.SUPPORTED,
                 text = "Tag and search metadata for artist, convention source, sizing, characters, media, etc.",
             )
 
-            ActionButton(
-                enabled = enabled,
-                actionTextRes = R.string.monetization_subscribe_button,
-                alreadyActionedTextRes = R.string.monetization_subscribe_button_completed,
-                alreadyActioned = subscribed(),
-                onActionClick = onSubscribeClick
-            )
+            val subscriptionProvider = LocalSubscriptionProvider.current
+            if (subscriptionProvider == null) {
+                Button(
+                    onClick = {},
+                    enabled = false,
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .padding(top = 16.dp)
+                ) {
+                    Text(text = stringResource(R.string.monetization_subscription_not_supported))
+                }
+            } else {
+                val error by subscriptionProvider.error.collectAsState()
+                val errorText = error?.let { stringResource(it.first) }
+                if (errorText != null) {
+                    val errorColor = MaterialTheme.colorScheme.error
+                    OutlinedCard(
+                        border = remember { BorderStroke(width = 1.dp, color = errorColor) },
+                        modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 10.dp)
+                    ) {
+                        Text(
+                            text = errorText,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = errorColor,
+                            modifier = Modifier
+                                .background(MaterialTheme.colorScheme.errorContainer)
+                                .padding(horizontal = 16.dp, vertical = 10.dp)
+                                .align(Alignment.CenterHorizontally)
+                        )
+                    }
+                }
+
+                LaunchedEffect(Unit) { subscriptionProvider.loadSubscriptionDetails() }
+
+                val subscriptionDetails by subscriptionProvider.subscriptionDetails.collectAsState()
+                val subscription = subscriptionDetails.result
+                val subscribed = subscribed()
+                if (subscribed) {
+                    Text(
+                        text = stringResource(R.string.monetization_subscribe_completed),
+                        modifier = Modifier
+                            .align(Alignment.CenterHorizontally)
+                            .padding(horizontal = 16.dp, vertical = 10.dp)
+                    )
+                }
+
+                val uriHandler = LocalUriHandler.current
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .height(IntrinsicSize.Min)
+                        .align(Alignment.CenterHorizontally)
+                ) {
+                    Button(
+                        enabled = subscribed || subscription != null,
+                        onClick = {
+                            if (subscribed) {
+                                uriHandler.openUri(
+                                    subscriptionProvider.getManageSubscriptionUrl(subscription)
+                                )
+                            } else if (subscription != null) {
+                                subscriptionProvider.requestSubscribe(subscription)
+                            }
+                        },
+                    ) {
+                        Text(
+                            text = stringResource(
+                                if (subscribed) {
+                                    R.string.monetization_manage_subscription_button
+                                } else {
+                                    R.string.monetization_subscribe_button
+                                }
+                            )
+                        )
+                    }
+
+                    if (!subscribed && subscription == null) {
+                        CircularProgressIndicator()
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(32.dp))
         }
     }
 
@@ -354,46 +461,6 @@ object UnlockScreen {
         }
     }
 
-    @Composable
-    private fun ColumnScope.ActionButton(
-        enabled: Boolean,
-        @StringRes actionTextRes: Int,
-        @StringRes alreadyActionedTextRes: Int,
-        alreadyActioned: Boolean,
-        onActionClick: () -> Unit,
-    ) {
-        if (!enabled) {
-            Button(
-                onClick = {},
-                enabled = false,
-                modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
-                    .padding(top = 16.dp, bottom = 32.dp)
-            ) {
-                Text(text = stringResource(R.string.monetization_coming_soon))
-            }
-        } else if (alreadyActioned) {
-            Button(
-                onClick = {},
-                enabled = false,
-                modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
-                    .padding(top = 16.dp, bottom = 32.dp)
-            ) {
-                Text(text = stringResource(alreadyActionedTextRes))
-            }
-        } else {
-            Button(
-                onClick = onActionClick,
-                modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
-                    .padding(top = 16.dp, bottom = 32.dp)
-            ) {
-                Text(text = stringResource(actionTextRes))
-            }
-        }
-    }
-
     private enum class SupportedType {
         FROM_PREVIOUS_TIER, SUPPORTED, UNSUPPORTED,
     }
@@ -408,11 +475,11 @@ private fun PreviewFree() {
 @Composable
 @Preview
 private fun PreviewAds() {
-    AdsTier(adsEnabled = { false }, onClickEnableAds = {})
+    AdsTier(adsEnabled = { false }, onChangeEnableAds = {}, subscribed = { false })
 }
 
 @Composable
 @Preview
 private fun PreviewSubscription() {
-    SubscriptionTier(subscribed = { false }, onSubscribeClick = {})
+    SubscriptionTier(subscribed = { false })
 }
