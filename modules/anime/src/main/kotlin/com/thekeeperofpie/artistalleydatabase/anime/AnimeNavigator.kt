@@ -247,7 +247,6 @@ object AnimeNavigator {
                 onGenreLongClick = { /*TODO*/ },
                 onCharacterLongClick = { /*TODO*/ },
                 onStaffLongClick = { /*TODO*/ },
-                onTagLongClick = { /*TODO*/ },
                 navigationCallback = navigationCallback,
             )
         }

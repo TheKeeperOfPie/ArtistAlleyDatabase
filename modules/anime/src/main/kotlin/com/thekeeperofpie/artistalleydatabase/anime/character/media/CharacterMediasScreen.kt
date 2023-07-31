@@ -74,7 +74,6 @@ object CharacterMediasScreen {
                     viewer = viewer,
                     onClickListEdit = { editViewModel.initialize(it.media) },
                     onLongClick = viewModel::onMediaLongClick,
-                    onTagLongClick = { /* TODO */ },
                     colorCalculationState = colorCalculationState,
                     navigationCallback = navigationCallback,
                     modifier = Modifier.padding(

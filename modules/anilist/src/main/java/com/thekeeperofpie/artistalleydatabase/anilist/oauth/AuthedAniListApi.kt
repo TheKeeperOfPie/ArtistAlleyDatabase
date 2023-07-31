@@ -145,13 +145,17 @@ open class AuthedAniListApi(
     }
 
     private val memoryThenDiskCache = MemoryCacheFactory(MEMORY_CACHE_BYTE_SIZE)
-        .chain(
-            SqlNormalizedCacheFactory(
-                scopedApplication.app,
-                "apollo.db",
-                useNoBackupDirectory = true,
-            )
-        )
+        .apply {
+            if (networkSettings.enableNetworkCaching.value) {
+                chain(
+                    SqlNormalizedCacheFactory(
+                        scopedApplication.app,
+                        "apollo.db",
+                        useNoBackupDirectory = true,
+                    )
+                )
+            }
+        }
     private val apolloClient = ApolloClient.Builder()
         .serverUrl(AniListUtils.GRAPHQL_API_URL)
         .httpEngine(DefaultHttpEngine(okHttpClient))
@@ -214,6 +218,10 @@ open class AuthedAniListApi(
         averageScoreLesser: Int?,
         episodesGreater: Int?,
         episodesLesser: Int?,
+        volumesGreater: Int?,
+        volumesLesser: Int?,
+        chaptersGreater: Int?,
+        chaptersLesser: Int?,
         sourcesIn: List<MediaSource>?,
         minimumTagRank: Int?,
     ): MediaAdvancedSearchQuery.Data {
@@ -250,6 +258,10 @@ open class AuthedAniListApi(
                 averageScoreLesser = Optional.presentIfNotNull(averageScoreLesser),
                 episodesGreater = Optional.presentIfNotNull(episodesGreater),
                 episodesLesser = Optional.presentIfNotNull(episodesLesser),
+                volumesGreater = Optional.presentIfNotNull(volumesGreater),
+                volumesLesser = Optional.presentIfNotNull(volumesLesser),
+                chaptersGreater = Optional.presentIfNotNull(chaptersGreater),
+                chaptersLesser = Optional.presentIfNotNull(chaptersLesser),
                 sourceIn = Optional.presentIfNotNull(sourcesIn?.ifEmpty { null }),
                 minimumTagRank = Optional.presentIfNotNull(minimumTagRank),
             )
@@ -877,28 +889,27 @@ open class AuthedAniListApi(
             .flowOn(CustomDispatchers.IO)
             .startWith(null),
     ) { cache, network ->
+        val cacheHasErrors = cache?.exception != null
         if (network != null) {
             val networkHasErrors = network.exception != null
+            val result = if (networkHasErrors) cache?.data else network.data
             LoadingResult(
                 success = !networkHasErrors,
-                result = if (networkHasErrors) cache?.data else network.data,
+                result = result,
                 error = if (networkHasErrors) {
                     UtilsStringR.error_loading_from_network to network.exception
+                } else if (result == null && cacheHasErrors) {
+                    UtilsStringR.error_loading_from_cache to cache?.exception
                 } else {
                     null
                 },
             )
         } else {
-            val cacheHasErrors = cache?.exception != null
             LoadingResult(
                 loading = true,
                 success = !cacheHasErrors,
                 result = cache?.data,
-                error = if (cacheHasErrors) {
-                    UtilsStringR.error_loading_from_cache to cache?.exception
-                } else {
-                    null
-                }
+                error = null,
             )
         }
     }

@@ -184,6 +184,11 @@
     <string name="anime_media_filter_episodes_label">Episodes</string>
     <string name="anime_media_filter_episodes_expand_content_description">Episodes filter expand</string>
 
+    <string name="anime_media_filter_volumes_label">Volumes</string>
+    <string name="anime_media_filter_volumes_expand_content_description">Volumes filter expand</string>
+    <string name="anime_media_filter_chapters_label">Chapters</string>
+    <string name="anime_media_filter_chapters_expand_content_description">Chapters filter expand</string>
+
     <string name="anime_media_filter_source_label">Source</string>
     <string name="anime_media_filter_source_expand_content_description">Source filter expand</string>
     <string name="anime_media_filter_source_chip_state_content_description">Source chip state</string>
@@ -206,6 +211,8 @@
     <string name="anime_media_filter_tag_rank_label">Minimum rank</string>
 
     <string name="anime_media_filter_expand_all_content_description">Expand/collapse all sections</string>
+    <string name="anime_media_filter_show_less_important_tags">Show less important tags</string>
+    <string name="anime_media_filter_show_spoiler_tags">Show spoiler tags</string>
     <string name="anime_media_cover_image_long_press_preview">Preview cover image</string>
     <string name="anime_media_banner_image_long_press_preview">Preview banner image</string>
     <string name="anime_media_tag_long_click_content_description">Preview tag</string>
@@ -489,6 +496,9 @@
     <string name="anime_character_details_alternative_names_spoiler_warning">Spoiler</string>
     <string name="anime_character_details_alternative_names_spoiler_warning_content_description">Character alternative name spoiler warning icon</string>
     <string name="anime_character_details_view_all_content_description">View all</string>
+    <string name="anime_character_details_more_actions_content_description">More actions</string>
+    <string name="anime_character_details_open_external">Open in external</string>
+    <string name="anime_character_details_open_external_icon_content_description">Open in external</string>
 
     <string name="anime_character_role_main">Main</string>
     <string name="anime_character_role_supporting">Supporting</string>
@@ -510,6 +520,7 @@
     <string name="anime_staff_overview_label">Overview</string>
     <string name="anime_staff_media_label">Media</string>
     <string name="anime_staff_staff_label">Staff</string>
+    <string name="anime_staff_media_year_unknown">TBA</string>
     <string name="anime_staff_details_information_label">Information</string>
     <string name="anime_staff_details_age_label">Age</string>
     <string name="anime_staff_details_gender_label">Gender</string>
@@ -526,7 +537,10 @@
     <string name="anime_staff_details_characters_label">Characters</string>
     <string name="anime_staff_details_media_load_retry">Retry</string>
     <string name="anime_staff_details_view_all_content_description">View all</string>
-    <string name="anime_staff_media_year_unknown">TBA</string>
+
+    <string name="anime_staff_details_more_actions_content_description">More actions</string>
+    <string name="anime_staff_details_open_external">Open in external</string>
+    <string name="anime_staff_details_open_external_icon_content_description">Open in external</string>
 
     <string name="anime_staff_sort_id">Last added</string>
     <string name="anime_staff_sort_search_match">Search match</string>

@@ -17,12 +17,14 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatc
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.transformIf
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListPagingSource
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityToggleHelper
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityUtils.entryId
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityUtils.liked
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityUtils.subscribed
 import com.thekeeperofpie.artistalleydatabase.anime.activity.AnimeActivityViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
 import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsController
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -38,7 +40,9 @@ import javax.inject.Inject
 class AnimeHomeViewModel @Inject constructor(
     val newsController: AnimeNewsController,
     private val aniListApi: AuthedAniListApi,
+    ignoreList: AnimeMediaIgnoreList,
     activityStatusController: ActivityStatusController,
+    settings: AnimeSettings,
 ) : ViewModel() {
 
     val viewer = aniListApi.authedUser
@@ -64,18 +68,31 @@ class AnimeHomeViewModel @Inject constructor(
                             result.page?.pageInfo to
                                     result.page?.activities?.filterNotNull().orEmpty()
                         }
-                    }.flow
+                    }.flow.cachedIn(viewModelScope)
                 }
-                .mapLatest {
-                    it.map {
-                        AnimeActivityViewModel.ActivityEntry(
-                            it.entryId,
-                            it,
-                            it.liked,
-                            it.subscribed,
-                            (it as? UserSocialActivityQuery.Data.Page.ListActivityActivity)
-                                ?.media?.let(AnimeActivityViewModel.ActivityEntry::MediaEntry),
-                        )
+                .flatMapLatest { pagingData ->
+                    combine(
+                        ignoreList.updates,
+                        settings.showLessImportantTags,
+                        settings.showSpoilerTags,
+                    ) { ignoredIds, showLessImportantTags, showSpoilerTags ->
+                        pagingData.map {
+                            AnimeActivityViewModel.ActivityEntry(
+                                it.entryId,
+                                it,
+                                it.liked,
+                                it.subscribed,
+                                (it as? UserSocialActivityQuery.Data.Page.ListActivityActivity)
+                                    ?.media?.let {
+                                        AnimeActivityViewModel.ActivityEntry.MediaEntry(
+                                            media = it,
+                                            ignored = ignoredIds.contains(it.id),
+                                            showLessImportantTags = showLessImportantTags,
+                                            showSpoilerTags = showSpoilerTags,
+                                        )
+                                    },
+                            )
+                        }
                     }
                 }
                 .cachedIn(viewModelScope)

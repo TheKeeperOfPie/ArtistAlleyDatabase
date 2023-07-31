@@ -239,7 +239,6 @@ object CharacterDetailsScreen {
             navigationCallback = navigationCallback,
             onClickListEdit = { editViewModel.initialize(it.media) },
             onLongClick = viewModel::onMediaLongClick,
-            onTagLongClick = { /* TODO */ },
         )
 
         infoSection(entry = entry)
@@ -415,7 +414,6 @@ object CharacterDetailsScreen {
         navigationCallback: AnimeNavigator.NavigationCallback,
         onClickListEdit: (AnimeMediaListRow.Entry<*>) -> Unit,
         onLongClick: (AnimeMediaListRow.Entry<*>) -> Unit,
-        onTagLongClick: (String) -> Unit,
     ) {
         mediaListSection(
             screenKey = AnimeNavDestinations.CHARACTER_DETAILS.id,
@@ -431,7 +429,6 @@ object CharacterDetailsScreen {
             navigationCallback = navigationCallback,
             onClickListEdit = onClickListEdit,
             onLongClick = onLongClick,
-            onTagLongClick = onTagLongClick,
             onClickViewAll = {
                 entry.let {
                     navigationCallback.onCharacterMediasClick(

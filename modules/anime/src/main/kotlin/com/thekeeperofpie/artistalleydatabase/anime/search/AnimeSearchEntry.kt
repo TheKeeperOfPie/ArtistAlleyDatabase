@@ -20,12 +20,16 @@ sealed interface AnimeSearchEntry {
         progress: Int? = null,
         progressVolumes: Int? = null,
         ignored: Boolean = false,
+        showLessImportantTags: Boolean = false,
+        showSpoilerTags: Boolean = false,
     ) : AnimeMediaListRow.Entry<MediaType>(
         media = media,
         mediaListStatus = mediaListStatus,
         progress = progress,
         progressVolumes = progressVolumes,
-        ignored = ignored
+        ignored = ignored,
+        showLessImportantTags = showLessImportantTags,
+        showSpoilerTags = showSpoilerTags,
     ), AnimeSearchEntry, MediaStatusAware {
         override val entryId = EntryId("media", media.id.toString())
     }

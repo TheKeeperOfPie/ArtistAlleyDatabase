@@ -26,7 +26,7 @@ class UserSortFilterController(
 
     private val moderatorSection = SortFilterSection.Switch(
         titleRes = R.string.anime_user_filter_moderator_label,
-        enabled = false,
+        defaultEnabled = false,
     )
 
     override var sections = listOf(

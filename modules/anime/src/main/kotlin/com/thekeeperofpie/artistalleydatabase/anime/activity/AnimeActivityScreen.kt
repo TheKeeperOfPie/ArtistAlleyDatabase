@@ -229,7 +229,7 @@ object AnimeActivityScreen {
                                         screenKey = AnimeNavDestinations.ACTIVITY.id,
                                         viewer = viewer,
                                         activity = activity,
-                                        media = activity.media,
+                                        mediaEntry = entry.media?.rowEntry,
                                         entry = entry,
                                         onActivityStatusUpdate = onActivityStatusUpdate,
                                         colorCalculationState = colorCalculationState,

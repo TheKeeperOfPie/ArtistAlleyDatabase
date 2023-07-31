@@ -22,7 +22,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.UserMediaListControlle
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaTagsController
-import com.thekeeperofpie.artistalleydatabase.anime.media.filter.TagSection
 import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -54,7 +53,6 @@ class AnimeUserListViewModel @Inject constructor(
     val viewer = aniListApi.authedUser
     var query by mutableStateOf("")
     var content by mutableStateOf<LoadingResult<List<ListEntry>>>(LoadingResult.loading())
-    var tagShown by mutableStateOf<TagSection.Tag?>(null)
     val colorMap = mutableStateMapOf<String, Pair<Color, Color>>()
 
     var userName by mutableStateOf<String?>(null)
@@ -155,13 +153,6 @@ class AnimeUserListViewModel @Inject constructor(
         } else {
             refreshUptimeMillis.value = SystemClock.uptimeMillis()
         }
-    }
-
-    fun onTagLongClick(tagId: String) {
-        tagShown = mediaTagsController.tags.value.values
-            .asSequence()
-            .mapNotNull { it.findTag(tagId) }
-            .firstOrNull()
     }
 
     fun onMediaLongClick(entry: AnimeMediaListRow.Entry<*>) =

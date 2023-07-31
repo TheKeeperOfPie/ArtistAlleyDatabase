@@ -71,7 +71,6 @@ object AnimeMediaLargeCard {
         modifier: Modifier = Modifier,
         label: (@Composable () -> Unit)? = null,
         onLongClick: (MediaNavigationData) -> Unit = {},
-        onTagLongClick: (tagId: String) -> Unit = {},
         colorCalculationState: ColorCalculationState = ColorCalculationState(),
         navigationCallback: AnimeNavigator.NavigationCallback =
             AnimeNavigator.NavigationCallback(null),
@@ -150,7 +149,6 @@ object AnimeMediaLargeCard {
                                 )
                             }
                         },
-                        onTagLongClick = onTagLongClick,
                         tagContainerColor = containerColor,
                         tagTextColor = textColor,
                     )
@@ -280,7 +278,5 @@ object AnimeMediaLargeCard {
             get() = media.nextAiringEpisode
 
         val tags: List<AnimeMediaTagEntry>
-            get() = media.tags?.filterNotNull()?.map(::AnimeMediaTagEntry)?.distinctBy { it.id }
-                .orEmpty()
     }
 }

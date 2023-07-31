@@ -96,7 +96,6 @@ fun <T> LazyListScope.mediaListSection(
     navigationCallback: AnimeNavigator.NavigationCallback,
     onClickListEdit: (AnimeMediaListRow.Entry<*>) -> Unit,
     onLongClick: (AnimeMediaListRow.Entry<*>) -> Unit,
-    onTagLongClick: (String) -> Unit,
     label: (@Composable (T) -> Unit)? = null,
     onClickViewAll: (() -> Unit)? = null,
     @StringRes viewAllContentDescriptionTextRes: Int? = null,
@@ -121,7 +120,6 @@ fun <T> LazyListScope.mediaListSection(
         },
         onClickListEdit = onClickListEdit,
         onLongClick = onLongClick,
-        onTagLongClick = onTagLongClick,
         colorCalculationState = colorCalculationState,
         navigationCallback = navigationCallback,
         modifier = modifier.padding(start = 16.dp, end = 16.dp, bottom = paddingBottom)
@@ -357,7 +355,6 @@ fun MediaNextAiringSection(nextAiringEpisode: MediaPreview.NextAiringEpisode) {
 fun MediaTagRow(
     tags: List<AnimeMediaTagEntry>,
     onTagClick: (tagId: String, tagName: String) -> Unit,
-    onTagLongClick: (tagId: String) -> Unit,
     tagContainerColor: Color,
     tagTextColor: Color,
     tagTextStyle: TextStyle? = null,
@@ -382,7 +379,6 @@ fun MediaTagRow(
             AnimeMediaTagEntry.Chip(
                 tag = it,
                 onTagClick = onTagClick,
-                onTagLongClick = onTagLongClick,
                 containerColor = tagContainerColor,
                 textColor = tagTextColor,
                 textStyle = tagTextStyle,

@@ -183,60 +183,68 @@ class AnimeMediaDetailsViewModel @Inject constructor(
                                 statusController.allChanges(mediaIds),
                                 ignoreList.updates,
                                 settings.showAdult,
-                                ::Triple,
-                            )
-                                .mapLatest { (statuses, ignoredIds, showAdult) ->
-                                    loadingResult.transformResult {
-                                        AnimeMediaDetailsScreen.Entry(
-                                            mediaId,
-                                            media,
-                                            relations = relations.mapNotNull {
-                                                applyMediaFiltering(
-                                                    statuses = statuses,
-                                                    ignoredIds = ignoredIds,
-                                                    showAdult = showAdult,
-                                                    showIgnored = true,
-                                                    entry = it,
-                                                    transform = { it.entry },
-                                                    media = it.entry.media,
-                                                    copy = { mediaListStatus, progress, progressVolumes, ignored ->
-                                                        copy(
-                                                            entry = AnimeMediaListRow.Entry(
-                                                                media = it.entry.media,
-                                                                mediaListStatus = mediaListStatus,
-                                                                progress = progress,
-                                                                progressVolumes = progressVolumes,
-                                                                ignored = ignored,
-                                                            )
+                                settings.showLessImportantTags,
+                                settings.showSpoilerTags,
+                            ) { statuses, ignoredIds, showAdult, showLessImportantTags, showSpoilerTags ->
+                                loadingResult.transformResult {
+                                    AnimeMediaDetailsScreen.Entry(
+                                        mediaId,
+                                        media,
+                                        relations = relations.mapNotNull {
+                                            applyMediaFiltering(
+                                                statuses = statuses,
+                                                ignoredIds = ignoredIds,
+                                                showAdult = showAdult,
+                                                showIgnored = true,
+                                                showLessImportantTags = showLessImportantTags,
+                                                showSpoilerTags = showSpoilerTags,
+                                                entry = it,
+                                                transform = { it.entry },
+                                                media = it.entry.media,
+                                                copy = { mediaListStatus, progress, progressVolumes, ignored, showLessImportantTags, showSpoilerTags ->
+                                                    copy(
+                                                        entry = AnimeMediaListRow.Entry(
+                                                            media = it.entry.media,
+                                                            mediaListStatus = mediaListStatus,
+                                                            progress = progress,
+                                                            progressVolumes = progressVolumes,
+                                                            ignored = ignored,
+                                                            showLessImportantTags = showLessImportantTags,
+                                                            showSpoilerTags = showSpoilerTags,
                                                         )
-                                                    }
-                                                )
-                                            },
-                                            recommendations = recommendations.mapNotNull {
-                                                applyMediaFiltering(
-                                                    statuses = statuses,
-                                                    ignoredIds = ignoredIds,
-                                                    showAdult = showAdult,
-                                                    showIgnored = true,
-                                                    entry = it,
-                                                    transform = { it.entry },
-                                                    media = it.entry.media,
-                                                    copy = { mediaListStatus, progress, progressVolumes, ignored ->
-                                                        copy(
-                                                            entry = AnimeMediaListRow.Entry(
-                                                                media = it.entry.media,
-                                                                mediaListStatus = mediaListStatus,
-                                                                progress = progress,
-                                                                progressVolumes = progressVolumes,
-                                                                ignored = ignored,
-                                                            )
+                                                    )
+                                                }
+                                            )
+                                        },
+                                        recommendations = recommendations.mapNotNull {
+                                            applyMediaFiltering(
+                                                statuses = statuses,
+                                                ignoredIds = ignoredIds,
+                                                showAdult = showAdult,
+                                                showIgnored = true,
+                                                showLessImportantTags = showLessImportantTags,
+                                                showSpoilerTags = showSpoilerTags,
+                                                entry = it,
+                                                transform = { it.entry },
+                                                media = it.entry.media,
+                                                copy = { mediaListStatus, progress, progressVolumes, ignored, showLessImportantTags, showSpoilerTags ->
+                                                    copy(
+                                                        entry = AnimeMediaListRow.Entry(
+                                                            media = it.entry.media,
+                                                            mediaListStatus = mediaListStatus,
+                                                            progress = progress,
+                                                            progressVolumes = progressVolumes,
+                                                            ignored = ignored,
+                                                            showLessImportantTags = showLessImportantTags,
+                                                            showSpoilerTags = showSpoilerTags,
                                                         )
-                                                    }
-                                                )
-                                            }
-                                        )
-                                    }
+                                                    )
+                                                }
+                                            )
+                                        }
+                                    )
                                 }
+                            }
                         }
                     }
             }
@@ -274,10 +282,14 @@ class AnimeMediaDetailsViewModel @Inject constructor(
                     Pager(config = PagingConfig(10)) {
                         AniListPagingSource { page ->
                             if (page == 1) {
-                                characters?.pageInfo to characters?.edges?.filterNotNull().orEmpty()
+                                characters?.pageInfo to characters?.edges?.filterNotNull()
+                                    .orEmpty()
                             } else {
                                 val result =
-                                    aniListApi.mediaDetailsCharactersPage(mediaId, page).characters
+                                    aniListApi.mediaDetailsCharactersPage(
+                                        mediaId,
+                                        page
+                                    ).characters
                                 result.pageInfo to result.edges.filterNotNull()
                             }
                         }
@@ -405,12 +417,14 @@ class AnimeMediaDetailsViewModel @Inject constructor(
                         .filterIsInstance<MediaActivityPageQuery.Data.Page.ListActivityActivity>()
                 }
                 .flatMapLatest { activities ->
-                    activityStatusController.allChanges(activities.map { it.id.toString() }.toSet())
+                    activityStatusController.allChanges(activities.map { it.id.toString() }
+                        .toSet())
                         .mapLatest { updates ->
                             activities.map {
                                 ActivityEntry(
                                     it,
-                                    liked = updates[it.id.toString()]?.liked ?: it.isLiked ?: false,
+                                    liked = updates[it.id.toString()]?.liked ?: it.isLiked
+                                    ?: false,
                                     subscribed = updates[it.id.toString()]?.subscribed
                                         ?: it.isSubscribed ?: false,
                                 )

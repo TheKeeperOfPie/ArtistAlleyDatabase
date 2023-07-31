@@ -7,4 +7,6 @@ interface MediaStatusAware {
     val progress: Int?
     val progressVolumes: Int?
     val ignored: Boolean
+    val showLessImportantTags: Boolean
+    val showSpoilerTags: Boolean
 }

@@ -6,12 +6,20 @@ import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkHorizontally
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.OpenInBrowser
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -25,6 +33,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -35,6 +44,8 @@ import com.anilist.fragment.MediaHeaderData
 import com.anilist.type.MediaSeason
 import com.anilist.type.MediaType
 import com.mxalbert.sharedelements.SharedElement
+import com.thekeeperofpie.artistalleydatabase.android_utils.UriUtils
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.ui.CoverAndBannerHeader
@@ -51,6 +62,7 @@ fun MediaHeader(
     screenKey: String,
     upIconOption: UpIconOption,
     mediaId: String?,
+    mediaType: MediaType?,
     titles: List<String>?,
     averageScore: Int?,
     popularity: Int?,
@@ -131,7 +143,11 @@ fun MediaHeader(
                 }
 
                 Row(verticalAlignment = Alignment.Bottom) {
-                    Column(modifier = Modifier.weight(1f)) {
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(bottom = 10.dp)
+                    ) {
                         val subtitleText = headerValues.subtitleText()
                         AnimatedVisibility(
                             subtitleText != null,
@@ -188,6 +204,46 @@ fun MediaHeader(
 
                     if (menuContent != null) {
                         menuContent()
+                    } else {
+                        Box {
+                            var showMenu by remember { mutableStateOf(false) }
+                            IconButton(onClick = { showMenu = true }) {
+                                Icon(
+                                    imageVector = Icons.Filled.MoreVert,
+                                    contentDescription = stringResource(
+                                        R.string.anime_media_details_more_actions_content_description,
+                                    ),
+                                )
+                            }
+
+                            val uriHandler = LocalUriHandler.current
+                            DropdownMenu(
+                                expanded = showMenu,
+                                onDismissRequest = { showMenu = false },
+                            ) {
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(R.string.anime_media_details_open_external)) },
+                                    leadingIcon = {
+                                        Icon(
+                                            imageVector = Icons.Filled.OpenInBrowser,
+                                            contentDescription = stringResource(
+                                                R.string.anime_media_details_open_external_icon_content_description
+                                            )
+                                        )
+                                    },
+                                    onClick = {
+                                        showMenu = false
+                                        uriHandler.openUri(
+                                            AniListUtils.mediaUrl(
+                                                // TODO: Better infer media type
+                                                mediaType ?: MediaType.ANIME,
+                                                mediaId.toString()
+                                            ) + "?${UriUtils.FORCE_EXTERNAL_URI_PARAM}=true"
+                                        )
+                                    }
+                                )
+                            }
+                        }
                     }
                 }
             }

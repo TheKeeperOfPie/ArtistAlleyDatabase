@@ -70,7 +70,6 @@ object AnimeMediaListRow {
         label: (@Composable () -> Unit)? = null,
         onClickListEdit: (Entry<MediaType>) -> Unit,
         onLongClick: (Entry<MediaType>) -> Unit,
-        onTagLongClick: (tagId: String) -> Unit = {},
         onLongPressImage: (entry: Entry<MediaType>) -> Unit = {},
         nextAiringEpisode: MediaPreview.NextAiringEpisode? = entry?.media?.nextAiringEpisode,
         colorCalculationState: ColorCalculationState = ColorCalculationState(),
@@ -149,7 +148,6 @@ object AnimeMediaListRow {
                                 )
                             }
                         },
-                        onTagLongClick = onTagLongClick,
                         tagContainerColor = containerColor,
                         tagTextColor = textColor,
                     )
@@ -283,9 +281,22 @@ object AnimeMediaListRow {
         override val progress: Int? = null,
         override val progressVolumes: Int? = null,
         override val ignored: Boolean = false,
+        override val showLessImportantTags: Boolean = false,
+        override val showSpoilerTags: Boolean = false,
     ) : MediaStatusAware where MediaType : MediaPreview, MediaType : MediaHeaderData {
         val color = media.coverImage?.color?.let(ComposeColorUtils::hexToColor)
-        val tags = media.tags?.filterNotNull()?.map(::AnimeMediaTagEntry)
-            ?.distinctBy { it.id }.orEmpty()
+        val tags = media.tags?.asSequence()
+            ?.filterNotNull()
+            ?.filter {
+                showLessImportantTags
+                        || it.category !in MediaUtils.LESS_IMPORTANT_MEDIA_TAG_CATEGORIES
+            }
+            ?.filter {
+                showSpoilerTags || (it.isGeneralSpoiler != true && it.isMediaSpoiler != true)
+            }
+            ?.map(::AnimeMediaTagEntry)
+            ?.distinctBy { it.id }
+            ?.toList()
+            .orEmpty()
     }
 }

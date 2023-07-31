@@ -70,6 +70,9 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListOAuthStore
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
+import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
+import com.thekeeperofpie.artistalleydatabase.anime.media.LocalMediaTagDialogController
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaTagDialogController
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryNavigator
 import com.thekeeperofpie.artistalleydatabase.art.ArtNavDestinations
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseScreen
@@ -136,6 +139,9 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var featureOverrideProvider: FeatureOverrideProvider
 
+    @Inject
+    lateinit var mediaTagDialogController: MediaTagDialogController
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -160,6 +166,7 @@ class MainActivity : ComponentActivity() {
                 CompositionLocalProvider(
                     LocalMonetizationProvider provides monetizationProvider,
                     LocalSubscriptionProvider provides subscriptionProvider,
+                    LocalMediaTagDialogController provides mediaTagDialogController,
                 ) {
                     // TODO: Draw inside insets for applicable screens
                     Surface(modifier = Modifier.safeDrawingPadding()) {
@@ -233,6 +240,13 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                 }
+
+                val tagShown = mediaTagDialogController.tagShown
+                if (tagShown != null) {
+                    AnimeMediaListScreen.TagPreview(tag = tagShown) {
+                        mediaTagDialogController.tagShown = null
+                    }
+                }
             }
         }
 
@@ -276,7 +290,8 @@ class MainActivity : ComponentActivity() {
         onClickNav: () -> Unit,
         startDestination: String,
     ) {
-        val navDrawerUpIconOption = UpIconOption.NavDrawer(onClickNav).takeIf { unlockDatabaseFeatures }
+        val navDrawerUpIconOption =
+            UpIconOption.NavDrawer(onClickNav).takeIf { unlockDatabaseFeatures }
         Column(modifier = Modifier.fillMaxSize()) {
             val adsEnabled by monetizationController.adsEnabled.collectAsState(false)
             if (adsEnabled) {

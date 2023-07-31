@@ -55,6 +55,7 @@ object RecommendationsScreen {
                     screenKey = SCREEN_KEY,
                     upIconOption = upIconOption,
                     mediaId = viewModel.headerId,
+                    mediaType = viewModel.entry?.media?.type,
                     titles = entry?.titlesUnique,
                     averageScore = media?.averageScore,
                     popularity = media?.popularity,
@@ -83,7 +84,6 @@ object RecommendationsScreen {
                     viewer = viewer,
                     onClickListEdit = { editViewModel.initialize(it.media) },
                     onLongClick = viewModel::onMediaLongClick,
-                    onTagLongClick = { /* TODO */ },
                     colorCalculationState = colorCalculationState,
                     navigationCallback = navigationCallback,
                     modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)

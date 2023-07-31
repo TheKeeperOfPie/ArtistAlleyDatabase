@@ -82,6 +82,12 @@ class AnimeSortFilterController<SortType : SortOption>(
                         || (data.seasonYear.toIntOrNull() != null)
             }
 
+        override fun clear() {
+            airingDate = AiringDate.Basic() to AiringDate.Advanced()
+            airingDateIsAdvanced = false
+            airingDateShown = null
+        }
+
         @Composable
         override fun Content(state: ExpandedState, showDivider: Boolean) {
             AiringDateSection(
@@ -105,18 +111,9 @@ class AnimeSortFilterController<SortType : SortOption>(
     private val episodesSection = SortFilterSection.Range(
         titleRes = R.string.anime_media_filter_episodes_label,
         titleDropdownContentDescriptionRes = R.string.anime_media_filter_episodes_expand_content_description,
-        data = RangeData(151),
+        initialData = RangeData(151),
         unboundedMax = true,
     )
-
-    private val actionsSection = object : SortFilterSection.Custom("actions") {
-        override fun showingPreview() = false
-
-        @Composable
-        override fun Content(state: ExpandedState, showDivider: Boolean) {
-            // TODO("Not yet implemented")
-        }
-    }
 
     override var sections by mutableStateOf(emptyList<SortFilterSection>())
 
@@ -124,13 +121,11 @@ class AnimeSortFilterController<SortType : SortOption>(
         viewModel: ViewModel,
         refreshUptimeMillis: MutableStateFlow<*>,
         initialParams: InitialParams<SortType>,
-        tagLongClickListener: (String) -> Unit = { /* TODO */ },
     ) {
         super.initialize(
             viewModel,
             refreshUptimeMillis,
             initialParams,
-            tagLongClickListener,
         )
         viewModel.viewModelScope.launch(CustomDispatchers.Main) {
             aniListApi.authedUser
@@ -160,11 +155,12 @@ class AnimeSortFilterController<SortType : SortOption>(
                             children = listOfNotNull(
                                 showAdultSection,
                                 collapseOnCloseSection,
-                                showIgnoredSection.takeIf { initialParams.showIgnoredEnabled }
+                                showIgnoredSection.takeIf { initialParams.showIgnoredEnabled },
+                                showLessImportantTagsSection,
+                                showSpoilerTagsSection,
                             )
                         },
                         SortFilterSection.Spacer(height = 32.dp),
-                        actionsSection,
                     )
                 }
                 .collectLatest { sections = it }
@@ -194,6 +190,8 @@ class AnimeSortFilterController<SortType : SortOption>(
                     formats = formatSection.filterOptions,
                     averageScoreRange = averageScoreSection.data,
                     episodesRange = episodesSection.data,
+                    volumesRange = null,
+                    chaptersRange = null,
                     showAdult = false,
                     showIgnored = true,
                     airingDate = if (airingDateIsAdvanced) airingDate.second else airingDate.first,

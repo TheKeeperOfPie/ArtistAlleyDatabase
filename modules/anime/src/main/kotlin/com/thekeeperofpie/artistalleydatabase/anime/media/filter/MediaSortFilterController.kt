@@ -55,8 +55,6 @@ abstract class MediaSortFilterController<SortType : SortOption, ParamsType : Med
     private val mediaTagsController: MediaTagsController,
     private val mediaType: MediaType,
 ) : SortFilterController(settings, featureOverrideProvider) {
-    var tagLongClickListener: (String) -> Unit = {}
-
     private var initialized = false
     protected var initialParams by mutableStateOf<ParamsType?>(null)
 
@@ -136,6 +134,20 @@ abstract class MediaSortFilterController<SortType : SortOption, ParamsType : Med
     protected val tagSection = object : SortFilterSection.Custom("tag") {
         override fun showingPreview() = true
 
+        override fun clear() {
+            tagsByCategory.value = tagsByCategory.value.mapValues {
+                it.value.replace {
+                    if (it.id == initialParams?.tagId) {
+                        it
+                    } else {
+                        it.copy(state = FilterIncludeExcludeState.DEFAULT)
+                    }
+                }
+            }
+            tagRank = "0"
+            tagSearchQuery = ""
+        }
+
         @Composable
         override fun Content(state: ExpandedState, showDivider: Boolean) {
             val tagsByCategoryFiltered by tagsByCategoryFiltered.collectAsState(emptyMap())
@@ -154,7 +166,6 @@ abstract class MediaSortFilterController<SortType : SortOption, ParamsType : Med
                             }
                     }
                 },
-                onTagLongClick = tagLongClickListener,
                 tagRank = { tagRank },
                 onTagRankChange = { tagRank = it },
                 query = tagSearchQuery,
@@ -167,7 +178,7 @@ abstract class MediaSortFilterController<SortType : SortOption, ParamsType : Med
     protected val averageScoreSection = SortFilterSection.Range(
         titleRes = R.string.anime_media_filter_average_score_label,
         titleDropdownContentDescriptionRes = R.string.anime_media_filter_average_score_expand_content_description,
-        data = RangeData(100, hardMax = true),
+        initialData = RangeData(100, hardMax = true),
     )
 
     protected val sourceSection = SortFilterSection.Filter(
@@ -195,14 +206,17 @@ abstract class MediaSortFilterController<SortType : SortOption, ParamsType : Med
         selectionMethod = SortFilterSection.Filter.SelectionMethod.ONLY_INCLUDE,
     )
 
-    private val actionsSection = object : SortFilterSection.Custom("actions") {
-        override fun showingPreview() = false
+    protected val showLessImportantTagsSection = SortFilterSection.SwitchBySetting(
+        titleRes = R.string.anime_media_filter_show_less_important_tags,
+        settings = settings,
+        property = { it.showLessImportantTags },
+    )
 
-        @Composable
-        override fun Content(state: ExpandedState, showDivider: Boolean) {
-            // TODO("Not yet implemented")
-        }
-    }
+    protected val showSpoilerTagsSection = SortFilterSection.SwitchBySetting(
+        titleRes = R.string.anime_media_filter_show_spoiler_tags,
+        settings = settings,
+        property = { it.showSpoilerTags },
+    )
 
     override var sections by mutableStateOf(emptyList<SortFilterSection>())
 
@@ -210,11 +224,9 @@ abstract class MediaSortFilterController<SortType : SortOption, ParamsType : Med
         viewModel: ViewModel,
         refreshUptimeMillis: MutableStateFlow<*>,
         initialParams: InitialParams<SortType>,
-        tagLongClickListener: (String) -> Unit = { /* TODO */ },
     ) {
         if (initialized) return
         initialized = true
-        this.tagLongClickListener = tagLongClickListener
         if (initialParams.tagId != null) {
             tagRank = "60"
         }
@@ -241,9 +253,7 @@ abstract class MediaSortFilterController<SortType : SortOption, ParamsType : Med
                 }
                 .catch { /* TODO: Error message */ }
                 .flowOn(CustomDispatchers.IO)
-                .collectLatest {
-                    genreSection.filterOptions = it
-                }
+                .collectLatest(genreSection::setDefaultValues)
         }
 
         viewModel.viewModelScope.launch(CustomDispatchers.Main) {
@@ -315,7 +325,9 @@ abstract class MediaSortFilterController<SortType : SortOption, ParamsType : Med
         val onList: Boolean?,
         val formats: List<FilterEntry<MediaFormat>>,
         val averageScoreRange: RangeData,
-        val episodesRange: RangeData,
+        val episodesRange: RangeData?,
+        val volumesRange: RangeData?,
+        val chaptersRange: RangeData?,
         val showAdult: Boolean,
         val showIgnored: Boolean,
         val airingDate: AiringDate,

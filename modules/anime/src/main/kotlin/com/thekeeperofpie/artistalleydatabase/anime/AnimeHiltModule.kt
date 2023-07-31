@@ -8,6 +8,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityStatusContr
 import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoritesController
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaTagDialogController
 import com.thekeeperofpie.artistalleydatabase.anime.media.UserMediaListController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaTagsController
 import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsController
@@ -81,4 +82,9 @@ object AnimeHiltModule {
     @Singleton
     @Provides
     fun provideActivityReplyStatusController() = ActivityReplyStatusController()
+
+    @Singleton
+    @Provides
+    fun provideMediaTagDialogController(mediaTagsController: MediaTagsController) =
+        MediaTagDialogController(mediaTagsController)
 }

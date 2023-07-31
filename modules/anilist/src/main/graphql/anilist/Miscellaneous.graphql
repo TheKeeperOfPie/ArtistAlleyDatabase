@@ -13,6 +13,7 @@ query MediaTags {
 fragment GeneralMediaTag on MediaTag {
     id
     name
+    category
     isAdult
     isGeneralSpoiler
 }

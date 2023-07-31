@@ -97,9 +97,16 @@ class AnimeSearchMediaPagingSource(
                 ?.toApiFuzzyDateInt(),
             averageScoreGreater = filterParams.averageScoreRange.apiStart,
             averageScoreLesser = filterParams.averageScoreRange.apiEnd,
-            // Episode greater is not inclusive, offset by -1 to ensure correct results
-            episodesGreater = filterParams.episodesRange.apiStart?.let { it.coerceAtLeast(1) - 1 },
-            episodesLesser = filterParams.episodesRange.apiEnd,
+            // Greater is not inclusive, offset by -1 to ensure correct results
+            episodesGreater = filterParams.episodesRange?.apiStart
+                ?.let { it.coerceAtLeast(1) - 1 },
+            episodesLesser = filterParams.episodesRange?.apiEnd,
+            volumesGreater = filterParams.volumesRange?.apiStart
+                ?.let { it.coerceAtLeast(1) - 1 },
+            volumesLesser = filterParams.volumesRange?.apiEnd,
+            chaptersGreater = filterParams.chaptersRange?.apiStart
+                ?.let { it.coerceAtLeast(1) - 1 },
+            chaptersLesser = filterParams.chaptersRange?.apiEnd,
             sourcesIn = filterParams.sources
                 .filter { it.state == FilterIncludeExcludeState.INCLUDE }
                 .map { it.value },
@@ -134,8 +141,9 @@ class AnimeSearchMediaPagingSource(
         val filterParams: MediaSortFilterController.FilterParams<MediaSortOption>,
         val seasonYearOverride: Pair<MediaSeason, Int>? = null,
     ) {
-        fun sortApiValue() = filterParams.sort.filter { it.state == FilterIncludeExcludeState.INCLUDE }
-            .flatMap { it.value.toApiValue(filterParams.sortAscending) }
-            .ifEmpty { listOf(MediaSort.SEARCH_MATCH) }
+        fun sortApiValue() =
+            filterParams.sort.filter { it.state == FilterIncludeExcludeState.INCLUDE }
+                .flatMap { it.value.toApiValue(filterParams.sortAscending) }
+                .ifEmpty { listOf(MediaSort.SEARCH_MATCH) }
     }
 }

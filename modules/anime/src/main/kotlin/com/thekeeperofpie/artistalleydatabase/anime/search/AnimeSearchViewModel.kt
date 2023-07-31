@@ -37,7 +37,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeSortFilter
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MangaSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaTagsController
-import com.thekeeperofpie.artistalleydatabase.anime.media.filter.TagSection
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffListRow
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.studio.StudioListRow
@@ -77,7 +76,6 @@ class AnimeSearchViewModel @Inject constructor(
     val viewer = aniListApi.authedUser
     var query by mutableStateOf("")
     var content = MutableStateFlow(PagingData.empty<AnimeSearchEntry>())
-    var tagShown by mutableStateOf<TagSection.Tag?>(null)
     val colorMap = mutableStateMapOf<String, Pair<Color, Color>>()
 
     private var initialized = false
@@ -159,13 +157,15 @@ class AnimeSearchViewModel @Inject constructor(
                     ignoreList = ignoreList,
                     settings = settings,
                     media = { it.media },
-                    copy = { mediaListStatus, progress, progressVolumes, ignored ->
+                    copy = { mediaListStatus, progress, progressVolumes, ignored, showLessImportantTags, showSpoilerTags ->
                         AnimeSearchEntry.Media(
                             media = media,
                             mediaListStatus = mediaListStatus,
                             progress = progress,
                             progressVolumes = progressVolumes,
                             ignored = ignored,
+                            showLessImportantTags = showLessImportantTags,
+                            showSpoilerTags = showSpoilerTags,
                         )
                     },
                 )
@@ -192,13 +192,15 @@ class AnimeSearchViewModel @Inject constructor(
                     ignoreList = ignoreList,
                     settings = settings,
                     media = { it.media },
-                    copy = { mediaListStatus, progress, progressVolumes, ignored ->
+                    copy = { mediaListStatus, progress, progressVolumes, ignored, showLessImportantTags, showSpoilerTags ->
                         AnimeSearchEntry.Media(
                             media = media,
                             mediaListStatus = mediaListStatus,
                             progress = progress,
                             progressVolumes = progressVolumes,
                             ignored = ignored,
+                            showLessImportantTags = showLessImportantTags,
+                            showSpoilerTags = showSpoilerTags,
                         )
                     },
                 )
@@ -467,7 +469,6 @@ class AnimeSearchViewModel @Inject constructor(
                 genre = genre,
                 defaultSort = defaultMediaSort,
             ),
-            tagLongClickListener = ::onTagLongClick,
         )
         mangaSortFilterController.initialize(
             viewModel = this,
@@ -477,18 +478,10 @@ class AnimeSearchViewModel @Inject constructor(
                 genre = genre,
                 defaultSort = defaultMediaSort,
             ),
-            tagLongClickListener = ::onTagLongClick,
         )
     }
 
     fun onRefresh() = refreshUptimeMillis.update { SystemClock.uptimeMillis() }
-
-    fun onTagLongClick(tagId: String) {
-        tagShown = mediaTagsController.tags.value.values
-            .asSequence()
-            .mapNotNull { it.findTag(tagId) }
-            .firstOrNull()
-    }
 
     enum class SearchType(@StringRes val textRes: Int) {
         ANIME(R.string.anime_search_type_anime),

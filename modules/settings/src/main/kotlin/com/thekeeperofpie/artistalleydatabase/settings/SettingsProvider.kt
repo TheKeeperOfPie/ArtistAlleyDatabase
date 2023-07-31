@@ -69,6 +69,8 @@ class SettingsProvider(
     override val networkLoggingLevel = MutableStateFlow(
         deserialize("networkLoggingLevel") ?: NetworkSettings.NetworkLoggingLevel.NONE
     )
+    override val enableNetworkCaching =
+        MutableStateFlow(deserialize("enableNetworkCaching") ?: false)
     override var savedAnimeFilters = MutableStateFlow(deserializeAnimeFilters())
 
     override var showAdult = ignoreOnRelease("showAdult")
@@ -79,6 +81,13 @@ class SettingsProvider(
     override var showIgnored = MutableStateFlow(deserialize("showIgnored") ?: true)
     override var ignoredAniListMediaIds =
         MutableStateFlow(deserialize("ignoredAniListMediaIds") ?: emptySet<Int>())
+
+    override var showLessImportantTags =
+        MutableStateFlow(deserialize("showLessImportantTags") ?: false)
+
+    override var showSpoilerTags =
+        MutableStateFlow(deserialize("showSpoilerTags") ?: false)
+
     override val animeNewsNetworkRegion =
         MutableStateFlow(deserialize("animeNewsNetworkRegion") ?: AnimeNewsNetworkRegion.USA_CANADA)
 
@@ -172,12 +181,15 @@ class SettingsProvider(
             artEntryTemplate = artEntryTemplate.value,
             cropDocumentUri = cropDocumentUri.value,
             networkLoggingLevel = networkLoggingLevel.value,
+            enableNetworkCaching = enableNetworkCaching.value,
             searchQuery = searchQuery.value,
             collapseAnimeFiltersOnClose = collapseAnimeFiltersOnClose.value,
             savedAnimeFilters = savedAnimeFilters.value,
             showAdult = showAdult.value,
             showIgnored = showIgnored.value,
             ignoredAniListMediaIds = ignoredAniListMediaIds.value,
+            showLessImportantTags = showLessImportantTags.value,
+            showSpoilerTags = showSpoilerTags.value,
             animeNewsNetworkRegion = animeNewsNetworkRegion.value,
             animeNewsNetworkCategoriesIncluded = animeNewsNetworkCategoriesIncluded.value,
             animeNewsNetworkCategoriesExcluded = animeNewsNetworkCategoriesExcluded.value,
@@ -195,6 +207,7 @@ class SettingsProvider(
         subscribeProperty(scope, ::artEntryTemplate)
         subscribeProperty(scope, ::cropDocumentUri)
         subscribeProperty(scope, ::networkLoggingLevel)
+        subscribeProperty(scope, ::enableNetworkCaching)
         subscribeProperty(scope, ::searchQuery)
         subscribeProperty(scope, ::collapseAnimeFiltersOnClose)
         subscribeProperty(scope, ::showAdult)
@@ -209,6 +222,8 @@ class SettingsProvider(
         subscribeProperty(scope, ::adsEnabled)
         subscribeProperty(scope, ::subscribed)
         subscribeProperty(scope, ::appTheme)
+        subscribeProperty(scope, ::showLessImportantTags)
+        subscribeProperty(scope, ::showSpoilerTags)
 
         scope.launch(CustomDispatchers.IO) {
             ignoredAniListMediaIds.drop(1).collectLatest {
@@ -273,12 +288,15 @@ class SettingsProvider(
         artEntryTemplate.emit(data.artEntryTemplate)
         cropDocumentUri.emit(data.cropDocumentUri)
         networkLoggingLevel.emit(data.networkLoggingLevel)
+        enableNetworkCaching.emit(data.enableNetworkCaching)
         searchQuery.emit(data.searchQuery)
         savedAnimeFilters.emit(data.savedAnimeFilters)
         collapseAnimeFiltersOnClose.emit(data.collapseAnimeFiltersOnClose)
         showAdult.emit(data.showAdult)
         showIgnored.emit(data.showIgnored)
         ignoredAniListMediaIds.emit(data.ignoredAniListMediaIds)
+        showLessImportantTags.emit(data.showLessImportantTags)
+        showSpoilerTags.emit(data.showSpoilerTags)
         animeNewsNetworkRegion.emit(data.animeNewsNetworkRegion)
         animeNewsNetworkCategoriesIncluded.emit(data.animeNewsNetworkCategoriesIncluded)
         animeNewsNetworkCategoriesExcluded.emit(data.animeNewsNetworkCategoriesExcluded)
@@ -320,11 +338,12 @@ class SettingsProvider(
             .putString(name, stringValue)
     }
 
-    private fun ignoreOnRelease(booleanPropertyName: String) = if (featureOverrideProvider.isReleaseBuild) {
-        IgnoringMutableStateFlow()
-    } else {
-        MutableStateFlow(deserialize(booleanPropertyName) ?: false)
-    }
+    private fun ignoreOnRelease(booleanPropertyName: String) =
+        if (featureOverrideProvider.isReleaseBuild) {
+            IgnoringMutableStateFlow()
+        } else {
+            MutableStateFlow(deserialize(booleanPropertyName) ?: false)
+        }
 
     private class IgnoringMutableStateFlow : MutableStateFlow<Boolean> {
         private val flow = MutableStateFlow(false)

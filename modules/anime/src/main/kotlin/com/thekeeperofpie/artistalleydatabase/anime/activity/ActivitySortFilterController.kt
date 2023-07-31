@@ -58,7 +58,7 @@ class ActivitySortFilterController(
 
     private val hasRepliesSection = SortFilterSection.Switch(
         titleRes = R.string.anime_activity_filter_has_replies_label,
-        enabled = false,
+        defaultEnabled = false,
     )
 
     var date by mutableStateOf(AiringDate.Advanced())
@@ -66,6 +66,11 @@ class ActivitySortFilterController(
     private val dateSection = object : SortFilterSection.Custom("date") {
 
         override fun showingPreview() = date.summaryText() != null
+
+        override fun clear() {
+            date = AiringDate.Advanced()
+            dateShown = null
+        }
 
         @Composable
         override fun Content(state: ExpandedState, showDivider: Boolean) {

@@ -85,13 +85,15 @@ class StudioMediasViewModel @Inject constructor(
             ignoreList = ignoreList,
             settings = settings,
             media = { it.media },
-            copy = { mediaListStatus, progress, progressVolumes, ignored ->
+            copy = { mediaListStatus, progress, progressVolumes, ignored, showLessImportantTags, showSpoilerTags ->
                 AnimeMediaListRow.Entry(
                     media = this.media,
                     mediaListStatus = mediaListStatus,
                     progress = progress,
                     progressVolumes = progressVolumes,
                     ignored = ignored,
+                    showLessImportantTags = showLessImportantTags,
+                    showSpoilerTags = showSpoilerTags,
                 )
             },
         )

@@ -20,11 +20,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
+import com.thekeeperofpie.artistalleydatabase.android_utils.AppMetadataProvider
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterEntryDao
@@ -61,6 +63,7 @@ class SettingsViewModel @Inject constructor(
     private val aniListOAuthStore: AniListOAuthStore,
     private val monetizationController: MonetizationController,
     featureOverrideProvider: FeatureOverrideProvider,
+    appMetadataProvider: AppMetadataProvider,
 ) : ViewModel() {
 
     companion object {
@@ -86,17 +89,33 @@ class SettingsViewModel @Inject constructor(
         icon = Icons.Filled.Info,
         labelTextRes = R.string.settings_subsection_about_label,
         children = listOf(
+            SettingsSection.TextByString(
+                id = R.string.settings_subsection_about_build_title.toString(),
+                title = { stringResource(R.string.settings_subsection_about_build_title) },
+                description = {
+                    stringResource(
+                        R.string.settings_subsection_about_build_description,
+                        appMetadataProvider.versionName,
+                        appMetadataProvider.versionCode,
+                    )
+                },
+            ),
             SettingsSection.Text(
                 titleTextRes = R.string.settings_subsection_about_author_title,
                 descriptionTextRes = R.string.settings_subsection_about_author_description,
             ),
-            SettingsSection.Button(
-                labelTextRes = R.string.settings_subsection_about_discord_label,
-                buttonTextRes = R.string.settings_open,
-                onClick = {
-                    // TODO: Create and link a community server
+            object : SettingsSection.Custom("openDiscord") {
+                @Composable
+                override fun Content(modifier: Modifier) {
+                    val uriHandler = LocalUriHandler.current
+                    ButtonRow(
+                        labelTextRes = R.string.settings_subsection_about_discord_label,
+                        buttonTextRes = R.string.settings_open,
+                        onClick = { uriHandler.openUri(BuildConfig.discordServerInviteLink) }
+                    )
                 }
-            ),
+
+            },
             SettingsSection.Placeholder(id = "showLicenses"),
         )
     )
@@ -124,6 +143,10 @@ class SettingsViewModel @Inject constructor(
                 labelTextRes = R.string.settings_clear_aniList_oAuth,
                 buttonTextRes = R.string.settings_clear,
                 onClick = ::onClickClearAniListOAuth,
+            ),
+            SettingsSection.Switch(
+                labelTextRes = R.string.settings_enable_network_caching,
+                property = settings.enableNetworkCaching,
             ),
             SettingsSection.Switch(
                 labelTextRes = R.string.settings_unlock_all_features,

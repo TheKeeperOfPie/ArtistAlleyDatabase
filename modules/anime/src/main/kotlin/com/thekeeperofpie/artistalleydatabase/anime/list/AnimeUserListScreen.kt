@@ -117,6 +117,7 @@ object AnimeUserListScreen {
                                 withDismissAction = true,
                                 duration = SnackbarDuration.Long
                             )
+                            viewModel.content = viewModel.content.copy(error = null)
                         }
                     }
                 }
@@ -143,8 +144,6 @@ object AnimeUserListScreen {
                 AnimeMediaListScreen(
                     refreshing = content.loading,
                     onRefresh = viewModel::onRefresh,
-                    tagShown = viewModel::tagShown,
-                    onTagDismiss = { viewModel.tagShown = null },
                     pullRefreshTopPadding = { topBarPadding },
                     modifier = Modifier.nestedScroll(
                         NestedScrollSplitter(
@@ -207,7 +206,6 @@ object AnimeUserListScreen {
                                                             editViewModel.initialize(it.media)
                                                         },
                                                         onLongClick = viewModel::onMediaLongClick,
-                                                        onTagLongClick = viewModel::onTagLongClick,
                                                         onLongPressImage = onLongPressImage,
                                                         colorCalculationState = colorCalculationState,
                                                         navigationCallback = navigationCallback,

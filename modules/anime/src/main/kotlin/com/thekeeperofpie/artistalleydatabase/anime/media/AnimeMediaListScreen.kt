@@ -52,8 +52,6 @@ object AnimeMediaListScreen {
         refreshing: Boolean,
         onRefresh: () -> Unit,
         modifier: Modifier = Modifier,
-        tagShown: () -> TagSection.Tag? = { null },
-        onTagDismiss: () -> Unit = {},
         pullRefreshTopPadding: @Composable () -> Dp = { 0.dp },
         listContent: @Composable (
             onLongPressImage: (AnimeMediaListRow.Entry<MediaType>) -> Unit
@@ -82,10 +80,6 @@ object AnimeMediaListScreen {
 
             entryToPreview?.let {
                 EntryImagePreview(it) { entryToPreview = null }
-            }
-
-            tagShown()?.let {
-                TagPreview(it, onTagDismiss)
             }
         }
     }
@@ -163,7 +157,7 @@ object AnimeMediaListScreen {
     }
 
     @Composable
-    private fun TagPreview(
+    fun TagPreview(
         tag: TagSection.Tag,
         onDismiss: () -> Unit,
     ) {
@@ -171,9 +165,18 @@ object AnimeMediaListScreen {
             onDismissRequest = onDismiss,
             title = { Text(tag.name) },
             text = {
-                Text(
-                    tag.description ?: stringResource(R.string.anime_media_tag_no_description_error)
-                )
+                Column {
+                    if (tag.category != null) {
+                        Text(
+                            tag.category,
+                            style = MaterialTheme.typography.labelSmall,
+                            modifier = Modifier.padding(bottom = 10.dp)
+                        )
+                    }
+                    Text(
+                        tag.description ?: stringResource(R.string.anime_media_tag_no_description_error)
+                    )
+                }
             },
             confirmButton = {
                 TextButton(onClick = onDismiss) {

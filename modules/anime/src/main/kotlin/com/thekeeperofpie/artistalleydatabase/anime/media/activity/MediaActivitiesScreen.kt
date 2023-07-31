@@ -55,6 +55,7 @@ object MediaActivitiesScreen {
                     screenKey = SCREEN_KEY,
                     upIconOption = upIconOption,
                     mediaId = viewModel.headerId,
+                    mediaType = viewModel.entry?.data?.media?.type,
                     titles = entry?.titlesUnique,
                     averageScore = media?.averageScore,
                     popularity = media?.popularity,

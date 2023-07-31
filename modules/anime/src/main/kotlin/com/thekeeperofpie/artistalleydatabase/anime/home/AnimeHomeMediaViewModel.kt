@@ -11,6 +11,7 @@ import com.anilist.fragment.MediaNavigationData
 import com.anilist.fragment.MediaPreviewWithDescription
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
+import com.hoc081098.flowext.combine
 import com.hoc081098.flowext.flowFromSuspend
 import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.android_utils.flowForRefreshableContent
@@ -29,7 +30,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
@@ -103,7 +103,9 @@ abstract class AnimeHomeMediaViewModel(
                         ignoreList.updates,
                         settings.showAdult,
                         settings.showIgnored,
-                    ) { mediaStatusUpdates, ignoredIds, showAdult, showIgnored ->
+                        settings.showLessImportantTags,
+                        settings.showSpoilerTags,
+                    ) { mediaStatusUpdates, ignoredIds, showAdult, showIgnored, showLessImportantTags, showSpoilerTags ->
                         current.copy(
                             result = current.result?.mapNotNull {
                                 applyMediaFiltering(
@@ -111,16 +113,20 @@ abstract class AnimeHomeMediaViewModel(
                                     ignoredIds = ignoredIds,
                                     showAdult = showAdult,
                                     showIgnored = showIgnored,
+                                    showLessImportantTags = showLessImportantTags,
+                                    showSpoilerTags = showSpoilerTags,
                                     entry = it,
                                     transform = { it },
                                     media = it.media,
-                                    copy = { mediaListStatus, progress, progressVolumes, ignored ->
+                                    copy = { mediaListStatus, progress, progressVolumes, ignored, showLessImportantTags, showSpoilerTags ->
                                         UserMediaListController.MediaEntry(
                                             media = media,
                                             mediaListStatus = mediaListStatus,
                                             progress = progress,
                                             progressVolumes = progressVolumes,
                                             ignored = ignored,
+                                            showLessImportantTags = showLessImportantTags,
+                                            showSpoilerTags = showSpoilerTags,
                                         )
                                     }
                                 )
@@ -143,7 +149,9 @@ abstract class AnimeHomeMediaViewModel(
                         ignoreList.updates,
                         settings.showAdult,
                         settings.showIgnored,
-                    ) { mediaStatusUpdates, ignoredIds, showAdult, showIgnored ->
+                        settings.showLessImportantTags,
+                        settings.showSpoilerTags,
+                    ) { mediaStatusUpdates, ignoredIds, showAdult, showIgnored, showLessImportantTags, showSpoilerTags ->
                         mediaResult.transformResult { rows ->
                             AnimeHomeDataEntry(
                                 lists = rows.map {
@@ -159,16 +167,20 @@ abstract class AnimeHomeMediaViewModel(
                                                     ignoredIds = ignoredIds,
                                                     showAdult = showAdult,
                                                     showIgnored = showIgnored,
+                                                    showLessImportantTags = showLessImportantTags,
+                                                    showSpoilerTags = showSpoilerTags,
                                                     entry = it,
                                                     transform = { it },
                                                     media = it.media,
-                                                    copy = { mediaListStatus, progress, progressVolumes, ignored ->
+                                                    copy = { mediaListStatus, progress, progressVolumes, ignored, showLessImportantTags, showSpoilerTags ->
                                                         AnimeHomeDataEntry.MediaEntry(
                                                             media = media,
                                                             mediaListStatus = mediaListStatus,
                                                             progress = progress,
                                                             progressVolumes = progressVolumes,
                                                             ignored = ignored,
+                                                            showLessImportantTags = showLessImportantTags,
+                                                            showSpoilerTags = showSpoilerTags,
                                                         )
                                                     }
                                                 )

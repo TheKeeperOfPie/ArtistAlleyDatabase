@@ -65,7 +65,6 @@ object AnimeMediaCompactListRow {
         entry: Entry?,
         modifier: Modifier = Modifier,
         onLongClick: (Entry) -> Unit,
-        onTagLongClick: (tagId: String) -> Unit,
         onLongPressImage: (Entry) -> Unit,
         colorCalculationState: ColorCalculationState,
         navigationCallback: AnimeNavigator.NavigationCallback,
@@ -136,7 +135,6 @@ object AnimeMediaCompactListRow {
                                 )
                             }
                         },
-                        onTagLongClick = onTagLongClick,
                         tagContainerColor = containerColor,
                         tagTextColor = textColor,
                         tagTextStyle = MaterialTheme.typography.bodySmall,
@@ -223,10 +221,21 @@ object AnimeMediaCompactListRow {
     class Entry(
         val media: MediaCompactWithTags,
         ignored: Boolean,
+        showLessImportantTags: Boolean,
+        showSpoilerTags: Boolean,
     ) {
-        val tags = media.tags?.filterNotNull()
+        val tags = media.tags?.asSequence()
+            ?.filterNotNull()
+            ?.filter {
+                showLessImportantTags
+                        || it.category !in MediaUtils.LESS_IMPORTANT_MEDIA_TAG_CATEGORIES
+            }
+            ?.filter {
+                showSpoilerTags || (it.isGeneralSpoiler != true && it.isMediaSpoiler != true)
+            }
             ?.map { AnimeMediaTagEntry(it, isMediaSpoiler = it.isMediaSpoiler, rank = it.rank) }
             ?.distinctBy { it.id }
+            ?.toList()
             .orEmpty()
         val ignored by mutableStateOf(ignored)
     }

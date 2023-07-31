@@ -31,7 +31,7 @@ class StaffSortFilterController(
 
     private val birthdaySection = SortFilterSection.Switch(
         titleRes = R.string.anime_staff_filter_birthday_label,
-        enabled = false,
+        defaultEnabled = false,
     )
 
     override var sections = listOf(

@@ -72,6 +72,10 @@ class AuthedAniListApiWrapper(
         averageScoreLesser: Int?,
         episodesGreater: Int?,
         episodesLesser: Int?,
+        volumesGreater: Int?,
+        volumesLesser: Int?,
+        chaptersGreater: Int?,
+        chaptersLesser: Int?,
         sourcesIn: List<MediaSource>?,
         minimumTagRank: Int?,
     ) = super.searchMedia(
@@ -98,6 +102,10 @@ class AuthedAniListApiWrapper(
         averageScoreLesser,
         episodesGreater,
         episodesLesser,
+        volumesGreater,
+        volumesLesser,
+        chaptersGreater,
+        chaptersLesser,
         sourcesIn,
         minimumTagRank
     ).let {

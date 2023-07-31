@@ -5,10 +5,7 @@ package com.thekeeperofpie.artistalleydatabase.anime.seasonal
 import android.os.SystemClock
 import androidx.collection.LruCache
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -35,7 +32,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaStatusChange
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaTagsController
-import com.thekeeperofpie.artistalleydatabase.anime.media.filter.TagSection
 import com.thekeeperofpie.artistalleydatabase.anime.search.AnimeSearchMediaPagingSource
 import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIntIds
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -72,7 +68,6 @@ class SeasonalViewModel @Inject constructor(
     private val currentSeasonYear = AniListUtils.getCurrentSeasonYear()
 
     var initialPage = 0
-    var tagShown by mutableStateOf<TagSection.Tag?>(null)
     val colorMap = mutableStateMapOf<String, Pair<Color, Color>>()
 
     val sortFilterController = AnimeSortFilterController(
@@ -102,13 +97,6 @@ class SeasonalViewModel @Inject constructor(
         )
     }
 
-    fun onTagLongClick(tagId: String) {
-        tagShown = mediaTagsController.tags.value.values
-            .asSequence()
-            .mapNotNull { it.findTag(tagId) }
-            .firstOrNull()
-    }
-
     fun onRefresh() = refreshUptimeMillis.update { SystemClock.uptimeMillis() }
 
     @Composable
@@ -135,12 +123,16 @@ class SeasonalViewModel @Inject constructor(
         progress: Int? = null,
         progressVolumes: Int? = null,
         ignored: Boolean = false,
+        showLessImportantTags: Boolean = false,
+        showSpoilerTags: Boolean = false,
     ) : AnimeMediaListRow.Entry<MediaAdvancedSearchQuery.Data.Page.Medium>(
         media = media,
         mediaListStatus = mediaListStatus,
         progress = progress,
         progressVolumes = progressVolumes,
         ignored = ignored,
+        showLessImportantTags = showLessImportantTags,
+        showSpoilerTags = showSpoilerTags,
     )
 
     enum class Type {
@@ -181,13 +173,15 @@ class SeasonalViewModel @Inject constructor(
                         ignoreList = ignoreList,
                         settings = settings,
                         media = { it.media },
-                        copy = { mediaListStatus, progress, progressVolumes, ignored ->
+                        copy = { mediaListStatus, progress, progressVolumes, ignored, showLessImportantTags, showSpoilerTags ->
                             MediaEntry(
                                 media = media,
                                 mediaListStatus = mediaListStatus,
                                 progress = progress,
                                 progressVolumes = progressVolumes,
                                 ignored = ignored,
+                                showLessImportantTags = showLessImportantTags,
+                                showSpoilerTags = showSpoilerTags,
                             )
                         },
                     )

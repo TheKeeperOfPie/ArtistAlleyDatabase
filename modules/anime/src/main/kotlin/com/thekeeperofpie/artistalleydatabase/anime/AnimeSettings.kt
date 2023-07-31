@@ -12,6 +12,8 @@ interface AnimeSettings {
     val showAdult: MutableStateFlow<Boolean>
     val collapseAnimeFiltersOnClose: MutableStateFlow<Boolean>
     val showIgnored: MutableStateFlow<Boolean>
+    val showLessImportantTags: MutableStateFlow<Boolean>
+    val showSpoilerTags: MutableStateFlow<Boolean>
 
     // TODO: Better database to store ignored IDs
     val ignoredAniListMediaIds: MutableStateFlow<Set<Int>>

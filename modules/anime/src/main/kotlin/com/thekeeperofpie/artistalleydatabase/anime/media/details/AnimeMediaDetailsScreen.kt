@@ -217,7 +217,6 @@ object AnimeMediaDetailsScreen {
         onGenreLongClick: (String) -> Unit = {},
         onCharacterLongClick: (String) -> Unit = {},
         onStaffLongClick: (String) -> Unit = {},
-        onTagLongClick: (String) -> Unit = {},
         navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
         val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
@@ -279,6 +278,7 @@ object AnimeMediaDetailsScreen {
                             screenKey = viewModel.screenKey,
                             upIconOption = upIconOption,
                             mediaId = viewModel.mediaId,
+                            mediaType = viewModel.entry.result?.media?.type,
                             titles = entry.result?.titlesUnique,
                             averageScore = entry.result?.media?.averageScore,
                             popularity = entry.result?.media?.popularity,
@@ -467,7 +467,6 @@ object AnimeMediaDetailsScreen {
                                     onGenreLongClick = onGenreLongClick,
                                     onCharacterLongClick = onCharacterLongClick,
                                     onStaffLongClick = onStaffLongClick,
-                                    onTagLongClick = onTagLongClick,
                                     navigationCallback = navigationCallback,
                                     expandedState = expandedState,
                                     colorCalculationState = colorCalculationState,
@@ -497,7 +496,6 @@ object AnimeMediaDetailsScreen {
         onGenreLongClick: (String) -> Unit,
         onCharacterLongClick: (String) -> Unit,
         onStaffLongClick: (String) -> Unit,
-        onTagLongClick: (String) -> Unit,
         navigationCallback: AnimeNavigator.NavigationCallback,
         expandedState: ExpandedState,
         colorCalculationState: ColorCalculationState,
@@ -544,7 +542,6 @@ object AnimeMediaDetailsScreen {
             navigationCallback = navigationCallback,
             onClickListEdit = onClickListEdit,
             onLongClick = viewModel::onMediaLongClick,
-            onTagLongClick = onTagLongClick,
         )
 
         infoSection(entry)
@@ -576,7 +573,6 @@ object AnimeMediaDetailsScreen {
         tagsSection(
             entry = entry,
             onTagClick = navigationCallback::onTagClick,
-            onTagLongClick = onTagLongClick,
             colorCalculationState = colorCalculationState,
         )
 
@@ -610,7 +606,6 @@ object AnimeMediaDetailsScreen {
             navigationCallback = navigationCallback,
             onClickListEdit = onClickListEdit,
             onLongClick = viewModel::onMediaLongClick,
-            onTagLongClick = onTagLongClick,
         )
 
         activitiesSection(
@@ -689,7 +684,6 @@ object AnimeMediaDetailsScreen {
         onRelationsExpandedChange: (Boolean) -> Unit,
         onClickListEdit: (AnimeMediaListRow.Entry<*>) -> Unit,
         onLongClick: (AnimeMediaListRow.Entry<*>) -> Unit,
-        onTagLongClick: (String) -> Unit,
         colorCalculationState: ColorCalculationState,
         navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
@@ -707,7 +701,6 @@ object AnimeMediaDetailsScreen {
             navigationCallback = navigationCallback,
             onClickListEdit = onClickListEdit,
             onLongClick = onLongClick,
-            onTagLongClick = onTagLongClick,
             label = { RelationLabel(it.relation) },
         )
     }
@@ -1319,7 +1312,6 @@ object AnimeMediaDetailsScreen {
         navigationCallback: AnimeNavigator.NavigationCallback,
         onClickListEdit: (AnimeMediaListRow.Entry<*>) -> Unit,
         onLongClick: (AnimeMediaListRow.Entry<*>) -> Unit,
-        onTagLongClick: (String) -> Unit,
     ) {
         mediaListSection(
             screenKey = screenKey,
@@ -1335,7 +1327,6 @@ object AnimeMediaDetailsScreen {
             navigationCallback = navigationCallback,
             onClickListEdit = onClickListEdit,
             onLongClick = onLongClick,
-            onTagLongClick = onTagLongClick,
             onClickViewAll = {
                 entry.let {
                     navigationCallback.onMediaRecommendationsClick(
@@ -1474,7 +1465,6 @@ object AnimeMediaDetailsScreen {
     private fun LazyListScope.tagsSection(
         entry: Entry,
         onTagClick: (MediaType, tagId: String, tagName: String) -> Unit,
-        onTagLongClick: (tagId: String) -> Unit = {},
         colorCalculationState: ColorCalculationState,
     ) {
         if (entry.tags.isNotEmpty()) {
@@ -1511,7 +1501,6 @@ object AnimeMediaDetailsScreen {
                             onTagClick = { id, name ->
                                 onTagClick(entry.media.type ?: MediaType.ANIME, id, name)
                             },
-                            onTagLongClick = onTagLongClick,
                             containerColor = containerColor,
                             textColor = textColor,
                         )

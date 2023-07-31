@@ -37,6 +37,7 @@ import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalTextStyle
@@ -47,6 +48,7 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -65,9 +67,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
 import com.anilist.type.MediaSeason
+import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.filter.SortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.filter.SortFilterSection
+import com.thekeeperofpie.artistalleydatabase.anime.media.LocalMediaTagDialogController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.ui.StartEndDateRow
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
@@ -94,16 +98,24 @@ fun SortFilterOptionsPanel(
     sectionState: () -> SortFilterSection.ExpandedState,
     modifier: Modifier = Modifier,
 ) {
-    Divider()
-    Column(
-        modifier
-            .fillMaxWidth()
-            .verticalScroll(rememberScrollState())
-            .animateContentSize()
-    ) {
-        val state = sectionState()
-        sections().forEach {
-            it.Content(state, showDivider = true)
+    HorizontalDivider()
+    Column(modifier = modifier) {
+        Column(
+            Modifier
+                .weight(1f, fill = false)
+                .verticalScroll(rememberScrollState())
+                .animateContentSize()
+        ) {
+            val state = sectionState()
+            sections().forEach {
+                it.Content(state, showDivider = true)
+            }
+        }
+        HorizontalDivider()
+        Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
+            TextButton(onClick = { sections().forEach(SortFilterSection::clear) }) {
+                Text(text = stringResource(UtilsStringR.clear))
+            }
         }
     }
 }
@@ -518,7 +530,6 @@ fun TagSection(
     onExpandedChange: (Boolean) -> Unit,
     tags: @Composable () -> Map<String, TagSection>,
     onTagClick: (String) -> Unit,
-    onTagLongClick: (String) -> Unit,
     tagRank: @Composable () -> String,
     onTagRankChange: (String) -> Unit,
     query: String,
@@ -575,9 +586,7 @@ fun TagSection(
                 TagChips(
                     tags = children,
                     level = 0,
-                    parentExpanded = expanded,
                     onTagClick = onTagClick,
-                    onTagLongClick = onTagLongClick,
                 )
             }
 
@@ -605,7 +614,6 @@ fun TagSection(
                     parentExpanded = expanded,
                     level = 0,
                     onTagClick = onTagClick,
-                    onTagLongClick = onTagLongClick,
                     query = query,
                     showDivider = expanded || index != subcategoriesToShow.size - 1,
                 )
@@ -663,7 +671,6 @@ private fun TagSubsection(
     parentExpanded: Boolean,
     level: Int,
     onTagClick: (String) -> Unit,
-    onTagLongClick: (String) -> Unit,
     query: String,
     showDivider: Boolean,
 ) {
@@ -743,10 +750,8 @@ private fun TagSubsection(
         if (tagsToShow.isNotEmpty()) {
             TagChips(
                 tagsToShow,
-                parentExpanded = expanded,
                 level,
                 onTagClick,
-                onTagLongClick
             )
         }
 
@@ -757,7 +762,6 @@ private fun TagSubsection(
                 parentExpanded = parentExpanded && expanded,
                 level + 1,
                 onTagClick,
-                onTagLongClick,
                 query = query,
                 showDivider = index != subcategoriesToShow.size - 1,
             )
@@ -772,10 +776,8 @@ private fun TagSubsection(
 @Composable
 private fun TagChips(
     tags: List<TagSection.Tag>,
-    parentExpanded: Boolean,
     level: Int,
     onTagClick: (String) -> Unit,
-    onTagLongClick: (String) -> Unit,
 ) {
     FlowRow(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -784,15 +786,15 @@ private fun TagChips(
             .padding(start = 16.dp * level + 48.dp, end = 16.dp)
             .animateContentSize(),
     ) {
+        val mediaTagDialogController = LocalMediaTagDialogController.current
         tags.forEach {
-//            if (!parentExpanded && it.state == FilterIncludeExcludeState.DEFAULT) return@forEach
             FilterChip(
                 selected = it.state != FilterIncludeExcludeState.DEFAULT,
                 onClick = { onTagClick(it.id) },
                 onLongClickLabel = stringResource(
                     R.string.anime_media_tag_long_click_content_description
                 ),
-                onLongClick = { onTagLongClick(it.id) },
+                onLongClick = { mediaTagDialogController?.onLongClickTag(it.id) },
                 enabled = it.clickable,
                 label = { AutoHeightText(it.value.name) },
                 leadingIcon = {

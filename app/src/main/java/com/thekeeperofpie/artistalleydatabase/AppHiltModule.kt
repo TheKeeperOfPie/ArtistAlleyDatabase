@@ -7,7 +7,9 @@ import android.net.Uri
 import androidx.room.Room
 import androidx.security.crypto.MasterKey
 import androidx.work.WorkManager
+import com.thekeeperofpie.anichive.BuildConfig
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
+import com.thekeeperofpie.artistalleydatabase.android_utils.AppMetadataProvider
 import com.thekeeperofpie.artistalleydatabase.android_utils.CryptoUtils
 import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
@@ -136,4 +138,12 @@ object AppHiltModule {
     fun provideMonetizationFeatureOverrideProvider(
         aniListApi: AuthedAniListApi,
     ): MonetizationOverrideProvider = AppMonetizationOverrideProvider(aniListApi)
+
+    @Singleton
+    @Provides
+    fun provideAppMetadataProvider(): AppMetadataProvider = object : AppMetadataProvider{
+        override val versionCode = BuildConfig.VERSION_CODE
+        override val versionName = BuildConfig.VERSION_NAME
+
+    }
 }

@@ -79,27 +79,71 @@ fragment MediaCompactWithTags on Media {
     popularity
 }
 
-query MediaAdvancedSearch($page: Int, $perPage: Int, $search: String, $type: MediaType!,
-    $sort: [MediaSort], $genreIn: [String], $genreNotIn: [String], $tagIn: [String],
-    $tagNotIn: [String], $statusIn: [MediaStatus], $statusNotIn: [MediaStatus],
-    $formatIn: [MediaFormat], $formatNotIn: [MediaFormat], $isAdult: Boolean, $onList: Boolean,
-    $season: MediaSeason, $seasonYear: Int, $startDateGreater: FuzzyDateInt,
-    $startDateLesser: FuzzyDateInt, $averageScoreGreater: Int, $averageScoreLesser: Int,
-    $episodesGreater: Int, $episodesLesser: Int, $sourceIn: [MediaSource], $minimumTagRank: Int) {
+query MediaAdvancedSearch(
+    $page: Int,
+    $perPage: Int,
+    $search: String,
+    $type: MediaType!,
+    $sort: [MediaSort],
+    $genreIn: [String],
+    $genreNotIn: [String],
+    $tagIn: [String],
+    $tagNotIn: [String],
+    $statusIn: [MediaStatus],
+    $statusNotIn: [MediaStatus],
+    $formatIn: [MediaFormat],
+    $formatNotIn: [MediaFormat],
+    $isAdult: Boolean,
+    $onList: Boolean,
+    $season: MediaSeason,
+    $seasonYear: Int,
+    $startDateGreater: FuzzyDateInt,
+    $startDateLesser: FuzzyDateInt,
+    $averageScoreGreater: Int,
+    $averageScoreLesser: Int,
+    $episodesGreater: Int,
+    $episodesLesser: Int,
+    $volumesGreater: Int,
+    $volumesLesser: Int,
+    $chaptersGreater: Int,
+    $chaptersLesser: Int,
+    $sourceIn: [MediaSource],
+    $minimumTagRank: Int,
+) {
     Page(page: $page, perPage: $perPage) @nonnull {
         pageInfo @nonnull {
             hasNextPage
             total
         }
-        media(search: $search, type: $type, sort: $sort, genre_in: $genreIn,
-            genre_not_in: $genreNotIn, tag_in: $tagIn, tag_not_in: $tagNotIn,
-            status_in: $statusIn, status_not_in: $statusNotIn, format_in: $formatIn,
-            format_not_in: $formatNotIn, isAdult: $isAdult, onList: $onList,
-            season: $season, seasonYear: $seasonYear, startDate_greater: $startDateGreater,
-            startDate_lesser: $startDateLesser, averageScore_greater: $averageScoreGreater,
-            averageScore_lesser: $averageScoreLesser, episodes_greater: $episodesGreater,
-            episodes_lesser: $episodesLesser, source_in: $sourceIn,
-            minimumTagRank: $minimumTagRank) @nonnull {
+        media(
+            search: $search,
+            type: $type,
+            sort: $sort,
+            genre_in: $genreIn,
+            genre_not_in: $genreNotIn,
+            tag_in: $tagIn,
+            tag_not_in: $tagNotIn,
+            status_in: $statusIn,
+            status_not_in: $statusNotIn,
+            format_in: $formatIn,
+            format_not_in: $formatNotIn,
+            isAdult: $isAdult,
+            onList: $onList,
+            season: $season,
+            seasonYear: $seasonYear,
+            startDate_greater: $startDateGreater,
+            startDate_lesser: $startDateLesser,
+            averageScore_greater: $averageScoreGreater,
+            averageScore_lesser: $averageScoreLesser,
+            episodes_greater: $episodesGreater,
+            episodes_lesser: $episodesLesser,
+            volumes_greater: $volumesGreater,
+            volumes_lesser: $volumesLesser,
+            chapters_greater: $chaptersGreater,
+            chapters_lesser: $chaptersLesser,
+            source_in: $sourceIn,
+            minimumTagRank: $minimumTagRank,
+        ) @nonnull {
             ...MediaPreview
         }
     }

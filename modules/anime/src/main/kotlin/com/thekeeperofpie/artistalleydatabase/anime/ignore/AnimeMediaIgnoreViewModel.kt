@@ -27,7 +27,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaStatusChanges
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaTagsController
-import com.thekeeperofpie.artistalleydatabase.anime.media.filter.TagSection
 import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -57,7 +56,6 @@ class AnimeMediaIgnoreViewModel @Inject constructor(
     val viewer = aniListApi.authedUser
     var query by mutableStateOf("")
     var content = MutableStateFlow(PagingData.empty<AnimeMediaListRow.Entry<Medium>>())
-    var tagShown by mutableStateOf<TagSection.Tag?>(null)
     val colorMap = mutableStateMapOf<String, Pair<Color, Color>>()
 
     private var initialized = false
@@ -100,7 +98,7 @@ class AnimeMediaIgnoreViewModel @Inject constructor(
                         AnimeMediaIgnorePagingSource(aniListApi, it)
                     }.flow
                 }
-                .map { it.map { AnimeMediaListRow.Entry(it, ignored = false) } }
+                .map { it.map { AnimeMediaListRow.Entry(it) } }
                 .cachedIn(viewModelScope)
                 .applyMediaStatusChanges(
                     statusController = statusController,
@@ -108,13 +106,15 @@ class AnimeMediaIgnoreViewModel @Inject constructor(
                     settings = settings,
                     media = { it.media },
                     forceShowIgnored = true,
-                    copy = { mediaListStatus, progress, progressVolumes, ignored ->
+                    copy = { mediaListStatus, progress, progressVolumes, ignored, showLessImportantTags, showSpoilerTags ->
                         AnimeMediaListRow.Entry(
                             media = media,
                             mediaListStatus = mediaListStatus,
                             progress = progress,
                             progressVolumes = progressVolumes,
                             ignored = ignored,
+                            showLessImportantTags = showLessImportantTags,
+                            showSpoilerTags = showSpoilerTags,
                         )
                     },
                 )
@@ -168,13 +168,6 @@ class AnimeMediaIgnoreViewModel @Inject constructor(
     }
 
     fun onRefresh() = refreshUptimeMillis.update { SystemClock.uptimeMillis() }
-
-    fun onTagLongClick(tagId: String) {
-        tagShown = mediaTagsController.tags.value.values
-            .asSequence()
-            .mapNotNull { it.findTag(tagId) }
-            .firstOrNull()
-    }
 
     fun onMediaLongClick(entry: AnimeMediaListRow.Entry<*>) =
         ignoreList.toggle(entry.media.id.toString())

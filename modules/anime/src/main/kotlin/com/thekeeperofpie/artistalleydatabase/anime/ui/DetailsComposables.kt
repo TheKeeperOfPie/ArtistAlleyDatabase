@@ -94,6 +94,7 @@ internal fun CoverAndBannerHeader(
     coverImageOnSuccess: (AsyncImagePainter.State.Success) -> Unit = {},
     menuContent: (@Composable RowScope.() -> Unit)? = null,
     fadeOutMenu: Boolean = true,
+    reserveMenuWidth: Boolean = !fadeOutMenu,
     onCoverImageSharedElementFractionChanged: ((Float) -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
@@ -187,10 +188,9 @@ internal fun CoverAndBannerHeader(
                     .padding(
                         start = 16.dp,
                         top = lerp(100.dp, 10.dp, progress),
-                        bottom = 10.dp,
                         // Reserve some space if the menu should be retained,
                         // currently only supports 1 option (40dp)
-                        end = if (fadeOutMenu) 0.dp else lerp(0.dp, 40.dp, progress)
+                        end = if (reserveMenuWidth) lerp(0.dp, 40.dp, progress) else 0.dp
                     )
                     .height(lerp(coverSize, pinnedHeight, progress))
             ) {

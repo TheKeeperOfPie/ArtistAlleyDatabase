@@ -19,8 +19,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import com.anilist.MediaDetailsQuery
-import com.anilist.fragment.MediaPreview
 import com.anilist.fragment.GeneralMediaTag
+import com.anilist.fragment.MediaPreview
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.compose.AssistChip
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
@@ -42,13 +42,13 @@ data class AnimeMediaTagEntry(
             modifier: Modifier = Modifier,
             title: @Composable () -> String = { tag.name },
             onTagClick: (mediatagId: String, tagName: String) -> Unit = { _, _ -> },
-            onTagLongClick: (tagId: String) -> Unit = {},
             containerColor: Color,
             textColor: Color,
             textStyle: TextStyle? = null,
         ) {
             val shouldHide = tag.shouldHide
             var hidden by remember(tag.id) { mutableStateOf(shouldHide) }
+            val mediaTagDialogController = LocalMediaTagDialogController.current
             AssistChip(
                 onClick = {
                     if (!hidden) {
@@ -60,7 +60,7 @@ data class AnimeMediaTagEntry(
                 onLongClickLabel = stringResource(
                     R.string.anime_media_tag_long_click_content_description
                 ),
-                onLongClick = { onTagLongClick(tag.id) },
+                onLongClick = { mediaTagDialogController?.onLongClickTag(tag.id) },
                 colors = assistChipColors(
                     containerColor = containerColor
                         .takeOrElse { MaterialTheme.colorScheme.surfaceVariant },

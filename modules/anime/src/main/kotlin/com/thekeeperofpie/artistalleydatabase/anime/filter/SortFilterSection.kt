@@ -44,6 +44,8 @@ sealed class SortFilterSection(val id: String) {
 
     abstract fun showingPreview(): Boolean
 
+    abstract fun clear()
+
     @Composable
     abstract fun Content(state: ExpandedState, showDivider: Boolean)
 
@@ -61,6 +63,11 @@ sealed class SortFilterSection(val id: String) {
         fun changeDefaultEnabled(defaultEnabled: SortType?) {
             this.defaultEnabled = defaultEnabled
             sortOptions = SortEntry.options(enumClass, defaultEnabled)
+        }
+
+        override fun clear() {
+            sortOptions = SortEntry.options(enumClass, defaultEnabled)
+            sortAscending = false
         }
 
         @Composable
@@ -103,7 +110,7 @@ sealed class SortFilterSection(val id: String) {
         @StringRes private val titleRes: Int,
         @StringRes private val titleDropdownContentDescriptionRes: Int,
         @StringRes private val includeExcludeIconContentDescriptionRes: Int,
-        values: List<FilterType>,
+        private var values: List<FilterType>,
         private val includedSetting: MutableStateFlow<FilterType>? = null,
         private val includedSettings: MutableStateFlow<List<FilterType>>? = null,
         private val excludedSettings: MutableStateFlow<List<FilterType>>? = null,
@@ -126,8 +133,17 @@ sealed class SortFilterSection(val id: String) {
             )
         )
 
+        fun setDefaultValues(values: List<FilterEntry.FilterEntryImpl<FilterType>>) {
+            this.values = values.map { it.value }
+            filterOptions = values
+        }
+
         override fun showingPreview() =
             filterOptions.any { it.state != FilterIncludeExcludeState.DEFAULT }
+
+        override fun clear() {
+            filterOptions = FilterEntry.values(values)
+        }
 
         @Composable
         override fun Content(state: ExpandedState, showDivider: Boolean) {
@@ -203,13 +219,17 @@ sealed class SortFilterSection(val id: String) {
     class Range(
         @StringRes private val titleRes: Int,
         @StringRes private val titleDropdownContentDescriptionRes: Int,
-        data: RangeData,
+        val initialData: RangeData,
         private val unboundedMax: Boolean = false,
     ) : SortFilterSection(titleRes) {
 
-        var data by mutableStateOf(data)
+        var data by mutableStateOf(initialData)
 
         override fun showingPreview() = data.summaryText != null
+
+        override fun clear() {
+            data = initialData
+        }
 
         @Composable
         override fun Content(state: ExpandedState, showDivider: Boolean) {
@@ -233,11 +253,15 @@ sealed class SortFilterSection(val id: String) {
 
     class Switch(
         @StringRes private val titleRes: Int,
-        enabled: Boolean,
+        private val defaultEnabled: Boolean,
     ) : SortFilterSection(titleRes) {
-        var enabled by mutableStateOf(enabled)
+        var enabled by mutableStateOf(defaultEnabled)
 
         override fun showingPreview() = false
+
+        override fun clear() {
+            enabled = defaultEnabled
+        }
 
         @Composable
         override fun Content(state: ExpandedState, showDivider: Boolean) {
@@ -260,6 +284,10 @@ sealed class SortFilterSection(val id: String) {
 
         override fun showingPreview() = false
 
+        override fun clear() {
+            // This is persistent, can't be cleared
+        }
+
         @Composable
         override fun Content(state: ExpandedState, showDivider: Boolean) {
             val enabled by stateFlow.collectAsState()
@@ -281,6 +309,10 @@ sealed class SortFilterSection(val id: String) {
         var children by mutableStateOf(children)
 
         override fun showingPreview() = children.any { it.showingPreview() }
+
+        override fun clear() {
+            children.forEach(SortFilterSection::clear)
+        }
 
         @Composable
         override fun Content(state: ExpandedState, showDivider: Boolean) {
@@ -324,6 +356,10 @@ sealed class SortFilterSection(val id: String) {
     class Spacer(id: String = "spacer", val height: Dp) : SortFilterSection(id) {
 
         override fun showingPreview() = false
+
+        override fun clear() {
+            // Not applicable
+        }
 
         @Composable
         override fun Content(state: ExpandedState, showDivider: Boolean) {

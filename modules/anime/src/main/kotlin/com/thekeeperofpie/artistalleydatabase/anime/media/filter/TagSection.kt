@@ -72,6 +72,7 @@ sealed interface TagSection {
                 children[it.name] = Tag(
                     id = it.id.toString(),
                     name = it.name,
+                    category = it.category,
                     isAdult = it.isAdult,
                     description = it.description,
                     value = it,
@@ -94,6 +95,7 @@ sealed interface TagSection {
     data class Tag(
         val id: String,
         override val name: String,
+        val category: String?,
         val description: String?,
         val isAdult: Boolean?,
         override val value: MediaTagsQuery.Data.MediaTagCollection,
@@ -114,6 +116,7 @@ sealed interface TagSection {
         constructor(tag: MediaTagsQuery.Data.MediaTagCollection) : this(
             id = tag.id.toString(),
             name = tag.name,
+            category = tag.category,
             isAdult = tag.isAdult,
             description = tag.description,
             value = tag,

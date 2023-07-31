@@ -83,7 +83,9 @@ class AnimeCharacterDetailsViewModel @Inject constructor(
                         statusController.allChanges(media.map { it.media.id.toString() }.toSet()),
                         ignoreList.updates,
                         settings.showAdult,
-                    ) { statuses, ignoredIds, showAdult ->
+                        settings.showLessImportantTags,
+                        settings.showSpoilerTags,
+                    ) { statuses, ignoredIds, showAdult, showLessImportantTags, showSpoilerTags ->
                         result.transformResult { character ->
                             CharacterDetailsScreen.Entry(
                                 character.character!!,
@@ -93,16 +95,20 @@ class AnimeCharacterDetailsViewModel @Inject constructor(
                                         ignoredIds = ignoredIds,
                                         showAdult = showAdult,
                                         showIgnored = true,
+                                        showLessImportantTags = showLessImportantTags,
+                                        showSpoilerTags = showSpoilerTags,
                                         entry = it,
                                         transform = { it },
                                         media = it.media,
-                                        copy = { mediaListStatus, progress, progressVolumes, ignored ->
+                                        copy = { mediaListStatus, progress, progressVolumes, ignored, showLessImportantTags, showSpoilerTags ->
                                             AnimeMediaListRow.Entry(
                                                 media = this.media,
                                                 mediaListStatus = mediaListStatus,
                                                 progress = progress,
                                                 progressVolumes = progressVolumes,
                                                 ignored = ignored,
+                                                showLessImportantTags = showLessImportantTags,
+                                                showSpoilerTags = showSpoilerTags,
                                             )
                                         }
                                     )

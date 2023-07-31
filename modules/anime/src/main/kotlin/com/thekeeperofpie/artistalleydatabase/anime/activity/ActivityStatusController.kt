@@ -47,13 +47,15 @@ fun <ActivityEntry> applyActivityFiltering(
     ignoredIds: Set<Int>,
     showAdult: Boolean,
     showIgnored: Boolean,
+    showLessImportantTags: Boolean,
+    showSpoilerTags: Boolean,
     entry: ActivityEntry,
     activityId: String,
     activityLiked: Boolean,
     activitySubscribed: Boolean,
     media: MediaWithListStatus?,
     mediaStatusAware: MediaStatusAware?,
-    copyMedia: ActivityEntry.(status: MediaListStatus?, progress: Int?, progressVolumes: Int?, ignored: Boolean) -> ActivityEntry,
+    copyMedia: ActivityEntry.(status: MediaListStatus?, progress: Int?, progressVolumes: Int?, ignored: Boolean, showLessImportantTags: Boolean, showSpoilerTags: Boolean) -> ActivityEntry,
     copyActivity: ActivityEntry.(liked: Boolean, subscribed: Boolean) -> ActivityEntry,
 ): ActivityEntry? {
     if (!showAdult && media?.isAdult == true) return null
@@ -84,9 +86,11 @@ fun <ActivityEntry> applyActivityFiltering(
             || mediaStatusAware.ignored != ignored
             || mediaStatusAware.progress != progress
             || mediaStatusAware.progressVolumes != progressVolumes
+            || mediaStatusAware.showLessImportantTags != showLessImportantTags
+            || mediaStatusAware.showSpoilerTags != showSpoilerTags
             || activityLiked != currentlyLiked
         ) {
-            copiedEntry = entry.copyMedia(status, progress, progressVolumes, ignored)
+            copiedEntry = entry.copyMedia(status, progress, progressVolumes, ignored, showLessImportantTags, showSpoilerTags)
         }
     }
 

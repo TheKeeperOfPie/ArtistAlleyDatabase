@@ -364,7 +364,7 @@ object AnimeHomeScreen {
                             screenKey = SCREEN_KEY,
                             viewer = viewer,
                             activity = activity,
-                            media = activity.media,
+                            mediaEntry = entry.media?.rowEntry,
                             entry = entry,
                             onActivityStatusUpdate = onActivityStatusUpdate,
                             colorCalculationState = colorCalculationState,

@@ -43,7 +43,6 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.anilist.AuthedUserQuery
 import com.anilist.fragment.ListActivityWithoutMedia
-import com.anilist.fragment.MediaCompactWithTags
 import com.anilist.fragment.MessageActivityFragment
 import com.anilist.fragment.TextActivityFragment
 import com.google.accompanist.placeholder.PlaceholderHighlight
@@ -363,7 +362,7 @@ fun ListActivitySmallCard(
         viewer = viewer,
         activity = activity,
         showMedia = false,
-        media = null,
+        entry = null,
         liked = entry?.liked ?: false,
         subscribed = entry?.subscribed ?: false,
         onActivityStatusUpdate = onActivityStatusUpdate,
@@ -381,7 +380,7 @@ fun ListActivitySmallCard(
     screenKey: String,
     viewer: AuthedUserQuery.Data.Viewer?,
     activity: ListActivityWithoutMedia?,
-    media: MediaCompactWithTags?,
+    mediaEntry: AnimeMediaCompactListRow.Entry?,
     entry: ActivityStatusAware?,
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
     colorCalculationState: ColorCalculationState,
@@ -396,7 +395,7 @@ fun ListActivitySmallCard(
         viewer = viewer,
         activity = activity,
         showMedia = true,
-        media = media,
+        entry = mediaEntry,
         liked = entry?.liked ?: false,
         subscribed = entry?.subscribed ?: false,
         onActivityStatusUpdate = onActivityStatusUpdate,
@@ -415,7 +414,7 @@ private fun ListActivitySmallCard(
     viewer: AuthedUserQuery.Data.Viewer?,
     activity: ListActivityWithoutMedia?,
     showMedia: Boolean,
-    media: MediaCompactWithTags?,
+    entry: AnimeMediaCompactListRow.Entry?,
     liked: Boolean,
     subscribed: Boolean,
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
@@ -509,15 +508,9 @@ private fun ListActivitySmallCard(
         if (showMedia) {
             AnimeMediaCompactListRow(
                 screenKey = screenKey,
-                entry = media?.let {
-                    // TODO: Ignored
-                    AnimeMediaCompactListRow.Entry(it, false)
-                },
+                entry = entry,
                 onLongClick = {
                     // TODO: Ignored
-                },
-                onTagLongClick = {
-                    // TODO: Tag long click
                 },
                 onLongPressImage = {
                     // TODO: Image long click

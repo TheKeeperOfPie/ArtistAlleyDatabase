@@ -139,8 +139,6 @@ object AnimeSearchScreen {
                 AnimeMediaListScreen(
                     refreshing = refreshing,
                     onRefresh = viewModel::onRefresh,
-                    tagShown = viewModel::tagShown,
-                    onTagDismiss = { viewModel.tagShown = null },
                     pullRefreshTopPadding = { topBarPadding },
                     modifier = Modifier.nestedScroll(
                         NestedScrollSplitter(
@@ -187,7 +185,6 @@ object AnimeSearchScreen {
                                                     viewModel.ignoreList
                                                         .toggle(item.media.id.toString())
                                                 },
-                                                onTagLongClick = viewModel::onTagLongClick,
                                                 onLongPressImage = onLongPressImage,
                                                 colorCalculationState = colorCalculationState,
                                                 navigationCallback = navigationCallback,

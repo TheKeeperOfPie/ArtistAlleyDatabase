@@ -92,6 +92,7 @@ object ReviewDetailsScreen {
                         screenKey = SCREEN_KEY,
                         upIconOption = upIconOption,
                         mediaId = entry?.review?.media?.id?.toString(),
+                        mediaType = viewModel.entry?.review?.media?.type,
                         titles = entry?.titlesUnique,
                         averageScore = media?.averageScore,
                         popularity = media?.popularity,

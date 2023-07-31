@@ -4,6 +4,7 @@ import android.os.SystemClock
 import com.anilist.UserMediaListQuery
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
+import com.hoc081098.flowext.combine
 import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
@@ -73,16 +74,20 @@ class UserMediaListController(
             .flatMapLatest { entry ->
                 combine(
                     statusController.allChanges(),
+                    ignoreList.updates,
                     settings.showAdult,
                     settings.showIgnored,
-                    ignoreList.updates,
-                ) { statuses, showAdult, showIgnored, ignoredIds ->
+                    settings.showLessImportantTags,
+                    settings.showSpoilerTags,
+                ) { statuses, ignoredIds, showAdult, showIgnored, showLessImportantTags, showSpoilerTags ->
                     applyStatus(
                         statuses = statuses,
                         showAdult = showAdult,
                         showIgnored = showIgnored,
                         ignoredIds = ignoredIds,
-                        result = entry
+                        showLessImportantTags = showLessImportantTags,
+                        showSpoilerTags = showSpoilerTags,
+                        result = entry,
                     )
                 }
             }
@@ -94,6 +99,8 @@ class UserMediaListController(
         showAdult: Boolean,
         showIgnored: Boolean,
         ignoredIds: Set<Int>,
+        showLessImportantTags: Boolean,
+        showSpoilerTags: Boolean,
         result: LoadingResult<List<ListEntry>>,
     ) = result.transformResult {
         it.map {
@@ -103,16 +110,20 @@ class UserMediaListController(
                     ignoredIds = ignoredIds,
                     showAdult = showAdult,
                     showIgnored = showIgnored,
+                    showLessImportantTags = showLessImportantTags,
+                    showSpoilerTags = showSpoilerTags,
                     entry = it,
                     transform = { it },
                     media = it.media,
-                    copy = { mediaListStatus, progress, progressVolumes, ignored ->
+                    copy = { mediaListStatus, progress, progressVolumes, ignored, showLessImportantTags, showSpoilerTags ->
                         MediaEntry(
                             media = media,
                             mediaListStatus = mediaListStatus,
                             progress = progress,
                             progressVolumes = progressVolumes,
                             ignored = ignored,
+                            showLessImportantTags = showLessImportantTags,
+                            showSpoilerTags = showSpoilerTags,
                         )
                     }
                 )
@@ -137,7 +148,7 @@ class UserMediaListController(
             name = list.name.orEmpty(),
             status = list.status,
             entries = list.entries?.filterNotNull()
-                ?.map { MediaEntry(it.media, ignored = false) }
+                ?.map { MediaEntry(it.media) }
                 .orEmpty()
         )
     }
@@ -147,6 +158,8 @@ class UserMediaListController(
         override val mediaListStatus: MediaListStatus? = media.mediaListEntry?.status,
         override val progress: Int? = null,
         override val progressVolumes: Int? = null,
-        override val ignored: Boolean,
+        override val ignored: Boolean = false,
+        override val showLessImportantTags: Boolean = false,
+        override val showSpoilerTags: Boolean = false,
     ) : MediaStatusAware
 }

@@ -144,6 +144,7 @@ object ActivityDetailsScreen {
                     withDismissAction = true,
                     duration = SnackbarDuration.Long,
                 )
+                viewModel.entry = viewModel.entry.copy(error = null)
             }
         }
 
@@ -207,7 +208,7 @@ object ActivityDetailsScreen {
                                         screenKey = SCREEN_KEY,
                                         viewer = viewer,
                                         activity = activity,
-                                        media = result.mediaEntry?.media,
+                                        mediaEntry = result.mediaEntry?.rowEntry,
                                         entry = result,
                                         onActivityStatusUpdate = viewModel.toggleHelper::toggle,
                                         showActionsRow = true,

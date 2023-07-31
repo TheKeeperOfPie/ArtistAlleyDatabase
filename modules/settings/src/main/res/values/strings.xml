@@ -17,6 +17,7 @@
     <string name="settings_notification_info_crash_title">%1$s crash</string>
     <string name="settings_show_last_crash">Show last crash</string>
     <string name="settings_show_licenses">Show licenses</string>
+    <string name="settings_enable_network_caching">Enable network caching</string>
     <string name="settings_unlock_all_features">Unlock all features</string>
     <string name="settings_revoke_ads_consent">Revoke ads consent</string>
     <string name="settings_ads_enabled">Ads are enabled</string>
@@ -34,6 +35,8 @@
     <string name="settings_subsection_theme_light">Light</string>
 
     <string name="settings_subsection_about_label">About</string>
+    <string name="settings_subsection_about_build_title">Build</string>
+    <string name="settings_subsection_about_build_description">Version %1$s (%2$s)</string>
     <string name="settings_subsection_about_author_title">Author</string>
     <string name="settings_subsection_about_author_description">Anichive is written by TheKeeperOfPie. Feel free to say hi on Discord.</string>
     <string name="settings_subsection_about_discord_label">Discord</string>

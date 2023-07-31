@@ -87,12 +87,14 @@ class AiringScheduleViewModel @Inject constructor(
                     ignoreList = ignoreList,
                     settings = settings,
                     media = { it.data.media },
-                    copy = { mediaListStatus, progress, progressVolumes, ignored ->
+                    copy = { mediaListStatus, progress, progressVolumes, ignored, showLessImportantTags, showSpoilerTags ->
                         copy(
                             mediaListStatus = mediaListStatus,
                             progress = progress,
                             progressVolumes = progressVolumes,
                             ignored = ignored,
+                            showLessImportantTags = showLessImportantTags,
+                            showSpoilerTags = showSpoilerTags,
                         )
                     },
                 )
@@ -195,6 +197,8 @@ class AiringScheduleViewModel @Inject constructor(
         override val progress: Int? = null,
         override val progressVolumes: Int? = null,
         override val ignored: Boolean = false,
+        override val showLessImportantTags: Boolean = false,
+        override val showSpoilerTags: Boolean = false,
     ) : MediaStatusAware {
         val entry = data.media?.let {
             AnimeMediaListRow.Entry(
@@ -202,7 +206,9 @@ class AiringScheduleViewModel @Inject constructor(
                 mediaListStatus = mediaListStatus,
                 progress = progress,
                 progressVolumes = progressVolumes,
-                ignored = ignored
+                ignored = ignored,
+                showLessImportantTags = showLessImportantTags,
+                showSpoilerTags = showSpoilerTags,
             )
         }
     }

@@ -45,6 +45,7 @@ object ReviewsScreen {
                     screenKey = SCREEN_KEY,
                     upIconOption = upIconOption,
                     mediaId = viewModel.headerId,
+                    mediaType = viewModel.entry?.media?.type,
                     titles = entry?.titlesUnique,
                     averageScore = media?.averageScore,
                     popularity = media?.popularity,

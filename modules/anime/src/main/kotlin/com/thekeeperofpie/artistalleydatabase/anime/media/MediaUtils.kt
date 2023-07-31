@@ -65,6 +65,12 @@ object MediaUtils {
         Color(100, 210, 45),
     )
 
+    val LESS_IMPORTANT_MEDIA_TAG_CATEGORIES = setOf(
+        "Cast-Main Cast",
+        "Demographic",
+        "Technical",
+    )
+
     fun genreColor(name: String) = Color.hsl(
         hue = (name.hashCode() % 360f).absoluteValue,
         lightness = 0.25f,
@@ -637,8 +643,8 @@ object MediaUtils {
         }
 
         val episodes = filterParams.episodesRange
-        val episodesStart = episodes.startInt ?: 0
-        val episodesEnd = episodes.endInt
+        val episodesStart = episodes?.startInt ?: 0
+        val episodesEnd = episodes?.endInt
         if (episodesStart > 0) {
             filteredEntries = filteredEntries.filter {
                 media(it).episodes.let { it != null && it >= episodesStart }
@@ -647,6 +653,34 @@ object MediaUtils {
         if (episodesEnd != null) {
             filteredEntries = filteredEntries.filter {
                 media(it).episodes.let { it != null && it <= episodesEnd }
+            }
+        }
+
+        val volumes = filterParams.volumesRange
+        val volumesStart = volumes?.startInt ?: 0
+        val volumesEnd = volumes?.endInt
+        if (volumesStart > 0) {
+            filteredEntries = filteredEntries.filter {
+                media(it).volumes.let { it != null && it >= volumesStart }
+            }
+        }
+        if (volumesEnd != null) {
+            filteredEntries = filteredEntries.filter {
+                media(it).volumes.let { it != null && it <= volumesEnd }
+            }
+        }
+
+        val chapters = filterParams.chaptersRange
+        val chaptersStart = chapters?.startInt ?: 0
+        val chaptersEnd = chapters?.endInt
+        if (chaptersStart > 0) {
+            filteredEntries = filteredEntries.filter {
+                media(it).chapters.let { it != null && it >= chaptersStart }
+            }
+        }
+        if (chaptersEnd != null) {
+            filteredEntries = filteredEntries.filter {
+                media(it).chapters.let { it != null && it <= chaptersEnd }
             }
         }
 

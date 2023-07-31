@@ -76,6 +76,11 @@ class MangaSortFilterController<SortType : SortOption>(
 
         override fun showingPreview() = releaseDate.summaryText() != null
 
+        override fun clear() {
+            releaseDate = AiringDate.Advanced()
+            releaseDateShown = null
+        }
+
         @Composable
         override fun Content(state: ExpandedState, showDivider: Boolean) {
             val expanded = state.expandedState[id] ?: false
@@ -107,21 +112,18 @@ class MangaSortFilterController<SortType : SortOption>(
     }
 
     // TODO: Fix volumes/chapters range search
-    private val episodesSection = SortFilterSection.Range(
-        titleRes = R.string.anime_media_filter_episodes_label,
-        titleDropdownContentDescriptionRes = R.string.anime_media_filter_episodes_expand_content_description,
-        data = RangeData(151),
+    private val volumesSection = SortFilterSection.Range(
+        titleRes = R.string.anime_media_filter_volumes_label,
+        titleDropdownContentDescriptionRes = R.string.anime_media_filter_volumes_expand_content_description,
+        initialData = RangeData(151),
         unboundedMax = true,
     )
-
-    private val actionsSection = object : SortFilterSection.Custom("actions") {
-        override fun showingPreview() = true
-
-        @Composable
-        override fun Content(state: ExpandedState, showDivider: Boolean) {
-            // TODO("Not yet implemented")
-        }
-    }
+    private val chaptersSection = SortFilterSection.Range(
+        titleRes = R.string.anime_media_filter_chapters_label,
+        titleDropdownContentDescriptionRes = R.string.anime_media_filter_chapters_expand_content_description,
+        initialData = RangeData(151),
+        unboundedMax = true,
+    )
 
     override var sections by mutableStateOf(emptyList<SortFilterSection>())
 
@@ -129,13 +131,11 @@ class MangaSortFilterController<SortType : SortOption>(
         viewModel: ViewModel,
         refreshUptimeMillis: MutableStateFlow<*>,
         initialParams: InitialParams<SortType>,
-        tagLongClickListener: (String) -> Unit = { /* TODO */ },
     ) {
         super.initialize(
             viewModel,
             refreshUptimeMillis,
             initialParams,
-            tagLongClickListener,
         )
         viewModel.viewModelScope.launch(CustomDispatchers.Main) {
             aniListApi.authedUser
@@ -159,17 +159,19 @@ class MangaSortFilterController<SortType : SortOption>(
                                 }
                             }
                         },
-                        episodesSection,
+                        volumesSection,
+                        chaptersSection,
                         sourceSection,
                         advancedSection.apply {
                             children = listOfNotNull(
                                 showAdultSection,
                                 collapseOnCloseSection,
-                                showIgnoredSection.takeIf { initialParams.showIgnoredEnabled }
+                                showIgnoredSection.takeIf { initialParams.showIgnoredEnabled },
+                                showLessImportantTagsSection,
+                                showSpoilerTagsSection,
                             )
                         },
                         SortFilterSection.Spacer(height = 32.dp),
-                        actionsSection,
                     )
                 }
                 .collectLatest { sections = it }
@@ -193,11 +195,14 @@ class MangaSortFilterController<SortType : SortOption>(
                         FilterIncludeExcludeState.INCLUDE -> true
                         FilterIncludeExcludeState.EXCLUDE -> false
                         FilterIncludeExcludeState.DEFAULT,
-                        null -> null
+                        null,
+                        -> null
                     },
                     formats = formatSection.filterOptions,
                     averageScoreRange = averageScoreSection.data,
-                    episodesRange = episodesSection.data,
+                    episodesRange = null,
+                    volumesRange = volumesSection.data,
+                    chaptersRange = chaptersSection.data,
                     showAdult = false,
                     showIgnored = true,
                     airingDate = releaseDate,

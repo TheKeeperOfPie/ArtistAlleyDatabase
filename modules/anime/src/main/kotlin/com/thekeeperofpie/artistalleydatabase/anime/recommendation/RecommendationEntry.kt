@@ -12,6 +12,8 @@ data class RecommendationEntry(
     override val progress: Int? = null,
     override val progressVolumes: Int? = null,
     override val ignored: Boolean = false,
+    override val showLessImportantTags: Boolean = false,
+    override val showSpoilerTags: Boolean = false,
 ) : MediaStatusAware {
     val entry = recommendation.mediaRecommendation?.let {
         AnimeMediaListRow.Entry(
@@ -20,6 +22,8 @@ data class RecommendationEntry(
             progress = progress,
             progressVolumes = progressVolumes,
             ignored = ignored,
+            showLessImportantTags = showLessImportantTags,
+            showSpoilerTags = showSpoilerTags,
         )
     }
 }

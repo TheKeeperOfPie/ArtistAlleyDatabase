@@ -13,5 +13,6 @@ class AppFeatureOverrideProvider : FeatureOverrideProvider {
 
 class AppMonetizationOverrideProvider(aniListApi: AuthedAniListApi) : MonetizationOverrideProvider {
     // To allow testing, hardcode user ID of known test account to unlock all features
-    override val overrideUnlock = aniListApi.authedUser.map { it?.id == 6222551 }
+    override val overrideUnlock = aniListApi.authedUser
+        .map { it?.id == BuildConfig.aniListTestAccountUserId.toInt() }
 }

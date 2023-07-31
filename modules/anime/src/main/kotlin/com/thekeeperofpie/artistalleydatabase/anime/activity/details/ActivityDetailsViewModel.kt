@@ -23,6 +23,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.flowForRefreshableCo
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListPagingSource
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityReplyStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityReplyToggleHelper
@@ -30,6 +31,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityStatusAware
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityToggleHelper
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
+import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaCompactListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaStatusAware
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -53,6 +55,7 @@ class ActivityDetailsViewModel @Inject constructor(
     private val mediaListStatusController: MediaListStatusController,
     private val replyStatusController: ActivityReplyStatusController,
     private val ignoreList: AnimeMediaIgnoreList,
+    private val settings: AnimeSettings,
 ) : ViewModel() {
 
     lateinit var activityId: String
@@ -89,9 +92,9 @@ class ActivityDetailsViewModel @Inject constructor(
                             flowOf(null)
                         },
                         ignoreList.updates,
-                        ::Triple
-                    )
-                        .mapLatest { (activityUpdates, mediaListUpdate, ignoredIds) ->
+                        settings.showLessImportantTags,
+                        settings.showSpoilerTags,
+                    ) { activityUpdates, mediaListUpdate, ignoredIds, showLessImportantTags, showSpoilerTags ->
                             activity.transformResult {
                                 val liked = activityUpdates?.liked ?: when (it) {
                                     is ActivityDetailsQuery.Data.ListActivityActivity -> it.isLiked
@@ -117,6 +120,8 @@ class ActivityDetailsViewModel @Inject constructor(
                                                 progress = it.mediaListEntry?.progress,
                                                 progressVolumes = it.mediaListEntry?.progressVolumes,
                                                 ignored = ignoredIds.contains(it.id),
+                                                showLessImportantTags = showLessImportantTags,
+                                                showSpoilerTags = showSpoilerTags,
                                             )
                                         } else {
                                             Entry.MediaEntry(
@@ -125,6 +130,8 @@ class ActivityDetailsViewModel @Inject constructor(
                                                 progress = mediaListUpdate.entry?.progress,
                                                 progressVolumes = mediaListUpdate.entry?.progressVolumes,
                                                 ignored = ignoredIds.contains(it.id),
+                                                showLessImportantTags = showLessImportantTags,
+                                                showSpoilerTags = showSpoilerTags,
                                             )
                                         }
                                     }
@@ -206,7 +213,16 @@ class ActivityDetailsViewModel @Inject constructor(
             override val progress: Int?,
             override val progressVolumes: Int?,
             override val ignored: Boolean,
-        ) : MediaStatusAware
+            override val showLessImportantTags: Boolean,
+            override val showSpoilerTags: Boolean,
+        ) : MediaStatusAware {
+            val rowEntry = AnimeMediaCompactListRow.Entry(
+                media = media,
+                ignored = ignored,
+                showLessImportantTags = showLessImportantTags,
+                showSpoilerTags = showSpoilerTags,
+            )
+        }
 
         data class ReplyEntry(
             val reply: ActivityDetailsRepliesQuery.Data.Page.ActivityReply,

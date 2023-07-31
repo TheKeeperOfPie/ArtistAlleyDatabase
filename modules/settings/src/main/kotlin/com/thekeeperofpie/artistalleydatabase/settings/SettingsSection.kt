@@ -214,4 +214,29 @@ sealed class SettingsSection(open val id: String) {
             }
         }
     }
+
+    class TextByString(
+        id: String,
+        val title: @Composable () -> String,
+        val description: @Composable () -> String,
+    ) : SettingsSection(id) {
+        @Composable
+        override fun Content(modifier: Modifier) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 10.dp)
+                    .then(modifier)
+            ) {
+                Text(
+                    text = title(),
+                    style = MaterialTheme.typography.titleMedium,
+                )
+                Text(
+                    text = description(),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            }
+        }
+    }
 }
