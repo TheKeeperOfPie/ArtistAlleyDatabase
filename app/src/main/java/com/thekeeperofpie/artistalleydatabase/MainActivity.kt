@@ -79,6 +79,8 @@ import com.thekeeperofpie.artistalleydatabase.browse.BrowseScreen
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseViewModel
 import com.thekeeperofpie.artistalleydatabase.cds.CdEntryNavigator
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
+import com.thekeeperofpie.artistalleydatabase.compose.update.AppUpdateChecker
+import com.thekeeperofpie.artistalleydatabase.compose.update.LocalAppUpdateChecker
 import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils.navToEntryDetails
 import com.thekeeperofpie.artistalleydatabase.export.ExportScreen
 import com.thekeeperofpie.artistalleydatabase.export.ExportViewModel
@@ -137,6 +139,9 @@ class MainActivity : ComponentActivity() {
     lateinit var subscriptionProviderOptional: Optional<SubscriptionProvider>
 
     @Inject
+    lateinit var appUpdateCheckerOptional: Optional<AppUpdateChecker>
+
+    @Inject
     lateinit var featureOverrideProvider: FeatureOverrideProvider
 
     @Inject
@@ -159,6 +164,8 @@ class MainActivity : ComponentActivity() {
         monetizationProvider?.initialize(this)
         val subscriptionProvider = subscriptionProviderOptional.getOrNull()
         subscriptionProvider?.initialize(this)
+        val appUpdateChecker = appUpdateCheckerOptional.getOrNull()
+        appUpdateChecker?.initialize(this)
 
         setContent {
             val navHostController = rememberNavController()
@@ -167,6 +174,7 @@ class MainActivity : ComponentActivity() {
                     LocalMonetizationProvider provides monetizationProvider,
                     LocalSubscriptionProvider provides subscriptionProvider,
                     LocalMediaTagDialogController provides mediaTagDialogController,
+                    LocalAppUpdateChecker provides appUpdateChecker,
                 ) {
                     // TODO: Draw inside insets for applicable screens
                     Surface(modifier = Modifier.safeDrawingPadding()) {

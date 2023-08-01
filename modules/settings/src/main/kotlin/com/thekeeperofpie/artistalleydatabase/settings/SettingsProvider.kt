@@ -73,7 +73,7 @@ class SettingsProvider(
         MutableStateFlow(deserialize("enableNetworkCaching") ?: false)
     override var savedAnimeFilters = MutableStateFlow(deserializeAnimeFilters())
 
-    override var showAdult = ignoreOnRelease("showAdult")
+    override var showAdult = ignoreOnRelease("showAdult", false)
 
     override var collapseAnimeFiltersOnClose = MutableStateFlow(
         deserialize("collapseAnimeFiltersOnClose") ?: true
@@ -119,7 +119,7 @@ class SettingsProvider(
     var lastCrashShown = MutableStateFlow(deserialize("lastCrashShown") ?: false)
     var screenshotMode = MutableStateFlow(deserialize("screenshotMode") ?: false)
 
-    override var unlockAllFeatures = ignoreOnRelease("unlockAllFeatures")
+    override var unlockAllFeatures = ignoreOnRelease("unlockAllFeatures", false)
 
     init {
         val mainThreadId = Looper.getMainLooper().thread.id
@@ -338,35 +338,35 @@ class SettingsProvider(
             .putString(name, stringValue)
     }
 
-    private fun ignoreOnRelease(booleanPropertyName: String) =
+    private inline fun <reified T> ignoreOnRelease(propertyName: String, defaultValue: T) =
         if (featureOverrideProvider.isReleaseBuild) {
-            IgnoringMutableStateFlow()
+            IgnoringMutableStateFlow(defaultValue)
         } else {
-            MutableStateFlow(deserialize(booleanPropertyName) ?: false)
+            MutableStateFlow(deserialize<T>(propertyName) ?: defaultValue)
         }
 
-    private class IgnoringMutableStateFlow : MutableStateFlow<Boolean> {
-        private val flow = MutableStateFlow(false)
-        override val replayCache: List<Boolean>
+    private class IgnoringMutableStateFlow<T>(defaultValue: T) : MutableStateFlow<T> {
+        private val flow = MutableStateFlow(defaultValue)
+        override val replayCache: List<T>
             get() = flow.replayCache
         override val subscriptionCount: StateFlow<Int>
             get() = flow.subscriptionCount
-        override var value: Boolean
+        override var value: T
             get() = flow.value
             set(value) {
                 // Do not set anything on release
             }
 
-        override suspend fun collect(collector: FlowCollector<Boolean>) =
+        override suspend fun collect(collector: FlowCollector<T>) =
             flow.collect(collector)
 
-        override fun compareAndSet(expect: Boolean, update: Boolean) = true
+        override fun compareAndSet(expect: T, update: T) = true
 
         @ExperimentalCoroutinesApi
         override fun resetReplayCache() = Unit
 
-        override fun tryEmit(value: Boolean) = true
+        override fun tryEmit(value: T) = true
 
-        override suspend fun emit(value: Boolean) = Unit
+        override suspend fun emit(value: T) = Unit
     }
 }

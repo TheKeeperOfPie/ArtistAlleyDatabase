@@ -17,10 +17,13 @@ import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.SaverScope
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -39,9 +42,9 @@ import com.thekeeperofpie.artistalleydatabase.anime.user.viewer.AniListViewerPro
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysNavigationBar
 import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
-import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.navigationBarEnterAlwaysScrollBehavior
+import com.thekeeperofpie.artistalleydatabase.compose.update.LocalAppUpdateChecker
 import com.thekeeperofpie.artistalleydatabase.monetization.UnlockScreen
 
 object AnimeRootScreen {
@@ -53,8 +56,6 @@ object AnimeRootScreen {
         onClickAuth: () -> Unit,
         onSubmitAuthToken: (String) -> Unit,
         navigationCallback: AnimeNavigator.NavigationCallback,
-        errorRes: () -> Pair<Int, Exception?>? = { null },
-        onErrorDismiss: () -> Unit = { },
         onClickSettings: () -> Unit,
     ) {
         var selectedScreen by rememberSaveable(stateSaver = object :
@@ -72,11 +73,10 @@ object AnimeRootScreen {
         @Suppress("UnusedMaterial3ScaffoldPaddingParameter")
         Scaffold(
             snackbarHost = {
-                SnackbarErrorText(
-                    errorRes()?.first,
-                    errorRes()?.second,
-                    onErrorDismiss = onErrorDismiss
-                )
+                val appUpdateChecker = LocalAppUpdateChecker.current
+                val snackbarHostState = remember { SnackbarHostState() }
+                appUpdateChecker?.applySnackbarState(snackbarHostState)
+                SnackbarHost(hostState = snackbarHostState)
             },
             bottomBar = {
                 val unlocked by viewModel.unlocked.collectAsState(initial = false)

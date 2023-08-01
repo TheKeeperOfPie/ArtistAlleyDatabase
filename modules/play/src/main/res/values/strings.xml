@@ -2,4 +2,8 @@
 <resources>
     <string name="play_error_purchasing">Error processing purchase, please try again or contact the developer</string>
     <string name="play_error_loading_subscription">Error loading subscription</string>
+    <string name="play_update_available">Update available</string>
+    <string name="play_update_available_button">Download</string>
+    <string name="play_update_downloaded">Update downloaded</string>
+    <string name="play_update_downloaded_button">Install</string>
 </resources>

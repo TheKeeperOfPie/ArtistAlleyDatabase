@@ -22,6 +22,8 @@ dependencies {
     kapt(kaptProcessors.dagger.hilt.compiler)
     kapt(kaptProcessors.androidx.hilt.compiler)
 
+    implementation(libs.lifecycle.runtime.ktx)
+
     implementation(libs.compose.ui)
     implementation(libs.compose.ui.tooling.preview)
     implementation(libs.material.icons.core)
@@ -29,4 +31,7 @@ dependencies {
     implementation(libs.material3)
 
     implementation(libs.billing.ktx)
+
+    implementation(libs.app.update)
+    implementation(libs.app.update.ktx)
 }
