@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.monetization.play
+package com.thekeeperofpie.artistalleydatabase.play
 
 import android.app.Activity
 import androidx.activity.ComponentActivity

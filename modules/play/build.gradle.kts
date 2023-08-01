@@ -10,7 +10,7 @@ secrets {
 }
 
 android {
-    namespace = "com.thekeeperofpie.artistalleydatabase.monetization.play"
+    namespace = "com.thekeeperofpie.artistalleydatabase.play"
 }
 
 dependencies {

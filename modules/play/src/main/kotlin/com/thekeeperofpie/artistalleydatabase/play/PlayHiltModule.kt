@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.monetization.play
+package com.thekeeperofpie.artistalleydatabase.play
 
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationSettings

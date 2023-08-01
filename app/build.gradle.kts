@@ -210,7 +210,7 @@ dependencies {
     configurations["internalImplementation"].dependencies +=
         create(project(":modules:monetization:debug"))
 
-    releaseImplementation(project(":modules:monetization:play"))
+    releaseImplementation(project(":modules:play"))
     releaseImplementation(project(":modules:monetization:unity"))
     implementation(project(":modules:settings"))
 
