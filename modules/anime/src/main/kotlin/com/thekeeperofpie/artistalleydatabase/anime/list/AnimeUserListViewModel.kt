@@ -20,6 +20,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.UserMediaListController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeSortFilterController
+import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MangaSortFilterController
+import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaLicensorsController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaTagsController
 import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
@@ -43,11 +45,12 @@ import kotlin.time.Duration.Companion.milliseconds
 @HiltViewModel
 class AnimeUserListViewModel @Inject constructor(
     private val aniListApi: AuthedAniListApi,
-    settings: AnimeSettings,
+    private val settings: AnimeSettings,
     private val ignoreList: AnimeMediaIgnoreList,
     private val mediaTagsController: MediaTagsController,
+    private val mediaLicensorsController: MediaLicensorsController,
     private val userMediaListController: UserMediaListController,
-    featureOverrideProvider: FeatureOverrideProvider,
+    private val featureOverrideProvider: FeatureOverrideProvider,
 ) : ViewModel() {
 
     val viewer = aniListApi.authedUser
@@ -62,13 +65,7 @@ class AnimeUserListViewModel @Inject constructor(
     private var initialized = false
     private lateinit var mediaType: MediaType
 
-    val sortFilterController = AnimeSortFilterController(
-        sortTypeEnumClass = MediaListSortOption::class,
-        aniListApi = aniListApi,
-        settings = settings,
-        featureOverrideProvider = featureOverrideProvider,
-        mediaTagsController = mediaTagsController,
-    )
+    lateinit var sortFilterController: MediaSortFilterController<*, *>
 
     private val refreshUptimeMillis = MutableStateFlow(-1L)
 
@@ -78,15 +75,43 @@ class AnimeUserListViewModel @Inject constructor(
         this.userId = userId
         this.mediaType = mediaType
         this.userName = userName
-        sortFilterController.initialize(
-            viewModel = this,
-            refreshUptimeMillis = refreshUptimeMillis,
-            initialParams = AnimeSortFilterController.InitialParams(
-                // Disable "On list" filter, everything in this screen is on the user's list
-                onListEnabled = false,
-                defaultSort = MediaListSortOption.UPDATED_TIME
-            )
-        )
+        sortFilterController = if (mediaType == MediaType.ANIME) {
+            AnimeSortFilterController(
+                sortTypeEnumClass = MediaListSortOption::class,
+                aniListApi = aniListApi,
+                settings = settings,
+                featureOverrideProvider = featureOverrideProvider,
+                mediaTagsController = mediaTagsController,
+                mediaLicensorsController = mediaLicensorsController,
+            ).apply {
+                initialize(
+                    viewModel = this@AnimeUserListViewModel,
+                    refreshUptimeMillis = refreshUptimeMillis,
+                    initialParams = AnimeSortFilterController.InitialParams(
+                        onListEnabled = false,
+                        defaultSort = MediaListSortOption.UPDATED_TIME
+                    )
+                )
+            }
+        } else {
+            MangaSortFilterController(
+                sortTypeEnumClass = MediaListSortOption::class,
+                aniListApi = aniListApi,
+                settings = settings,
+                featureOverrideProvider = featureOverrideProvider,
+                mediaTagsController = mediaTagsController,
+                mediaLicensorsController = mediaLicensorsController,
+            ).apply {
+                initialize(
+                    viewModel = this@AnimeUserListViewModel,
+                    refreshUptimeMillis = refreshUptimeMillis,
+                    initialParams = MangaSortFilterController.InitialParams(
+                        onListEnabled = false,
+                        defaultSort = MediaListSortOption.UPDATED_TIME
+                    )
+                )
+            }
+        }
 
         if (userId != null) {
             viewModelScope.launch(CustomDispatchers.IO) {
@@ -120,10 +145,12 @@ class AnimeUserListViewModel @Inject constructor(
                 }
             }
 
+            @Suppress("UNCHECKED_CAST")
             combine(
                 response,
                 snapshotFlow { query }.debounce(500.milliseconds),
-                sortFilterController.filterParams(),
+                (sortFilterController as? AnimeSortFilterController<MediaListSortOption>)?.filterParams()
+                    ?: (sortFilterController as MangaSortFilterController<MediaListSortOption>).filterParams(),
                 ::FilterParams
             ).map { (lists, query, filterParams) ->
                 lists.transformResult {

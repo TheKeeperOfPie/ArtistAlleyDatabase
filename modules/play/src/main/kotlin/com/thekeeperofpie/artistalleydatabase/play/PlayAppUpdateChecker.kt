@@ -23,6 +23,7 @@ import com.google.android.play.core.ktx.isFlexibleUpdateAllowed
 import com.google.android.play.core.ktx.isImmediateUpdateAllowed
 import com.google.android.play.core.ktx.requestCompleteUpdate
 import com.google.android.play.core.ktx.requestUpdateFlow
+import com.google.android.play.core.ktx.updatePriority
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.compose.update.AppUpdateChecker
 import kotlinx.coroutines.flow.catch
@@ -101,7 +102,10 @@ class PlayAppUpdateChecker(application: Application) : AppUpdateChecker, Default
                             duration = SnackbarDuration.Long,
                         )
                         if (result == SnackbarResult.ActionPerformed) {
-                            if (isFlexibleUpdateAllowed) {
+                            if (updateAvailable.updateInfo.updatePriority == 5
+                                && isImmediateUpdateAllowed) {
+                                updateAvailable.startImmediateUpdate(activity, 0)
+                            } else if (isFlexibleUpdateAllowed) {
                                 updateAvailable.startFlexibleUpdate(activity, 0)
                             } else {
                                 updateAvailable.startImmediateUpdate(activity, 0)

@@ -123,3 +123,13 @@ query ToggleStudioResult($id: Int!) {
         isFavourite
     }
 }
+
+query Licensors($mediaType: ExternalLinkMediaType!) {
+    ExternalLinkSourceCollection(type: STREAMING, mediaType: $mediaType) @nonnull {
+        site
+        siteId
+        icon
+        language
+        isDisabled
+    }
+}

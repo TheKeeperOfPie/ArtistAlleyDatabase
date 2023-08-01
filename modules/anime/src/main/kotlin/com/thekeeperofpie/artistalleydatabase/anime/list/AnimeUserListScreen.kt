@@ -50,7 +50,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.SortFilterBottomScaffoldNoAppBarOffset
-import com.thekeeperofpie.artistalleydatabase.anime.ui.StartEndDateDialog
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBar
 import com.thekeeperofpie.artistalleydatabase.compose.NestedScrollSplitter
@@ -92,15 +91,7 @@ object AnimeUserListScreen {
             snackbarHostState = snackbarHostState,
         ) {
             val sortFilterController = viewModel.sortFilterController
-            if (sortFilterController.airingDateShown != null) {
-                StartEndDateDialog(
-                    shownForStartDate = sortFilterController.airingDateShown,
-                    onShownForStartDateChange = {
-                        sortFilterController.airingDateShown = it
-                    },
-                    onDateChange = sortFilterController::onAiringDateChange,
-                )
-            }
+            sortFilterController.PromptDialog()
             SortFilterBottomScaffoldNoAppBarOffset(
                 sortFilterController = sortFilterController,
                 topBar = { TopBar(viewModel, mediaType, upIconOption, scrollBehavior) },

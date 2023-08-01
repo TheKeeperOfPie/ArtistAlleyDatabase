@@ -80,15 +80,7 @@ object SeasonalScreen {
             navigationCallback = navigationCallback,
         ) {
             val sortFilterController = viewModel.sortFilterController
-            if (sortFilterController.airingDateShown != null) {
-                StartEndDateDialog(
-                    shownForStartDate = sortFilterController.airingDateShown,
-                    onShownForStartDateChange = {
-                        sortFilterController.airingDateShown = it
-                    },
-                    onDateChange = sortFilterController::onAiringDateChange,
-                )
-            }
+            sortFilterController.PromptDialog()
 
             SortFilterBottomScaffold(
                 sortFilterController = sortFilterController,

@@ -35,6 +35,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusControl
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaStatusChanges
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MangaSortFilterController
+import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaLicensorsController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaTagsController
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffListRow
@@ -69,7 +70,8 @@ class AnimeSearchViewModel @Inject constructor(
     settings: AnimeSettings,
     val ignoreList: AnimeMediaIgnoreList,
     private val statusController: MediaListStatusController,
-    private val mediaTagsController: MediaTagsController,
+    mediaTagsController: MediaTagsController,
+    mediaLicensorsController: MediaLicensorsController,
     featureOverrideProvider: FeatureOverrideProvider,
 ) : ViewModel() {
 
@@ -86,6 +88,7 @@ class AnimeSearchViewModel @Inject constructor(
         settings = settings,
         featureOverrideProvider = featureOverrideProvider,
         mediaTagsController = mediaTagsController,
+        mediaLicensorsController = mediaLicensorsController,
     )
 
     val mangaSortFilterController = MangaSortFilterController(
@@ -94,6 +97,7 @@ class AnimeSearchViewModel @Inject constructor(
         settings = settings,
         featureOverrideProvider = featureOverrideProvider,
         mediaTagsController = mediaTagsController,
+        mediaLicensorsController = mediaLicensorsController,
     )
 
     val characterSortFilterController =

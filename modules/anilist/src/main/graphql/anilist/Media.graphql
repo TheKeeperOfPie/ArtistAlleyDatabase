@@ -63,6 +63,9 @@ fragment MediaPreview on Media {
         day
     }
     popularity
+    externalLinks {
+        siteId
+    }
 }
 
 fragment MediaCompactWithTags on Media {
@@ -109,6 +112,7 @@ query MediaAdvancedSearch(
     $chaptersLesser: Int,
     $sourceIn: [MediaSource],
     $minimumTagRank: Int,
+    $licensedByIdIn: [Int],
 ) {
     Page(page: $page, perPage: $perPage) @nonnull {
         pageInfo @nonnull {
@@ -143,6 +147,7 @@ query MediaAdvancedSearch(
             chapters_lesser: $chaptersLesser,
             source_in: $sourceIn,
             minimumTagRank: $minimumTagRank,
+            licensedById_in: $licensedByIdIn,
         ) @nonnull {
             ...MediaPreview
         }

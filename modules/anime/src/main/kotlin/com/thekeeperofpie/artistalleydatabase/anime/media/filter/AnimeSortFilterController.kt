@@ -45,12 +45,14 @@ class AnimeSortFilterController<SortType : SortOption>(
     settings: AnimeSettings,
     featureOverrideProvider: FeatureOverrideProvider,
     mediaTagsController: MediaTagsController,
+    mediaLicensorsController: MediaLicensorsController,
 ) : MediaSortFilterController<SortType, AnimeSortFilterController.InitialParams<SortType>>(
     sortTypeEnumClass = sortTypeEnumClass,
     aniListApi = aniListApi,
     settings = settings,
     featureOverrideProvider = featureOverrideProvider,
     mediaTagsController = mediaTagsController,
+    mediaLicensorsController = mediaLicensorsController,
     mediaType = MediaType.ANIME,
 ) {
     private val formatSection = SortFilterSection.Filter(
@@ -70,9 +72,9 @@ class AnimeSortFilterController<SortType : SortOption>(
         valueToText = { stringResource(it.value.toTextRes()) },
     )
 
-    var airingDate by mutableStateOf(AiringDate.Basic() to AiringDate.Advanced())
-    var airingDateIsAdvanced by mutableStateOf(false)
-    var airingDateShown by mutableStateOf<Boolean?>(null)
+    private var airingDate by mutableStateOf(AiringDate.Basic() to AiringDate.Advanced())
+    private var airingDateIsAdvanced by mutableStateOf(false)
+    private var airingDateShown by mutableStateOf<Boolean?>(null)
 
     private val airingDateSection = object : SortFilterSection.Custom("airingDate") {
         override fun showingPreview() =
@@ -151,6 +153,7 @@ class AnimeSortFilterController<SortType : SortOption>(
                         },
                         episodesSection,
                         sourceSection,
+                        licensedBySection,
                         advancedSection.apply {
                             children = listOfNotNull(
                                 showAdultSection,
@@ -196,6 +199,7 @@ class AnimeSortFilterController<SortType : SortOption>(
                     showIgnored = true,
                     airingDate = if (airingDateIsAdvanced) airingDate.second else airingDate.first,
                     sources = sourceSection.filterOptions,
+                    licensedBy = licensedBySection.children.flatMap { it.filterOptions },
                 )
             }.flowOn(CustomDispatchers.Main),
             settings.showAdult,

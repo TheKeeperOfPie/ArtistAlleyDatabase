@@ -690,6 +690,14 @@ object MediaUtils {
             transform = { listOfNotNull(media(it).source) }
         )
 
+        filteredEntries = FilterIncludeExcludeState.applyFiltering(
+            filters = filterParams.licensedBy,
+            list = filteredEntries,
+            state = { it.state },
+            key = { it.value.siteId },
+            transform = { media(it).externalLinks?.mapNotNull { it?.siteId }.orEmpty() },
+        )
+
         return filteredEntries
     }
 

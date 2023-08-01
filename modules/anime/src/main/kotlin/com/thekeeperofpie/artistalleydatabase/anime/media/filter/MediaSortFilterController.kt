@@ -11,6 +11,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.filter
+import com.anilist.LicensorsQuery
 import com.anilist.fragment.MediaPreview
 import com.anilist.type.MediaFormat
 import com.anilist.type.MediaListStatus
@@ -53,6 +54,7 @@ abstract class MediaSortFilterController<SortType : SortOption, ParamsType : Med
     settings: AnimeSettings,
     featureOverrideProvider: FeatureOverrideProvider,
     private val mediaTagsController: MediaTagsController,
+    private val mediaLicensorsController: MediaLicensorsController,
     private val mediaType: MediaType,
 ) : SortFilterController(settings, featureOverrideProvider) {
     private var initialized = false
@@ -206,6 +208,14 @@ abstract class MediaSortFilterController<SortType : SortOption, ParamsType : Med
         selectionMethod = SortFilterSection.Filter.SelectionMethod.ONLY_INCLUDE,
     )
 
+    protected val licensedBySection =
+        SortFilterSection.Group<SortFilterSection.Filter<LicensorsQuery.Data.ExternalLinkSourceCollection>>(
+            titleRes = R.string.anime_media_filter_licensed_by_label,
+            titleDropdownContentDescriptionRes = R.string.anime_media_filter_licensed_by_content_description,
+            children = emptyList(),
+            onlyShowChildIfSingle = true,
+        )
+
     protected val showLessImportantTagsSection = SortFilterSection.SwitchBySetting(
         titleRes = R.string.anime_media_filter_show_less_important_tags,
         settings = settings,
@@ -272,6 +282,35 @@ abstract class MediaSortFilterController<SortType : SortOption, ParamsType : Med
                 }
                 .collectLatest(tagsByCategory::emit)
         }
+
+        viewModel.viewModelScope.launch(CustomDispatchers.Main) {
+            val licensors = if (mediaType == MediaType.ANIME) {
+                mediaLicensorsController.anime
+            } else {
+                mediaLicensorsController.manga
+            }
+            licensors.mapLatest { languageAndSites ->
+                languageAndSites.map {
+                    SortFilterSection.Filter(
+                        id = "licensedBy-${it.language}",
+                        title = {
+                            it.language ?: if (languageAndSites.size == 1) {
+                                stringResource(R.string.anime_media_filter_licensed_by_label)
+                            } else {
+                                stringResource(R.string.anime_media_filter_licensed_by_general_label)
+                            }
+                        },
+                        titleDropdownContentDescriptionRes = R.string.anime_media_filter_licensed_by_content_description,
+                        includeExcludeIconContentDescriptionRes = R.string.anime_media_filter_licensed_by_chip_state_content_description,
+                        values = it.sites,
+                        valueToText = { it.value.site },
+                        selectionMethod = SortFilterSection.Filter.SelectionMethod.ONLY_INCLUDE,
+                    )
+                }
+            }
+                .flowOn(CustomDispatchers.IO)
+                .collectLatest { licensedBySection.children = it }
+        }
     }
 
     fun <Entry : MediaStatusAware> filterMedia(
@@ -332,5 +371,6 @@ abstract class MediaSortFilterController<SortType : SortOption, ParamsType : Med
         val showIgnored: Boolean,
         val airingDate: AiringDate,
         val sources: List<FilterEntry<MediaSource>>,
+        val licensedBy: List<FilterEntry<LicensorsQuery.Data.ExternalLinkSourceCollection>>,
     )
 }

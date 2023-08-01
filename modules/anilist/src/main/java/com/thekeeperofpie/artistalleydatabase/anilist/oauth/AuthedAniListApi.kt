@@ -18,6 +18,7 @@ import com.anilist.DeleteMediaListEntryMutation
 import com.anilist.GenresQuery
 import com.anilist.HomeAnimeQuery
 import com.anilist.HomeMangaQuery
+import com.anilist.LicensorsQuery
 import com.anilist.MediaActivityPageQuery
 import com.anilist.MediaActivityQuery
 import com.anilist.MediaAdvancedSearchQuery
@@ -77,6 +78,7 @@ import com.anilist.type.ActivitySort
 import com.anilist.type.ActivityType
 import com.anilist.type.AiringSort
 import com.anilist.type.CharacterSort
+import com.anilist.type.ExternalLinkMediaType
 import com.anilist.type.FuzzyDateInput
 import com.anilist.type.MediaFormat
 import com.anilist.type.MediaListStatus
@@ -224,6 +226,7 @@ open class AuthedAniListApi(
         chaptersLesser: Int?,
         sourcesIn: List<MediaSource>?,
         minimumTagRank: Int?,
+        licensedByIdIn: List<Int>?,
     ): MediaAdvancedSearchQuery.Data {
         val sortParam =
             if (query.isEmpty() && sort?.size == 1 && sort.contains(MediaSort.SEARCH_MATCH)) {
@@ -264,6 +267,7 @@ open class AuthedAniListApi(
                 chaptersLesser = Optional.presentIfNotNull(chaptersLesser),
                 sourceIn = Optional.presentIfNotNull(sourcesIn?.ifEmpty { null }),
                 minimumTagRank = Optional.presentIfNotNull(minimumTagRank),
+                licensedByIdIn = Optional.presentIfNotNull(licensedByIdIn?.ifEmpty { null }),
             )
         )
     }
@@ -872,6 +876,9 @@ open class AuthedAniListApi(
                 text = text,
             )
         ).saveActivityReply
+
+    open suspend fun licensors(mediaType: ExternalLinkMediaType) =
+        query(LicensorsQuery(mediaType = mediaType)).externalLinkSourceCollection.filterNotNull()
 
     // TODO: Use queryCacheAndNetwork for everything
     private suspend fun <D : Query.Data> query(query: Query<D>) =

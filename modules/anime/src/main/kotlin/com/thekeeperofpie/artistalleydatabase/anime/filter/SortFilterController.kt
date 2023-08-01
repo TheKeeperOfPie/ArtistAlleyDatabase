@@ -32,7 +32,7 @@ abstract class SortFilterController(
     ).takeUnless { featureOverrideProvider.isReleaseBuild }
 
     // TODO: Actually de-dupe advanced section across controllers
-    protected val advancedSection = SortFilterSection.Group(
+    protected val advancedSection = SortFilterSection.Group<SortFilterSection>(
         titleRes = R.string.anime_generic_filter_advanced_group,
         titleDropdownContentDescriptionRes = R.string.anime_generic_filter_advanced_group_expand_content_description,
         children = listOfNotNull(showAdultSection, collapseOnCloseSection, showIgnoredSection)

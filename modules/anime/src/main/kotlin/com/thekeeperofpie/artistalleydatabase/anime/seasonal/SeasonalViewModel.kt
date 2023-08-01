@@ -30,6 +30,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaStatusChanges
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeSortFilterController
+import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaLicensorsController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaTagsController
 import com.thekeeperofpie.artistalleydatabase.anime.search.AnimeSearchMediaPagingSource
@@ -57,7 +58,8 @@ class SeasonalViewModel @Inject constructor(
     private val settings: AnimeSettings,
     private val ignoreList: AnimeMediaIgnoreList,
     private val statusController: MediaListStatusController,
-    private val mediaTagsController: MediaTagsController,
+    mediaTagsController: MediaTagsController,
+    mediaLicensorsController: MediaLicensorsController,
     featureOverrideProvider: FeatureOverrideProvider,
 ) : ViewModel() {
 
@@ -75,7 +77,8 @@ class SeasonalViewModel @Inject constructor(
         aniListApi = aniListApi,
         settings = settings,
         featureOverrideProvider = featureOverrideProvider,
-        mediaTagsController = mediaTagsController
+        mediaTagsController = mediaTagsController,
+        mediaLicensorsController = mediaLicensorsController,
     )
 
     private val refreshUptimeMillis = MutableStateFlow(-1L)

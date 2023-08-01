@@ -49,12 +49,14 @@ class MangaSortFilterController<SortType : SortOption>(
     settings: AnimeSettings,
     featureOverrideProvider: FeatureOverrideProvider,
     mediaTagsController: MediaTagsController,
+    mediaLicensorsController: MediaLicensorsController,
 ) : MediaSortFilterController<SortType, MangaSortFilterController.InitialParams<SortType>>(
     sortTypeEnumClass = sortTypeEnumClass,
     aniListApi = aniListApi,
     settings = settings,
     featureOverrideProvider = featureOverrideProvider,
     mediaTagsController = mediaTagsController,
+    mediaLicensorsController = mediaLicensorsController,
     mediaType = MediaType.MANGA,
 ) {
     private val formatSection = SortFilterSection.Filter(
@@ -69,8 +71,8 @@ class MangaSortFilterController<SortType : SortOption>(
         valueToText = { stringResource(it.value.toTextRes()) },
     )
 
-    var releaseDate by mutableStateOf(AiringDate.Advanced())
-    var releaseDateShown by mutableStateOf<Boolean?>(null)
+    private var releaseDate by mutableStateOf(AiringDate.Advanced())
+    private var releaseDateShown by mutableStateOf<Boolean?>(null)
 
     private val releaseDateSection = object : SortFilterSection.Custom("releaseDate") {
 
@@ -162,6 +164,7 @@ class MangaSortFilterController<SortType : SortOption>(
                         volumesSection,
                         chaptersSection,
                         sourceSection,
+                        licensedBySection,
                         advancedSection.apply {
                             children = listOfNotNull(
                                 showAdultSection,
@@ -207,6 +210,7 @@ class MangaSortFilterController<SortType : SortOption>(
                     showIgnored = true,
                     airingDate = releaseDate,
                     sources = sourceSection.filterOptions,
+                    licensedBy = licensedBySection.children.flatMap { it.filterOptions },
                 )
             }.flowOn(CustomDispatchers.Main),
             settings.showAdult,

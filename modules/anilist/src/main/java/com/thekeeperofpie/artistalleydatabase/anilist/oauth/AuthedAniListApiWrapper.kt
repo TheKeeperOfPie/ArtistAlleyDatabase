@@ -6,6 +6,7 @@ import com.anilist.type.ActivitySort
 import com.anilist.type.ActivityType
 import com.anilist.type.AiringSort
 import com.anilist.type.CharacterSort
+import com.anilist.type.ExternalLinkMediaType
 import com.anilist.type.MediaFormat
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaSeason
@@ -78,6 +79,7 @@ class AuthedAniListApiWrapper(
         chaptersLesser: Int?,
         sourcesIn: List<MediaSource>?,
         minimumTagRank: Int?,
+        licensedByIdIn: List<Int>?,
     ) = super.searchMedia(
         query,
         mediaType,
@@ -107,7 +109,8 @@ class AuthedAniListApiWrapper(
         chaptersGreater,
         chaptersLesser,
         sourcesIn,
-        minimumTagRank
+        minimumTagRank,
+        licensedByIdIn,
     ).let {
         it.copy(page = it.page.copy(media = it.page.media.filter { it?.isAdult == false }))
     }
@@ -591,4 +594,6 @@ class AuthedAniListApiWrapper(
         replyId: String?,
         text: String,
     ) = super.saveActivityReply(activityId, replyId, text)
+
+    override suspend fun licensors(mediaType: ExternalLinkMediaType) = super.licensors(mediaType)
 }

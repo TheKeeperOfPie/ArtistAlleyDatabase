@@ -110,6 +110,9 @@ class AnimeSearchMediaPagingSource(
             sourcesIn = filterParams.sources
                 .filter { it.state == FilterIncludeExcludeState.INCLUDE }
                 .map { it.value },
+            licensedByIdIn = filterParams.licensedBy
+                .filter { it.state == FilterIncludeExcludeState.INCLUDE }
+                .mapNotNull { it.value.siteId },
             minimumTagRank = filterParams.tagRank,
         )
         val pageInfo = result.page.pageInfo

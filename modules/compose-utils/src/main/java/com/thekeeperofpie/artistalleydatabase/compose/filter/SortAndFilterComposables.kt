@@ -56,12 +56,23 @@ object SortAndFilterComposables {
     fun RowScope.SortFilterHeaderText(
         expanded: Boolean,
         @StringRes titleRes: Int,
-        modifier: Modifier = Modifier
+        modifier: Modifier = Modifier,
+    ) = SortFilterHeaderText(
+        expanded = expanded,
+        title = { stringResource(titleRes) },
+        modifier = modifier,
+    )
+
+    @Composable
+    fun RowScope.SortFilterHeaderText(
+        expanded: Boolean,
+        title: @Composable () -> String,
+        modifier: Modifier = Modifier,
     ) {
         Text(
             // Use a zero width space to invalidate the Composable, or otherwise the width
             // will not change in response to expanded. This might be a bug in Compose.
-            text = stringResource(titleRes) + "\u200B".takeIf { expanded }.orEmpty(),
+            text = title() + "\u200B".takeIf { expanded }.orEmpty(),
             style = MaterialTheme.typography.titleMedium,
             modifier = modifier
                 .run {
@@ -238,6 +249,32 @@ fun <Entry : FilterEntry<*>> FilterSection(
     @StringRes includeExcludeIconContentDescriptionRes: Int,
     showDivider: Boolean = true,
     showIcons: Boolean = true,
+) = FilterSection(
+    expanded = expanded,
+    onExpandedChange = onExpandedChange,
+    entries = entries,
+    onEntryClick = onEntryClick,
+    title = { stringResource(titleRes) },
+    titleDropdownContentDescriptionRes = titleDropdownContentDescriptionRes,
+    valueToText = valueToText,
+    includeExcludeIconContentDescriptionRes = includeExcludeIconContentDescriptionRes,
+    showDivider = showDivider,
+    showIcons = showIcons,
+)
+
+
+@Composable
+fun <Entry : FilterEntry<*>> FilterSection(
+    expanded: () -> Boolean,
+    onExpandedChange: (Boolean) -> Unit,
+    entries: @Composable () -> List<Entry>,
+    onEntryClick: (Entry) -> Unit,
+    title: @Composable () -> String,
+    @StringRes titleDropdownContentDescriptionRes: Int,
+    valueToText: @Composable (Entry) -> String,
+    @StringRes includeExcludeIconContentDescriptionRes: Int,
+    showDivider: Boolean = true,
+    showIcons: Boolean = true,
 ) {
     @Suppress("NAME_SHADOWING")
     val expanded = expanded()
@@ -254,7 +291,7 @@ fun <Entry : FilterEntry<*>> FilterSection(
                 .padding(start = 16.dp)
                 .animateContentSize()
         ) {
-            SortFilterHeaderText(expanded, titleRes)
+            SortFilterHeaderText(expanded, title)
 
             entries().forEach {
                 if (!expanded && it.state == FilterIncludeExcludeState.DEFAULT) return@forEach
@@ -292,7 +329,7 @@ fun <Entry : FilterEntry<*>> FilterSection(
 @Composable
 fun IncludeExcludeIcon(
     entry: FilterEntry<*>,
-    @StringRes contentDescriptionRes: Int
+    @StringRes contentDescriptionRes: Int,
 ) {
     if (entry.state == FilterIncludeExcludeState.DEFAULT) {
         if (entry.leadingIconVector != null) {

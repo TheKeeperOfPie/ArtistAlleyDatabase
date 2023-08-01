@@ -10,6 +10,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaTagDialogController
 import com.thekeeperofpie.artistalleydatabase.anime.media.UserMediaListController
+import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaLicensorsController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaTagsController
 import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsController
 import dagger.Module
@@ -87,4 +88,11 @@ object AnimeHiltModule {
     @Provides
     fun provideMediaTagDialogController(mediaTagsController: MediaTagsController) =
         MediaTagDialogController(mediaTagsController)
+
+    @Singleton
+    @Provides
+    fun provideMediaLicensorsController(
+        scopedApplication: ScopedApplication,
+        aniListApi: AuthedAniListApi,
+    ) = MediaLicensorsController(scopedApplication, aniListApi)
 }

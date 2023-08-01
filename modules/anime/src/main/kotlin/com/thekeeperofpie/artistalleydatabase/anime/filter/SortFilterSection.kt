@@ -106,8 +106,9 @@ sealed class SortFilterSection(val id: String) {
         }
     }
 
-    class Filter<FilterType : Any?>(
-        @StringRes private val titleRes: Int,
+    open class Filter<FilterType : Any?>(
+        id: String,
+        private val title: @Composable () -> String,
         @StringRes private val titleDropdownContentDescriptionRes: Int,
         @StringRes private val includeExcludeIconContentDescriptionRes: Int,
         private var values: List<FilterType>,
@@ -116,12 +117,35 @@ sealed class SortFilterSection(val id: String) {
         private val excludedSettings: MutableStateFlow<List<FilterType>>? = null,
         private val valueToText: @Composable (FilterEntry.FilterEntryImpl<FilterType>) -> String,
         var selectionMethod: SelectionMethod = SelectionMethod.ALLOW_EXCLUDE,
-    ) : SortFilterSection(titleRes) {
+    ) : SortFilterSection(id) {
         enum class SelectionMethod {
             SINGLE_EXCLUSIVE,
             ONLY_INCLUDE,
             ALLOW_EXCLUDE,
         }
+
+        constructor(
+            @StringRes titleRes: Int,
+            @StringRes titleDropdownContentDescriptionRes: Int,
+            @StringRes includeExcludeIconContentDescriptionRes: Int,
+            values: List<FilterType>,
+            includedSetting: MutableStateFlow<FilterType>? = null,
+            includedSettings: MutableStateFlow<List<FilterType>>? = null,
+            excludedSettings: MutableStateFlow<List<FilterType>>? = null,
+            valueToText: @Composable (FilterEntry.FilterEntryImpl<FilterType>) -> String,
+            selectionMethod: SelectionMethod = SelectionMethod.ALLOW_EXCLUDE,
+        ) : this(
+            id = titleRes.toString(),
+            title = { stringResource(titleRes) },
+            titleDropdownContentDescriptionRes = titleDropdownContentDescriptionRes,
+            includeExcludeIconContentDescriptionRes = includeExcludeIconContentDescriptionRes,
+            values = values,
+            includedSetting = includedSetting,
+            includedSettings = includedSettings,
+            excludedSettings = excludedSettings,
+            valueToText = valueToText,
+            selectionMethod = selectionMethod,
+        )
 
         var filterOptions by mutableStateOf(
             FilterEntry.values(
@@ -206,7 +230,7 @@ sealed class SortFilterSection(val id: String) {
                             .map { it.value }
                     }
                 },
-                titleRes = titleRes,
+                title = { title() },
                 titleDropdownContentDescriptionRes = titleDropdownContentDescriptionRes,
                 valueToText = valueToText,
                 includeExcludeIconContentDescriptionRes = includeExcludeIconContentDescriptionRes,
@@ -300,10 +324,11 @@ sealed class SortFilterSection(val id: String) {
         }
     }
 
-    class Group(
+    class Group<Child : SortFilterSection>(
         @StringRes private val titleRes: Int,
         @StringRes private val titleDropdownContentDescriptionRes: Int,
-        children: List<SortFilterSection> = emptyList(),
+        children: List<Child> = emptyList(),
+        private val onlyShowChildIfSingle: Boolean = false,
     ) : SortFilterSection(titleRes) {
 
         var children by mutableStateOf(children)
@@ -316,6 +341,10 @@ sealed class SortFilterSection(val id: String) {
 
         @Composable
         override fun Content(state: ExpandedState, showDivider: Boolean) {
+            if (onlyShowChildIfSingle && children.size == 1) {
+                children.first().Content(state = state, showDivider = showDivider)
+                return
+            }
             val expanded = state.expandedState[id] ?: false
             Row(
                 verticalAlignment = Alignment.CenterVertically,
