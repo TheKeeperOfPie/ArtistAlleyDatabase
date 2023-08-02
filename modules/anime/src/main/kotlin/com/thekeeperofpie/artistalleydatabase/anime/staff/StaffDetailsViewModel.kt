@@ -120,7 +120,7 @@ class StaffDetailsViewModel @Inject constructor(
                     it.map {
                         DetailsCharacter(
                             id = it.id.toString(),
-                            name = it.name?.userPreferred,
+                            name = it.name,
                             image = it.image?.large,
                             character = it,
                         )

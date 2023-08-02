@@ -34,9 +34,12 @@ import androidx.navigation.navArgument
 import com.anilist.fragment.StaffHeaderData
 import com.anilist.fragment.StaffNavigationData
 import com.thekeeperofpie.artistalleydatabase.android_utils.UriUtils
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffUtils.primaryName
+import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffUtils.subtitleName
 import com.thekeeperofpie.artistalleydatabase.anime.ui.CoverAndBannerHeader
 import com.thekeeperofpie.artistalleydatabase.anime.ui.FavoriteIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.AutoResizeHeightText
@@ -80,7 +83,7 @@ fun StaffHeader(
         reserveMenuWidth = false,
     ) {
         AutoResizeHeightText(
-            text = headerValues.name,
+            text = headerValues.name(),
             style = MaterialTheme.typography.headlineLarge,
             modifier = Modifier
                 .fillMaxWidth()
@@ -89,7 +92,7 @@ fun StaffHeader(
         )
 
         Row(verticalAlignment = Alignment.Bottom) {
-            val subtitleText = headerValues.subtitle
+            val subtitleText = headerValues.subtitle()
             AnimatedVisibility(
                 subtitleText.isNotEmpty(),
                 label = "Staff details subtitle text",
@@ -175,16 +178,13 @@ class StaffHeaderValues(
 
         fun routeSuffix(
             staff: StaffHeaderData?,
+            languageOption: AniListLanguageOption,
             favorite: Boolean?,
             imageWidthToHeightRatio: Float,
             color: Color?,
         ) = if (staff == null) "" else routeSuffix(
-            name = staff.name?.userPreferred,
-            subtitle = StaffUtils.subtitleName(
-                userPreferred = staff.name?.userPreferred,
-                native = staff.name?.native,
-                full = staff.name?.full,
-            ),
+            name = staff.name?.primaryName(languageOption),
+            subtitle = staff.name?.subtitleName(languageOption),
             image = staff.image?.large,
             imageWidthToHeightRatio = imageWidthToHeightRatio,
             color = color,
@@ -193,12 +193,13 @@ class StaffHeaderValues(
 
         fun routeSuffix(
             staff: StaffNavigationData?,
+            languageOption: AniListLanguageOption,
             favorite: Boolean?,
             imageWidthToHeightRatio: Float,
             color: Color?,
         ) = if (staff == null) "" else routeSuffix(
-            name = staff.name?.userPreferred,
-            subtitle = null,
+            name = staff.name?.primaryName(languageOption),
+            subtitle = staff.name?.subtitleName(languageOption),
             image = staff.image?.large,
             imageWidthToHeightRatio = imageWidthToHeightRatio,
             color = color,
@@ -236,18 +237,14 @@ class StaffHeaderValues(
 
     val image
         get() = staff()?.image?.large ?: _image
-    val name
-        get() = staff()?.name?.userPreferred ?: _name ?: ""
-    val subtitle
-        get() = staff()?.name?.run {
-            StaffUtils.subtitleName(
-                userPreferred = userPreferred,
-                native = native,
-                full = full,
-            )
-        } ?: _subtitle ?: ""
     val favorite
         get() = favoriteUpdate() ?: staff()?.isFavourite ?: _favorite
+
+    @Composable
+    fun name() = staff()?.name?.primaryName() ?: _name ?: ""
+
+    @Composable
+    fun subtitle() = staff()?.name?.subtitleName() ?: _subtitle ?: ""
 
     fun color(colorCalculationState: ColorCalculationState) =
         colorCalculationState.getColors(staff()?.id?.toString()).first

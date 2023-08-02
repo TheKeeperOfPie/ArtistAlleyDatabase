@@ -3,6 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.anime.media.details
 import android.app.Application
 import android.os.SystemClock
 import android.util.Log
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
@@ -20,6 +21,7 @@ import androidx.paging.cachedIn
 import androidx.paging.map
 import com.anilist.MediaActivityPageQuery
 import com.anilist.MediaDetailsQuery
+import com.anilist.fragment.CharacterNameLanguageFragment
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
@@ -37,6 +39,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityStatusAware
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityToggleHelper
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils
+import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.primaryName
 import com.thekeeperofpie.artistalleydatabase.anime.character.DetailsCharacter
 import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoritesController
 import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoritesToggleHelper
@@ -315,7 +318,7 @@ class AnimeMediaDetailsViewModel @Inject constructor(
                                         it.node?.let {
                                             DetailsStaff(
                                                 id = it.id.toString(),
-                                                name = it.name?.userPreferred,
+                                                name = it.name,
                                                 image = it.image?.large,
                                                 role = role,
                                                 staff = it
@@ -328,7 +331,7 @@ class AnimeMediaDetailsViewModel @Inject constructor(
                                 result.pageInfo to result.edges.filterNotNull().map {
                                     DetailsStaff(
                                         id = it.node.id.toString(),
-                                        name = it.node.name?.userPreferred,
+                                        name = it.node.name,
                                         image = it.node.image?.large,
                                         role = it.role,
                                         staff = it.node,
@@ -466,7 +469,8 @@ class AnimeMediaDetailsViewModel @Inject constructor(
             AnimeSongEntry.Artist.Character(
                 aniListId = it.id.toString(),
                 image = it.image?.large,
-                name = it.name?.userPreferred ?: artist.character ?: "",
+                name = it.name,
+                fallbackName = artist.character,
             )
         }
 
@@ -580,9 +584,13 @@ class AnimeMediaDetailsViewModel @Inject constructor(
             data class Character(
                 val aniListId: String,
                 val image: String?,
-                val name: String,
+                private val name: CharacterNameLanguageFragment?,
+                private val fallbackName: String?,
             ) {
                 val link by lazy { AniListUtils.characterUrl(aniListId) }
+
+                @Composable
+                fun name() = name?.primaryName() ?: fallbackName ?: ""
             }
         }
     }

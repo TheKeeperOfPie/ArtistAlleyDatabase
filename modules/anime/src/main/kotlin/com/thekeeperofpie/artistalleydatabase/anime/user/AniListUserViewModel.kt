@@ -192,7 +192,7 @@ class AniListUserViewModel @Inject constructor(
             map = { (staff, primaryOccupations) ->
                 DetailsStaff(
                     id = staff.id.toString(),
-                    name = staff.name?.userPreferred,
+                    name = staff.name,
                     image = staff.image?.large,
                     role = primaryOccupations?.filterNotNull()?.firstOrNull(),
                     staff = staff,

@@ -1226,14 +1226,14 @@ object AnimeMediaDetailsScreen {
                             } else if (artist.asCharacter) {
                                 stringResource(
                                     R.string.anime_media_details_song_artist_as_character,
-                                    artist.character.name,
+                                    artist.character.name(),
                                     artist.name,
                                 )
                             } else {
                                 stringResource(
                                     R.string.anime_media_details_song_artist_with_character,
                                     artist.name,
-                                    artist.character.name,
+                                    artist.character.name(),
                                 )
                             }
 

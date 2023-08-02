@@ -54,6 +54,7 @@ import com.google.accompanist.placeholder.material.shimmer
 import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.CustomHtmlText
@@ -218,7 +219,7 @@ object AnimeMediaLargeCard {
     @Composable
     private fun TitleText(entry: Entry?) {
         Text(
-            text = entry?.title ?: "Loading...",
+            text = entry?.media?.title?.primaryTitle() ?: "Loading...",
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Black,
             modifier = Modifier
@@ -266,8 +267,6 @@ object AnimeMediaLargeCard {
             get() = media.bannerImage
         val color: Color?
             get() = media.coverImage?.color?.let(ComposeColorUtils::hexToColor)
-        val title: String?
-            get() = media.title?.userPreferred
 
         val rating: Int?
             get() = media.averageScore

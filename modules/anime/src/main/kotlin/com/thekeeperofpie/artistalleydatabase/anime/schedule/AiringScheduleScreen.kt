@@ -247,7 +247,6 @@ object AiringScheduleScreen {
                                                 onLongClick = viewModel::onLongClickEntry,
                                                 nextAiringEpisode = schedule?.data?.let {
                                                     NextAiringEpisode(
-                                                        id = it.id,
                                                         episode = it.episode,
                                                         airingAt = it.airingAt,
                                                     )

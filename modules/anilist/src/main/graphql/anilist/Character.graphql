@@ -79,15 +79,15 @@ fragment DetailsCharacterEdge on CharacterEdge {
         ...StaffNavigationData
         languageV2
         name {
-            full
             alternative
+            ...StaffNameLanguageFragment
         }
     }
     node @nonnull {
         ...CharacterNavigationData
         name {
-            full
             alternative
+            ...CharacterNameLanguageFragment
         }
     }
 }
@@ -95,7 +95,7 @@ fragment DetailsCharacterEdge on CharacterEdge {
 fragment CharacterNavigationData on Character {
     id
     name {
-        userPreferred
+        ...CharacterNameLanguageFragment
     }
     image {
         large
@@ -106,11 +106,9 @@ fragment CharacterHeaderData on Character {
     ...CharacterNavigationData
     id
     name {
-        full
         alternative
         alternativeSpoiler
-        native
-        userPreferred
+        ...CharacterNameLanguageFragment
     }
     image {
         large
@@ -287,4 +285,10 @@ query CharacterAndMediasPagination(
             }
         }
     }
+}
+
+fragment CharacterNameLanguageFragment on CharacterName {
+    full
+    native
+    userPreferred
 }

@@ -28,6 +28,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterSmallCard
+import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.primaryName
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
@@ -119,7 +120,7 @@ object StaffMediaScreen {
                                     )
                                 }
 
-                                it.character.name?.userPreferred?.let {
+                                it.character.name?.primaryName()?.let {
                                     AutoHeightText(
                                         text = it,
                                         color = textColor,

@@ -149,7 +149,7 @@ class AnimeCharacterDetailsViewModel @Inject constructor(
                             ?.map {
                                 DetailsStaff(
                                     id = it.id.toString(),
-                                    name = it.name?.userPreferred,
+                                    name = it.name,
                                     image = it.image?.large,
                                     role = it.languageV2,
                                     staff = it,

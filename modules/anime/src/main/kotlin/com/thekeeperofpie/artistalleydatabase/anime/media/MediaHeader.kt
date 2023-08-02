@@ -24,6 +24,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -45,8 +46,10 @@ import com.anilist.type.MediaSeason
 import com.anilist.type.MediaType
 import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.android_utils.UriUtils
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.ui.CoverAndBannerHeader
 import com.thekeeperofpie.artistalleydatabase.anime.ui.FavoriteIconButton
@@ -75,7 +78,12 @@ fun MediaHeader(
     onCoverImageSharedElementFractionChanged: ((Float) -> Unit)? = null,
     menuContent: (@Composable () -> Unit)? = null,
 ) {
-    var preferredTitle by remember { mutableStateOf<Int?>(null) }
+    val defaultTitle = headerValues.title()
+    var preferredTitle by remember(defaultTitle, titles) {
+        mutableIntStateOf(
+            titles?.indexOf(defaultTitle)?.coerceAtLeast(0) ?: 0
+        )
+    }
     SharedElement(
         key = "anime_media_${mediaId}_header",
         screenKey = screenKey,
@@ -96,8 +104,7 @@ fun MediaHeader(
             bannerImage = { headerValues.bannerImage },
             onClickEnabled = (titles?.size ?: 0) > 1,
             onClick = {
-                preferredTitle =
-                    ((preferredTitle ?: 0) + 1) % (titles?.size ?: 1)
+                preferredTitle = (preferredTitle + 1) % (titles?.size ?: 1)
             },
             coverImageOnSuccess = {
                 onImageWidthToHeightRatioAvailable(it.widthToHeightRatio())
@@ -116,10 +123,7 @@ fun MediaHeader(
             Column {
                 Row(modifier = Modifier.weight(1f)) {
                     AutoResizeHeightText(
-                        text = when (val index = preferredTitle) {
-                            null -> null
-                            else -> titles?.get(index)
-                        } ?: headerValues.titleText,
+                        text = titles?.get(preferredTitle) ?: headerValues.title(),
                         style = MaterialTheme.typography.headlineLarge,
                         modifier = Modifier
                             .fillMaxHeight()
@@ -312,13 +316,14 @@ class MediaHeaderValues(
 
         fun routeSuffix(
             media: MediaHeaderData?,
+            languageOption: AniListLanguageOption,
             favorite: Boolean?,
             imageWidthToHeightRatio: Float,
         ) =
             if (media == null) {
                 ""
             } else {
-                "&title=${media.title?.userPreferred}" +
+                "&title=${media.title?.primaryTitle(languageOption)}" +
                         "&subtitleFormatRes=${media.format.toTextRes()}" +
                         "&subtitleStatusRes=${media.status.toTextRes()}" +
                         "&subtitleSeason=${media.season}" +
@@ -365,8 +370,6 @@ class MediaHeaderValues(
         get() = media()?.coverImage?.extraLarge ?: _coverImage
     val bannerImage
         get() = media()?.bannerImage ?: _bannerImage
-    val titleText
-        get() = media()?.title?.userPreferred ?: _title ?: ""
     val nextEpisode
         get() = media()?.nextAiringEpisode?.episode
             ?: _nextEpisode
@@ -377,6 +380,9 @@ class MediaHeaderValues(
         get() = favoriteUpdate() ?: media()?.isFavourite ?: _favorite
     val type
         get() = media()?.type ?: _type
+
+    @Composable
+    fun title() = media()?.title?.primaryTitle() ?: _title ?: ""
 
     @Composable
     fun subtitleText() = media()?.let {

@@ -19,7 +19,7 @@ fragment UserFavoriteMediaNode on Media {
         extraLarge
     }
     title {
-        userPreferred
+        ...MediaTitleFragment
     }
     format
     averageScore

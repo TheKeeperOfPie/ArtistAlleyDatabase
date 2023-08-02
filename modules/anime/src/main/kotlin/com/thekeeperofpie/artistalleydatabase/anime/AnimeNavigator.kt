@@ -3,7 +3,6 @@ package com.thekeeperofpie.artistalleydatabase.anime
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.Dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -17,13 +16,14 @@ import com.anilist.fragment.CharacterHeaderData
 import com.anilist.fragment.CharacterNavigationData
 import com.anilist.fragment.MediaHeaderData
 import com.anilist.fragment.MediaNavigationData
+import com.anilist.fragment.MediaPreview
 import com.anilist.fragment.MediaPreviewWithDescription
 import com.anilist.fragment.StaffHeaderData
 import com.anilist.fragment.StaffNavigationData
-import com.anilist.fragment.UserFavoriteMediaNode
 import com.anilist.fragment.UserNavigationData
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anime.activity.AnimeActivityScreen
 import com.thekeeperofpie.artistalleydatabase.anime.activity.details.ActivityDetailsScreen
@@ -41,6 +41,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.list.AnimeUserListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.list.AnimeUserListViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderValues
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.media.activity.MediaActivitiesScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.activity.MediaActivitiesViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDetailsScreen
@@ -71,7 +72,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.user.UserHeaderValues
 import com.thekeeperofpie.artistalleydatabase.cds.CdEntryNavigator
 import com.thekeeperofpie.artistalleydatabase.cds.grid.CdEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
-import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.monetization.UnlockScreen
@@ -672,7 +672,9 @@ object AnimeNavigator {
         navGraphBuilder.composable(
             route = AnimeNavDestinations.ACTIVITY_DETAILS.id + "?activityId={activityId}",
             deepLinks = listOf(
-                navDeepLink { uriPattern = "${AniListUtils.ANILIST_BASE_URL}/activity/{activityId}" },
+                navDeepLink {
+                    uriPattern = "${AniListUtils.ANILIST_BASE_URL}/activity/{activityId}"
+                },
                 navDeepLink {
                     uriPattern = "${AniListUtils.ANILIST_BASE_URL}/activity/{activityId}/.*"
                 },
@@ -687,7 +689,8 @@ object AnimeNavigator {
             val arguments = it.arguments!!
             val activityId = arguments.getString("activityId")!!
 
-            val viewModel = hiltViewModel<ActivityDetailsViewModel>().apply { initialize(activityId) }
+            val viewModel =
+                hiltViewModel<ActivityDetailsViewModel>().apply { initialize(activityId) }
 
             ActivityDetailsScreen(
                 upIconOption = UpIconOption.Back(navHostController),
@@ -725,101 +728,106 @@ object AnimeNavigator {
 
     fun onMediaClick(
         navHostController: NavHostController,
-        entry: AnimeMediaListRow.Entry<*>,
+        media: MediaPreview,
+        languageOption: AniListLanguageOption,
         favorite: Boolean?,
         imageWidthToHeightRatio: Float,
     ) = navHostController.navigate(
         AnimeNavDestinations.MEDIA_DETAILS.id +
-                "?mediaId=${entry.media.id}" +
-                MediaHeaderValues.routeSuffix(entry.media, favorite, imageWidthToHeightRatio)
+                "?mediaId=${media.id}" +
+                MediaHeaderValues.routeSuffix(
+                    media = media,
+                    languageOption = languageOption,
+                    favorite = favorite,
+                    imageWidthToHeightRatio = imageWidthToHeightRatio,
+                )
     )
 
     fun onMediaCharactersClick(
         navHostController: NavHostController,
         entry: AnimeMediaDetailsScreen.Entry,
+        languageOption: AniListLanguageOption,
         favorite: Boolean?,
         imageWidthToHeightRatio: Float,
     ) = navHostController.navigate(
         AnimeNavDestinations.MEDIA_CHARACTERS.id +
                 "?mediaId=${entry.mediaId}" +
-                MediaHeaderValues.routeSuffix(entry.media, favorite, imageWidthToHeightRatio)
+                MediaHeaderValues.routeSuffix(
+                    media = entry.media,
+                    languageOption = languageOption,
+                    favorite = favorite,
+                    imageWidthToHeightRatio = imageWidthToHeightRatio,
+                )
     )
 
     fun onMediaReviewsClick(
         navHostController: NavHostController,
         entry: AnimeMediaDetailsScreen.Entry,
+        languageOption: AniListLanguageOption,
         favorite: Boolean?,
         imageWidthToHeightRatio: Float,
     ) = navHostController.navigate(
         AnimeNavDestinations.MEDIA_REVIEWS.id +
                 "?mediaId=${entry.mediaId}" +
-                MediaHeaderValues.routeSuffix(entry.media, favorite, imageWidthToHeightRatio)
+                MediaHeaderValues.routeSuffix(
+                    media = entry.media,
+                    languageOption = languageOption,
+                    favorite = favorite,
+                    imageWidthToHeightRatio = imageWidthToHeightRatio,
+                )
     )
 
     fun onMediaRecommendationsClick(
         navHostController: NavHostController,
         entry: AnimeMediaDetailsScreen.Entry,
+        languageOption: AniListLanguageOption,
         favorite: Boolean?,
         imageWidthToHeightRatio: Float,
     ) = navHostController.navigate(
         AnimeNavDestinations.MEDIA_RECOMMENDATIONS.id +
                 "?mediaId=${entry.mediaId}" +
-                MediaHeaderValues.routeSuffix(entry.media, favorite, imageWidthToHeightRatio)
+                MediaHeaderValues.routeSuffix(
+                    media = entry.media,
+                    languageOption = languageOption,
+                    favorite = favorite,
+                    imageWidthToHeightRatio = imageWidthToHeightRatio,
+                )
     )
 
     fun onMediaActivitiesClick(
         navHostController: NavHostController,
         entry: AnimeMediaDetailsScreen.Entry,
+        languageOption: AniListLanguageOption,
         favorite: Boolean?,
         imageWidthToHeightRatio: Float,
     ) = navHostController.navigate(
         AnimeNavDestinations.MEDIA_ACTIVITIES.id +
                 "?mediaId=${entry.mediaId}" +
-                MediaHeaderValues.routeSuffix(entry.media, favorite, imageWidthToHeightRatio)
-    )
-
-    fun onMediaClick(
-        navHostController: NavHostController,
-        media: UserFavoriteMediaNode,
-        imageWidthToHeightRatio: Float,
-    ) = navHostController.navigate(
-        AnimeNavDestinations.MEDIA_DETAILS.id +
-                "?mediaId=${media.id}" +
-                "&title=${media.title?.userPreferred}" +
-                "&coverImage=${media.coverImage?.extraLarge}" +
-                "&coverImageWidthToHeightRatio=$imageWidthToHeightRatio" +
-                "&color=${media.coverImage?.color?.let(ComposeColorUtils::hexToColor)?.toArgb()}"
+                MediaHeaderValues.routeSuffix(
+                    media = entry.media,
+                    languageOption = languageOption,
+                    favorite = favorite,
+                    imageWidthToHeightRatio = imageWidthToHeightRatio,
+                )
     )
 
     fun onMediaClick(
         navHostController: NavHostController,
         media: MediaNavigationData,
+        languageOption: AniListLanguageOption,
         imageWidthToHeightRatio: Float?,
     ) = navHostController.navigate(
         AnimeNavDestinations.MEDIA_DETAILS.id +
                 "?mediaId=${media.id}" +
-                "&title=${media.title?.userPreferred}" +
+                "&title=${media.title?.primaryTitle(languageOption)}" +
                 "&coverImage=${media.coverImage?.extraLarge}" +
                 imageWidthToHeightRatio?.let { "&coverImageWidthToHeightRatio=$it" }.orEmpty()
-    )
-
-    fun onMediaClick(
-        navHostController: NavHostController,
-        mediaId: String,
-        title: String?,
-        image: String?,
-        imageWidthToHeightRatio: Float,
-    ) = navHostController.navigate(
-        AnimeNavDestinations.MEDIA_DETAILS.id +
-                "?mediaId=$mediaId" +
-                "&title=$title" +
-                "&coverImage=$image" +
-                "&coverImageWidthToHeightRatio=$imageWidthToHeightRatio"
     )
 
     fun onCharacterClick(
         navHostController: NavHostController,
         character: CharacterNavigationData,
+        languageOption: AniListLanguageOption,
         favorite: Boolean?,
         imageWidthToHeightRatio: Float,
         color: Color?,
@@ -828,6 +836,7 @@ object AnimeNavigator {
                 "?characterId=${character.id}" +
                 CharacterHeaderValues.routeSuffix(
                     character,
+                    languageOption,
                     favorite,
                     imageWidthToHeightRatio,
                     color
@@ -837,6 +846,7 @@ object AnimeNavigator {
     fun onCharacterMediasClick(
         navHostController: NavHostController,
         character: CharacterHeaderData,
+        languageOption: AniListLanguageOption,
         favorite: Boolean?,
         imageWidthToHeightRatio: Float,
         color: Color?,
@@ -845,6 +855,7 @@ object AnimeNavigator {
                 "?characterId=${character.id}" +
                 CharacterHeaderValues.routeSuffix(
                     character,
+                    languageOption,
                     favorite ?: character.isFavourite,
                     imageWidthToHeightRatio,
                     color,
@@ -854,18 +865,7 @@ object AnimeNavigator {
     fun onStaffClick(
         navHostController: NavHostController,
         staff: StaffNavigationData,
-        favorite: Boolean?,
-        imageWidthToHeightRatio: Float,
-        color: Color?,
-    ) = navHostController.navigate(
-        AnimeNavDestinations.STAFF_DETAILS.id +
-                "?staffId=${staff.id}" +
-                StaffHeaderValues.routeSuffix(staff, favorite, imageWidthToHeightRatio, color)
-    )
-
-    fun onStaffClick(
-        navHostController: NavHostController,
-        staff: StaffHeaderData,
+        languageOption: AniListLanguageOption,
         favorite: Boolean?,
         imageWidthToHeightRatio: Float,
         color: Color?,
@@ -873,16 +873,37 @@ object AnimeNavigator {
         AnimeNavDestinations.STAFF_DETAILS.id +
                 "?staffId=${staff.id}" +
                 StaffHeaderValues.routeSuffix(
-                    staff,
-                    favorite ?: staff.isFavourite,
-                    imageWidthToHeightRatio,
-                    color,
+                    staff = staff,
+                    languageOption = languageOption,
+                    favorite = favorite,
+                    imageWidthToHeightRatio = imageWidthToHeightRatio,
+                    color = color,
+                )
+    )
+
+    fun onStaffClick(
+        navHostController: NavHostController,
+        staff: StaffHeaderData,
+        languageOption: AniListLanguageOption,
+        favorite: Boolean?,
+        imageWidthToHeightRatio: Float,
+        color: Color?,
+    ) = navHostController.navigate(
+        AnimeNavDestinations.STAFF_DETAILS.id +
+                "?staffId=${staff.id}" +
+                StaffHeaderValues.routeSuffix(
+                    staff = staff,
+                    languageOption = languageOption,
+                    favorite = favorite ?: staff.isFavourite,
+                    imageWidthToHeightRatio = imageWidthToHeightRatio,
+                    color = color,
                 )
     )
 
     fun onStaffCharactersClick(
         navHostController: NavHostController,
         staff: StaffHeaderData,
+        languageOption: AniListLanguageOption,
         favorite: Boolean?,
         imageWidthToHeightRatio: Float,
         color: Color?,
@@ -890,10 +911,11 @@ object AnimeNavigator {
         AnimeNavDestinations.STAFF_CHARACTERS.id +
                 "?staffId=${staff.id}" +
                 StaffHeaderValues.routeSuffix(
-                    staff,
-                    favorite ?: staff.isFavourite,
-                    imageWidthToHeightRatio,
-                    color,
+                    staff = staff,
+                    languageOption = languageOption,
+                    favorite = favorite ?: staff.isFavourite,
+                    imageWidthToHeightRatio = imageWidthToHeightRatio,
+                    color = color,
                 )
     )
 
@@ -925,6 +947,7 @@ object AnimeNavigator {
         navHostController: NavHostController,
         reviewId: String,
         media: MediaHeaderData?,
+        languageOption: AniListLanguageOption,
         favorite: Boolean?,
         imageWidthToHeightRatio: Float,
     ) = navHostController.navigate(
@@ -932,6 +955,7 @@ object AnimeNavigator {
                 "?reviewId=$reviewId" +
                 MediaHeaderValues.routeSuffix(
                     media,
+                    languageOption,
                     favorite ?: media?.isFavourite,
                     imageWidthToHeightRatio,
                 )
@@ -979,37 +1003,49 @@ object AnimeNavigator {
         // Null to make previews easier
         private val navHostController: NavHostController? = null,
         private val cdEntryNavigator: CdEntryNavigator? = null,
+        private val languageOptionMedia: AniListLanguageOption = AniListLanguageOption.DEFAULT,
+        private val languageOptionCharacters: AniListLanguageOption = AniListLanguageOption.DEFAULT,
+        private val languageOptionStaff: AniListLanguageOption = AniListLanguageOption.DEFAULT,
     ) {
-        fun onMediaClick(media: UserFavoriteMediaNode, imageWidthToHeightRatio: Float) {
-            navHostController?.let { onMediaClick(it, media, imageWidthToHeightRatio) }
-        }
-
         fun onMediaClick(
             media: AnimeMediaListRow.Entry<*>,
             favorite: Boolean?,
             imageWidthToHeightRatio: Float,
         ) {
-            navHostController?.let { onMediaClick(it, media, favorite, imageWidthToHeightRatio) }
+            navHostController?.let {
+                onMediaClick(
+                    navHostController = it,
+                    media = media.media,
+                    languageOption = languageOptionMedia,
+                    favorite = favorite,
+                    imageWidthToHeightRatio = imageWidthToHeightRatio
+                )
+            }
         }
 
         fun onMediaClick(
             media: MediaPreviewWithDescription,
             imageWidthToHeightRatio: Float? = null,
         ) {
-            navHostController?.let { onMediaClick(it, media, imageWidthToHeightRatio) }
+            navHostController?.let {
+                onMediaClick(
+                    navHostController = it,
+                    media = media,
+                    languageOption = languageOptionMedia,
+                    imageWidthToHeightRatio = imageWidthToHeightRatio
+                )
+            }
         }
 
         fun onMediaClick(media: MediaNavigationData, imageWidthToHeightRatio: Float) {
-            navHostController?.let { onMediaClick(it, media, imageWidthToHeightRatio) }
-        }
-
-        fun onMediaClick(
-            id: String,
-            title: String?,
-            image: String?,
-            imageWidthToHeightRatio: Float,
-        ) {
-            navHostController?.let { onMediaClick(it, id, title, image, imageWidthToHeightRatio) }
+            navHostController?.let {
+                onMediaClick(
+                    navHostController = it,
+                    media = media,
+                    languageOption = languageOptionMedia,
+                    imageWidthToHeightRatio = imageWidthToHeightRatio
+                )
+            }
         }
 
         fun onMediaCharactersClick(
@@ -1019,10 +1055,11 @@ object AnimeNavigator {
         ) {
             navHostController?.let {
                 onMediaCharactersClick(
-                    it,
-                    media,
-                    favorite,
-                    imageWidthToHeightRatio
+                    navHostController = it,
+                    entry = media,
+                    languageOption = languageOptionMedia,
+                    favorite = favorite,
+                    imageWidthToHeightRatio = imageWidthToHeightRatio
                 )
             }
         }
@@ -1034,10 +1071,11 @@ object AnimeNavigator {
         ) {
             navHostController?.let {
                 onMediaReviewsClick(
-                    it,
-                    media,
-                    favorite,
-                    imageWidthToHeightRatio
+                    navHostController = it,
+                    entry = media,
+                    languageOption = languageOptionMedia,
+                    favorite = favorite,
+                    imageWidthToHeightRatio = imageWidthToHeightRatio
                 )
             }
         }
@@ -1048,7 +1086,13 @@ object AnimeNavigator {
             imageWidthToHeightRatio: Float,
         ) {
             navHostController?.let {
-                onMediaRecommendationsClick(it, media, favorite, imageWidthToHeightRatio)
+                onMediaRecommendationsClick(
+                    navHostController = it,
+                    entry = media,
+                    languageOption = languageOptionMedia,
+                    favorite = favorite,
+                    imageWidthToHeightRatio = imageWidthToHeightRatio
+                )
             }
         }
 
@@ -1058,7 +1102,13 @@ object AnimeNavigator {
             imageWidthToHeightRatio: Float,
         ) {
             navHostController?.let {
-                onMediaActivitiesClick(it, media, favorite, imageWidthToHeightRatio)
+                onMediaActivitiesClick(
+                    navHostController = it,
+                    entry = media,
+                    languageOption = languageOptionMedia,
+                    favorite = favorite,
+                    imageWidthToHeightRatio = imageWidthToHeightRatio
+                )
             }
         }
 
@@ -1081,7 +1131,14 @@ object AnimeNavigator {
             color: Color?,
         ) {
             navHostController?.let {
-                onCharacterClick(it, character, favorite, imageWidthToHeightRatio, color)
+                onCharacterClick(
+                    navHostController = it,
+                    character = character,
+                    languageOption = languageOptionCharacters,
+                    favorite = favorite,
+                    imageWidthToHeightRatio = imageWidthToHeightRatio,
+                    color = color
+                )
             }
         }
 
@@ -1092,7 +1149,14 @@ object AnimeNavigator {
             color: Color?,
         ) {
             navHostController?.let {
-                onCharacterMediasClick(it, character, favorite, imageWidthToHeightRatio, color)
+                onCharacterMediasClick(
+                    navHostController = it,
+                    character = character,
+                    languageOption = languageOptionCharacters,
+                    favorite = favorite,
+                    imageWidthToHeightRatio = imageWidthToHeightRatio,
+                    color = color
+                )
             }
         }
 
@@ -1108,11 +1172,12 @@ object AnimeNavigator {
         ) {
             navHostController?.let {
                 onStaffClick(
-                    it,
-                    staff,
-                    favorite,
-                    imageWidthToHeightRatio,
-                    color
+                    navHostController = it,
+                    staff = staff,
+                    languageOption = languageOptionStaff,
+                    favorite = favorite,
+                    imageWidthToHeightRatio = imageWidthToHeightRatio,
+                    color = color,
                 )
             }
         }
@@ -1124,7 +1189,14 @@ object AnimeNavigator {
             color: Color?,
         ) {
             navHostController?.let {
-                onStaffCharactersClick(it, staff, favorite, imageWidthToHeightRatio, color)
+                onStaffCharactersClick(
+                    navHostController = it,
+                    staff = staff,
+                    languageOption = languageOptionStaff,
+                    favorite = favorite,
+                    imageWidthToHeightRatio = imageWidthToHeightRatio,
+                    color = color,
+                )
             }
         }
 
@@ -1165,11 +1237,12 @@ object AnimeNavigator {
         ) {
             navHostController?.let {
                 onReviewClick(
-                    it,
-                    reviewId,
-                    media,
-                    favorite,
-                    imageWidthToHeightRatio,
+                    navHostController = it,
+                    reviewId = reviewId,
+                    media = media,
+                    languageOption = languageOptionMedia,
+                    favorite = favorite,
+                    imageWidthToHeightRatio = imageWidthToHeightRatio,
                 )
             }
         }

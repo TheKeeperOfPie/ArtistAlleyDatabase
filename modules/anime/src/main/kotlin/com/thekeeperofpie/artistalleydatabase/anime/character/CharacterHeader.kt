@@ -35,9 +35,12 @@ import com.anilist.fragment.CharacterHeaderData
 import com.anilist.fragment.CharacterNavigationData
 import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.android_utils.UriUtils
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.primaryName
+import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.subtitleName
 import com.thekeeperofpie.artistalleydatabase.anime.ui.CoverAndBannerHeader
 import com.thekeeperofpie.artistalleydatabase.anime.ui.FavoriteIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.AutoResizeHeightText
@@ -87,7 +90,7 @@ fun CharacterHeader(
             reserveMenuWidth = false,
         ) {
             AutoResizeHeightText(
-                text = headerValues.name,
+                text = headerValues.name(),
                 style = MaterialTheme.typography.headlineLarge,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -96,7 +99,7 @@ fun CharacterHeader(
             )
 
             Row(verticalAlignment = Alignment.Bottom) {
-                val subtitle = headerValues.subtitle
+                val subtitle = headerValues.subtitle()
                 AnimatedVisibility(
                     subtitle.isNotEmpty(),
                     label = "Character details subtitle text",
@@ -182,16 +185,13 @@ class CharacterHeaderValues(
 
         fun routeSuffix(
             character: CharacterHeaderData?,
+            languageOption: AniListLanguageOption,
             favorite: Boolean?,
             imageWidthToHeightRatio: Float,
             color: Color?,
         ) = if (character == null) "" else routeSuffix(
-            name = character.name?.userPreferred,
-            subtitle = CharacterUtils.subtitleName(
-                userPreferred = character.name?.userPreferred,
-                native = character.name?.native,
-                full = character.name?.full,
-            ),
+            name = character.name?.primaryName(languageOption),
+            subtitle = character.name?.subtitleName(languageOption),
             favorite = favorite,
             image = character.image?.large,
             imageWidthToHeightRatio = imageWidthToHeightRatio,
@@ -200,12 +200,13 @@ class CharacterHeaderValues(
 
         fun routeSuffix(
             character: CharacterNavigationData?,
+            languageOption: AniListLanguageOption,
             favorite: Boolean?,
             imageWidthToHeightRatio: Float,
             color: Color?,
         ) = if (character == null) "" else routeSuffix(
-            name = character.name?.userPreferred,
-            subtitle = null,
+            name = character.name?.primaryName(languageOption),
+            subtitle = character.name?.subtitleName(languageOption),
             favorite = favorite,
             image = character.image?.large,
             imageWidthToHeightRatio = imageWidthToHeightRatio,
@@ -243,18 +244,14 @@ class CharacterHeaderValues(
 
     val image
         get() = character()?.image?.large ?: _image
-    val name
-        get() = character()?.name?.userPreferred ?: _name ?: ""
     val favorite
         get() = favoriteUpdate() ?: character()?.isFavourite ?: _favorite
-    val subtitle
-        get() = character()?.name?.run {
-            CharacterUtils.subtitleName(
-                userPreferred = userPreferred,
-                native = native,
-                full = full,
-            )
-        } ?: _subtitle ?: ""
+
+    @Composable
+    fun name() = character()?.name?.primaryName() ?: _name ?: ""
+
+    @Composable
+    fun subtitle() = character()?.name?.subtitleName() ?: _subtitle ?: ""
 
     fun color(colorCalculationState: ColorCalculationState) =
         colorCalculationState.getColors(character()?.id?.toString()).first

@@ -71,6 +71,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
 import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.primaryName
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.AutoSizeText
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
@@ -297,7 +298,7 @@ fun LazyListScope.charactersSection(
                     },
                 ) { textColor ->
                     AutoHeightText(
-                        text = character?.name.orEmpty(),
+                        text = character?.name?.primaryName().orEmpty(),
                         color = textColor,
                         style = MaterialTheme.typography.bodyMedium.copy(
                             lineBreak = LineBreak(
@@ -394,7 +395,7 @@ fun CharacterCard(
                         .padding(vertical = 10.dp)
                 ) {
                     Text(
-                        text = character?.name ?: "FirstName LastName",
+                        text = character?.name?.primaryName() ?: "FirstName LastName",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Black,
                         modifier = Modifier.placeholder(

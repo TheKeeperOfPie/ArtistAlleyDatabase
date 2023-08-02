@@ -106,6 +106,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.activity.TextActivitySmallCa
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaLargeCard
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListQuickEditIconButton
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.media.UserMediaListController
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
@@ -739,7 +740,7 @@ object AnimeHomeScreen {
 
                     if (showTitle) {
                         AutoResizeHeightText(
-                            text = media.title?.userPreferred.orEmpty(),
+                            text = media.title?.primaryTitle().orEmpty(),
                             style = MaterialTheme.typography.bodyMedium,
                             color = ComposeColorUtils.bestTextColor(containerColor)
                                 ?: Color.Unspecified,

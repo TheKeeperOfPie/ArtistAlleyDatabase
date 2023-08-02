@@ -22,6 +22,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
 import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
 import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterSmallCard
+import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffUtils.primaryName
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.DetailsSectionHeader
@@ -92,7 +93,7 @@ fun LazyListScope.staffSection(
                     }
 
                     AutoHeightText(
-                        text = staff?.name.orEmpty(),
+                        text = staff?.name?.primaryName().orEmpty(),
                         color = textColor,
                         style = MaterialTheme.typography.bodyMedium.copy(
                             lineBreak = LineBreak(

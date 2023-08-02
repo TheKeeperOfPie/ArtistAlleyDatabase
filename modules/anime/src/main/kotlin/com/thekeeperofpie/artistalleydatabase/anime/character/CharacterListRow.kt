@@ -62,6 +62,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
 import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.primaryName
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.ui.ListRowSmallImage
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
@@ -80,8 +81,7 @@ object CharacterListRow {
         showRole: Boolean = false,
         onLongPressImage: (Entry) -> Unit = {},
         colorCalculationState: ColorCalculationState = ColorCalculationState(),
-        navigationCallback: AnimeNavigator.NavigationCallback =
-            AnimeNavigator.NavigationCallback(null),
+        navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
         var imageWidthToHeightRatio by remember { MutableSingle(1f) }
         val onClick = {
@@ -214,7 +214,7 @@ object CharacterListRow {
     @Composable
     private fun NameText(entry: Entry?, modifier: Modifier = Modifier) {
         Text(
-            text = entry?.character?.name?.userPreferred ?: "Loading...",
+            text = entry?.character?.name?.primaryName() ?: "Loading...",
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Black,
             modifier = modifier

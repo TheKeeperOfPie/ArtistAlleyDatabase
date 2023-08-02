@@ -199,12 +199,12 @@ object UserStatsDetailScreen {
                                 image = media?.coverImage?.extraLarge,
                                 loading = media == null,
                                 onClick = { ratio ->
-                                    navigationCallback.onMediaClick(
-                                        id = it.toString(),
-                                        title = media?.title?.userPreferred,
-                                        image = media?.coverImage?.extraLarge,
-                                        imageWidthToHeightRatio = ratio,
-                                    )
+                                    if (media != null) {
+                                        navigationCallback.onMediaClick(
+                                            media = media,
+                                            imageWidthToHeightRatio = ratio,
+                                        )
+                                    }
                                 }
                             )
                         }

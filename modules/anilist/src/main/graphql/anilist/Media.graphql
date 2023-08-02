@@ -29,29 +29,11 @@ fragment MediaWithListStatus on Media {
 fragment MediaPreview on Media {
     ...MediaHeaderData
     ...MediaWithListStatus
-    bannerImage
-    coverImage {
-        color
-        extraLarge
-    }
-    title {
-        userPreferred
-    }
-    nextAiringEpisode {
-        id
-        episode
-        airingAt
-    }
-    averageScore
     episodes
     volumes
     chapters
-    format
     genres
-    season
-    seasonYear
     source
-    status
     tags {
         ...GeneralMediaTag
         isMediaSpoiler
@@ -62,7 +44,6 @@ fragment MediaPreview on Media {
         month
         day
     }
-    popularity
     externalLinks {
         siteId
     }
@@ -183,7 +164,7 @@ fragment MediaDetailsListEntry on MediaList {
 fragment MediaNavigationData on Media {
     id
     title {
-        userPreferred
+        ...MediaTitleFragment
     }
     coverImage {
         extraLarge
@@ -202,10 +183,7 @@ query MediaDetails($mediaId: Int!) {
             extraLarge
         }
         title {
-            romaji
-            english
-            native
-            userPreferred
+            ...MediaTitleFragment
         }
 
         characters(sort: [RELEVANCE, ROLE, FAVOURITES_DESC], page: 1, perPage: 10) {
@@ -560,11 +538,6 @@ fragment MediaHeaderData on Media {
     coverImage {
         color
     }
-    title {
-        romaji
-        english
-        native
-    }
     format
     status
     season
@@ -723,4 +696,11 @@ query MediaActivityPage($mediaId: Int!, $sort: [ActivitySort]!, $page: Int!, $ac
             ...MediaListActivityItem
         }
     }
+}
+
+fragment MediaTitleFragment on MediaTitle {
+    userPreferred
+    romaji
+    english
+    native
 }

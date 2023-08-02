@@ -1,7 +1,11 @@
 package com.thekeeperofpie.artistalleydatabase.anime.character
 
+import androidx.compose.runtime.Composable
+import com.anilist.fragment.CharacterNameLanguageFragment
 import com.anilist.fragment.DetailsCharacterEdge
 import com.anilist.type.CharacterRole
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
+import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionCharacters
 import com.thekeeperofpie.artistalleydatabase.anime.R
 
 object CharacterUtils {
@@ -15,9 +19,9 @@ object CharacterUtils {
         edge: CharacterEdge,
         role: ((CharacterEdge) -> CharacterRole?)? = null,
     ) = DetailsCharacter(
-        id = edge.node?.id.toString(),
-        name = edge.node?.name?.userPreferred,
-        image = edge.node?.image?.large,
+        id = edge.node.id.toString(),
+        name = edge.node.name,
+        image = edge.node.image?.large,
         languageToVoiceActor = edge.voiceActors?.filterNotNull()
             ?.mapNotNull {
                 it.languageV2?.let { language ->
@@ -43,12 +47,27 @@ object CharacterUtils {
         CharacterRole.UNKNOWN__ -> R.string.anime_character_role_unknown
     }
 
-    fun subtitleName(userPreferred: String?, native: String?, full: String?) =
-        if (native != userPreferred) {
-            native
-        } else if (full != userPreferred) {
-            full
-        } else {
-            null
+    @Composable
+    fun CharacterNameLanguageFragment.primaryName() = primaryName(LocalLanguageOptionCharacters.current)
+
+    fun CharacterNameLanguageFragment.primaryName(languageOption: AniListLanguageOption) =
+        when (languageOption) {
+            AniListLanguageOption.DEFAULT -> userPreferred
+            AniListLanguageOption.NATIVE -> native
+            AniListLanguageOption.ENGLISH,
+            AniListLanguageOption.ROMAJI,
+            -> full
+        }
+
+    @Composable
+    fun CharacterNameLanguageFragment.subtitleName() = subtitleName(LocalLanguageOptionCharacters.current)
+
+    fun CharacterNameLanguageFragment.subtitleName(languageOption: AniListLanguageOption) =
+        when (languageOption) {
+            AniListLanguageOption.DEFAULT -> native.takeIf { it != userPreferred } ?: full
+            AniListLanguageOption.NATIVE -> full.takeIf { it != native } ?: userPreferred
+            AniListLanguageOption.ENGLISH,
+            AniListLanguageOption.ROMAJI,
+            -> native.takeIf { it != full } ?: userPreferred
         }
 }

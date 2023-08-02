@@ -74,6 +74,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
 import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toStatusIcon
 import com.thekeeperofpie.artistalleydatabase.anime.ui.listSection
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
@@ -219,7 +220,7 @@ fun LazyListScope.mediaHorizontalRow(
 
                     if (showTitle) {
                         Text(
-                            text = media?.title?.userPreferred.orEmpty(),
+                            text = media?.title?.primaryTitle().orEmpty(),
                             color = ComposeColorUtils.bestTextColor(containerColor)
                                 ?: Color.Unspecified,
                             style = MaterialTheme.typography.bodyMedium,
@@ -316,13 +317,13 @@ fun MediaRatingIconsSection(
 @Composable
 fun MediaNextAiringSection(nextAiringEpisode: MediaPreview.NextAiringEpisode) {
     val context = LocalContext.current
-    val airingAt = remember(nextAiringEpisode.id) {
+    val airingAt = remember(nextAiringEpisode) {
         MediaUtils.formatAiringAt(context, nextAiringEpisode.airingAt * 1000L)
     }
 
     // TODO: De-dupe airingAt and remainingTime if both show a specific date
     //  (airing > 7 days away)
-    val remainingTime = remember(nextAiringEpisode.id) {
+    val remainingTime = remember(nextAiringEpisode) {
         MediaUtils.formatRemainingTime(nextAiringEpisode.airingAt * 1000L)
     }
 

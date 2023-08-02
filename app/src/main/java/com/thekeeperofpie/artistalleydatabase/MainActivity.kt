@@ -67,6 +67,9 @@ import com.thekeeperofpie.anichive.BuildConfig
 import com.thekeeperofpie.anichive.R
 import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
+import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionCharacters
+import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionMedia
+import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionStaff
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListOAuthStore
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
@@ -169,12 +172,29 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val navHostController = rememberNavController()
+            val languageOptionMedia by settings.languageOptionMedia.collectAsState()
+            val languageOptionCharacters by settings.languageOptionCharacters.collectAsState()
+            val languageOptionStaff by settings.languageOptionStaff.collectAsState()
+
+            val navigationCallback = remember(languageOptionMedia, languageOptionCharacters, languageOptionStaff) {
+                AnimeNavigator.NavigationCallback(
+                    navHostController = navHostController,
+                    cdEntryNavigator = cdEntryNavigator,
+                    languageOptionMedia = languageOptionMedia,
+                    languageOptionCharacters = languageOptionCharacters,
+                    languageOptionStaff = languageOptionStaff,
+                )
+            }
+
             ArtistAlleyDatabaseTheme(settings = settings, navHostController = navHostController) {
                 CompositionLocalProvider(
                     LocalMonetizationProvider provides monetizationProvider,
                     LocalSubscriptionProvider provides subscriptionProvider,
                     LocalMediaTagDialogController provides mediaTagDialogController,
                     LocalAppUpdateChecker provides appUpdateChecker,
+                    LocalLanguageOptionMedia provides languageOptionMedia,
+                    LocalLanguageOptionCharacters provides languageOptionCharacters,
+                    LocalLanguageOptionStaff provides languageOptionStaff,
                 ) {
                     // TODO: Draw inside insets for applicable screens
                     Surface(modifier = Modifier.safeDrawingPadding()) {
@@ -236,6 +256,7 @@ class MainActivity : ComponentActivity() {
                                     unlockDatabaseFeatures = true,
                                     onClickNav = ::onClickNav,
                                     startDestination = startDestination,
+                                    navigationCallback = navigationCallback,
                                 )
                             }
                         } else {
@@ -244,6 +265,7 @@ class MainActivity : ComponentActivity() {
                                 unlockDatabaseFeatures = false,
                                 onClickNav = ::onClickNav,
                                 startDestination = startDestination,
+                                navigationCallback = navigationCallback,
                             )
                         }
                     }
@@ -297,6 +319,7 @@ class MainActivity : ComponentActivity() {
         unlockDatabaseFeatures: Boolean,
         onClickNav: () -> Unit,
         startDestination: String,
+        navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
         val navDrawerUpIconOption =
             UpIconOption.NavDrawer(onClickNav).takeIf { unlockDatabaseFeatures }
@@ -315,12 +338,6 @@ class MainActivity : ComponentActivity() {
                     LocalMonetizationProvider.current?.BannerAdView()
                 }
             }
-
-            val navigationCallback =
-                AnimeNavigator.NavigationCallback(
-                    navHostController,
-                    cdEntryNavigator,
-                )
             Box(
                 modifier = Modifier.weight(1f)
             ) {

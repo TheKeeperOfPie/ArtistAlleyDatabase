@@ -18,6 +18,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.android_utils.notification.NotificationChannels
 import com.thekeeperofpie.artistalleydatabase.android_utils.notification.NotificationIds
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.FilterData
 import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsNetworkCategory
@@ -114,6 +115,10 @@ class SettingsProvider(
     var hideStatusBar = MutableStateFlow(deserialize("hideStatusBar") ?: false)
     var appTheme = MutableStateFlow(deserialize("appTheme") ?: AppThemeSetting.AUTO)
 
+    val languageOptionMedia = MutableStateFlow(deserialize("languageOptionMedia") ?: AniListLanguageOption.DEFAULT)
+    val languageOptionCharacters = MutableStateFlow(deserialize("languageOptionCharacters") ?: AniListLanguageOption.DEFAULT)
+    val languageOptionStaff = MutableStateFlow(deserialize("languageOptionStaff") ?: AniListLanguageOption.DEFAULT)
+
     // Not exported
     var lastCrash = MutableStateFlow(deserialize("lastCrash") ?: "")
     var lastCrashShown = MutableStateFlow(deserialize("lastCrashShown") ?: false)
@@ -200,6 +205,9 @@ class SettingsProvider(
             adsEnabled = adsEnabled.value,
             subscribed = subscribed.value,
             appTheme = appTheme.value,
+            languageOptionMedia = languageOptionMedia.value,
+            languageOptionCharacters = languageOptionCharacters.value,
+            languageOptionStaff = languageOptionStaff.value,
         )
 
     // Initialization separated into its own method so that tests can cancel the StateFlow job
@@ -224,6 +232,9 @@ class SettingsProvider(
         subscribeProperty(scope, ::appTheme)
         subscribeProperty(scope, ::showLessImportantTags)
         subscribeProperty(scope, ::showSpoilerTags)
+        subscribeProperty(scope, ::languageOptionMedia)
+        subscribeProperty(scope, ::languageOptionCharacters)
+        subscribeProperty(scope, ::languageOptionStaff)
 
         scope.launch(CustomDispatchers.IO) {
             ignoredAniListMediaIds.drop(1).collectLatest {
@@ -307,6 +318,9 @@ class SettingsProvider(
         adsEnabled.emit(data.adsEnabled)
         subscribed.emit(data.subscribed)
         appTheme.emit(data.appTheme)
+        languageOptionMedia.emit(data.languageOptionMedia)
+        languageOptionCharacters.emit(data.languageOptionCharacters)
+        languageOptionStaff.emit(data.languageOptionStaff)
     }
 
     private inline fun <reified T> deserialize(name: String): T? {

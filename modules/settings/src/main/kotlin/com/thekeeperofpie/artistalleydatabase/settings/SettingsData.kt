@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.settings
 
 import android.net.Uri
 import com.thekeeperofpie.artistalleydatabase.android_utils.Converters
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.FilterData
 import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsNetworkCategory
 import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsNetworkRegion
@@ -35,4 +36,7 @@ data class SettingsData(
     val adsEnabled: Boolean = false,
     val subscribed: Boolean = false,
     val appTheme: AppThemeSetting = AppThemeSetting.AUTO,
+    val languageOptionMedia: AniListLanguageOption = AniListLanguageOption.DEFAULT,
+    val languageOptionCharacters: AniListLanguageOption = AniListLanguageOption.DEFAULT,
+    val languageOptionStaff: AniListLanguageOption = AniListLanguageOption.DEFAULT,
 )

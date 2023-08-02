@@ -54,6 +54,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
 import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
@@ -237,7 +238,7 @@ object AnimeMediaListRow {
         paddingTop: Dp,
     ) {
         Text(
-            text = entry?.media?.title?.userPreferred ?: "Loading...",
+            text = entry?.media?.title?.primaryTitle() ?: "Loading...",
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Black,
             modifier = Modifier

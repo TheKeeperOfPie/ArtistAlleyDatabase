@@ -55,6 +55,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
 import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffUtils.primaryName
 import com.thekeeperofpie.artistalleydatabase.anime.ui.ListRowFavoritesSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.ListRowSmallImage
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
@@ -190,7 +191,7 @@ object StaffListRow {
     @Composable
     private fun NameText(entry: Entry?, modifier: Modifier = Modifier) {
         Text(
-            text = entry?.staff?.name?.userPreferred ?: "Loading...",
+            text = entry?.staff?.name?.primaryName() ?: "Loading...",
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Black,
             modifier = modifier

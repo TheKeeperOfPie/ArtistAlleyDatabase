@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AppSettingsAlt
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.ColorLens
 import androidx.compose.material.icons.filled.Info
@@ -29,6 +30,7 @@ import androidx.work.WorkManager
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppMetadataProvider
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterEntryDao
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaEntryDao
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListOAuthStore
@@ -81,6 +83,39 @@ class SettingsViewModel @Inject constructor(
                 options = AppThemeSetting.values().toList(),
                 optionToText = { stringResource(it.textRes) },
                 property = settings.appTheme,
+            ),
+        )
+    )
+
+    private val behaviorSection = SettingsSection.Subsection(
+        icon = Icons.Filled.AppSettingsAlt,
+        labelTextRes = R.string.settings_subsection_behavior_label,
+        children = listOf(
+            SettingsSection.Dropdown(
+                labelTextRes = R.string.settings_subsection_behavior_language_option_media_label,
+                options = AniListLanguageOption.values().toList(),
+                optionToText = { stringResource(it.textRes) },
+                property = settings.languageOptionMedia,
+            ),
+            SettingsSection.Dropdown(
+                labelTextRes = R.string.settings_subsection_behavior_language_option_characters_label,
+                options = listOf(
+                    AniListLanguageOption.DEFAULT,
+                    AniListLanguageOption.NATIVE,
+                    AniListLanguageOption.ROMAJI,
+                ),
+                optionToText = { stringResource(it.textRes) },
+                property = settings.languageOptionCharacters,
+            ),
+            SettingsSection.Dropdown(
+                labelTextRes = R.string.settings_subsection_behavior_language_option_staff_label,
+                options = listOf(
+                    AniListLanguageOption.DEFAULT,
+                    AniListLanguageOption.NATIVE,
+                    AniListLanguageOption.ROMAJI,
+                ),
+                optionToText = { stringResource(it.textRes) },
+                property = settings.languageOptionStaff,
             ),
         )
     )
@@ -262,6 +297,7 @@ class SettingsViewModel @Inject constructor(
             }
         },
         themeSection,
+        behaviorSection,
         SettingsSection.Placeholder(id = "featureTiers"),
         aboutSection,
         debugSection.takeIf { !featureOverrideProvider.isReleaseBuild },

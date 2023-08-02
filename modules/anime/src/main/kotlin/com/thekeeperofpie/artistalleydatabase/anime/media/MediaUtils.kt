@@ -22,6 +22,7 @@ import com.anilist.MediaDetailsQuery
 import com.anilist.MediaListEntryQuery
 import com.anilist.fragment.MediaDetailsListEntry
 import com.anilist.fragment.MediaPreview
+import com.anilist.fragment.MediaTitleFragment
 import com.anilist.type.MediaFormat
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaRelation
@@ -30,6 +31,8 @@ import com.anilist.type.MediaSource
 import com.anilist.type.MediaStatus
 import com.anilist.type.MediaType
 import com.anilist.type.ScoreFormat
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
+import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AiringDate
@@ -720,4 +723,15 @@ object MediaUtils {
     } else {
         FavoriteType.MANGA
     }
+
+    @Composable
+    fun MediaTitleFragment.primaryTitle() = primaryTitle(LocalLanguageOptionMedia.current)
+
+    fun MediaTitleFragment.primaryTitle(languageOption: AniListLanguageOption) =
+        when (languageOption) {
+            AniListLanguageOption.DEFAULT -> userPreferred
+            AniListLanguageOption.ENGLISH -> english
+            AniListLanguageOption.NATIVE -> native
+            AniListLanguageOption.ROMAJI -> romaji
+        }
 }

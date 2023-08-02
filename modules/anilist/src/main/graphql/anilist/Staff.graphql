@@ -10,7 +10,7 @@ fragment AniListStaffName on StaffName {
 fragment StaffNavigationData on Staff {
     id
     name {
-        userPreferred
+        ...StaffNameLanguageFragment
     }
     image {
         large
@@ -162,10 +162,8 @@ fragment StaffHeaderData on Staff {
     ...StaffNavigationData
     id
     name {
-        full
         alternative
-        native
-        userPreferred
+        ...StaffNameLanguageFragment
     }
     image {
         large
@@ -208,4 +206,10 @@ query StaffAndCharactersPagination(
             }
         }
     }
+}
+
+fragment StaffNameLanguageFragment on StaffName {
+    full
+    native
+    userPreferred
 }

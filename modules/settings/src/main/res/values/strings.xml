@@ -34,6 +34,11 @@
     <string name="settings_subsection_theme_dark">Dark</string>
     <string name="settings_subsection_theme_light">Light</string>
 
+    <string name="settings_subsection_behavior_label">Behavior</string>
+    <string name="settings_subsection_behavior_language_option_media_label">Media title language</string>
+    <string name="settings_subsection_behavior_language_option_characters_label">Character name language</string>
+    <string name="settings_subsection_behavior_language_option_staff_label">Staff name language</string>
+
     <string name="settings_subsection_about_label">About</string>
     <string name="settings_subsection_about_build_title">Build</string>
     <string name="settings_subsection_about_build_description">Version %1$s (%2$s)</string>

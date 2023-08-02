@@ -81,6 +81,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toStatusIcon
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.ui.StartEndDateDialog
@@ -303,7 +304,7 @@ object AnimeMediaEditBottomSheet {
                 }
 
                 AutoSizeText(
-                    text = media.title?.userPreferred.orEmpty(),
+                    text = media.title?.primaryTitle().orEmpty(),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Black,
                     modifier = Modifier
