@@ -95,7 +95,7 @@ fun CharacterHeader(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)
-                    .padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 4.dp),
+                    .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 4.dp),
             )
 
             Row(verticalAlignment = Alignment.Bottom) {

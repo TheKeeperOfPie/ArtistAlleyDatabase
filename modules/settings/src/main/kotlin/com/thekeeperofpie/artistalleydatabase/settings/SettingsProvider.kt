@@ -12,6 +12,7 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
+import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
@@ -26,6 +27,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsNetworkRegion
 import com.thekeeperofpie.artistalleydatabase.anime.news.CrunchyrollNewsCategory
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntry
 import com.thekeeperofpie.artistalleydatabase.art.persistence.ArtSettings
+import com.thekeeperofpie.artistalleydatabase.compose.AppThemeSetting
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySettings
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationSettings
 import com.thekeeperofpie.artistalleydatabase.network_utils.NetworkSettings
@@ -115,9 +117,14 @@ class SettingsProvider(
     var hideStatusBar = MutableStateFlow(deserialize("hideStatusBar") ?: false)
     var appTheme = MutableStateFlow(deserialize("appTheme") ?: AppThemeSetting.AUTO)
 
-    val languageOptionMedia = MutableStateFlow(deserialize("languageOptionMedia") ?: AniListLanguageOption.DEFAULT)
-    val languageOptionCharacters = MutableStateFlow(deserialize("languageOptionCharacters") ?: AniListLanguageOption.DEFAULT)
-    val languageOptionStaff = MutableStateFlow(deserialize("languageOptionStaff") ?: AniListLanguageOption.DEFAULT)
+    override val preferredMediaType =
+        MutableStateFlow(deserialize("preferredMediaType") ?: MediaType.ANIME)
+    val languageOptionMedia =
+        MutableStateFlow(deserialize("languageOptionMedia") ?: AniListLanguageOption.DEFAULT)
+    val languageOptionCharacters =
+        MutableStateFlow(deserialize("languageOptionCharacters") ?: AniListLanguageOption.DEFAULT)
+    val languageOptionStaff =
+        MutableStateFlow(deserialize("languageOptionStaff") ?: AniListLanguageOption.DEFAULT)
 
     // Not exported
     var lastCrash = MutableStateFlow(deserialize("lastCrash") ?: "")
@@ -205,6 +212,7 @@ class SettingsProvider(
             adsEnabled = adsEnabled.value,
             subscribed = subscribed.value,
             appTheme = appTheme.value,
+            preferredMediaType = preferredMediaType.value,
             languageOptionMedia = languageOptionMedia.value,
             languageOptionCharacters = languageOptionCharacters.value,
             languageOptionStaff = languageOptionStaff.value,
@@ -232,6 +240,7 @@ class SettingsProvider(
         subscribeProperty(scope, ::appTheme)
         subscribeProperty(scope, ::showLessImportantTags)
         subscribeProperty(scope, ::showSpoilerTags)
+        subscribeProperty(scope, ::preferredMediaType)
         subscribeProperty(scope, ::languageOptionMedia)
         subscribeProperty(scope, ::languageOptionCharacters)
         subscribeProperty(scope, ::languageOptionStaff)
@@ -318,6 +327,7 @@ class SettingsProvider(
         adsEnabled.emit(data.adsEnabled)
         subscribed.emit(data.subscribed)
         appTheme.emit(data.appTheme)
+        preferredMediaType.emit(data.preferredMediaType)
         languageOptionMedia.emit(data.languageOptionMedia)
         languageOptionCharacters.emit(data.languageOptionCharacters)
         languageOptionStaff.emit(data.languageOptionStaff)

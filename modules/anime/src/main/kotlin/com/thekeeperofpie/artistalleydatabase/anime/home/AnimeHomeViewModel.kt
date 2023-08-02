@@ -3,7 +3,10 @@
 package com.thekeeperofpie.artistalleydatabase.anime.home
 
 import android.os.SystemClock
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -45,6 +48,7 @@ class AnimeHomeViewModel @Inject constructor(
     settings: AnimeSettings,
 ) : ViewModel() {
 
+    val preferredMediaType= settings.preferredMediaType.value
     val viewer = aniListApi.authedUser
     val colorMap = mutableStateMapOf<String, Pair<Color, Color>>()
     val activityToggleHelper =

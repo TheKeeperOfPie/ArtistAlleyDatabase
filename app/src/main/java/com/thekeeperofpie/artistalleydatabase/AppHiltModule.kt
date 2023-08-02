@@ -137,11 +137,13 @@ object AppHiltModule {
     @Provides
     fun provideMonetizationFeatureOverrideProvider(
         aniListApi: AuthedAniListApi,
-    ): MonetizationOverrideProvider = AppMonetizationOverrideProvider(aniListApi)
+        featureOverrideProvider: FeatureOverrideProvider,
+    ): MonetizationOverrideProvider =
+        AppMonetizationOverrideProvider(aniListApi, featureOverrideProvider)
 
     @Singleton
     @Provides
-    fun provideAppMetadataProvider(): AppMetadataProvider = object : AppMetadataProvider{
+    fun provideAppMetadataProvider(): AppMetadataProvider = object : AppMetadataProvider {
         override val versionCode = BuildConfig.VERSION_CODE
         override val versionName = BuildConfig.VERSION_NAME
     }

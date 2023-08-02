@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
@@ -27,6 +28,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -39,22 +41,20 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.google.accompanist.pager.HorizontalPagerIndicator
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
-import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.compose.fadingEdgeBottom
 import com.thekeeperofpie.artistalleydatabase.monetization.UnlockScreen.AdsTier
 import com.thekeeperofpie.artistalleydatabase.monetization.UnlockScreen.FreeTier
@@ -83,6 +83,12 @@ object UnlockScreen {
                     duration = SnackbarDuration.Indefinite,
                 )
                 monetizationProvider.error = null
+            }
+        }
+
+        if (bottomNavigationState != null) {
+            SideEffect {
+                bottomNavigationState.reset()
             }
         }
 
@@ -120,59 +126,50 @@ object UnlockScreen {
                     )
                 )
             },
-            modifier = Modifier.conditionally(bottomNavigationState != null) {
-                nestedScroll(bottomNavigationState!!.nestedScrollConnection)
-            }
         ) {
             val pagerState = rememberPagerState(pageCount = { 3 })
             val adsEnabled by viewModel.adsEnabled.collectAsState()
             val subscribed by viewModel.subscribed.collectAsState(false)
-            Box {
-                HorizontalPager(
-                    state = pagerState,
-                    contentPadding = PaddingValues(
-                        start = 24.dp,
-                        end = 24.dp,
-                        top = 24.dp,
-                        bottom = 88.dp,
-                    ),
-                    pageSpacing = 16.dp,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(it)
-                ) {
-                    when (it) {
-                        0 -> FreeTier()
-                        1 -> AdsTier(
-                            adsEnabled = { adsEnabled },
-                            onChangeEnableAds = {
-                                if (it) {
-                                    monetizationProvider?.requestEnableAds()
-                                        ?: viewModel.enableAdsDebug()
-                                } else {
-                                    monetizationProvider?.revokeAds()
-                                        ?: viewModel.disableAdsDebug()
-                                }
-                            },
-                            subscribed = { subscribed },
-                        )
-                        2 -> SubscriptionTier(subscribed = { subscribed })
-                    }
+            HorizontalPager(
+                state = pagerState,
+                contentPadding = PaddingValues(
+                    start = 24.dp,
+                    end = 24.dp,
+                    top = 10.dp,
+                    bottom = 24.dp + (bottomNavigationState?.bottomNavBarPadding() ?: 0.dp),
+                ),
+                pageSpacing = 16.dp,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(it)
+            ) {
+                when (it) {
+                    0 -> FreeTier()
+                    1 -> AdsTier(
+                        adsEnabled = { adsEnabled },
+                        onChangeEnableAds = {
+                            if (it) {
+                                monetizationProvider?.requestEnableAds()
+                                    ?: viewModel.enableAdsDebug()
+                            } else {
+                                monetizationProvider?.revokeAds()
+                                    ?: viewModel.disableAdsDebug()
+                            }
+                        },
+                        subscribed = { subscribed },
+                    )
+                    2 -> SubscriptionTier(subscribed = { subscribed })
                 }
-
-                HorizontalPagerIndicator(
-                    pagerState = pagerState,
-                    pageCount = pagerState.pageCount,
-                    modifier = Modifier
-                        .padding(bottom = 104.dp)
-                        .align(Alignment.BottomCenter)
-                )
             }
         }
     }
 
     @Composable
-    private fun Tier(@StringRes headerTextRes: Int, content: @Composable ColumnScope.() -> Unit) {
+    private fun Tier(
+        @StringRes headerTextRes: Int,
+        footer: @Composable ColumnScope.() -> Unit = {},
+        content: @Composable ColumnScope.() -> Unit,
+    ) {
         val colorPrimary = MaterialTheme.colorScheme.primary
         val cardBorder = remember { BorderStroke(2.dp, colorPrimary) }
         OutlinedCard(
@@ -181,27 +178,33 @@ object UnlockScreen {
             ),
             border = cardBorder,
         ) {
-            Box(
-                contentAlignment = Alignment.Center, modifier = Modifier
-                    .fillMaxSize()
-                    .fadingEdgeBottom(firstStop = 0.9f)
-            ) {
-                Column(
-                    modifier = Modifier.verticalScroll(rememberScrollState())
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Box(
+                    contentAlignment = Alignment.Center, modifier = Modifier
+                        .weight(1f)
+                        .fadingEdgeBottom(firstStop = 0.9f)
                 ) {
-                    Text(
-                        text = stringResource(headerTextRes),
-                        style = MaterialTheme.typography.headlineLarge,
-                        modifier = Modifier
-                            .padding(start = 32.dp, end = 32.dp, top = 32.dp, bottom = 16.dp)
-                            .align(Alignment.CenterHorizontally)
-                    )
+                    Column(
+                        modifier = Modifier.verticalScroll(rememberScrollState())
+                    ) {
+                        Text(
+                            text = stringResource(headerTextRes),
+                            style = MaterialTheme.typography.headlineLarge,
+                            modifier = Modifier
+                                .padding(horizontal = 32.dp, vertical = 10.dp)
+                                .align(Alignment.CenterHorizontally)
+                        )
 
-                    // TODO: Move strings to resources
-                    content()
+                        // TODO: Move strings to resources
+                        content()
 
-                    Spacer(Modifier.height(16.dp))
+                        Spacer(Modifier.height(16.dp))
+                    }
                 }
+
+                HorizontalDivider(color = MaterialTheme.colorScheme.primary)
+
+                footer()
             }
         }
     }
@@ -243,7 +246,36 @@ object UnlockScreen {
         onChangeEnableAds: (Boolean) -> Unit,
         subscribed: () -> Boolean,
     ) {
-        Tier(R.string.monetization_feature_tier_ads_header) {
+        Tier(
+            headerTextRes = R.string.monetization_feature_tier_ads_header,
+            footer = {
+                if (subscribed()) {
+                    Text(
+                        text = stringResource(R.string.monetization_subscribed_ads_not_needed),
+                        modifier = Modifier
+                            .align(Alignment.CenterHorizontally)
+                            .padding(horizontal = 16.dp, vertical = 10.dp)
+                    )
+                } else {
+                    val adsEnabled = adsEnabled()
+                    Button(
+                        onClick = { onChangeEnableAds(!adsEnabled) },
+                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                            .padding(vertical = 10.dp)
+                    ) {
+                        Text(
+                            text = stringResource(
+                                if (adsEnabled) {
+                                    R.string.monetization_disable_ads_button
+                                } else {
+                                    R.string.monetization_enable_ads_button
+                                }
+                            )
+                        )
+                    }
+                }
+            },
+        ) {
             BulletPoint(
                 type = SupportedType.UNSUPPORTED,
                 text = "No ads"
@@ -268,48 +300,89 @@ object UnlockScreen {
                 type = SupportedType.UNSUPPORTED,
                 text = "Experimental database/catalog features"
             )
-
-            if (subscribed()) {
-                Text(
-                    text = stringResource(R.string.monetization_subscribed_ads_not_needed),
-                    modifier = Modifier
-                        .align(Alignment.CenterHorizontally)
-                        .padding(horizontal = 16.dp, vertical = 10.dp)
-                )
-            } else {
-                val adsEnabled = adsEnabled()
-                if (adsEnabled) {
-                    Text(
-                        text = stringResource(R.string.monetization_enable_ads_completed),
-                        modifier = Modifier
-                            .align(Alignment.CenterHorizontally)
-                            .padding(horizontal = 16.dp, vertical = 10.dp)
-                    )
-                }
-
-                Button(
-                    onClick = { onChangeEnableAds(!adsEnabled) },
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
-                ) {
-                    Text(
-                        text = stringResource(
-                            if (adsEnabled) {
-                                R.string.monetization_disable_ads_button
-                            } else {
-                                R.string.monetization_enable_ads_button
-                            }
-                        )
-                    )
-                }
-            }
-
-            Spacer(Modifier.height(32.dp))
         }
     }
 
     @Composable
     fun SubscriptionTier(subscribed: () -> Boolean) {
-        Tier(R.string.monetization_feature_tier_subscription_header) {
+        Tier(
+            headerTextRes = R.string.monetization_feature_tier_subscription_header,
+            footer = {
+                val subscriptionProvider = LocalSubscriptionProvider.current
+                if (subscriptionProvider == null) {
+                    Button(
+                        onClick = {},
+                        enabled = false,
+                        modifier = Modifier
+                            .align(Alignment.CenterHorizontally)
+                            .padding(top = 16.dp, bottom = 10.dp)
+                    ) {
+                        Text(text = stringResource(R.string.monetization_subscription_not_supported))
+                    }
+                } else {
+                    val error by subscriptionProvider.error.collectAsState()
+                    val errorText = error?.let { stringResource(it.first) }
+                    if (errorText != null) {
+                        val errorColor = MaterialTheme.colorScheme.error
+                        OutlinedCard(
+                            border = remember { BorderStroke(width = 1.dp, color = errorColor) },
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)
+                        ) {
+                            Text(
+                                text = errorText,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = errorColor,
+                                modifier = Modifier
+                                    .background(MaterialTheme.colorScheme.errorContainer)
+                                    .padding(horizontal = 16.dp, vertical = 10.dp)
+                                    .align(Alignment.CenterHorizontally)
+                            )
+                        }
+                    }
+
+                    LaunchedEffect(Unit) { subscriptionProvider.loadSubscriptionDetails() }
+
+                    val subscriptionDetails by subscriptionProvider.subscriptionDetails.collectAsState()
+                    val subscription = subscriptionDetails.result
+                    val subscribed = subscribed()
+                    val uriHandler = LocalUriHandler.current
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier
+                            .height(IntrinsicSize.Min)
+                            .align(Alignment.CenterHorizontally)
+                            .padding(vertical = 10.dp)
+                    ) {
+                        Button(
+                            enabled = subscribed || subscription != null,
+                            onClick = {
+                                if (subscribed) {
+                                    uriHandler.openUri(
+                                        subscriptionProvider.getManageSubscriptionUrl(subscription)
+                                    )
+                                } else if (subscription != null) {
+                                    subscriptionProvider.requestSubscribe(subscription)
+                                }
+                            },
+                        ) {
+                            Text(
+                                text = stringResource(
+                                    if (subscribed) {
+                                        R.string.monetization_manage_subscription_button
+                                    } else {
+                                        R.string.monetization_subscribe_button
+                                    }
+                                )
+                            )
+                        }
+
+                        if (!subscribed && subscription == null) {
+                            CircularProgressIndicator()
+                        }
+                    }
+                }
+            },
+        ) {
             BulletPoint(
                 type = SupportedType.FROM_PREVIOUS_TIER,
                 text = "No ads"
@@ -337,90 +410,6 @@ object UnlockScreen {
                 type = SupportedType.SUPPORTED,
                 text = "Tag and search metadata for artist, convention source, sizing, characters, media, etc.",
             )
-
-            val subscriptionProvider = LocalSubscriptionProvider.current
-            if (subscriptionProvider == null) {
-                Button(
-                    onClick = {},
-                    enabled = false,
-                    modifier = Modifier
-                        .align(Alignment.CenterHorizontally)
-                        .padding(top = 16.dp)
-                ) {
-                    Text(text = stringResource(R.string.monetization_subscription_not_supported))
-                }
-            } else {
-                val error by subscriptionProvider.error.collectAsState()
-                val errorText = error?.let { stringResource(it.first) }
-                if (errorText != null) {
-                    val errorColor = MaterialTheme.colorScheme.error
-                    OutlinedCard(
-                        border = remember { BorderStroke(width = 1.dp, color = errorColor) },
-                        modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 10.dp)
-                    ) {
-                        Text(
-                            text = errorText,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = errorColor,
-                            modifier = Modifier
-                                .background(MaterialTheme.colorScheme.errorContainer)
-                                .padding(horizontal = 16.dp, vertical = 10.dp)
-                                .align(Alignment.CenterHorizontally)
-                        )
-                    }
-                }
-
-                LaunchedEffect(Unit) { subscriptionProvider.loadSubscriptionDetails() }
-
-                val subscriptionDetails by subscriptionProvider.subscriptionDetails.collectAsState()
-                val subscription = subscriptionDetails.result
-                val subscribed = subscribed()
-                if (subscribed) {
-                    Text(
-                        text = stringResource(R.string.monetization_subscribe_completed),
-                        modifier = Modifier
-                            .align(Alignment.CenterHorizontally)
-                            .padding(horizontal = 16.dp, vertical = 10.dp)
-                    )
-                }
-
-                val uriHandler = LocalUriHandler.current
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .height(IntrinsicSize.Min)
-                        .align(Alignment.CenterHorizontally)
-                ) {
-                    Button(
-                        enabled = subscribed || subscription != null,
-                        onClick = {
-                            if (subscribed) {
-                                uriHandler.openUri(
-                                    subscriptionProvider.getManageSubscriptionUrl(subscription)
-                                )
-                            } else if (subscription != null) {
-                                subscriptionProvider.requestSubscribe(subscription)
-                            }
-                        },
-                    ) {
-                        Text(
-                            text = stringResource(
-                                if (subscribed) {
-                                    R.string.monetization_manage_subscription_button
-                                } else {
-                                    R.string.monetization_subscribe_button
-                                }
-                            )
-                        )
-                    }
-
-                    if (!subscribed && subscription == null) {
-                        CircularProgressIndicator()
-                    }
-                }
-            }
-
-            Spacer(Modifier.height(32.dp))
         }
     }
 
@@ -448,7 +437,7 @@ object UnlockScreen {
                     }
                 ),
                 tint = when (type) {
-                    SupportedType.FROM_PREVIOUS_TIER -> MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+                    SupportedType.FROM_PREVIOUS_TIER -> MaterialTheme.colorScheme.primary.copy(alpha = 0.38f)
                     SupportedType.SUPPORTED -> MaterialTheme.colorScheme.primary
                     SupportedType.UNSUPPORTED -> MaterialTheme.colorScheme.error
                 }

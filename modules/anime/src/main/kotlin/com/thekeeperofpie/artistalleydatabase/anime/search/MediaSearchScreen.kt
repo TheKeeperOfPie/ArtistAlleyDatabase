@@ -13,13 +13,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -35,10 +32,9 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
-import com.thekeeperofpie.artistalleydatabase.anime.media.filter.SortFilterBottomScaffoldNoAppBarOffset
+import com.thekeeperofpie.artistalleydatabase.anime.media.filter.SortFilterBottomScaffold
 import com.thekeeperofpie.artistalleydatabase.compose.AppBar
-import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBar
-import com.thekeeperofpie.artistalleydatabase.compose.NestedScrollSplitter
+import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
@@ -75,10 +71,10 @@ object MediaSearchScreen {
             }
             sortFilterController.PromptDialog()
 
-            SortFilterBottomScaffoldNoAppBarOffset(
+            SortFilterBottomScaffold(
                 sortFilterController = sortFilterController,
                 topBar = {
-                    EnterAlwaysTopAppBar(scrollBehavior = scrollBehavior) {
+                    EnterAlwaysTopAppBarHeightChange(scrollBehavior = scrollBehavior) {
                         Column {
                             val text = if (title is Either.Left) {
                                 stringResource(title.value)
@@ -132,46 +128,31 @@ object MediaSearchScreen {
                         }
                     }
                 },
+                modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
             ) { scaffoldPadding ->
                 val content = viewModel.content.collectAsLazyPagingItems()
                 val refreshing = content.loadState.refresh is LoadState.Loading
-                val density = LocalDensity.current
-                val topBarPadding by remember {
-                    derivedStateOf {
-                        scrollBehavior.state.heightOffsetLimit
-                            .takeUnless { it == -Float.MAX_VALUE }
-                            ?.let { density.run { -it.toDp() } }
-                            ?: 0.dp
-                    }
-                }
                 val viewer by viewModel.viewer.collectAsState()
                 AnimeMediaListScreen(
                     refreshing = refreshing,
                     onRefresh = viewModel::onRefresh,
-                    pullRefreshTopPadding = { topBarPadding },
-                    modifier = Modifier.nestedScroll(
-                        NestedScrollSplitter(
-                            scrollBehavior.nestedScrollConnection,
-                            consumeNone = true,
-                        )
-                    )
+                    modifier = Modifier.padding(scaffoldPadding)
                 ) { onLongPressImage ->
                     when (val refreshState = content.loadState.refresh) {
                         LoadState.Loading -> Unit
                         is LoadState.Error -> AnimeMediaListScreen.Error(
                             exception = refreshState.error,
-                            modifier = Modifier.padding(top = topBarPadding),
                         )
                         is LoadState.NotLoading -> {
                             if (content.itemCount == 0) {
-                                AnimeMediaListScreen.NoResults(Modifier.padding(top = topBarPadding))
+                                AnimeMediaListScreen.NoResults()
                             } else {
                                 LazyColumn(
                                     state = scrollStateSaver.lazyListState(),
                                     contentPadding = PaddingValues(
                                         start = 16.dp,
                                         end = 16.dp,
-                                        top = 16.dp + topBarPadding,
+                                        top = 16.dp,
                                         bottom = 16.dp + scaffoldPadding.calculateBottomPadding()
                                     ),
                                     verticalArrangement = Arrangement.spacedBy(16.dp),

@@ -30,11 +30,11 @@
     <string name="settings_open">Open</string>
 
     <string name="settings_subsection_theme_label">Theme</string>
-    <string name="settings_subsection_theme_auto">Auto</string>
-    <string name="settings_subsection_theme_dark">Dark</string>
-    <string name="settings_subsection_theme_light">Light</string>
 
     <string name="settings_subsection_behavior_label">Behavior</string>
+    <string name="settings_subsection_behavior_media_type_label">Preferred media type</string>
+    <string name="settings_subsection_behavior_media_type_anime">Anime</string>
+    <string name="settings_subsection_behavior_media_type_manga">Manga</string>
     <string name="settings_subsection_behavior_language_option_media_label">Media title language</string>
     <string name="settings_subsection_behavior_language_option_characters_label">Character name language</string>
     <string name="settings_subsection_behavior_language_option_staff_label">Staff name language</string>

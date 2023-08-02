@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime
 
+import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.FilterData
 import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsNetworkCategory
 import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsNetworkRegion
@@ -24,4 +25,6 @@ interface AnimeSettings {
     val animeNewsNetworkCategoriesExcluded: MutableStateFlow<List<AnimeNewsNetworkCategory>>
     val crunchyrollNewsCategoriesIncluded: MutableStateFlow<List<CrunchyrollNewsCategory>>
     val crunchyrollNewsCategoriesExcluded: MutableStateFlow<List<CrunchyrollNewsCategory>>
+
+    val preferredMediaType: MutableStateFlow<MediaType>
 }

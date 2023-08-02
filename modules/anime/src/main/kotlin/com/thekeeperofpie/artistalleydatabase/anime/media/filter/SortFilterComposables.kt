@@ -181,15 +181,14 @@ fun SortFilterBottomScaffold(
     sortFilterController: SortFilterController?,
     modifier: Modifier = Modifier,
     topBar: @Composable (() -> Unit)? = null,
+    sheetState: androidx.compose.material3.SheetState = androidx.compose.material3.rememberStandardBottomSheetState(
+        confirmValueChange = { it != SheetValue.Hidden },
+        skipHiddenState = true,
+    ),
     bottomNavigationState: BottomNavigationState? = null,
     content: @Composable (PaddingValues) -> Unit,
 ) {
-    val scaffoldState = androidx.compose.material3.rememberBottomSheetScaffoldState(
-        androidx.compose.material3.rememberStandardBottomSheetState(
-            confirmValueChange = { it != SheetValue.Hidden },
-            skipHiddenState = true,
-        )
-    )
+    val scaffoldState = androidx.compose.material3.rememberBottomSheetScaffoldState(sheetState)
 
     val scope = rememberCoroutineScope()
     val bottomSheetState = scaffoldState.bottomSheetState

@@ -59,7 +59,7 @@
     <string name="anime_media_list_sort_priority">Priority</string>
     <string name="anime_media_list_sort_started_on">Start date</string>
     <string name="anime_media_list_sort_finished_on">Finish date</string>
-    <string name="anime_media_list_sort_added_time">Added time</string>
+    <string name="anime_media_list_sort_added_time">Last added</string>
     <string name="anime_media_list_sort_updated_time">Last updated</string>
     <string name="anime_media_list_sort_title_romaji">Title (Romaji)</string>
     <string name="anime_media_list_sort_title_english">Title (English)</string>
@@ -573,7 +573,8 @@
     <string name="anime_home_top_screen_title">Top all time</string>
     <string name="anime_home_error_loading_anime">Error loading anime</string>
     <string name="anime_home_error_loading_manga">Error loading manga</string>
-    <string name="anime_home_label">Home</string>
+    <string name="anime_home_label_anime">Anime</string>
+    <string name="anime_home_label_manga">Manga</string>
     <string name="anime_home_activity_label">Activity</string>
     <string name="anime_home_row_view_all_content_description">View all</string>
     <string name="anime_home_anime_current_header">WATCHING</string>
@@ -727,4 +728,7 @@
     <string name="anime_studio_filter_sort_label">Sort</string>
     <string name="anime_studio_medias_error_loading">Error loading medias</string>
     <string name="anime_media_tag_search_clear_content_description">Clear query</string>
+
+    <string name="anime_requires_unlock">Requires higher feature tier</string>
+    <string name="anime_open_feature_tiers_button">Open tiers</string>
 </resources>

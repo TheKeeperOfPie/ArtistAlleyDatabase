@@ -14,11 +14,13 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -27,6 +29,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -46,9 +49,9 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.SortFilterBottomScaffold
-import com.thekeeperofpie.artistalleydatabase.anime.ui.StartEndDateDialog
 import com.thekeeperofpie.artistalleydatabase.compose.AppBar
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
+import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.bottomBorder
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
@@ -79,12 +82,15 @@ object SeasonalScreen {
             colorCalculationState = colorCalculationState,
             navigationCallback = navigationCallback,
         ) {
+            val scrollBehavior =
+                TopAppBarDefaults.enterAlwaysScrollBehavior(snapAnimationSpec = null)
             val sortFilterController = viewModel.sortFilterController
             sortFilterController.PromptDialog()
 
             SortFilterBottomScaffold(
                 sortFilterController = sortFilterController,
-                topBar = { TopBar(upIconOption, pagerState, currentSeasonYear) },
+                topBar = { TopBar(upIconOption, pagerState, currentSeasonYear, scrollBehavior) },
+                modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
             ) { scaffoldPadding ->
                 HorizontalPager(
                     state = pagerState,
@@ -109,74 +115,77 @@ object SeasonalScreen {
         upIconOption: UpIconOption?,
         pagerState: PagerState,
         currentSeasonYear: Pair<MediaSeason, Int>,
+        scrollBehavior: TopAppBarScrollBehavior,
     ) {
-        Column {
-            AppBar(
-                text = stringResource(R.string.anime_seasonal_title),
-                upIconOption = upIconOption,
-            )
+        EnterAlwaysTopAppBarHeightChange(scrollBehavior = scrollBehavior) {
+            Column {
+                AppBar(
+                    text = stringResource(R.string.anime_seasonal_title),
+                    upIconOption = upIconOption,
+                )
 
-            val state =
-                rememberLazyListState(initialFirstVisibleItemIndex = pagerState.initialPage)
-            val coroutineScope = rememberCoroutineScope()
+                val state =
+                    rememberLazyListState(initialFirstVisibleItemIndex = pagerState.initialPage)
+                val coroutineScope = rememberCoroutineScope()
 
-            val settledPage = pagerState.settledPage
-            LaunchedEffect(settledPage) {
-                val lastVisibleItem = state.layoutInfo.visibleItemsInfo.lastOrNull()
-                val lastVisibleIndex = lastVisibleItem?.index ?: 0
-                if (settledPage !in (state.firstVisibleItemIndex..lastVisibleIndex)) {
-                    state.animateScrollToItem(settledPage)
+                val settledPage = pagerState.settledPage
+                LaunchedEffect(settledPage) {
+                    val lastVisibleItem = state.layoutInfo.visibleItemsInfo.lastOrNull()
+                    val lastVisibleIndex = lastVisibleItem?.index ?: 0
+                    if (settledPage !in (state.firstVisibleItemIndex..lastVisibleIndex)) {
+                        state.animateScrollToItem(settledPage)
+                    }
                 }
-            }
 
-            LazyRow(
-                state = state,
-                flingBehavior = rememberSnapFlingBehavior(state),
-                modifier = Modifier.background(MaterialTheme.colorScheme.background)
-            ) {
-                items(
-                    Int.MAX_VALUE,
-                    key = { it },
-                    contentType = { "seasonYear" },
-                ) { index ->
-                    val selected = index == pagerState.currentPage
-                    Tab(
-                        selected = selected,
-                        text = {
-                            val (season, year) = AniListUtils.calculateSeasonYearWithOffset(
-                                seasonYear = currentSeasonYear,
-                                offset = Int.MAX_VALUE / 2 - index,
-                            )
-                            Text(
-                                text = stringResource(
-                                    R.string.anime_seasonal_season_year,
-                                    stringResource(season.toTextRes()),
-                                    year,
-                                ),
-                                color = if (index == Int.MAX_VALUE / 2) {
-                                    MaterialTheme.colorScheme.onSurfaceVariant
-                                } else {
-                                    Color.Unspecified
-                                },
-                                maxLines = 1,
-                            )
-                        },
-                        onClick = {
-                            coroutineScope.launch {
-                                pagerState.animateScrollToPage(index)
+                LazyRow(
+                    state = state,
+                    flingBehavior = rememberSnapFlingBehavior(state),
+                    modifier = Modifier.background(MaterialTheme.colorScheme.background)
+                ) {
+                    items(
+                        Int.MAX_VALUE,
+                        key = { it },
+                        contentType = { "seasonYear" },
+                    ) { index ->
+                        val selected = index == pagerState.currentPage
+                        Tab(
+                            selected = selected,
+                            text = {
+                                val (season, year) = AniListUtils.calculateSeasonYearWithOffset(
+                                    seasonYear = currentSeasonYear,
+                                    offset = Int.MAX_VALUE / 2 - index,
+                                )
+                                Text(
+                                    text = stringResource(
+                                        R.string.anime_seasonal_season_year,
+                                        stringResource(season.toTextRes()),
+                                        year,
+                                    ),
+                                    color = if (index == Int.MAX_VALUE / 2) {
+                                        MaterialTheme.colorScheme.onSurfaceVariant
+                                    } else {
+                                        Color.Unspecified
+                                    },
+                                    maxLines = 1,
+                                )
+                            },
+                            onClick = {
+                                coroutineScope.launch {
+                                    pagerState.animateScrollToPage(index)
+                                }
+                            },
+                            modifier = Modifier.conditionally(selected) {
+                                bottomBorder(
+                                    color = MaterialTheme.colorScheme.primary,
+                                    width = 3.dp,
+                                )
                             }
-                        },
-                        modifier = Modifier.conditionally(selected) {
-                            bottomBorder(
-                                color = MaterialTheme.colorScheme.primary,
-                                width = 3.dp,
-                            )
-                        }
-                    )
+                        )
+                    }
                 }
-            }
 
-            Divider()
+                HorizontalDivider()
+            }
         }
     }
 

@@ -45,6 +45,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.studio.StudioSortFilterContr
 import com.thekeeperofpie.artistalleydatabase.anime.user.UserListRow
 import com.thekeeperofpie.artistalleydatabase.anime.user.UserSortFilterController
 import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
+import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationController
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -73,12 +74,15 @@ class AnimeSearchViewModel @Inject constructor(
     mediaTagsController: MediaTagsController,
     mediaLicensorsController: MediaLicensorsController,
     featureOverrideProvider: FeatureOverrideProvider,
+    private val monetizationController: MonetizationController,
 ) : ViewModel() {
 
     val viewer = aniListApi.authedUser
     var query by mutableStateOf("")
     var content = MutableStateFlow(PagingData.empty<AnimeSearchEntry>())
     val colorMap = mutableStateMapOf<String, Pair<Color, Color>>()
+
+    val unlocked = monetizationController.unlocked
 
     private var initialized = false
 
@@ -111,7 +115,13 @@ class AnimeSearchViewModel @Inject constructor(
 
     private val refreshUptimeMillis = MutableStateFlow(-1L)
 
-    var selectedType by mutableStateOf(SearchType.ANIME)
+    var selectedType by mutableStateOf(
+        if (settings.preferredMediaType.value == MediaType.ANIME) {
+            SearchType.ANIME
+        } else {
+            SearchType.MANGA
+        }
+    )
     private val results =
         LoadStates(
             LoadState.Loading,
@@ -428,7 +438,9 @@ class AnimeSearchViewModel @Inject constructor(
         finalTransform: Flow<PagingData<Entry>>.() -> Flow<PagingData<Entry>> = { this },
     ) {
         viewModelScope.launch(CustomDispatchers.Main) {
-            snapshotFlow { selectedType }
+            monetizationController.unlocked
+                .filter { it || searchType == SearchType.ANIME || searchType == SearchType.MANGA }
+                .flatMapLatest { snapshotFlow { selectedType } }
                 .filter { it == searchType }
                 .flatMapLatest { flow() }
                 .flowOn(CustomDispatchers.IO)
@@ -460,11 +472,13 @@ class AnimeSearchViewModel @Inject constructor(
         defaultMediaSort: MediaSortOption,
         tagId: String? = null,
         genre: String? = null,
-        searchType: SearchType = SearchType.ANIME,
+        searchType: SearchType? = null,
     ) {
         if (initialized) return
         initialized = true
-        this.selectedType = searchType
+        if (searchType != null) {
+            this.selectedType = searchType
+        }
         animeSortFilterController.initialize(
             viewModel = this,
             refreshUptimeMillis = refreshUptimeMillis,

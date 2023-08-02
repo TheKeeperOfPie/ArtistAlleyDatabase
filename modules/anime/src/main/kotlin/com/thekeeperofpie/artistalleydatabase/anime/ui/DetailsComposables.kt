@@ -182,64 +182,61 @@ internal fun CoverAndBannerHeader(
                 }
             }
 
+            val rowHeight = lerp(coverSize, pinnedHeight, progress)
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(
                         start = 16.dp,
-                        top = lerp(100.dp, 10.dp, progress),
+                        top = lerp(100.dp, 0.dp, progress),
                         // Reserve some space if the menu should be retained,
                         // currently only supports 1 option (40dp)
                         end = if (reserveMenuWidth) lerp(0.dp, 40.dp, progress) else 0.dp
                     )
-                    .height(lerp(coverSize, pinnedHeight, progress))
+                    .height(rowHeight)
             ) {
-                SharedElement(
-                    key = "${entryId?.scopedId}_image",
-                    screenKey = screenKey,
-                    onFractionChanged = onCoverImageSharedElementFractionChanged,
-                ) {
-                    ElevatedCard {
-                        var success by remember { mutableStateOf(false) }
-                        val maxWidth = LocalConfiguration.current.screenWidthDp.dp * 0.4f
-                        AsyncImage(
-                            model = ImageRequest.Builder(LocalContext.current)
-                                .data(coverImage())
-                                .crossfade(true)
-                                .allowHardware(coverImageAllowHardware)
-                                .size(
-                                    width = Dimension.Undefined,
-                                    height = Dimension.Pixels(
-                                        LocalDensity.current.run { coverSize.roundToPx() }
-                                    ),
-                                )
-                                .build(),
-                            contentScale = ContentScale.FillHeight,
-                            error = rememberVectorPainter(Icons.Filled.ImageNotSupported),
-                            fallback = null,
-                            onSuccess = {
-                                success = true
-                                coverImageOnSuccess(it)
-                            },
-                            contentDescription = stringResource(R.string.anime_media_cover_image_content_description),
-                            modifier = Modifier
-                                .height(coverSize)
-                                .run {
-                                    if (coverImageWidthToHeightRatio != 1f) {
-                                        width(
-                                            (lerp(
-                                                coverSize,
-                                                pinnedHeight,
-                                                progress
-                                            ) * coverImageWidthToHeightRatio)
-                                                .coerceAtMost(maxWidth)
-                                        )
-                                    } else if (success) {
-                                        wrapContentWidth()
-                                    } else this
-                                }
-                                .widthIn(max = coverSize.coerceAtMost(maxWidth))
-                        )
+                Box(modifier = Modifier.padding(vertical = 10.dp)) {
+                    SharedElement(
+                        key = "${entryId?.scopedId}_image",
+                        screenKey = screenKey,
+                        onFractionChanged = onCoverImageSharedElementFractionChanged,
+                    ) {
+                        ElevatedCard {
+                            val imageHeight = rowHeight - 20.dp
+                            var success by remember { mutableStateOf(false) }
+                            val maxWidth = LocalConfiguration.current.screenWidthDp.dp * 0.4f
+                            AsyncImage(
+                                model = ImageRequest.Builder(LocalContext.current)
+                                    .data(coverImage())
+                                    .crossfade(true)
+                                    .allowHardware(coverImageAllowHardware)
+                                    .size(
+                                        width = Dimension.Undefined,
+                                        height = Dimension.Pixels(
+                                            LocalDensity.current.run { imageHeight.roundToPx() }
+                                        ),
+                                    )
+                                    .build(),
+                                contentScale = ContentScale.FillHeight,
+                                error = rememberVectorPainter(Icons.Filled.ImageNotSupported),
+                                fallback = null,
+                                onSuccess = {
+                                    success = true
+                                    coverImageOnSuccess(it)
+                                },
+                                contentDescription = stringResource(R.string.anime_media_cover_image_content_description),
+                                modifier = Modifier
+                                    .height(imageHeight)
+                                    .run {
+                                        if (coverImageWidthToHeightRatio != 1f) {
+                                            width(imageHeight * coverImageWidthToHeightRatio)
+                                        } else if (success) {
+                                            wrapContentWidth()
+                                        } else this
+                                    }
+                                    .widthIn(max = maxWidth)
+                            )
+                        }
                     }
                 }
 

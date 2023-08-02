@@ -4,6 +4,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -55,9 +56,11 @@ import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
+import com.thekeeperofpie.artistalleydatabase.compose.AppThemeSetting
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.CustomHtmlText
+import com.thekeeperofpie.artistalleydatabase.compose.LocalAppTheme
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -119,13 +122,14 @@ object AnimeMediaLargeCard {
                         )
                     }
 
-                    val description = entry?.media?.description
+                    val description = entry?.description
                     if (description == null) {
                         Spacer(Modifier.weight(1f))
                     } else {
                         CustomHtmlText(
                             text = description,
-                            style = MaterialTheme.typography.bodySmall,
+                            style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Black),
+                            fontWeight = FontWeight.Black,
                             overflow = TextOverflow.Ellipsis,
                             detectTaps = false,
                             modifier = Modifier
@@ -174,6 +178,9 @@ object AnimeMediaLargeCard {
                 if (loaded) 1f else 0f,
                 label = "AnimeMediaLargeCard banner image alpha",
             )
+            val appTheme = LocalAppTheme.current
+            val isLightTheme = appTheme == AppThemeSetting.LIGHT
+                    || (appTheme == AppThemeSetting.AUTO && !isSystemInDarkTheme())
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
                     .data(entry?.imageBanner ?: entry?.image)
@@ -207,7 +214,10 @@ object AnimeMediaLargeCard {
                     .height(HEIGHT)
                     .drawWithContent {
                         drawContent()
-                        drawRect(foregroundColor, alpha = 0.5f)
+                        drawRect(
+                            foregroundColor,
+                            alpha = if (isLightTheme) 0.8f else 0.6f,
+                        )
                     }
                     // Clip to match card so that shared element animation keeps rounded corner
                     .clip(RoundedCornerShape(topStart = 12.dp, bottomStart = 12.dp))
@@ -244,6 +254,7 @@ object AnimeMediaLargeCard {
                 seasonYear = media?.seasonYear,
             ),
             style = MaterialTheme.typography.bodySmall,
+            fontWeight = FontWeight.W700,
             color = MaterialTheme.typography.bodySmall.color
                 .takeOrElse { LocalContentColor.current }
                 .copy(alpha = 0.8f),
@@ -277,5 +288,7 @@ object AnimeMediaLargeCard {
             get() = media.nextAiringEpisode
 
         val tags: List<AnimeMediaTagEntry>
+
+        val description: String?
     }
 }

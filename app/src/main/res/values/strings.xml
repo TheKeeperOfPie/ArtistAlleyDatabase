@@ -7,6 +7,7 @@
     <string name="invalid_export_destination">Invalid export destination</string>
     <string name="nav_drawer_home">Home</string>
     <string name="nav_drawer_anime">Anime</string>
+    <string name="nav_drawer_manga">Manga</string>
     <string name="nav_drawer_art">Art</string>
     <string name="nav_drawer_cds">CDs</string>
     <string name="nav_drawer_browse">Browse</string>

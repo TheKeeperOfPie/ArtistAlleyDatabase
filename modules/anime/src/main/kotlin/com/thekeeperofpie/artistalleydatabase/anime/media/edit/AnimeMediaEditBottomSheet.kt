@@ -19,7 +19,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -37,7 +36,7 @@ import androidx.compose.material.icons.filled.StarRate
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
@@ -111,43 +110,45 @@ object AnimeMediaEditBottomSheet {
     ) {
         var showDelete by remember { mutableStateOf(false) }
 
-        Divider()
+        HorizontalDivider()
 
         val initialParams by viewModel.initialParams.collectAsState()
-        Column(
-            modifier = modifier
-                .verticalScroll(rememberScrollState())
-                .wrapContentHeight()
-        ) {
-            Crossfade(
-                targetState = initialParams?.loading,
-                label = "Media edit sheet crossfade"
+        Column {
+            Column(
+                modifier = modifier
+                    .verticalScroll(rememberScrollState())
+                    .weight(1f, fill = false)
             ) {
-                if (it == true) {
-                    Box(modifier = Modifier.fillMaxWidth()) {
-                        CircularProgressIndicator(
-                            modifier = Modifier
-                                .align(Alignment.Center)
-                                .padding(32.dp)
-                        )
-                    }
-                } else {
-                    Column {
-                        Form(
-                            screenKey = screenKey,
-                            viewModel = viewModel,
-                            initialParams = initialParams,
-                            onLongPressImage = onLongPressImage,
-                            colorCalculationState = colorCalculationState,
-                            navigationCallback = navigationCallback,
-                        )
+                Crossfade(
+                    targetState = initialParams?.loading,
+                    label = "Media edit sheet crossfade"
+                ) {
+                    if (it == true) {
+                        Box(modifier = Modifier.fillMaxWidth()) {
+                            CircularProgressIndicator(
+                                modifier = Modifier
+                                    .align(Alignment.Center)
+                                    .padding(32.dp)
+                            )
+                        }
+                    } else {
+                        Column {
+                            Form(
+                                screenKey = screenKey,
+                                viewModel = viewModel,
+                                initialParams = initialParams,
+                                onLongPressImage = onLongPressImage,
+                                colorCalculationState = colorCalculationState,
+                                navigationCallback = navigationCallback,
+                            )
+                        }
                     }
                 }
+
+                Spacer(Modifier.height(16.dp))
             }
 
-            Spacer(Modifier.height(16.dp))
-
-            Divider()
+            HorizontalDivider()
 
             Row(modifier = Modifier.align(Alignment.End)) {
                 if (initialParams?.id != null) {
@@ -312,7 +313,7 @@ object AnimeMediaEditBottomSheet {
                 )
             }
 
-            Divider()
+            HorizontalDivider()
         }
 
         val isAnime = initialParams?.mediaType == MediaType.ANIME
@@ -858,8 +859,8 @@ object AnimeMediaEditBottomSheet {
     @Composable
     private fun SectionHeader(
         @StringRes titleRes: Int,
-        horizontalPadding: Dp = 16.dp,
         modifier: Modifier = Modifier,
+        horizontalPadding: Dp = 16.dp,
     ) {
         Text(
             text = stringResource(titleRes),

@@ -98,7 +98,8 @@ object AnimeRootScreen {
                                     ) {
                                         // TODO: Support manga only lists, need to store ignored IDs
                                         //  in separate settings field
-                                        navigationCallback.onIgnoreListOpen(MediaType.ANIME)
+                                        // TODO: Re-enable ignore
+//                                        navigationCallback.onIgnoreListOpen(MediaType.ANIME)
                                     } else {
                                         selectedScreen = destination
                                     }

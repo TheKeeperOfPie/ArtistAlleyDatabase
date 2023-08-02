@@ -29,7 +29,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -37,7 +36,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -58,8 +56,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSh
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.SortFilterBottomScaffold
 import com.thekeeperofpie.artistalleydatabase.compose.ArrowBackIconButton
-import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBar
-import com.thekeeperofpie.artistalleydatabase.compose.NestedScrollSplitter
+import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -85,15 +82,15 @@ object AiringScheduleScreen {
             pageCount = { 21 },
         )
 
-        val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+        val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(snapAnimationSpec = null)
         val editViewModel = hiltViewModel<MediaEditViewModel>()
-        MediaEditBottomSheetScaffold.NoAppBarOffset(
+        MediaEditBottomSheetScaffold(
             screenKey = SCREEN_KEY,
             viewModel = editViewModel,
             colorCalculationState = colorCalculationState,
             navigationCallback = navigationCallback,
             topBar = {
-                EnterAlwaysTopAppBar(scrollBehavior = scrollBehavior) {
+                EnterAlwaysTopAppBarHeightChange(scrollBehavior = scrollBehavior) {
                     Column {
                         TopAppBar(
                             title = { Text(stringResource(R.string.anime_airing_schedule_label)) },
@@ -173,25 +170,12 @@ object AiringScheduleScreen {
                     }
                 }
             },
-            modifier = Modifier.nestedScroll(
-                NestedScrollSplitter(
-                    scrollBehavior.nestedScrollConnection,
-                    consumeNone = true
-                )
-            )
         ) { scaffoldPadding ->
-            val density = LocalDensity.current
-            val topBarPadding by remember {
-                derivedStateOf {
-                    scrollBehavior.state.heightOffsetLimit
-                        .takeUnless { it == -Float.MAX_VALUE }
-                        ?.let { density.run { -it.toDp() } }
-                        ?: 0.dp
-                }
-            }
             SortFilterBottomScaffold(
                 sortFilterController = viewModel.sortFilterController,
-                modifier = Modifier.padding(scaffoldPadding)
+                modifier = Modifier
+                    .padding(scaffoldPadding)
+                    .nestedScroll(scrollBehavior.nestedScrollConnection)
             ) { innerScaffoldPadding ->
                 val viewer by viewModel.viewer.collectAsState()
                 HorizontalPager(
@@ -211,23 +195,19 @@ object AiringScheduleScreen {
                             LoadState.Loading -> Unit
                             is LoadState.Error -> AnimeMediaListScreen.Error(
                                 exception = refreshState.error,
-                                modifier = Modifier
-                                    .padding(top = topBarPadding)
-                                    .pullRefresh(pullRefreshState)
+                                modifier = Modifier.pullRefresh(pullRefreshState)
                             )
                             is LoadState.NotLoading -> {
                                 if (data.itemCount == 0) {
                                     AnimeMediaListScreen.NoResults(
-                                        modifier = Modifier
-                                            .padding(top = topBarPadding)
-                                            .pullRefresh(pullRefreshState)
+                                        modifier = Modifier.pullRefresh(pullRefreshState)
                                     )
                                 } else {
                                     LazyColumn(
                                         contentPadding = PaddingValues(
                                             start = 16.dp,
                                             end = 16.dp,
-                                            top = 16.dp + topBarPadding,
+                                            top = 16.dp,
                                             bottom = 72.dp,
                                         ),
                                         verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -272,9 +252,7 @@ object AiringScheduleScreen {
                         PullRefreshIndicator(
                             refreshing = loading,
                             state = pullRefreshState,
-                            modifier = Modifier
-                                .padding(top = topBarPadding)
-                                .align(Alignment.TopCenter)
+                            modifier = Modifier.align(Alignment.TopCenter)
                         )
                     }
                 }

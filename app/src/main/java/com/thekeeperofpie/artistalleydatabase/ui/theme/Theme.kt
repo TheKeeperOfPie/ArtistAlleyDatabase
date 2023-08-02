@@ -17,6 +17,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
@@ -27,7 +28,8 @@ import androidx.navigation.NavHostController
 import com.thekeeperofpie.anichive.R
 import com.thekeeperofpie.artistalleydatabase.CustomApplication
 import com.thekeeperofpie.artistalleydatabase.android_utils.UriUtils
-import com.thekeeperofpie.artistalleydatabase.settings.AppThemeSetting
+import com.thekeeperofpie.artistalleydatabase.compose.AppThemeSetting
+import com.thekeeperofpie.artistalleydatabase.compose.LocalAppTheme
 import com.thekeeperofpie.artistalleydatabase.settings.SettingsProvider
 
 @Composable
@@ -40,20 +42,38 @@ fun ArtistAlleyDatabaseTheme(
 
     val appTheme by settings.appTheme.collectAsState()
     val systemInDarkTheme = isSystemInDarkTheme()
-    val colorScheme = when(appTheme) {
-        AppThemeSetting.AUTO -> {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                if (systemInDarkTheme) {
-                    dynamicDarkColorScheme(context)
-                } else {
-                    dynamicLightColorScheme(context)
-                }
+    val colorScheme = when (appTheme) {
+        AppThemeSetting.AUTO -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            if (systemInDarkTheme) {
+                dynamicDarkColorScheme(context)
             } else {
-                if (systemInDarkTheme) darkColorScheme() else lightColorScheme()
+                dynamicLightColorScheme(context)
             }
+        } else {
+            if (systemInDarkTheme) darkColorScheme() else lightColorScheme()
         }
-        AppThemeSetting.DARK -> darkColorScheme()
-        AppThemeSetting.LIGHT -> lightColorScheme()
+        AppThemeSetting.DARK -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            dynamicDarkColorScheme(context)
+        } else {
+            darkColorScheme()
+        }
+        AppThemeSetting.LIGHT -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            dynamicLightColorScheme(context)
+        } else {
+            lightColorScheme()
+        }
+        AppThemeSetting.BLACK -> darkColorScheme(
+            background = Color.Black,
+            surface = Color.Black,
+            surfaceVariant = Color.Black,
+            surfaceBright = Color.Black,
+            surfaceContainer = Color.Black,
+            surfaceContainerHigh = Color.Black,
+            surfaceContainerHighest = Color.Black,
+            surfaceContainerLow = Color.Black,
+            surfaceContainerLowest = Color.Black,
+            surfaceDim = Color.Black,
+        )
     }
     val isDarkTheme = appTheme == AppThemeSetting.DARK
             || (appTheme == AppThemeSetting.AUTO && systemInDarkTheme)
@@ -88,7 +108,8 @@ fun ArtistAlleyDatabaseTheme(
     }
 
     CompositionLocalProvider(
-        LocalUriHandler provides uriHandler
+        LocalUriHandler provides uriHandler,
+        LocalAppTheme provides appTheme,
     ) {
         MaterialTheme(
             colorScheme = colorScheme,

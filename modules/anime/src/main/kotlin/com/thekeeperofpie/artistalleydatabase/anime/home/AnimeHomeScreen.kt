@@ -93,6 +93,7 @@ import com.anilist.UserSocialActivityQuery
 import com.anilist.fragment.MediaNavigationData
 import com.anilist.fragment.MediaPreview
 import com.anilist.type.MediaListStatus
+import com.anilist.type.MediaType
 import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
@@ -117,6 +118,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.AutoResizeHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
+import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
@@ -144,7 +146,9 @@ object AnimeHomeScreen {
         scrollStateSaver: ScrollStateSaver,
         bottomNavigationState: BottomNavigationState,
     ) {
-        var selectedIsAnime by rememberSaveable { mutableStateOf(true) }
+        var selectedIsAnime by rememberSaveable {
+            mutableStateOf(viewModel.preferredMediaType == MediaType.ANIME)
+        }
         val colorCalculationState = rememberColorCalculationState(viewModel.colorMap)
         val selectedItemTracker = remember { SelectedItemTracker() }
 
@@ -175,42 +179,53 @@ object AnimeHomeScreen {
             navigationCallback = navigationCallback,
             bottomNavigationState = bottomNavigationState,
             topBar = {
-                TopAppBar(
-                    title = { Text(text = stringResource(R.string.anime_home_label)) },
-                    navigationIcon = {
-                        if (upIconOption != null) {
-                            UpIconButton(upIconOption)
-                        }
-                    },
-                    actions = {
-                        IconButton(onClick = { selectedIsAnime = !selectedIsAnime }) {
-                            Icon(
-                                imageVector = if (selectedIsAnime) {
-                                    Icons.Filled.MenuBook
-                                } else {
-                                    Icons.Filled.Monitor
-                                },
-                                contentDescription = stringResource(
-                                    R.string.anime_home_media_type_switch_icon_content_description
-                                ),
+                EnterAlwaysTopAppBarHeightChange(scrollBehavior = scrollBehavior) {
+                    TopAppBar(
+                        title = {
+                            Text(
+                                text = stringResource(
+                                    if (selectedIsAnime) {
+                                        R.string.anime_home_label_anime
+                                    } else {
+                                        R.string.anime_home_label_manga
+                                    }
+                                )
                             )
-                        }
-                        IconButton(onClick = navigationCallback::onAiringScheduleClick) {
-                            Icon(
-                                imageVector = Icons.Filled.CalendarMonth,
-                                contentDescription = stringResource(
-                                    R.string.anime_airing_schedule_icon_content_description
-                                ),
+                        },
+                        navigationIcon = {
+                            if (upIconOption != null) {
+                                UpIconButton(upIconOption)
+                            }
+                        },
+                        actions = {
+                            IconButton(onClick = { selectedIsAnime = !selectedIsAnime }) {
+                                Icon(
+                                    imageVector = if (selectedIsAnime) {
+                                        Icons.Filled.MenuBook
+                                    } else {
+                                        Icons.Filled.Monitor
+                                    },
+                                    contentDescription = stringResource(
+                                        R.string.anime_home_media_type_switch_icon_content_description
+                                    ),
+                                )
+                            }
+                            IconButton(onClick = navigationCallback::onAiringScheduleClick) {
+                                Icon(
+                                    imageVector = Icons.Filled.CalendarMonth,
+                                    contentDescription = stringResource(
+                                        R.string.anime_airing_schedule_icon_content_description
+                                    ),
+                                )
+                            }
+                        },
+                        colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(
+                                lerp(0.dp, 16.dp, scrollBehavior.state.overlappedFraction)
                             )
-                        }
-                    },
-                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(
-                            lerp(0.dp, 16.dp, scrollBehavior.state.overlappedFraction)
-                        )
-                    ),
-                    scrollBehavior = scrollBehavior
-                )
+                        ),
+                    )
+                }
             },
             modifier = Modifier
                 .nestedScroll(bottomNavigationState.nestedScrollConnection)

@@ -18,6 +18,7 @@ data class AnimeHomeDataEntry(
         override val showLessImportantTags: Boolean = false,
         override val showSpoilerTags: Boolean = false,
     ) : AnimeMediaLargeCard.Entry {
+        override val description = media.description?.replace("\n\n\n", "\n")
         override val tags = media.tags?.filterNotNull()
             ?.filter {
                 showLessImportantTags

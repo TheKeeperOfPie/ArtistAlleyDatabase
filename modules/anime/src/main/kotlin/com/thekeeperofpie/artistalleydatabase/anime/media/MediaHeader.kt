@@ -36,6 +36,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
@@ -124,11 +125,12 @@ fun MediaHeader(
                 Row(modifier = Modifier.weight(1f)) {
                     AutoResizeHeightText(
                         text = titles?.get(preferredTitle) ?: headerValues.title(),
-                        style = MaterialTheme.typography.headlineLarge,
+                        style = MaterialTheme.typography.headlineLarge
+                            .copy(lineBreak = LineBreak.Simple),
                         modifier = Modifier
                             .fillMaxHeight()
                             .weight(1f)
-                            .padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 4.dp),
+                            .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 4.dp),
                     )
                     AnimatedVisibility(
                         visible = progress > 0.8f,
@@ -141,7 +143,7 @@ fun MediaHeader(
                             popularity = popularity,
                             modifier = Modifier
                                 .alpha(if (progress > 0.8f) 1f - ((1f - progress) / 0.2f) else 0f)
-                                .padding(start = 8.dp, end = 8.dp, top = 4.dp)
+                                .padding(start = 8.dp, end = 8.dp, top = 12.dp)
                         )
                     }
                 }

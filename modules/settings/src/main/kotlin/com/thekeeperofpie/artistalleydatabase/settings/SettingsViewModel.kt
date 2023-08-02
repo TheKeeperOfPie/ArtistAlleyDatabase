@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
+import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppMetadataProvider
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
@@ -36,6 +37,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaEntryDao
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListOAuthStore
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntry
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDao
+import com.thekeeperofpie.artistalleydatabase.compose.AppThemeSetting
 import com.thekeeperofpie.artistalleydatabase.monetization.LocalMonetizationProvider
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationController
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtist
@@ -91,6 +93,20 @@ class SettingsViewModel @Inject constructor(
         icon = Icons.Filled.AppSettingsAlt,
         labelTextRes = R.string.settings_subsection_behavior_label,
         children = listOf(
+            SettingsSection.Dropdown(
+                labelTextRes = R.string.settings_subsection_behavior_media_type_label,
+                options = listOf(MediaType.ANIME, MediaType.MANGA),
+                optionToText = {
+                    stringResource(
+                        if (it == MediaType.ANIME) {
+                            R.string.settings_subsection_behavior_media_type_anime
+                        } else {
+                            R.string.settings_subsection_behavior_media_type_manga
+                        }
+                    )
+                },
+                property = settings.preferredMediaType,
+            ),
             SettingsSection.Dropdown(
                 labelTextRes = R.string.settings_subsection_behavior_language_option_media_label,
                 options = AniListLanguageOption.values().toList(),
@@ -295,7 +311,7 @@ class SettingsViewModel @Inject constructor(
                     }
                 }
             }
-        },
+        }.takeIf { !featureOverrideProvider.isReleaseBuild },
         themeSection,
         behaviorSection,
         SettingsSection.Placeholder(id = "featureTiers"),

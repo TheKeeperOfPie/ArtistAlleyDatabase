@@ -20,6 +20,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.LibraryBooks
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -61,6 +63,7 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.OutOfQuotaPolicy
+import com.anilist.type.MediaType
 import com.google.android.gms.oss.licenses.OssLicensesMenuActivity
 import com.mxalbert.sharedelements.SharedElementsRoot
 import com.thekeeperofpie.anichive.BuildConfig
@@ -176,15 +179,16 @@ class MainActivity : ComponentActivity() {
             val languageOptionCharacters by settings.languageOptionCharacters.collectAsState()
             val languageOptionStaff by settings.languageOptionStaff.collectAsState()
 
-            val navigationCallback = remember(languageOptionMedia, languageOptionCharacters, languageOptionStaff) {
-                AnimeNavigator.NavigationCallback(
-                    navHostController = navHostController,
-                    cdEntryNavigator = cdEntryNavigator,
-                    languageOptionMedia = languageOptionMedia,
-                    languageOptionCharacters = languageOptionCharacters,
-                    languageOptionStaff = languageOptionStaff,
-                )
-            }
+            val navigationCallback =
+                remember(languageOptionMedia, languageOptionCharacters, languageOptionStaff) {
+                    AnimeNavigator.NavigationCallback(
+                        navHostController = navHostController,
+                        cdEntryNavigator = cdEntryNavigator,
+                        languageOptionMedia = languageOptionMedia,
+                        languageOptionCharacters = languageOptionCharacters,
+                        languageOptionStaff = languageOptionStaff,
+                    )
+                }
 
             ArtistAlleyDatabaseTheme(settings = settings, navHostController = navHostController) {
                 CompositionLocalProvider(
@@ -297,10 +301,23 @@ class MainActivity : ComponentActivity() {
     ) {
         ModalDrawerSheet {
             Spacer(modifier = Modifier.height(16.dp))
+            val preferredMediaType by settings.preferredMediaType.collectAsState()
             navDrawerItems().forEachIndexed { index, item ->
                 NavigationDrawerItem(
-                    icon = { Icon(item.icon, contentDescription = null) },
-                    label = { Text(stringResource(item.titleRes)) },
+                    icon = {
+                        if (item == NavDrawerItems.ANIME && preferredMediaType == MediaType.MANGA) {
+                            Icon(Icons.Filled.LibraryBooks, contentDescription = null)
+                        } else {
+                            Icon(item.icon, contentDescription = null)
+                        }
+                    },
+                    label = {
+                        if (item == NavDrawerItems.ANIME && preferredMediaType == MediaType.MANGA) {
+                            Text(stringResource(R.string.nav_drawer_manga))
+                        } else {
+                            Text(stringResource(item.titleRes))
+                        }
+                    },
                     selected = index == selectedIndex(),
                     onClick = {
                         onCloseDrawer()
@@ -325,7 +342,9 @@ class MainActivity : ComponentActivity() {
             UpIconOption.NavDrawer(onClickNav).takeIf { unlockDatabaseFeatures }
         Column(modifier = Modifier.fillMaxSize()) {
             val adsEnabled by monetizationController.adsEnabled.collectAsState(false)
-            if (adsEnabled) {
+            val subscribed by monetizationController.subscribed.collectAsState(false)
+            // TODO: Offer option to still show ads even if subscribed?
+            if (adsEnabled && !subscribed) {
                 Box(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier
