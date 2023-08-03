@@ -57,6 +57,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.coerceAtMost
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
 import coil.compose.AsyncImage
@@ -229,7 +230,10 @@ internal fun CoverAndBannerHeader(
                                     .height(imageHeight)
                                     .run {
                                         if (coverImageWidthToHeightRatio != 1f) {
-                                            width(imageHeight * coverImageWidthToHeightRatio)
+                                            width(
+                                                (imageHeight * coverImageWidthToHeightRatio)
+                                                    .coerceAtMost(maxWidth)
+                                            )
                                         } else if (success) {
                                             wrapContentWidth()
                                         } else this

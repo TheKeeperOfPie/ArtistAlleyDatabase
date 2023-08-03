@@ -89,7 +89,8 @@ class AnimeUserListViewModel @Inject constructor(
                     refreshUptimeMillis = refreshUptimeMillis,
                     initialParams = AnimeSortFilterController.InitialParams(
                         onListEnabled = false,
-                        defaultSort = MediaListSortOption.UPDATED_TIME
+                        defaultSort = MediaListSortOption.UPDATED_TIME,
+                        lockSort = false,
                     )
                 )
             }
@@ -107,7 +108,8 @@ class AnimeUserListViewModel @Inject constructor(
                     refreshUptimeMillis = refreshUptimeMillis,
                     initialParams = MangaSortFilterController.InitialParams(
                         onListEnabled = false,
-                        defaultSort = MediaListSortOption.UPDATED_TIME
+                        defaultSort = MediaListSortOption.UPDATED_TIME,
+                        lockSort = false,
                     )
                 )
             }

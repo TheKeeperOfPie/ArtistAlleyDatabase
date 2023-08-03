@@ -15,6 +15,7 @@ enum class AnimeNavDestinations(val id: String) {
     SEASONAL("anime_seasonal"),
     NEWS("anime_news"),
     ACTIVITY("anime_activity"),
+    NOTIFICATIONS("anime_notifications"),
     MEDIA_CHARACTERS("anime_media_characters"),
     MEDIA_REVIEWS("anime_media_reviews"),
     REVIEW_DETAILS("anime_review_details"),

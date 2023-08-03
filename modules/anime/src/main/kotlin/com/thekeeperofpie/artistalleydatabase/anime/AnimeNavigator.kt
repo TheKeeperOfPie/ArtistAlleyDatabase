@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.anime
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.Dp
@@ -48,6 +49,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDeta
 import com.thekeeperofpie.artistalleydatabase.anime.media.details.AnimeMediaDetailsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsScreen
+import com.thekeeperofpie.artistalleydatabase.anime.notifications.NotificationsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.review.ReviewsScreen
@@ -148,7 +150,9 @@ object AnimeNavigator {
                         AnimeSearchViewModel.SearchType.MANGA
                     } else {
                         AnimeSearchViewModel.SearchType.ANIME
-                    }
+                    },
+                    // TODO: Explicitly pass lockSort
+                    lockSort = tagId == null && genre == null,
                 )
             }
             MediaSearchScreen(
@@ -470,6 +474,10 @@ object AnimeNavigator {
 
         navGraphBuilder.composable(AnimeNavDestinations.ACTIVITY.id) {
             AnimeActivityScreen(navigationCallback = navigationCallback)
+        }
+
+        navGraphBuilder.composable(AnimeNavDestinations.NOTIFICATIONS.id) {
+            NotificationsScreen(upIconOption = UpIconOption.Back(navHostController))
         }
 
         navGraphBuilder.composable(
@@ -1221,6 +1229,10 @@ object AnimeNavigator {
             }
         }
 
+        fun onNotificationsClick() {
+            navHostController?.navigate(AnimeNavDestinations.NOTIFICATIONS.id)
+        }
+
         fun onAiringScheduleClick() {
             navHostController?.navigate(AnimeNavDestinations.AIRING_SCHEDULE.id)
         }
@@ -1258,3 +1270,5 @@ object AnimeNavigator {
         fun navigateUp() = navHostController?.navigateUp()
     }
 }
+
+val LocalNavigationCallback = staticCompositionLocalOf<AnimeNavigator.NavigationCallback?> { null }

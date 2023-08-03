@@ -145,7 +145,11 @@ class MangaSortFilterController<SortType : SortOption>(
                     listOfNotNull(
                         sortSection.apply {
                             if (initialParams.defaultSort != null) {
-                                enforceSelected(initialParams.defaultSort, sortAscending = false)
+                                changeSelected(
+                                    initialParams.defaultSort,
+                                    sortAscending = false,
+                                    lockSort = initialParams.lockSort,
+                                )
                             }
                         },
                         statusSection,
@@ -261,5 +265,6 @@ class MangaSortFilterController<SortType : SortOption>(
         val onListEnabled: Boolean = true,
         val showIgnoredEnabled: Boolean = true,
         val defaultSort: SortType?,
+        val lockSort: Boolean,
     ) : MediaSortFilterController.InitialParams<SortType>
 }

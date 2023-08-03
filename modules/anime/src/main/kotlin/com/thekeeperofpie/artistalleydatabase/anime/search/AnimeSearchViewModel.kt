@@ -473,6 +473,7 @@ class AnimeSearchViewModel @Inject constructor(
         tagId: String? = null,
         genre: String? = null,
         searchType: SearchType? = null,
+        lockSort: Boolean,
     ) {
         if (initialized) return
         initialized = true
@@ -486,6 +487,7 @@ class AnimeSearchViewModel @Inject constructor(
                 tagId = tagId,
                 genre = genre,
                 defaultSort = defaultMediaSort,
+                lockSort = lockSort,
             ),
         )
         mangaSortFilterController.initialize(
@@ -495,6 +497,7 @@ class AnimeSearchViewModel @Inject constructor(
                 tagId = tagId,
                 genre = genre,
                 defaultSort = defaultMediaSort,
+                lockSort = lockSort,
             ),
         )
     }

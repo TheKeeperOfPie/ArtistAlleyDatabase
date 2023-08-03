@@ -57,7 +57,6 @@ fragment MediaCompactWithTags on Media {
     tags {
         ...GeneralMediaTag
         isMediaSpoiler
-        rank
     }
     averageScore
     popularity

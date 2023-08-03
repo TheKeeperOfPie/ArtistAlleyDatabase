@@ -348,7 +348,7 @@ fun MediaNextAiringSection(nextAiringEpisode: MediaPreview.NextAiringEpisode) {
             .copy(alpha = 0.8f),
         modifier = Modifier
             .wrapContentHeight(Alignment.Bottom)
-            .padding(start = 12.dp, top = 4.dp, end = 16.dp, bottom = 4.dp)
+            .padding(start = 12.dp, end = 16.dp)
     )
 }
 

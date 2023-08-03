@@ -19,7 +19,7 @@ enum class UserSortOption(
     ;
 
     fun toApiValue(ascending: Boolean) = when (this) {
-        SEARCH_MATCH -> listOf(UserSort.SEARCH_MATCH)
+        SEARCH_MATCH -> listOf(UserSort.SEARCH_MATCH, UserSort.ID_DESC)
         ID -> listOf(if (ascending) UserSort.ID else UserSort.ID_DESC)
         USERNAME -> listOf(
             if (ascending) UserSort.USERNAME else UserSort.USERNAME_DESC,

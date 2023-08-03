@@ -61,11 +61,11 @@ sealed class SortFilterSection(val id: String) {
         override fun showingPreview() =
             sortOptions.any { it.state != FilterIncludeExcludeState.DEFAULT }
 
-        fun enforceSelected(defaultEnabled: SortType, sortAscending: Boolean) {
+        fun changeSelected(defaultEnabled: SortType, sortAscending: Boolean, lockSort: Boolean) {
             this.defaultEnabled = defaultEnabled
             sortOptions = SortEntry.options(enumClass, defaultEnabled)
             this.sortAscending = sortAscending
-            clickable = false
+            clickable = !lockSort
         }
 
         override fun clear() {

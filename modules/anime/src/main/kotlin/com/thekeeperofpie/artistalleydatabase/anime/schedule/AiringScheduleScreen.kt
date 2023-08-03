@@ -108,7 +108,7 @@ object AiringScheduleScreen {
                                             MediaSeason.SUMMER -> Icons.Filled.WbSunny
                                             // TODO: Use a better leaf
                                             MediaSeason.FALL -> Icons.Filled.EnergySavingsLeaf
-                                            MediaSeason.UNKNOWN__ -> TODO()
+                                            MediaSeason.UNKNOWN__ -> Icons.Filled.WbSunny
                                         },
                                         contentDescription = stringResource(
                                             R.string.anime_seasonal_icon_content_description

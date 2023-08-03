@@ -1,0 +1,191 @@
+fragment NotificationMedia on Media {
+    ...MediaWithListStatus
+    ...MediaCompactWithTags
+}
+
+fragment ActivityId on ActivityUnion {
+    ... on TextActivity {
+        id
+    }
+    ... on ListActivity {
+        id
+        media {
+            id
+            isAdult
+        }
+    }
+    ... on MessageActivity {
+        id
+    }
+}
+
+fragment NotificationItem on NotificationUnion {
+    __typename
+
+    ... on AiringNotification {
+        id
+        episode
+        createdAt
+        media {
+            id
+            isAdult
+        }
+    }
+
+    ... on FollowingNotification {
+        id
+        userId
+        context
+        createdAt
+        user {
+            ...UserNavigationData
+        }
+    }
+
+    ... on ActivityMessageNotification {
+        id
+        context
+        createdAt
+        message {
+            id
+        }
+        user {
+            ...UserNavigationData
+        }
+    }
+
+    ... on ActivityMentionNotification {
+        id
+        context
+        createdAt
+        activity {
+            ...ActivityId
+        }
+        user {
+            ...UserNavigationData
+        }
+    }
+
+    ... on ActivityReplyNotification {
+        id
+        context
+        createdAt
+        activity {
+            ...ActivityId
+        }
+        user {
+            ...UserNavigationData
+        }
+    }
+
+    ... on ActivityReplySubscribedNotification {
+        id
+        context
+        createdAt
+        activity {
+            ...ActivityId
+        }
+        user {
+            ...UserNavigationData
+        }
+    }
+
+    ... on ActivityLikeNotification {
+        id
+        context
+        createdAt
+        activity {
+            ...ActivityId
+        }
+        user {
+            ...UserNavigationData
+        }
+    }
+
+    ... on ActivityReplyLikeNotification {
+        id
+        context
+        createdAt
+        activity {
+            ...ActivityId
+        }
+        user {
+            ...UserNavigationData
+        }
+    }
+    ... on RelatedMediaAdditionNotification {
+        id
+        context
+        createdAt
+        media {
+            id
+            isAdult
+        }
+    }
+
+    ... on MediaDataChangeNotification {
+        id
+        context
+        reason
+        createdAt
+        media {
+            id
+            isAdult
+        }
+    }
+
+    ... on MediaMergeNotification {
+        id
+        context
+        reason
+        createdAt
+        media {
+            id
+            isAdult
+        }
+    }
+
+    ... on MediaDeletionNotification {
+        id
+        context
+        reason
+        createdAt
+        deletedMediaTitle
+    }
+
+    # TODO: Forum related notifications
+    #ThreadCommentMentionNotification
+    #ThreadCommentReplyNotification
+    #ThreadCommentSubscribedNotification
+    #ThreadCommentLikeNotification
+    #ThreadLikeNotification
+}
+
+query Notifications(
+    $resetNotificationCount: Boolean!,
+    $typeIn: [NotificationType],
+    $page: Int!,
+    $perPage: Int!,
+) {
+    Page(page: $page, perPage: $perPage) {
+        pageInfo {
+            ...PaginationInfo
+        }
+        notifications(resetNotificationCount: $resetNotificationCount, type_in: $typeIn) {
+            ...NotificationItem
+        }
+    }
+}
+
+query NotificationMediaAndActivity($mediaIds: [Int]!, $activityIds: [Int]!) {
+    media: Page(page: 1, perPage: 25) {
+        media(id_in: $mediaIds) {
+            ...NotificationMedia
+        }
+    }
+    activity: Page(page: 1, perPage: 25) {
+        activities(id_in: $activityIds) {
+            ...ActivityItem
+        }
+    }
+}

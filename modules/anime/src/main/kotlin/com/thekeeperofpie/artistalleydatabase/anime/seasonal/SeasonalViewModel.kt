@@ -96,6 +96,7 @@ class SeasonalViewModel @Inject constructor(
             initialParams = AnimeSortFilterController.InitialParams(
                 airingDateEnabled = false,
                 defaultSort = MediaSortOption.POPULARITY,
+                lockSort =  false,
             ),
         )
     }

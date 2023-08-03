@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.anilist
 
 import android.util.Log
+import com.anilist.NotificationsQuery
 import com.anilist.fragment.AniListCharacter
 import com.anilist.fragment.AniListMedia
 import com.anilist.type.MediaSeason
@@ -151,4 +152,56 @@ internal fun ApolloClient.Builder.addLoggingInterceptors(
         }
         addHttpInterceptor(LoggingInterceptor(level) { Log.d(tag, it) })
     }
+}
+
+fun NotificationsQuery.Data.Page.Notification.isAdult() = when (this) {
+    // STOPSHIP: Filter all options
+    is NotificationsQuery.Data.Page.ActivityMentionNotificationNotification ->
+        when (activity) {
+            is NotificationsQuery.Data.Page.ActivityMentionNotificationNotification.ListActivityActivity -> activity.media?.isAdult
+            is NotificationsQuery.Data.Page.ActivityMentionNotificationNotification.MessageActivityActivity,
+            is NotificationsQuery.Data.Page.ActivityMentionNotificationNotification.OtherActivity,
+            is NotificationsQuery.Data.Page.ActivityMentionNotificationNotification.TextActivityActivity,
+            null -> false
+        }
+    is NotificationsQuery.Data.Page.AiringNotificationNotification -> media?.isAdult
+    is NotificationsQuery.Data.Page.ActivityReplyNotificationNotification ->
+        when (activity) {
+            is NotificationsQuery.Data.Page.ActivityReplyNotificationNotification.ListActivityActivity -> activity.media?.isAdult
+            is NotificationsQuery.Data.Page.ActivityReplyNotificationNotification.MessageActivityActivity,
+            is NotificationsQuery.Data.Page.ActivityReplyNotificationNotification.OtherActivity,
+            is NotificationsQuery.Data.Page.ActivityReplyNotificationNotification.TextActivityActivity,
+            null -> false
+        }
+    is NotificationsQuery.Data.Page.ActivityReplySubscribedNotificationNotification ->
+        when (activity) {
+            is NotificationsQuery.Data.Page.ActivityReplySubscribedNotificationNotification.ListActivityActivity -> activity.media?.isAdult
+            is NotificationsQuery.Data.Page.ActivityReplySubscribedNotificationNotification.MessageActivityActivity,
+            is NotificationsQuery.Data.Page.ActivityReplySubscribedNotificationNotification.OtherActivity,
+            is NotificationsQuery.Data.Page.ActivityReplySubscribedNotificationNotification.TextActivityActivity,
+            null -> false
+        }
+    is NotificationsQuery.Data.Page.ActivityLikeNotificationNotification ->
+        when (activity) {
+            is NotificationsQuery.Data.Page.ActivityLikeNotificationNotification.ListActivityActivity -> activity.media?.isAdult
+            is NotificationsQuery.Data.Page.ActivityLikeNotificationNotification.MessageActivityActivity,
+            is NotificationsQuery.Data.Page.ActivityLikeNotificationNotification.OtherActivity,
+            is NotificationsQuery.Data.Page.ActivityLikeNotificationNotification.TextActivityActivity,
+            null -> false
+        }
+    is NotificationsQuery.Data.Page.ActivityReplyLikeNotificationNotification ->
+        when (activity) {
+            is NotificationsQuery.Data.Page.ActivityReplyLikeNotificationNotification.ListActivityActivity -> activity.media?.isAdult
+            is NotificationsQuery.Data.Page.ActivityReplyLikeNotificationNotification.MessageActivityActivity,
+            is NotificationsQuery.Data.Page.ActivityReplyLikeNotificationNotification.OtherActivity,
+            is NotificationsQuery.Data.Page.ActivityReplyLikeNotificationNotification.TextActivityActivity,
+            null -> false
+        }
+    is NotificationsQuery.Data.Page.RelatedMediaAdditionNotificationNotification -> media?.isAdult
+    is NotificationsQuery.Data.Page.MediaDataChangeNotificationNotification -> media?.isAdult
+    is NotificationsQuery.Data.Page.MediaMergeNotificationNotification -> media?.isAdult
+    is NotificationsQuery.Data.Page.MediaDeletionNotificationNotification,
+    is NotificationsQuery.Data.Page.ActivityMessageNotificationNotification,
+    is NotificationsQuery.Data.Page.FollowingNotificationNotification,
+    is NotificationsQuery.Data.Page.OtherNotification -> false
 }

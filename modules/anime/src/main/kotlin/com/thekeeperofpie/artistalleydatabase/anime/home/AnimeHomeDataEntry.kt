@@ -18,8 +18,10 @@ data class AnimeHomeDataEntry(
         override val showLessImportantTags: Boolean = false,
         override val showSpoilerTags: Boolean = false,
     ) : AnimeMediaLargeCard.Entry {
-        override val description = media.description?.replace("\n\n\n", "\n")
-        override val tags = media.tags?.filterNotNull()
+        // So that enough meaningful text is shown, strip any double newlines
+        override val description = media.description?.replace("<br><br />\n<br><br />\n", "\n")
+        override val tags = media.tags?.asSequence()
+            ?.filterNotNull()
             ?.filter {
                 showLessImportantTags
                         || it.category !in MediaUtils.LESS_IMPORTANT_MEDIA_TAG_CATEGORIES
@@ -28,7 +30,7 @@ data class AnimeHomeDataEntry(
                 showSpoilerTags || (it.isGeneralSpoiler != true && it.isMediaSpoiler != true)
             }
             ?.map(::AnimeMediaTagEntry)
-            ?.distinctBy { it.id }
+            ?.distinctBy { it.id }?.toList()
             .orEmpty()
     }
 

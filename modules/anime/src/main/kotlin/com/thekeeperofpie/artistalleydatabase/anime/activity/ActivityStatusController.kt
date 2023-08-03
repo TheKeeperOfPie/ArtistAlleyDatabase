@@ -50,19 +50,14 @@ fun <ActivityEntry> applyActivityFiltering(
     showLessImportantTags: Boolean,
     showSpoilerTags: Boolean,
     entry: ActivityEntry,
-    activityId: String,
-    activityLiked: Boolean,
-    activitySubscribed: Boolean,
+    activityId: String?,
+    activityStatusAware: ActivityStatusAware?,
     media: MediaWithListStatus?,
     mediaStatusAware: MediaStatusAware?,
     copyMedia: ActivityEntry.(status: MediaListStatus?, progress: Int?, progressVolumes: Int?, ignored: Boolean, showLessImportantTags: Boolean, showSpoilerTags: Boolean) -> ActivityEntry,
     copyActivity: ActivityEntry.(liked: Boolean, subscribed: Boolean) -> ActivityEntry,
 ): ActivityEntry? {
     if (!showAdult && media?.isAdult == true) return null
-    val activityUpdate = activityStatuses[activityId]
-    val currentlyLiked = activityUpdate?.liked ?: activityLiked
-    val currentlySubscribed = activityUpdate?.subscribed ?: activitySubscribed
-
     var copiedEntry = entry
     if (media != null && mediaStatusAware != null) {
         val ignored = ignoredIds.contains(media.id)
@@ -88,15 +83,24 @@ fun <ActivityEntry> applyActivityFiltering(
             || mediaStatusAware.progressVolumes != progressVolumes
             || mediaStatusAware.showLessImportantTags != showLessImportantTags
             || mediaStatusAware.showSpoilerTags != showSpoilerTags
-            || activityLiked != currentlyLiked
         ) {
             copiedEntry = entry.copyMedia(status, progress, progressVolumes, ignored, showLessImportantTags, showSpoilerTags)
         }
     }
 
-    return if (activityLiked == currentlyLiked && activitySubscribed == currentlySubscribed) {
-        copiedEntry
-    } else {
-        copiedEntry.copyActivity(currentlyLiked, currentlySubscribed)
+    if (activityId != null && activityStatusAware != null) {
+        val activityUpdate = activityStatuses[activityId]
+
+        val activityLiked = activityStatusAware.liked
+        val currentlyLiked = activityUpdate?.liked ?: activityLiked
+
+        val activitySubscribed = activityStatusAware.subscribed
+        val currentlySubscribed = activityUpdate?.subscribed ?: activitySubscribed
+
+        if (activityLiked != currentlyLiked || activitySubscribed != currentlySubscribed) {
+            copiedEntry = copiedEntry.copyActivity(currentlyLiked, currentlySubscribed)
+        }
     }
+
+    return copiedEntry
 }

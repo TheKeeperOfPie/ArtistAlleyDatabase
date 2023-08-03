@@ -68,103 +68,174 @@ fun TextActivitySmallCard(
     activity: TextActivityFragment?,
     entry: ActivityStatusAware?,
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
-    navigationCallback: AnimeNavigator.NavigationCallback,
+    navigationCallback: AnimeNavigator.NavigationCallback?,
     modifier: Modifier = Modifier,
     clickable: Boolean = false,
     showActionsRow: Boolean = false,
     onClickDelete: (String) -> Unit = {},
 ) {
     val content: @Composable ColumnScope.() -> Unit = {
-        val user = activity?.user
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
-        ) {
-            val image = user?.avatar?.large
-            if (activity == null || image != null) {
-                UserImage(
-                    screenKey = screenKey,
-                    loading = activity == null,
-                    user = user,
-                    navigationCallback = navigationCallback,
-                )
-            }
-
-            Column(Modifier.weight(1f)) {
-                Text(
-                    text = user?.name ?: "USERNAME",
-                    modifier = Modifier.placeholder(
-                        visible = activity == null,
-                        highlight = PlaceholderHighlight.shimmer(),
-                    )
-                )
-
-                val timestamp = remember(activity) {
-                    activity?.let {
-                        DateUtils.getRelativeTimeSpanString(
-                            it.createdAt * 1000L,
-                            Instant.now().atOffset(ZoneOffset.UTC).toEpochSecond() * 1000,
-                            0,
-                            DateUtils.FORMAT_ABBREV_ALL,
-                        )
-                    }
-                }
-
-                if (activity == null || timestamp != null) {
-                    Text(
-                        text = timestamp.toString(),
-                        style = MaterialTheme.typography.labelSmall,
-                        modifier = Modifier.placeholder(
-                            visible = activity == null,
-                            highlight = PlaceholderHighlight.shimmer(),
-                        )
-                    )
-                }
-            }
-
-            ActivityStatusIcons(
-                activityId = activity?.id?.toString(),
-                replies = activity?.replyCount,
-                viewer = viewer,
-                liked = entry?.liked ?: false,
-                subscribed = entry?.subscribed ?: false,
-                onActivityStatusUpdate = onActivityStatusUpdate,
-            )
-        }
-
-        if (activity == null || activity.text != null) {
-            ImageHtmlText(
-                text = activity?.text ?: "Placeholder text",
-                color = MaterialTheme.typography.bodySmall.color
-                    .takeOrElse { LocalContentColor.current },
-                onClickFallback = {
-                    if (activity != null && clickable) {
-                        navigationCallback.onActivityDetailsClick(activity.id.toString())
-                    }
-                },
-                modifier = Modifier
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
-                    .conditionally(activity == null) { fillMaxWidth() }
-                    .placeholder(
-                        visible = activity == null,
-                        highlight = PlaceholderHighlight.shimmer(),
-                    )
-            )
-        }
-
-        if (showActionsRow) {
-            ActivityDetailsActionRow(
-                activityId = activity?.id?.toString(),
-                isViewer = viewer != null && user?.id == viewer.id,
-                onClickDelete = onClickDelete,
-            )
-        }
+        TextActivityCardContent(
+            screenKey = screenKey,
+            viewer = viewer,
+            activity = activity,
+            user = activity?.user,
+            entry = entry,
+            onActivityStatusUpdate = onActivityStatusUpdate,
+            navigationCallback = navigationCallback,
+            clickable = clickable,
+            showActionsRow = showActionsRow,
+            onClickDelete = onClickDelete,
+        )
     }
 
     if (clickable && activity != null) {
         ElevatedCard(
             onClick = {
-                navigationCallback.onActivityDetailsClick(activity.id.toString())
+                navigationCallback?.onActivityDetailsClick(activity.id.toString())
+            },
+            modifier = modifier,
+            content = content,
+        )
+    } else {
+        ElevatedCard(
+            modifier = modifier,
+            content = content,
+        )
+    }
+}
+
+@Suppress("UnusedReceiverParameter")
+@Composable
+fun ColumnScope.TextActivityCardContent(
+    screenKey: String,
+    viewer: AuthedUserQuery.Data.Viewer?,
+    activity: TextActivityFragment?,
+    user: UserNavigationData?,
+    entry: ActivityStatusAware?,
+    onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
+    navigationCallback: AnimeNavigator.NavigationCallback?,
+    clickable: Boolean = false,
+    showActionsRow: Boolean = false,
+    onClickDelete: (String) -> Unit = {},
+) {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
+    ) {
+        val image = user?.avatar?.large
+        if (activity == null || image != null) {
+            UserImage(
+                screenKey = screenKey,
+                loading = activity == null,
+                user = user,
+                navigationCallback = navigationCallback,
+            )
+        }
+
+        Column(Modifier.weight(1f)) {
+            Text(
+                text = user?.name ?: "USERNAME",
+                modifier = Modifier.placeholder(
+                    visible = activity == null,
+                    highlight = PlaceholderHighlight.shimmer(),
+                )
+            )
+
+            val timestamp = remember(activity) {
+                activity?.let {
+                    DateUtils.getRelativeTimeSpanString(
+                        it.createdAt * 1000L,
+                        Instant.now().atOffset(ZoneOffset.UTC).toEpochSecond() * 1000,
+                        0,
+                        DateUtils.FORMAT_ABBREV_ALL,
+                    )
+                }
+            }
+
+            if (activity == null || timestamp != null) {
+                Text(
+                    text = timestamp.toString(),
+                    style = MaterialTheme.typography.labelMedium,
+                    modifier = Modifier.placeholder(
+                        visible = activity == null,
+                        highlight = PlaceholderHighlight.shimmer(),
+                    )
+                )
+            }
+        }
+
+        ActivityStatusIcons(
+            activityId = activity?.id?.toString(),
+            replies = activity?.replyCount,
+            viewer = viewer,
+            liked = entry?.liked ?: false,
+            subscribed = entry?.subscribed ?: false,
+            onActivityStatusUpdate = onActivityStatusUpdate,
+        )
+    }
+
+    if (activity == null || activity.text != null) {
+        ImageHtmlText(
+            text = activity?.text ?: "Placeholder text",
+            color = MaterialTheme.typography.bodySmall.color
+                .takeOrElse { LocalContentColor.current },
+            onClickFallback = {
+                if (activity != null && clickable) {
+                    navigationCallback?.onActivityDetailsClick(activity.id.toString())
+                }
+            },
+            modifier = Modifier
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .conditionally(activity == null) { fillMaxWidth() }
+                .placeholder(
+                    visible = activity == null,
+                    highlight = PlaceholderHighlight.shimmer(),
+                )
+        )
+    }
+
+    if (showActionsRow) {
+        ActivityDetailsActionRow(
+            activityId = activity?.id?.toString(),
+            isViewer = viewer != null && user?.id == viewer.id,
+            onClickDelete = onClickDelete,
+        )
+    }
+}
+
+@Composable
+fun MessageActivitySmallCard(
+    screenKey: String,
+    viewer: AuthedUserQuery.Data.Viewer?,
+    activity: MessageActivityFragment?,
+    entry: ActivityStatusAware?,
+    onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
+    navigationCallback: AnimeNavigator.NavigationCallback?,
+    modifier: Modifier = Modifier,
+    clickable: Boolean = false,
+    showActionsRow: Boolean = false,
+    onClickDelete: (String) -> Unit = {},
+) {
+    val content: @Composable ColumnScope.() -> Unit = {
+        MessageActivityCardContent(
+            screenKey = screenKey,
+            viewer = viewer,
+            activity = activity,
+            messenger = activity?.messenger,
+            entry = entry,
+            onActivityStatusUpdate = onActivityStatusUpdate,
+            navigationCallback = navigationCallback,
+            clickable = clickable,
+            showActionsRow = showActionsRow,
+            onClickDelete = onClickDelete,
+        )
+    }
+
+    if (clickable && activity != null) {
+        ElevatedCard(
+            onClick = {
+                navigationCallback?.onActivityDetailsClick(activity.id.toString())
             },
             modifier = modifier,
             content = content,
@@ -178,159 +249,145 @@ fun TextActivitySmallCard(
 }
 
 @Composable
-fun MessageActivitySmallCard(
+fun ColumnScope.MessageActivityCardContent(
     screenKey: String,
     viewer: AuthedUserQuery.Data.Viewer?,
     activity: MessageActivityFragment?,
+    messenger: UserNavigationData?,
     entry: ActivityStatusAware?,
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
-    navigationCallback: AnimeNavigator.NavigationCallback,
-    modifier: Modifier = Modifier,
+    navigationCallback: AnimeNavigator.NavigationCallback?,
     clickable: Boolean = false,
     showActionsRow: Boolean = false,
     onClickDelete: (String) -> Unit = {},
 ) {
-    val content: @Composable ColumnScope.() -> Unit = {
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            modifier = Modifier.padding(start = 8.dp, end = 8.dp, top = 8.dp)
-        ) {
-            val image = activity?.messenger?.avatar?.large
-            if (activity == null || image != null) {
-                UserImage(
-                    screenKey = screenKey,
-                    loading = activity == null,
-                    user = activity?.messenger,
-                    navigationCallback = navigationCallback,
-                )
-            }
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        modifier = Modifier.padding(start = 8.dp, end = 8.dp, top = 8.dp)
+    ) {
+        val image = messenger?.avatar?.large
+        if (activity == null || image != null) {
+            UserImage(
+                screenKey = screenKey,
+                loading = activity == null,
+                user = messenger,
+                navigationCallback = navigationCallback,
+            )
+        }
 
-            Column(Modifier.weight(1f)) {
+        Column(Modifier.weight(1f)) {
+            val messengerName = if (activity == null) "USERNAME" else messenger?.name
+            if (messengerName != null) {
                 Text(
-                    text = activity?.messenger?.name ?: "USERNAME",
+                    text = messengerName,
                     modifier = Modifier.placeholder(
                         visible = activity == null,
                         highlight = PlaceholderHighlight.shimmer(),
                     )
                 )
+            }
 
-                val timestamp = remember(activity) {
-                    activity?.let {
-                        DateUtils.getRelativeTimeSpanString(
-                            it.createdAt * 1000L,
-                            Instant.now().atOffset(ZoneOffset.UTC).toEpochSecond() * 1000,
-                            0,
-                            DateUtils.FORMAT_ABBREV_ALL,
-                        )
-                    }
-                }
-
-                if (activity == null || timestamp != null) {
-                    Text(
-                        text = timestamp.toString(),
-                        style = MaterialTheme.typography.labelSmall,
-                        modifier = Modifier.placeholder(
-                            visible = activity == null,
-                            highlight = PlaceholderHighlight.shimmer(),
-                        )
+            val timestamp = remember(activity) {
+                activity?.let {
+                    DateUtils.getRelativeTimeSpanString(
+                        it.createdAt * 1000L,
+                        Instant.now().atOffset(ZoneOffset.UTC).toEpochSecond() * 1000,
+                        0,
+                        DateUtils.FORMAT_ABBREV_ALL,
                     )
                 }
             }
 
-            ActivityStatusIcons(
-                activityId = activity?.id?.toString(),
-                replies = activity?.replyCount,
-                viewer = viewer,
-                liked = entry?.liked ?: false,
-                subscribed = entry?.subscribed ?: false,
-                onActivityStatusUpdate = onActivityStatusUpdate,
-            )
-        }
-
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            modifier = Modifier
-                .padding(horizontal = 16.dp)
-                .align(Alignment.End)
-                .clickable {
-                    activity?.recipient?.let { navigationCallback.onUserClick(it, 1f) }
-                }
-        ) {
-            Icon(
-                imageVector = Icons.Filled.ArrowRightAlt,
-                contentDescription = stringResource(
-                    R.string.anime_activity_message_arrow_recipient_icon_content_description
-                ),
-                modifier = Modifier.size(16.dp)
-            )
-
-            Text(
-                text = activity?.recipient?.name ?: "USERNAME",
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier
-                    .placeholder(
+            if (activity == null || timestamp != null) {
+                Text(
+                    text = timestamp.toString(),
+                    style = MaterialTheme.typography.labelMedium,
+                    modifier = Modifier.placeholder(
                         visible = activity == null,
                         highlight = PlaceholderHighlight.shimmer(),
                     )
-            )
-            val image = activity?.recipient?.avatar?.large
-            if (activity == null || image != null) {
-                AsyncImage(
-                    model = image,
-                    contentDescription = stringResource(R.string.anime_user_image),
-                    modifier = Modifier
-                        .size(32.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                        .placeholder(
-                            visible = activity == null,
-                            highlight = PlaceholderHighlight.shimmer(),
-                        )
                 )
             }
         }
 
-        if (activity == null || activity.message != null) {
-            ImageHtmlText(
-                text = activity?.message ?: "Placeholder text",
-                color = MaterialTheme.typography.bodySmall.color
-                    .takeOrElse { LocalContentColor.current },
-                onClickFallback = {
-                    if (activity != null && clickable) {
-                        navigationCallback.onActivityDetailsClick(activity.id.toString())
-                    }
-                },
+        ActivityStatusIcons(
+            activityId = activity?.id?.toString(),
+            replies = activity?.replyCount,
+            viewer = viewer,
+            liked = entry?.liked ?: false,
+            subscribed = entry?.subscribed ?: false,
+            onActivityStatusUpdate = onActivityStatusUpdate,
+        )
+    }
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        modifier = Modifier
+            .padding(horizontal = 16.dp)
+            .align(Alignment.End)
+            .clickable {
+                activity?.recipient?.let { navigationCallback?.onUserClick(it, 1f) }
+            }
+    ) {
+        Icon(
+            imageVector = Icons.Filled.ArrowRightAlt,
+            contentDescription = stringResource(
+                R.string.anime_activity_message_arrow_recipient_icon_content_description
+            ),
+            modifier = Modifier.size(16.dp)
+        )
+
+        Text(
+            text = activity?.recipient?.name ?: "USERNAME",
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier
+                .placeholder(
+                    visible = activity == null,
+                    highlight = PlaceholderHighlight.shimmer(),
+                )
+        )
+        val image = activity?.recipient?.avatar?.large
+        if (activity == null || image != null) {
+            AsyncImage(
+                model = image,
+                contentDescription = stringResource(R.string.anime_user_image),
                 modifier = Modifier
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
-                    .conditionally(activity == null) { fillMaxWidth() }
+                    .size(32.dp)
+                    .clip(RoundedCornerShape(12.dp))
                     .placeholder(
                         visible = activity == null,
                         highlight = PlaceholderHighlight.shimmer(),
                     )
             )
         }
-
-        if (showActionsRow) {
-            ActivityDetailsActionRow(
-                activityId = activity?.id?.toString(),
-                isViewer = viewer != null && activity?.messenger?.id == viewer.id,
-                onClickDelete = onClickDelete,
-            )
-        }
     }
 
-    if (clickable && activity != null) {
-        ElevatedCard(
-            onClick = {
-                navigationCallback.onActivityDetailsClick(activity.id.toString())
+    if (activity == null || activity.message != null) {
+        ImageHtmlText(
+            text = activity?.message ?: "Placeholder text",
+            color = MaterialTheme.typography.bodySmall.color
+                .takeOrElse { LocalContentColor.current },
+            onClickFallback = {
+                if (activity != null && clickable) {
+                    navigationCallback?.onActivityDetailsClick(activity.id.toString())
+                }
             },
-            modifier = modifier,
-            content = content,
+            modifier = Modifier
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .conditionally(activity == null) { fillMaxWidth() }
+                .placeholder(
+                    visible = activity == null,
+                    highlight = PlaceholderHighlight.shimmer(),
+                )
         )
-    } else {
-        ElevatedCard(
-            modifier = modifier,
-            content = content,
+    }
+
+    if (showActionsRow) {
+        ActivityDetailsActionRow(
+            activityId = activity?.id?.toString(),
+            isViewer = viewer != null && messenger?.id == viewer.id,
+            onClickDelete = onClickDelete,
         )
     }
 }
@@ -343,7 +400,7 @@ fun ListActivitySmallCard(
     entry: ActivityStatusAware?,
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
     colorCalculationState: ColorCalculationState,
-    navigationCallback: AnimeNavigator.NavigationCallback,
+    navigationCallback: AnimeNavigator.NavigationCallback?,
     modifier: Modifier = Modifier,
     clickable: Boolean = false,
     showActionsRow: Boolean = false,
@@ -411,114 +468,33 @@ private fun ListActivitySmallCard(
     subscribed: Boolean,
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
     colorCalculationState: ColorCalculationState,
-    navigationCallback: AnimeNavigator.NavigationCallback,
+    navigationCallback: AnimeNavigator.NavigationCallback?,
     clickable: Boolean,
     showActionsRow: Boolean,
     onClickDelete: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val content: @Composable ColumnScope.() -> Unit = {
-        val user = activity?.user
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            modifier = Modifier.padding(start = 8.dp, top = 8.dp, bottom = 8.dp)
-        ) {
-            val image = user?.avatar?.large
-            if (activity == null || image != null) {
-                UserImage(
-                    screenKey = screenKey,
-                    loading = activity == null,
-                    user = user,
-                    navigationCallback = navigationCallback,
-                )
-            }
-
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = user?.name ?: "USERNAME",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier
-                        .placeholder(
-                            visible = activity == null,
-                            highlight = PlaceholderHighlight.shimmer(),
-                        )
-                )
-
-                // API returns "1" if the status is "plans to watch", which is redundant, strip it
-                val progress =
-                    if (activity?.status == "plans to watch") null else activity?.progress
-                val status = listOfNotNull(activity?.status, progress).joinToString(separator = " ")
-                val timestamp = remember(activity) {
-                    activity?.let {
-                        DateUtils.getRelativeTimeSpanString(
-                            it.createdAt * 1000L,
-                            Instant.now().atOffset(ZoneOffset.UTC).toEpochSecond() * 1000,
-                            0,
-                            DateUtils.FORMAT_ABBREV_ALL,
-                        )
-                    }
-                }
-                val summaryText = if (status.isNotBlank()) {
-                    stringResource(
-                        R.string.anime_activity_status_with_timestamp,
-                        status,
-                        timestamp.toString()
-                    )
-                } else {
-                    timestamp
-                }
-                if (activity == null || summaryText != null) {
-                    Text(
-                        text = summaryText.toString(),
-                        style = MaterialTheme.typography.labelSmall,
-                        modifier = Modifier
-                            .placeholder(
-                                visible = activity == null,
-                                highlight = PlaceholderHighlight.shimmer(),
-                            )
-                    )
-                }
-            }
-
-            ActivityStatusIcons(
-                activityId = activity?.id?.toString(),
-                replies = activity?.replyCount,
-                viewer = viewer,
-                liked = liked,
-                subscribed = subscribed,
-                onActivityStatusUpdate = onActivityStatusUpdate,
-            )
-        }
-
-        if (showMedia) {
-            AnimeMediaCompactListRow(
-                screenKey = screenKey,
-                entry = entry,
-                onLongClick = {
-                    // TODO: Ignored
-                },
-                onLongPressImage = {
-                    // TODO: Image long click
-                },
-                colorCalculationState = colorCalculationState,
-                navigationCallback = navigationCallback,
-                modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
-            )
-        }
-
-        if (showActionsRow) {
-            ActivityDetailsActionRow(
-                activityId = activity?.id?.toString(),
-                isViewer = viewer != null && user?.id == viewer.id,
-                onClickDelete = onClickDelete,
-            )
-        }
+        ListActivityCardContent(
+            screenKey = screenKey,
+            viewer = viewer,
+            activity = activity,
+            showMedia = showMedia,
+            user = activity?.user,
+            entry = entry,
+            liked = liked,
+            subscribed = subscribed,
+            onActivityStatusUpdate = onActivityStatusUpdate,
+            colorCalculationState = colorCalculationState,
+            navigationCallback = navigationCallback,
+            showActionsRow = showActionsRow,
+            onClickDelete = onClickDelete,
+        )
     }
     if (clickable && activity != null) {
         ElevatedCard(
             onClick = {
-                navigationCallback.onActivityDetailsClick(activity.id.toString())
+                navigationCallback?.onActivityDetailsClick(activity.id.toString())
             },
             modifier = modifier,
             content = content,
@@ -527,6 +503,124 @@ private fun ListActivitySmallCard(
         ElevatedCard(
             modifier = modifier,
             content = content,
+        )
+    }
+}
+
+@Suppress("UnusedReceiverParameter")
+@Composable
+fun ColumnScope.ListActivityCardContent(
+    screenKey: String,
+    viewer: AuthedUserQuery.Data.Viewer?,
+    activity: ListActivityWithoutMedia?,
+    user: UserNavigationData?,
+    entry: AnimeMediaCompactListRow.Entry?,
+    liked: Boolean,
+    subscribed: Boolean,
+    onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
+    colorCalculationState: ColorCalculationState,
+    navigationCallback: AnimeNavigator.NavigationCallback?,
+    showMedia: Boolean = entry != null,
+    showUser: Boolean = true,
+    showActionsRow: Boolean = false,
+    onClickDelete: (String) -> Unit = {},
+) {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        modifier = Modifier.padding(start = 8.dp, top = 8.dp, bottom = 8.dp)
+    ) {
+        val image = user?.avatar?.large
+        if (showUser && (activity == null || image != null)) {
+            UserImage(
+                screenKey = screenKey,
+                loading = activity == null,
+                user = user,
+                navigationCallback = navigationCallback,
+            )
+        }
+
+        Column(modifier = Modifier.weight(1f)) {
+            val userName = if (activity == null) "USERNAME" else user?.name
+            if (userName != null) {
+                Text(
+                    text = userName,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier
+                        .placeholder(
+                            visible = activity == null,
+                            highlight = PlaceholderHighlight.shimmer(),
+                        )
+                )
+            }
+
+            // API returns "1" if the status is "plans to watch", which is redundant, strip it
+            val progress =
+                if (activity?.status == "plans to watch") null else activity?.progress
+            val status = listOfNotNull(activity?.status, progress).joinToString(separator = " ")
+            val timestamp = remember(activity) {
+                activity?.let {
+                    DateUtils.getRelativeTimeSpanString(
+                        it.createdAt * 1000L,
+                        Instant.now().atOffset(ZoneOffset.UTC).toEpochSecond() * 1000,
+                        0,
+                        DateUtils.FORMAT_ABBREV_ALL,
+                    )
+                }
+            }
+            val summaryText = if (status.isNotBlank()) {
+                stringResource(
+                    R.string.anime_activity_status_with_timestamp,
+                    status,
+                    timestamp.toString()
+                )
+            } else {
+                timestamp
+            }
+            if (activity == null || summaryText != null) {
+                Text(
+                    text = summaryText.toString(),
+                    style = MaterialTheme.typography.labelMedium,
+                    modifier = Modifier
+                        .placeholder(
+                            visible = activity == null,
+                            highlight = PlaceholderHighlight.shimmer(),
+                        )
+                )
+            }
+        }
+
+        ActivityStatusIcons(
+            activityId = activity?.id?.toString(),
+            replies = activity?.replyCount,
+            viewer = viewer,
+            liked = liked,
+            subscribed = subscribed,
+            onActivityStatusUpdate = onActivityStatusUpdate,
+        )
+    }
+
+    if (showMedia) {
+        AnimeMediaCompactListRow(
+            screenKey = screenKey,
+            entry = entry,
+            onLongClick = {
+                // TODO: Ignored
+            },
+            onLongPressImage = {
+                // TODO: Image long click
+            },
+            colorCalculationState = colorCalculationState,
+            navigationCallback = navigationCallback,
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
+        )
+    }
+
+    if (showActionsRow) {
+        ActivityDetailsActionRow(
+            activityId = activity?.id?.toString(),
+            isViewer = viewer != null && user?.id == viewer.id,
+            onClickDelete = onClickDelete,
         )
     }
 }
@@ -587,7 +681,7 @@ fun ActivityStatusIcons(
         if (activityId == null || replyCount > 0) {
             Text(
                 text = replyCount.toString(),
-                style = MaterialTheme.typography.labelSmall,
+                style = MaterialTheme.typography.labelMedium,
                 modifier = Modifier.placeholder(
                     visible = activityId == null,
                     highlight = PlaceholderHighlight.shimmer(),
@@ -664,7 +758,7 @@ private fun UserImage(
     screenKey: String,
     loading: Boolean,
     user: UserNavigationData?,
-    navigationCallback: AnimeNavigator.NavigationCallback,
+    navigationCallback: AnimeNavigator.NavigationCallback?,
 ) {
     val shape = RoundedCornerShape(12.dp)
     SharedElement(key = "anime_user_${user?.id}_image", screenKey = screenKey) {
@@ -677,7 +771,7 @@ private fun UserImage(
                 .border(width = Dp.Hairline, MaterialTheme.colorScheme.primary, shape)
                 .clickable {
                     if (user != null) {
-                        navigationCallback.onUserClick(user, 1f)
+                        navigationCallback?.onUserClick(user, 1f)
                     }
                 }
                 .placeholder(

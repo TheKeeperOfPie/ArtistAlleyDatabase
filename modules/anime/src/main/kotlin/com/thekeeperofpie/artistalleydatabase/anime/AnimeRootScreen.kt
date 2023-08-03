@@ -163,7 +163,10 @@ object AnimeRootScreen {
                         )
                         NavDestinations.SEARCH -> {
                             val viewModel = hiltViewModel<AnimeSearchViewModel>().apply {
-                                initialize(defaultMediaSort = MediaSortOption.SEARCH_MATCH)
+                                initialize(
+                                    defaultMediaSort = MediaSortOption.SEARCH_MATCH,
+                                    lockSort = false,
+                                )
                             }
                             AnimeSearchScreen(
                                 upIconOption = upIconOption,

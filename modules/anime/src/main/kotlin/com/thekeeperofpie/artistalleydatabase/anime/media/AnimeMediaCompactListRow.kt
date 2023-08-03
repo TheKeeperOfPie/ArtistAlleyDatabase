@@ -68,7 +68,7 @@ object AnimeMediaCompactListRow {
         onLongClick: (Entry) -> Unit,
         onLongPressImage: (Entry) -> Unit,
         colorCalculationState: ColorCalculationState,
-        navigationCallback: AnimeNavigator.NavigationCallback,
+        navigationCallback: AnimeNavigator.NavigationCallback?,
     ) {
         var imageWidthToHeightRatio by remember { MutableSingle(1f) }
         OutlinedCard(
@@ -83,7 +83,7 @@ object AnimeMediaCompactListRow {
                     enabled = entry != null,
                     onClick = {
                         if (entry != null) {
-                            navigationCallback.onMediaClick(
+                            navigationCallback?.onMediaClick(
                                 entry.media,
                                 imageWidthToHeightRatio
                             )
@@ -97,7 +97,7 @@ object AnimeMediaCompactListRow {
                     entry = entry,
                     onClick = {
                         if (entry != null) {
-                            navigationCallback.onMediaClick(entry.media, imageWidthToHeightRatio)
+                            navigationCallback?.onMediaClick(entry.media, imageWidthToHeightRatio)
                         }
                     },
                     onLongPressImage = onLongPressImage,
@@ -129,7 +129,7 @@ object AnimeMediaCompactListRow {
                         tags = entry?.tags.orEmpty(),
                         onTagClick = { id, name ->
                             if (entry != null) {
-                                navigationCallback.onTagClick(
+                                navigationCallback?.onTagClick(
                                     entry.media.type ?: MediaType.ANIME,
                                     id,
                                     name
@@ -234,7 +234,7 @@ object AnimeMediaCompactListRow {
             ?.filter {
                 showSpoilerTags || (it.isGeneralSpoiler != true && it.isMediaSpoiler != true)
             }
-            ?.map { AnimeMediaTagEntry(it, isMediaSpoiler = it.isMediaSpoiler, rank = it.rank) }
+            ?.map { AnimeMediaTagEntry(it, isMediaSpoiler = it.isMediaSpoiler) }
             ?.distinctBy { it.id }
             ?.toList()
             .orEmpty()

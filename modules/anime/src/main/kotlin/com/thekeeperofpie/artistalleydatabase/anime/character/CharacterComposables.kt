@@ -36,7 +36,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -136,7 +135,9 @@ fun CharacterSmallCard(
     ElevatedCard(
         onClick = onClick,
         colors = CardDefaults.elevatedCardColors(containerColor = containerColor),
-        modifier = Modifier.width(width).padding(bottom = 2.dp),
+        modifier = Modifier
+            .width(width)
+            .padding(bottom = 2.dp),
     ) {
         Box {
             val density = LocalDensity.current
@@ -186,7 +187,6 @@ fun CharacterSmallCard(
             if (innerImage != null) {
                 var showInnerImage by remember { mutableStateOf(true) }
                 if (showInnerImage) {
-                    var show by rememberSaveable(id) { mutableStateOf(false) }
                     val clipShape = RoundedCornerShape(topStart = 8.dp)
                     val size = LocalDensity.current.run { 40.dp.roundToPx() }
                     Box(modifier = Modifier.align(Alignment.BottomEnd)) {
@@ -197,11 +197,9 @@ fun CharacterSmallCard(
                             AsyncImage(
                                 model = ImageRequest.Builder(LocalContext.current)
                                     .data(innerImage)
-                                    .crossfade(false)
+                                    .crossfade(true)
                                     .listener(onError = { _, _ ->
                                         showInnerImage = false
-                                    }, onSuccess = { _, _ ->
-                                        show = true
                                     })
                                     .size(width = size, height = size)
                                     .build(),

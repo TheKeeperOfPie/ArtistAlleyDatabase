@@ -39,6 +39,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material.icons.filled.Monitor
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.OpenInNew
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
@@ -172,6 +173,7 @@ object AnimeHomeScreen {
 
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
         val editViewModel = hiltViewModel<MediaEditViewModel>()
+        val viewer by viewModel.viewer.collectAsState()
         MediaEditBottomSheetScaffold(
             screenKey = SCREEN_KEY,
             viewModel = editViewModel,
@@ -210,6 +212,19 @@ object AnimeHomeScreen {
                                     ),
                                 )
                             }
+
+                            // TODO: Unread notification count
+                            if (viewer != null) {
+                                IconButton(onClick = navigationCallback::onNotificationsClick) {
+                                    Icon(
+                                        imageVector = Icons.Filled.Notifications,
+                                        contentDescription = stringResource(
+                                            R.string.anime_notifications_icon_content_description
+                                        ),
+                                    )
+                                }
+                            }
+
                             IconButton(onClick = navigationCallback::onAiringScheduleClick) {
                                 Icon(
                                     imageVector = Icons.Filled.CalendarMonth,
@@ -236,8 +251,6 @@ object AnimeHomeScreen {
                     .padding(it)
                     .pullRefresh(pullRefreshState)
             ) {
-                val viewer by viewModel.viewer.collectAsState()
-
                 LazyColumn(
                     state = scrollStateSaver.lazyListState(),
                     contentPadding = PaddingValues(
@@ -732,7 +745,6 @@ object AnimeHomeScreen {
                     AsyncImage(
                         model = ImageRequest.Builder(LocalContext.current)
                             .data(media.coverImage?.extraLarge)
-                            .crossfade(false)
                             .allowHardware(colorCalculationState.hasColor(id))
                             .size(width = coilWidth, height = coilHeight)
                             .build(),

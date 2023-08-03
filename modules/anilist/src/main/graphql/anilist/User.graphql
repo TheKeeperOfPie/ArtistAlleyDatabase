@@ -2,9 +2,10 @@ query AuthedUser {
     Viewer {
         id
         name
-        options {
-            profileColor
-        }
+        # TODO: profileColor
+#        options {
+#            profileColor
+#        }
         mediaListOptions {
             scoreFormat
         }

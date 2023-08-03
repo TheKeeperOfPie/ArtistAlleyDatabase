@@ -35,6 +35,8 @@ import com.anilist.MediaDetailsStaffPageQuery
 import com.anilist.MediaListEntryQuery
 import com.anilist.MediaTagsQuery
 import com.anilist.MediaTitlesAndImagesQuery
+import com.anilist.NotificationMediaAndActivityQuery
+import com.anilist.NotificationsQuery
 import com.anilist.RateReviewMutation
 import com.anilist.ReviewDetailsQuery
 import com.anilist.SaveActivityReplyMutation
@@ -87,6 +89,7 @@ import com.anilist.type.MediaSort
 import com.anilist.type.MediaSource
 import com.anilist.type.MediaStatus
 import com.anilist.type.MediaType
+import com.anilist.type.NotificationType
 import com.anilist.type.RecommendationSort
 import com.anilist.type.ReviewRating
 import com.anilist.type.ReviewSort
@@ -879,6 +882,30 @@ open class AuthedAniListApi(
 
     open suspend fun licensors(mediaType: ExternalLinkMediaType) =
         query(LicensorsQuery(mediaType = mediaType)).externalLinkSourceCollection.filterNotNull()
+
+    open suspend fun notifications(
+        page: Int,
+        perPage: Int = 10,
+        typeIn: List<NotificationType>? = null,
+        resetNotificationCount: Boolean = true,
+    ) = query(
+        NotificationsQuery(
+            page = page,
+            perPage = perPage,
+            resetNotificationCount = resetNotificationCount,
+            typeIn = Optional.presentIfNotNull(typeIn),
+        )
+    )
+
+    open suspend fun notificationMediaAndActivity(
+        mediaIds: List<String>,
+        activityIds: List<String>,
+    ) = query(
+        NotificationMediaAndActivityQuery(
+            mediaIds = mediaIds.map { it.toInt() },
+            activityIds = activityIds.map { it.toInt() },
+        )
+    )
 
     // TODO: Use queryCacheAndNetwork for everything
     private suspend fun <D : Query.Data> query(query: Query<D>) =

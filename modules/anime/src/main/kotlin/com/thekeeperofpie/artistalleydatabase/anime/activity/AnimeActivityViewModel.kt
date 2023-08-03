@@ -192,8 +192,7 @@ class AnimeActivityViewModel @Inject constructor(
                             showSpoilerTags = showSpoilerTags,
                             entry = it,
                             activityId = it.activityId.valueId,
-                            activityLiked = it.liked,
-                            activitySubscribed = it.subscribed,
+                            activityStatusAware = it,
                             media = (it.activity as? ListActivityActivity)?.media,
                             mediaStatusAware = it.media,
                             copyMedia = { status, progress, progressVolumes, ignored, showLessImportantTags, showSpoilerTags ->

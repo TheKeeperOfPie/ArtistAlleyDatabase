@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LibraryBooks
 import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
@@ -76,6 +77,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionStaff
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListOAuthStore
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
+import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.LocalMediaTagDialogController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaTagDialogController
@@ -199,6 +201,7 @@ class MainActivity : ComponentActivity() {
                     LocalLanguageOptionMedia provides languageOptionMedia,
                     LocalLanguageOptionCharacters provides languageOptionCharacters,
                     LocalLanguageOptionStaff provides languageOptionStaff,
+                    LocalNavigationCallback provides navigationCallback,
                 ) {
                     // TODO: Draw inside insets for applicable screens
                     Surface(modifier = Modifier.safeDrawingPadding()) {
@@ -345,16 +348,19 @@ class MainActivity : ComponentActivity() {
             val subscribed by monetizationController.subscribed.collectAsState(false)
             // TODO: Offer option to still show ads even if subscribed?
             if (adsEnabled && !subscribed) {
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(82.dp)
-                        .background(Color.Black)
-                        .padding(vertical = 16.dp)
-                        .background(MaterialTheme.colorScheme.primaryContainer)
-                ) {
-                    LocalMonetizationProvider.current?.BannerAdView()
+                Column {
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(82.dp)
+                            .background(MaterialTheme.colorScheme.background)
+                            .padding(vertical = 16.dp)
+                            .background(MaterialTheme.colorScheme.primaryContainer)
+                    ) {
+                        LocalMonetizationProvider.current?.BannerAdView()
+                    }
+                    HorizontalDivider()
                 }
             }
             Box(

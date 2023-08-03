@@ -135,7 +135,7 @@ object AnimeMediaLargeCard {
                             modifier = Modifier
                                 .weight(1f)
                                 .fillMaxWidth()
-                                .padding(10.dp)
+                                .padding(horizontal = 10.dp, vertical = 8.dp)
                         )
                     }
 
@@ -232,6 +232,7 @@ object AnimeMediaLargeCard {
             text = entry?.media?.title?.primaryTitle() ?: "Loading...",
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Black,
+            maxLines = 1,
             modifier = Modifier
                 .fillMaxWidth()
                 .wrapContentHeight(Alignment.Top)
@@ -260,7 +261,7 @@ object AnimeMediaLargeCard {
                 .copy(alpha = 0.8f),
             modifier = Modifier
                 .wrapContentHeight()
-                .padding(start = 12.dp, top = 4.dp, end = 16.dp, bottom = 10.dp)
+                .padding(start = 12.dp, top = 4.dp, end = 16.dp, bottom = 4.dp)
                 .placeholder(
                     visible = entry == null,
                     highlight = PlaceholderHighlight.shimmer(),

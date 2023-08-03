@@ -84,6 +84,7 @@ class AnimeMediaIgnoreViewModel @Inject constructor(
             initialParams = AnimeSortFilterController.InitialParams(
                 defaultSort = MediaIgnoreSortOption.ID,
                 showIgnoredEnabled = false,
+                lockSort = false,
             ),
         )
 

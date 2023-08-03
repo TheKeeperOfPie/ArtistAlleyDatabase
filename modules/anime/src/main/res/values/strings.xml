@@ -731,4 +731,9 @@
 
     <string name="anime_requires_unlock">Requires higher feature tier</string>
     <string name="anime_open_feature_tiers_button">Open tiers</string>
+
+    <string name="anime_notifications_title">Notifications</string>
+    <string name="anime_notifications_icon_content_description">Notifications</string>
+    <string name="anime_notification_episode_aired">Episode %1$d aired</string>
+    <string name="anime_notification_related_added">Recently added</string>
 </resources>

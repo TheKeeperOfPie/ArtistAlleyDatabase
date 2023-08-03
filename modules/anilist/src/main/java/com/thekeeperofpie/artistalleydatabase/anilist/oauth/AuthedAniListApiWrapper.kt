@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.anilist.oauth
 
 import com.anilist.ActivityDetailsQuery
+import com.anilist.NotificationMediaAndActivityQuery
 import com.anilist.UserSocialActivityQuery
 import com.anilist.type.ActivitySort
 import com.anilist.type.ActivityType
@@ -14,6 +15,7 @@ import com.anilist.type.MediaSort
 import com.anilist.type.MediaSource
 import com.anilist.type.MediaStatus
 import com.anilist.type.MediaType
+import com.anilist.type.NotificationType
 import com.anilist.type.RecommendationSort
 import com.anilist.type.ReviewRating
 import com.anilist.type.ReviewSort
@@ -21,6 +23,7 @@ import com.anilist.type.StaffSort
 import com.anilist.type.StudioSort
 import com.anilist.type.UserSort
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
+import com.thekeeperofpie.artistalleydatabase.anilist.isAdult
 import com.thekeeperofpie.artistalleydatabase.network_utils.NetworkSettings
 import kotlinx.coroutines.flow.map
 import okhttp3.OkHttpClient
@@ -596,4 +599,35 @@ class AuthedAniListApiWrapper(
     ) = super.saveActivityReply(activityId, replyId, text)
 
     override suspend fun licensors(mediaType: ExternalLinkMediaType) = super.licensors(mediaType)
+
+    override suspend fun notifications(
+        page: Int,
+        perPage: Int,
+        typeIn: List<NotificationType>?,
+        resetNotificationCount: Boolean,
+    ) = super.notifications(page, perPage, typeIn, resetNotificationCount).let {
+        it.copy(
+            page = it.page?.copy(
+                notifications = it.page.notifications?.filter { it?.isAdult() == false })
+        )
+    }
+
+    override suspend fun notificationMediaAndActivity(
+        mediaIds: List<String>,
+        activityIds: List<String>,
+    ) = super.notificationMediaAndActivity(mediaIds, activityIds).let {
+        it.copy(
+            media = it.media?.copy(media = it.media.media?.filter { it?.isAdult == false }),
+            activity = it.activity?.copy(activities = it.activity.activities?.filter {
+                when (it) {
+                    is NotificationMediaAndActivityQuery.Data.Activity.ListActivityActivity -> it.media?.isAdult == false
+                    is NotificationMediaAndActivityQuery.Data.Activity.MessageActivityActivity,
+                    is NotificationMediaAndActivityQuery.Data.Activity.OtherActivity,
+                    is NotificationMediaAndActivityQuery.Data.Activity.TextActivityActivity,
+                    null,
+                    -> true
+                }
+            })
+        )
+    }
 }

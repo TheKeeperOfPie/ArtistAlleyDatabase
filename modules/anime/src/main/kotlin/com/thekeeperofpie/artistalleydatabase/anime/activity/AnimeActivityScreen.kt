@@ -73,7 +73,7 @@ object AnimeActivityScreen {
             pageCount = { if (viewer == null) 1 else 3 },
         )
 
-        val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+        val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(snapAnimationSpec = null)
         SortFilterBottomScaffold(
             sortFilterController = viewModel.sortFilterController,
             topBar = {
@@ -169,7 +169,8 @@ object AnimeActivityScreen {
             )
             else -> {
                 if (activities.itemCount == 0
-                    && activities.loadState.refresh is LoadState.NotLoading) {
+                    && activities.loadState.refresh is LoadState.NotLoading
+                ) {
                     AnimeMediaListScreen.NoResults()
                 } else {
                     val refreshing = activities.loadState.refresh is LoadState.Loading
