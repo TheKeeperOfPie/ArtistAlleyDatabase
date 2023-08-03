@@ -26,7 +26,7 @@ class UnityMonetizationProvider(
 ) : MonetizationProvider {
 
     companion object {
-        private const val FORCE_TEST_MODE = false
+        private const val FORCE_TEST_MODE = true
     }
 
     override var error by mutableStateOf<Pair<Int, Throwable?>?>(null)

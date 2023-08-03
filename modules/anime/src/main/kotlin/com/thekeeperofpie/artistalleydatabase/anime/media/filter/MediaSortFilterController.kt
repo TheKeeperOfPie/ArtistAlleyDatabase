@@ -240,6 +240,7 @@ abstract class MediaSortFilterController<SortType : SortOption, ParamsType : Med
         if (initialParams.tagId != null) {
             tagRank = "60"
         }
+
         viewModel.viewModelScope.launch(CustomDispatchers.Main) {
             refreshUptimeMillis.mapLatest {
                 aniListApi.genres()
@@ -301,9 +302,11 @@ abstract class MediaSortFilterController<SortType : SortOption, ParamsType : Med
                             }
                         },
                         titleDropdownContentDescriptionRes = R.string.anime_media_filter_licensed_by_content_description,
-                        includeExcludeIconContentDescriptionRes = R.string.anime_media_filter_licensed_by_chip_state_content_description,
+                        // TODO: Content description should include site?
+                        includeExcludeIconContentDescriptionRes = R.string.anime_media_filter_licensed_by_chip_icon_content_description,
                         values = it.sites,
                         valueToText = { it.value.site },
+                        valueToImage = { it.value.icon },
                         selectionMethod = SortFilterSection.Filter.SelectionMethod.ONLY_INCLUDE,
                     )
                 }

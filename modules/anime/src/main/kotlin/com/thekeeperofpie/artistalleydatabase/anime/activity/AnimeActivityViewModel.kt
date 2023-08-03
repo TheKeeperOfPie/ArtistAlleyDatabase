@@ -219,14 +219,6 @@ class AnimeActivityViewModel @Inject constructor(
             .collectLatest(target::emit)
     }
 
-    private data class Params(
-        val mediaListStatuses: Map<String, MediaListStatusController.Update>,
-        val activityStatuses: Map<String, ActivityStatusController.Update>,
-        val ignoredIds: Set<Int>,
-        val showAdult: Boolean,
-        val showIgnored: Boolean,
-    )
-
     data class ActivityEntry(
         val activityId: EntryId,
         val activity: UserSocialActivityQuery.Data.Page.Activity,

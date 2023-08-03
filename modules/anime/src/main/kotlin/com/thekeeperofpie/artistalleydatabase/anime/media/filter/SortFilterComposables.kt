@@ -136,7 +136,8 @@ fun SortFilterBottomScaffoldNoAppBarOffset(
 
     val scope = rememberCoroutineScope()
     val bottomSheetState = scaffoldState.bottomSheetState
-    BackHandler(bottomSheetState.targetValue == SheetValue.Expanded && !WindowInsets.isImeVisible) {
+    BackHandler(bottomSheetState.targetValue == SheetValue.Expanded
+            && !WindowInsets.isImeVisible) {
         scope.launch { bottomSheetState.partialExpand() }
     }
 
@@ -192,7 +193,8 @@ fun SortFilterBottomScaffold(
 
     val scope = rememberCoroutineScope()
     val bottomSheetState = scaffoldState.bottomSheetState
-    BackHandler(enabled = bottomSheetState.targetValue == SheetValue.Expanded) {
+    BackHandler(enabled = bottomSheetState.targetValue == SheetValue.Expanded
+            && !WindowInsets.isImeVisible) {
         scope.launch { bottomSheetState.partialExpand() }
     }
 

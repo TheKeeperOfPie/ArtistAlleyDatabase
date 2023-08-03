@@ -43,8 +43,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import com.thekeeperofpie.artistalleydatabase.compose.CustomOutlinedTextField
 import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
+import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortAndFilterComposables.SortFilterHeaderText
 import com.thekeeperofpie.compose_proxy.R
 import kotlin.math.roundToInt
@@ -98,11 +100,16 @@ object SortAndFilterComposables {
         onSortClick: (SortType) -> Unit,
         sortAscending: @Composable () -> Boolean,
         onSortAscendingChange: (Boolean) -> Unit,
+        clickable: Boolean = true,
         showDivider: Boolean = true,
     ) {
         @Suppress("NAME_SHADOWING")
-        val expanded = expanded()
-        Column(modifier = Modifier.clickable { onExpandedChange(!expanded) }) {
+        val expanded = expanded() && clickable
+        Column(
+            modifier = Modifier.conditionally(clickable) {
+                clickable { onExpandedChange(!expanded) }
+            }
+        ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
@@ -121,6 +128,7 @@ object SortAndFilterComposables {
                         if (!expanded && it.state == FilterIncludeExcludeState.DEFAULT) return@forEach
                         FilterChip(
                             selected = it.state != FilterIncludeExcludeState.DEFAULT,
+                            enabled = clickable,
                             onClick = { onSortClick(it.value) },
                             label = { Text(stringResource(it.value.textRes)) },
                             modifier = Modifier.animateContentSize()
@@ -133,6 +141,7 @@ object SortAndFilterComposables {
                         val sortAscending = sortAscending()
                         FilterChip(
                             selected = true,
+                            enabled = clickable,
                             onClick = { onSortAscendingChange(!sortAscending) },
                             leadingIcon = {
                                 Icon(
@@ -155,12 +164,14 @@ object SortAndFilterComposables {
                     }
                 }
 
-                TrailingDropdownIconButton(
-                    expanded = expanded,
-                    contentDescription = stringResource(R.string.sort_expand_content_description),
-                    onClick = { onExpandedChange(!expanded) },
-                    modifier = Modifier.align(Alignment.Top),
-                )
+                if (clickable) {
+                    TrailingDropdownIconButton(
+                        expanded = expanded,
+                        contentDescription = stringResource(R.string.sort_expand_content_description),
+                        onClick = { onExpandedChange(!expanded) },
+                        modifier = Modifier.align(Alignment.Top),
+                    )
+                }
             }
 
             AnimatedVisibility(
@@ -189,6 +200,7 @@ object SortAndFilterComposables {
                     ) {
                         FilterChip(
                             selected = sortAscending,
+                            enabled = clickable,
                             onClick = { onSortAscendingChange(true) },
                             label = { Text(ascendingText(true)) },
                             leadingIcon = {
@@ -204,6 +216,7 @@ object SortAndFilterComposables {
 
                         FilterChip(
                             selected = !sortAscending,
+                            enabled = clickable,
                             onClick = { onSortAscendingChange(false) },
                             label = { Text(ascendingText(false)) },
                             leadingIcon = {
@@ -257,7 +270,7 @@ fun <Entry : FilterEntry<*>> FilterSection(
     title = { stringResource(titleRes) },
     titleDropdownContentDescriptionRes = titleDropdownContentDescriptionRes,
     valueToText = valueToText,
-    includeExcludeIconContentDescriptionRes = includeExcludeIconContentDescriptionRes,
+    iconContentDescriptionRes = includeExcludeIconContentDescriptionRes,
     showDivider = showDivider,
     showIcons = showIcons,
 )
@@ -272,7 +285,8 @@ fun <Entry : FilterEntry<*>> FilterSection(
     title: @Composable () -> String,
     @StringRes titleDropdownContentDescriptionRes: Int,
     valueToText: @Composable (Entry) -> String,
-    @StringRes includeExcludeIconContentDescriptionRes: Int,
+    valueToImage: (@Composable (Entry) -> String?)? = null,
+    @StringRes iconContentDescriptionRes: Int,
     showDivider: Boolean = true,
     showIcons: Boolean = true,
 ) {
@@ -295,16 +309,30 @@ fun <Entry : FilterEntry<*>> FilterSection(
 
             entries().forEach {
                 if (!expanded && it.state == FilterIncludeExcludeState.DEFAULT) return@forEach
+                val customIcon = valueToImage?.invoke(it)
+                val leadingIcon: (@Composable () -> Unit)? = if (customIcon != null) {
+                    {
+                        AsyncImage(
+                            model = customIcon,
+                            contentDescription = stringResource(iconContentDescriptionRes),
+                            modifier = Modifier
+                                .size(24.dp)
+                                .padding(2.dp),
+                        )
+                    }
+                } else if (!showIcons) {
+                    null
+                } else {
+                    {
+                        IncludeExcludeIcon(it, iconContentDescriptionRes)
+                    }
+                }
                 FilterChip(
                     selected = it.state != FilterIncludeExcludeState.DEFAULT,
                     onClick = { onEntryClick(it) },
                     enabled = it.clickable,
                     label = { Text(valueToText(it)) },
-                    leadingIcon = if (!showIcons) null else {
-                        {
-                            IncludeExcludeIcon(it, includeExcludeIconContentDescriptionRes)
-                        }
-                    },
+                    leadingIcon = leadingIcon,
                     modifier = Modifier
                         .animateContentSize()
                         .heightIn(min = 32.dp)

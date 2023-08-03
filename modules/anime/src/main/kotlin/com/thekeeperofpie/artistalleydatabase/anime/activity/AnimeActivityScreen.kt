@@ -57,6 +57,8 @@ import kotlinx.coroutines.launch
 )
 object AnimeActivityScreen {
 
+    private val SCREEN_KEY = AnimeNavDestinations.ACTIVITY.id
+
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     @Composable
     operator fun invoke(
@@ -194,6 +196,7 @@ object AnimeActivityScreen {
                                 val entry = activities[it]
                                 when (val activity = entry?.activity) {
                                     is TextActivityActivity -> TextActivitySmallCard(
+                                        screenKey = SCREEN_KEY,
                                         viewer = viewer,
                                         activity = activity,
                                         entry = entry,
@@ -203,7 +206,7 @@ object AnimeActivityScreen {
                                         modifier = Modifier.fillMaxWidth()
                                     )
                                     is ListActivityActivity -> ListActivitySmallCard(
-                                        screenKey = AnimeNavDestinations.ACTIVITY.id,
+                                        screenKey = SCREEN_KEY,
                                         viewer = viewer,
                                         activity = activity,
                                         mediaEntry = entry.media?.rowEntry,
@@ -215,6 +218,7 @@ object AnimeActivityScreen {
                                         modifier = Modifier.fillMaxWidth()
                                     )
                                     is MessageActivityActivity -> MessageActivitySmallCard(
+                                        screenKey = SCREEN_KEY,
                                         viewer = viewer,
                                         activity = activity,
                                         entry = entry,
@@ -226,6 +230,7 @@ object AnimeActivityScreen {
                                     is OtherActivity,
                                     null,
                                     -> TextActivitySmallCard(
+                                        screenKey = SCREEN_KEY,
                                         activity = null,
                                         viewer = viewer,
                                         entry = null,

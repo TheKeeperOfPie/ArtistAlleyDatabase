@@ -142,11 +142,11 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSh
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.mediaListSection
 import com.thekeeperofpie.artistalleydatabase.anime.review.ReviewSmallCard
+import com.thekeeperofpie.artistalleydatabase.anime.songs.AnimeSongEntry
 import com.thekeeperofpie.artistalleydatabase.anime.staff.DetailsStaff
 import com.thekeeperofpie.artistalleydatabase.anime.staff.staffSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.descriptionSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.listSection
-import com.thekeeperofpie.artistalleydatabase.animethemes.models.AnimeTheme
 import com.thekeeperofpie.artistalleydatabase.cds.grid.CdEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.compose.AssistChip
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
@@ -903,7 +903,7 @@ object AnimeMediaDetailsScreen {
     private fun AnimeThemeRow(
         screenKey: String,
         viewModel: AnimeMediaDetailsViewModel,
-        entry: AnimeMediaDetailsViewModel.AnimeSongEntry,
+        entry: AnimeSongEntry,
         modifier: Modifier = Modifier,
     ) {
         val state = viewModel.getAnimeSongState(entry.id)
@@ -915,7 +915,9 @@ object AnimeMediaDetailsScreen {
         val playing = active && playingState.second
 
         ElevatedCard(
-            modifier = Modifier.animateContentSize().then(modifier),
+            modifier = Modifier
+                .animateContentSize()
+                .then(modifier),
         ) {
             var hidden by remember { mutableStateOf(entry.spoiler && !active) }
             if (hidden) {
@@ -963,7 +965,7 @@ object AnimeMediaDetailsScreen {
                         }
 
                         val labelText = when (entry.type) {
-                            AnimeTheme.Type.Opening -> if (entry.episodes.isNullOrBlank()) {
+                            AnimeSongEntry.Type.OP -> if (entry.episodes.isNullOrBlank()) {
                                 stringResource(R.string.anime_media_details_song_opening)
                             } else {
                                 stringResource(
@@ -971,7 +973,7 @@ object AnimeMediaDetailsScreen {
                                     entry.episodes,
                                 )
                             }
-                            AnimeTheme.Type.Ending -> if (entry.episodes.isNullOrBlank()) {
+                            AnimeSongEntry.Type.ED -> if (entry.episodes.isNullOrBlank()) {
                                 stringResource(R.string.anime_media_details_song_ending)
                             } else {
                                 stringResource(
@@ -1723,7 +1725,9 @@ object AnimeMediaDetailsScreen {
                                         R.string.anime_media_details_link_content_description,
                                         it.site,
                                     ),
-                                    modifier = Modifier.size(24.dp),
+                                    modifier = Modifier
+                                        .size(24.dp)
+                                        .padding(2.dp),
                                 )
                             }
                         },

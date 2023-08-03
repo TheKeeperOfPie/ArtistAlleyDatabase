@@ -68,7 +68,7 @@ object UnlockScreen {
     operator fun invoke(
         upIconOption: UpIconOption?,
         viewModel: UnlockScreenViewModel = hiltViewModel(),
-        onClickSettings: () -> Unit,
+        onClickSettings: (() -> Unit)?,
         bottomNavigationState: BottomNavigationState? = null,
     ) {
         // TODO: Show error message if monetization not available
@@ -107,13 +107,15 @@ object UnlockScreen {
                         }
                     },
                     actions = {
-                        IconButton(onClick = onClickSettings) {
-                            Icon(
-                                imageVector = Icons.Filled.Settings,
-                                contentDescription = stringResource(
-                                    R.string.monetization_settings_content_description
+                        if (onClickSettings != null) {
+                            IconButton(onClick = onClickSettings) {
+                                Icon(
+                                    imageVector = Icons.Filled.Settings,
+                                    contentDescription = stringResource(
+                                        R.string.monetization_settings_content_description
+                                    )
                                 )
-                            )
+                            }
                         }
                     }
                 )

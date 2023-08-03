@@ -702,7 +702,7 @@ object AnimeNavigator {
         navGraphBuilder.composable(route = AnimeNavDestinations.FEATURE_TIERS.id) {
             UnlockScreen(
                 upIconOption = UpIconOption.Back(navHostController),
-                onClickSettings = onClickSettings,
+                onClickSettings = null,
             )
         }
     }

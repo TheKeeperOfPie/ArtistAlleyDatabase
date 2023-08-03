@@ -172,25 +172,13 @@ fun EnterAlwaysNavigationBar(
         scrollBehavior.state.heightOffsetLimit = heightOffsetLimit
     }
 
-    val appBarDragModifier = Modifier.draggable(
-        orientation = Orientation.Vertical,
-        state = rememberDraggableState { scrollBehavior.state.heightOffset += it },
-        onDragStopped = {
-            settle(
-                scrollBehavior.state,
-                it,
-                scrollBehavior.snapAnimationSpec,
-                scrollBehavior.flingAnimationSpec,
-            )
-        }
-    )
-
     val density = LocalDensity.current
     val offset by remember {
         derivedStateOf {
             density.run { -scrollBehavior.state.heightOffset.toDp() }
         }
     }
+
     NavigationBar(
         modifier
             .offset {
@@ -201,7 +189,6 @@ fun EnterAlwaysNavigationBar(
                         .toInt()
                 )
             }
-            .then(appBarDragModifier)
             .onSizeChanged {
                 heightOffsetLimit = -it.height.toFloat()
             }

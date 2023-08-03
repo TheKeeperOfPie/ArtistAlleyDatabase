@@ -109,7 +109,7 @@
     <string name="anime_media_filter_licensed_by_label">Licensed by</string>
     <string name="anime_media_filter_licensed_by_general_label">General</string>
     <string name="anime_media_filter_licensed_by_content_description">Licensed by filter expand</string>
-    <string name="anime_media_filter_licensed_by_chip_state_content_description">Licensed by chip state</string>
+    <string name="anime_media_filter_licensed_by_chip_icon_content_description">Licensed by icon</string>
 
     <string name="anime_media_status_finished">Finished</string>
     <string name="anime_media_status_releasing">Releasing</string>

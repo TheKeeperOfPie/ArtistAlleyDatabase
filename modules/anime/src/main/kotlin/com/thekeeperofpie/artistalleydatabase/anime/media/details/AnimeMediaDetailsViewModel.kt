@@ -3,7 +3,6 @@ package com.thekeeperofpie.artistalleydatabase.anime.media.details
 import android.app.Application
 import android.os.SystemClock
 import android.util.Log
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
@@ -20,15 +19,12 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.map
 import com.anilist.MediaActivityPageQuery
-import com.anilist.MediaDetailsQuery
-import com.anilist.fragment.CharacterNameLanguageFragment
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.android_utils.foldPreviousResult
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListPagingSource
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListOAuthStore
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
@@ -39,7 +35,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityStatusAware
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityToggleHelper
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils
-import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.primaryName
 import com.thekeeperofpie.artistalleydatabase.anime.character.DetailsCharacter
 import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoritesController
 import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoritesToggleHelper
@@ -48,11 +43,10 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toFavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaFiltering
+import com.thekeeperofpie.artistalleydatabase.anime.songs.AnimeSongEntry
+import com.thekeeperofpie.artistalleydatabase.anime.songs.AnimeSongsProvider
 import com.thekeeperofpie.artistalleydatabase.anime.staff.DetailsStaff
 import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIds
-import com.thekeeperofpie.artistalleydatabase.animethemes.AnimeThemesApi
-import com.thekeeperofpie.artistalleydatabase.animethemes.AnimeThemesUtils
-import com.thekeeperofpie.artistalleydatabase.animethemes.models.AnimeTheme
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDao
 import com.thekeeperofpie.artistalleydatabase.cds.grid.CdEntryGridModel
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -69,8 +63,10 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.IOException
+import java.util.Optional
 import java.util.UUID
 import javax.inject.Inject
+import kotlin.jvm.optionals.getOrNull
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
@@ -80,7 +76,7 @@ class AnimeMediaDetailsViewModel @Inject constructor(
     private val aniListApi: AuthedAniListApi,
     private val cdEntryDao: CdEntryDao,
     private val appJson: AppJson,
-    private val animeThemesApi: AnimeThemesApi,
+    private val animeSongsProviderOptional: Optional<AnimeSongsProvider>,
     val mediaPlayer: AppMediaPlayer,
     oAuthStore: AniListOAuthStore,
     val statusController: MediaListStatusController,
@@ -354,55 +350,32 @@ class AnimeMediaDetailsViewModel @Inject constructor(
             }
         }
 
-        viewModelScope.launch(CustomDispatchers.IO) {
-            snapshotFlow { entry }
-                .flowOn(CustomDispatchers.Main)
-                .collectLatest {
-                    val media = it.result?.media
-                    if (media?.type == MediaType.ANIME) {
-                        try {
-                            val anime = animeThemesApi.getAnime(mediaId)
-                            val songEntries = anime
-                                ?.animethemes
-                                ?.flatMap { animeTheme ->
-                                    animeTheme.animeThemeEntries.map {
-                                        val video = it.videos.firstOrNull()
-                                        AnimeSongEntry(
-                                            id = it.id,
-                                            type = animeTheme.type,
-                                            title = animeTheme.song?.title.orEmpty(),
-                                            spoiler = it.spoiler,
-                                            artists = animeTheme.song?.artists
-                                                ?.map { buildArtist(media, it) }
-                                                .orEmpty(),
-                                            episodes = it.episodes,
-                                            videoUrl = video?.link,
-                                            audioUrl = video?.audio?.link,
-                                            link = AnimeThemesUtils.buildWebsiteLink(
-                                                anime,
-                                                animeTheme,
-                                                it
-                                            ),
-                                        )
+        val animeSongsProvider = animeSongsProviderOptional.getOrNull()
+        if (animeSongsProvider != null) {
+            viewModelScope.launch(CustomDispatchers.IO) {
+                snapshotFlow { entry }
+                    .flowOn(CustomDispatchers.Main)
+                    .collectLatest {
+                        val media = it.result?.media
+                        if (media?.type == MediaType.ANIME) {
+                            try {
+                                val songEntries = animeSongsProvider.getSongs(media)
+                                if (songEntries.isNotEmpty()) {
+                                    val songStates = songEntries
+                                        .map { AnimeSongState(id = it.id, entry = it) }
+                                        .associateBy { it.id }
+
+                                    withContext(CustomDispatchers.Main) {
+                                        animeSongStates = songStates
+                                        animeSongs = AnimeSongs(songEntries)
                                     }
                                 }
-                                .orEmpty()
-
-                            if (songEntries.isNotEmpty()) {
-                                val songStates = songEntries
-                                    .map { AnimeSongState(id = it.id, entry = it) }
-                                    .associateBy { it.id }
-
-                                withContext(CustomDispatchers.Main) {
-                                    animeSongStates = songStates
-                                    animeSongs = AnimeSongs(songEntries)
-                                }
+                            } catch (e: Exception) {
+                                Log.e(TAG, "Error loading from AnimeThemes", e)
                             }
-                        } catch (e: Exception) {
-                            Log.e(TAG, "Error loading from AnimeThemes", e)
                         }
                     }
-                }
+            }
         }
 
         viewModelScope.launch(CustomDispatchers.Main) {
@@ -437,57 +410,6 @@ class AnimeMediaDetailsViewModel @Inject constructor(
                 .flowOn(CustomDispatchers.IO)
                 .collectLatest { activities = it }
         }
-    }
-
-    // TODO: Something better than exact string matching
-    private fun buildArtist(
-        media: MediaDetailsQuery.Data.Media,
-        artist: AnimeTheme.Song.Artist,
-    ): AnimeSongEntry.Artist {
-        val edges = media.characters?.edges?.filterNotNull()
-        val edge = edges?.find {
-            val characterName = it.node.name ?: return@find false
-            characterName.full == artist.character ||
-                    (characterName.alternative?.any { it == artist.character } == true)
-        }
-
-        val voiceActor = edges
-            ?.flatMap { it.voiceActors?.filterNotNull().orEmpty() }
-            ?.firstOrNull {
-                it.name?.full == artist.name ||
-                        (it.name?.alternative?.any { it == artist.name } == true)
-            }
-
-        // If character search failed, but voiceActor succeeded, try to find the character again
-        val characterEdge = edge ?: voiceActor?.let {
-            edges.find {
-                it.voiceActors?.contains(voiceActor) == true
-            }
-        }
-
-        val character = characterEdge?.node?.let {
-            AnimeSongEntry.Artist.Character(
-                aniListId = it.id.toString(),
-                image = it.image?.large,
-                name = it.name,
-                fallbackName = artist.character,
-            )
-        }
-
-        val artistImage = voiceActor?.image?.large
-            ?: (artist.images.firstOrNull {
-                it.facet == AnimeTheme.Song.Artist.Images.Facet.SmallCover
-            } ?: artist.images.firstOrNull())?.link
-
-        return AnimeSongEntry.Artist(
-            id = artist.id,
-            aniListId = voiceActor?.id?.toString(),
-            animeThemesSlug = artist.slug,
-            name = artist.name,
-            image = artistImage,
-            asCharacter = !artist.character.isNullOrBlank(),
-            character = character,
-        )
     }
 
     fun getAnimeSongState(animeSongId: String) = animeSongStates[animeSongId]!!
@@ -552,48 +474,6 @@ class AnimeMediaDetailsViewModel @Inject constructor(
     data class AnimeSongs(
         val entries: List<AnimeSongEntry>,
     )
-
-    data class AnimeSongEntry(
-        val id: String,
-        val type: AnimeTheme.Type?,
-        val title: String,
-        val spoiler: Boolean,
-        val artists: List<Artist>,
-        val episodes: String?,
-        val videoUrl: String?,
-        val audioUrl: String?,
-        val link: String?,
-    ) {
-        data class Artist(
-            val id: String,
-            val aniListId: String?,
-            val animeThemesSlug: String,
-            val name: String,
-            val image: String?,
-            val asCharacter: Boolean,
-            val character: Character?,
-        ) {
-            val link by lazy {
-                if (aniListId != null) {
-                    AniListUtils.staffUrl(aniListId)
-                } else {
-                    AnimeThemesUtils.artistUrl(animeThemesSlug)
-                }
-            }
-
-            data class Character(
-                val aniListId: String,
-                val image: String?,
-                private val name: CharacterNameLanguageFragment?,
-                private val fallbackName: String?,
-            ) {
-                val link by lazy { AniListUtils.characterUrl(aniListId) }
-
-                @Composable
-                fun name() = name?.primaryName() ?: fallbackName ?: ""
-            }
-        }
-    }
 
     // State separated from immutable data so that recomposition is as granular as possible
     class AnimeSongState(

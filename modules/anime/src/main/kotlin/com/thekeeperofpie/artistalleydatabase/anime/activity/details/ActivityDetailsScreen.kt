@@ -219,6 +219,7 @@ object ActivityDetailsScreen {
                                 }
                                 is ActivityDetailsQuery.Data.TextActivityActivity -> {
                                     TextActivitySmallCard(
+                                        screenKey = SCREEN_KEY,
                                         activity = activity,
                                         viewer = viewer,
                                         entry = result,
@@ -230,6 +231,7 @@ object ActivityDetailsScreen {
                                 }
                                 is ActivityDetailsQuery.Data.MessageActivityActivity -> {
                                     MessageActivitySmallCard(
+                                        screenKey = SCREEN_KEY,
                                         activity = activity,
                                         viewer = viewer,
                                         entry = result,
@@ -243,6 +245,7 @@ object ActivityDetailsScreen {
                                 null,
                                 -> {
                                     TextActivitySmallCard(
+                                        screenKey = SCREEN_KEY,
                                         activity = null,
                                         viewer = viewer,
                                         entry = result,

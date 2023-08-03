@@ -133,7 +133,11 @@ class AnimeSortFilterController<SortType : SortOption>(
             aniListApi.authedUser
                 .mapLatest { viewer ->
                     listOfNotNull(
-                        sortSection.apply { changeDefaultEnabled(initialParams.defaultSort) },
+                        sortSection.apply {
+                            if (initialParams.defaultSort != null) {
+                                enforceSelected(initialParams.defaultSort, sortAscending = false)
+                            }
+                        },
                         statusSection,
                         formatSection,
                         genreSection,

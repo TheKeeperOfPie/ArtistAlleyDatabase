@@ -56,13 +56,16 @@ sealed class SortFilterSection(val id: String) {
     ) : SortFilterSection(headerTextRes) {
         var sortOptions by mutableStateOf(SortEntry.options(enumClass, defaultEnabled))
         var sortAscending by mutableStateOf(false)
+        var clickable by mutableStateOf(true)
 
         override fun showingPreview() =
             sortOptions.any { it.state != FilterIncludeExcludeState.DEFAULT }
 
-        fun changeDefaultEnabled(defaultEnabled: SortType?) {
+        fun enforceSelected(defaultEnabled: SortType, sortAscending: Boolean) {
             this.defaultEnabled = defaultEnabled
             sortOptions = SortEntry.options(enumClass, defaultEnabled)
+            this.sortAscending = sortAscending
+            clickable = false
         }
 
         override fun clear() {
@@ -101,6 +104,7 @@ sealed class SortFilterSection(val id: String) {
                 },
                 sortAscending = { sortAscending },
                 onSortAscendingChange = { sortAscending = it },
+                clickable = clickable,
                 showDivider = showDivider,
             )
         }
@@ -116,6 +120,7 @@ sealed class SortFilterSection(val id: String) {
         private val includedSettings: MutableStateFlow<List<FilterType>>? = null,
         private val excludedSettings: MutableStateFlow<List<FilterType>>? = null,
         private val valueToText: @Composable (FilterEntry.FilterEntryImpl<FilterType>) -> String,
+        private val valueToImage: (@Composable (FilterEntry.FilterEntryImpl<FilterType>) -> String?)? = null,
         var selectionMethod: SelectionMethod = SelectionMethod.ALLOW_EXCLUDE,
     ) : SortFilterSection(id) {
         enum class SelectionMethod {
@@ -233,7 +238,8 @@ sealed class SortFilterSection(val id: String) {
                 title = { title() },
                 titleDropdownContentDescriptionRes = titleDropdownContentDescriptionRes,
                 valueToText = valueToText,
-                includeExcludeIconContentDescriptionRes = includeExcludeIconContentDescriptionRes,
+                valueToImage = valueToImage,
+                iconContentDescriptionRes = includeExcludeIconContentDescriptionRes,
                 showDivider = showDivider,
                 showIcons = selectionMethod == SelectionMethod.ALLOW_EXCLUDE,
             )

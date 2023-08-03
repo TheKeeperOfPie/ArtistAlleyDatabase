@@ -51,6 +51,9 @@ dependencyAnalysis {
             onUsedTransitiveDependencies {
                 severity("ignore")
             }
+            onIncorrectConfiguration {
+                exclude("io.coil-kt:coil-compose")
+            }
             onUnusedDependencies {
                 exclude(
                     "androidx.compose.animation:animation",
@@ -74,6 +77,7 @@ dependencyAnalysis {
                     "com.squareup.leakcanary:leakcanary-android",
                     "com.squareup.moshi:moshi-kotlin",
                     "de.mannodermaus.junit5:android-test-core",
+                    "io.coil-kt:coil-compose",
                     "org.jetbrains.kotlinx:kotlinx-serialization-json",
                     "org.mockito:mockito-core",
                     "org.mockito:mockito-android",

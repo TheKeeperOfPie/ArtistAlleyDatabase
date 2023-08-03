@@ -367,6 +367,7 @@ object AnimeHomeScreen {
                 when (val activity = entry?.activity) {
                     is UserSocialActivityQuery.Data.Page.TextActivityActivity ->
                         TextActivitySmallCard(
+                            screenKey = SCREEN_KEY,
                             viewer = viewer,
                             activity = activity,
                             entry = entry,
@@ -390,6 +391,7 @@ object AnimeHomeScreen {
                         )
                     is UserSocialActivityQuery.Data.Page.MessageActivityActivity ->
                         MessageActivitySmallCard(
+                            screenKey = SCREEN_KEY,
                             viewer = viewer,
                             activity = activity,
                             entry = entry,
@@ -401,6 +403,7 @@ object AnimeHomeScreen {
                     is UserSocialActivityQuery.Data.Page.OtherActivity,
                     null,
                     -> TextActivitySmallCard(
+                        screenKey = SCREEN_KEY,
                         viewer = viewer,
                         activity = null,
                         entry = null,

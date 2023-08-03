@@ -12,11 +12,13 @@ android {
 
 dependencies {
     api(project(":modules:android-utils"))
+    api(project(":modules:anime"))
     api(project(":modules:network-utils"))
     implementation(libs.kotlinx.serialization.json)
 
     implementation(libs.hilt.android)
     kapt(kaptProcessors.dagger.hilt.compiler)
+    kapt(kaptProcessors.androidx.hilt.compiler)
 
     implementation(libs.okhttp)
 }
