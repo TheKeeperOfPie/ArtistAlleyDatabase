@@ -1,6 +1,8 @@
 package com.thekeeperofpie.artistalleydatabase.compose
 
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.grid.LazyGridState
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -65,9 +67,18 @@ interface ScrollStateSaver {
     var position: Int
     var offset: Int
 
-
     @Composable
     fun lazyListState() = rememberLazyListState(
+        initialFirstVisibleItemIndex = position,
+        initialFirstVisibleItemScrollOffset = offset,
+    ).also {
+        DisposableEffect(it) {
+            onDispose { save(it) }
+        }
+    }
+
+    @Composable
+    fun lazyGridState() = rememberLazyGridState(
         initialFirstVisibleItemIndex = position,
         initialFirstVisibleItemScrollOffset = offset,
     ).also {
@@ -79,6 +90,11 @@ interface ScrollStateSaver {
     private fun save(lazyListState: LazyListState) {
         position = lazyListState.firstVisibleItemIndex
         offset = lazyListState.firstVisibleItemScrollOffset
+    }
+
+    private fun save(lazyGridState: LazyGridState) {
+        position = lazyGridState.firstVisibleItemIndex
+        offset = lazyGridState.firstVisibleItemScrollOffset
     }
 
     class ScrollStateSaverImpl(

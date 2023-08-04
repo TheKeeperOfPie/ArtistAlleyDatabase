@@ -462,8 +462,8 @@ object MediaUtils {
         ""
     } else {
         listOfNotNull(
-            stringResource(format.toTextRes()),
-            stringResource(status.toTextRes()),
+            format?.toTextRes()?.let { stringResource(it) },
+            status?.toTextRes()?.let { stringResource(it) },
             formatSeasonYear(season, seasonYear, withSeparator = true),
         ).joinToString(separator = " - ")
     }

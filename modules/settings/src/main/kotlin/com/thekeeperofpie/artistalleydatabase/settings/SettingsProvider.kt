@@ -22,6 +22,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.notification.Notific
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.FilterData
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOption
 import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsNetworkCategory
 import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsNetworkRegion
 import com.thekeeperofpie.artistalleydatabase.anime.news.CrunchyrollNewsCategory
@@ -119,6 +120,10 @@ class SettingsProvider(
 
     override val preferredMediaType =
         MutableStateFlow(deserialize("preferredMediaType") ?: MediaType.ANIME)
+
+    override val mediaViewOption =
+        MutableStateFlow(deserialize("mediaViewOption") ?: MediaViewOption.SMALL_CARD)
+
     val languageOptionMedia =
         MutableStateFlow(deserialize("languageOptionMedia") ?: AniListLanguageOption.DEFAULT)
     val languageOptionCharacters =
@@ -213,6 +218,7 @@ class SettingsProvider(
             subscribed = subscribed.value,
             appTheme = appTheme.value,
             preferredMediaType = preferredMediaType.value,
+            mediaViewOption = mediaViewOption.value,
             languageOptionMedia = languageOptionMedia.value,
             languageOptionCharacters = languageOptionCharacters.value,
             languageOptionStaff = languageOptionStaff.value,
@@ -241,6 +247,7 @@ class SettingsProvider(
         subscribeProperty(scope, ::showLessImportantTags)
         subscribeProperty(scope, ::showSpoilerTags)
         subscribeProperty(scope, ::preferredMediaType)
+        subscribeProperty(scope, ::mediaViewOption)
         subscribeProperty(scope, ::languageOptionMedia)
         subscribeProperty(scope, ::languageOptionCharacters)
         subscribeProperty(scope, ::languageOptionStaff)
@@ -328,6 +335,7 @@ class SettingsProvider(
         subscribed.emit(data.subscribed)
         appTheme.emit(data.appTheme)
         preferredMediaType.emit(data.preferredMediaType)
+        mediaViewOption.emit(data.mediaViewOption)
         languageOptionMedia.emit(data.languageOptionMedia)
         languageOptionCharacters.emit(data.languageOptionCharacters)
         languageOptionStaff.emit(data.languageOptionStaff)

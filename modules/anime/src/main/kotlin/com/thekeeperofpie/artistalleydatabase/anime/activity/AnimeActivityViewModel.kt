@@ -27,7 +27,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityUtils.isAdu
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityUtils.liked
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityUtils.subscribed
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
-import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaCompactListRow
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaStatusAware
 import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIntIds

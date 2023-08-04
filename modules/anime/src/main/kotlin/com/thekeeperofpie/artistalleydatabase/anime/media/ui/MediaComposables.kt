@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 
-package com.thekeeperofpie.artistalleydatabase.anime.media
+package com.thekeeperofpie.artistalleydatabase.anime.media.ui
 
 import androidx.annotation.StringRes
 import androidx.compose.animation.core.animateIntAsState
@@ -74,6 +74,8 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
 import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaTagEntry
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toStatusIcon
 import com.thekeeperofpie.artistalleydatabase.anime.ui.listSection
@@ -360,13 +362,14 @@ fun MediaTagRow(
     tagTextColor: Color,
     tagTextStyle: TextStyle? = null,
     height: Dp = 24.dp,
+    bottomPadding: Dp = 10.dp,
 ) {
     if (tags.isEmpty()) return
     LazyRow(
         contentPadding = PaddingValues(start = 12.dp, end = 32.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         modifier = Modifier
-            .padding(top = 4.dp, bottom = 10.dp)
+            .padding(top = 4.dp, bottom = bottomPadding)
             .fillMaxWidth()
             // SubcomposeLayout doesn't support fill max width, so use a really large number.
             // The parent will clamp the actual width so all content still fits on screen.

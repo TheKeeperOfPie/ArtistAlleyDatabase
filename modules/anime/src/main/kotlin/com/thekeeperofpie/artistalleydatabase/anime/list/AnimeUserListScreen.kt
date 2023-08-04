@@ -11,8 +11,10 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -41,16 +43,24 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.anilist.AuthedUserQuery
+import com.anilist.fragment.MediaPreviewWithDescription
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
+import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
-import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.SortFilterBottomScaffoldNoAppBarOffset
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaLargeCard
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaGridCard
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOption
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
+import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBar
 import com.thekeeperofpie.artistalleydatabase.compose.NestedScrollSplitter
 import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
@@ -66,6 +76,8 @@ import kotlinx.coroutines.launch
     ExperimentalFoundationApi::class
 )
 object AnimeUserListScreen {
+
+    private val SCREEN_KEY = AnimeNavDestinations.USER_LIST.id
 
     @Composable
     operator fun invoke(
@@ -158,21 +170,35 @@ object AnimeUserListScreen {
                             if (!content.loading && !hasItems) {
                                 AnimeMediaListScreen.NoResults(Modifier.padding(top = topBarPadding))
                             } else {
-                                LazyColumn(
-                                    state = scrollStateSaver.lazyListState(),
+                                val columns = when (viewModel.mediaViewOption) {
+                                    MediaViewOption.SMALL_CARD,
+                                    MediaViewOption.LARGE_CARD,
+                                    MediaViewOption.COMPACT,
+                                    -> GridCells.Adaptive(300.dp)
+                                    MediaViewOption.GRID -> GridCells.Adaptive(120.dp)
+                                }
+                                LazyVerticalGrid(
+                                    columns = columns,
+                                    state = scrollStateSaver.lazyGridState(),
                                     contentPadding = PaddingValues(
                                         top = 16.dp + (scrollBehavior.state.heightOffsetLimit
                                             .takeUnless { it == -Float.MAX_VALUE }
                                             ?.let { LocalDensity.current.run { -it.toDp() } }
                                             ?: 0.dp),
+                                        start = 16.dp,
+                                        end = 16.dp,
                                         bottom = 88.dp + scaffoldPadding.calculateBottomPadding()
                                     ),
-                                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp),
                                 ) {
                                     content.result?.forEach {
                                         if (it.entries.isNotEmpty()) {
                                             val expanded = expandedState[it.name] ?: true
-                                            item("header-${it.name}") {
+                                            item(
+                                                "header-${it.name}",
+                                                span = { GridItemSpan(maxCurrentLineSpan) },
+                                            ) {
                                                 Header(
                                                     name = it.name,
                                                     expanded = expanded,
@@ -189,20 +215,15 @@ object AnimeUserListScreen {
                                                     key = { "media_${it.media.id}" },
                                                     contentType = { "media" },
                                                 ) {
-                                                    AnimeMediaListRow(
-                                                        screenKey = AnimeNavDestinations.USER_LIST.id,
+                                                    MediaRow(
                                                         entry = it,
                                                         viewer = viewer,
-                                                        onClickListEdit = {
-                                                            editViewModel.initialize(it.media)
-                                                        },
-                                                        onLongClick = viewModel::onMediaLongClick,
+                                                        viewModel = viewModel,
+                                                        editViewModel = editViewModel,
                                                         onLongPressImage = onLongPressImage,
                                                         colorCalculationState = colorCalculationState,
-                                                        navigationCallback = navigationCallback,
                                                         modifier = Modifier
-                                                            .animateItemPlacement()
-                                                            .padding(horizontal = 16.dp),
+                                                            .animateItemPlacement(),
                                                     )
                                                 }
                                             }
@@ -261,13 +282,29 @@ object AnimeUserListScreen {
                     )
                 },
                 trailingIcon = {
-                    IconButton(onClick = { viewModel.query = "" }) {
-                        Icon(
-                            imageVector = Icons.Filled.Clear,
-                            contentDescription = stringResource(
-                                R.string.anime_search_clear
-                            ),
-                        )
+                    Row {
+                        IconButton(onClick = { viewModel.query = "" }) {
+                            Icon(
+                                imageVector = Icons.Filled.Clear,
+                                contentDescription = stringResource(
+                                    R.string.anime_search_clear
+                                ),
+                            )
+                        }
+
+                        val mediaViewOption = viewModel.mediaViewOption
+                        val nextMediaViewOption = MediaViewOption.values()
+                            .let { it[(it.indexOf(mediaViewOption) + 1) % it.size] }
+                        IconButton(onClick = {
+                            viewModel.mediaViewOption = nextMediaViewOption
+                        }) {
+                            Icon(
+                                imageVector = nextMediaViewOption.icon,
+                                contentDescription = stringResource(
+                                    R.string.anime_media_view_option_icon_content_description
+                                ),
+                            )
+                        }
                     }
                 },
             )
@@ -301,6 +338,58 @@ object AnimeUserListScreen {
                     R.string.anime_user_list_header_expand_content_description
                 ),
                 onClick = onClick,
+            )
+        }
+    }
+
+    @Composable
+    private fun MediaRow(
+        viewer: AuthedUserQuery.Data.Viewer?,
+        viewModel: AnimeUserListViewModel,
+        editViewModel: MediaEditViewModel,
+        entry: AnimeUserListViewModel.MediaEntry,
+        onLongPressImage: (AnimeMediaListRow.Entry<MediaPreviewWithDescription>) -> Unit = {},
+        colorCalculationState: ColorCalculationState = ColorCalculationState(),
+        modifier: Modifier = Modifier,
+    ) {
+        when (viewModel.mediaViewOption) {
+            MediaViewOption.SMALL_CARD -> AnimeMediaListRow(
+                screenKey = SCREEN_KEY,
+                viewer = viewer,
+                entry = entry,
+                onClickListEdit = { editViewModel.initialize(it.media) },
+                onLongClick = { viewModel.ignoreList.toggle(entry.media.id.toString()) },
+                onLongPressImage = { onLongPressImage(entry) },
+                colorCalculationState = colorCalculationState,
+                navigationCallback = LocalNavigationCallback.current,
+                modifier = modifier,
+            )
+            MediaViewOption.LARGE_CARD -> AnimeMediaLargeCard(
+                screenKey = SCREEN_KEY,
+                entry = entry,
+                onLongClick = { viewModel.ignoreList.toggle(entry.media.id.toString()) },
+                colorCalculationState = colorCalculationState,
+                navigationCallback = LocalNavigationCallback.current,
+                modifier = modifier,
+            )
+            MediaViewOption.COMPACT -> AnimeMediaCompactListRow(
+                screenKey = SCREEN_KEY,
+                entry = entry.compactEntry,
+                onLongClick = { viewModel.ignoreList.toggle(entry.media.id.toString()) },
+                onLongPressImage = { onLongPressImage(entry) },
+                colorCalculationState = colorCalculationState,
+                navigationCallback = LocalNavigationCallback.current,
+                modifier = modifier,
+            )
+            MediaViewOption.GRID -> MediaGridCard(
+                screenKey = SCREEN_KEY,
+                entry = entry,
+                viewer = viewer,
+                onClickListEdit = { editViewModel.initialize(it.media) },
+                onLongClick = { viewModel.ignoreList.toggle(entry.media.id.toString()) },
+                onLongPressImage = { onLongPressImage(entry) },
+                colorCalculationState = colorCalculationState,
+                modifier = modifier,
             )
         }
     }

@@ -105,13 +105,13 @@ import com.thekeeperofpie.artistalleydatabase.anime.activity.AnimeActivityViewMo
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ListActivitySmallCard
 import com.thekeeperofpie.artistalleydatabase.anime.activity.MessageActivitySmallCard
 import com.thekeeperofpie.artistalleydatabase.anime.activity.TextActivitySmallCard
-import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaLargeCard
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListQuickEditIconButton
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.media.UserMediaListController
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaLargeCard
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaListQuickEditIconButton
 import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsArticleEntry
 import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsSmallCard
 import com.thekeeperofpie.artistalleydatabase.anime.ui.GenericViewAllCard

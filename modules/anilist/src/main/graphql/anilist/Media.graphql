@@ -28,15 +28,13 @@ fragment MediaWithListStatus on Media {
 
 fragment MediaPreview on Media {
     ...MediaHeaderData
-    ...MediaWithListStatus
+    ...MediaCompactWithTags
     episodes
     volumes
     chapters
     genres
     source
     tags {
-        ...GeneralMediaTag
-        isMediaSpoiler
         rank
     }
     startDate {
@@ -50,7 +48,7 @@ fragment MediaPreview on Media {
 }
 
 fragment MediaCompactWithTags on Media {
-    ...MediaNavigationData
+    ...MediaWithListStatus
     coverImage {
         color
     }
@@ -60,6 +58,9 @@ fragment MediaCompactWithTags on Media {
     }
     averageScore
     popularity
+    format
+    season
+    seasonYear
 }
 
 query MediaAdvancedSearch(
@@ -93,6 +94,7 @@ query MediaAdvancedSearch(
     $sourceIn: [MediaSource],
     $minimumTagRank: Int,
     $licensedByIdIn: [Int],
+    $includeDescription: Boolean = true,
 ) {
     Page(page: $page, perPage: $perPage) @nonnull {
         pageInfo @nonnull {
@@ -129,7 +131,7 @@ query MediaAdvancedSearch(
             minimumTagRank: $minimumTagRank,
             licensedById_in: $licensedByIdIn,
         ) @nonnull {
-            ...MediaPreview
+            ...MediaPreviewWithDescription
         }
     }
 }
@@ -172,7 +174,7 @@ fragment MediaNavigationData on Media {
     isAdult
 }
 
-query MediaDetails($mediaId: Int!) {
+query MediaDetails($mediaId: Int!, $includeDescription: Boolean = true) {
     Media(id: $mediaId) {
         ...MediaHeaderData
         ...MediaPreviewWithDescription
@@ -418,7 +420,7 @@ query MediaWithCharacters($mediaId: Int, $page: Int, $perPage: Int) {
 
 fragment MediaPreviewWithDescription on Media {
     ...MediaPreview
-    description(asHtml: true)
+    description(asHtml: true) @include(if: $includeDescription)
 }
 
 query HomeAnime(
@@ -429,6 +431,7 @@ query HomeAnime(
     $nextSeason: MediaSeason!,
     $nextYear: Int!,
     $perPage: Int!,
+    $includeDescription: Boolean = true,
 ) {
     trending: Page(perPage: $perPage) {
         media(sort: TRENDING_DESC, type: ANIME, isAdult: false) {
@@ -485,7 +488,7 @@ query HomeAnime(
     }
 }
 
-query HomeManga($perPage: Int!) {
+query HomeManga($perPage: Int!, $includeDescription: Boolean = true) {
     trending: Page(perPage: $perPage) {
         media(sort: TRENDING_DESC, type: MANGA, isAdult: false) {
             ...MediaPreviewWithDescription

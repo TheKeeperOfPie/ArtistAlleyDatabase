@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.anime
 
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.FilterData
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOption
 import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsNetworkCategory
 import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsNetworkRegion
 import com.thekeeperofpie.artistalleydatabase.anime.news.CrunchyrollNewsCategory
@@ -27,4 +28,5 @@ interface AnimeSettings {
     val crunchyrollNewsCategoriesExcluded: MutableStateFlow<List<CrunchyrollNewsCategory>>
 
     val preferredMediaType: MutableStateFlow<MediaType>
+    val mediaViewOption: MutableStateFlow<MediaViewOption>
 }

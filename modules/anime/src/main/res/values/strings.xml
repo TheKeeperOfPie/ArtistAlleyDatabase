@@ -480,6 +480,12 @@
     <string name="anime_media_activities_header">Activity</string>
     <string name="anime_media_activities_error_loading">Error loading activity</string>
 
+    <string name="anime_media_view_option_small_card">Small card</string>
+    <string name="anime_media_view_option_large_card">Large card</string>
+    <string name="anime_media_view_option_compact">Compact</string>
+    <string name="anime_media_view_option_grid">Grid</string>
+    <string name="anime_media_view_option_icon_content_description">Change view type</string>
+
     <string name="anime_character_filter_sort_label">Sort</string>
 
     <string name="anime_character_details_voice_actors_label">Voice actors</string>

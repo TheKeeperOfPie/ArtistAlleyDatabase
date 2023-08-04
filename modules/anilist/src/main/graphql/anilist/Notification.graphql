@@ -1,5 +1,4 @@
 fragment NotificationMedia on Media {
-    ...MediaWithListStatus
     ...MediaCompactWithTags
 }
 

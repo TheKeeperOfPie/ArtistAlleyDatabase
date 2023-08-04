@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.anime.media
+package com.thekeeperofpie.artistalleydatabase.anime.media.ui
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -55,6 +55,9 @@ import com.google.accompanist.placeholder.material.shimmer
 import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaTagEntry
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaStatusAware
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.compose.AppThemeSetting
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
@@ -76,8 +79,7 @@ object AnimeMediaLargeCard {
         label: (@Composable () -> Unit)? = null,
         onLongClick: (MediaNavigationData) -> Unit = {},
         colorCalculationState: ColorCalculationState = ColorCalculationState(),
-        navigationCallback: AnimeNavigator.NavigationCallback =
-            AnimeNavigator.NavigationCallback(null),
+        navigationCallback: AnimeNavigator.NavigationCallback?,
     ) {
         ElevatedCard(
             modifier = modifier
@@ -89,7 +91,7 @@ object AnimeMediaLargeCard {
                 modifier = Modifier.combinedClickable(
                     enabled = entry != null,
                     onClick = {
-                        if (entry != null) navigationCallback.onMediaClick(entry.media)
+                        if (entry != null) navigationCallback?.onMediaClick(entry.media)
                     },
                     onLongClick = { if (entry?.media != null) onLongClick(entry.media) }
                 )
@@ -147,7 +149,7 @@ object AnimeMediaLargeCard {
                         tags = entry?.tags.orEmpty(),
                         onTagClick = { id, name ->
                             if (entry != null) {
-                                navigationCallback.onTagClick(
+                                navigationCallback?.onTagClick(
                                     entry.media.type ?: MediaType.ANIME,
                                     id,
                                     name

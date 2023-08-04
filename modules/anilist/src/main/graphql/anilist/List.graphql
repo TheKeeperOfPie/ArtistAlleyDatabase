@@ -3,7 +3,8 @@ query UserMediaList(
     $type: MediaType!,
     $chunk: Int,
     $perChunk: Int,
-    $status: MediaListStatus
+    $status: MediaListStatus,
+    $includeDescription: Boolean = true,
 ) {
     # Sort for this API is completely broken
     MediaListCollection(
@@ -18,21 +19,12 @@ query UserMediaList(
             entries {
                 id
                 media @nonnull {
-                    ...MediaPreview
-
+                    ...MediaPreviewWithDescription
+                    synonyms
                     mediaListEntry {
-                        status
-                        progress
-                        progressVolumes
                         priority
                         updatedAt
                         createdAt
-                    }
-                    # TODO: Disable this on restricted networks/offer an option?
-                    title {
-                        romaji
-                        native
-                        english
                     }
                     synonyms
                     endDate {

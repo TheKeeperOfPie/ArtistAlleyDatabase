@@ -28,11 +28,11 @@ import com.anilist.fragment.MediaPreview
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
-import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.SortFilterBottomScaffold
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.compose.AppBar
 import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
@@ -52,7 +52,7 @@ object MediaSearchScreen {
         navigationCallback: AnimeNavigator.NavigationCallback,
         scrollStateSaver: ScrollStateSaver,
     ) {
-        val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+        val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(snapAnimationSpec = null)
         val colorCalculationState = rememberColorCalculationState(viewModel.colorMap)
 
         val editViewModel = hiltViewModel<MediaEditViewModel>()
@@ -163,7 +163,7 @@ object MediaSearchScreen {
                                         contentType = content.itemContentType { it.entryId.type }
                                     ) { index ->
                                         when (val item = content[index]) {
-                                            is AnimeSearchEntry.Media<*> -> AnimeMediaListRow(
+                                            is AnimeSearchEntry.Media -> AnimeMediaListRow(
                                                 screenKey = SCREEN_KEY,
                                                 viewer = viewer,
                                                 entry = item,

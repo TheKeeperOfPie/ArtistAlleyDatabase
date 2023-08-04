@@ -2,7 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.anime.recommendation
 
 import com.anilist.fragment.MediaAndRecommendationsRecommendation
 import com.anilist.type.MediaListStatus
-import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaStatusAware
 
 data class RecommendationEntry(

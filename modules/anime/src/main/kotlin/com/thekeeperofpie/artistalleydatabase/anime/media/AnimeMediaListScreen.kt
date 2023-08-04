@@ -42,6 +42,7 @@ import com.anilist.fragment.MediaPreview
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.TagSection
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.compose.ZoomPanBox
 
 @OptIn(ExperimentalMaterialApi::class)

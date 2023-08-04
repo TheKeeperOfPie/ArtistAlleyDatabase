@@ -45,7 +45,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityToggleUpdat
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ListActivityCardContent
 import com.thekeeperofpie.artistalleydatabase.anime.activity.MessageActivityCardContent
 import com.thekeeperofpie.artistalleydatabase.anime.activity.TextActivityCardContent
-import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaCompactListRow
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import java.time.Instant
 import java.time.ZoneOffset

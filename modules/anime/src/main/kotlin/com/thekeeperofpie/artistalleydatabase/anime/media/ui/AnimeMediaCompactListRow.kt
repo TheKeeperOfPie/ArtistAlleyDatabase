@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.anime.media
+package com.thekeeperofpie.artistalleydatabase.anime.media.ui
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -6,16 +6,18 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ImageNotSupported
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
@@ -27,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -49,6 +52,8 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
 import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaTagEntry
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
@@ -109,13 +114,20 @@ object AnimeMediaCompactListRow {
                         onRatioAvailable = { imageWidthToHeightRatio = it }
                     )
 
-                    Column(modifier = Modifier.height(DEFAULT_IMAGE_HEIGHT)) {
+                    Column(
+                        modifier = Modifier
+                            .heightIn(min = DEFAULT_IMAGE_HEIGHT)
+                            .fillMaxHeight()
+                    ) {
                         Row(
                             Modifier
-                                .fillMaxWidth()
                                 .weight(1f)
+                                .fillMaxWidth()
                         ) {
-                            TitleText(entry, modifier = Modifier.weight(1f))
+                            Column(modifier = Modifier.weight(1f)) {
+                                TitleText(entry)
+                                SubtitleText(entry)
+                            }
 
                             MediaRatingIconsSection(
                                 rating = entry?.media?.averageScore,
@@ -144,6 +156,7 @@ object AnimeMediaCompactListRow {
                             tagTextColor = textColor,
                             tagTextStyle = MaterialTheme.typography.bodySmall,
                             height = 20.dp,
+                            bottomPadding = 8.dp,
                         )
                     }
                 }
@@ -191,7 +204,8 @@ object AnimeMediaCompactListRow {
                     // Clip to match card so that shared element animation keeps rounded corner
                     .clip(RoundedCornerShape(topStart = 12.dp, bottomStart = 12.dp))
                     .background(MaterialTheme.colorScheme.surfaceVariant)
-                    .size(width = DEFAULT_IMAGE_WIDTH, height = DEFAULT_IMAGE_HEIGHT)
+                    .width(DEFAULT_IMAGE_WIDTH)
+                    .heightIn(min = DEFAULT_IMAGE_HEIGHT)
                     .placeholder(
                         visible = entry == null,
                         highlight = PlaceholderHighlight.shimmer(),
@@ -208,15 +222,41 @@ object AnimeMediaCompactListRow {
     }
 
     @Composable
-    private fun TitleText(entry: Entry?, modifier: Modifier = Modifier) {
+    private fun TitleText(entry: Entry?) {
         Text(
             text = entry?.media?.title?.primaryTitle() ?: "Loading...",
             style = MaterialTheme.typography.titleSmall,
             fontWeight = FontWeight.Black,
             overflow = TextOverflow.Ellipsis,
-            modifier = modifier
+            minLines = 2,
+            maxLines = 2,
+            modifier = Modifier
                 .wrapContentHeight(Alignment.Top)
                 .padding(start = 12.dp, top = 8.dp, end = 16.dp)
+                .placeholder(
+                    visible = entry == null,
+                    highlight = PlaceholderHighlight.shimmer(),
+                )
+        )
+    }
+
+    @Composable
+    private fun SubtitleText(entry: Entry?) {
+        val media = entry?.media
+        Text(
+            text = MediaUtils.formatSubtitle(
+                format = media?.format,
+                status = null,
+                season = media?.season,
+                seasonYear = media?.seasonYear,
+            ),
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.typography.labelSmall.color
+                .takeOrElse { LocalContentColor.current }
+                .copy(alpha = 0.8f),
+            modifier = Modifier
+                .wrapContentHeight()
+                .padding(start = 12.dp, top = 4.dp, end = 16.dp)
                 .placeholder(
                     visible = entry == null,
                     highlight = PlaceholderHighlight.shimmer(),
@@ -229,8 +269,7 @@ object AnimeMediaCompactListRow {
         ignored: Boolean,
         showLessImportantTags: Boolean,
         showSpoilerTags: Boolean,
-    ) {
-        val tags = media.tags?.asSequence()
+        val tags: List<AnimeMediaTagEntry> = media.tags?.asSequence()
             ?.filterNotNull()
             ?.filter {
                 showLessImportantTags
@@ -242,7 +281,8 @@ object AnimeMediaCompactListRow {
             ?.map { AnimeMediaTagEntry(it, isMediaSpoiler = it.isMediaSpoiler) }
             ?.distinctBy { it.id }
             ?.toList()
-            .orEmpty()
+            .orEmpty(),
+    ) {
         val ignored by mutableStateOf(ignored)
     }
 }

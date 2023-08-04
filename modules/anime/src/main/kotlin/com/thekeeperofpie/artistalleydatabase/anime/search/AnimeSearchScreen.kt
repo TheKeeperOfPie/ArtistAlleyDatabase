@@ -7,12 +7,14 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -46,20 +48,28 @@ import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
+import com.anilist.AuthedUserQuery
 import com.anilist.fragment.MediaPreview
+import com.anilist.fragment.MediaPreviewWithDescription
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
+import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterListRow
-import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.SortFilterBottomScaffold
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaLargeCard
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaGridCard
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOption
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffListRow
 import com.thekeeperofpie.artistalleydatabase.anime.studio.StudioListRow
 import com.thekeeperofpie.artistalleydatabase.anime.user.UserListRow
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
+import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
 import com.thekeeperofpie.artistalleydatabase.compose.StaticSearchBar
@@ -82,7 +92,7 @@ object AnimeSearchScreen {
         scrollStateSaver: ScrollStateSaver = ScrollStateSaver.STUB,
         bottomNavigationState: BottomNavigationState? = null,
     ) {
-        val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+        val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(snapAnimationSpec = null)
         val colorCalculationState = rememberColorCalculationState(viewModel.colorMap)
 
         val editViewModel = hiltViewModel<MediaEditViewModel>()
@@ -143,7 +153,7 @@ object AnimeSearchScreen {
                 val refreshing = content.loadState.refresh is LoadState.Loading && selectedUnlocked
 
                 val viewer by viewModel.viewer.collectAsState()
-                AnimeMediaListScreen(
+                AnimeMediaListScreen<MediaPreviewWithDescription>(
                     refreshing = refreshing,
                     onRefresh = viewModel::onRefresh,
                     modifier = Modifier.padding(scaffoldPadding),
@@ -185,15 +195,29 @@ object AnimeSearchScreen {
                                 if (content.itemCount == 0) {
                                     AnimeMediaListScreen.NoResults()
                                 } else {
-                                    LazyColumn(
-                                        state = scrollStateSaver.lazyListState(),
+                                    val columns =
+                                        if (selectedType == AnimeSearchViewModel.SearchType.ANIME || selectedType == AnimeSearchViewModel.SearchType.MANGA) {
+                                            when (viewModel.mediaViewOption) {
+                                                MediaViewOption.SMALL_CARD,
+                                                MediaViewOption.LARGE_CARD,
+                                                MediaViewOption.COMPACT,
+                                                -> GridCells.Adaptive(300.dp)
+                                                MediaViewOption.GRID -> GridCells.Adaptive(120.dp)
+                                            }
+                                        } else {
+                                            GridCells.Adaptive(300.dp)
+                                        }
+                                    LazyVerticalGrid(
+                                        columns = columns,
+                                        state = scrollStateSaver.lazyGridState(),
                                         contentPadding = PaddingValues(
                                             start = 16.dp,
                                             end = 16.dp,
                                             top = 16.dp,
                                             bottom = 16.dp + scaffoldPadding.calculateBottomPadding()
                                         ),
-                                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                        verticalArrangement = Arrangement.spacedBy(8.dp),
                                     ) {
                                         items(
                                             count = content.itemCount,
@@ -201,20 +225,13 @@ object AnimeSearchScreen {
                                             contentType = content.itemContentType { it.entryId.type }
                                         ) { index ->
                                             when (val item = content[index]) {
-                                                is AnimeSearchEntry.Media<*> -> AnimeMediaListRow(
-                                                    screenKey = SCREEN_KEY,
+                                                is AnimeSearchEntry.Media -> MediaRow(
                                                     viewer = viewer,
+                                                    viewModel = viewModel,
+                                                    editViewModel = editViewModel,
                                                     entry = item,
-                                                    onClickListEdit = {
-                                                        editViewModel.initialize(it.media)
-                                                    },
-                                                    onLongClick = {
-                                                        viewModel.ignoreList
-                                                            .toggle(item.media.id.toString())
-                                                    },
-                                                    onLongPressImage = onLongPressImage,
+                                                    onLongPressImage = { onLongPressImage(item) },
                                                     colorCalculationState = colorCalculationState,
-                                                    navigationCallback = navigationCallback,
                                                 )
                                                 is AnimeSearchEntry.Character -> CharacterListRow(
                                                     screenKey = SCREEN_KEY,
@@ -274,6 +291,53 @@ object AnimeSearchScreen {
     }
 
     @Composable
+    private fun MediaRow(
+        viewer: AuthedUserQuery.Data.Viewer?,
+        viewModel: AnimeSearchViewModel,
+        editViewModel: MediaEditViewModel,
+        entry: AnimeSearchEntry.Media,
+        onLongPressImage: (AnimeSearchEntry.Media) -> Unit = {},
+        colorCalculationState: ColorCalculationState = ColorCalculationState(),
+    ) {
+        when (viewModel.mediaViewOption) {
+            MediaViewOption.SMALL_CARD -> AnimeMediaListRow(
+                screenKey = SCREEN_KEY,
+                viewer = viewer,
+                entry = entry,
+                onClickListEdit = { editViewModel.initialize(it.media) },
+                onLongClick = { viewModel.ignoreList.toggle(entry.media.id.toString()) },
+                onLongPressImage = { onLongPressImage(entry) },
+                colorCalculationState = colorCalculationState,
+                navigationCallback = LocalNavigationCallback.current,
+            )
+            MediaViewOption.LARGE_CARD -> AnimeMediaLargeCard(
+                screenKey = SCREEN_KEY,
+                entry = entry,
+                onLongClick = { viewModel.ignoreList.toggle(entry.media.id.toString()) },
+                colorCalculationState = colorCalculationState,
+                navigationCallback = LocalNavigationCallback.current,
+            )
+            MediaViewOption.COMPACT -> AnimeMediaCompactListRow(
+                screenKey = SCREEN_KEY,
+                entry = entry.compactEntry,
+                onLongClick = { viewModel.ignoreList.toggle(entry.media.id.toString()) },
+                onLongPressImage = { onLongPressImage(entry) },
+                colorCalculationState = colorCalculationState,
+                navigationCallback = LocalNavigationCallback.current,
+            )
+            MediaViewOption.GRID -> MediaGridCard(
+                screenKey = SCREEN_KEY,
+                entry = entry,
+                viewer = viewer,
+                onClickListEdit = { editViewModel.initialize(it.media) },
+                onLongClick = { viewModel.ignoreList.toggle(entry.media.id.toString()) },
+                onLongPressImage = { onLongPressImage(entry) },
+                colorCalculationState = colorCalculationState,
+            )
+        }
+    }
+
+    @Composable
     private fun TopBar(
         viewModel: AnimeSearchViewModel,
         upIconOption: UpIconOption? = null,
@@ -320,13 +384,33 @@ object AnimeSearchScreen {
                         )
                     },
                     trailingIcon = {
-                        IconButton(onClick = { viewModel.query = "" }) {
-                            Icon(
-                                imageVector = Icons.Filled.Clear,
-                                contentDescription = stringResource(
-                                    R.string.anime_search_clear
-                                ),
-                            )
+                        Row {
+                            IconButton(onClick = { viewModel.query = "" }) {
+                                Icon(
+                                    imageVector = Icons.Filled.Clear,
+                                    contentDescription = stringResource(
+                                        R.string.anime_search_clear
+                                    ),
+                                )
+                            }
+
+                            if (viewModel.selectedType == AnimeSearchViewModel.SearchType.ANIME
+                                || viewModel.selectedType == AnimeSearchViewModel.SearchType.MANGA
+                            ) {
+                                val mediaViewOption = viewModel.mediaViewOption
+                                val nextMediaViewOption = MediaViewOption.values()
+                                    .let { it[(it.indexOf(mediaViewOption) + 1) % it.size] }
+                                IconButton(onClick = {
+                                    viewModel.mediaViewOption = nextMediaViewOption
+                                }) {
+                                    Icon(
+                                        imageVector = nextMediaViewOption.icon,
+                                        contentDescription = stringResource(
+                                            R.string.anime_media_view_option_icon_content_description
+                                        ),
+                                    )
+                                }
+                            }
                         }
                     },
                     modifier = Modifier.background(MaterialTheme.colorScheme.surface)

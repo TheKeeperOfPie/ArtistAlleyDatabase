@@ -19,7 +19,6 @@ import androidx.paging.PagingSource
 import androidx.paging.cachedIn
 import androidx.paging.filter
 import androidx.paging.map
-import com.anilist.MediaAdvancedSearchQuery.Data.Page.Medium
 import com.anilist.type.MediaType
 import com.anilist.type.StudioSort
 import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
@@ -77,6 +76,7 @@ class AnimeSearchViewModel @Inject constructor(
     private val monetizationController: MonetizationController,
 ) : ViewModel() {
 
+    var mediaViewOption by mutableStateOf(settings.mediaViewOption.value)
     val viewer = aniListApi.authedUser
     var query by mutableStateOf("")
     var content = MutableStateFlow(PagingData.empty<AnimeSearchEntry>())
@@ -132,7 +132,7 @@ class AnimeSearchViewModel @Inject constructor(
                 it to when (it) {
                     SearchType.ANIME,
                     SearchType.MANGA,
-                    -> PagingData.empty<AnimeSearchEntry.Media<Medium>>(loadStates)
+                    -> PagingData.empty<AnimeSearchEntry.Media>(loadStates)
                     SearchType.CHARACTER -> PagingData.empty<AnimeSearchEntry.Character>(loadStates)
                     SearchType.STAFF -> PagingData.empty<AnimeSearchEntry.Staff>(loadStates)
                     SearchType.STUDIO -> PagingData.empty<AnimeSearchEntry.Studio>(loadStates)

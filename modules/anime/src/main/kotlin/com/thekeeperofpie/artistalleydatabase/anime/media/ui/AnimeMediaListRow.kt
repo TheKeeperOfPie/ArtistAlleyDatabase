@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.anime.media
+package com.thekeeperofpie.artistalleydatabase.anime.media.ui
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -54,6 +54,9 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
 import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaTagEntry
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaStatusAware
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
@@ -74,8 +77,7 @@ object AnimeMediaListRow {
         onLongPressImage: (entry: Entry<MediaType>) -> Unit = {},
         nextAiringEpisode: MediaPreview.NextAiringEpisode? = entry?.media?.nextAiringEpisode,
         colorCalculationState: ColorCalculationState = ColorCalculationState(),
-        navigationCallback: AnimeNavigator.NavigationCallback =
-            AnimeNavigator.NavigationCallback(null),
+        navigationCallback: AnimeNavigator.NavigationCallback? = null,
     ) {
         var imageWidthToHeightRatio by remember { MutableSingle(1f) }
         ElevatedCard(
@@ -90,7 +92,7 @@ object AnimeMediaListRow {
                 .combinedClickable(
                     enabled = entry != null,
                     onClick = {
-                        navigationCallback.onMediaClick(
+                        navigationCallback?.onMediaClick(
                             entry!!,
                             null,
                             imageWidthToHeightRatio
@@ -105,7 +107,7 @@ object AnimeMediaListRow {
                     viewer = viewer,
                     onClick = {
                         if (entry != null) {
-                            navigationCallback.onMediaClick(entry, null, imageWidthToHeightRatio)
+                            navigationCallback?.onMediaClick(entry, null, imageWidthToHeightRatio)
                         }
                     },
                     onClickListEdit = onClickListEdit,
@@ -142,7 +144,7 @@ object AnimeMediaListRow {
                         tags = entry?.tags.orEmpty(),
                         onTagClick = { id, name ->
                             if (entry != null) {
-                                navigationCallback.onTagClick(
+                                navigationCallback?.onTagClick(
                                     entry.media.type ?: com.anilist.type.MediaType.ANIME,
                                     id,
                                     name
@@ -285,7 +287,7 @@ object AnimeMediaListRow {
         override val showLessImportantTags: Boolean = false,
         override val showSpoilerTags: Boolean = false,
     ) : MediaStatusAware where MediaType : MediaPreview, MediaType : MediaHeaderData {
-        val color = media.coverImage?.color?.let(ComposeColorUtils::hexToColor)
+        open val color = media.coverImage?.color?.let(ComposeColorUtils::hexToColor)
         val tags = media.tags?.asSequence()
             ?.filterNotNull()
             ?.filter {

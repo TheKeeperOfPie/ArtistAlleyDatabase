@@ -5,6 +5,7 @@ import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.android_utils.Converters
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.FilterData
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOption
 import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsNetworkCategory
 import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsNetworkRegion
 import com.thekeeperofpie.artistalleydatabase.anime.news.CrunchyrollNewsCategory
@@ -39,6 +40,7 @@ data class SettingsData(
     val subscribed: Boolean = false,
     val appTheme: AppThemeSetting = AppThemeSetting.AUTO,
     val preferredMediaType: MediaType = MediaType.ANIME,
+    val mediaViewOption: MediaViewOption = MediaViewOption.SMALL_CARD,
     val languageOptionMedia: AniListLanguageOption = AniListLanguageOption.DEFAULT,
     val languageOptionCharacters: AniListLanguageOption = AniListLanguageOption.DEFAULT,
     val languageOptionStaff: AniListLanguageOption = AniListLanguageOption.DEFAULT,

@@ -349,7 +349,6 @@ fragment ActivityItem on ActivityUnion {
         ...ListActivityWithoutMedia
         media {
             ...MediaCompactWithTags
-            ...MediaWithListStatus
         }
     }
     ... on MessageActivity {

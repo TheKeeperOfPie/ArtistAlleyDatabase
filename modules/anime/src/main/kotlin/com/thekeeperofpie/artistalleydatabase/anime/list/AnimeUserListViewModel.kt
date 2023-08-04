@@ -9,6 +9,9 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.anilist.UserMediaListQuery
+import com.anilist.fragment.MediaPreviewWithDescription
+import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
@@ -16,7 +19,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatc
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
-import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListRow
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaStatusAware
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.UserMediaListController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeSortFilterController
@@ -24,6 +27,11 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MangaSortFilter
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaLicensorsController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaTagsController
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaLargeCard
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaGridCard
+import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -46,13 +54,14 @@ import kotlin.time.Duration.Companion.milliseconds
 class AnimeUserListViewModel @Inject constructor(
     private val aniListApi: AuthedAniListApi,
     private val settings: AnimeSettings,
-    private val ignoreList: AnimeMediaIgnoreList,
+    val ignoreList: AnimeMediaIgnoreList,
     private val mediaTagsController: MediaTagsController,
     private val mediaLicensorsController: MediaLicensorsController,
     private val userMediaListController: UserMediaListController,
     private val featureOverrideProvider: FeatureOverrideProvider,
 ) : ViewModel() {
 
+    var mediaViewOption by mutableStateOf(settings.mediaViewOption.value)
     val viewer = aniListApi.authedUser
     var query by mutableStateOf("")
     var content by mutableStateOf<LoadingResult<List<ListEntry>>>(LoadingResult.loading())
@@ -253,15 +262,8 @@ class AnimeUserListViewModel @Inject constructor(
 
         return ListEntry(
             name = list.name,
-            entries = filteredEntries.map {
-                AnimeMediaListRow.Entry(
-                    media = it.media,
-                    mediaListStatus = it.mediaListStatus,
-                    progress = it.progress,
-                    progressVolumes = it.progressVolumes,
-                    ignored = it.ignored,
-                )
-            }.distinctBy { it.media.id },
+            entries = filteredEntries.map { MediaEntry(it.media) }
+                .distinctBy { it.media.id },
         )
     }
 
@@ -273,6 +275,36 @@ class AnimeUserListViewModel @Inject constructor(
 
     data class ListEntry(
         val name: String,
-        val entries: List<AnimeMediaListRow.Entry<*>>,
+        val entries: List<MediaEntry>,
     )
+
+    class MediaEntry(
+        media: UserMediaListQuery.Data.MediaListCollection.List.Entry.Media,
+        mediaListStatus: MediaListStatus? = media.mediaListEntry?.status,
+        progress: Int? = null,
+        progressVolumes: Int? = null,
+        ignored: Boolean = false,
+        showLessImportantTags: Boolean = false,
+        showSpoilerTags: Boolean = false,
+    ) : AnimeMediaListRow.Entry<MediaPreviewWithDescription>(
+        media = media,
+        mediaListStatus = mediaListStatus,
+        progress = progress,
+        progressVolumes = progressVolumes,
+        ignored = ignored,
+        showLessImportantTags = showLessImportantTags,
+        showSpoilerTags = showSpoilerTags,
+    ), MediaStatusAware, AnimeMediaLargeCard.Entry, MediaGridCard.Entry {
+        override val color = media.coverImage?.color?.let(ComposeColorUtils::hexToColor)
+
+        // So that enough meaningful text is shown, strip any double newlines
+        override val description = media.description?.replace("<br><br />\n<br><br />\n", "\n")
+
+        val compactEntry = AnimeMediaCompactListRow.Entry(
+            media = media,
+            ignored = ignored,
+            showLessImportantTags = showLessImportantTags,
+            showSpoilerTags = showSpoilerTags,
+        )
+    }
 }

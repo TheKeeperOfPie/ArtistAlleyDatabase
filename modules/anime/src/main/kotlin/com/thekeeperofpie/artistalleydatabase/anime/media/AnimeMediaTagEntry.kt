@@ -23,7 +23,7 @@ import com.anilist.fragment.GeneralMediaTag
 import com.anilist.fragment.MediaPreview
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.compose.AssistChip
-import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
+import com.thekeeperofpie.artistalleydatabase.compose.AutoResizeHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.assistChipColors
 
 data class AnimeMediaTagEntry(
@@ -84,7 +84,7 @@ data class AnimeMediaTagEntry(
                     }
                 },
                 label = {
-                    AutoHeightText(
+                    AutoResizeHeightText(
                         style = textStyle ?: LocalTextStyle.current,
                         text = if (hidden && tag.textHiddenRes != null) {
                             stringResource(tag.textHiddenRes)

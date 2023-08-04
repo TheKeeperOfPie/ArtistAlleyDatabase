@@ -10,7 +10,6 @@ query ActivityDetails($activityId: Int!) {
             ...ListActivityWithoutMedia
             isLocked
             media {
-                ...MediaWithListStatus
                 ...MediaCompactWithTags
             }
         }
