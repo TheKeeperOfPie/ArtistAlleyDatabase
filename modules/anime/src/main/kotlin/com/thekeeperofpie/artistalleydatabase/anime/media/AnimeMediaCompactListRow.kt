@@ -71,76 +71,81 @@ object AnimeMediaCompactListRow {
         navigationCallback: AnimeNavigator.NavigationCallback?,
     ) {
         var imageWidthToHeightRatio by remember { MutableSingle(1f) }
-        OutlinedCard(
-            modifier = modifier
-                .fillMaxWidth()
-                .heightIn(min = DEFAULT_IMAGE_HEIGHT)
-                .alpha(if (entry?.ignored == true) 0.38f else 1f)
-        ) {
-            Row(modifier = Modifier
-                .height(IntrinsicSize.Min)
-                .combinedClickable(
-                    enabled = entry != null,
-                    onClick = {
-                        if (entry != null) {
-                            navigationCallback?.onMediaClick(
-                                entry.media,
-                                imageWidthToHeightRatio
-                            )
-                        }
-                    },
-                    onLongClick = { if (entry != null) onLongClick(entry) }
-                )
+        SharedElement(key = "anime_media_compact_row_${entry?.media?.id}", screenKey = screenKey) {
+            OutlinedCard(
+                modifier = modifier
+                    .fillMaxWidth()
+                    .heightIn(min = DEFAULT_IMAGE_HEIGHT)
+                    .alpha(if (entry?.ignored == true) 0.38f else 1f)
             ) {
-                CoverImage(
-                    screenKey = screenKey,
-                    entry = entry,
-                    onClick = {
-                        if (entry != null) {
-                            navigationCallback?.onMediaClick(entry.media, imageWidthToHeightRatio)
-                        }
-                    },
-                    onLongPressImage = onLongPressImage,
-                    colorCalculationState = colorCalculationState,
-                    onRatioAvailable = { imageWidthToHeightRatio = it }
-                )
-
-                Column(modifier = Modifier.height(DEFAULT_IMAGE_HEIGHT)) {
-                    Row(
-                        Modifier
-                            .fillMaxWidth()
-                            .weight(1f)
-                    ) {
-                        TitleText(entry, modifier = Modifier.weight(1f))
-
-                        MediaRatingIconsSection(
-                            rating = entry?.media?.averageScore,
-                            popularity = entry?.media?.popularity,
-                            loading = entry == null,
-                            modifier = Modifier
-                                .padding(horizontal = 8.dp, vertical = 8.dp)
-                                .wrapContentWidth()
-                        )
-                    }
-
-                    val (containerColor, textColor) =
-                        colorCalculationState.getColors(entry?.media?.id?.toString())
-                    MediaTagRow(
-                        tags = entry?.tags.orEmpty(),
-                        onTagClick = { id, name ->
+                Row(modifier = Modifier
+                    .height(IntrinsicSize.Min)
+                    .combinedClickable(
+                        enabled = entry != null,
+                        onClick = {
                             if (entry != null) {
-                                navigationCallback?.onTagClick(
-                                    entry.media.type ?: MediaType.ANIME,
-                                    id,
-                                    name
+                                navigationCallback?.onMediaClick(
+                                    entry.media,
+                                    imageWidthToHeightRatio
                                 )
                             }
                         },
-                        tagContainerColor = containerColor,
-                        tagTextColor = textColor,
-                        tagTextStyle = MaterialTheme.typography.bodySmall,
-                        height = 20.dp,
+                        onLongClick = { if (entry != null) onLongClick(entry) }
                     )
+                ) {
+                    CoverImage(
+                        screenKey = screenKey,
+                        entry = entry,
+                        onClick = {
+                            if (entry != null) {
+                                navigationCallback?.onMediaClick(
+                                    entry.media,
+                                    imageWidthToHeightRatio
+                                )
+                            }
+                        },
+                        onLongPressImage = onLongPressImage,
+                        colorCalculationState = colorCalculationState,
+                        onRatioAvailable = { imageWidthToHeightRatio = it }
+                    )
+
+                    Column(modifier = Modifier.height(DEFAULT_IMAGE_HEIGHT)) {
+                        Row(
+                            Modifier
+                                .fillMaxWidth()
+                                .weight(1f)
+                        ) {
+                            TitleText(entry, modifier = Modifier.weight(1f))
+
+                            MediaRatingIconsSection(
+                                rating = entry?.media?.averageScore,
+                                popularity = entry?.media?.popularity,
+                                loading = entry == null,
+                                modifier = Modifier
+                                    .padding(horizontal = 8.dp, vertical = 8.dp)
+                                    .wrapContentWidth()
+                            )
+                        }
+
+                        val (containerColor, textColor) =
+                            colorCalculationState.getColors(entry?.media?.id?.toString())
+                        MediaTagRow(
+                            tags = entry?.tags.orEmpty(),
+                            onTagClick = { id, name ->
+                                if (entry != null) {
+                                    navigationCallback?.onTagClick(
+                                        entry.media.type ?: MediaType.ANIME,
+                                        id,
+                                        name
+                                    )
+                                }
+                            },
+                            tagContainerColor = containerColor,
+                            tagTextColor = textColor,
+                            tagTextStyle = MaterialTheme.typography.bodySmall,
+                            height = 20.dp,
+                        )
+                    }
                 }
             }
         }

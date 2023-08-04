@@ -25,6 +25,15 @@
                 <data android:host="anilist.co" />
                 <data android:path="/api/v2/oauth/pin" />
             </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="com.thekeeperofpie.anichive" />
+                <data android:host="oauth" />
+            </intent-filter>
         </activity>
 
         <activity

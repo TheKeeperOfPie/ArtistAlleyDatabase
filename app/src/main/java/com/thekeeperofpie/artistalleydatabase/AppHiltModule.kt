@@ -8,6 +8,7 @@ import androidx.room.Room
 import androidx.security.crypto.MasterKey
 import androidx.work.WorkManager
 import com.thekeeperofpie.anichive.BuildConfig
+import com.thekeeperofpie.anichive.R
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppMetadataProvider
 import com.thekeeperofpie.artistalleydatabase.android_utils.CryptoUtils
@@ -146,5 +147,6 @@ object AppHiltModule {
     fun provideAppMetadataProvider(): AppMetadataProvider = object : AppMetadataProvider {
         override val versionCode = BuildConfig.VERSION_CODE
         override val versionName = BuildConfig.VERSION_NAME
+        override val appIconDrawableRes = R.mipmap.ic_launcher
     }
 }

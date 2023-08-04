@@ -6,6 +6,7 @@ import android.text.format.DateUtils
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -34,6 +35,9 @@ import com.anilist.NotificationsQuery.Data.Page.ActivityReplyLikeNotificationNot
 import com.anilist.NotificationsQuery.Data.Page.ActivityReplyNotificationNotification
 import com.anilist.NotificationsQuery.Data.Page.ActivityReplySubscribedNotificationNotification
 import com.anilist.fragment.UserNavigationData
+import com.google.accompanist.placeholder.PlaceholderHighlight
+import com.google.accompanist.placeholder.material.placeholder
+import com.google.accompanist.placeholder.material.shimmer
 import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
@@ -45,6 +49,61 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaCompactListR
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import java.time.Instant
 import java.time.ZoneOffset
+
+@Composable
+fun NotificationPlaceholderCard() {
+    ElevatedCard {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier
+                .padding(8.dp)
+                .fillMaxWidth()
+        ) {
+            val shape = RoundedCornerShape(12.dp)
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(shape)
+                    .border(width = Dp.Hairline, MaterialTheme.colorScheme.primary, shape)
+                    .placeholder(
+                        visible = true,
+                        highlight = PlaceholderHighlight.shimmer(),
+                    )
+            )
+
+            Column(Modifier.weight(1f)) {
+                Text(
+                    text = "USERNAME",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.placeholder(
+                        visible = true,
+                        highlight = PlaceholderHighlight.shimmer(),
+                    )
+                )
+                Text(
+                    text = "some placeholder context",
+                    style = MaterialTheme.typography.labelMedium,
+                    modifier = Modifier.placeholder(
+                        visible = true,
+                        highlight = PlaceholderHighlight.shimmer(),
+                    )
+                )
+            }
+
+            Text(
+                text = "5 minutes ago",
+                style = MaterialTheme.typography.labelSmall,
+                modifier = Modifier
+                    .padding(top = 4.dp)
+                    .placeholder(
+                        visible = true,
+                        highlight = PlaceholderHighlight.shimmer(),
+                    )
+            )
+        }
+    }
+}
 
 @Composable
 fun ActivityMentionNotificationCard(
@@ -65,7 +124,7 @@ fun ActivityMentionNotificationCard(
         )
 
         ActivityCard(
-            screenKey =screenKey,
+            screenKey = screenKey,
             viewer = viewer,
             activityEntry = activityEntry,
             mediaEntry = mediaEntry,
@@ -93,7 +152,7 @@ fun ActivityMessageNotificationCard(
         )
 
         ActivityCard(
-            screenKey =screenKey,
+            screenKey = screenKey,
             viewer = viewer,
             activityEntry = activityEntry,
             mediaEntry = null,
@@ -122,7 +181,7 @@ fun ActivityReplyNotificationCard(
         )
 
         ActivityCard(
-            screenKey =screenKey,
+            screenKey = screenKey,
             viewer = viewer,
             activityEntry = activityEntry,
             mediaEntry = mediaEntry,
@@ -319,17 +378,19 @@ fun MediaDataChangeNotificationCard(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             modifier = Modifier.padding(start = 8.dp, end = 8.dp, top = 10.dp)
         ) {
-            notification.context?.let {
-                Text(
-                    text = it,
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-            }
-            notification.reason?.let {
-                Text(
-                    text = it,
-                    style = MaterialTheme.typography.labelMedium,
-                )
+            Column(modifier = Modifier.weight(1f)) {
+                notification.context?.let {
+                    Text(
+                        text = it,
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                }
+                notification.reason?.let {
+                    Text(
+                        text = it,
+                        style = MaterialTheme.typography.labelMedium,
+                    )
+                }
             }
             Timestamp(createdAt = notification.createdAt, modifier = Modifier.padding(top = 4.dp))
         }
@@ -359,15 +420,22 @@ fun MediaDeletionNotificationCard(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             modifier = Modifier.padding(start = 8.dp, end = 8.dp, top = 10.dp)
         ) {
-            Text(
-                text = "${notification.deletedMediaTitle} ${notification.context}",
-                style = MaterialTheme.typography.bodyMedium,
-            )
-            notification.reason?.let {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(bottom = 10.dp)
+            ) {
                 Text(
-                    text = it,
-                    style = MaterialTheme.typography.labelMedium,
+                    text = "${notification.deletedMediaTitle?.trim()} ${notification.context?.trim()}",
+                    style = MaterialTheme.typography.bodyMedium,
                 )
+                notification.reason?.let {
+                    Text(
+                        text = it,
+                        style = MaterialTheme.typography.labelMedium,
+                    )
+                }
             }
             Timestamp(createdAt = notification.createdAt, modifier = Modifier.padding(top = 4.dp))
         }
@@ -397,17 +465,19 @@ fun MediaMergeNotificationCard(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             modifier = Modifier.padding(start = 8.dp, end = 8.dp, top = 10.dp)
         ) {
-            notification.context?.let {
-                Text(
-                    text = it,
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-            }
-            notification.reason?.let {
-                Text(
-                    text = it,
-                    style = MaterialTheme.typography.labelMedium,
-                )
+            Column(modifier = Modifier.weight(1f)) {
+                notification.context?.let {
+                    Text(
+                        text = it,
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                }
+                notification.reason?.let {
+                    Text(
+                        text = it,
+                        style = MaterialTheme.typography.labelMedium,
+                    )
+                }
             }
             Timestamp(createdAt = notification.createdAt, modifier = Modifier.padding(top = 4.dp))
         }

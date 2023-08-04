@@ -3,22 +3,6 @@ fragment NotificationMedia on Media {
     ...MediaCompactWithTags
 }
 
-fragment ActivityId on ActivityUnion {
-    ... on TextActivity {
-        id
-    }
-    ... on ListActivity {
-        id
-        media {
-            id
-            isAdult
-        }
-    }
-    ... on MessageActivity {
-        id
-    }
-}
-
 fragment NotificationItem on NotificationUnion {
     __typename
 
@@ -26,10 +10,7 @@ fragment NotificationItem on NotificationUnion {
         id
         episode
         createdAt
-        media {
-            id
-            isAdult
-        }
+        animeId
     }
 
     ... on FollowingNotification {
@@ -46,9 +27,7 @@ fragment NotificationItem on NotificationUnion {
         id
         context
         createdAt
-        message {
-            id
-        }
+        activityId
         user {
             ...UserNavigationData
         }
@@ -58,9 +37,7 @@ fragment NotificationItem on NotificationUnion {
         id
         context
         createdAt
-        activity {
-            ...ActivityId
-        }
+        activityId
         user {
             ...UserNavigationData
         }
@@ -70,9 +47,7 @@ fragment NotificationItem on NotificationUnion {
         id
         context
         createdAt
-        activity {
-            ...ActivityId
-        }
+        activityId
         user {
             ...UserNavigationData
         }
@@ -82,9 +57,7 @@ fragment NotificationItem on NotificationUnion {
         id
         context
         createdAt
-        activity {
-            ...ActivityId
-        }
+        activityId
         user {
             ...UserNavigationData
         }
@@ -94,9 +67,7 @@ fragment NotificationItem on NotificationUnion {
         id
         context
         createdAt
-        activity {
-            ...ActivityId
-        }
+        activityId
         user {
             ...UserNavigationData
         }
@@ -106,9 +77,7 @@ fragment NotificationItem on NotificationUnion {
         id
         context
         createdAt
-        activity {
-            ...ActivityId
-        }
+        activityId
         user {
             ...UserNavigationData
         }
@@ -117,10 +86,7 @@ fragment NotificationItem on NotificationUnion {
         id
         context
         createdAt
-        media {
-            id
-            isAdult
-        }
+        mediaId
     }
 
     ... on MediaDataChangeNotification {
@@ -128,10 +94,7 @@ fragment NotificationItem on NotificationUnion {
         context
         reason
         createdAt
-        media {
-            id
-            isAdult
-        }
+        mediaId
     }
 
     ... on MediaMergeNotification {
@@ -139,10 +102,7 @@ fragment NotificationItem on NotificationUnion {
         context
         reason
         createdAt
-        media {
-            id
-            isAdult
-        }
+        mediaId
     }
 
     ... on MediaDeletionNotification {

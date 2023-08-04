@@ -8,14 +8,16 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
+import androidx.paging.filter
 import com.anilist.NotificationMediaAndActivityQuery
 import com.anilist.NotificationsQuery
-import com.anilist.fragment.NotificationMedia
+import com.anilist.fragment.ActivityItem.Companion.asListActivity
+import com.anilist.fragment.MediaCompactWithTags
+import com.anilist.fragment.MediaWithListStatus
 import com.anilist.type.MediaListStatus
 import com.hoc081098.flowext.combine
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListPagingSource
-import com.thekeeperofpie.artistalleydatabase.anilist.isAdult
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityStatusAware
@@ -35,6 +37,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -71,8 +74,6 @@ class NotificationsViewModel @Inject constructor(
                             aniListApi.notifications(it, resetNotificationCount = it == 1)
 
                         val notifications = result.page?.notifications?.filterNotNull().orEmpty()
-                            .filter { showAdult || it.isAdult() == false }
-
                         val mediaToFetch = mutableListOf<String>()
                         val activityToFetch = mutableListOf<String>()
                         notifications.forEach {
@@ -131,11 +132,14 @@ class NotificationsViewModel @Inject constructor(
                                         } ?: false,
                                     )
                                 },
-                                mediaEntry = media?.let(NotificationEntry::MediaEntry),
+                                mediaEntry = media?.let { NotificationEntry.MediaEntry(it, it) }
+                                    ?: activity?.asListActivity()?.media
+                                        ?.let { NotificationEntry.MediaEntry(it, it) },
                             )
                         }
                     }
                 }.flow
+                    .map { it.filter { showAdult || it.mediaEntry?.mediaCompactWithTags?.isAdult != true } }
             }
                 .enforceUniqueIds { it.notificationId.scopedId }
                 .cachedIn(viewModelScope)
@@ -161,7 +165,7 @@ class NotificationsViewModel @Inject constructor(
                                 entry = it,
                                 activityId = it.activityEntry?.id,
                                 activityStatusAware = it.activityEntry,
-                                media = it.mediaEntry?.media,
+                                media = it.mediaEntry?.mediaWithListStatus,
                                 mediaStatusAware = it.mediaEntry,
                                 copyMedia = { status, progress, progressVolumes, ignored, showLessImportantTags, showSpoilerTags ->
                                     copy(
@@ -206,17 +210,18 @@ class NotificationsViewModel @Inject constructor(
         ) : ActivityStatusAware
 
         data class MediaEntry(
-            val media: NotificationMedia,
-            val id: String = media.id.toString(),
-            override val mediaListStatus: MediaListStatus? = media.mediaListEntry?.status,
-            override val progress: Int? = media.mediaListEntry?.progress,
-            override val progressVolumes: Int? = media.mediaListEntry?.progressVolumes,
+            val mediaCompactWithTags: MediaCompactWithTags,
+            val mediaWithListStatus: MediaWithListStatus,
+            val id: String = mediaCompactWithTags.id.toString(),
+            override val mediaListStatus: MediaListStatus? = mediaWithListStatus.mediaListEntry?.status,
+            override val progress: Int? = mediaWithListStatus.mediaListEntry?.progress,
+            override val progressVolumes: Int? = mediaWithListStatus.mediaListEntry?.progressVolumes,
             override val ignored: Boolean = false,
             override val showLessImportantTags: Boolean = false,
             override val showSpoilerTags: Boolean = false,
         ) : MediaStatusAware {
             val rowEntry = AnimeMediaCompactListRow.Entry(
-                media = media,
+                media = mediaCompactWithTags,
                 ignored = ignored,
                 showLessImportantTags = showLessImportantTags,
                 showSpoilerTags = showSpoilerTags,

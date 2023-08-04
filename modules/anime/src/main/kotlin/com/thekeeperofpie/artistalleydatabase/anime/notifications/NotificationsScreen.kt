@@ -200,7 +200,7 @@ object NotificationsScreen {
                                                 colorCalculationState = colorCalculationState,
                                             )
                                         is NotificationsQuery.Data.Page.OtherNotification,
-                                        null -> Unit
+                                        null -> NotificationPlaceholderCard()
                                     }
                                 }
 

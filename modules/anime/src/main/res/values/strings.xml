@@ -1,13 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
     <string name="anime_auth_prompt_label">AniList account required</string>
-    <string name="anime_auth_prompt_text">This will open a webpage to log into AniList.co.
-        Afterwards, share or open the page in this app.
-    </string>
-    <string name="anime_auth_prompt_why">This method prevents malicious redirects. By having
-        you share/open this app explicitly (or copy-pasting), it avoids anyone else intercepting
-        the token.
-    </string>
+    <string name="anime_auth_prompt_text">This will open a webpage to log into AniList.co</string>
     <string name="anime_auth_prompt_paste">Or paste in an auth token</string>
     <string name="anime_auth_button_log_in">Log in</string>
     <string name="anime_auth_button_why">Why?</string>

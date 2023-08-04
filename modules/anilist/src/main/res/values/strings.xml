@@ -17,4 +17,5 @@
     <string name="aniList_language_option_english">English</string>
     <string name="aniList_language_option_native">Native</string>
     <string name="aniList_language_option_romaji">Romaji</string>
+    <string name="aniList_oAuth_close_button">Close</string>
 </resources>

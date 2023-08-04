@@ -14,10 +14,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
@@ -89,6 +91,14 @@ class AniListOAuthShareTargetActivity : ComponentActivity() {
                                     if (state == AniListOAuthViewModel.State.Done) {
                                         closeAndFinish()
                                     }
+                                }
+
+                                HorizontalDivider()
+                                TextButton(
+                                    onClick = { closeAndFinish() },
+                                    modifier = Modifier.align(Alignment.End)
+                                ) {
+                                    Text(text = stringResource(R.string.aniList_oAuth_close_button))
                                 }
                             }
                         }

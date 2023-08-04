@@ -69,6 +69,7 @@ import com.google.android.gms.oss.licenses.OssLicensesMenuActivity
 import com.mxalbert.sharedelements.SharedElementsRoot
 import com.thekeeperofpie.anichive.BuildConfig
 import com.thekeeperofpie.anichive.R
+import com.thekeeperofpie.artistalleydatabase.android_utils.AppMetadataProvider
 import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionCharacters
@@ -154,6 +155,9 @@ class MainActivity : ComponentActivity() {
 
     @Inject
     lateinit var mediaTagDialogController: MediaTagDialogController
+
+    @Inject
+    lateinit var appMetadataProvider: AppMetadataProvider
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -559,6 +563,7 @@ class MainActivity : ComponentActivity() {
                                 ?.toBooleanStrictOrNull() == true
                             SettingsScreen(
                                 viewModel = viewModel,
+                                appMetadataProvider = appMetadataProvider,
                                 upIconOption = navDrawerUpIconOption.takeIf { root }
                                     ?: UpIconOption.Back(navHostController),
                                 onClickShowLastCrash = {

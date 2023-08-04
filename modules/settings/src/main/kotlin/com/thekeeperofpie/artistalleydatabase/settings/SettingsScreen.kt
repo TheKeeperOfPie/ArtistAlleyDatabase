@@ -8,17 +8,21 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MonetizationOn
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -28,10 +32,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
+import com.thekeeperofpie.artistalleydatabase.android_utils.AppMetadataProvider
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListStringR
 import com.thekeeperofpie.artistalleydatabase.compose.AppBar
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
+import com.thekeeperofpie.artistalleydatabase.monetization.LocalMonetizationProvider
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistsStringR
 import com.thekeeperofpie.artistalleydatabase.vgmdb.VgmdbStringR
 
@@ -41,6 +48,7 @@ object SettingsScreen {
     @Composable
     operator fun invoke(
         viewModel: SettingsViewModel,
+        appMetadataProvider: AppMetadataProvider,
         upIconOption: UpIconOption?,
         onClickShowLastCrash: () -> Unit,
         onClickShowLicenses: () -> Unit,
@@ -81,6 +89,7 @@ object SettingsScreen {
                 (currentSubsection?.children ?: viewModel.sections).forEach { section ->
                     if (section is SettingsSection.Placeholder) {
                         when (section.id) {
+                            "header" -> Header(viewModel, appMetadataProvider)
                             "openLastCrash" -> ButtonRow(
                                 labelTextRes = R.string.settings_show_last_crash,
                                 buttonTextRes = UtilsStringR.open,
@@ -169,6 +178,55 @@ object SettingsScreen {
             }
         }
         return null
+    }
+
+    @Composable
+    private fun Header(viewModel: SettingsViewModel, appMetadataProvider: AppMetadataProvider) {
+        OutlinedCard(modifier = Modifier.padding(16.dp)) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)
+            ) {
+                AsyncImage(
+                    model = appMetadataProvider.appIconDrawableRes,
+                    contentDescription = stringResource(R.string.settings_header_app_icon_content_description),
+                    modifier = Modifier.size(72.dp)
+                )
+                Text(text = stringResource(R.string.settings_header))
+            }
+
+            val monetizationProvider = LocalMonetizationProvider.current
+            val adsEnabled by viewModel.adsEnabled.collectAsState()
+            val hasAuth by viewModel.hasAuth.collectAsState(false)
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                modifier = Modifier.align(Alignment.CenterHorizontally)
+            ) {
+                if (adsEnabled) {
+                    FilledTonalButton(
+                        onClick = {
+                            if (monetizationProvider != null) {
+                                monetizationProvider.revokeAds()
+                            } else {
+                                viewModel.debugDisableAds()
+                            }
+                        },
+                        modifier = Modifier.padding(bottom = 10.dp)
+                    ) {
+                        Text(text = stringResource(R.string.settings_ads_disable_button))
+                    }
+                }
+                if (hasAuth) {
+                    FilledTonalButton(
+                        onClick = viewModel::logOut,
+                        modifier = Modifier.padding(bottom = 10.dp)
+                    ) {
+                        Text(text = stringResource(R.string.settings_log_out_button))
+                    }
+                }
+            }
+        }
     }
 
     enum class DatabaseType(@StringRes val labelRes: Int) {

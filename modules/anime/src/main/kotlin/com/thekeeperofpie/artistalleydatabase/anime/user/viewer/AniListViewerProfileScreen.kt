@@ -1,15 +1,9 @@
 package com.thekeeperofpie.artistalleydatabase.anime.user.viewer
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.expandHorizontally
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -21,7 +15,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.Button
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -38,6 +31,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
@@ -120,38 +114,14 @@ object AniListViewerProfileScreen {
 
                     Text(
                         stringResource(R.string.anime_auth_prompt_text),
+                        textAlign = TextAlign.Center,
                         modifier = Modifier.padding(vertical = 8.dp)
                             .widthIn(min = 300.dp)
                             .width(IntrinsicSize.Min)
                     )
 
-                    var showWhy by remember { mutableStateOf(false) }
-                    AnimatedVisibility(visible = showWhy) {
-                        Text(
-                            stringResource(R.string.anime_auth_prompt_why),
-                            modifier = Modifier
-                                .widthIn(min = 300.dp)
-                                .padding(vertical = 8.dp)
-                        )
-                    }
-
-                    Row {
-                        AnimatedVisibility(
-                            visible = !showWhy,
-                            enter = fadeIn() + expandHorizontally(),
-                            exit = fadeOut() + shrinkHorizontally(),
-                        ) {
-                            Button(
-                                onClick = { showWhy = true },
-                                modifier = Modifier.padding(end = 12.dp)
-                            ) {
-                                Text(stringResource(R.string.anime_auth_button_why))
-                            }
-                        }
-
-                        FilledTonalButton(onClick = onClickAuth) {
-                            Text(stringResource(R.string.anime_auth_button_log_in))
-                        }
+                    FilledTonalButton(onClick = onClickAuth) {
+                        Text(stringResource(R.string.anime_auth_button_log_in))
                     }
 
                     Text(

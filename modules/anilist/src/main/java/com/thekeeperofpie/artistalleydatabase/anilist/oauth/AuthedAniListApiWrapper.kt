@@ -23,7 +23,6 @@ import com.anilist.type.StaffSort
 import com.anilist.type.StudioSort
 import com.anilist.type.UserSort
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
-import com.thekeeperofpie.artistalleydatabase.anilist.isAdult
 import com.thekeeperofpie.artistalleydatabase.network_utils.NetworkSettings
 import kotlinx.coroutines.flow.map
 import okhttp3.OkHttpClient
@@ -605,12 +604,7 @@ class AuthedAniListApiWrapper(
         perPage: Int,
         typeIn: List<NotificationType>?,
         resetNotificationCount: Boolean,
-    ) = super.notifications(page, perPage, typeIn, resetNotificationCount).let {
-        it.copy(
-            page = it.page?.copy(
-                notifications = it.page.notifications?.filter { it?.isAdult() == false })
-        )
-    }
+    ) = super.notifications(page, perPage, typeIn, resetNotificationCount)
 
     override suspend fun notificationMediaAndActivity(
         mediaIds: List<String>,

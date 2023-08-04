@@ -14,7 +14,6 @@ import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -35,10 +34,10 @@ import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterEntryDao
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaEntryDao
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListOAuthStore
+import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntry
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDao
 import com.thekeeperofpie.artistalleydatabase.compose.AppThemeSetting
-import com.thekeeperofpie.artistalleydatabase.monetization.LocalMonetizationProvider
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationController
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtist
 import com.thekeeperofpie.artistalleydatabase.musical_artists.MusicalArtistDao
@@ -68,12 +67,15 @@ class SettingsViewModel @Inject constructor(
     private val monetizationController: MonetizationController,
     featureOverrideProvider: FeatureOverrideProvider,
     appMetadataProvider: AppMetadataProvider,
+    private val aniListApi: AuthedAniListApi,
 ) : ViewModel() {
 
     companion object {
         private const val TAG = "SettingsViewModel"
     }
 
+    val adsEnabled = monetizationController.adsEnabled
+    val hasAuth = aniListOAuthStore.hasAuth
     private var onClickDatabaseFetch: (WorkManager) -> Unit = {}
 
     private val themeSection = SettingsSection.Subsection(
@@ -165,7 +167,17 @@ class SettingsViewModel @Inject constructor(
                         onClick = { uriHandler.openUri(BuildConfig.discordServerInviteLink) }
                     )
                 }
-
+            },
+            object : SettingsSection.Custom("openPrivacyPolicy") {
+                @Composable
+                override fun Content(modifier: Modifier) {
+                    val uriHandler = LocalUriHandler.current
+                    ButtonRow(
+                        labelTextRes = R.string.settings_subsection_about_privacy_policy_label,
+                        buttonTextRes = R.string.settings_open,
+                        onClick = { uriHandler.openUri(BuildConfig.privacyPolicyLink) }
+                    )
+                }
             },
             SettingsSection.Placeholder(id = "showLicenses"),
         )
@@ -273,45 +285,7 @@ class SettingsViewModel @Inject constructor(
     )
 
     val sections = listOfNotNull(
-        object : SettingsSection.Custom(id = "revokeAds") {
-            @Composable
-            override fun Content(modifier: Modifier) {
-                val adsEnabled by monetizationController.adsEnabled.collectAsState()
-                val monetizationProvider = LocalMonetizationProvider.current
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = modifier.padding(
-                        start = 16.dp,
-                        end = 16.dp,
-                        top = 10.dp,
-                        bottom = 10.dp
-                    )
-                ) {
-                    Text(
-                        text = stringResource(
-                            if (adsEnabled) {
-                                R.string.settings_ads_enabled
-                            } else {
-                                R.string.settings_ads_disabled
-                            }
-                        ),
-                        Modifier.weight(1f)
-                    )
-                    FilledTonalButton(
-                        onClick = {
-                            if (monetizationProvider != null) {
-                                monetizationProvider.revokeAds()
-                            } else {
-                                settings.adsEnabled.value = false
-                            }
-                        },
-                        enabled = adsEnabled,
-                    ) {
-                        Text(text = stringResource(R.string.settings_ads_disable_button))
-                    }
-                }
-            }
-        }.takeIf { !featureOverrideProvider.isReleaseBuild },
+        SettingsSection.Placeholder(id = "header"),
         themeSection,
         behaviorSection,
         SettingsSection.Placeholder(id = "featureTiers"),
@@ -415,6 +389,12 @@ class SettingsViewModel @Inject constructor(
             aniListOAuthStore.clearAuthToken()
         }
     }
+
+    fun debugDisableAds() {
+        settings.adsEnabled.value = false
+    }
+
+    fun logOut() = aniListApi.logOut()
 
     fun checkMismatchedCdEntryData() {
         viewModelScope.launch(Dispatchers.IO) {

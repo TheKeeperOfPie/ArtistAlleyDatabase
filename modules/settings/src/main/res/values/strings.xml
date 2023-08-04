@@ -22,12 +22,15 @@
     <string name="settings_revoke_ads_consent">Revoke ads consent</string>
     <string name="settings_ads_enabled">Ads are enabled</string>
     <string name="settings_ads_disabled">Ads are disabled</string>
-    <string name="settings_ads_disable_button">Disable</string>
+    <string name="settings_ads_disable_button">Disable ads</string>
+    <string name="settings_log_out_button">Log out</string>
     <string name="settings_revoke">Revoke</string>
     <string name="settings_database_clear_by_id_label">Database</string>
     <string name="settings_delete">Delete</string>
     <string name="settings_rebuild">Rebuild</string>
     <string name="settings_open">Open</string>
+
+    <string name="settings_header">Anichive is in early development; features may be broken or incomplete</string>
 
     <string name="settings_subsection_theme_label">Theme</string>
 
@@ -45,8 +48,10 @@
     <string name="settings_subsection_about_author_title">Author</string>
     <string name="settings_subsection_about_author_description">Anichive is written by TheKeeperOfPie. Feel free to say hi on Discord.</string>
     <string name="settings_subsection_about_discord_label">Discord</string>
+    <string name="settings_subsection_about_privacy_policy_label">Privacy policy</string>
 
     <string name="settings_subsection_debug_label">Debug</string>
 
     <string name="settings_subsection_feature_tiers">Feature tiers</string>
+    <string name="settings_header_app_icon_content_description">App icon</string>
 </resources>

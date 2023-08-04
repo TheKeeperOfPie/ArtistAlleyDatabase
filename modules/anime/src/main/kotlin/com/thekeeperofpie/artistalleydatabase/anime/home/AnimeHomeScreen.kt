@@ -171,7 +171,7 @@ object AnimeHomeScreen {
             }
         )
 
-        val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+        val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(snapAnimationSpec = null)
         val editViewModel = hiltViewModel<MediaEditViewModel>()
         val viewer by viewModel.viewer.collectAsState()
         MediaEditBottomSheetScaffold(

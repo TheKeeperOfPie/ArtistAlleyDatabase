@@ -21,57 +21,12 @@ val Page.Notification.id
 
 val Page.Notification.activityId
     get() = when (this) {
-        is Page.ActivityLikeNotificationNotification -> {
-            when (val activity = activity) {
-                is Page.ActivityLikeNotificationNotification.ListActivityActivity -> activity.id.toString()
-                is Page.ActivityLikeNotificationNotification.MessageActivityActivity -> activity.id.toString()
-                is Page.ActivityLikeNotificationNotification.TextActivityActivity -> activity.id.toString()
-                is Page.ActivityLikeNotificationNotification.OtherActivity,
-                null,
-                -> null
-            }
-        }
-        is Page.ActivityMentionNotificationNotification -> {
-            when (val activity = activity) {
-                is Page.ActivityMentionNotificationNotification.ListActivityActivity -> activity.id.toString()
-                is Page.ActivityMentionNotificationNotification.MessageActivityActivity -> activity.id.toString()
-                is Page.ActivityMentionNotificationNotification.TextActivityActivity -> activity.id.toString()
-                is Page.ActivityMentionNotificationNotification.OtherActivity,
-                null,
-                -> null
-            }
-        }
-        is Page.ActivityMessageNotificationNotification -> message?.id?.toString()
-        is Page.ActivityReplyLikeNotificationNotification -> {
-            when (val activity = activity) {
-                is Page.ActivityReplyLikeNotificationNotification.ListActivityActivity -> activity.id.toString()
-                is Page.ActivityReplyLikeNotificationNotification.MessageActivityActivity -> activity.id.toString()
-                is Page.ActivityReplyLikeNotificationNotification.TextActivityActivity -> activity.id.toString()
-                is Page.ActivityReplyLikeNotificationNotification.OtherActivity,
-                null,
-                -> null
-            }
-        }
-        is Page.ActivityReplyNotificationNotification -> {
-            when (val activity = activity) {
-                is Page.ActivityReplyNotificationNotification.ListActivityActivity -> activity.id.toString()
-                is Page.ActivityReplyNotificationNotification.MessageActivityActivity -> activity.id.toString()
-                is Page.ActivityReplyNotificationNotification.TextActivityActivity -> activity.id.toString()
-                is Page.ActivityReplyNotificationNotification.OtherActivity,
-                null,
-                -> null
-            }
-        }
-        is Page.ActivityReplySubscribedNotificationNotification -> {
-            when (val activity = activity) {
-                is Page.ActivityReplySubscribedNotificationNotification.ListActivityActivity -> activity.id.toString()
-                is Page.ActivityReplySubscribedNotificationNotification.MessageActivityActivity -> activity.id.toString()
-                is Page.ActivityReplySubscribedNotificationNotification.TextActivityActivity -> activity.id.toString()
-                is Page.ActivityReplySubscribedNotificationNotification.OtherActivity,
-                null,
-                -> null
-            }
-        }
+        is Page.ActivityLikeNotificationNotification -> activityId.toString()
+        is Page.ActivityMentionNotificationNotification -> activityId.toString()
+        is Page.ActivityMessageNotificationNotification -> activityId.toString()
+        is Page.ActivityReplyLikeNotificationNotification -> activityId.toString()
+        is Page.ActivityReplyNotificationNotification -> activityId.toString()
+        is Page.ActivityReplySubscribedNotificationNotification -> activityId.toString()
         is Page.AiringNotificationNotification,
         is Page.FollowingNotificationNotification,
         is Page.RelatedMediaAdditionNotificationNotification,
@@ -84,56 +39,16 @@ val Page.Notification.activityId
 
 val Page.Notification.mediaId
     get() = when (this) {
-        is Page.ActivityLikeNotificationNotification ->
-            when (val activity = activity) {
-                is Page.ActivityLikeNotificationNotification.ListActivityActivity -> activity.media?.id?.toString()
-                is Page.ActivityLikeNotificationNotification.MessageActivityActivity,
-                is Page.ActivityLikeNotificationNotification.OtherActivity,
-                is Page.ActivityLikeNotificationNotification.TextActivityActivity,
-                null,
-                -> null
-            }
-        is Page.ActivityMentionNotificationNotification ->
-            when (val activity = activity) {
-                is Page.ActivityMentionNotificationNotification.ListActivityActivity -> activity.media?.id?.toString()
-                is Page.ActivityMentionNotificationNotification.MessageActivityActivity,
-                is Page.ActivityMentionNotificationNotification.OtherActivity,
-                is Page.ActivityMentionNotificationNotification.TextActivityActivity,
-                null,
-                -> null
-            }
-        is Page.ActivityMessageNotificationNotification -> null
-        is Page.ActivityReplyLikeNotificationNotification ->
-            when (val activity = activity) {
-                is Page.ActivityReplyLikeNotificationNotification.ListActivityActivity -> activity.media?.id?.toString()
-                is Page.ActivityReplyLikeNotificationNotification.MessageActivityActivity,
-                is Page.ActivityReplyLikeNotificationNotification.OtherActivity,
-                is Page.ActivityReplyLikeNotificationNotification.TextActivityActivity,
-                null,
-                -> null
-            }
-        is Page.ActivityReplyNotificationNotification ->
-            when (val activity = activity) {
-                is Page.ActivityReplyNotificationNotification.ListActivityActivity -> activity.media?.id?.toString()
-                is Page.ActivityReplyNotificationNotification.MessageActivityActivity,
-                is Page.ActivityReplyNotificationNotification.OtherActivity,
-                is Page.ActivityReplyNotificationNotification.TextActivityActivity,
-                null,
-                -> null
-            }
-        is Page.ActivityReplySubscribedNotificationNotification ->
-            when (val activity = activity) {
-                is Page.ActivityReplySubscribedNotificationNotification.ListActivityActivity -> activity.media?.id?.toString()
-                is Page.ActivityReplySubscribedNotificationNotification.MessageActivityActivity,
-                is Page.ActivityReplySubscribedNotificationNotification.OtherActivity,
-                is Page.ActivityReplySubscribedNotificationNotification.TextActivityActivity,
-                null,
-                -> null
-            }
-        is Page.AiringNotificationNotification -> media?.id?.toString()
-        is Page.RelatedMediaAdditionNotificationNotification -> media?.id?.toString()
-        is Page.MediaDataChangeNotificationNotification -> media?.id?.toString()
-        is Page.MediaMergeNotificationNotification -> media?.id?.toString()
+        is Page.AiringNotificationNotification -> animeId.toString()
+        is Page.RelatedMediaAdditionNotificationNotification -> mediaId.toString()
+        is Page.MediaDataChangeNotificationNotification -> mediaId.toString()
+        is Page.MediaMergeNotificationNotification -> mediaId.toString()
+        is Page.ActivityLikeNotificationNotification,
+        is Page.ActivityMentionNotificationNotification,
+        is Page.ActivityMessageNotificationNotification,
+        is Page.ActivityReplyLikeNotificationNotification,
+        is Page.ActivityReplyNotificationNotification,
+        is Page.ActivityReplySubscribedNotificationNotification,
         is Page.MediaDeletionNotificationNotification,
         is Page.FollowingNotificationNotification,
         is Page.OtherNotification,
