@@ -30,7 +30,7 @@ android {
         applicationId = "com.thekeeperofpie.anichive"
         minSdk = 28
         targetSdk = 33
-        versionCode = 2
+        versionCode = 3
         versionName = "0.39"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
