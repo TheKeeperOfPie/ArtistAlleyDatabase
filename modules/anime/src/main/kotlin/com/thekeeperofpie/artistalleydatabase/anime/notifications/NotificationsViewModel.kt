@@ -25,9 +25,10 @@ import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityStatusContr
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityToggleHelper
 import com.thekeeperofpie.artistalleydatabase.anime.activity.applyActivityFiltering
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
-import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaStatusAware
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow
 import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIds
 import com.thekeeperofpie.artistalleydatabase.anime.utils.mapNotNull
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
@@ -139,7 +140,7 @@ class NotificationsViewModel @Inject constructor(
                         }
                     }
                 }.flow
-                    .map { it.filter { showAdult || it.mediaEntry?.mediaCompactWithTags?.isAdult != true } }
+                    .map { it.filter { showAdult || it.mediaEntry?.media?.isAdult != true } }
             }
                 .enforceUniqueIds { it.notificationId.scopedId }
                 .cachedIn(viewModelScope)
@@ -210,22 +211,17 @@ class NotificationsViewModel @Inject constructor(
         ) : ActivityStatusAware
 
         data class MediaEntry(
-            val mediaCompactWithTags: MediaCompactWithTags,
+            override val media: MediaCompactWithTags,
             val mediaWithListStatus: MediaWithListStatus,
-            val id: String = mediaCompactWithTags.id.toString(),
+            val id: String = media.id.toString(),
             override val mediaListStatus: MediaListStatus? = mediaWithListStatus.mediaListEntry?.status,
             override val progress: Int? = mediaWithListStatus.mediaListEntry?.progress,
             override val progressVolumes: Int? = mediaWithListStatus.mediaListEntry?.progressVolumes,
             override val ignored: Boolean = false,
             override val showLessImportantTags: Boolean = false,
             override val showSpoilerTags: Boolean = false,
-        ) : MediaStatusAware {
-            val rowEntry = AnimeMediaCompactListRow.Entry(
-                media = mediaCompactWithTags,
-                ignored = ignored,
-                showLessImportantTags = showLessImportantTags,
-                showSpoilerTags = showSpoilerTags,
-            )
+        ) : MediaStatusAware, AnimeMediaCompactListRow.Entry {
+            override val tags = MediaUtils.buildTags(media, showLessImportantTags, showSpoilerTags)
         }
     }
 }

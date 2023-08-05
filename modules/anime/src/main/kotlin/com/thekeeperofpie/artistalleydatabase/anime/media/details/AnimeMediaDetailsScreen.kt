@@ -127,7 +127,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.activity.ListActivitySmallCa
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils
 import com.thekeeperofpie.artistalleydatabase.anime.character.DetailsCharacter
 import com.thekeeperofpie.artistalleydatabase.anime.character.charactersSection
-import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaTagEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeader
@@ -140,6 +139,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toStatusTex
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.mediaListSection
 import com.thekeeperofpie.artistalleydatabase.anime.review.ReviewSmallCard
 import com.thekeeperofpie.artistalleydatabase.anime.songs.AnimeSongEntry
@@ -267,7 +267,6 @@ object AnimeMediaDetailsScreen {
                 screenKey = viewModel.screenKey,
                 viewModel = editViewModel,
                 colorCalculationState = colorCalculationState,
-                navigationCallback = navigationCallback,
                 topBar = {
                     CollapsingToolbar(
                         maxHeight = 356.dp,
@@ -459,6 +458,7 @@ object AnimeMediaDetailsScreen {
                             ) {
                                 content(
                                     viewModel = viewModel,
+                                    editViewModel = editViewModel,
                                     viewer = viewer,
                                     entry = entry.result!!,
                                     characters = characters,
@@ -488,6 +488,7 @@ object AnimeMediaDetailsScreen {
 
     private fun LazyListScope.content(
         viewModel: AnimeMediaDetailsViewModel,
+        editViewModel: MediaEditViewModel,
         viewer: AuthedUserQuery.Data.Viewer?,
         entry: Entry,
         characters: LazyPagingItems<DetailsCharacter>,
@@ -612,6 +613,7 @@ object AnimeMediaDetailsScreen {
             screenKey = screenKey,
             viewer = viewer,
             viewModel = viewModel,
+            editViewModel = editViewModel,
             expanded = expandedState::activities,
             onExpandedChange = { expandedState.activities = it },
             onClickViewAll = {
@@ -1310,9 +1312,9 @@ object AnimeMediaDetailsScreen {
         coverImageWidthToHeightRatio: () -> Float,
         expanded: () -> Boolean,
         onExpandedChange: (Boolean) -> Unit,
+        onClickListEdit: (AnimeMediaListRow.Entry<*>) -> Unit,
         colorCalculationState: ColorCalculationState,
         navigationCallback: AnimeNavigator.NavigationCallback,
-        onClickListEdit: (AnimeMediaListRow.Entry<*>) -> Unit,
         onLongClick: (AnimeMediaListRow.Entry<*>) -> Unit,
     ) {
         mediaListSection(
@@ -1505,6 +1507,7 @@ object AnimeMediaDetailsScreen {
                             },
                             containerColor = containerColor,
                             textColor = textColor,
+                            autoResize = false,
                         )
                     }
                 }
@@ -1750,6 +1753,7 @@ object AnimeMediaDetailsScreen {
     private fun LazyListScope.activitiesSection(
         screenKey: String,
         viewer: AuthedUserQuery.Data.Viewer?,
+        editViewModel: MediaEditViewModel,
         viewModel: AnimeMediaDetailsViewModel,
         expanded: () -> Boolean,
         onExpandedChange: (Boolean) -> Unit,
@@ -1774,6 +1778,7 @@ object AnimeMediaDetailsScreen {
                 activity = item.activity,
                 entry = item,
                 onActivityStatusUpdate = viewModel.activityToggleHelper::toggle,
+                onClickListEdit = { editViewModel.initialize(it.media) },
                 colorCalculationState = colorCalculationState,
                 navigationCallback = navigationCallback,
                 clickable = true,

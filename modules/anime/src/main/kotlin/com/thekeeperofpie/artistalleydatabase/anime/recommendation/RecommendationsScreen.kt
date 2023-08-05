@@ -47,8 +47,6 @@ object RecommendationsScreen {
             screenKey = SCREEN_KEY,
             viewModel = viewModel,
             editViewModel = editViewModel,
-            colorCalculationState = colorCalculationState,
-            navigationCallback = navigationCallback,
             headerTextRes = R.string.anime_recommendations_header,
             header = {
                 MediaHeader(
@@ -88,7 +86,8 @@ object RecommendationsScreen {
                     navigationCallback = navigationCallback,
                     modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
                 )
-            }
+            },
+            colorCalculationState = colorCalculationState
         )
     }
 

@@ -21,17 +21,25 @@ import com.anilist.ToggleFollowMutation
 import com.anilist.fragment.PaginationInfo
 import com.anilist.fragment.UserFavoriteMediaNode
 import com.anilist.fragment.UserMediaStatistics
+import com.anilist.type.MediaListStatus
 import com.hoc081098.flowext.startWith
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListPagingSource
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils
 import com.thekeeperofpie.artistalleydatabase.anime.character.DetailsCharacter
+import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
+import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaStatusChanges
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaGridCard
 import com.thekeeperofpie.artistalleydatabase.anime.staff.DetailsStaff
 import com.thekeeperofpie.artistalleydatabase.anime.studio.StudioListRow
 import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIds
+import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -57,6 +65,9 @@ import javax.inject.Inject
 @HiltViewModel
 class AniListUserViewModel @Inject constructor(
     private val aniListApi: AuthedAniListApi,
+    private val statusController: MediaListStatusController,
+    private val ignoreList: AnimeMediaIgnoreList,
+    private val settings: AnimeSettings,
 ) : ViewModel() {
 
     val screenKey = "${AnimeNavDestinations.USER.id}-${UUID.randomUUID()}"
@@ -68,8 +79,8 @@ class AniListUserViewModel @Inject constructor(
     var errorResource by mutableStateOf<Pair<Int, Exception?>?>(null)
     val colorMap = mutableStateMapOf<String, Pair<Color, Color>>()
 
-    val anime = MutableStateFlow(PagingData.empty<UserFavoriteMediaNode>())
-    val manga = MutableStateFlow(PagingData.empty<UserFavoriteMediaNode>())
+    val anime = MutableStateFlow(PagingData.empty<MediaEntry>())
+    val manga = MutableStateFlow(PagingData.empty<MediaEntry>())
     val characters = MutableStateFlow(PagingData.empty<DetailsCharacter>())
     val staff = MutableStateFlow(PagingData.empty<DetailsStaff>())
     val studios = MutableStateFlow(PagingData.empty<StudioListRow.Entry>())
@@ -118,7 +129,6 @@ class AniListUserViewModel @Inject constructor(
                 }
         }
 
-        // TODO: Show and attach MediaListStatus
         // TODO: Better placeholders for loading horizontal scrolling rows
         collectFavoritesPage(
             request = { entry, page ->
@@ -133,9 +143,27 @@ class AniListUserViewModel @Inject constructor(
                     result.pageInfo to result.nodes.filterNotNull()
                 }
             },
-            map = { it },
-            id = { it.id.toString() },
+            map = ::MediaEntry,
+            id = { it.media.id.toString() },
             property = anime,
+            transformFlow = {
+                applyMediaStatusChanges(
+                    statusController = statusController,
+                    ignoreList = ignoreList,
+                    settings = settings,
+                    media = { it.media },
+                    copy = { mediaListStatus, progress, progressVolumes, ignored, showLessImportantTags, showSpoilerTags ->
+                        copy(
+                            mediaListStatus = mediaListStatus,
+                            progress = progress,
+                            progressVolumes = progressVolumes,
+                            ignored = ignored,
+                            showLessImportantTags = showLessImportantTags,
+                            showSpoilerTags = showSpoilerTags,
+                        )
+                    },
+                )
+            }
         )
 
         collectFavoritesPage(
@@ -151,9 +179,27 @@ class AniListUserViewModel @Inject constructor(
                     result.pageInfo to result.nodes.filterNotNull()
                 }
             },
-            map = { it },
-            id = { it.id.toString() },
+            map = ::MediaEntry,
+            id = { it.media.id.toString() },
             property = manga,
+            transformFlow = {
+                applyMediaStatusChanges(
+                    statusController = statusController,
+                    ignoreList = ignoreList,
+                    settings = settings,
+                    media = { it.media },
+                    copy = { mediaListStatus, progress, progressVolumes, ignored, showLessImportantTags, showSpoilerTags ->
+                        copy(
+                            mediaListStatus = mediaListStatus,
+                            progress = progress,
+                            progressVolumes = progressVolumes,
+                            ignored = ignored,
+                            showLessImportantTags = showLessImportantTags,
+                            showSpoilerTags = showSpoilerTags,
+                        )
+                    },
+                )
+            }
         )
 
         collectFavoritesPage(
@@ -244,6 +290,7 @@ class AniListUserViewModel @Inject constructor(
         map: (ResponseType) -> ResultType,
         id: (ResultType) -> String,
         property: MutableStateFlow<PagingData<ResultType>>,
+        transformFlow: (Flow<PagingData<ResultType>>.() -> Flow<PagingData<ResultType>>)? = null,
     ) {
         viewModelScope.launch(CustomDispatchers.IO) {
             snapshotFlow { entry }
@@ -257,6 +304,11 @@ class AniListUserViewModel @Inject constructor(
                 .mapLatest { it.map(map) }
                 .enforceUniqueIds(id)
                 .cachedIn(viewModelScope)
+                .run {
+                    if (transformFlow == null) this else {
+                        transformFlow().cachedIn(viewModelScope)
+                    }
+                }
                 .collectLatest(property::emit)
         }
     }
@@ -340,5 +392,32 @@ class AniListUserViewModel @Inject constructor(
             @Composable
             fun getMedia(value: Value) = getMedia(value, this)
         }
+    }
+
+    data class MediaEntry(
+        val userMedia: UserFavoriteMediaNode,
+        override val mediaListStatus: MediaListStatus? = userMedia.mediaListEntry?.status,
+        override val progress: Int? = MediaUtils.maxProgress(
+            type = userMedia.type,
+            chapters = userMedia.chapters,
+            episodes = userMedia.episodes,
+            nextAiringEpisode = userMedia.nextAiringEpisode?.episode,
+        ),
+        override val progressVolumes: Int? = userMedia.volumes,
+        override val ignored: Boolean = false,
+        override val showLessImportantTags: Boolean = false,
+        override val showSpoilerTags: Boolean = false,
+    ) : MediaGridCard.Entry {
+        override val media = userMedia
+        override val type = userMedia.type
+        override val maxProgress = MediaUtils.maxProgress(
+            type = userMedia.type,
+            chapters = userMedia.chapters,
+            episodes = userMedia.episodes,
+            nextAiringEpisode = userMedia.nextAiringEpisode?.episode,
+        )
+        override val maxProgressVolumes = userMedia.volumes
+        override val averageScore = userMedia.averageScore
+        override val color = userMedia.coverImage?.color?.let(ComposeColorUtils::hexToColor)
     }
 }

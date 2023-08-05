@@ -63,7 +63,6 @@ object AnimeIgnoreScreen {
             screenKey = AnimeNavDestinations.IGNORED.id,
             viewModel = editViewModel,
             colorCalculationState = colorCalculationState,
-            navigationCallback = navigationCallback,
         ) {
             val sortFilterController = viewModel.sortFilterController
             SortFilterBottomScaffold(

@@ -57,11 +57,11 @@ import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterHeader
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterHeaderValues
 import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoriteType
-import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.mediaListSection
 import com.thekeeperofpie.artistalleydatabase.anime.staff.DetailsStaff
 import com.thekeeperofpie.artistalleydatabase.anime.staff.staffSection
@@ -120,10 +120,9 @@ object CharacterDetailsScreen {
         ) {
             val editViewModel = hiltViewModel<MediaEditViewModel>()
             MediaEditBottomSheetScaffold(
-                screenKey = AnimeNavDestinations.SEARCH.id,
+                screenKey = SCREEN_KEY,
                 viewModel = editViewModel,
                 colorCalculationState = colorCalculationState,
-                navigationCallback = navigationCallback,
                 topBar = {
                     CollapsingToolbar(
                         maxHeight = 356.dp,

@@ -31,9 +31,10 @@ import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityStatusAware
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityToggleHelper
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
-import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaStatusAware
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -208,20 +209,15 @@ class ActivityDetailsViewModel @Inject constructor(
         override val subscribed: Boolean,
     ) : ActivityStatusAware {
         data class MediaEntry(
-            val media: ActivityDetailsQuery.Data.ListActivityActivity.Media,
+            override val media: ActivityDetailsQuery.Data.ListActivityActivity.Media,
             override val mediaListStatus: MediaListStatus?,
             override val progress: Int?,
             override val progressVolumes: Int?,
             override val ignored: Boolean,
             override val showLessImportantTags: Boolean,
             override val showSpoilerTags: Boolean,
-        ) : MediaStatusAware {
-            val rowEntry = AnimeMediaCompactListRow.Entry(
-                media = media,
-                ignored = ignored,
-                showLessImportantTags = showLessImportantTags,
-                showSpoilerTags = showSpoilerTags,
-            )
+        ) : MediaStatusAware, AnimeMediaCompactListRow.Entry {
+            override val tags = MediaUtils.buildTags(media, showLessImportantTags, showSpoilerTags)
         }
 
         data class ReplyEntry(

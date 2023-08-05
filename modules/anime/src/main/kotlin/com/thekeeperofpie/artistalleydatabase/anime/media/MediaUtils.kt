@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import com.anilist.MediaDetailsQuery
 import com.anilist.MediaListEntryQuery
+import com.anilist.fragment.MediaCompactWithTags
 import com.anilist.fragment.MediaDetailsListEntry
 import com.anilist.fragment.MediaPreview
 import com.anilist.fragment.MediaTitleFragment
@@ -711,12 +712,26 @@ object MediaUtils {
             ?.episode?.let { (it - 1).coerceAtLeast(1) }
     }
 
+    fun maxProgress(media: MediaCompactWithTags) = if (media.type == MediaType.MANGA) {
+        media.chapters
+    } else {
+        media.episodes ?: media.nextAiringEpisode
+            ?.episode?.let { (it - 1).coerceAtLeast(1) }
+    }
+
     fun maxProgress(media: MediaListEntryQuery.Data.Media) = if (media.type == MediaType.MANGA) {
         media.chapters
     } else {
         media.episodes ?: media.nextAiringEpisode
             ?.episode?.let { (it - 1).coerceAtLeast(1) }
     }
+
+    fun maxProgress(type: MediaType?, chapters: Int?, episodes: Int?, nextAiringEpisode: Int?) =
+        if (type == MediaType.MANGA) {
+            chapters
+        } else {
+            episodes ?: nextAiringEpisode?.let { (it - 1).coerceAtLeast(1) }
+        }
 
     fun MediaType?.toFavoriteType() = if (this == MediaType.ANIME) {
         FavoriteType.ANIME
@@ -734,4 +749,21 @@ object MediaUtils {
             AniListLanguageOption.NATIVE -> native
             AniListLanguageOption.ROMAJI -> romaji
         }
+
+    fun buildTags(
+        media: MediaCompactWithTags,
+        showLessImportantTags: Boolean,
+        showSpoilerTags: Boolean,
+    ) = media.tags?.asSequence()
+        ?.filterNotNull()
+        ?.filter {
+            showLessImportantTags || it.category !in LESS_IMPORTANT_MEDIA_TAG_CATEGORIES
+        }
+        ?.filter {
+            showSpoilerTags || (it.isGeneralSpoiler != true && it.isMediaSpoiler != true)
+        }
+        ?.map { AnimeMediaTagEntry(it, isMediaSpoiler = it.isMediaSpoiler) }
+        ?.distinctBy { it.id }
+        ?.toList()
+        .orEmpty()
 }

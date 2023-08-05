@@ -2,6 +2,9 @@ package com.thekeeperofpie.artistalleydatabase.anime.media
 
 import android.os.Bundle
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.VisibilityThreshold
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -37,6 +40,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.LineBreak
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
@@ -134,8 +138,14 @@ fun MediaHeader(
                             .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 4.dp),
                     )
                     AnimatedVisibility(
-                        visible = progress > 0.8f,
-                        enter = fadeIn() + expandHorizontally(),
+                        visible = progress > 0.6f,
+                        enter = fadeIn() + expandHorizontally(
+                            animationSpec = spring(
+                                stiffness = Spring.StiffnessHigh,
+                                visibilityThreshold = IntSize.VisibilityThreshold
+                            ),
+                            expandFrom = Alignment.Start,
+                        ),
                         exit = fadeOut() + shrinkHorizontally(),
                         modifier = Modifier.align(Alignment.Top)
                     ) {
@@ -143,7 +153,7 @@ fun MediaHeader(
                             rating = averageScore,
                             popularity = popularity,
                             modifier = Modifier
-                                .alpha(if (progress > 0.8f) 1f - ((1f - progress) / 0.2f) else 0f)
+                                .alpha(if (progress > 0.6f) 1f - ((1f - progress) / 0.2f) else 0f)
                                 .padding(start = 8.dp, end = 8.dp, top = 12.dp)
                         )
                     }

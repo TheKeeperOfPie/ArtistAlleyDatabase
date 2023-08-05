@@ -35,7 +35,6 @@ object MediaEditBottomSheetScaffold {
         modifier: Modifier = Modifier,
         topBar: @Composable (() -> Unit)? = null,
         colorCalculationState: ColorCalculationState,
-        navigationCallback: AnimeNavigator.NavigationCallback,
         bottomNavigationState: BottomNavigationState? = null,
         sheetState: androidx.compose.material3.SheetState = androidx.compose.material3.rememberStandardBottomSheetState(
             initialValue = SheetValue.Hidden,
@@ -104,7 +103,6 @@ object MediaEditBottomSheetScaffold {
                     screenKey = screenKey,
                     viewModel,
                     colorCalculationState = colorCalculationState,
-                    navigationCallback = navigationCallback,
                     onDismiss = {
                         scope.launch { sheetState.hide() }
                             .invokeOnCompletion {

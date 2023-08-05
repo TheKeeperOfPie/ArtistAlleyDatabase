@@ -27,9 +27,10 @@ import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityUtils.isAdu
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityUtils.liked
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityUtils.subscribed
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
-import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaStatusAware
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow
 import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIntIds
 import com.thekeeperofpie.artistalleydatabase.anime.utils.mapNotNull
 import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
@@ -234,20 +235,15 @@ class AnimeActivityViewModel @Inject constructor(
         )
 
         data class MediaEntry(
-            val media: ListActivityActivity.Media,
+            override val media: ListActivityActivity.Media,
             override val mediaListStatus: MediaListStatus? = media.mediaListEntry?.status,
             override val progress: Int? = media.mediaListEntry?.progress,
             override val progressVolumes: Int? = media.mediaListEntry?.progressVolumes,
             override val ignored: Boolean = false,
             override val showLessImportantTags: Boolean = false,
             override val showSpoilerTags: Boolean = false,
-        ) : MediaStatusAware {
-            val rowEntry = AnimeMediaCompactListRow.Entry(
-                media = media,
-                ignored = ignored,
-                showLessImportantTags = showLessImportantTags,
-                showSpoilerTags = showSpoilerTags,
-            )
+        ) : MediaStatusAware, AnimeMediaCompactListRow.Entry {
+            override val tags = MediaUtils.buildTags(media, showLessImportantTags, showSpoilerTags)
         }
     }
 }

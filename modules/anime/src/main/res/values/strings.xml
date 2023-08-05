@@ -564,6 +564,8 @@
     <string name="anime_home_tab_manga">Manga</string>
     <string name="anime_home_trending_row_label">TRENDING</string>
     <string name="anime_home_trending_screen_title">Trending</string>
+    <string name="anime_home_last_added">LAST ADDED</string>
+    <string name="anime_home_last_added_screen_title">Last added</string>
     <string name="anime_home_popular_this_season">THIS SEASON</string>
     <string name="anime_home_popular_last_season">LAST SEASON</string>
     <string name="anime_home_popular_next_season">NEXT SEASON</string>

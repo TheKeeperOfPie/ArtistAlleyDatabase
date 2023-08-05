@@ -43,9 +43,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import coil.size.Dimension
+import com.anilist.AuthedUserQuery
 import com.anilist.fragment.MediaNavigationData
 import com.anilist.fragment.MediaPreviewWithDescription
 import com.anilist.type.MediaType
@@ -74,10 +76,12 @@ object AnimeMediaLargeCard {
     @Composable
     operator fun invoke(
         screenKey: String,
+        viewer: AuthedUserQuery.Data.Viewer?,
         entry: Entry?,
         modifier: Modifier = Modifier,
         label: (@Composable () -> Unit)? = null,
         onLongClick: (MediaNavigationData) -> Unit = {},
+        onClickListEdit: (Entry) -> Unit,
         colorCalculationState: ColorCalculationState = ColorCalculationState(),
         navigationCallback: AnimeNavigator.NavigationCallback?,
     ) {
@@ -141,24 +145,44 @@ object AnimeMediaLargeCard {
                         )
                     }
 
-                    entry?.nextAiringEpisode?.let { MediaNextAiringSection(it) }
-                    val (containerColor, textColor) =
-                        colorCalculationState.getColors(entry?.id?.valueId)
+                    Row(verticalAlignment = Alignment.Bottom) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            entry?.nextAiringEpisode?.let { MediaNextAiringSection(it) }
+                            val (containerColor, textColor) =
+                                colorCalculationState.getColors(entry?.id?.valueId)
 
-                    MediaTagRow(
-                        tags = entry?.tags.orEmpty(),
-                        onTagClick = { id, name ->
-                            if (entry != null) {
-                                navigationCallback?.onTagClick(
-                                    entry.media.type ?: MediaType.ANIME,
-                                    id,
-                                    name
+                            MediaTagRow(
+                                tags = entry?.tags.orEmpty(),
+                                onTagClick = { id, name ->
+                                    if (entry != null) {
+                                        navigationCallback?.onTagClick(
+                                            entry.media.type ?: MediaType.ANIME,
+                                            id,
+                                            name
+                                        )
+                                    }
+                                },
+                                tagContainerColor = containerColor,
+                                tagTextColor = textColor,
+                            )
+                        }
+
+                        if (viewer != null && entry != null) {
+                            Box(modifier = Modifier.padding(end = 4.dp, bottom = 4.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                            ) {
+                                MediaListQuickEditIconButton(
+                                    mediaType = entry.media.type,
+                                    listStatus = entry.mediaListStatus,
+                                    progress = entry.progress,
+                                    progressVolumes = entry.progressVolumes,
+                                    maxProgress = MediaUtils.maxProgress(entry.media),
+                                    maxProgressVolumes = entry.media.volumes,
+                                    onClick = { onClickListEdit(entry) },
                                 )
                             }
-                        },
-                        tagContainerColor = containerColor,
-                        tagTextColor = textColor,
-                    )
+                        }
+                    }
                 }
             }
         }
@@ -232,7 +256,8 @@ object AnimeMediaLargeCard {
     private fun TitleText(entry: Entry?) {
         Text(
             text = entry?.media?.title?.primaryTitle() ?: "Loading...",
-            style = MaterialTheme.typography.titleMedium,
+            style = MaterialTheme.typography.headlineSmall,
+            fontSize = 20.sp,
             fontWeight = FontWeight.Black,
             maxLines = 1,
             modifier = Modifier

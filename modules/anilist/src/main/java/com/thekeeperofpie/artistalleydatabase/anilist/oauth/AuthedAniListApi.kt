@@ -16,7 +16,9 @@ import com.anilist.DeleteActivityMutation
 import com.anilist.DeleteActivityReplyMutation
 import com.anilist.DeleteMediaListEntryMutation
 import com.anilist.GenresQuery
+import com.anilist.HomeAnime2Query
 import com.anilist.HomeAnimeQuery
+import com.anilist.HomeManga2Query
 import com.anilist.HomeMangaQuery
 import com.anilist.LicensorsQuery
 import com.anilist.MediaActivityPageQuery
@@ -553,9 +555,11 @@ open class AuthedAniListApi(
         )
     }
 
-    open suspend fun homeManga(perPage: Int = 10) = query(
-        HomeMangaQuery(perPage = perPage)
-    )
+    open suspend fun homeAnime2(perPage: Int = 10) = query(HomeAnime2Query(perPage = perPage))
+
+    open suspend fun homeManga(perPage: Int = 10) = query(HomeMangaQuery(perPage = perPage))
+
+    open suspend fun homeManga2(perPage: Int = 10) = query(HomeManga2Query(perPage = perPage))
 
     open suspend fun airingSchedule(
         startTime: Long,

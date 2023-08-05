@@ -78,6 +78,7 @@ import com.anilist.type.ScoreFormat
 import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
+import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
@@ -106,7 +107,6 @@ object AnimeMediaEditBottomSheet {
         onLongPressImage: (MediaNavigationData) -> Unit = { /* TODO */ },
         onDismiss: () -> Unit,
         colorCalculationState: ColorCalculationState,
-        navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
         var showDelete by remember { mutableStateOf(false) }
 
@@ -139,7 +139,6 @@ object AnimeMediaEditBottomSheet {
                                 initialParams = initialParams,
                                 onLongPressImage = onLongPressImage,
                                 colorCalculationState = colorCalculationState,
-                                navigationCallback = navigationCallback,
                             )
                         }
                     }
@@ -245,7 +244,6 @@ object AnimeMediaEditBottomSheet {
         initialParams: MediaEditData.InitialParams?,
         onLongPressImage: (MediaNavigationData) -> Unit = { /* TODO */ },
         colorCalculationState: ColorCalculationState,
-        navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
         var startEndDateShown by remember { mutableStateOf<Boolean?>(null) }
         val media = initialParams?.media
@@ -261,6 +259,7 @@ object AnimeMediaEditBottomSheet {
                     key = "anime_media_${media.id}_image",
                     screenKey = screenKey,
                 ) {
+                    val navigationCallback = LocalNavigationCallback.current
                     var imageWidthToHeightRatio by remember { mutableFloatStateOf(1f) }
                     AsyncImage(
                         model = ImageRequest.Builder(LocalContext.current)
@@ -291,7 +290,7 @@ object AnimeMediaEditBottomSheet {
                             .size(width = DEFAULT_IMAGE_WIDTH, height = DEFAULT_IMAGE_HEIGHT)
                             .combinedClickable(
                                 onClick = {
-                                    navigationCallback.onMediaClick(
+                                    navigationCallback?.onMediaClick(
                                         media,
                                         imageWidthToHeightRatio,
                                     )

@@ -20,6 +20,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatc
 import com.thekeeperofpie.artistalleydatabase.android_utils.notification.NotificationChannels
 import com.thekeeperofpie.artistalleydatabase.android_utils.notification.NotificationIds
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeRootNavDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.FilterData
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOption
@@ -124,6 +125,9 @@ class SettingsProvider(
     override val mediaViewOption =
         MutableStateFlow(deserialize("mediaViewOption") ?: MediaViewOption.SMALL_CARD)
 
+    override val rootNavDestination =
+        MutableStateFlow(deserialize("rootNavDestination") ?: AnimeRootNavDestination.HOME)
+
     val languageOptionMedia =
         MutableStateFlow(deserialize("languageOptionMedia") ?: AniListLanguageOption.DEFAULT)
     val languageOptionCharacters =
@@ -219,6 +223,7 @@ class SettingsProvider(
             appTheme = appTheme.value,
             preferredMediaType = preferredMediaType.value,
             mediaViewOption = mediaViewOption.value,
+            rootNavDestination = rootNavDestination.value,
             languageOptionMedia = languageOptionMedia.value,
             languageOptionCharacters = languageOptionCharacters.value,
             languageOptionStaff = languageOptionStaff.value,
@@ -248,6 +253,7 @@ class SettingsProvider(
         subscribeProperty(scope, ::showSpoilerTags)
         subscribeProperty(scope, ::preferredMediaType)
         subscribeProperty(scope, ::mediaViewOption)
+        subscribeProperty(scope, ::rootNavDestination)
         subscribeProperty(scope, ::languageOptionMedia)
         subscribeProperty(scope, ::languageOptionCharacters)
         subscribeProperty(scope, ::languageOptionStaff)
@@ -336,6 +342,7 @@ class SettingsProvider(
         appTheme.emit(data.appTheme)
         preferredMediaType.emit(data.preferredMediaType)
         mediaViewOption.emit(data.mediaViewOption)
+        rootNavDestination.emit(data.rootNavDestination)
         languageOptionMedia.emit(data.languageOptionMedia)
         languageOptionCharacters.emit(data.languageOptionCharacters)
         languageOptionStaff.emit(data.languageOptionStaff)

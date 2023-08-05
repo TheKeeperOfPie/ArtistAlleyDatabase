@@ -217,6 +217,7 @@ object UserStatsDetailScreen {
         }
     }
 
+    // TODO: For media types, show quick edit and stats
     @Composable
     private fun InnerCard(
         screenKey: String,

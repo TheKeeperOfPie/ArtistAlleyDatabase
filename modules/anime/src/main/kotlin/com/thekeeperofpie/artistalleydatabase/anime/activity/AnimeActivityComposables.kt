@@ -399,6 +399,7 @@ fun ListActivitySmallCard(
     activity: ListActivityWithoutMedia?,
     entry: ActivityStatusAware?,
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
+    onClickListEdit: (AnimeMediaCompactListRow.Entry) -> Unit,
     colorCalculationState: ColorCalculationState,
     navigationCallback: AnimeNavigator.NavigationCallback?,
     modifier: Modifier = Modifier,
@@ -415,6 +416,7 @@ fun ListActivitySmallCard(
         liked = entry?.liked ?: false,
         subscribed = entry?.subscribed ?: false,
         onActivityStatusUpdate = onActivityStatusUpdate,
+        onClickListEdit = onClickListEdit,
         colorCalculationState = colorCalculationState,
         navigationCallback = navigationCallback,
         clickable = clickable,
@@ -432,6 +434,7 @@ fun ListActivitySmallCard(
     mediaEntry: AnimeMediaCompactListRow.Entry?,
     entry: ActivityStatusAware?,
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
+    onClickListEdit: (AnimeMediaCompactListRow.Entry) -> Unit,
     colorCalculationState: ColorCalculationState,
     navigationCallback: AnimeNavigator.NavigationCallback,
     clickable: Boolean = false,
@@ -448,6 +451,7 @@ fun ListActivitySmallCard(
         liked = entry?.liked ?: false,
         subscribed = entry?.subscribed ?: false,
         onActivityStatusUpdate = onActivityStatusUpdate,
+        onClickListEdit = onClickListEdit,
         colorCalculationState = colorCalculationState,
         navigationCallback = navigationCallback,
         clickable = clickable,
@@ -467,6 +471,7 @@ private fun ListActivitySmallCard(
     liked: Boolean,
     subscribed: Boolean,
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
+    onClickListEdit: (AnimeMediaCompactListRow.Entry) -> Unit,
     colorCalculationState: ColorCalculationState,
     navigationCallback: AnimeNavigator.NavigationCallback?,
     clickable: Boolean,
@@ -485,6 +490,7 @@ private fun ListActivitySmallCard(
             liked = liked,
             subscribed = subscribed,
             onActivityStatusUpdate = onActivityStatusUpdate,
+            onClickListEdit = onClickListEdit,
             colorCalculationState = colorCalculationState,
             navigationCallback = navigationCallback,
             showActionsRow = showActionsRow,
@@ -518,6 +524,7 @@ fun ColumnScope.ListActivityCardContent(
     liked: Boolean,
     subscribed: Boolean,
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
+    onClickListEdit: (AnimeMediaCompactListRow.Entry) -> Unit,
     colorCalculationState: ColorCalculationState,
     navigationCallback: AnimeNavigator.NavigationCallback?,
     showMedia: Boolean = entry != null,
@@ -603,6 +610,7 @@ fun ColumnScope.ListActivityCardContent(
     if (showMedia) {
         AnimeMediaCompactListRow(
             screenKey = screenKey,
+            viewer = viewer,
             entry = entry,
             onLongClick = {
                 // TODO: Ignored
@@ -610,6 +618,7 @@ fun ColumnScope.ListActivityCardContent(
             onLongPressImage = {
                 // TODO: Image long click
             },
+            onClickListEdit = onClickListEdit,
             colorCalculationState = colorCalculationState,
             navigationCallback = navigationCallback,
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)

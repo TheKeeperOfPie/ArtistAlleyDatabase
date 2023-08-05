@@ -50,7 +50,6 @@ import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
 import com.anilist.AuthedUserQuery
 import com.anilist.fragment.MediaPreview
-import com.anilist.fragment.MediaPreviewWithDescription
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
@@ -102,11 +101,10 @@ object AnimeSearchScreen {
             skipHiddenState = false,
         )
         MediaEditBottomSheetScaffold(
-            screenKey = AnimeNavDestinations.SEARCH.id,
+            screenKey = SCREEN_KEY,
             viewModel = editViewModel,
             sheetState = editSheetState,
             colorCalculationState = colorCalculationState,
-            navigationCallback = navigationCallback,
             bottomNavigationState = bottomNavigationState,
         ) {
             val sortFilterController = when (viewModel.selectedType) {
@@ -153,7 +151,7 @@ object AnimeSearchScreen {
                 val refreshing = content.loadState.refresh is LoadState.Loading && selectedUnlocked
 
                 val viewer by viewModel.viewer.collectAsState()
-                AnimeMediaListScreen<MediaPreviewWithDescription>(
+                AnimeMediaListScreen(
                     refreshing = refreshing,
                     onRefresh = viewModel::onRefresh,
                     modifier = Modifier.padding(scaffoldPadding),
@@ -312,16 +310,20 @@ object AnimeSearchScreen {
             )
             MediaViewOption.LARGE_CARD -> AnimeMediaLargeCard(
                 screenKey = SCREEN_KEY,
+                viewer = viewer,
                 entry = entry,
                 onLongClick = { viewModel.ignoreList.toggle(entry.media.id.toString()) },
+                onClickListEdit = { editViewModel.initialize(it.media) },
                 colorCalculationState = colorCalculationState,
                 navigationCallback = LocalNavigationCallback.current,
             )
             MediaViewOption.COMPACT -> AnimeMediaCompactListRow(
                 screenKey = SCREEN_KEY,
-                entry = entry.compactEntry,
+                viewer = viewer,
+                entry = entry,
                 onLongClick = { viewModel.ignoreList.toggle(entry.media.id.toString()) },
                 onLongPressImage = { onLongPressImage(entry) },
+                onClickListEdit = { editViewModel.initialize(it.media) },
                 colorCalculationState = colorCalculationState,
                 navigationCallback = LocalNavigationCallback.current,
             )

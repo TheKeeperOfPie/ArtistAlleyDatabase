@@ -35,6 +35,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterEntryDa
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaEntryDao
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListOAuthStore
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeRootNavDestination
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOption
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntry
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDao
@@ -115,6 +116,14 @@ class SettingsViewModel @Inject constructor(
                 options = MediaViewOption.values().toList(),
                 optionToText = { stringResource(it.textRes) },
                 property = settings.mediaViewOption,
+            ),
+            SettingsSection.Dropdown(
+                labelTextRes = R.string.settings_subsection_behavior_starting_screen_option_label,
+                options = AnimeRootNavDestination.values()
+                    .filterNot { it == AnimeRootNavDestination.UNLOCK }
+                    .toList(),
+                optionToText = { stringResource(it.textRes) },
+                property = settings.rootNavDestination,
             ),
             SettingsSection.Dropdown(
                 labelTextRes = R.string.settings_subsection_behavior_language_option_media_label,

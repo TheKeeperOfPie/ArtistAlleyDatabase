@@ -43,6 +43,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
+import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
+import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.SortFilterBottomScaffold
 import com.thekeeperofpie.artistalleydatabase.compose.AppBar
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
@@ -72,91 +74,100 @@ object AnimeActivityScreen {
             initialPage = if (viewer == null) 0 else 1,
             pageCount = { if (viewer == null) 1 else 3 },
         )
+        val editViewModel = hiltViewModel<MediaEditViewModel>()
+        MediaEditBottomSheetScaffold(
+            screenKey = SCREEN_KEY,
+            viewModel = editViewModel,
+            colorCalculationState = colorCalculationState,
+        ) {
+            val scrollBehavior =
+                TopAppBarDefaults.enterAlwaysScrollBehavior(snapAnimationSpec = null)
+            SortFilterBottomScaffold(
+                sortFilterController = viewModel.sortFilterController,
+                topBar = {
+                    if (viewer == null) {
+                        AppBar(
+                            text = stringResource(R.string.anime_activity_global_title),
+                            upIconOption = UpIconOption.Back { navigationCallback.navigateUp() },
+                            scrollBehavior = scrollBehavior,
+                        )
+                    } else {
+                        EnterAlwaysTopAppBarHeightChange(scrollBehavior = scrollBehavior) {
+                            Column {
+                                AppBar(
+                                    text = stringResource(R.string.anime_activity_title),
+                                    upIconOption = UpIconOption.Back {
+                                        navigationCallback.navigateUp()
+                                    },
+                                )
 
-        val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(snapAnimationSpec = null)
-        SortFilterBottomScaffold(
-            sortFilterController = viewModel.sortFilterController,
-            topBar = {
-                if (viewer == null) {
-                    AppBar(
-                        text = stringResource(R.string.anime_activity_global_title),
-                        upIconOption = UpIconOption.Back { navigationCallback.navigateUp() },
-                        scrollBehavior = scrollBehavior,
-                    )
-                } else {
-                    EnterAlwaysTopAppBarHeightChange(scrollBehavior = scrollBehavior) {
-                        Column {
-                            AppBar(
-                                text = stringResource(R.string.anime_activity_title),
-                                upIconOption = UpIconOption.Back {
-                                    navigationCallback.navigateUp()
-                                },
-                            )
-
-                            val scope = rememberCoroutineScope()
-                            TabRow(selectedTabIndex = pagerState.targetPage) {
-                                Tab(selected = pagerState.targetPage == 0,
-                                    onClick = {
-                                        scope.launch { pagerState.animateScrollToPage(0) }
-                                    },
-                                    text = {
-                                        Text(text = stringResource(R.string.anime_activity_tab_own))
-                                    }
-                                )
-                                Tab(selected = pagerState.targetPage == 1,
-                                    onClick = {
-                                        scope.launch { pagerState.animateScrollToPage(1) }
-                                    },
-                                    text = {
-                                        Text(
-                                            text = stringResource(
-                                                R.string.anime_activity_tab_following
+                                val scope = rememberCoroutineScope()
+                                TabRow(selectedTabIndex = pagerState.targetPage) {
+                                    Tab(selected = pagerState.targetPage == 0,
+                                        onClick = {
+                                            scope.launch { pagerState.animateScrollToPage(0) }
+                                        },
+                                        text = {
+                                            Text(text = stringResource(R.string.anime_activity_tab_own))
+                                        }
+                                    )
+                                    Tab(selected = pagerState.targetPage == 1,
+                                        onClick = {
+                                            scope.launch { pagerState.animateScrollToPage(1) }
+                                        },
+                                        text = {
+                                            Text(
+                                                text = stringResource(
+                                                    R.string.anime_activity_tab_following
+                                                )
                                             )
-                                        )
-                                    }
-                                )
-                                Tab(
-                                    selected = pagerState.targetPage == 2,
-                                    onClick = {
-                                        scope.launch { pagerState.animateScrollToPage(2) }
-                                    },
-                                    text = {
-                                        Text(
-                                            text = stringResource(
-                                                R.string.anime_activity_tab_global
+                                        }
+                                    )
+                                    Tab(
+                                        selected = pagerState.targetPage == 2,
+                                        onClick = {
+                                            scope.launch { pagerState.animateScrollToPage(2) }
+                                        },
+                                        text = {
+                                            Text(
+                                                text = stringResource(
+                                                    R.string.anime_activity_tab_global
+                                                )
                                             )
-                                        )
-                                    }
-                                )
+                                        }
+                                    )
+                                }
                             }
                         }
                     }
+                },
+                modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
+            ) {
+                HorizontalPager(state = pagerState) {
+                    val activities = if (viewer == null) {
+                        viewModel.globalActivity().collectAsLazyPagingItems()
+                    } else when (it) {
+                        0 -> viewModel.ownActivity().collectAsLazyPagingItems()
+                        1 -> viewModel.followingActivity().collectAsLazyPagingItems()
+                        2 -> viewModel.globalActivity().collectAsLazyPagingItems()
+                        else -> throw IllegalArgumentException("Invalid page")
+                    }
+                    ActivityList(
+                        editViewModel = editViewModel,
+                        viewer = viewer,
+                        activities = activities,
+                        onActivityStatusUpdate = viewModel.activityToggleHelper::toggle,
+                        colorCalculationState = colorCalculationState,
+                        navigationCallback = navigationCallback,
+                    )
                 }
-            },
-            modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
-        ) {
-            HorizontalPager(state = pagerState) {
-                val activities = if (viewer == null) {
-                    viewModel.globalActivity().collectAsLazyPagingItems()
-                } else when (it) {
-                    0 -> viewModel.ownActivity().collectAsLazyPagingItems()
-                    1 -> viewModel.followingActivity().collectAsLazyPagingItems()
-                    2 -> viewModel.globalActivity().collectAsLazyPagingItems()
-                    else -> throw IllegalArgumentException("Invalid page")
-                }
-                ActivityList(
-                    viewer = viewer,
-                    activities = activities,
-                    onActivityStatusUpdate = viewModel.activityToggleHelper::toggle,
-                    colorCalculationState = colorCalculationState,
-                    navigationCallback = navigationCallback,
-                )
             }
         }
     }
 
     @Composable
     private fun ActivityList(
+        editViewModel: MediaEditViewModel,
         viewer: AuthedUserQuery.Data.Viewer?,
         activities: LazyPagingItems<AnimeActivityViewModel.ActivityEntry>,
         onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
@@ -210,9 +221,10 @@ object AnimeActivityScreen {
                                         screenKey = SCREEN_KEY,
                                         viewer = viewer,
                                         activity = activity,
-                                        mediaEntry = entry.media?.rowEntry,
+                                        mediaEntry = entry.media,
                                         entry = entry,
                                         onActivityStatusUpdate = onActivityStatusUpdate,
+                                        onClickListEdit = { editViewModel.initialize(it.media) },
                                         colorCalculationState = colorCalculationState,
                                         navigationCallback = navigationCallback,
                                         clickable = true,

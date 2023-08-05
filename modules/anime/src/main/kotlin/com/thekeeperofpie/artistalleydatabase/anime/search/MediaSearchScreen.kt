@@ -60,7 +60,6 @@ object MediaSearchScreen {
             screenKey = SCREEN_KEY,
             viewModel = editViewModel,
             colorCalculationState = colorCalculationState,
-            navigationCallback = navigationCallback,
         ) {
             val sortFilterController = when (viewModel.selectedType) {
                 AnimeSearchViewModel.SearchType.ANIME -> viewModel.animeSortFilterController

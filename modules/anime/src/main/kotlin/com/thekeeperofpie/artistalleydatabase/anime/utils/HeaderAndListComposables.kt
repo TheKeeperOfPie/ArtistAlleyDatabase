@@ -27,7 +27,6 @@ import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
@@ -80,11 +79,10 @@ fun <ListEntryType : Any> HeaderAndMediaListScreen(
     viewModel: HeaderAndListViewModel<*, *, ListEntryType, *>,
     editViewModel: MediaEditViewModel,
     @StringRes headerTextRes: Int?,
-    header: @Composable BoxScope.(progress: Float) -> Unit,
+    header: @Composable() (BoxScope.(progress: Float) -> Unit),
     itemKey: (ListEntryType) -> Any,
-    item: @Composable LazyGridItemScope.(ListEntryType?) -> Unit,
+    item: @Composable() (LazyGridItemScope.(ListEntryType?) -> Unit),
     colorCalculationState: ColorCalculationState,
-    navigationCallback: AnimeNavigator.NavigationCallback,
 ) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -114,7 +112,6 @@ fun <ListEntryType : Any> HeaderAndMediaListScreen(
         },
         snackbarHostState = snackbarHostState,
         colorCalculationState = colorCalculationState,
-        navigationCallback = navigationCallback,
     ) {
         List(
             viewModel = viewModel,

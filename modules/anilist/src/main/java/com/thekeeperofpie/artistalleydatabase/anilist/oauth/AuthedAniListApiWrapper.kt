@@ -332,8 +332,14 @@ class AuthedAniListApiWrapper(
         it.copy(
             trending = it.trending?.copy(media = it.trending.media?.filter { it?.isAdult == false }),
             popularThisSeason = it.popularThisSeason?.copy(media = it.popularThisSeason.media?.filter { it?.isAdult == false }),
+            lastAdded = it.lastAdded?.copy(media = it.lastAdded.media?.filter { it?.isAdult == false }),
             popularLastSeason = it.popularLastSeason?.copy(media = it.popularLastSeason.media?.filter { it?.isAdult == false }),
             popularNextSeason = it.popularNextSeason?.copy(media = it.popularNextSeason.media?.filter { it?.isAdult == false }),
+        )
+    }
+
+    override suspend fun homeAnime2(perPage: Int) = super.homeAnime2(perPage).let {
+        it.copy(
             popular = it.popular?.copy(media = it.popular.media?.filter { it?.isAdult == false }),
             top = it.top?.copy(media = it.top.media?.filter { it?.isAdult == false }),
         )
@@ -342,6 +348,12 @@ class AuthedAniListApiWrapper(
     override suspend fun homeManga(perPage: Int) = super.homeManga(perPage).let {
         it.copy(
             trending = it.trending?.copy(media = it.trending.media?.filter { it?.isAdult == false }),
+            lastAdded = it.lastAdded?.copy(media = it.lastAdded.media?.filter { it?.isAdult == false }),
+        )
+    }
+
+    override suspend fun homeManga2(perPage: Int) = super.homeManga2(perPage).let {
+        it.copy(
             popular = it.popular?.copy(media = it.popular.media?.filter { it?.isAdult == false }),
             top = it.top?.copy(media = it.top.media?.filter { it?.isAdult == false }),
         )

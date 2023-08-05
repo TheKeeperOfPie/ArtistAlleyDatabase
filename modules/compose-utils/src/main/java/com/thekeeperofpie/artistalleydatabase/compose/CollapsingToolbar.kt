@@ -96,20 +96,7 @@ fun EnterAlwaysTopAppBar(
         scrollBehavior.state.heightOffsetLimit = heightOffsetLimit
     }
 
-    val appBarDragModifier = Modifier.draggable(
-        orientation = Orientation.Vertical,
-        state = rememberDraggableState { scrollBehavior.state.heightOffset += it },
-        onDragStopped = { velocity ->
-            settle(
-                scrollBehavior.state,
-                velocity,
-                scrollBehavior.snapAnimationSpec,
-                scrollBehavior.flingAnimationSpec,
-            )
-        }
-    )
-
-    Box(modifier = modifier.then(appBarDragModifier)) {
+    Box(modifier = modifier) {
         Box(
             modifier = Modifier
                 .windowInsetsPadding(windowInsets)

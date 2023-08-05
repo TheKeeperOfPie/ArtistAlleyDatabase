@@ -36,6 +36,7 @@ import com.anilist.UserByIdQuery
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.charactersSection
+import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.mediaHorizontalRow
 import com.thekeeperofpie.artistalleydatabase.anime.staff.staffSection
 import com.thekeeperofpie.artistalleydatabase.anime.studio.StudioListRow
@@ -52,6 +53,7 @@ object UserOverviewScreen {
     operator fun invoke(
         entry: AniListUserScreen.Entry,
         viewModel: AniListUserViewModel,
+        editViewModel: MediaEditViewModel,
         viewer: AuthedUserQuery.Data.Viewer?,
         isFollowing: @Composable () -> Boolean,
         onFollowingClick: () -> Unit,
@@ -89,17 +91,19 @@ object UserOverviewScreen {
 
             mediaHorizontalRow(
                 screenKey = viewModel.screenKey,
+                editViewModel = editViewModel,
+                viewer = viewer,
                 titleRes = R.string.anime_user_favorite_anime_label,
                 entries = anime,
-                onClickEntry = navigationCallback::onMediaClick,
                 colorCalculationState = colorCalculationState,
             )
 
             mediaHorizontalRow(
                 screenKey = viewModel.screenKey,
+                editViewModel = editViewModel,
+                viewer = viewer,
                 titleRes = R.string.anime_user_favorite_manga_label,
                 entries = manga,
-                onClickEntry = navigationCallback::onMediaClick,
                 colorCalculationState = colorCalculationState,
             )
 

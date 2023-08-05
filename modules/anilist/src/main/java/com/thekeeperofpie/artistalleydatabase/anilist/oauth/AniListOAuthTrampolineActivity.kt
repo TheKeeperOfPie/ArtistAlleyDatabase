@@ -20,6 +20,8 @@ import com.thekeeperofpie.artistalleydatabase.anilist.R
  * the browser tab. When the result is sent back, the share target can launch this with
  * [Intent.FLAG_ACTIVITY_CLEAR_TOP] to wipe out the tab by bringing this to the front, which will
  * also close itself, leaving the user on the previous screen.
+ *
+ * TODO: Is this still necessary with redirect URI auth?
  */
 class AniListOAuthTrampolineActivity : ComponentActivity() {
 

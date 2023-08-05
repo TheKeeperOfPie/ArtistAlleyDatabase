@@ -13,7 +13,7 @@ query AuthedUser {
 }
 
 fragment UserFavoriteMediaNode on Media {
-    ...MediaNavigationData
+    ...MediaWithListStatus
     id
     coverImage {
         color
@@ -24,6 +24,12 @@ fragment UserFavoriteMediaNode on Media {
     }
     format
     averageScore
+    episodes
+    volumes
+    chapters
+    nextAiringEpisode {
+        episode
+    }
 }
 
 query UserById($id: Int!) {

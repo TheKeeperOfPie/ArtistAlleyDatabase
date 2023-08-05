@@ -44,8 +44,6 @@ object StudioMediasScreen {
             screenKey = SCREEN_KEY,
             viewModel = viewModel,
             editViewModel = editViewModel,
-            colorCalculationState = colorCalculationState,
-            navigationCallback = navigationCallback,
             headerTextRes = null,
             header = {
                 TopAppBar(
@@ -82,7 +80,8 @@ object StudioMediasScreen {
                         bottom = 16.dp
                     )
                 )
-            }
+            },
+            colorCalculationState = colorCalculationState
         )
     }
 

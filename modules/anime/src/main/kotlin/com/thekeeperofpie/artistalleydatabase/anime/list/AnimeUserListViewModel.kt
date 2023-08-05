@@ -281,11 +281,11 @@ class AnimeUserListViewModel @Inject constructor(
     class MediaEntry(
         media: UserMediaListQuery.Data.MediaListCollection.List.Entry.Media,
         mediaListStatus: MediaListStatus? = media.mediaListEntry?.status,
-        progress: Int? = null,
-        progressVolumes: Int? = null,
-        ignored: Boolean = false,
-        showLessImportantTags: Boolean = false,
-        showSpoilerTags: Boolean = false,
+        override val progress: Int? = null,
+        override val progressVolumes: Int? = null,
+        override val ignored: Boolean = false,
+        override val showLessImportantTags: Boolean = false,
+        override val showSpoilerTags: Boolean = false,
     ) : AnimeMediaListRow.Entry<MediaPreviewWithDescription>(
         media = media,
         mediaListStatus = mediaListStatus,
@@ -294,17 +294,14 @@ class AnimeUserListViewModel @Inject constructor(
         ignored = ignored,
         showLessImportantTags = showLessImportantTags,
         showSpoilerTags = showSpoilerTags,
-    ), MediaStatusAware, AnimeMediaLargeCard.Entry, MediaGridCard.Entry {
+    ), MediaStatusAware, AnimeMediaLargeCard.Entry, MediaGridCard.Entry, AnimeMediaCompactListRow.Entry {
         override val color = media.coverImage?.color?.let(ComposeColorUtils::hexToColor)
+        override val type = media.type
+        override val maxProgress = MediaUtils.maxProgress(media)
+        override val maxProgressVolumes = media.volumes
+        override val averageScore = media.averageScore
 
         // So that enough meaningful text is shown, strip any double newlines
         override val description = media.description?.replace("<br><br />\n<br><br />\n", "\n")
-
-        val compactEntry = AnimeMediaCompactListRow.Entry(
-            media = media,
-            ignored = ignored,
-            showLessImportantTags = showLessImportantTags,
-            showSpoilerTags = showSpoilerTags,
-        )
     }
 }

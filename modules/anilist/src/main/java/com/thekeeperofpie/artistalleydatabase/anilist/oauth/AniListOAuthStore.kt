@@ -8,14 +8,10 @@ import android.content.pm.PackageManager
 import androidx.core.app.ActivityOptionsCompat
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
-import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.BuildConfig
 import com.thekeeperofpie.artistalleydatabase.network_utils.NetworkAuthProvider
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
@@ -58,21 +54,12 @@ class AniListOAuthStore(
         EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
     )
 
-    val authToken = MutableStateFlow<String?>(null)
+    val authToken = MutableStateFlow(sharedPreferences.getString(KEY_AUTH_TOKEN, null))
     private val authTokenMutex = Mutex()
 
     override val authHeader get() = authToken.value?.let { "Bearer $it" }
 
     val hasAuth = authToken.map { !it.isNullOrBlank() }
-
-    init {
-        @OptIn(DelicateCoroutinesApi::class)
-        GlobalScope.launch(CustomDispatchers.IO) {
-            authTokenMutex.withLock {
-                authToken.tryEmit(sharedPreferences.getString(KEY_AUTH_TOKEN, null))
-            }
-        }
-    }
 
     fun launchAuthRequest(activity: Activity) {
         activity.startActivity(

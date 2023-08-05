@@ -17,8 +17,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterHeader
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterHeaderValues
 import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoriteType
-import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.utils.HeaderAndMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
@@ -46,8 +46,6 @@ object CharacterMediasScreen {
             screenKey = SCREEN_KEY,
             viewModel = viewModel,
             editViewModel = editViewModel,
-            colorCalculationState = colorCalculationState,
-            navigationCallback = navigationCallback,
             headerTextRes = R.string.anime_character_medias_header,
             header = {
                 CharacterHeader(
@@ -82,7 +80,8 @@ object CharacterMediasScreen {
                         bottom = 16.dp
                     )
                 )
-            }
+            },
+            colorCalculationState = colorCalculationState
         )
     }
 

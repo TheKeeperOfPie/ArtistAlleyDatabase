@@ -22,7 +22,6 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
@@ -39,11 +38,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.anilist.UserByIdQuery.Data.User
 import com.anilist.fragment.UserMediaStatistics
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
+import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
+import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.user.social.UserSocialScreen
 import com.thekeeperofpie.artistalleydatabase.anime.user.stats.UserMediaScreen
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
@@ -72,7 +74,10 @@ object AniListUserScreen {
     ) {
         val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
         val colorCalculationState = rememberColorCalculationState(viewModel.colorMap)
-        Scaffold(
+        val editViewModel = hiltViewModel<MediaEditViewModel>()
+        MediaEditBottomSheetScaffold(
+            screenKey = viewModel.screenKey,
+            viewModel = editViewModel,
             topBar = {
                 CollapsingToolbar(
                     maxHeight = 280.dp,
@@ -136,6 +141,7 @@ object AniListUserScreen {
                     }
                 }
             },
+            colorCalculationState = colorCalculationState,
         ) { scaffoldPadding ->
             Column(modifier = Modifier.padding(scaffoldPadding)) {
                 val pagerState = rememberPagerState(pageCount = { UserTab.values().size })
@@ -205,6 +211,7 @@ object AniListUserScreen {
                                 UserTab.OVERVIEW -> UserOverviewScreen(
                                     entry = entry,
                                     viewModel = viewModel,
+                                    editViewModel = editViewModel,
                                     viewer = viewModel.viewer.collectAsState(null).value,
                                     isFollowing = { viewModel.isFollowing },
                                     onFollowingClick = viewModel::toggleFollow,

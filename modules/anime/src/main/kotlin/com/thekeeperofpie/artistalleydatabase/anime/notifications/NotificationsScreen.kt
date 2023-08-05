@@ -11,7 +11,6 @@ import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -30,6 +29,8 @@ import com.anilist.NotificationsQuery
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
+import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
+import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.compose.AppBar
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
@@ -49,7 +50,10 @@ object NotificationsScreen {
         val viewer by viewModel.viewer.collectAsState()
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
-        Scaffold(
+        val editViewModel = hiltViewModel<MediaEditViewModel>()
+        MediaEditBottomSheetScaffold(
+            screenKey = SCREEN_KEY,
+            viewModel = editViewModel,
             topBar = {
                 AppBar(
                     text = stringResource(R.string.anime_notifications_title),
@@ -57,6 +61,7 @@ object NotificationsScreen {
                     scrollBehavior = scrollBehavior,
                 )
             },
+            colorCalculationState = colorCalculationState,
             modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
         ) {
             Box(
@@ -106,8 +111,11 @@ object NotificationsScreen {
                                                 viewer = viewer,
                                                 notification = notification,
                                                 activityEntry = entry.activityEntry,
-                                                mediaEntry = entry.mediaEntry?.rowEntry,
+                                                mediaEntry = entry.mediaEntry,
                                                 onActivityStatusUpdate = viewModel.activityToggleHelper::toggle,
+                                                onClickListEdit = {
+                                                    editViewModel.initialize(it.media)
+                                                },
                                                 colorCalculationState = colorCalculationState,
                                             )
                                         is NotificationsQuery.Data.Page.ActivityMessageNotificationNotification ->
@@ -117,13 +125,20 @@ object NotificationsScreen {
                                                 notification = notification,
                                                 activityEntry = entry.activityEntry,
                                                 onActivityStatusUpdate = viewModel.activityToggleHelper::toggle,
+                                                onClickListEdit = {
+                                                    editViewModel.initialize(it.media)
+                                                },
                                                 colorCalculationState = colorCalculationState,
                                             )
                                         is NotificationsQuery.Data.Page.AiringNotificationNotification ->
                                             AiringNotificationCard(
                                                 screenKey = SCREEN_KEY,
+                                                viewer = viewer,
                                                 notification = notification,
-                                                mediaEntry = entry.mediaEntry?.rowEntry,
+                                                mediaEntry = entry.mediaEntry,
+                                                onClickListEdit = {
+                                                    editViewModel.initialize(it.media)
+                                                },
                                                 colorCalculationState = colorCalculationState,
                                             )
                                         is NotificationsQuery.Data.Page.FollowingNotificationNotification ->
@@ -137,8 +152,11 @@ object NotificationsScreen {
                                                 viewer = viewer,
                                                 notification = notification,
                                                 activityEntry = entry.activityEntry,
-                                                mediaEntry = entry.mediaEntry?.rowEntry,
+                                                mediaEntry = entry.mediaEntry,
                                                 onActivityStatusUpdate = viewModel.activityToggleHelper::toggle,
+                                                onClickListEdit = {
+                                                    editViewModel.initialize(it.media)
+                                                },
                                                 colorCalculationState = colorCalculationState,
                                             )
                                         is NotificationsQuery.Data.Page.ActivityReplySubscribedNotificationNotification ->
@@ -147,8 +165,11 @@ object NotificationsScreen {
                                                 viewer = viewer,
                                                 notification = notification,
                                                 activityEntry = entry.activityEntry,
-                                                mediaEntry = entry.mediaEntry?.rowEntry,
+                                                mediaEntry = entry.mediaEntry,
                                                 onActivityStatusUpdate = viewModel.activityToggleHelper::toggle,
+                                                onClickListEdit = {
+                                                    editViewModel.initialize(it.media)
+                                                },
                                                 colorCalculationState = colorCalculationState,
                                             )
                                         is NotificationsQuery.Data.Page.ActivityLikeNotificationNotification ->
@@ -157,8 +178,11 @@ object NotificationsScreen {
                                                 viewer = viewer,
                                                 notification = notification,
                                                 activityEntry = entry.activityEntry,
-                                                mediaEntry = entry.mediaEntry?.rowEntry,
+                                                mediaEntry = entry.mediaEntry,
                                                 onActivityStatusUpdate = viewModel.activityToggleHelper::toggle,
+                                                onClickListEdit = {
+                                                    editViewModel.initialize(it.media)
+                                                },
                                                 colorCalculationState = colorCalculationState,
                                             )
                                         is NotificationsQuery.Data.Page.ActivityReplyLikeNotificationNotification ->
@@ -167,36 +191,55 @@ object NotificationsScreen {
                                                 viewer = viewer,
                                                 notification = notification,
                                                 activityEntry = entry.activityEntry,
-                                                mediaEntry = entry.mediaEntry?.rowEntry,
+                                                mediaEntry = entry.mediaEntry,
                                                 onActivityStatusUpdate = viewModel.activityToggleHelper::toggle,
+                                                onClickListEdit = {
+                                                    editViewModel.initialize(it.media)
+                                                },
                                                 colorCalculationState = colorCalculationState,
                                             )
                                         is NotificationsQuery.Data.Page.RelatedMediaAdditionNotificationNotification ->
                                             RelatedMediaAdditionNotificationCard(
                                                 screenKey = SCREEN_KEY,
+                                                viewer = viewer,
                                                 notification = notification,
-                                                mediaEntry = entry.mediaEntry?.rowEntry,
+                                                mediaEntry = entry.mediaEntry,
+                                                onClickListEdit = {
+                                                    editViewModel.initialize(it.media)
+                                                },
                                                 colorCalculationState = colorCalculationState,
                                             )
                                         is NotificationsQuery.Data.Page.MediaDataChangeNotificationNotification ->
                                             MediaDataChangeNotificationCard(
                                                 screenKey = SCREEN_KEY,
+                                                viewer = viewer,
                                                 notification = notification,
-                                                mediaEntry = entry.mediaEntry?.rowEntry,
+                                                mediaEntry = entry.mediaEntry,
+                                                onClickListEdit = {
+                                                    editViewModel.initialize(it.media)
+                                                },
                                                 colorCalculationState = colorCalculationState,
                                             )
                                         is NotificationsQuery.Data.Page.MediaDeletionNotificationNotification ->
                                             MediaDeletionNotificationCard(
                                                 screenKey = SCREEN_KEY,
+                                                viewer = viewer,
                                                 notification = notification,
-                                                mediaEntry = entry.mediaEntry?.rowEntry,
+                                                mediaEntry = entry.mediaEntry,
+                                                onClickListEdit = {
+                                                    editViewModel.initialize(it.media)
+                                                },
                                                 colorCalculationState = colorCalculationState,
                                             )
                                         is NotificationsQuery.Data.Page.MediaMergeNotificationNotification ->
                                             MediaMergeNotificationCard(
                                                 screenKey = SCREEN_KEY,
+                                                viewer = viewer,
                                                 notification = notification,
-                                                mediaEntry = entry.mediaEntry?.rowEntry,
+                                                mediaEntry = entry.mediaEntry,
+                                                onClickListEdit = {
+                                                    editViewModel.initialize(it.media)
+                                                },
                                                 colorCalculationState = colorCalculationState,
                                             )
                                         is NotificationsQuery.Data.Page.OtherNotification,

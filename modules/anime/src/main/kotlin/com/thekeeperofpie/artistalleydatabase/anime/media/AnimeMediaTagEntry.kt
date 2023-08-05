@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -45,6 +46,7 @@ data class AnimeMediaTagEntry(
             containerColor: Color,
             textColor: Color,
             textStyle: TextStyle? = null,
+            autoResize: Boolean = true,
         ) {
             val shouldHide = tag.shouldHide
             var hidden by remember(tag.id) { mutableStateOf(shouldHide) }
@@ -84,14 +86,17 @@ data class AnimeMediaTagEntry(
                     }
                 },
                 label = {
-                    AutoResizeHeightText(
-                        style = textStyle ?: LocalTextStyle.current,
-                        text = if (hidden && tag.textHiddenRes != null) {
-                            stringResource(tag.textHiddenRes)
-                        } else {
-                            title()
-                        },
-                    )
+                    val style = textStyle ?: LocalTextStyle.current
+                    val text = if (hidden && tag.textHiddenRes != null) {
+                        stringResource(tag.textHiddenRes)
+                    } else {
+                        title()
+                    }
+                    if (autoResize) {
+                        AutoResizeHeightText(text = text, style = style)
+                    } else {
+                        Text(text = text, style = style)
+                    }
                 },
                 modifier = modifier,
             )

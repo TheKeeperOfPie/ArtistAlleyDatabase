@@ -47,8 +47,6 @@ object MediaActivitiesScreen {
             screenKey = SCREEN_KEY,
             viewModel = viewModel,
             editViewModel = editViewModel,
-            colorCalculationState = colorCalculationState,
-            navigationCallback = navigationCallback,
             headerTextRes = R.string.anime_media_activities_header,
             header = {
                 MediaHeader(
@@ -83,12 +81,14 @@ object MediaActivitiesScreen {
                     activity = it?.activity,
                     entry = it,
                     onActivityStatusUpdate = viewModel.activityToggleHelper::toggle,
+                    onClickListEdit = { editViewModel.initialize(it.media) },
                     colorCalculationState = colorCalculationState,
                     navigationCallback = navigationCallback,
                     clickable = true,
                     modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
                 )
-            }
+            },
+            colorCalculationState = colorCalculationState
         )
     }
 

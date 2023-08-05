@@ -4,7 +4,7 @@ package com.thekeeperofpie.artistalleydatabase.anime.media
 
 import androidx.paging.PagingData
 import com.anilist.fragment.MediaDetailsListEntry
-import com.anilist.fragment.MediaPreview
+import com.anilist.fragment.MediaWithListStatus
 import com.anilist.type.MediaListStatus
 import com.hoc081098.flowext.combine
 import com.hoc081098.flowext.startWith
@@ -61,7 +61,7 @@ fun <Input> applyMediaFiltering(
     showSpoilerTags: Boolean,
     entry: Input,
     transform: (Input) -> MediaStatusAware,
-    media: MediaPreview?,
+    media: MediaWithListStatus?,
     copy: Input.(MediaListStatus?, progress: Int?, progressVolumes: Int?, ignored: Boolean, showLessImportantTags: Boolean, showSpoilerTags: Boolean) -> Input,
 ): Input? {
     if (!showAdult && media?.isAdult != false) return null
@@ -100,7 +100,7 @@ fun <T : MediaStatusAware> Flow<PagingData<T>>.applyMediaStatusChanges(
     statusController: MediaListStatusController,
     ignoreList: AnimeMediaIgnoreList,
     settings: AnimeSettings,
-    media: (T) -> MediaPreview?,
+    media: (T) -> MediaWithListStatus?,
     forceShowIgnored: Boolean = false,
     copy: T.(MediaListStatus?, progress: Int?, progressVolumes: Int?, ignored: Boolean, showLessImportantTags: Boolean, showSpoilerTags: Boolean) -> T,
 ) = flatMapLatest { pagingData ->

@@ -61,6 +61,12 @@ fragment MediaCompactWithTags on Media {
     format
     season
     seasonYear
+    episodes
+    chapters
+    volumes
+    nextAiringEpisode {
+        episode
+    }
 }
 
 query MediaAdvancedSearch(
@@ -451,6 +457,18 @@ query HomeAnime(
         }
     }
 
+    lastAdded: Page(perPage: $perPage) {
+        media(
+            season: $currentSeason,
+            seasonYear: $currentYear,
+            sort: ID_DESC,
+            type: ANIME,
+            isAdult: false,
+        ) {
+            ...MediaPreviewWithDescription
+        }
+    }
+
     popularLastSeason: Page(perPage: $perPage) {
         media(
             season: $lastSeason,
@@ -474,7 +492,12 @@ query HomeAnime(
             ...MediaPreviewWithDescription
         }
     }
+}
 
+query HomeAnime2(
+    $perPage: Int!,
+    $includeDescription: Boolean = true,
+) {
     popular: Page(perPage: $perPage) {
         media(sort: POPULARITY_DESC, type: ANIME, isAdult: false) {
             ...MediaPreviewWithDescription
@@ -495,6 +518,14 @@ query HomeManga($perPage: Int!, $includeDescription: Boolean = true) {
         }
     }
 
+    lastAdded: Page(perPage: $perPage) {
+        media(sort: ID_DESC, type: MANGA, isAdult: false) {
+            ...MediaPreviewWithDescription
+        }
+    }
+}
+
+query HomeManga2($perPage: Int!, $includeDescription: Boolean = true) {
     popular: Page(perPage: $perPage) {
         media(sort: POPULARITY_DESC, type: MANGA, isAdult: false) {
             ...MediaPreviewWithDescription

@@ -4,6 +4,7 @@ import com.anilist.fragment.MediaPreviewWithDescription
 import com.anilist.type.MediaListStatus
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaStatusAware
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaLargeCard
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
@@ -20,12 +21,12 @@ sealed interface AnimeSearchEntry {
 
     class Media(
         media: MediaPreviewWithDescription,
-        mediaListStatus: MediaListStatus? = media.mediaListEntry?.status,
-        progress: Int? = null,
-        progressVolumes: Int? = null,
-        ignored: Boolean = false,
-        showLessImportantTags: Boolean = false,
-        showSpoilerTags: Boolean = false,
+        override val mediaListStatus: MediaListStatus? = media.mediaListEntry?.status,
+        override val progress: Int? = null,
+        override val progressVolumes: Int? = null,
+        override val ignored: Boolean = false,
+        override val showLessImportantTags: Boolean = false,
+        override val showSpoilerTags: Boolean = false,
     ) : AnimeMediaListRow.Entry<MediaPreviewWithDescription>(
         media = media,
         mediaListStatus = mediaListStatus,
@@ -34,19 +35,17 @@ sealed interface AnimeSearchEntry {
         ignored = ignored,
         showLessImportantTags = showLessImportantTags,
         showSpoilerTags = showSpoilerTags,
-    ), AnimeSearchEntry, MediaStatusAware, AnimeMediaLargeCard.Entry, MediaGridCard.Entry {
+    ), AnimeSearchEntry, MediaStatusAware, AnimeMediaLargeCard.Entry, MediaGridCard.Entry, AnimeMediaCompactListRow.Entry {
         override val entryId = EntryId("media", media.id.toString())
         override val color = media.coverImage?.color?.let(ComposeColorUtils::hexToColor)
+        override val type = media.type
+        override val maxProgress = MediaUtils.maxProgress(media)
+        override val maxProgressVolumes = media.volumes
+        override val averageScore = media.averageScore
 
         // So that enough meaningful text is shown, strip any double newlines
         override val description = media.description?.replace("<br><br />\n<br><br />\n", "\n")
 
-        val compactEntry = AnimeMediaCompactListRow.Entry(
-            media = media,
-            ignored = ignored,
-            showLessImportantTags = showLessImportantTags,
-            showSpoilerTags = showSpoilerTags,
-        )
     }
 
     data class Character(

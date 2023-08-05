@@ -98,7 +98,6 @@ object AnimeUserListScreen {
             screenKey = AnimeNavDestinations.USER_LIST.id,
             viewModel = editViewModel,
             colorCalculationState = colorCalculationState,
-            navigationCallback = navigationCallback,
             bottomNavigationState = bottomNavigationState,
             snackbarHostState = snackbarHostState,
         ) {
@@ -366,17 +365,21 @@ object AnimeUserListScreen {
             )
             MediaViewOption.LARGE_CARD -> AnimeMediaLargeCard(
                 screenKey = SCREEN_KEY,
+                viewer = viewer,
                 entry = entry,
                 onLongClick = { viewModel.ignoreList.toggle(entry.media.id.toString()) },
+                onClickListEdit = { editViewModel.initialize(it.media) },
                 colorCalculationState = colorCalculationState,
                 navigationCallback = LocalNavigationCallback.current,
                 modifier = modifier,
             )
             MediaViewOption.COMPACT -> AnimeMediaCompactListRow(
                 screenKey = SCREEN_KEY,
-                entry = entry.compactEntry,
+                viewer = viewer,
+                entry = entry,
                 onLongClick = { viewModel.ignoreList.toggle(entry.media.id.toString()) },
                 onLongPressImage = { onLongPressImage(entry) },
+                onClickListEdit = { editViewModel.initialize(it.media) },
                 colorCalculationState = colorCalculationState,
                 navigationCallback = LocalNavigationCallback.current,
                 modifier = modifier,

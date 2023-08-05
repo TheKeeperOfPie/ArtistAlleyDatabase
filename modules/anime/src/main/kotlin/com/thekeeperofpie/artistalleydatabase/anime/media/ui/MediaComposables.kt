@@ -3,7 +3,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media.ui
 
 import androidx.annotation.StringRes
-import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -28,62 +27,44 @@ import androidx.compose.material.icons.filled.PeopleAlt
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PersonOutline
 import androidx.compose.material.icons.outlined.PeopleAlt
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.takeOrElse
-import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.core.graphics.ColorUtils
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
-import coil.size.Dimension
 import com.anilist.AuthedUserQuery
-import com.anilist.fragment.MediaNavigationData
 import com.anilist.fragment.MediaPreview
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.material.placeholder
 import com.google.accompanist.placeholder.material.shimmer
-import com.mxalbert.sharedelements.SharedElement
-import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
-import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
-import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaTagEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toStatusIcon
+import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.ui.listSection
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
-import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.compose.fadingEdgeEnd
-import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
 
 fun <T> LazyListScope.mediaListSection(
     screenKey: String,
@@ -131,11 +112,11 @@ fun <T> LazyListScope.mediaListSection(
 
 fun LazyListScope.mediaHorizontalRow(
     screenKey: String,
+    viewer: AuthedUserQuery.Data.Viewer?,
+    editViewModel: MediaEditViewModel,
     @StringRes titleRes: Int,
-    entries: LazyPagingItems<out MediaNavigationData>,
-    onClickEntry: (MediaNavigationData, imageWidthToHeightRatio: Float) -> Unit,
+    entries: LazyPagingItems<out MediaGridCard.Entry>,
     colorCalculationState: ColorCalculationState,
-    showTitle: Boolean = true,
     sectionTitle: @Composable () -> Unit = {
         DetailsSectionHeader(stringResource(titleRes))
     },
@@ -144,97 +125,26 @@ fun LazyListScope.mediaHorizontalRow(
     item("$titleRes-header") { sectionTitle() }
 
     item("$titleRes-media") {
-        val density = LocalDensity.current
-        val coilWidth = Dimension.Pixels(density.run { 120.dp.roundToPx() })
-        val coilHeight = Dimension.Pixels(density.run { 180.dp.roundToPx() })
         LazyRow(
             contentPadding = PaddingValues(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             items(
                 count = entries.itemCount,
-                key = entries.itemKey { it.id },
+                key = entries.itemKey { it.media.id },
                 contentType = entries.itemContentType { "media" },
             ) {
-                val media = entries[it]
-                val mediaId = media?.id?.toString()
-                val colors = colorCalculationState.colorMap[mediaId]
-                val animationProgress by animateIntAsState(
-                    if (colors == null) 0 else 255,
-                    label = "Media card color fade in",
+                val entry = entries[it]
+                MediaGridCard(
+                    screenKey = screenKey,
+                    entry = entry,
+                    viewer = viewer,
+                    onClickListEdit = { editViewModel.initialize(it.media) },
+                    onLongClick = { /* TODO */ },
+                    onLongPressImage = { /* TODO */ },
+                    colorCalculationState = colorCalculationState,
+                    modifier = Modifier.width(120.dp)
                 )
-
-                val containerColor = when {
-                    colors == null || animationProgress == 0 ->
-                        MaterialTheme.colorScheme.surface
-                    animationProgress == 255 -> colors.first
-                    else -> Color(
-                        ColorUtils.compositeColors(
-                            ColorUtils.setAlphaComponent(
-                                colors.first.toArgb(),
-                                animationProgress
-                            ),
-                            MaterialTheme.colorScheme.surface.toArgb()
-                        )
-                    )
-                }
-
-                var widthToHeightRatio by remember { MutableSingle<Float?>(null) }
-                ElevatedCard(
-                    onClick = {
-                        if (media != null) {
-                            onClickEntry(media, widthToHeightRatio ?: 1f)
-                        }
-                    },
-                    colors = CardDefaults.elevatedCardColors(containerColor = containerColor),
-                    modifier = Modifier.animateItemPlacement().padding(2.dp),
-                ) {
-                    SharedElement(
-                        key = "anime_media_${media?.id}_image",
-                        screenKey = screenKey,
-                    ) {
-                        AsyncImage(
-                            model = ImageRequest.Builder(LocalContext.current)
-                                .data(media?.coverImage?.extraLarge)
-                                .crossfade(true)
-                                .allowHardware(colorCalculationState.hasColor(mediaId))
-                                .size(width = coilWidth, height = coilHeight)
-                                .build(),
-                            contentScale = ContentScale.FillHeight,
-                            contentDescription = stringResource(R.string.anime_media_cover_image_content_description),
-                            onSuccess = {
-                                widthToHeightRatio = it.widthToHeightRatio()
-                                if (mediaId != null) {
-                                    ComposeColorUtils.calculatePalette(
-                                        id = mediaId,
-                                        success = it,
-                                        colorCalculationState = colorCalculationState,
-                                        heightStartThreshold = 3 / 4f,
-                                        selectMaxPopulation = true,
-                                    )
-                                }
-                            },
-                            modifier = Modifier
-                                .size(width = 120.dp, height = 180.dp)
-                                .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
-                        )
-                    }
-
-                    if (showTitle) {
-                        Text(
-                            text = media?.title?.primaryTitle().orEmpty(),
-                            color = ComposeColorUtils.bestTextColor(containerColor)
-                                ?: Color.Unspecified,
-                            style = MaterialTheme.typography.bodyMedium,
-                            maxLines = 2,
-                            minLines = 2,
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier
-                                .width(120.dp)
-                                .padding(horizontal = 8.dp, vertical = 8.dp)
-                        )
-                    }
-                }
             }
         }
     }
@@ -360,13 +270,15 @@ fun MediaTagRow(
     onTagClick: (tagId: String, tagName: String) -> Unit,
     tagContainerColor: Color,
     tagTextColor: Color,
+    modifier: Modifier = Modifier,
     tagTextStyle: TextStyle? = null,
     height: Dp = 24.dp,
+    startPadding: Dp = 12.dp,
     bottomPadding: Dp = 10.dp,
 ) {
     if (tags.isEmpty()) return
     LazyRow(
-        contentPadding = PaddingValues(start = 12.dp, end = 32.dp),
+        contentPadding = PaddingValues(start = startPadding, end = 32.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         modifier = Modifier
             .padding(top = 4.dp, bottom = bottomPadding)
@@ -375,9 +287,11 @@ fun MediaTagRow(
             // The parent will clamp the actual width so all content still fits on screen.
             .size(width = LocalConfiguration.current.screenWidthDp.dp, height = height)
             .fadingEdgeEnd(
+                startOpaque = startPadding,
                 endOpaque = 32.dp,
                 endTransparent = 16.dp,
             )
+            .then(modifier)
     ) {
         items(tags, { it.id }) {
             AnimeMediaTagEntry.Chip(
@@ -402,6 +316,7 @@ fun MediaListQuickEditIconButton(
     maxProgressVolumes: Int?,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    padding: Dp = 8.dp,
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -409,7 +324,7 @@ fun MediaListQuickEditIconButton(
         modifier = modifier
             .clip(RoundedCornerShape(topEnd = 12.dp))
             .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.66f))
-            .padding(8.dp)
+            .padding(padding)
             .clickable(onClick = onClick)
     ) {
         val (imageVector, contentDescriptionRes) =

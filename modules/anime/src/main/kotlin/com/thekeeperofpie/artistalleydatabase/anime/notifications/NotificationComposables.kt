@@ -113,6 +113,7 @@ fun ActivityMentionNotificationCard(
     activityEntry: NotificationsViewModel.NotificationEntry.ActivityEntry?,
     mediaEntry: AnimeMediaCompactListRow.Entry?,
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
+    onClickListEdit: (AnimeMediaCompactListRow.Entry) -> Unit,
     colorCalculationState: ColorCalculationState,
 ) {
     ElevatedCard {
@@ -129,6 +130,7 @@ fun ActivityMentionNotificationCard(
             activityEntry = activityEntry,
             mediaEntry = mediaEntry,
             onActivityStatusUpdate = onActivityStatusUpdate,
+            onClickListEdit = onClickListEdit,
             colorCalculationState = colorCalculationState,
         )
     }
@@ -141,6 +143,7 @@ fun ActivityMessageNotificationCard(
     notification: NotificationsQuery.Data.Page.ActivityMessageNotificationNotification,
     activityEntry: NotificationsViewModel.NotificationEntry.ActivityEntry?,
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
+    onClickListEdit: (AnimeMediaCompactListRow.Entry) -> Unit,
     colorCalculationState: ColorCalculationState,
 ) {
     ElevatedCard {
@@ -157,6 +160,7 @@ fun ActivityMessageNotificationCard(
             activityEntry = activityEntry,
             mediaEntry = null,
             onActivityStatusUpdate = onActivityStatusUpdate,
+            onClickListEdit = onClickListEdit,
             colorCalculationState = colorCalculationState,
         )
     }
@@ -170,6 +174,7 @@ fun ActivityReplyNotificationCard(
     activityEntry: NotificationsViewModel.NotificationEntry.ActivityEntry?,
     mediaEntry: AnimeMediaCompactListRow.Entry?,
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
+    onClickListEdit: (AnimeMediaCompactListRow.Entry) -> Unit,
     colorCalculationState: ColorCalculationState,
 ) {
     ElevatedCard {
@@ -186,6 +191,7 @@ fun ActivityReplyNotificationCard(
             activityEntry = activityEntry,
             mediaEntry = mediaEntry,
             onActivityStatusUpdate = onActivityStatusUpdate,
+            onClickListEdit = onClickListEdit,
             colorCalculationState = colorCalculationState,
         )
     }
@@ -199,6 +205,7 @@ fun ActivityReplySubscribedNotificationCard(
     activityEntry: NotificationsViewModel.NotificationEntry.ActivityEntry?,
     mediaEntry: AnimeMediaCompactListRow.Entry?,
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
+    onClickListEdit: (AnimeMediaCompactListRow.Entry) -> Unit,
     colorCalculationState: ColorCalculationState,
 ) {
     ElevatedCard {
@@ -215,6 +222,7 @@ fun ActivityReplySubscribedNotificationCard(
             activityEntry = activityEntry,
             mediaEntry = mediaEntry,
             onActivityStatusUpdate = onActivityStatusUpdate,
+            onClickListEdit = onClickListEdit,
             colorCalculationState = colorCalculationState,
         )
     }
@@ -228,6 +236,7 @@ fun ActivityLikedNotificationCard(
     activityEntry: NotificationsViewModel.NotificationEntry.ActivityEntry?,
     mediaEntry: AnimeMediaCompactListRow.Entry?,
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
+    onClickListEdit: (AnimeMediaCompactListRow.Entry) -> Unit,
     colorCalculationState: ColorCalculationState,
 ) {
     ElevatedCard {
@@ -244,6 +253,7 @@ fun ActivityLikedNotificationCard(
             activityEntry = activityEntry,
             mediaEntry = mediaEntry,
             onActivityStatusUpdate = onActivityStatusUpdate,
+            onClickListEdit = onClickListEdit,
             colorCalculationState = colorCalculationState,
         )
     }
@@ -257,6 +267,7 @@ fun ActivityReplyLikedNotificationCard(
     activityEntry: NotificationsViewModel.NotificationEntry.ActivityEntry?,
     mediaEntry: AnimeMediaCompactListRow.Entry?,
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
+    onClickListEdit: (AnimeMediaCompactListRow.Entry) -> Unit,
     colorCalculationState: ColorCalculationState,
 ) {
     ElevatedCard {
@@ -273,6 +284,7 @@ fun ActivityReplyLikedNotificationCard(
             activityEntry = activityEntry,
             mediaEntry = mediaEntry,
             onActivityStatusUpdate = onActivityStatusUpdate,
+            onClickListEdit = onClickListEdit,
             colorCalculationState = colorCalculationState,
         )
     }
@@ -281,8 +293,10 @@ fun ActivityReplyLikedNotificationCard(
 @Composable
 fun AiringNotificationCard(
     screenKey: String,
+    viewer: AuthedUserQuery.Data.Viewer?,
     notification: NotificationsQuery.Data.Page.AiringNotificationNotification,
     mediaEntry: AnimeMediaCompactListRow.Entry?,
+    onClickListEdit: (AnimeMediaCompactListRow.Entry) -> Unit,
     colorCalculationState: ColorCalculationState,
 ) {
     ElevatedCard {
@@ -303,9 +317,11 @@ fun AiringNotificationCard(
         mediaEntry?.let {
             AnimeMediaCompactListRow(
                 screenKey = screenKey,
+                viewer = viewer,
                 entry = mediaEntry,
                 onLongClick = { /* TODO */ },
                 onLongPressImage = { /* TODO */ },
+                onClickListEdit = onClickListEdit,
                 colorCalculationState = colorCalculationState,
                 navigationCallback = LocalNavigationCallback.current,
                 modifier = Modifier.padding(8.dp)
@@ -337,8 +353,10 @@ fun FollowingNotificationCard(
 @Composable
 fun RelatedMediaAdditionNotificationCard(
     screenKey: String,
+    viewer: AuthedUserQuery.Data.Viewer?,
     notification: NotificationsQuery.Data.Page.RelatedMediaAdditionNotificationNotification,
     mediaEntry: AnimeMediaCompactListRow.Entry?,
+    onClickListEdit: (AnimeMediaCompactListRow.Entry) -> Unit,
     colorCalculationState: ColorCalculationState,
 ) {
     ElevatedCard {
@@ -355,9 +373,11 @@ fun RelatedMediaAdditionNotificationCard(
         mediaEntry?.let {
             AnimeMediaCompactListRow(
                 screenKey = screenKey,
+                viewer = viewer,
                 entry = mediaEntry,
                 onLongClick = { /* TODO */ },
                 onLongPressImage = { /* TODO */ },
+                onClickListEdit = onClickListEdit,
                 colorCalculationState = colorCalculationState,
                 navigationCallback = LocalNavigationCallback.current,
                 modifier = Modifier.padding(8.dp)
@@ -369,8 +389,10 @@ fun RelatedMediaAdditionNotificationCard(
 @Composable
 fun MediaDataChangeNotificationCard(
     screenKey: String,
+    viewer: AuthedUserQuery.Data.Viewer?,
     notification: NotificationsQuery.Data.Page.MediaDataChangeNotificationNotification,
     mediaEntry: AnimeMediaCompactListRow.Entry?,
+    onClickListEdit: (AnimeMediaCompactListRow.Entry) -> Unit,
     colorCalculationState: ColorCalculationState,
 ) {
     ElevatedCard {
@@ -397,9 +419,11 @@ fun MediaDataChangeNotificationCard(
         mediaEntry?.let {
             AnimeMediaCompactListRow(
                 screenKey = screenKey,
+                viewer = viewer,
                 entry = mediaEntry,
                 onLongClick = { /* TODO */ },
                 onLongPressImage = { /* TODO */ },
+                onClickListEdit = onClickListEdit,
                 colorCalculationState = colorCalculationState,
                 navigationCallback = LocalNavigationCallback.current,
                 modifier = Modifier.padding(8.dp)
@@ -411,8 +435,10 @@ fun MediaDataChangeNotificationCard(
 @Composable
 fun MediaDeletionNotificationCard(
     screenKey: String,
+    viewer: AuthedUserQuery.Data.Viewer?,
     notification: NotificationsQuery.Data.Page.MediaDeletionNotificationNotification,
     mediaEntry: AnimeMediaCompactListRow.Entry?,
+    onClickListEdit: (AnimeMediaCompactListRow.Entry) -> Unit,
     colorCalculationState: ColorCalculationState,
 ) {
     ElevatedCard {
@@ -442,9 +468,11 @@ fun MediaDeletionNotificationCard(
         mediaEntry?.let {
             AnimeMediaCompactListRow(
                 screenKey = screenKey,
+                viewer = viewer,
                 entry = mediaEntry,
                 onLongClick = { /* TODO */ },
                 onLongPressImage = { /* TODO */ },
+                onClickListEdit = onClickListEdit,
                 colorCalculationState = colorCalculationState,
                 navigationCallback = LocalNavigationCallback.current,
                 modifier = Modifier.padding(8.dp)
@@ -456,8 +484,10 @@ fun MediaDeletionNotificationCard(
 @Composable
 fun MediaMergeNotificationCard(
     screenKey: String,
+    viewer: AuthedUserQuery.Data.Viewer?,
     notification: NotificationsQuery.Data.Page.MediaMergeNotificationNotification,
     mediaEntry: AnimeMediaCompactListRow.Entry?,
+    onClickListEdit: (AnimeMediaCompactListRow.Entry) -> Unit,
     colorCalculationState: ColorCalculationState,
 ) {
     ElevatedCard {
@@ -484,9 +514,11 @@ fun MediaMergeNotificationCard(
         mediaEntry?.let {
             AnimeMediaCompactListRow(
                 screenKey = screenKey,
+                viewer = viewer,
                 entry = mediaEntry,
                 onLongClick = { /* TODO */ },
                 onLongPressImage = { /* TODO */ },
+                onClickListEdit = onClickListEdit,
                 colorCalculationState = colorCalculationState,
                 navigationCallback = LocalNavigationCallback.current,
                 modifier = Modifier.padding(8.dp)
@@ -551,6 +583,7 @@ private fun ActivityCard(
     activityEntry: NotificationsViewModel.NotificationEntry.ActivityEntry?,
     mediaEntry: AnimeMediaCompactListRow.Entry?,
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
+    onClickListEdit: (AnimeMediaCompactListRow.Entry) -> Unit,
     colorCalculationState: ColorCalculationState,
 ) {
     val navigationCallback = LocalNavigationCallback.current
@@ -570,6 +603,7 @@ private fun ActivityCard(
                 liked = activityEntry.liked,
                 subscribed = activityEntry.subscribed,
                 onActivityStatusUpdate = onActivityStatusUpdate,
+                onClickListEdit = onClickListEdit,
                 colorCalculationState = colorCalculationState,
                 navigationCallback = navigationCallback,
             )
