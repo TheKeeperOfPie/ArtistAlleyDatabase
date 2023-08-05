@@ -23,6 +23,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BarChart
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.PeopleAlt
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PersonOutline
@@ -120,6 +121,7 @@ fun LazyListScope.mediaHorizontalRow(
     sectionTitle: @Composable () -> Unit = {
         DetailsSectionHeader(stringResource(titleRes))
     },
+    forceListEditIcon: Boolean = false,
 ) {
     if (entries.itemCount == 0) return
     item("$titleRes-header") { sectionTitle() }
@@ -143,6 +145,7 @@ fun LazyListScope.mediaHorizontalRow(
                     onLongClick = { /* TODO */ },
                     onLongPressImage = { /* TODO */ },
                     colorCalculationState = colorCalculationState,
+                    forceListEditIcon = forceListEditIcon,
                     modifier = Modifier.width(120.dp)
                 )
             }
@@ -317,6 +320,7 @@ fun MediaListQuickEditIconButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     padding: Dp = 8.dp,
+    forceListEditIcon: Boolean = false,
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -327,8 +331,12 @@ fun MediaListQuickEditIconButton(
             .padding(padding)
             .clickable(onClick = onClick)
     ) {
-        val (imageVector, contentDescriptionRes) =
+        val (imageVector, contentDescriptionRes) = if (forceListEditIcon) {
+            Icons.Filled.Edit to
+                    R.string.anime_media_details_fab_user_status_edit_icon_content_description
+        } else {
             listStatus.toStatusIcon(mediaType)
+        }
         Icon(
             imageVector = imageVector,
             contentDescription = stringResource(contentDescriptionRes),

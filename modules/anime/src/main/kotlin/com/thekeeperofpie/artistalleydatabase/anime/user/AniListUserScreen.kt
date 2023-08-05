@@ -142,6 +142,7 @@ object AniListUserScreen {
                 }
             },
             colorCalculationState = colorCalculationState,
+            bottomNavigationState = bottomNavigationState,
         ) { scaffoldPadding ->
             Column(modifier = Modifier.padding(scaffoldPadding)) {
                 val pagerState = rememberPagerState(pageCount = { UserTab.values().size })

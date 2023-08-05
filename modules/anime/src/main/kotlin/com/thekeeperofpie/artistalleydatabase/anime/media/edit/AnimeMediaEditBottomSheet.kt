@@ -77,7 +77,6 @@ import com.anilist.type.MediaType
 import com.anilist.type.ScoreFormat
 import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
@@ -113,11 +112,11 @@ object AnimeMediaEditBottomSheet {
         HorizontalDivider()
 
         val initialParams by viewModel.initialParams.collectAsState()
-        Column {
+        Column(modifier = modifier) {
             Column(
-                modifier = modifier
+                Modifier
                     .verticalScroll(rememberScrollState())
-                    .weight(1f, fill = false)
+                    .weight(1f)
             ) {
                 Crossfade(
                     targetState = initialParams?.loading,
@@ -149,7 +148,10 @@ object AnimeMediaEditBottomSheet {
 
             HorizontalDivider()
 
-            Row(modifier = Modifier.align(Alignment.End)) {
+            Row(
+                horizontalArrangement = Arrangement.End,
+                modifier = Modifier.fillMaxWidth()
+            ) {
                 if (initialParams?.id != null) {
                     TextButton(onClick = { showDelete = true }) {
                         Crossfade(

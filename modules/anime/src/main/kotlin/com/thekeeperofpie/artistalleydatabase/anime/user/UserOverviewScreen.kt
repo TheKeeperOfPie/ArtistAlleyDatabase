@@ -89,6 +89,7 @@ object UserOverviewScreen {
                 imagesSupported = true,
             )
 
+            // TODO: mediaListEntry doesn't load properly for these, figure out a way to show status
             mediaHorizontalRow(
                 screenKey = viewModel.screenKey,
                 editViewModel = editViewModel,
@@ -96,6 +97,7 @@ object UserOverviewScreen {
                 titleRes = R.string.anime_user_favorite_anime_label,
                 entries = anime,
                 colorCalculationState = colorCalculationState,
+                forceListEditIcon = true,
             )
 
             mediaHorizontalRow(
@@ -105,6 +107,7 @@ object UserOverviewScreen {
                 titleRes = R.string.anime_user_favorite_manga_label,
                 entries = manga,
                 colorCalculationState = colorCalculationState,
+                forceListEditIcon = true,
             )
 
             charactersSection(

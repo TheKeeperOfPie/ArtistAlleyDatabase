@@ -68,6 +68,7 @@ object MediaGridCard {
         onLongPressImage: (entry: Entry) -> Unit,
         colorCalculationState: ColorCalculationState,
         modifier: Modifier = Modifier,
+        forceListEditIcon: Boolean = false,
     ) {
         val colors = colorCalculationState.colorMap[entry?.media?.id?.toString()]
         val animationProgress by animateIntAsState(
@@ -127,6 +128,7 @@ object MediaGridCard {
                             onLongPressImage = onLongPressImage,
                             colorCalculationState = colorCalculationState,
                             onRatioAvailable = { imageWidthToHeightRatio = it },
+                            forceListEditIcon = forceListEditIcon,
                         )
 
                         MediaRatingIconsSection(
@@ -171,6 +173,7 @@ object MediaGridCard {
         onLongPressImage: (entry: Entry) -> Unit,
         colorCalculationState: ColorCalculationState,
         onRatioAvailable: (Float) -> Unit,
+        forceListEditIcon: Boolean,
     ) {
         SharedElement(
             key = "anime_media_${entry?.media?.id}_image",
@@ -228,6 +231,7 @@ object MediaGridCard {
                         maxProgress = entry.maxProgress,
                         maxProgressVolumes = entry.maxProgressVolumes,
                         onClick = { onClickListEdit(entry) },
+                        forceListEditIcon = forceListEditIcon,
                         modifier = Modifier.align(Alignment.BottomStart)
                     )
                 }
