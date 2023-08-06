@@ -99,7 +99,7 @@ dependencyResolutionManagement {
             library("com.linkedin.dexmaker:dexmaker-mockito-inline:2.28.3")
             library("com.neovisionaries:nv-i18n:1.29")
             library(
-                "com.pierfrancescosoffritti.androidyoutubeplayer:core:12.0.0",
+                "com.pierfrancescosoffritti.androidyoutubeplayer:core:12.1.0",
                 alias = "androidyoutubeplayer"
             )
             library("com.rometools:rome:2.1.0")
@@ -109,10 +109,10 @@ dependencyResolutionManagement {
             library("com.squareup.moshi:moshi-kotlin:1.15.0")
             library("com.squareup.okhttp3:okhttp:5.0.0-alpha.11")
             library("com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.11", prefix = "okhttp3")
-            library("com.unity3d.ads:unity-ads:4.7.0")
+            library("com.unity3d.ads:unity-ads:4.8.0")
             library("de.charlex.compose:html-text:1.4.1")
             library("io.coil-kt:coil-compose:2.4.0")
-            library("io.github.hoc081098:FlowExt:0.6.1")
+            library("io.github.hoc081098:FlowExt:0.7.1")
             library("io.github.java-diff-utils:java-diff-utils:4.12")
             library("it.skrape:skrapeit:1.3.0-alpha.1")
             library("junit:junit:4.13.2")
@@ -123,7 +123,7 @@ dependencyResolutionManagement {
             library("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
             library("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
             library("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
-            library("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1")
+            library("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0-RC")
             library("org.junit.jupiter:junit-jupiter-api:5.10.0")
             library("org.junit.jupiter:junit-jupiter-engine:5.10.0")
             library("org.mockito.kotlin:mockito-kotlin:5.0.0")
