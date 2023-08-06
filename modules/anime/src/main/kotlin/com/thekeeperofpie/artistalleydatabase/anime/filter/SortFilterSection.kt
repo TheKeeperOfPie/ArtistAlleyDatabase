@@ -211,7 +211,7 @@ sealed class SortFilterSection(val id: String) {
                                                     FilterIncludeExcludeState.DEFAULT
                                                 }
                                             it.copy(state = newState)
-                                        } else it.copy(state = FilterIncludeExcludeState.DEFAULT)
+                                        } else it
                                     }
                                     SelectionMethod.ALLOW_EXCLUDE -> replaceAll {
                                         if (it.value == selected.value) {

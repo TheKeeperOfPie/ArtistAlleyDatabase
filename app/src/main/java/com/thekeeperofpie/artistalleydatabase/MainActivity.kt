@@ -632,6 +632,7 @@ class MainActivity : ComponentActivity() {
                         .background(colorResource(R.color.launcher_background))
                         .fillMaxWidth()
                         .height(48.dp)
+                        .clickable { /* Consume touches */ }
                 ) {
                     Text(
                         text = BuildConfig.BUILD_TYPE.toUpperCase(Locale.current),
