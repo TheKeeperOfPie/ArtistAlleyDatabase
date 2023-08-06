@@ -12,7 +12,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.anilist.CharacterAndMediasQuery
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterHeader
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterHeaderValues
@@ -32,7 +31,6 @@ object CharacterMediasScreen {
         viewModel: CharacterMediasViewModel,
         upIconOption: UpIconOption,
         headerValues: CharacterHeaderValues,
-        navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
         val colorCalculationState = rememberColorCalculationState(viewModel.colorMap)
         var characterImageWidthToHeightRatio by remember {
@@ -73,7 +71,6 @@ object CharacterMediasScreen {
                     onClickListEdit = { editViewModel.initialize(it.media) },
                     onLongClick = viewModel::onMediaLongClick,
                     colorCalculationState = colorCalculationState,
-                    navigationCallback = navigationCallback,
                     modifier = Modifier.padding(
                         start = 16.dp,
                         end = 16.dp,

@@ -40,7 +40,7 @@ import com.anilist.UserSocialActivityQuery.Data.Page.MessageActivityActivity
 import com.anilist.UserSocialActivityQuery.Data.Page.OtherActivity
 import com.anilist.UserSocialActivityQuery.Data.Page.TextActivityActivity
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
+import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
@@ -65,7 +65,6 @@ object AnimeActivityScreen {
     @Composable
     operator fun invoke(
         viewModel: AnimeActivityViewModel = hiltViewModel<AnimeActivityViewModel>(),
-        navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
         val colorCalculationState = rememberColorCalculationState(viewModel.colorMap)
 
@@ -85,6 +84,7 @@ object AnimeActivityScreen {
             SortFilterBottomScaffold(
                 sortFilterController = viewModel.sortFilterController,
                 topBar = {
+                    val navigationCallback = LocalNavigationCallback.current
                     if (viewer == null) {
                         AppBar(
                             text = stringResource(R.string.anime_activity_global_title),
@@ -158,7 +158,6 @@ object AnimeActivityScreen {
                         activities = activities,
                         onActivityStatusUpdate = viewModel.activityToggleHelper::toggle,
                         colorCalculationState = colorCalculationState,
-                        navigationCallback = navigationCallback,
                     )
                 }
             }
@@ -172,7 +171,6 @@ object AnimeActivityScreen {
         activities: LazyPagingItems<AnimeActivityViewModel.ActivityEntry>,
         onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
         colorCalculationState: ColorCalculationState,
-        navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
         when (val refreshState = activities.loadState.refresh) {
             is LoadState.Error -> AnimeMediaListScreen.Error(
@@ -213,7 +211,6 @@ object AnimeActivityScreen {
                                         activity = activity,
                                         entry = entry,
                                         onActivityStatusUpdate = onActivityStatusUpdate,
-                                        navigationCallback = navigationCallback,
                                         clickable = true,
                                         modifier = Modifier.fillMaxWidth()
                                     )
@@ -226,7 +223,6 @@ object AnimeActivityScreen {
                                         onActivityStatusUpdate = onActivityStatusUpdate,
                                         onClickListEdit = { editViewModel.initialize(it.media) },
                                         colorCalculationState = colorCalculationState,
-                                        navigationCallback = navigationCallback,
                                         clickable = true,
                                         modifier = Modifier.fillMaxWidth()
                                     )
@@ -236,7 +232,6 @@ object AnimeActivityScreen {
                                         activity = activity,
                                         entry = entry,
                                         onActivityStatusUpdate = onActivityStatusUpdate,
-                                        navigationCallback = navigationCallback,
                                         clickable = true,
                                         modifier = Modifier.fillMaxWidth()
                                     )
@@ -248,7 +243,6 @@ object AnimeActivityScreen {
                                         viewer = viewer,
                                         entry = null,
                                         onActivityStatusUpdate = onActivityStatusUpdate,
-                                        navigationCallback = navigationCallback,
                                         modifier = Modifier.fillMaxWidth()
                                     )
                                 }

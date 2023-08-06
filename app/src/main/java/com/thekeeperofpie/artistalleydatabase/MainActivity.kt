@@ -267,7 +267,6 @@ class MainActivity : ComponentActivity() {
                                     unlockDatabaseFeatures = true,
                                     onClickNav = ::onClickNav,
                                     startDestination = startDestination,
-                                    navigationCallback = navigationCallback,
                                 )
                             }
                         } else {
@@ -276,7 +275,6 @@ class MainActivity : ComponentActivity() {
                                 unlockDatabaseFeatures = false,
                                 onClickNav = ::onClickNav,
                                 startDestination = startDestination,
-                                navigationCallback = navigationCallback,
                             )
                         }
                     }
@@ -343,7 +341,6 @@ class MainActivity : ComponentActivity() {
         unlockDatabaseFeatures: Boolean,
         onClickNav: () -> Unit,
         startDestination: String,
-        navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
         val navDrawerUpIconOption =
             UpIconOption.NavDrawer(onClickNav).takeIf { unlockDatabaseFeatures }
@@ -387,7 +384,6 @@ class MainActivity : ComponentActivity() {
                             onClickSettings = {
                                 navHostController.navigate(AppNavDestinations.SETTINGS.id)
                             },
-                            navigationCallback = navigationCallback,
                         )
 
                         artEntryNavigator.initialize(
@@ -561,6 +557,7 @@ class MainActivity : ComponentActivity() {
                                 }
                             val root = it.arguments?.getString("root")
                                 ?.toBooleanStrictOrNull() == true
+                            val navigationCallback = LocalNavigationCallback.current
                             SettingsScreen(
                                 viewModel = viewModel,
                                 appMetadataProvider = appMetadataProvider,

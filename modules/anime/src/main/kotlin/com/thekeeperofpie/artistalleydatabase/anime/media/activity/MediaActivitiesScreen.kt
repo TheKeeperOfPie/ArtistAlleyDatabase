@@ -12,7 +12,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.anilist.MediaActivityQuery
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ListActivitySmallCard
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeader
@@ -32,7 +31,6 @@ object MediaActivitiesScreen {
         viewModel: MediaActivitiesViewModel,
         upIconOption: UpIconOption,
         headerValues: MediaHeaderValues,
-        navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
         val colorCalculationState = rememberColorCalculationState(viewModel.colorMap)
         val entry = viewModel.entry
@@ -83,7 +81,6 @@ object MediaActivitiesScreen {
                     onActivityStatusUpdate = viewModel.activityToggleHelper::toggle,
                     onClickListEdit = { editViewModel.initialize(it.media) },
                     colorCalculationState = colorCalculationState,
-                    navigationCallback = navigationCallback,
                     clickable = true,
                     modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
                 )

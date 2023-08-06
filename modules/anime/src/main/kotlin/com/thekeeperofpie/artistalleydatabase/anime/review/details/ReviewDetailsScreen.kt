@@ -1,5 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.anime.review.details
 
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -48,7 +50,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
 import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
 import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
+import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeader
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderValues
@@ -75,12 +77,13 @@ object ReviewDetailsScreen {
         viewModel: ReviewDetailsViewModel,
         upIconOption: UpIconOption,
         headerValues: MediaHeaderValues,
-        navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
         val colorCalculationState = rememberColorCalculationState(viewModel.colorMap)
         val entry = viewModel.entry
         val media = entry?.review?.media
-        val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+        val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
+            snapAnimationSpec = spring(stiffness = Spring.StiffnessMedium)
+        )
         Scaffold(
             topBar = {
                 CollapsingToolbar(
@@ -140,6 +143,7 @@ object ReviewDetailsScreen {
                             .padding(horizontal = 16.dp)
                     ) {
                         var userImageWidthToHeightRatio by remember { MutableSingle(1f) }
+                        val navigationCallback = LocalNavigationCallback.current
                         AsyncImage(
                             model = review.user?.avatar?.large,
                             contentScale = ContentScale.FillHeight,

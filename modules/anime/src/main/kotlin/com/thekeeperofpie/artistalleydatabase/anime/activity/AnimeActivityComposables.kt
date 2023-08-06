@@ -52,7 +52,7 @@ import com.google.accompanist.placeholder.material.shimmer
 import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.android_utils.UriUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
+import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
@@ -68,7 +68,6 @@ fun TextActivitySmallCard(
     activity: TextActivityFragment?,
     entry: ActivityStatusAware?,
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
-    navigationCallback: AnimeNavigator.NavigationCallback?,
     modifier: Modifier = Modifier,
     clickable: Boolean = false,
     showActionsRow: Boolean = false,
@@ -82,7 +81,6 @@ fun TextActivitySmallCard(
             user = activity?.user,
             entry = entry,
             onActivityStatusUpdate = onActivityStatusUpdate,
-            navigationCallback = navigationCallback,
             clickable = clickable,
             showActionsRow = showActionsRow,
             onClickDelete = onClickDelete,
@@ -90,9 +88,10 @@ fun TextActivitySmallCard(
     }
 
     if (clickable && activity != null) {
+        val navigationCallback = LocalNavigationCallback.current
         ElevatedCard(
             onClick = {
-                navigationCallback?.onActivityDetailsClick(activity.id.toString())
+                navigationCallback.onActivityDetailsClick(activity.id.toString())
             },
             modifier = modifier,
             content = content,
@@ -114,7 +113,6 @@ fun ColumnScope.TextActivityCardContent(
     user: UserNavigationData?,
     entry: ActivityStatusAware?,
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
-    navigationCallback: AnimeNavigator.NavigationCallback?,
     clickable: Boolean = false,
     showActionsRow: Boolean = false,
     onClickDelete: (String) -> Unit = {},
@@ -129,7 +127,6 @@ fun ColumnScope.TextActivityCardContent(
                 screenKey = screenKey,
                 loading = activity == null,
                 user = user,
-                navigationCallback = navigationCallback,
             )
         }
 
@@ -176,13 +173,14 @@ fun ColumnScope.TextActivityCardContent(
     }
 
     if (activity == null || activity.text != null) {
+        val navigationCallback = LocalNavigationCallback.current
         ImageHtmlText(
             text = activity?.text ?: "Placeholder text",
             color = MaterialTheme.typography.bodySmall.color
                 .takeOrElse { LocalContentColor.current },
             onClickFallback = {
                 if (activity != null && clickable) {
-                    navigationCallback?.onActivityDetailsClick(activity.id.toString())
+                    navigationCallback.onActivityDetailsClick(activity.id.toString())
                 }
             },
             modifier = Modifier
@@ -211,7 +209,6 @@ fun MessageActivitySmallCard(
     activity: MessageActivityFragment?,
     entry: ActivityStatusAware?,
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
-    navigationCallback: AnimeNavigator.NavigationCallback?,
     modifier: Modifier = Modifier,
     clickable: Boolean = false,
     showActionsRow: Boolean = false,
@@ -225,7 +222,6 @@ fun MessageActivitySmallCard(
             messenger = activity?.messenger,
             entry = entry,
             onActivityStatusUpdate = onActivityStatusUpdate,
-            navigationCallback = navigationCallback,
             clickable = clickable,
             showActionsRow = showActionsRow,
             onClickDelete = onClickDelete,
@@ -233,9 +229,10 @@ fun MessageActivitySmallCard(
     }
 
     if (clickable && activity != null) {
+        val navigationCallback = LocalNavigationCallback.current
         ElevatedCard(
             onClick = {
-                navigationCallback?.onActivityDetailsClick(activity.id.toString())
+                navigationCallback.onActivityDetailsClick(activity.id.toString())
             },
             modifier = modifier,
             content = content,
@@ -256,7 +253,6 @@ fun ColumnScope.MessageActivityCardContent(
     messenger: UserNavigationData?,
     entry: ActivityStatusAware?,
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
-    navigationCallback: AnimeNavigator.NavigationCallback?,
     clickable: Boolean = false,
     showActionsRow: Boolean = false,
     onClickDelete: (String) -> Unit = {},
@@ -271,7 +267,6 @@ fun ColumnScope.MessageActivityCardContent(
                 screenKey = screenKey,
                 loading = activity == null,
                 user = messenger,
-                navigationCallback = navigationCallback,
             )
         }
 
@@ -320,6 +315,7 @@ fun ColumnScope.MessageActivityCardContent(
         )
     }
 
+    val navigationCallback = LocalNavigationCallback.current
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -327,7 +323,7 @@ fun ColumnScope.MessageActivityCardContent(
             .padding(horizontal = 16.dp)
             .align(Alignment.End)
             .clickable {
-                activity?.recipient?.let { navigationCallback?.onUserClick(it, 1f) }
+                activity?.recipient?.let { navigationCallback.onUserClick(it, 1f) }
             }
     ) {
         Icon(
@@ -370,7 +366,7 @@ fun ColumnScope.MessageActivityCardContent(
                 .takeOrElse { LocalContentColor.current },
             onClickFallback = {
                 if (activity != null && clickable) {
-                    navigationCallback?.onActivityDetailsClick(activity.id.toString())
+                    navigationCallback.onActivityDetailsClick(activity.id.toString())
                 }
             },
             modifier = Modifier
@@ -401,7 +397,6 @@ fun ListActivitySmallCard(
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
     onClickListEdit: (AnimeMediaCompactListRow.Entry) -> Unit,
     colorCalculationState: ColorCalculationState,
-    navigationCallback: AnimeNavigator.NavigationCallback?,
     modifier: Modifier = Modifier,
     clickable: Boolean = false,
     showActionsRow: Boolean = false,
@@ -418,7 +413,6 @@ fun ListActivitySmallCard(
         onActivityStatusUpdate = onActivityStatusUpdate,
         onClickListEdit = onClickListEdit,
         colorCalculationState = colorCalculationState,
-        navigationCallback = navigationCallback,
         clickable = clickable,
         showActionsRow = showActionsRow,
         onClickDelete = onClickDelete,
@@ -436,7 +430,6 @@ fun ListActivitySmallCard(
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
     onClickListEdit: (AnimeMediaCompactListRow.Entry) -> Unit,
     colorCalculationState: ColorCalculationState,
-    navigationCallback: AnimeNavigator.NavigationCallback,
     clickable: Boolean = false,
     showActionsRow: Boolean = false,
     onClickDelete: (String) -> Unit = {},
@@ -453,7 +446,6 @@ fun ListActivitySmallCard(
         onActivityStatusUpdate = onActivityStatusUpdate,
         onClickListEdit = onClickListEdit,
         colorCalculationState = colorCalculationState,
-        navigationCallback = navigationCallback,
         clickable = clickable,
         showActionsRow = showActionsRow,
         onClickDelete = onClickDelete,
@@ -473,7 +465,6 @@ private fun ListActivitySmallCard(
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
     onClickListEdit: (AnimeMediaCompactListRow.Entry) -> Unit,
     colorCalculationState: ColorCalculationState,
-    navigationCallback: AnimeNavigator.NavigationCallback?,
     clickable: Boolean,
     showActionsRow: Boolean,
     onClickDelete: (String) -> Unit,
@@ -492,15 +483,15 @@ private fun ListActivitySmallCard(
             onActivityStatusUpdate = onActivityStatusUpdate,
             onClickListEdit = onClickListEdit,
             colorCalculationState = colorCalculationState,
-            navigationCallback = navigationCallback,
             showActionsRow = showActionsRow,
             onClickDelete = onClickDelete,
         )
     }
     if (clickable && activity != null) {
+        val navigationCallback = LocalNavigationCallback.current
         ElevatedCard(
             onClick = {
-                navigationCallback?.onActivityDetailsClick(activity.id.toString())
+                navigationCallback.onActivityDetailsClick(activity.id.toString())
             },
             modifier = modifier,
             content = content,
@@ -526,7 +517,6 @@ fun ColumnScope.ListActivityCardContent(
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
     onClickListEdit: (AnimeMediaCompactListRow.Entry) -> Unit,
     colorCalculationState: ColorCalculationState,
-    navigationCallback: AnimeNavigator.NavigationCallback?,
     showMedia: Boolean = entry != null,
     showUser: Boolean = true,
     showActionsRow: Boolean = false,
@@ -542,7 +532,6 @@ fun ColumnScope.ListActivityCardContent(
                 screenKey = screenKey,
                 loading = activity == null,
                 user = user,
-                navigationCallback = navigationCallback,
             )
         }
 
@@ -620,7 +609,6 @@ fun ColumnScope.ListActivityCardContent(
             },
             onClickListEdit = onClickListEdit,
             colorCalculationState = colorCalculationState,
-            navigationCallback = navigationCallback,
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
         )
     }
@@ -767,10 +755,10 @@ private fun UserImage(
     screenKey: String,
     loading: Boolean,
     user: UserNavigationData?,
-    navigationCallback: AnimeNavigator.NavigationCallback?,
 ) {
     val shape = RoundedCornerShape(12.dp)
     SharedElement(key = "anime_user_${user?.id}_image", screenKey = screenKey) {
+        val navigationCallback = LocalNavigationCallback.current
         AsyncImage(
             model = user?.avatar?.large,
             contentDescription = stringResource(R.string.anime_user_image),
@@ -780,7 +768,7 @@ private fun UserImage(
                 .border(width = Dp.Hairline, MaterialTheme.colorScheme.primary, shape)
                 .clickable {
                     if (user != null) {
-                        navigationCallback?.onUserClick(user, 1f)
+                        navigationCallback.onUserClick(user, 1f)
                     }
                 }
                 .placeholder(

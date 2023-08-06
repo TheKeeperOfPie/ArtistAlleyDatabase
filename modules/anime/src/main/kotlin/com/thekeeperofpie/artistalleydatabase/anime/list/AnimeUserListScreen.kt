@@ -47,8 +47,6 @@ import com.anilist.AuthedUserQuery
 import com.anilist.fragment.MediaPreviewWithDescription
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
-import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
@@ -84,8 +82,6 @@ object AnimeUserListScreen {
         upIconOption: UpIconOption? = null,
         viewModel: AnimeUserListViewModel,
         mediaType: MediaType = MediaType.ANIME,
-        navigationCallback: AnimeNavigator.NavigationCallback =
-            AnimeNavigator.NavigationCallback(null),
         scrollStateSaver: ScrollStateSaver = ScrollStateSaver.STUB,
         bottomNavigationState: BottomNavigationState? = null,
     ) {
@@ -360,7 +356,6 @@ object AnimeUserListScreen {
                 onLongClick = { viewModel.ignoreList.toggle(entry.media.id.toString()) },
                 onLongPressImage = { onLongPressImage(entry) },
                 colorCalculationState = colorCalculationState,
-                navigationCallback = LocalNavigationCallback.current,
                 modifier = modifier,
             )
             MediaViewOption.LARGE_CARD -> AnimeMediaLargeCard(
@@ -370,7 +365,6 @@ object AnimeUserListScreen {
                 onLongClick = { viewModel.ignoreList.toggle(entry.media.id.toString()) },
                 onClickListEdit = { editViewModel.initialize(it.media) },
                 colorCalculationState = colorCalculationState,
-                navigationCallback = LocalNavigationCallback.current,
                 modifier = modifier,
             )
             MediaViewOption.COMPACT -> AnimeMediaCompactListRow(
@@ -381,7 +375,6 @@ object AnimeUserListScreen {
                 onLongPressImage = { onLongPressImage(entry) },
                 onClickListEdit = { editViewModel.initialize(it.media) },
                 colorCalculationState = colorCalculationState,
-                navigationCallback = LocalNavigationCallback.current,
                 modifier = modifier,
             )
             MediaViewOption.GRID -> MediaGridCard(

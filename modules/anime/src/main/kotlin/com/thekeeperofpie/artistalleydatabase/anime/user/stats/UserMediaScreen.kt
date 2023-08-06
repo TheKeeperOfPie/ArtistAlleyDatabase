@@ -17,6 +17,7 @@ import com.anilist.UserByIdQuery
 import com.anilist.fragment.UserMediaStatistics
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
+import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserScreen
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserViewModel
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
@@ -32,7 +33,6 @@ object UserMediaScreen {
         statistics: @Composable () -> AniListUserScreen.Entry.Statistics?,
         state: AniListUserViewModel.States,
         colorCalculationState: ColorCalculationState,
-        navigationCallback: AnimeNavigator.NavigationCallback,
         bottomNavigationState: BottomNavigationState? = null,
     ) {
         val isAnime = state is AniListUserViewModel.States.Anime
@@ -57,11 +57,11 @@ object UserMediaScreen {
 
             Divider()
 
+            val navigationCallback = LocalNavigationCallback.current
             when (values[selectedTabIndex]) {
                 UserStatsTab.STATS -> UserStatsBasicScreen(
                     user = user,
                     statistics = statistics,
-                    navigationCallback = navigationCallback,
                     isAnime = isAnime,
                     bottomNavigationState = bottomNavigationState,
                 )
@@ -71,7 +71,6 @@ object UserMediaScreen {
                     values = { it.statistics.genres?.filterNotNull().orEmpty() },
                     state = state.genresState,
                     isAnime = isAnime,
-                    navigationCallback = navigationCallback,
                     bottomNavigationState = bottomNavigationState,
                     valueToKey = { it.genre.orEmpty() },
                     valueToCount = UserMediaStatistics.Genre::count,
@@ -92,7 +91,6 @@ object UserMediaScreen {
                     values = { it.statistics.tags?.filterNotNull().orEmpty() },
                     state = state.tagsState,
                     isAnime = isAnime,
-                    navigationCallback = navigationCallback,
                     bottomNavigationState = bottomNavigationState,
                     valueToKey = { it.tag?.name.orEmpty() },
                     valueToCount = UserMediaStatistics.Tag::count,
@@ -114,7 +112,6 @@ object UserMediaScreen {
                     values = { it.statistics.voiceActors?.filterNotNull().orEmpty() },
                     state = (state as AniListUserViewModel.States.Anime).voiceActorsState,
                     isAnime = true,
-                    navigationCallback = navigationCallback,
                     bottomNavigationState = bottomNavigationState,
                     valueToKey = { it.voiceActor?.id.toString() },
                     valueToCount = UserMediaStatistics.VoiceActor::count,
@@ -139,7 +136,6 @@ object UserMediaScreen {
                     values = { it.statistics.studios?.filterNotNull().orEmpty() },
                     state = (state as AniListUserViewModel.States.Anime).studiosState,
                     isAnime = true,
-                    navigationCallback = navigationCallback,
                     bottomNavigationState = bottomNavigationState,
                     valueToKey = { it.studio?.name.orEmpty() },
                     valueToCount = UserMediaStatistics.Studio::count,
@@ -159,7 +155,6 @@ object UserMediaScreen {
                     values = { it.statistics.staff?.filterNotNull().orEmpty() },
                     state = state.staffState,
                     isAnime = isAnime,
-                    navigationCallback = navigationCallback,
                     bottomNavigationState = bottomNavigationState,
                     valueToKey = { it.staff?.id.toString() },
                     valueToCount = UserMediaStatistics.Staff::count,

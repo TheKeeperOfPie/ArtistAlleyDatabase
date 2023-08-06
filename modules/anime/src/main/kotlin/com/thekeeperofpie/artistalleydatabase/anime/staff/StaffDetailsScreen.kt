@@ -1,5 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.anime.staff
 
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -49,10 +51,10 @@ object StaffDetailsScreen {
         viewModel: StaffDetailsViewModel = hiltViewModel(),
         upIconOption: UpIconOption?,
         headerValues: StaffHeaderValues,
-        navigationCallback: AnimeNavigator.NavigationCallback =
-            AnimeNavigator.NavigationCallback(null),
     ) {
-        val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+        val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
+            snapAnimationSpec = spring(stiffness = Spring.StiffnessMedium)
+        )
         val colorCalculationState = rememberColorCalculationState(viewModel.colorMap)
         val expandedState = rememberExpandedState()
 
@@ -149,19 +151,16 @@ object StaffDetailsScreen {
                                 staffImageWidthToHeightRatio = { staffImageWidthToHeightRatio },
                                 colorCalculationState = colorCalculationState,
                                 expandedState = expandedState,
-                                navigationCallback = navigationCallback,
                             )
                             StaffTab.MEDIA -> StaffMediaScreen(
                                 mediaTimeline = mediaTimeline,
                                 onRequestYear = viewModel::onRequestMediaYear,
                                 colorCalculationState = colorCalculationState,
-                                navigationCallback = navigationCallback,
                             )
                             StaffTab.STAFF -> StaffStaffScreen(
                                 staffTimeline = staffTimeline,
                                 onRequestYear = viewModel::onRequestStaffYear,
                                 colorCalculationState = colorCalculationState,
-                                navigationCallback = navigationCallback,
                             )
                         }
                     }

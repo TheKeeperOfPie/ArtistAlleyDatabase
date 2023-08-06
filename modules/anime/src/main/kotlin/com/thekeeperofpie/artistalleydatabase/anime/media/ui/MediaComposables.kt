@@ -78,11 +78,10 @@ fun <T> LazyListScope.mediaListSection(
     expanded: () -> Boolean = { false },
     onExpandedChange: (Boolean) -> Unit = {},
     colorCalculationState: ColorCalculationState,
-    navigationCallback: AnimeNavigator.NavigationCallback,
     onClickListEdit: (AnimeMediaListRow.Entry<*>) -> Unit,
     onLongClick: (AnimeMediaListRow.Entry<*>) -> Unit,
     label: (@Composable (T) -> Unit)? = null,
-    onClickViewAll: (() -> Unit)? = null,
+    onClickViewAll: ((AnimeNavigator.NavigationCallback) -> Unit)? = null,
     @StringRes viewAllContentDescriptionTextRes: Int? = null,
 ) = listSection(
     titleRes = titleRes,
@@ -106,7 +105,6 @@ fun <T> LazyListScope.mediaListSection(
         onClickListEdit = onClickListEdit,
         onLongClick = onLongClick,
         colorCalculationState = colorCalculationState,
-        navigationCallback = navigationCallback,
         modifier = modifier.padding(start = 16.dp, end = 16.dp, bottom = paddingBottom)
     )
 }

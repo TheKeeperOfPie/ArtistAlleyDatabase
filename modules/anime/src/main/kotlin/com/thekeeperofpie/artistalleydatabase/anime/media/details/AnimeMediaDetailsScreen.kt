@@ -5,7 +5,9 @@ import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -122,6 +124,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.UriUtils
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
+import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ListActivitySmallCard
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils
@@ -217,9 +220,10 @@ object AnimeMediaDetailsScreen {
         onGenreLongClick: (String) -> Unit = {},
         onCharacterLongClick: (String) -> Unit = {},
         onStaffLongClick: (String) -> Unit = {},
-        navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
-        val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+        val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
+            snapAnimationSpec = spring(stiffness = Spring.StiffnessMedium)
+        )
         val lazyListState = rememberLazyListState()
         val scope = rememberCoroutineScope()
         val colorCalculationState = rememberColorCalculationState(viewModel.colorMap)
@@ -467,7 +471,6 @@ object AnimeMediaDetailsScreen {
                                     onGenreLongClick = onGenreLongClick,
                                     onCharacterLongClick = onCharacterLongClick,
                                     onStaffLongClick = onStaffLongClick,
-                                    navigationCallback = navigationCallback,
                                     expandedState = expandedState,
                                     colorCalculationState = colorCalculationState,
                                     coverImageWidthToHeightRatio = { coverImageWidthToHeightRatio },
@@ -497,7 +500,6 @@ object AnimeMediaDetailsScreen {
         onGenreLongClick: (String) -> Unit,
         onCharacterLongClick: (String) -> Unit,
         onStaffLongClick: (String) -> Unit,
-        navigationCallback: AnimeNavigator.NavigationCallback,
         expandedState: ExpandedState,
         colorCalculationState: ColorCalculationState,
         coverImageWidthToHeightRatio: () -> Float,
@@ -505,7 +507,6 @@ object AnimeMediaDetailsScreen {
         val screenKey = viewModel.screenKey
         genreSection(
             entry = entry,
-            onGenreClick = navigationCallback::onGenreClick,
             onGenreLongClick = onGenreLongClick,
         )
 
@@ -519,11 +520,8 @@ object AnimeMediaDetailsScreen {
             screenKey = screenKey,
             titleRes = R.string.anime_media_details_characters_label,
             characters = characters,
-            onCharacterClick = navigationCallback::onCharacterClick,
-            onCharacterLongClick = onCharacterLongClick,
-            onStaffClick = navigationCallback::onStaffClick,
             onClickViewAll = {
-                navigationCallback.onMediaCharactersClick(
+                it.onMediaCharactersClick(
                     entry,
                     viewModel.favoritesToggleHelper.favorite,
                     coverImageWidthToHeightRatio(),
@@ -540,7 +538,6 @@ object AnimeMediaDetailsScreen {
             relationsExpanded = expandedState::relations,
             onRelationsExpandedChange = { expandedState.relations = it },
             colorCalculationState = colorCalculationState,
-            navigationCallback = navigationCallback,
             onClickListEdit = onClickListEdit,
             onLongClick = viewModel::onMediaLongClick,
         )
@@ -557,15 +554,12 @@ object AnimeMediaDetailsScreen {
         cdsSection(
             screenKey = screenKey,
             cdEntries = viewModel.cdEntries,
-            onEntryClick = { navigationCallback.onCdEntryClick(model = it, imageCornerDp = 12.dp) },
         )
 
         staffSection(
             screenKey = screenKey,
             titleRes = R.string.anime_media_details_staff_label,
             staffList = staff,
-            onStaffClick = navigationCallback::onStaffClick,
-            onStaffLongClick = onStaffLongClick,
             colorCalculationState = colorCalculationState,
         )
 
@@ -573,7 +567,6 @@ object AnimeMediaDetailsScreen {
 
         tagsSection(
             entry = entry,
-            onTagClick = navigationCallback::onTagClick,
             colorCalculationState = colorCalculationState,
         )
 
@@ -604,7 +597,6 @@ object AnimeMediaDetailsScreen {
             expanded = expandedState::recommendations,
             onExpandedChange = { expandedState.recommendations = it },
             colorCalculationState = colorCalculationState,
-            navigationCallback = navigationCallback,
             onClickListEdit = onClickListEdit,
             onLongClick = viewModel::onMediaLongClick,
         )
@@ -617,16 +609,13 @@ object AnimeMediaDetailsScreen {
             expanded = expandedState::activities,
             onExpandedChange = { expandedState.activities = it },
             onClickViewAll = {
-                entry.let {
-                    navigationCallback.onMediaActivitiesClick(
-                        it,
-                        viewModel.favoritesToggleHelper.favorite,
-                        coverImageWidthToHeightRatio()
-                    )
-                }
+                it.onMediaActivitiesClick(
+                    entry,
+                    viewModel.favoritesToggleHelper.favorite,
+                    coverImageWidthToHeightRatio()
+                )
             },
             colorCalculationState = colorCalculationState,
-            navigationCallback = navigationCallback,
         )
 
         reviewsSection(
@@ -635,17 +624,16 @@ object AnimeMediaDetailsScreen {
             coverImageWidthToHeightRatio = coverImageWidthToHeightRatio,
             expanded = expandedState::reviews,
             onExpandedChange = { expandedState.reviews = it },
-            navigationCallback = navigationCallback,
         )
     }
 
     private fun LazyListScope.genreSection(
         entry: Entry,
-        onGenreClick: (MediaType, String) -> Unit,
         onGenreLongClick: (String) -> Unit,
     ) {
         if (entry.genres.isNotEmpty()) {
             item("genreSection") {
+                val navigationCallback = LocalNavigationCallback.current
                 FlowRow(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier
@@ -657,7 +645,7 @@ object AnimeMediaDetailsScreen {
                     entry.genres.forEach {
                         AssistChip(
                             onClick = {
-                                onGenreClick(
+                                navigationCallback.onGenreClick(
                                     entry.media.type ?: MediaType.ANIME,
                                     it.name
                                 )
@@ -687,7 +675,6 @@ object AnimeMediaDetailsScreen {
         onClickListEdit: (AnimeMediaListRow.Entry<*>) -> Unit,
         onLongClick: (AnimeMediaListRow.Entry<*>) -> Unit,
         colorCalculationState: ColorCalculationState,
-        navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
         mediaListSection(
             screenKey = screenKey,
@@ -700,7 +687,6 @@ object AnimeMediaDetailsScreen {
             expanded = relationsExpanded,
             onExpandedChange = onRelationsExpandedChange,
             colorCalculationState = colorCalculationState,
-            navigationCallback = navigationCallback,
             onClickListEdit = onClickListEdit,
             onLongClick = onLongClick,
             label = { RelationLabel(it.relation) },
@@ -1266,7 +1252,6 @@ object AnimeMediaDetailsScreen {
     private fun LazyListScope.cdsSection(
         screenKey: String,
         cdEntries: List<CdEntryGridModel>,
-        onEntryClick: (CdEntryGridModel) -> Unit,
     ) {
         if (cdEntries.isEmpty()) return
 
@@ -1279,6 +1264,7 @@ object AnimeMediaDetailsScreen {
 
         item("cdsSection") {
             val width = LocalDensity.current.run { Dimension.Pixels(200.dp.toPx().roundToInt()) }
+            val navigationCallback = LocalNavigationCallback.current
             LazyRow(
                 contentPadding = PaddingValues(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -1295,7 +1281,12 @@ object AnimeMediaDetailsScreen {
                             expectedWidth = width,
                             index = index,
                             entry = cdEntry,
-                            onClickEntry = { _, entry -> onEntryClick(entry) },
+                            onClickEntry = { _, entry ->
+                                navigationCallback.onCdEntryClick(
+                                    model = entry,
+                                    imageCornerDp = 12.dp,
+                                )
+                            },
                             onSharedElementFractionChanged = { transitionProgress = it }
                         )
                     }
@@ -1314,7 +1305,6 @@ object AnimeMediaDetailsScreen {
         onExpandedChange: (Boolean) -> Unit,
         onClickListEdit: (AnimeMediaListRow.Entry<*>) -> Unit,
         colorCalculationState: ColorCalculationState,
-        navigationCallback: AnimeNavigator.NavigationCallback,
         onLongClick: (AnimeMediaListRow.Entry<*>) -> Unit,
     ) {
         mediaListSection(
@@ -1328,17 +1318,14 @@ object AnimeMediaDetailsScreen {
             expanded = expanded,
             onExpandedChange = onExpandedChange,
             colorCalculationState = colorCalculationState,
-            navigationCallback = navigationCallback,
             onClickListEdit = onClickListEdit,
             onLongClick = onLongClick,
             onClickViewAll = {
-                entry.let {
-                    navigationCallback.onMediaRecommendationsClick(
-                        it,
-                        viewModel.favoritesToggleHelper.favorite,
-                        coverImageWidthToHeightRatio()
-                    )
-                }
+                it.onMediaRecommendationsClick(
+                    entry,
+                    viewModel.favoritesToggleHelper.favorite,
+                    coverImageWidthToHeightRatio()
+                )
             },
             viewAllContentDescriptionTextRes = R.string.anime_media_details_view_all_content_description,
         )
@@ -1468,7 +1455,6 @@ object AnimeMediaDetailsScreen {
 
     private fun LazyListScope.tagsSection(
         entry: Entry,
-        onTagClick: (MediaType, tagId: String, tagName: String) -> Unit,
         colorCalculationState: ColorCalculationState,
     ) {
         if (entry.tags.isNotEmpty()) {
@@ -1480,6 +1466,7 @@ object AnimeMediaDetailsScreen {
             }
 
             item("tagsSection") {
+                val navigationCallback = LocalNavigationCallback.current
                 FlowRow(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier
@@ -1503,7 +1490,11 @@ object AnimeMediaDetailsScreen {
                                 }
                             },
                             onTagClick = { id, name ->
-                                onTagClick(entry.media.type ?: MediaType.ANIME, id, name)
+                                navigationCallback.onTagClick(
+                                    entry.media.type ?: MediaType.ANIME,
+                                    id,
+                                    name,
+                                )
                             },
                             containerColor = containerColor,
                             textColor = textColor,
@@ -1757,9 +1748,8 @@ object AnimeMediaDetailsScreen {
         viewModel: AnimeMediaDetailsViewModel,
         expanded: () -> Boolean,
         onExpandedChange: (Boolean) -> Unit,
-        onClickViewAll: () -> Unit,
+        onClickViewAll: (AnimeNavigator.NavigationCallback) -> Unit,
         colorCalculationState: ColorCalculationState,
-        navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
         listSection(
             titleRes = R.string.anime_media_details_activities_label,
@@ -1780,7 +1770,6 @@ object AnimeMediaDetailsScreen {
                 onActivityStatusUpdate = viewModel.activityToggleHelper::toggle,
                 onClickListEdit = { editViewModel.initialize(it.media) },
                 colorCalculationState = colorCalculationState,
-                navigationCallback = navigationCallback,
                 clickable = true,
                 modifier = modifier
                     .fillMaxWidth()
@@ -1795,7 +1784,6 @@ object AnimeMediaDetailsScreen {
         coverImageWidthToHeightRatio: () -> Float,
         expanded: () -> Boolean,
         onExpandedChange: (Boolean) -> Unit,
-        navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
         val reviews = entry.reviews
         if (reviews.isEmpty()) return
@@ -1808,16 +1796,15 @@ object AnimeMediaDetailsScreen {
             expanded = expanded,
             onExpandedChange = onExpandedChange,
             onClickViewAll = {
-                entry.let {
-                    navigationCallback.onMediaReviewsClick(
-                        it,
-                        viewModel.favoritesToggleHelper.favorite,
-                        coverImageWidthToHeightRatio(),
-                    )
-                }
+                it.onMediaReviewsClick(
+                    entry,
+                    viewModel.favoritesToggleHelper.favorite,
+                    coverImageWidthToHeightRatio(),
+                )
             },
             viewAllContentDescriptionTextRes = R.string.anime_media_details_view_all_content_description,
         ) { item, paddingBottom, modifier ->
+            val navigationCallback = LocalNavigationCallback.current
             ReviewSmallCard(
                 review = item,
                 onClick = {
@@ -1828,7 +1815,6 @@ object AnimeMediaDetailsScreen {
                         imageWidthToHeightRatio = coverImageWidthToHeightRatio()
                     )
                 },
-                navigationCallback = navigationCallback,
                 modifier = modifier.padding(start = 16.dp, end = 16.dp, bottom = paddingBottom)
             )
         }

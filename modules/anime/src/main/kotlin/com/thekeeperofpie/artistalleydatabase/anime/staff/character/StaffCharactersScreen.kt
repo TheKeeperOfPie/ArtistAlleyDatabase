@@ -6,7 +6,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.anilist.StaffAndCharactersQuery
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterListRow
 import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoriteType
@@ -25,7 +24,6 @@ object StaffCharactersScreen {
         viewModel: StaffCharactersViewModel,
         upIconOption: UpIconOption?,
         headerValues: StaffHeaderValues,
-        navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
         val colorCalculationState = rememberColorCalculationState(viewModel.colorMap)
 
@@ -52,7 +50,6 @@ object StaffCharactersScreen {
                     entry = it,
                     showRole = true,
                     colorCalculationState = colorCalculationState,
-                    navigationCallback = navigationCallback,
                     modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
                 )
             }

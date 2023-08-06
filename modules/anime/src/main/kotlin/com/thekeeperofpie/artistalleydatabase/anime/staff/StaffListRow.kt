@@ -53,7 +53,7 @@ import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
 import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
 import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
+import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffUtils.primaryName
 import com.thekeeperofpie.artistalleydatabase.anime.ui.ListRowFavoritesSection
@@ -71,10 +71,9 @@ object StaffListRow {
         entry: Entry?,
         onLongPressImage: (Entry) -> Unit = {},
         colorCalculationState: ColorCalculationState = ColorCalculationState(),
-        navigationCallback: AnimeNavigator.NavigationCallback =
-            AnimeNavigator.NavigationCallback(null),
     ) {
         var imageWidthToHeightRatio by remember { MutableSingle(1f) }
+        val navigationCallback = LocalNavigationCallback.current
         val onClick = {
             if (entry != null) {
                 navigationCallback.onStaffClick(
@@ -127,7 +126,6 @@ object StaffListRow {
                         screenKey = screenKey,
                         entry = entry,
                         colorCalculationState = colorCalculationState,
-                        navigationCallback = navigationCallback,
                     )
                 }
             }
@@ -229,7 +227,6 @@ object StaffListRow {
         screenKey: String,
         entry: Entry?,
         colorCalculationState: ColorCalculationState,
-        navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
         val media = entry?.media.orEmpty()
         val characters = entry?.characters.orEmpty()
@@ -246,6 +243,7 @@ object StaffListRow {
         ) {
             items(characters, key = { it.id }) {
                 SharedElement(key = "anime_character_${it.id}_image", screenKey = screenKey) {
+                    val navigationCallback = LocalNavigationCallback.current
                     ListRowSmallImage(
                         context = context,
                         density = density,
@@ -266,6 +264,7 @@ object StaffListRow {
 
             items(media, key = { it.media.id }) {
                 SharedElement(key = "anime_media_${it.media.id}_image", screenKey = screenKey) {
+                    val navigationCallback = LocalNavigationCallback.current
                     ListRowSmallImage(
                         context = context,
                         density = density,

@@ -25,7 +25,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
 import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
 import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
+import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterSmallCard
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.primaryName
@@ -43,7 +43,6 @@ object StaffMediaScreen {
         mediaTimeline: StaffDetailsViewModel.MediaTimeline,
         onRequestYear: (Int?) -> Unit,
         colorCalculationState: ColorCalculationState,
-        navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
         LazyColumn(
             contentPadding = PaddingValues(bottom = 16.dp),
@@ -63,6 +62,7 @@ object StaffMediaScreen {
                 }
 
                 item {
+                    val navigationCallback = LocalNavigationCallback.current
                     LazyRow(
                         contentPadding = PaddingValues(horizontal = 16.dp),
                         horizontalArrangement = Arrangement.spacedBy(16.dp),

@@ -33,7 +33,6 @@ import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
 import com.anilist.fragment.MediaPreview
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
@@ -53,8 +52,6 @@ object AnimeIgnoreScreen {
         onClickBack: () -> Unit = {},
         @StringRes titleRes: Int,
         viewModel: AnimeMediaIgnoreViewModel = hiltViewModel(),
-        navigationCallback: AnimeNavigator.NavigationCallback =
-            AnimeNavigator.NavigationCallback(null),
     ) {
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
         val colorCalculationState = rememberColorCalculationState(viewModel.colorMap)
@@ -112,7 +109,6 @@ object AnimeIgnoreScreen {
                                                 onLongClick = viewModel::onMediaLongClick,
                                                 onLongPressImage = onLongPressImage,
                                                 colorCalculationState = colorCalculationState,
-                                                navigationCallback = navigationCallback,
                                             )
                                             null -> AnimeMediaListRow<MediaPreview>(
                                                 screenKey = AnimeNavDestinations.IGNORED.id,

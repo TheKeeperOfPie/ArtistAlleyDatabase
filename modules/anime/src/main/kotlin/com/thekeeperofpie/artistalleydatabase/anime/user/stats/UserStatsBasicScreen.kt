@@ -27,7 +27,7 @@ import com.anilist.UserByIdQuery
 import com.anilist.type.MediaFormat
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
+import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toColor
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
@@ -48,7 +48,6 @@ object UserStatsBasicScreen {
     operator fun invoke(
         user: () -> UserByIdQuery.Data.User?,
         statistics: @Composable () -> AniListUserScreen.Entry.Statistics?,
-        navigationCallback: AnimeNavigator.NavigationCallback,
         isAnime: Boolean,
         bottomNavigationState: BottomNavigationState? = null,
     ) {
@@ -75,9 +74,9 @@ object UserStatsBasicScreen {
             val user = user()
             if (user != null) {
                 if (isAnime) {
-                    animeStatisticsSection(user, navigationCallback)
+                    animeStatisticsSection(user)
                 } else {
-                    mangaStatisticsSection(user, navigationCallback)
+                    mangaStatisticsSection(user)
                 }
             }
 
@@ -232,10 +231,10 @@ object UserStatsBasicScreen {
 
     private fun LazyListScope.animeStatisticsSection(
         user: UserByIdQuery.Data.User,
-        navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
         val statistics = user.statistics?.anime ?: return
         item {
+            val navigationCallback = LocalNavigationCallback.current
             StatsCard(
                 statistics.count.toString() to R.string.anime_user_statistics_count,
                 String.format(
@@ -259,10 +258,10 @@ object UserStatsBasicScreen {
 
     private fun LazyListScope.mangaStatisticsSection(
         user: UserByIdQuery.Data.User,
-        navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
         val statistics = user.statistics?.manga ?: return
         item {
+            val navigationCallback = LocalNavigationCallback.current
             StatsCard(
                 statistics.count.toString() to R.string.anime_user_statistics_count,
                 statistics.chaptersRead.toString() to

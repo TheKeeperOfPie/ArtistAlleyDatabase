@@ -52,7 +52,7 @@ import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
 import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
 import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
+import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaTagEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaStatusAware
@@ -77,9 +77,9 @@ object AnimeMediaListRow {
         onLongPressImage: (entry: Entry<MediaType>) -> Unit = {},
         nextAiringEpisode: MediaPreview.NextAiringEpisode? = entry?.media?.nextAiringEpisode,
         colorCalculationState: ColorCalculationState = ColorCalculationState(),
-        navigationCallback: AnimeNavigator.NavigationCallback? = null,
     ) {
         var imageWidthToHeightRatio by remember { MutableSingle(1f) }
+        val navigationCallback = LocalNavigationCallback.current
         ElevatedCard(
             modifier = modifier
                 .fillMaxWidth()

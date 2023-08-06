@@ -2,6 +2,8 @@ package com.thekeeperofpie.artistalleydatabase.anime.character.details
 
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -52,7 +54,6 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import com.anilist.AuthedUserQuery
 import com.anilist.CharacterDetailsQuery.Data.Character
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterHeader
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterHeaderValues
@@ -91,9 +92,10 @@ object CharacterDetailsScreen {
         viewModel: AnimeCharacterDetailsViewModel = hiltViewModel(),
         upIconOption: UpIconOption?,
         headerValues: CharacterHeaderValues,
-        navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
-        val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+        val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
+            snapAnimationSpec = spring(stiffness = Spring.StiffnessMedium)
+        )
         val colorCalculationState = rememberColorCalculationState(viewModel.colorMap)
 
         var characterImageWidthToHeightRatio by remember {
@@ -183,7 +185,6 @@ object CharacterDetailsScreen {
                                 viewer = viewer,
                                 characterImageWidthToHeightRatio = { characterImageWidthToHeightRatio },
                                 expandedState = expandedState,
-                                navigationCallback = navigationCallback,
                                 colorCalculationState = colorCalculationState,
                             )
                         }
@@ -208,7 +209,6 @@ object CharacterDetailsScreen {
         viewer: AuthedUserQuery.Data.Viewer?,
         characterImageWidthToHeightRatio: () -> Float,
         expandedState: ExpandedState,
-        navigationCallback: AnimeNavigator.NavigationCallback,
         colorCalculationState: ColorCalculationState,
     ) {
         descriptionSection(
@@ -221,8 +221,6 @@ object CharacterDetailsScreen {
             screenKey = AnimeNavDestinations.CHARACTER_DETAILS.id,
             titleRes = R.string.anime_character_details_voice_actors_label,
             staffList = voiceActors,
-            onStaffClick = navigationCallback::onStaffClick,
-            onStaffLongClick = navigationCallback::onStaffLongClick,
             colorCalculationState = colorCalculationState,
             roleLines = 1,
         )
@@ -235,7 +233,6 @@ object CharacterDetailsScreen {
             expanded = expandedState::media,
             onExpandedChange = { expandedState.media = it },
             colorCalculationState = colorCalculationState,
-            navigationCallback = navigationCallback,
             onClickListEdit = { editViewModel.initialize(it.media) },
             onLongClick = viewModel::onMediaLongClick,
         )
@@ -410,7 +407,6 @@ object CharacterDetailsScreen {
         expanded: () -> Boolean,
         onExpandedChange: (Boolean) -> Unit,
         colorCalculationState: ColorCalculationState,
-        navigationCallback: AnimeNavigator.NavigationCallback,
         onClickListEdit: (AnimeMediaListRow.Entry<*>) -> Unit,
         onLongClick: (AnimeMediaListRow.Entry<*>) -> Unit,
     ) {
@@ -425,18 +421,15 @@ object CharacterDetailsScreen {
             expanded = expanded,
             onExpandedChange = onExpandedChange,
             colorCalculationState = colorCalculationState,
-            navigationCallback = navigationCallback,
             onClickListEdit = onClickListEdit,
             onLongClick = onLongClick,
             onClickViewAll = {
-                entry.let {
-                    navigationCallback.onCharacterMediasClick(
-                        character = it.character,
-                        favorite = headerValues.favorite,
-                        imageWidthToHeightRatio = characterImageWidthToHeightRatio(),
-                        color = headerValues.color(colorCalculationState),
-                    )
-                }
+                it.onCharacterMediasClick(
+                    character = entry.character,
+                    favorite = headerValues.favorite,
+                    imageWidthToHeightRatio = characterImageWidthToHeightRatio(),
+                    color = headerValues.color(colorCalculationState),
+                )
             },
             viewAllContentDescriptionTextRes = R.string.anime_character_details_view_all_content_description,
         )

@@ -51,7 +51,6 @@ import androidx.paging.compose.itemKey
 import com.anilist.AuthedUserQuery
 import com.anilist.fragment.MediaPreview
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterListRow
@@ -86,8 +85,6 @@ object AnimeSearchScreen {
     operator fun invoke(
         upIconOption: UpIconOption? = null,
         viewModel: AnimeSearchViewModel = hiltViewModel(),
-        navigationCallback: AnimeNavigator.NavigationCallback =
-            AnimeNavigator.NavigationCallback(null),
         scrollStateSaver: ScrollStateSaver = ScrollStateSaver.STUB,
         bottomNavigationState: BottomNavigationState? = null,
     ) {
@@ -168,6 +165,7 @@ object AnimeSearchScreen {
                                     text = stringResource(R.string.anime_requires_unlock),
                                     modifier = Modifier.padding(vertical = 10.dp)
                                 )
+                                val navigationCallback = LocalNavigationCallback.current
                                 Button(
                                     onClick = {
                                         navigationCallback.navigate(
@@ -236,26 +234,22 @@ object AnimeSearchScreen {
                                                     entry = item.entry,
                                                     onLongPressImage = { /* TODO */ },
                                                     colorCalculationState = colorCalculationState,
-                                                    navigationCallback = navigationCallback,
                                                 )
                                                 is AnimeSearchEntry.Staff -> StaffListRow(
                                                     screenKey = SCREEN_KEY,
                                                     entry = item.entry,
                                                     onLongPressImage = { /* TODO */ },
                                                     colorCalculationState = colorCalculationState,
-                                                    navigationCallback = navigationCallback,
                                                 )
                                                 is AnimeSearchEntry.User -> UserListRow(
                                                     screenKey = SCREEN_KEY,
                                                     entry = item.entry,
                                                     onLongPressImage = { /* TODO */ },
                                                     colorCalculationState = colorCalculationState,
-                                                    navigationCallback = navigationCallback,
                                                 )
                                                 is AnimeSearchEntry.Studio -> StudioListRow(
                                                     screenKey = SCREEN_KEY,
                                                     entry = item.entry,
-                                                    navigationCallback = navigationCallback,
                                                 )
 
                                                 // TODO: Separated placeholder types
@@ -306,7 +300,6 @@ object AnimeSearchScreen {
                 onLongClick = { viewModel.ignoreList.toggle(entry.media.id.toString()) },
                 onLongPressImage = { onLongPressImage(entry) },
                 colorCalculationState = colorCalculationState,
-                navigationCallback = LocalNavigationCallback.current,
             )
             MediaViewOption.LARGE_CARD -> AnimeMediaLargeCard(
                 screenKey = SCREEN_KEY,
@@ -315,7 +308,6 @@ object AnimeSearchScreen {
                 onLongClick = { viewModel.ignoreList.toggle(entry.media.id.toString()) },
                 onClickListEdit = { editViewModel.initialize(it.media) },
                 colorCalculationState = colorCalculationState,
-                navigationCallback = LocalNavigationCallback.current,
             )
             MediaViewOption.COMPACT -> AnimeMediaCompactListRow(
                 screenKey = SCREEN_KEY,
@@ -325,7 +317,6 @@ object AnimeSearchScreen {
                 onLongPressImage = { onLongPressImage(entry) },
                 onClickListEdit = { editViewModel.initialize(it.media) },
                 colorCalculationState = colorCalculationState,
-                navigationCallback = LocalNavigationCallback.current,
             )
             MediaViewOption.GRID -> MediaGridCard(
                 screenKey = SCREEN_KEY,

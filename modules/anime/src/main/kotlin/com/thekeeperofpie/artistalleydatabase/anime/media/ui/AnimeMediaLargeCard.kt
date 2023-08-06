@@ -55,7 +55,7 @@ import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.material.placeholder
 import com.google.accompanist.placeholder.material.shimmer
 import com.mxalbert.sharedelements.SharedElement
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
+import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaTagEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaStatusAware
@@ -83,7 +83,6 @@ object AnimeMediaLargeCard {
         onLongClick: (MediaNavigationData) -> Unit = {},
         onClickListEdit: (Entry) -> Unit,
         colorCalculationState: ColorCalculationState = ColorCalculationState(),
-        navigationCallback: AnimeNavigator.NavigationCallback?,
     ) {
         ElevatedCard(
             modifier = modifier
@@ -91,11 +90,12 @@ object AnimeMediaLargeCard {
                 .heightIn(min = HEIGHT)
                 .alpha(if (entry?.ignored == true) 0.38f else 1f)
         ) {
+            val navigationCallback = LocalNavigationCallback.current
             Box(
                 modifier = Modifier.combinedClickable(
                     enabled = entry != null,
                     onClick = {
-                        if (entry != null) navigationCallback?.onMediaClick(entry.media)
+                        if (entry != null) navigationCallback.onMediaClick(entry.media)
                     },
                     onLongClick = { if (entry?.media != null) onLongClick(entry.media) }
                 )
@@ -155,7 +155,7 @@ object AnimeMediaLargeCard {
                                 tags = entry?.tags.orEmpty(),
                                 onTagClick = { id, name ->
                                     if (entry != null) {
-                                        navigationCallback?.onTagClick(
+                                        navigationCallback.onTagClick(
                                             entry.media.type ?: MediaType.ANIME,
                                             id,
                                             name

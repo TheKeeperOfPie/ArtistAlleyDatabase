@@ -48,7 +48,7 @@ import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
 import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
 import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
+import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.ui.ListRowSmallImage
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
@@ -65,10 +65,9 @@ object UserListRow {
         entry: Entry,
         onLongPressImage: (Entry) -> Unit = {},
         colorCalculationState: ColorCalculationState = ColorCalculationState(),
-        navigationCallback: AnimeNavigator.NavigationCallback =
-            AnimeNavigator.NavigationCallback(null),
     ) {
         var imageWidthToHeightRatio by remember { MutableSingle(1f) }
+        val navigationCallback = LocalNavigationCallback.current
         ElevatedCard(
             modifier = Modifier
                 .fillMaxWidth()

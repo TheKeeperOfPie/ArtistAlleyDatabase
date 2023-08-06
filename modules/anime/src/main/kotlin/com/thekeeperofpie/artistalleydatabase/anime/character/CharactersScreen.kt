@@ -4,7 +4,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
 import com.anilist.MediaAndCharactersQuery
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeader
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderValues
@@ -24,7 +23,6 @@ object CharactersScreen {
         viewModel: CharactersViewModel,
         upIconOption: UpIconOption,
         headerValues: MediaHeaderValues,
-        navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
         val colorCalculationState = rememberColorCalculationState(viewModel.colorMap)
         val entry = viewModel.entry
@@ -63,7 +61,6 @@ object CharactersScreen {
                     imageWidth = IMAGE_WIDTH,
                     minHeight = MIN_IMAGE_HEIGHT,
                     colorCalculationState = colorCalculationState,
-                    navigationCallback = navigationCallback,
                 )
             },
         )

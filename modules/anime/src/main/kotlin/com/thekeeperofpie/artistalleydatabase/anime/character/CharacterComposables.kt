@@ -59,8 +59,6 @@ import coil.compose.AsyncImage
 import coil.compose.AsyncImagePainter
 import coil.request.ImageRequest
 import coil.size.Dimension
-import com.anilist.fragment.CharacterNavigationData
-import com.anilist.fragment.StaffNavigationData
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.material.placeholder
 import com.google.accompanist.placeholder.material.shimmer
@@ -69,6 +67,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
 import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
 import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
+import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.primaryName
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
@@ -232,18 +231,16 @@ fun LazyListScope.charactersSection(
     screenKey: String,
     @StringRes titleRes: Int,
     characters: LazyPagingItems<DetailsCharacter>,
-    onCharacterClick: (CharacterNavigationData, favorite: Boolean?, imageWidthToHeightRatio: Float, color: Color?) -> Unit,
-    onCharacterLongClick: (String) -> Unit,
-    onStaffClick: (StaffNavigationData, favorite: Boolean?, imageWidthToHeightRatio: Float, color: Color?) -> Unit,
-    onClickViewAll: (() -> Unit)? = null,
+    onClickViewAll: ((AnimeNavigator.NavigationCallback) -> Unit)? = null,
     @StringRes viewAllContentDescriptionTextRes: Int? = null,
     colorCalculationState: ColorCalculationState,
 ) {
     if (characters.itemCount == 0) return
     item("charactersHeader-$titleRes") {
+        val navigationCallback = LocalNavigationCallback.current
         DetailsSectionHeader(
             stringResource(titleRes),
-            onClickViewAll = onClickViewAll,
+            onClickViewAll = onClickViewAll?.let { { it(navigationCallback) } },
             viewAllContentDescriptionTextRes = viewAllContentDescriptionTextRes,
         )
     }
@@ -263,6 +260,8 @@ fun LazyListScope.charactersSection(
                 var innerImageWidthToHeightRatio by remember { MutableSingle(1f) }
                 val voiceActor = (character?.languageToVoiceActor?.get("Japanese")
                     ?: character?.languageToVoiceActor?.values?.firstOrNull())
+
+                val navigationCallback = LocalNavigationCallback.current
                 CharacterSmallCard(
                     screenKey = screenKey,
                     id = EntryId("anime_character", character?.id.orEmpty()),
@@ -270,7 +269,7 @@ fun LazyListScope.charactersSection(
                     colorCalculationState = colorCalculationState,
                     onClick = {
                         character?.character?.let {
-                            onCharacterClick(
+                            navigationCallback.onCharacterClick(
                                 character.character,
                                 null,
                                 imageWidthToHeightRatio,
@@ -282,7 +281,7 @@ fun LazyListScope.charactersSection(
                     innerImageKey = "anime_staff_${voiceActor?.id}_image",
                     onClickInnerImage = voiceActor?.image?.let {
                         {
-                            onStaffClick(
+                            navigationCallback.onStaffClick(
                                 voiceActor.staff,
                                 null,
                                 innerImageWidthToHeightRatio,
@@ -324,9 +323,9 @@ fun CharacterCard(
     minHeight: Dp,
     character: DetailsCharacter?,
     colorCalculationState: ColorCalculationState,
-    navigationCallback: AnimeNavigator.NavigationCallback,
 ) {
     var imageWidthToHeightRatio by remember { MutableSingle(1f) }
+    val navigationCallback = LocalNavigationCallback.current
     ElevatedCard(
         onClick = {
             character?.character?.let {

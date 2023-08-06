@@ -65,6 +65,8 @@ import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.material.placeholder
 import com.google.accompanist.placeholder.material.shimmer
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
+import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.compose.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
@@ -261,19 +263,20 @@ fun <T> LazyListScope.listSection(
     onExpandedChange: (Boolean) -> Unit = {},
     hidden: () -> Boolean = { false },
     hiddenContent: @Composable () -> Unit = {},
-    onClickViewAll: (() -> Unit)? = null,
+    onClickViewAll: ((AnimeNavigator.NavigationCallback) -> Unit)? = null,
     @StringRes viewAllContentDescriptionTextRes: Int? = null,
     itemContent: @Composable LazyListScope.(T, paddingBottom: Dp, modifier: Modifier) -> Unit,
 ) {
     if (values != null && values.isEmpty()) return
     item("$titleRes-header") {
+        val navigationCallback = LocalNavigationCallback.current
         DetailsSectionHeader(
             text = stringResource(titleRes),
             modifier = Modifier.clickable(
                 enabled = onClickViewAll != null,
-                onClick = { onClickViewAll?.invoke() },
+                onClick = { onClickViewAll?.invoke(navigationCallback) },
             ),
-            onClickViewAll = onClickViewAll,
+            onClickViewAll = onClickViewAll?.let { { it(navigationCallback) }},
             viewAllContentDescriptionTextRes = viewAllContentDescriptionTextRes
         )
     }
@@ -303,8 +306,9 @@ fun <T> LazyListScope.listSection(
 
     fun showAllButton() {
         item("$titleRes-showAll") {
+            val navigationCallback = LocalNavigationCallback.current
             ElevatedCard(
-                onClick = { onClickViewAll?.invoke() },
+                onClick = { onClickViewAll?.invoke(navigationCallback) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)

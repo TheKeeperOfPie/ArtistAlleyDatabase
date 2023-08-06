@@ -33,7 +33,6 @@ import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
 import com.anilist.AuthedUserQuery
 import com.anilist.UserByIdQuery
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.charactersSection
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
@@ -58,7 +57,6 @@ object UserOverviewScreen {
         isFollowing: @Composable () -> Boolean,
         onFollowingClick: () -> Unit,
         colorCalculationState: ColorCalculationState,
-        navigationCallback: AnimeNavigator.NavigationCallback,
         modifier: Modifier = Modifier,
         bottomNavigationState: BottomNavigationState? = null,
     ) {
@@ -114,9 +112,6 @@ object UserOverviewScreen {
                 screenKey = viewModel.screenKey,
                 titleRes = R.string.anime_user_favorite_characters_label,
                 characters = characters,
-                onCharacterClick = navigationCallback::onCharacterClick,
-                onCharacterLongClick = navigationCallback::onCharacterLongClick,
-                onStaffClick = navigationCallback::onStaffClick,
                 colorCalculationState = colorCalculationState,
             )
 
@@ -124,15 +119,12 @@ object UserOverviewScreen {
                 screenKey = viewModel.screenKey,
                 titleRes = R.string.anime_user_favorite_staff_label,
                 staffList = staff,
-                onStaffClick = navigationCallback::onStaffClick,
-                onStaffLongClick = navigationCallback::onStaffLongClick,
                 colorCalculationState = colorCalculationState,
             )
 
             favoriteStudiosSection(
                 screenKey = viewModel.screenKey,
                 studios = studios,
-                navigationCallback = navigationCallback,
             )
 
             previousNamesSection(
@@ -206,7 +198,6 @@ object UserOverviewScreen {
     private fun LazyListScope.favoriteStudiosSection(
         screenKey: String,
         studios: LazyPagingItems<StudioListRow.Entry>,
-        navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
         if (studios.itemCount == 0) return
         item {
@@ -222,7 +213,6 @@ object UserOverviewScreen {
             StudioListRow(
                 screenKey = screenKey,
                 entry = studio,
-                navigationCallback = navigationCallback,
                 mediaWidth = 64.dp,
                 mediaHeight = 96.dp,
                 modifier = Modifier

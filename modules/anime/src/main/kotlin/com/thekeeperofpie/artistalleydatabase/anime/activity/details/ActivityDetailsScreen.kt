@@ -83,7 +83,7 @@ import com.google.accompanist.placeholder.material.shimmer
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
+import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ListActivitySmallCard
 import com.thekeeperofpie.artistalleydatabase.anime.activity.MessageActivitySmallCard
@@ -109,7 +109,6 @@ object ActivityDetailsScreen {
     operator fun invoke(
         upIconOption: UpIconOption.Back,
         viewModel: ActivityDetailsViewModel,
-        navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
         val colorCalculationState = rememberColorCalculationState(viewModel.colorMap)
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
@@ -228,7 +227,6 @@ object ActivityDetailsScreen {
                                                 editViewModel.initialize(it.media)
                                             },
                                             colorCalculationState = colorCalculationState,
-                                            navigationCallback = navigationCallback,
                                         )
                                     }
                                     is ActivityDetailsQuery.Data.TextActivityActivity -> {
@@ -242,7 +240,6 @@ object ActivityDetailsScreen {
                                             onClickDelete = {
                                                 deletePromptData = Either.Left(Unit)
                                             },
-                                            navigationCallback = navigationCallback,
                                         )
                                     }
                                     is ActivityDetailsQuery.Data.MessageActivityActivity -> {
@@ -256,7 +253,6 @@ object ActivityDetailsScreen {
                                             onClickDelete = {
                                                 deletePromptData = Either.Left(Unit)
                                             },
-                                            navigationCallback = navigationCallback,
                                         )
                                     }
                                     is ActivityDetailsQuery.Data.OtherActivity,
@@ -268,7 +264,6 @@ object ActivityDetailsScreen {
                                             viewer = viewer,
                                             entry = result,
                                             onActivityStatusUpdate = viewModel.toggleHelper::toggle,
-                                            navigationCallback = navigationCallback,
                                         )
                                     }
                                 }
@@ -300,7 +295,6 @@ object ActivityDetailsScreen {
                                             deletePromptData = Either.Right(replyEntry)
                                         }
                                     },
-                                    navigationCallback = navigationCallback,
                                 )
                             }
                         }
@@ -439,10 +433,10 @@ object ActivityDetailsScreen {
         replyEntry: ActivityDetailsViewModel.Entry.ReplyEntry?,
         onReplyStatusUpdate: (String, Boolean) -> Unit,
         onClickDelete: (String) -> Unit,
-        navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
         val user = replyEntry?.reply?.user
         Column(modifier = Modifier.fillMaxWidth()) {
+            val navigationCallback = LocalNavigationCallback.current
             Row(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 modifier = Modifier

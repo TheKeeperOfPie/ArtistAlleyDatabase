@@ -3,6 +3,8 @@
 package com.thekeeperofpie.artistalleydatabase.anime.utils
 
 import androidx.annotation.StringRes
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
@@ -43,7 +45,9 @@ fun <ListEntryType : Any> HeaderAndListScreen(
     itemKey: (ListEntryType) -> Any,
     item: @Composable LazyGridItemScope.(ListEntryType?) -> Unit,
 ) {
-    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
+        snapAnimationSpec = spring(stiffness = Spring.StiffnessMedium)
+    )
     Scaffold(
         topBar = {
             CollapsingToolbar(
@@ -81,10 +85,12 @@ fun <ListEntryType : Any> HeaderAndMediaListScreen(
     @StringRes headerTextRes: Int?,
     header: @Composable() (BoxScope.(progress: Float) -> Unit),
     itemKey: (ListEntryType) -> Any,
-    item: @Composable() (LazyGridItemScope.(ListEntryType?) -> Unit),
+    item: @Composable (LazyGridItemScope.(ListEntryType?) -> Unit),
     colorCalculationState: ColorCalculationState,
 ) {
-    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
+        snapAnimationSpec = spring(stiffness = Spring.StiffnessMedium)
+    )
     val snackbarHostState = remember { SnackbarHostState() }
 
     val error = viewModel.error

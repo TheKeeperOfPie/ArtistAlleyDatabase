@@ -100,7 +100,7 @@ import com.anilist.type.MediaType
 import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
+import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityToggleUpdate
 import com.thekeeperofpie.artistalleydatabase.anime.activity.AnimeActivityViewModel
@@ -145,7 +145,6 @@ object AnimeHomeScreen {
     operator fun invoke(
         viewModel: AnimeHomeViewModel = hiltViewModel<AnimeHomeViewModel>(),
         upIconOption: UpIconOption?,
-        navigationCallback: AnimeNavigator.NavigationCallback,
         scrollStateSaver: ScrollStateSaver,
         bottomNavigationState: BottomNavigationState,
     ) {
@@ -214,6 +213,7 @@ object AnimeHomeScreen {
                                 )
                             }
 
+                            val navigationCallback = LocalNavigationCallback.current
                             // TODO: Unread notification count
                             if (viewer != null) {
                                 IconButton(onClick = navigationCallback::onNotificationsClick) {
@@ -261,7 +261,6 @@ object AnimeHomeScreen {
                 ) {
                     newsRow(
                         data = viewModel.newsController.newsDateDescending(),
-                        navigationCallback = navigationCallback,
                     )
 
                     activityRow(
@@ -270,7 +269,6 @@ object AnimeHomeScreen {
                         data = activity,
                         onActivityStatusUpdate = viewModel.activityToggleHelper::toggle,
                         colorCalculationState = colorCalculationState,
-                        navigationCallback = navigationCallback,
                     )
 
                     mediaList(
@@ -278,7 +276,6 @@ object AnimeHomeScreen {
                         viewer = viewer,
                         onClickListEdit = { editViewModel.initialize(it) },
                         selectedItemTracker = selectedItemTracker,
-                        navigationCallback = navigationCallback,
                         colorCalculationState = colorCalculationState,
                     )
                 }
@@ -299,7 +296,6 @@ object AnimeHomeScreen {
         onClickListEdit: (MediaCompactWithTags) -> Unit,
         selectedItemTracker: SelectedItemTracker,
         colorCalculationState: ColorCalculationState,
-        navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
         val entry = mediaViewModel.entry
         currentMediaRow(
@@ -308,7 +304,6 @@ object AnimeHomeScreen {
             viewer = viewer,
             onClickListEdit = onClickListEdit,
             colorCalculationState = colorCalculationState,
-            navigationCallback = navigationCallback
         )
 
         entry.result?.lists?.forEach {
@@ -318,7 +313,6 @@ object AnimeHomeScreen {
                 onClickListEdit = onClickListEdit,
                 onLongClickEntry = mediaViewModel::onLongClickEntry,
                 selectedItemTracker = selectedItemTracker,
-                navigationCallback = navigationCallback,
                 colorCalculationState = colorCalculationState,
             )
         }
@@ -326,11 +320,9 @@ object AnimeHomeScreen {
 
     private fun LazyListScope.newsRow(
         data: List<AnimeNewsArticleEntry>,
-        navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
         rowHeader(
             titleRes = R.string.anime_news_home_title,
-            navigationCallback = navigationCallback,
             viewAllRoute = AnimeNavDestinations.NEWS.id
         )
 
@@ -360,11 +352,9 @@ object AnimeHomeScreen {
         data: LazyPagingItems<AnimeActivityViewModel.ActivityEntry>,
         onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
         colorCalculationState: ColorCalculationState,
-        navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
         rowHeader(
             titleRes = R.string.anime_home_activity_label,
-            navigationCallback = navigationCallback,
             viewAllRoute = AnimeNavDestinations.ACTIVITY.id
         )
 
@@ -388,7 +378,6 @@ object AnimeHomeScreen {
                             activity = activity,
                             entry = entry,
                             onActivityStatusUpdate = onActivityStatusUpdate,
-                            navigationCallback = navigationCallback,
                             clickable = true,
                             modifier = Modifier.fillMaxWidth()
                         )
@@ -402,7 +391,6 @@ object AnimeHomeScreen {
                             onActivityStatusUpdate = onActivityStatusUpdate,
                             onClickListEdit = { editViewModel.initialize(it.media) },
                             colorCalculationState = colorCalculationState,
-                            navigationCallback = navigationCallback,
                             clickable = true,
                             modifier = Modifier.fillMaxWidth()
                         )
@@ -413,7 +401,6 @@ object AnimeHomeScreen {
                             activity = activity,
                             entry = entry,
                             onActivityStatusUpdate = onActivityStatusUpdate,
-                            navigationCallback = navigationCallback,
                             clickable = true,
                             modifier = Modifier.fillMaxWidth()
                         )
@@ -425,7 +412,6 @@ object AnimeHomeScreen {
                         activity = null,
                         entry = null,
                         onActivityStatusUpdate = onActivityStatusUpdate,
-                        navigationCallback = navigationCallback,
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
@@ -442,19 +428,16 @@ object AnimeHomeScreen {
         viewer: AuthedUserQuery.Data.Viewer?,
         onClickListEdit: (MediaPreview) -> Unit,
         colorCalculationState: ColorCalculationState,
-        navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
         val result = current.result
         if (result.isNullOrEmpty()) return
         rowHeader(
             titleRes = headerTextRes,
-            navigationCallback = navigationCallback,
             viewAllRoute = null, // TODO: full current lists
         )
 
         item("$headerTextRes-current") {
             val listState = rememberLazyListState()
-            val colorPrimary = MaterialTheme.colorScheme.primary
 
             LazyRow(
                 state = listState,
@@ -476,7 +459,6 @@ object AnimeHomeScreen {
                         onClickListEdit = onClickListEdit,
                         onLongClickEntry = { /* TODO */ },
                         colorCalculationState = colorCalculationState,
-                        navigationCallback = navigationCallback,
                         modifier = Modifier.animateItemPlacement(),
                     )
                 }
@@ -499,10 +481,10 @@ object AnimeHomeScreen {
 
     private fun LazyListScope.rowHeader(
         @StringRes titleRes: Int,
-        navigationCallback: AnimeNavigator.NavigationCallback,
         viewAllRoute: String?,
     ) {
         item("header_$titleRes") {
+            val navigationCallback = LocalNavigationCallback.current
             Row(
                 modifier = Modifier
                     .clickable(enabled = viewAllRoute != null) {
@@ -541,12 +523,10 @@ object AnimeHomeScreen {
         onLongClickEntry: (MediaNavigationData) -> Unit,
         selectedItemTracker: SelectedItemTracker,
         colorCalculationState: ColorCalculationState,
-        navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
         val (rowKey, titleRes, entries, viewAllRoute) = data
         rowHeader(
             titleRes = titleRes,
-            navigationCallback = navigationCallback,
             viewAllRoute = viewAllRoute
         )
 
@@ -570,7 +550,6 @@ object AnimeHomeScreen {
                     onLongClick = { onLongClickEntry(entry.media) },
                     onClickListEdit = { onClickListEdit(it.media) },
                     colorCalculationState = colorCalculationState,
-                    navigationCallback = navigationCallback,
                 )
             }
 
@@ -621,13 +600,13 @@ object AnimeHomeScreen {
                         onClickListEdit = onClickListEdit,
                         onLongClickEntry = onLongClickEntry,
                         colorCalculationState = colorCalculationState,
-                        navigationCallback = navigationCallback,
                         modifier = Modifier.animateItemPlacement(),
                     )
                 }
 
                 if (viewAllRoute != null) {
                     item("view_all") {
+                        val navigationCallback = LocalNavigationCallback.current
                         GenericViewAllCard(onClick = {
                             navigationCallback.navigate(viewAllRoute)
                         })
@@ -651,7 +630,6 @@ object AnimeHomeScreen {
         onLongClickEntry: (MediaNavigationData) -> Unit,
         modifier: Modifier = Modifier,
         colorCalculationState: ColorCalculationState,
-        navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
         val id = media.id.toString()
         val colors = colorCalculationState.colorMap[id]
@@ -676,11 +654,11 @@ object AnimeHomeScreen {
             )
         }
 
+        val navigationCallback = LocalNavigationCallback.current
         var widthToHeightRatio by remember(id) { mutableStateOf<Float?>(null) }
         val onClick = {
             navigationCallback.onMediaClick(media, widthToHeightRatio ?: 1f)
         }
-
 
         SharedElement(
             key = "anime_media_${media.id}_image",
@@ -784,7 +762,6 @@ object AnimeHomeScreen {
         onLongClickEntry: (MediaNavigationData) -> Unit,
         modifier: Modifier = Modifier,
         colorCalculationState: ColorCalculationState,
-        navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
         val id = media.id.toString()
         val colors = colorCalculationState.colorMap[id]
@@ -809,6 +786,7 @@ object AnimeHomeScreen {
             )
         }
 
+        val navigationCallback = LocalNavigationCallback.current
         var widthToHeightRatio by remember(id) { mutableStateOf<Float?>(null) }
         val onClick = {
             navigationCallback.onMediaClick(media, widthToHeightRatio ?: 1f)

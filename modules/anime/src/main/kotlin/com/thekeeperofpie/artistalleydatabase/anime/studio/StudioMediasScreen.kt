@@ -12,10 +12,9 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.anilist.StudioMediasQuery
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoriteType
-import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.ui.FavoriteIconButton
 import com.thekeeperofpie.artistalleydatabase.anime.utils.HeaderAndMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
@@ -34,7 +33,6 @@ object StudioMediasScreen {
         viewModel: StudioMediasViewModel,
         name: () -> String,
         favorite: () -> Boolean?,
-        navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
         val colorCalculationState = rememberColorCalculationState(viewModel.colorMap)
         val viewer by viewModel.viewer.collectAsState()
@@ -73,7 +71,6 @@ object StudioMediasScreen {
                     onClickListEdit = { editViewModel.initialize(it.media) },
                     onLongClick = viewModel::onMediaLongClick,
                     colorCalculationState = colorCalculationState,
-                    navigationCallback = navigationCallback,
                     modifier = Modifier.padding(
                         start = 16.dp,
                         end = 16.dp,

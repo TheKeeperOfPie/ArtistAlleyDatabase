@@ -51,7 +51,7 @@ import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
 import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
 import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
+import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaTagEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaStatusAware
@@ -77,7 +77,6 @@ object AnimeMediaCompactListRow {
         onLongPressImage: (Entry) -> Unit,
         onClickListEdit: (Entry) -> Unit,
         colorCalculationState: ColorCalculationState,
-        navigationCallback: AnimeNavigator.NavigationCallback?,
     ) {
         var imageWidthToHeightRatio by remember { MutableSingle(1f) }
         SharedElement(key = "anime_media_compact_row_${entry?.media?.id}", screenKey = screenKey) {
@@ -87,13 +86,14 @@ object AnimeMediaCompactListRow {
                     .heightIn(min = DEFAULT_IMAGE_HEIGHT)
                     .alpha(if (entry?.ignored == true) 0.38f else 1f)
             ) {
+                val navigationCallback = LocalNavigationCallback.current
                 Row(modifier = Modifier
                     .height(IntrinsicSize.Min)
                     .combinedClickable(
                         enabled = entry != null,
                         onClick = {
                             if (entry != null) {
-                                navigationCallback?.onMediaClick(
+                                navigationCallback.onMediaClick(
                                     entry.media,
                                     imageWidthToHeightRatio
                                 )
@@ -108,7 +108,7 @@ object AnimeMediaCompactListRow {
                         entry = entry,
                         onClick = {
                             if (entry != null) {
-                                navigationCallback?.onMediaClick(
+                                navigationCallback.onMediaClick(
                                     entry.media,
                                     imageWidthToHeightRatio
                                 )
@@ -151,7 +151,7 @@ object AnimeMediaCompactListRow {
                             tags = entry?.tags.orEmpty(),
                             onTagClick = { id, name ->
                                 if (entry != null) {
-                                    navigationCallback?.onTagClick(
+                                    navigationCallback.onTagClick(
                                         entry.media.type ?: MediaType.ANIME,
                                         id,
                                         name

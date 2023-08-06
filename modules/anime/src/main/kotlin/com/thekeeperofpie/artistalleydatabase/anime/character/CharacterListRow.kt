@@ -60,7 +60,7 @@ import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
 import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
 import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
+import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.primaryName
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.toTextRes
@@ -81,9 +81,9 @@ object CharacterListRow {
         showRole: Boolean = false,
         onLongPressImage: (Entry) -> Unit = {},
         colorCalculationState: ColorCalculationState = ColorCalculationState(),
-        navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
         var imageWidthToHeightRatio by remember { MutableSingle(1f) }
+        val navigationCallback = LocalNavigationCallback.current
         val onClick = {
             if (entry != null) {
                 navigationCallback.onCharacterClick(
@@ -147,7 +147,6 @@ object CharacterListRow {
                         screenKey = screenKey,
                         entry = entry,
                         colorCalculationState = colorCalculationState,
-                        navigationCallback = navigationCallback,
                     )
                 }
             }
@@ -287,12 +286,12 @@ object CharacterListRow {
         screenKey: String,
         entry: Entry?,
         colorCalculationState: ColorCalculationState,
-        navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
         val media = entry?.media?.takeIf { it.isNotEmpty() }
             ?: listOf(null, null, null, null, null)
         val context = LocalContext.current
         val density = LocalDensity.current
+        val navigationCallback = LocalNavigationCallback.current
         LazyRow(
             contentPadding = PaddingValues(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp),

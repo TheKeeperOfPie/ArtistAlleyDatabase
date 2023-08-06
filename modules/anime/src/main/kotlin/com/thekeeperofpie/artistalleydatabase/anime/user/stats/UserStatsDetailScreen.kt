@@ -38,7 +38,7 @@ import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
 import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
 import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
+import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserScreen
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserViewModel
@@ -55,7 +55,6 @@ object UserStatsDetailScreen {
     operator fun <Value> invoke(
         screenKey: String,
         statistics: @Composable () -> AniListUserScreen.Entry.Statistics?,
-        navigationCallback: AnimeNavigator.NavigationCallback,
         state: AniListUserViewModel.States.State<Value>,
         isAnime: Boolean,
         bottomNavigationState: BottomNavigationState? = null,
@@ -110,7 +109,6 @@ object UserStatsDetailScreen {
                         initialItemImage = initialItemImage,
                         state = state,
                         isAnime = isAnime,
-                        navigationCallback = navigationCallback,
                     )
                 }
             }
@@ -132,7 +130,6 @@ object UserStatsDetailScreen {
         initialItemImage: ((Value) -> String?)?,
         state: AniListUserViewModel.States.State<Value>,
         isAnime: Boolean,
-        navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
         var firstItemImageWidthToHeightRatio by remember { MutableSingle(1f) }
         ElevatedCard(
@@ -193,6 +190,7 @@ object UserStatsDetailScreen {
 
                         items(mediaIds, key = { it }) {
                             val media = medias.getOrNull()?.get(it)
+                            val navigationCallback = LocalNavigationCallback.current
                             InnerCard(
                                 screenKey = screenKey,
                                 id = media?.id.toString(),

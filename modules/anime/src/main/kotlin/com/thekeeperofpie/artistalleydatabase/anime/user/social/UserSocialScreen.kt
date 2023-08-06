@@ -50,7 +50,7 @@ import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
 import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
 import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
+import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
@@ -67,7 +67,6 @@ object UserSocialScreen {
         screenKey: String,
         userId: String?,
         colorCalculationState: ColorCalculationState,
-        navigationCallback: AnimeNavigator.NavigationCallback,
         bottomNavigationState: BottomNavigationState?,
     ) {
         val followingViewModel = hiltViewModel<UserSocialViewModel.Following>()
@@ -107,7 +106,6 @@ object UserSocialScreen {
                 titleRes = R.string.anime_user_social_following,
                 emptyTextRes = R.string.anime_user_social_not_following_anyone,
                 colorCalculationState = colorCalculationState,
-                navigationCallback = navigationCallback,
             )
 
             if (followers.itemCount > 0) {
@@ -118,7 +116,6 @@ object UserSocialScreen {
                     titleRes = R.string.anime_user_social_followers,
                     emptyTextRes = null,
                     colorCalculationState = colorCalculationState,
-                    navigationCallback = navigationCallback,
                 )
             }
         }
@@ -131,7 +128,6 @@ object UserSocialScreen {
         @StringRes titleRes: Int,
         @StringRes emptyTextRes: Int?,
         colorCalculationState: ColorCalculationState,
-        navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
         item("header_$key") {
             DetailsSectionHeader(text = stringResource(titleRes))
@@ -166,7 +162,6 @@ object UserSocialScreen {
                             screenKey = screenKey,
                             user = data[it],
                             colorCalculationState = colorCalculationState,
-                            navigationCallback = navigationCallback,
                         )
                     }
                 }
@@ -179,9 +174,9 @@ object UserSocialScreen {
         screenKey: String,
         user: UserNavigationData?,
         colorCalculationState: ColorCalculationState,
-        navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
         var imageWidthToHeightRatio by remember { MutableSingle(1f) }
+        val navigationCallback = LocalNavigationCallback.current
         ElevatedCard(
             modifier = Modifier
                 .fillMaxWidth()

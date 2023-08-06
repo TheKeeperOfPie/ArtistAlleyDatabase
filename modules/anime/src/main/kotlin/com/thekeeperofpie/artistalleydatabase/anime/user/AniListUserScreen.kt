@@ -1,5 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.anime.user
 
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -67,12 +69,13 @@ object AniListUserScreen {
         viewModel: AniListUserViewModel,
         upIconOption: UpIconOption?,
         headerValues: UserHeaderValues,
-        navigationCallback: AnimeNavigator.NavigationCallback,
         bottomNavigationState: BottomNavigationState? = null,
         showLogOut: Boolean = false,
         onClickSettings: (() -> Unit)? = null,
     ) {
-        val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+        val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
+            snapAnimationSpec = spring(stiffness = Spring.StiffnessMedium)
+        )
         val colorCalculationState = rememberColorCalculationState(viewModel.colorMap)
         val editViewModel = hiltViewModel<MediaEditViewModel>()
         MediaEditBottomSheetScaffold(
@@ -217,7 +220,6 @@ object AniListUserScreen {
                                     isFollowing = { viewModel.isFollowing },
                                     onFollowingClick = viewModel::toggleFollow,
                                     colorCalculationState = colorCalculationState,
-                                    navigationCallback = navigationCallback,
                                     bottomNavigationState = bottomNavigationState,
                                 )
                                 UserTab.ANIME_STATS -> UserMediaScreen(
@@ -225,7 +227,6 @@ object AniListUserScreen {
                                     statistics = { viewModel.entry?.statisticsAnime },
                                     state = viewModel.animeStats,
                                     colorCalculationState = colorCalculationState,
-                                    navigationCallback = navigationCallback,
                                     bottomNavigationState = bottomNavigationState,
                                 )
                                 UserTab.MANGA_STATS -> UserMediaScreen(
@@ -233,14 +234,12 @@ object AniListUserScreen {
                                     statistics = { viewModel.entry?.statisticsManga },
                                     state = viewModel.mangaStats,
                                     colorCalculationState = colorCalculationState,
-                                    navigationCallback = navigationCallback,
                                     bottomNavigationState = bottomNavigationState,
                                 )
                                 UserTab.SOCIAL -> UserSocialScreen(
                                     screenKey = viewModel.screenKey,
                                     userId = viewModel.userId,
                                     colorCalculationState = colorCalculationState,
-                                    navigationCallback = navigationCallback,
                                     bottomNavigationState = bottomNavigationState,
                                 )
                             }

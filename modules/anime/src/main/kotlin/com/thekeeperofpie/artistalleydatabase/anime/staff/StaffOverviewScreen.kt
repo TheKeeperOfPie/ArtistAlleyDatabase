@@ -14,7 +14,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.charactersSection
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
@@ -33,7 +32,6 @@ object StaffOverviewScreen {
         staffImageWidthToHeightRatio: () -> Float,
         colorCalculationState: ColorCalculationState,
         expandedState: StaffDetailsScreen.ExpandedState,
-        navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
         val characters = viewModel.characters.collectAsLazyPagingItems()
         LazyColumn(
@@ -50,11 +48,8 @@ object StaffOverviewScreen {
                 screenKey = AnimeNavDestinations.STAFF_DETAILS.id,
                 titleRes = R.string.anime_staff_details_characters_label,
                 characters = characters,
-                onCharacterClick = navigationCallback::onCharacterClick,
-                onCharacterLongClick = navigationCallback::onCharacterLongClick,
-                onStaffClick = navigationCallback::onStaffClick,
                 onClickViewAll = {
-                    navigationCallback.onStaffCharactersClick(
+                    it.onStaffCharactersClick(
                         entry.staff,
                         viewModel.favoritesToggleHelper.favorite,
                         staffImageWidthToHeightRatio(),

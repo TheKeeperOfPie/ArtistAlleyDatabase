@@ -38,21 +38,22 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
 import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
 import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
+import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
 
 @Composable
 fun ReviewSmallCard(
     review: MediaAndReviewsReview?,
-    onClick: () -> Unit,
+    onClick: (AnimeNavigator.NavigationCallback) -> Unit,
     modifier: Modifier = Modifier,
-    navigationCallback: AnimeNavigator.NavigationCallback,
 ) {
+    val navigationCallback = LocalNavigationCallback.current
     ElevatedCard(
         modifier = modifier
             .clickable(
                 enabled = review?.id != null,
-                onClick = onClick,
+                onClick = { onClick(navigationCallback) },
             ),
     ) {
         Row(

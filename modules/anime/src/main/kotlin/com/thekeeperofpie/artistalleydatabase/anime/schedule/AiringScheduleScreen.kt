@@ -47,7 +47,7 @@ import com.anilist.type.MediaSeason
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
+import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
@@ -73,7 +73,6 @@ object AiringScheduleScreen {
     operator fun invoke(
         viewModel: AiringScheduleViewModel = hiltViewModel(),
         onClickBack: () -> Unit,
-        navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
         val colorCalculationState = rememberColorCalculationState(viewModel.colorMap)
         val initialDayIndex = remember { 6 + LocalDate.now().dayOfWeek.value }
@@ -99,6 +98,7 @@ object AiringScheduleScreen {
                                 )
                             },
                             actions = {
+                                val navigationCallback = LocalNavigationCallback.current
                                 IconButton(onClick = navigationCallback::onSeasonalClick) {
                                     Icon(
                                         imageVector = when (AniListUtils.getCurrentSeasonYear().first) {
@@ -231,7 +231,6 @@ object AiringScheduleScreen {
                                                     )
                                                 },
                                                 colorCalculationState = colorCalculationState,
-                                                navigationCallback = navigationCallback,
                                             )
                                         }
 

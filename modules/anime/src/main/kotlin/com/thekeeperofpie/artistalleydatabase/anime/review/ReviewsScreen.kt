@@ -10,7 +10,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.anilist.MediaAndReviewsQuery
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeader
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderValues
@@ -28,7 +27,6 @@ object ReviewsScreen {
         viewModel: ReviewsViewModel,
         upIconOption: UpIconOption,
         headerValues: MediaHeaderValues,
-        navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
         val colorCalculationState = rememberColorCalculationState(viewModel.colorMap)
         val entry = viewModel.entry
@@ -66,14 +64,13 @@ object ReviewsScreen {
                 )
             },
             itemKey = { it.id },
-            item = {
+            item = { review ->
                 ReviewSmallCard(
-                    review = it,
-                    navigationCallback = navigationCallback,
+                    review = review,
                     onClick = {
-                        if (it != null) {
-                            navigationCallback.onReviewClick(
-                                reviewId = it.id.toString(),
+                        if (review != null) {
+                            it.onReviewClick(
+                                reviewId = review.id.toString(),
                                 media = entry?.media,
                                 favorite = viewModel.favoritesToggleHelper.favorite,
                                 imageWidthToHeightRatio = coverImageWidthToHeightRatio

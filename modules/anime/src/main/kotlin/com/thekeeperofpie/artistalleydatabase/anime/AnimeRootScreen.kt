@@ -44,7 +44,6 @@ object AnimeRootScreen {
         viewModel: AnimeRootViewModel,
         onClickAuth: () -> Unit,
         onSubmitAuthToken: (String) -> Unit,
-        navigationCallback: AnimeNavigator.NavigationCallback,
         onClickSettings: () -> Unit,
     ) {
 
@@ -120,7 +119,6 @@ object AnimeRootScreen {
                     when (it) {
                         AnimeRootNavDestination.HOME -> AnimeHomeScreen(
                             upIconOption = upIconOption,
-                            navigationCallback = navigationCallback,
                             scrollStateSaver = ScrollStateSaver.fromMap(
                                 AnimeRootNavDestination.HOME.id,
                                 scrollPositions
@@ -132,7 +130,6 @@ object AnimeRootScreen {
                             userName = null,
                             mediaType = MediaType.ANIME,
                             upIconOption = upIconOption,
-                            navigationCallback = navigationCallback,
                             scrollStateSaver = ScrollStateSaver.fromMap(
                                 AnimeRootNavDestination.ANIME.id,
                                 scrollPositions
@@ -144,7 +141,6 @@ object AnimeRootScreen {
                             userName = null,
                             mediaType = MediaType.MANGA,
                             upIconOption = upIconOption,
-                            navigationCallback = navigationCallback,
                             scrollStateSaver = ScrollStateSaver.fromMap(
                                 AnimeRootNavDestination.MANGA.id,
                                 scrollPositions
@@ -161,7 +157,6 @@ object AnimeRootScreen {
                             AnimeSearchScreen(
                                 upIconOption = upIconOption,
                                 viewModel = viewModel,
-                                navigationCallback = navigationCallback,
                                 scrollStateSaver = ScrollStateSaver.fromMap(
                                     AnimeRootNavDestination.SEARCH.id,
                                     scrollPositions
@@ -175,7 +170,6 @@ object AnimeRootScreen {
                             onClickAuth = onClickAuth,
                             onSubmitAuthToken = onSubmitAuthToken,
                             onClickSettings = onClickSettings,
-                            navigationCallback = navigationCallback,
                             bottomNavigationState = bottomNavigationState,
                         )
                         AnimeRootNavDestination.UNLOCK -> UnlockScreen(

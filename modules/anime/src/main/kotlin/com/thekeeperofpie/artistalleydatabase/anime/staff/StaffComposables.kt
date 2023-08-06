@@ -10,17 +10,16 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.unit.dp
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
-import com.anilist.fragment.StaffNavigationData
 import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
 import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
 import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
+import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterSmallCard
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffUtils.primaryName
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
@@ -33,8 +32,6 @@ fun LazyListScope.staffSection(
     screenKey: String,
     @StringRes titleRes: Int,
     staffList: LazyPagingItems<DetailsStaff>,
-    onStaffClick: (StaffNavigationData, favorite: Boolean?, imageWidthToHeightRatio: Float, color: Color?) -> Unit,
-    onStaffLongClick: (String) -> Unit,
     colorCalculationState: ColorCalculationState,
     roleLines: Int = 1,
 ) {
@@ -44,6 +41,7 @@ fun LazyListScope.staffSection(
     }
 
     item("$titleRes-section") {
+        val navigationCallback = LocalNavigationCallback.current
         LazyRow(
             contentPadding = PaddingValues(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -62,7 +60,7 @@ fun LazyListScope.staffSection(
                     colorCalculationState = colorCalculationState,
                     onClick = {
                         if (staff != null) {
-                            onStaffClick(
+                            navigationCallback.onStaffClick(
                                 staff.staff,
                                 null,
                                 imageWidthToHeightRatio,

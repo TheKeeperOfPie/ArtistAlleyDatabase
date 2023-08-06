@@ -41,7 +41,6 @@ import com.anilist.fragment.MediaPreview
 import com.anilist.type.MediaSeason
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
@@ -65,8 +64,6 @@ object SeasonalScreen {
     operator fun invoke(
         viewModel: SeasonalViewModel = hiltViewModel<SeasonalViewModel>(),
         upIconOption: UpIconOption? = null,
-        navigationCallback: AnimeNavigator.NavigationCallback =
-            AnimeNavigator.NavigationCallback(null),
     ) {
         val colorCalculationState = rememberColorCalculationState(viewModel.colorMap)
         val pagerState = rememberPagerState(
@@ -102,7 +99,6 @@ object SeasonalScreen {
                         content = data,
                         scaffoldPadding = scaffoldPadding,
                         colorCalculationState = colorCalculationState,
-                        navigationCallback = navigationCallback,
                     )
                 }
             }
@@ -195,7 +191,6 @@ object SeasonalScreen {
         content: LazyPagingItems<SeasonalViewModel.MediaEntry>,
         scaffoldPadding: PaddingValues,
         colorCalculationState: ColorCalculationState,
-        navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
         val refreshing = content.loadState.refresh is LoadState.Loading
         val viewer by viewModel.viewer.collectAsState()
@@ -239,7 +234,6 @@ object SeasonalScreen {
                                         onLongClick = viewModel::onMediaLongClick,
                                         onLongPressImage = onLongPressImage,
                                         colorCalculationState = colorCalculationState,
-                                        navigationCallback = navigationCallback,
                                     )
                                 }
                             }

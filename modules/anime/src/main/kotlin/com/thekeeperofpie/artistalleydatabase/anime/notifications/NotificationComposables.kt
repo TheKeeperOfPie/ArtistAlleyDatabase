@@ -323,7 +323,6 @@ fun AiringNotificationCard(
                 onLongPressImage = { /* TODO */ },
                 onClickListEdit = onClickListEdit,
                 colorCalculationState = colorCalculationState,
-                navigationCallback = LocalNavigationCallback.current,
                 modifier = Modifier.padding(8.dp)
             )
         }
@@ -379,7 +378,6 @@ fun RelatedMediaAdditionNotificationCard(
                 onLongPressImage = { /* TODO */ },
                 onClickListEdit = onClickListEdit,
                 colorCalculationState = colorCalculationState,
-                navigationCallback = LocalNavigationCallback.current,
                 modifier = Modifier.padding(8.dp)
             )
         }
@@ -425,7 +423,6 @@ fun MediaDataChangeNotificationCard(
                 onLongPressImage = { /* TODO */ },
                 onClickListEdit = onClickListEdit,
                 colorCalculationState = colorCalculationState,
-                navigationCallback = LocalNavigationCallback.current,
                 modifier = Modifier.padding(8.dp)
             )
         }
@@ -474,7 +471,6 @@ fun MediaDeletionNotificationCard(
                 onLongPressImage = { /* TODO */ },
                 onClickListEdit = onClickListEdit,
                 colorCalculationState = colorCalculationState,
-                navigationCallback = LocalNavigationCallback.current,
                 modifier = Modifier.padding(8.dp)
             )
         }
@@ -520,7 +516,6 @@ fun MediaMergeNotificationCard(
                 onLongPressImage = { /* TODO */ },
                 onClickListEdit = onClickListEdit,
                 colorCalculationState = colorCalculationState,
-                navigationCallback = LocalNavigationCallback.current,
                 modifier = Modifier.padding(8.dp)
             )
         }
@@ -605,7 +600,6 @@ private fun ActivityCard(
                 onActivityStatusUpdate = onActivityStatusUpdate,
                 onClickListEdit = onClickListEdit,
                 colorCalculationState = colorCalculationState,
-                navigationCallback = navigationCallback,
             )
             is NotificationMediaAndActivityQuery.Data.Activity.MessageActivityActivity -> MessageActivityCardContent(
                 screenKey = screenKey,
@@ -614,7 +608,6 @@ private fun ActivityCard(
                 messenger = activity.messenger,
                 entry = activityEntry,
                 onActivityStatusUpdate = onActivityStatusUpdate,
-                navigationCallback = navigationCallback,
                 clickable = true,
             )
             is NotificationMediaAndActivityQuery.Data.Activity.TextActivityActivity -> TextActivityCardContent(
@@ -624,7 +617,6 @@ private fun ActivityCard(
                 entry = activityEntry,
                 user = activity.user,
                 onActivityStatusUpdate = onActivityStatusUpdate,
-                navigationCallback = navigationCallback,
                 clickable = true,
             )
             is NotificationMediaAndActivityQuery.Data.Activity.OtherActivity,
@@ -636,7 +628,6 @@ private fun ActivityCard(
                 entry = null,
                 user = null,
                 onActivityStatusUpdate = onActivityStatusUpdate,
-                navigationCallback = navigationCallback,
             )
         }
     }

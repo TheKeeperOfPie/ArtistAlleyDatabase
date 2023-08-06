@@ -28,7 +28,7 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
+import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.SortFilterBottomScaffold
 import com.thekeeperofpie.artistalleydatabase.compose.AppBar
@@ -41,7 +41,6 @@ object AnimeNewsScreen {
     @Composable
     operator fun invoke(
         viewModel: AnimeNewsViewModel = hiltViewModel<AnimeNewsViewModel>(),
-        navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
         val scaffoldState = rememberBottomSheetScaffoldState(
             rememberStandardBottomSheetState(
@@ -61,6 +60,7 @@ object AnimeNewsScreen {
         SortFilterBottomScaffold(
             sortFilterController = viewModel.sortFilterController,
             topBar = {
+                val navigationCallback = LocalNavigationCallback.current
                 AppBar(
                     text = stringResource(R.string.anime_news_title),
                     upIconOption = UpIconOption.Back { navigationCallback.navigateUp() },

@@ -86,7 +86,6 @@ object AnimeNavigator {
         upIconOption: UpIconOption?,
         onClickAuth: () -> Unit,
         onClickSettings: () -> Unit,
-        navigationCallback: NavigationCallback,
     ) {
         navGraphBuilder.composable(
             route = AnimeNavDestinations.HOME.id,
@@ -98,7 +97,6 @@ object AnimeNavigator {
                 viewModel = viewModel,
                 onClickAuth = onClickAuth,
                 onSubmitAuthToken = viewModel::onSubmitAuthToken,
-                navigationCallback = navigationCallback,
                 onClickSettings = onClickSettings,
             )
         }
@@ -163,7 +161,6 @@ object AnimeNavigator {
                 },
                 upIconOption = UpIconOption.Back(navHostController),
                 viewModel = viewModel,
-                navigationCallback = navigationCallback,
                 scrollStateSaver = ScrollStateSaver(),
             )
         }
@@ -199,7 +196,6 @@ object AnimeNavigator {
                 userName = userName,
                 mediaType = mediaType,
                 upIconOption = UpIconOption.Back(navHostController),
-                navigationCallback = navigationCallback,
                 scrollStateSaver = ScrollStateSaver.fromMap(
                     AnimeNavDestinations.USER_LIST.id,
                     ScrollStateSaver.scrollPositions(),
@@ -251,7 +247,6 @@ object AnimeNavigator {
                 onGenreLongClick = { /*TODO*/ },
                 onCharacterLongClick = { /*TODO*/ },
                 onStaffLongClick = { /*TODO*/ },
-                navigationCallback = navigationCallback,
             )
         }
 
@@ -288,7 +283,6 @@ object AnimeNavigator {
                 viewModel = viewModel,
                 upIconOption = UpIconOption.Back(navHostController),
                 headerValues = headerValues,
-                navigationCallback = navigationCallback,
             )
         }
 
@@ -317,7 +311,6 @@ object AnimeNavigator {
                 viewModel = viewModel,
                 upIconOption = UpIconOption.Back(navHostController),
                 headerValues = headerValues,
-                navigationCallback = navigationCallback,
             )
         }
 
@@ -350,7 +343,6 @@ object AnimeNavigator {
                 viewModel = viewModel,
                 upIconOption = UpIconOption.Back(navHostController),
                 headerValues = headerValues,
-                navigationCallback = navigationCallback,
             )
         }
 
@@ -378,7 +370,6 @@ object AnimeNavigator {
                 viewModel = viewModel,
                 upIconOption = UpIconOption.Back(navHostController),
                 headerValues = headerValues,
-                navigationCallback = navigationCallback,
             )
         }
 
@@ -404,7 +395,6 @@ object AnimeNavigator {
                 viewModel = viewModel,
                 upIconOption = upIconOption,
                 headerValues = headerValues,
-                navigationCallback = navigationCallback,
             )
         }
 
@@ -432,14 +422,12 @@ object AnimeNavigator {
                     R.string.anime_media_ignore_title_manga
                 },
                 viewModel = viewModel,
-                navigationCallback = navigationCallback,
             )
         }
 
         navGraphBuilder.composable(route = AnimeNavDestinations.AIRING_SCHEDULE.id) {
             AiringScheduleScreen(
                 onClickBack = { navHostController.navigateUp() },
-                navigationCallback = navigationCallback,
             )
         }
 
@@ -464,16 +452,15 @@ object AnimeNavigator {
             SeasonalScreen(
                 viewModel = viewModel,
                 upIconOption = UpIconOption.Back(navHostController),
-                navigationCallback = navigationCallback,
             )
         }
 
         navGraphBuilder.composable(AnimeNavDestinations.NEWS.id) {
-            AnimeNewsScreen(navigationCallback = navigationCallback)
+            AnimeNewsScreen()
         }
 
         navGraphBuilder.composable(AnimeNavDestinations.ACTIVITY.id) {
-            AnimeActivityScreen(navigationCallback = navigationCallback)
+            AnimeActivityScreen()
         }
 
         navGraphBuilder.composable(AnimeNavDestinations.NOTIFICATIONS.id) {
@@ -509,7 +496,6 @@ object AnimeNavigator {
                 viewModel = viewModel,
                 upIconOption = UpIconOption.Back(navHostController),
                 headerValues = headerValues,
-                navigationCallback = navigationCallback,
             )
         }
 
@@ -538,7 +524,6 @@ object AnimeNavigator {
                 viewModel = viewModel,
                 upIconOption = UpIconOption.Back(navHostController),
                 headerValues = headerValues,
-                navigationCallback = navigationCallback,
             )
         }
 
@@ -567,7 +552,6 @@ object AnimeNavigator {
                 viewModel = viewModel,
                 upIconOption = UpIconOption.Back(navHostController),
                 headerValues = headerValues,
-                navigationCallback = navigationCallback,
             )
         }
 
@@ -595,7 +579,6 @@ object AnimeNavigator {
                 viewModel = viewModel,
                 upIconOption = UpIconOption.Back(navHostController),
                 headerValues = headerValues,
-                navigationCallback = navigationCallback,
             )
         }
 
@@ -629,7 +612,6 @@ object AnimeNavigator {
                 viewModel = viewModel,
                 upIconOption = UpIconOption.Back(navHostController),
                 headerValues = headerValues,
-                navigationCallback = navigationCallback,
             )
         }
 
@@ -673,7 +655,6 @@ object AnimeNavigator {
                         ?: viewModel.entry?.studio?.isFavourite
                         ?: favorite
                 },
-                navigationCallback = navigationCallback,
             )
         }
 
@@ -703,7 +684,6 @@ object AnimeNavigator {
             ActivityDetailsScreen(
                 upIconOption = UpIconOption.Back(navHostController),
                 viewModel = viewModel,
-                navigationCallback = navigationCallback,
             )
         }
 
@@ -991,7 +971,6 @@ object AnimeNavigator {
         userName: String?,
         mediaType: MediaType,
         upIconOption: UpIconOption?,
-        navigationCallback: NavigationCallback,
         scrollStateSaver: ScrollStateSaver,
         bottomNavigationState: BottomNavigationState? = null,
     ) {
@@ -1001,7 +980,6 @@ object AnimeNavigator {
             upIconOption = upIconOption,
             mediaType = mediaType,
             viewModel = viewModel,
-            navigationCallback = navigationCallback,
             scrollStateSaver = scrollStateSaver,
             bottomNavigationState = bottomNavigationState,
         )
@@ -1271,4 +1249,4 @@ object AnimeNavigator {
     }
 }
 
-val LocalNavigationCallback = staticCompositionLocalOf<AnimeNavigator.NavigationCallback?> { null }
+val LocalNavigationCallback = staticCompositionLocalOf { AnimeNavigator.NavigationCallback(null) }

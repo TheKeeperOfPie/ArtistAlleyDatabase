@@ -27,7 +27,6 @@ import androidx.paging.compose.itemKey
 import com.anilist.fragment.MediaPreview
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
@@ -49,7 +48,6 @@ object MediaSearchScreen {
         upIconOption: UpIconOption?,
         title: Either<Int, String>,
         viewModel: AnimeSearchViewModel = hiltViewModel(),
-        navigationCallback: AnimeNavigator.NavigationCallback,
         scrollStateSaver: ScrollStateSaver,
     ) {
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(snapAnimationSpec = null)
@@ -175,7 +173,6 @@ object MediaSearchScreen {
                                                 },
                                                 onLongPressImage = onLongPressImage,
                                                 colorCalculationState = colorCalculationState,
-                                                navigationCallback = navigationCallback,
                                             )
 
                                             // TODO: Separated placeholder types

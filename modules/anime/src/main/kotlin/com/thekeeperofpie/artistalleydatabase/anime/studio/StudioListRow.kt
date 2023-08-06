@@ -29,7 +29,7 @@ import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.material.placeholder
 import com.google.accompanist.placeholder.material.shimmer
 import com.mxalbert.sharedelements.SharedElement
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
+import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.ui.ListRowFavoritesSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.ListRowSmallImage
@@ -42,11 +42,11 @@ object StudioListRow {
     operator fun invoke(
         screenKey: String,
         entry: Entry?,
-        navigationCallback: AnimeNavigator.NavigationCallback,
         modifier: Modifier = Modifier,
         mediaWidth: Dp = 120.dp,
         mediaHeight: Dp = 180.dp,
     ) {
+        val navigationCallback = LocalNavigationCallback.current
         ElevatedCard(
             onClick = {
                 if (entry != null) {
@@ -81,7 +81,6 @@ object StudioListRow {
                     entry = entry,
                     mediaWidth = mediaWidth,
                     mediaHeight = mediaHeight,
-                    navigationCallback = navigationCallback,
                 )
             }
         }
@@ -108,7 +107,6 @@ object StudioListRow {
         entry: Entry?,
         mediaWidth: Dp,
         mediaHeight: Dp,
-        navigationCallback: AnimeNavigator.NavigationCallback,
     ) {
         val media = entry?.media?.takeIf { it.isNotEmpty() }
             ?: listOf(null, null, null, null, null)
@@ -128,6 +126,7 @@ object StudioListRow {
                 key = { index, item -> item?.media?.id ?: "placeholder_$index" },
             ) { index, item ->
                 SharedElement(key = "anime_media_${item?.media?.id}_image", screenKey = screenKey) {
+                    val navigationCallback = LocalNavigationCallback.current
                     ListRowSmallImage(
                         context = context,
                         density = density,

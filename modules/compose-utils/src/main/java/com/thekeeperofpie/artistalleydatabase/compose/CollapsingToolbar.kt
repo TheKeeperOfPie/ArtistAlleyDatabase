@@ -187,7 +187,7 @@ fun EnterAlwaysNavigationBar(
 @Composable
 fun navigationBarEnterAlwaysScrollBehavior(
     canScroll: () -> Boolean = { true },
-    snapAnimationSpec: AnimationSpec<Float>? = spring(stiffness = Spring.StiffnessMediumLow),
+    snapAnimationSpec: AnimationSpec<Float>? = spring(stiffness = Spring.StiffnessMedium),
     flingAnimationSpec: DecayAnimationSpec<Float>? = rememberSplineBasedDecay(),
 ) = NavigationBarEnterAlwaysScrollBehavior(
     state = rememberTopAppBarState(),

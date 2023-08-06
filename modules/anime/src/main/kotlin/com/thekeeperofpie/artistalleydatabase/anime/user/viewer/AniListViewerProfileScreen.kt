@@ -35,7 +35,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserScreen
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserViewModel
@@ -53,7 +52,6 @@ object AniListViewerProfileScreen {
         onClickAuth: () -> Unit,
         onSubmitAuthToken: (String) -> Unit,
         onClickSettings: () -> Unit,
-        navigationCallback: AnimeNavigator.NavigationCallback,
         bottomNavigationState: BottomNavigationState? = null,
     ) {
         if (needsAuth()) {
@@ -71,7 +69,6 @@ object AniListViewerProfileScreen {
                 viewModel = viewModel,
                 upIconOption = upIconOption,
                 headerValues = headerValues,
-                navigationCallback = navigationCallback,
                 bottomNavigationState = bottomNavigationState,
                 showLogOut = true,
                 onClickSettings = onClickSettings,
