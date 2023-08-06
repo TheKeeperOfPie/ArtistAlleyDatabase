@@ -51,6 +51,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.ui.ListRowSmallImage
+import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
@@ -63,7 +64,6 @@ object UserListRow {
     operator fun invoke(
         screenKey: String,
         entry: Entry,
-        onLongPressImage: (Entry) -> Unit = {},
         colorCalculationState: ColorCalculationState = ColorCalculationState(),
     ) {
         var imageWidthToHeightRatio by remember { MutableSingle(1f) }
@@ -92,7 +92,6 @@ object UserListRow {
                             imageWidthToHeightRatio,
                         )
                     },
-                    onLongPressImage = { onLongPressImage(entry) },
                     colorCalculationState = colorCalculationState,
                     onRatioAvailable = { imageWidthToHeightRatio = it }
                 )
@@ -125,12 +124,12 @@ object UserListRow {
     private fun UserImage(
         screenKey: String,
         entry: Entry,
-        onClick: () -> Unit = {},
-        onLongPressImage: () -> Unit,
+        onClick: () -> Unit,
         colorCalculationState: ColorCalculationState,
         onRatioAvailable: (Float) -> Unit,
     ) {
         SharedElement(key = "anime_user_${entry.user.id}_image", screenKey = screenKey) {
+            val fullscreenImageHandler = LocalFullscreenImageHandler.current
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
                     .data(entry.user.avatar?.large)
@@ -163,7 +162,9 @@ object UserListRow {
                     )
                     .combinedClickable(
                         onClick = onClick,
-                        onLongClick = onLongPressImage,
+                        onLongClick = {
+                            entry.user.avatar?.large?.let(fullscreenImageHandler::openImage)
+                        },
                         onLongClickLabel = stringResource(
                             R.string.anime_user_image_long_press_preview
                         ),
@@ -191,7 +192,7 @@ object UserListRow {
     private fun MediaRow(
         screenKey: String,
         entry: Entry,
-        onMediaClick: (MediaNavigationData, imageWidthToHeightRatio: Float) -> Unit
+        onMediaClick: (MediaNavigationData, imageWidthToHeightRatio: Float) -> Unit,
     ) {
         val media = entry.media.takeIf { it.isNotEmpty() } ?: return
         val context = LocalContext.current

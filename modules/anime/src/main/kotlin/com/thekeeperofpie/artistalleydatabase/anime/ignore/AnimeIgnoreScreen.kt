@@ -74,7 +74,7 @@ object AnimeIgnoreScreen {
                     refreshing = refreshing,
                     onRefresh = viewModel::onRefresh,
                     modifier = Modifier.padding(scaffoldPadding),
-                ) { onLongPressImage ->
+                ) {
                     when (val refreshState = content.loadState.refresh) {
                         LoadState.Loading -> Unit
                         is LoadState.Error -> AnimeMediaListScreen.Error(
@@ -107,7 +107,6 @@ object AnimeIgnoreScreen {
                                                     editViewModel.initialize(it.media)
                                                 },
                                                 onLongClick = viewModel::onMediaLongClick,
-                                                onLongPressImage = onLongPressImage,
                                                 colorCalculationState = colorCalculationState,
                                             )
                                             null -> AnimeMediaListRow<MediaPreview>(

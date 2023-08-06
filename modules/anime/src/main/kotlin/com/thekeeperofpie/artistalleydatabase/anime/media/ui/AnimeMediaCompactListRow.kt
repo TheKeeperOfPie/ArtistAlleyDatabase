@@ -57,6 +57,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaTagEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaStatusAware
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
+import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
@@ -74,7 +75,6 @@ object AnimeMediaCompactListRow {
         entry: Entry?,
         modifier: Modifier = Modifier,
         onLongClick: (Entry) -> Unit,
-        onLongPressImage: (Entry) -> Unit,
         onClickListEdit: (Entry) -> Unit,
         colorCalculationState: ColorCalculationState,
     ) {
@@ -114,7 +114,6 @@ object AnimeMediaCompactListRow {
                                 )
                             }
                         },
-                        onLongPressImage = onLongPressImage,
                         onClickListEdit = onClickListEdit,
                         colorCalculationState = colorCalculationState,
                         onRatioAvailable = { imageWidthToHeightRatio = it }
@@ -177,7 +176,6 @@ object AnimeMediaCompactListRow {
         viewer: AuthedUserQuery.Data.Viewer?,
         entry: Entry?,
         onClick: (Entry) -> Unit = {},
-        onLongPressImage: (Entry) -> Unit,
         onClickListEdit: (Entry) -> Unit,
         colorCalculationState: ColorCalculationState,
         onRatioAvailable: (Float) -> Unit,
@@ -187,6 +185,7 @@ object AnimeMediaCompactListRow {
                 key = "anime_media_${entry?.media?.id}_image",
                 screenKey = screenKey,
             ) {
+                val fullscreenImageHandler = LocalFullscreenImageHandler.current
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
                         .data(entry?.media?.coverImage?.extraLarge)
@@ -222,7 +221,10 @@ object AnimeMediaCompactListRow {
                         )
                         .combinedClickable(
                             onClick = { if (entry != null) onClick(entry) },
-                            onLongClick = { if (entry != null) onLongPressImage(entry) },
+                            onLongClick = {
+                                entry?.media?.coverImage?.extraLarge
+                                    ?.let(fullscreenImageHandler::openImage)
+                            },
                             onLongClickLabel = stringResource(
                                 R.string.anime_media_cover_image_long_press_preview
                             ),

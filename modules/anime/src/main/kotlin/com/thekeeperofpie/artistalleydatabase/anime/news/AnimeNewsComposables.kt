@@ -2,7 +2,9 @@
 
 package com.thekeeperofpie.artistalleydatabase.anime.news
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -29,9 +31,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.compose.CustomHtmlText
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun AnimeNewsSmallCard(
     entry: AnimeNewsArticleEntry,
@@ -47,6 +51,7 @@ fun AnimeNewsSmallCard(
         ) {
             entry.image?.let {
                 Box {
+                    val fullscreenImageHandler = LocalFullscreenImageHandler.current
                     AsyncImage(
                         model = it,
                         contentDescription = stringResource(
@@ -57,6 +62,10 @@ fun AnimeNewsSmallCard(
                             .background(MaterialTheme.colorScheme.onSurfaceVariant)
                             .width(80.dp)
                             .fillMaxHeight()
+                            .combinedClickable(
+                                onClick = { onClick?.invoke() },
+                                onLongClick = { fullscreenImageHandler.openImage(it) },
+                            )
                     )
 
                     entry.icon?.let {

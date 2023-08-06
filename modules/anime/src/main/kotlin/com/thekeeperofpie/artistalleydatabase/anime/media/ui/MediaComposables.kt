@@ -140,8 +140,7 @@ fun LazyListScope.mediaHorizontalRow(
                     entry = entry,
                     viewer = viewer,
                     onClickListEdit = { editViewModel.initialize(it.media) },
-                    onLongClick = { /* TODO */ },
-                    onLongPressImage = { /* TODO */ },
+                    onLongClick = {/* TODO: Ignored */ },
                     colorCalculationState = colorCalculationState,
                     forceListEditIcon = forceListEditIcon,
                     modifier = Modifier.width(120.dp)

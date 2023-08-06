@@ -58,6 +58,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaTagEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaStatusAware
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
+import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
@@ -74,7 +75,6 @@ object AnimeMediaListRow {
         label: (@Composable () -> Unit)? = null,
         onClickListEdit: (Entry<MediaType>) -> Unit,
         onLongClick: (Entry<MediaType>) -> Unit,
-        onLongPressImage: (entry: Entry<MediaType>) -> Unit = {},
         nextAiringEpisode: MediaPreview.NextAiringEpisode? = entry?.media?.nextAiringEpisode,
         colorCalculationState: ColorCalculationState = ColorCalculationState(),
     ) {
@@ -111,7 +111,6 @@ object AnimeMediaListRow {
                         }
                     },
                     onClickListEdit = onClickListEdit,
-                    onLongPressImage = onLongPressImage,
                     colorCalculationState = colorCalculationState,
                     onRatioAvailable = { imageWidthToHeightRatio = it },
                 )
@@ -166,7 +165,6 @@ object AnimeMediaListRow {
         viewer: AuthedUserQuery.Data.Viewer?,
         onClick: (Entry<MediaType>) -> Unit = {},
         onClickListEdit: (Entry<MediaType>) -> Unit,
-        onLongPressImage: (entry: Entry<MediaType>) -> Unit,
         colorCalculationState: ColorCalculationState,
         onRatioAvailable: (Float) -> Unit,
     ) {
@@ -175,6 +173,7 @@ object AnimeMediaListRow {
             screenKey = screenKey,
         ) {
             Box {
+                val fullscreenImageHandler = LocalFullscreenImageHandler.current
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
                         .data(entry?.media?.coverImage?.extraLarge)
@@ -211,7 +210,10 @@ object AnimeMediaListRow {
                         )
                         .combinedClickable(
                             onClick = { if (entry != null) onClick(entry) },
-                            onLongClick = { if (entry != null) onLongPressImage(entry) },
+                            onLongClick = {
+                                entry?.media?.coverImage?.extraLarge
+                                    ?.let(fullscreenImageHandler::openImage)
+                            },
                             onLongClickLabel = stringResource(
                                 R.string.anime_media_cover_image_long_press_preview
                             ),

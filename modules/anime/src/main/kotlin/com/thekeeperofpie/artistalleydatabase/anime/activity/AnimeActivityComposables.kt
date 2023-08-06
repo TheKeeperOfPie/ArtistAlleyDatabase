@@ -604,9 +604,6 @@ fun ColumnScope.ListActivityCardContent(
             onLongClick = {
                 // TODO: Ignored
             },
-            onLongPressImage = {
-                // TODO: Image long click
-            },
             onClickListEdit = onClickListEdit,
             colorCalculationState = colorCalculationState,
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)

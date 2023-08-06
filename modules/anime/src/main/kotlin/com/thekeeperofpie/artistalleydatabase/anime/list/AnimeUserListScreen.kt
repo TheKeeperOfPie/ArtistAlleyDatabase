@@ -150,7 +150,7 @@ object AnimeUserListScreen {
                             consumeNone = bottomNavigationState == null,
                         )
                     )
-                ) { onLongPressImage ->
+                ) {
                     val hasItems = (content.result?.sumOf { it.entries.size } ?: 0) != 0
                     when {
                         !content.loading && !content.success && !hasItems ->
@@ -215,7 +215,6 @@ object AnimeUserListScreen {
                                                         viewer = viewer,
                                                         viewModel = viewModel,
                                                         editViewModel = editViewModel,
-                                                        onLongPressImage = onLongPressImage,
                                                         colorCalculationState = colorCalculationState,
                                                         modifier = Modifier
                                                             .animateItemPlacement(),
@@ -343,7 +342,6 @@ object AnimeUserListScreen {
         viewModel: AnimeUserListViewModel,
         editViewModel: MediaEditViewModel,
         entry: AnimeUserListViewModel.MediaEntry,
-        onLongPressImage: (AnimeMediaListRow.Entry<MediaPreviewWithDescription>) -> Unit = {},
         colorCalculationState: ColorCalculationState = ColorCalculationState(),
         modifier: Modifier = Modifier,
     ) {
@@ -354,7 +352,6 @@ object AnimeUserListScreen {
                 entry = entry,
                 onClickListEdit = { editViewModel.initialize(it.media) },
                 onLongClick = { viewModel.ignoreList.toggle(entry.media.id.toString()) },
-                onLongPressImage = { onLongPressImage(entry) },
                 colorCalculationState = colorCalculationState,
                 modifier = modifier,
             )
@@ -372,7 +369,6 @@ object AnimeUserListScreen {
                 viewer = viewer,
                 entry = entry,
                 onLongClick = { viewModel.ignoreList.toggle(entry.media.id.toString()) },
-                onLongPressImage = { onLongPressImage(entry) },
                 onClickListEdit = { editViewModel.initialize(it.media) },
                 colorCalculationState = colorCalculationState,
                 modifier = modifier,
@@ -383,7 +379,6 @@ object AnimeUserListScreen {
                 viewer = viewer,
                 onClickListEdit = { editViewModel.initialize(it.media) },
                 onLongClick = { viewModel.ignoreList.toggle(entry.media.id.toString()) },
-                onLongPressImage = { onLongPressImage(entry) },
                 colorCalculationState = colorCalculationState,
                 modifier = modifier,
             )

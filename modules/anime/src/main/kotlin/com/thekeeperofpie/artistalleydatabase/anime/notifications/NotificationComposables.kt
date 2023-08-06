@@ -320,7 +320,6 @@ fun AiringNotificationCard(
                 viewer = viewer,
                 entry = mediaEntry,
                 onLongClick = { /* TODO */ },
-                onLongPressImage = { /* TODO */ },
                 onClickListEdit = onClickListEdit,
                 colorCalculationState = colorCalculationState,
                 modifier = Modifier.padding(8.dp)
@@ -337,7 +336,7 @@ fun FollowingNotificationCard(
     val navigationCallback = LocalNavigationCallback.current
     ElevatedCard(onClick = {
         notification.user?.let {
-            navigationCallback?.onUserClick(it, 1f)
+            navigationCallback.onUserClick(it, 1f)
         }
     }) {
         ContextHeader(
@@ -375,7 +374,6 @@ fun RelatedMediaAdditionNotificationCard(
                 viewer = viewer,
                 entry = mediaEntry,
                 onLongClick = { /* TODO */ },
-                onLongPressImage = { /* TODO */ },
                 onClickListEdit = onClickListEdit,
                 colorCalculationState = colorCalculationState,
                 modifier = Modifier.padding(8.dp)
@@ -420,7 +418,6 @@ fun MediaDataChangeNotificationCard(
                 viewer = viewer,
                 entry = mediaEntry,
                 onLongClick = { /* TODO */ },
-                onLongPressImage = { /* TODO */ },
                 onClickListEdit = onClickListEdit,
                 colorCalculationState = colorCalculationState,
                 modifier = Modifier.padding(8.dp)
@@ -468,7 +465,6 @@ fun MediaDeletionNotificationCard(
                 viewer = viewer,
                 entry = mediaEntry,
                 onLongClick = { /* TODO */ },
-                onLongPressImage = { /* TODO */ },
                 onClickListEdit = onClickListEdit,
                 colorCalculationState = colorCalculationState,
                 modifier = Modifier.padding(8.dp)
@@ -513,7 +509,6 @@ fun MediaMergeNotificationCard(
                 viewer = viewer,
                 entry = mediaEntry,
                 onLongClick = { /* TODO */ },
-                onLongPressImage = { /* TODO */ },
                 onClickListEdit = onClickListEdit,
                 colorCalculationState = colorCalculationState,
                 modifier = Modifier.padding(8.dp)

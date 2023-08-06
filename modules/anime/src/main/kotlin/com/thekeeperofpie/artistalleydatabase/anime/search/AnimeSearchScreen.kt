@@ -152,7 +152,7 @@ object AnimeSearchScreen {
                     refreshing = refreshing,
                     onRefresh = viewModel::onRefresh,
                     modifier = Modifier.padding(scaffoldPadding),
-                ) { onLongPressImage ->
+                ) {
                     if (!selectedUnlocked) {
                         Box(
                             contentAlignment = Alignment.Center,
@@ -226,25 +226,21 @@ object AnimeSearchScreen {
                                                     viewModel = viewModel,
                                                     editViewModel = editViewModel,
                                                     entry = item,
-                                                    onLongPressImage = { onLongPressImage(item) },
                                                     colorCalculationState = colorCalculationState,
                                                 )
                                                 is AnimeSearchEntry.Character -> CharacterListRow(
                                                     screenKey = SCREEN_KEY,
                                                     entry = item.entry,
-                                                    onLongPressImage = { /* TODO */ },
                                                     colorCalculationState = colorCalculationState,
                                                 )
                                                 is AnimeSearchEntry.Staff -> StaffListRow(
                                                     screenKey = SCREEN_KEY,
                                                     entry = item.entry,
-                                                    onLongPressImage = { /* TODO */ },
                                                     colorCalculationState = colorCalculationState,
                                                 )
                                                 is AnimeSearchEntry.User -> UserListRow(
                                                     screenKey = SCREEN_KEY,
                                                     entry = item.entry,
-                                                    onLongPressImage = { /* TODO */ },
                                                     colorCalculationState = colorCalculationState,
                                                 )
                                                 is AnimeSearchEntry.Studio -> StudioListRow(
@@ -288,7 +284,6 @@ object AnimeSearchScreen {
         viewModel: AnimeSearchViewModel,
         editViewModel: MediaEditViewModel,
         entry: AnimeSearchEntry.Media,
-        onLongPressImage: (AnimeSearchEntry.Media) -> Unit = {},
         colorCalculationState: ColorCalculationState = ColorCalculationState(),
     ) {
         when (viewModel.mediaViewOption) {
@@ -298,7 +293,6 @@ object AnimeSearchScreen {
                 entry = entry,
                 onClickListEdit = { editViewModel.initialize(it.media) },
                 onLongClick = { viewModel.ignoreList.toggle(entry.media.id.toString()) },
-                onLongPressImage = { onLongPressImage(entry) },
                 colorCalculationState = colorCalculationState,
             )
             MediaViewOption.LARGE_CARD -> AnimeMediaLargeCard(
@@ -314,7 +308,6 @@ object AnimeSearchScreen {
                 viewer = viewer,
                 entry = entry,
                 onLongClick = { viewModel.ignoreList.toggle(entry.media.id.toString()) },
-                onLongPressImage = { onLongPressImage(entry) },
                 onClickListEdit = { editViewModel.initialize(it.media) },
                 colorCalculationState = colorCalculationState,
             )
@@ -324,7 +317,6 @@ object AnimeSearchScreen {
                 viewer = viewer,
                 onClickListEdit = { editViewModel.initialize(it.media) },
                 onLongClick = { viewModel.ignoreList.toggle(entry.media.id.toString()) },
-                onLongPressImage = { onLongPressImage(entry) },
                 colorCalculationState = colorCalculationState,
             )
         }

@@ -2,20 +2,15 @@ package com.thekeeperofpie.artistalleydatabase.anime.media
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ImageNotSupported
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
@@ -25,38 +20,25 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-import coil.compose.AsyncImage
-import com.anilist.fragment.MediaPreview
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.TagSection
-import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
-import com.thekeeperofpie.artistalleydatabase.compose.ZoomPanBox
 
 @OptIn(ExperimentalMaterialApi::class)
 object AnimeMediaListScreen {
 
     @Composable
-    operator fun <MediaType : MediaPreview> invoke(
+    operator fun invoke(
         refreshing: Boolean,
         onRefresh: () -> Unit,
         modifier: Modifier = Modifier,
         pullRefreshTopPadding: @Composable () -> Dp = { 0.dp },
-        listContent: @Composable (
-            onLongPressImage: (AnimeMediaListRow.Entry<MediaType>) -> Unit
-        ) -> Unit,
+        listContent: @Composable () -> Unit,
     ) {
         val pullRefreshState = rememberPullRefreshState(refreshing, onRefresh)
 
@@ -65,11 +47,7 @@ object AnimeMediaListScreen {
                 .fillMaxSize()
                 .pullRefresh(pullRefreshState)
         ) {
-            var entryToPreview by remember {
-                mutableStateOf<AnimeMediaListRow.Entry<MediaType>?>(null)
-            }
-
-            listContent { entryToPreview = it }
+            listContent()
 
             PullRefreshIndicator(
                 refreshing = refreshing,
@@ -78,10 +56,6 @@ object AnimeMediaListScreen {
                     .align(Alignment.TopCenter)
                     .padding(top = pullRefreshTopPadding())
             )
-
-            entryToPreview?.let {
-                EntryImagePreview(it) { entryToPreview = null }
-            }
         }
     }
 
@@ -185,45 +159,5 @@ object AnimeMediaListScreen {
                 }
             }
         )
-    }
-
-    @Composable
-    private fun <MediaType : MediaPreview> EntryImagePreview(
-        entry: AnimeMediaListRow.Entry<MediaType>,
-        onDismiss: () -> Unit,
-    ) {
-        Dialog(onDismissRequest = onDismiss) {
-            ZoomPanBox(onClick = onDismiss) {
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .clickable(
-                            // Consume click events so that tapping image doesn't dismiss
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = null,
-                        ) {}
-                ) {
-                    entry.media.bannerImage?.let {
-                        AsyncImage(
-                            model = it,
-                            fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
-                            contentDescription = stringResource(R.string.anime_media_banner_image),
-                            modifier = Modifier.wrapContentSize(),
-                        )
-                    }
-                    AsyncImage(
-                        model = entry.media.coverImage?.extraLarge,
-                        contentScale = ContentScale.FillWidth,
-                        fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
-                        contentDescription = stringResource(R.string.anime_media_cover_image_content_description),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .widthIn(min = 240.dp),
-                    )
-                }
-            }
-        }
     }
 }

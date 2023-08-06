@@ -24,7 +24,7 @@ fun UserHeader(
     name: @Composable () -> String,
     coverImage: @Composable () -> String?,
     coverImageWidthToHeightRatio: Float = 1f,
-    bannerImage: @Composable () -> String? = { null },
+    bannerImage: String? = null,
 ) {
     CoverAndBannerHeader(
         screenKey = screenKey,

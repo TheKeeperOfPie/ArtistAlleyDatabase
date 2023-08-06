@@ -45,7 +45,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.intl.Locale
@@ -82,6 +81,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.LocalMediaTagDialogController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaTagDialogController
+import com.thekeeperofpie.artistalleydatabase.anime.utils.FullscreenImageHandler
+import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryNavigator
 import com.thekeeperofpie.artistalleydatabase.art.ArtNavDestinations
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseScreen
@@ -159,6 +160,8 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var appMetadataProvider: AppMetadataProvider
 
+    private val fullScreenImageHandler = FullscreenImageHandler()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -206,6 +209,7 @@ class MainActivity : ComponentActivity() {
                     LocalLanguageOptionCharacters provides languageOptionCharacters,
                     LocalLanguageOptionStaff provides languageOptionStaff,
                     LocalNavigationCallback provides navigationCallback,
+                    LocalFullscreenImageHandler provides fullScreenImageHandler,
                 ) {
                     // TODO: Draw inside insets for applicable screens
                     Surface(modifier = Modifier.safeDrawingPadding()) {
@@ -286,6 +290,8 @@ class MainActivity : ComponentActivity() {
                         mediaTagDialogController.tagShown = null
                     }
                 }
+
+                fullScreenImageHandler.ImageDialog()
             }
         }
 

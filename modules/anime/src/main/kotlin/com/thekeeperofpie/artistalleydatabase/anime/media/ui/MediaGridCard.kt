@@ -51,6 +51,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaStatusAware
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
+import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
@@ -65,7 +66,6 @@ object MediaGridCard {
         viewer: AuthedUserQuery.Data.Viewer?,
         onClickListEdit: (Entry) -> Unit,
         onLongClick: (MediaNavigationData) -> Unit,
-        onLongPressImage: (entry: Entry) -> Unit,
         colorCalculationState: ColorCalculationState,
         modifier: Modifier = Modifier,
         forceListEditIcon: Boolean = false,
@@ -125,7 +125,6 @@ object MediaGridCard {
                                 }
                             },
                             onClickListEdit = onClickListEdit,
-                            onLongPressImage = onLongPressImage,
                             colorCalculationState = colorCalculationState,
                             onRatioAvailable = { imageWidthToHeightRatio = it },
                             forceListEditIcon = forceListEditIcon,
@@ -170,7 +169,6 @@ object MediaGridCard {
         viewer: AuthedUserQuery.Data.Viewer?,
         onClick: (Entry) -> Unit = {},
         onClickListEdit: (Entry) -> Unit,
-        onLongPressImage: (entry: Entry) -> Unit,
         colorCalculationState: ColorCalculationState,
         onRatioAvailable: (Float) -> Unit,
         forceListEditIcon: Boolean,
@@ -180,6 +178,7 @@ object MediaGridCard {
             screenKey = screenKey,
         ) {
             Box {
+                val fullscreenImageHandler = LocalFullscreenImageHandler.current
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
                         .data(entry?.media?.coverImage?.extraLarge)
@@ -215,7 +214,10 @@ object MediaGridCard {
                         )
                         .combinedClickable(
                             onClick = { if (entry != null) onClick(entry) },
-                            onLongClick = { if (entry != null) onLongPressImage(entry) },
+                            onLongClick = {
+                                entry?.media?.coverImage?.extraLarge
+                                    ?.let(fullscreenImageHandler::openImage)
+                            },
                             onLongClickLabel = stringResource(
                                 R.string.anime_media_cover_image_long_press_preview
                             ),

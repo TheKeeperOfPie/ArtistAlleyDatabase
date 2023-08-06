@@ -58,6 +58,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffUtils.primaryName
 import com.thekeeperofpie.artistalleydatabase.anime.ui.ListRowFavoritesSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.ListRowSmallImage
+import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
@@ -69,7 +70,6 @@ object StaffListRow {
     operator fun invoke(
         screenKey: String,
         entry: Entry?,
-        onLongPressImage: (Entry) -> Unit = {},
         colorCalculationState: ColorCalculationState = ColorCalculationState(),
     ) {
         var imageWidthToHeightRatio by remember { MutableSingle(1f) }
@@ -98,7 +98,6 @@ object StaffListRow {
                     screenKey = screenKey,
                     entry = entry,
                     onClick = onClick,
-                    onLongPressImage = { if (entry != null) onLongPressImage(entry) },
                     colorCalculationState = colorCalculationState,
                     onRatioAvailable = { imageWidthToHeightRatio = it }
                 )
@@ -136,12 +135,12 @@ object StaffListRow {
     private fun StaffImage(
         screenKey: String,
         entry: Entry?,
-        onClick: () -> Unit = {},
-        onLongPressImage: () -> Unit,
+        onClick: () -> Unit,
         colorCalculationState: ColorCalculationState,
         onRatioAvailable: (Float) -> Unit,
     ) {
         SharedElement(key = "anime_staff_${entry?.staff?.id}_image", screenKey = screenKey) {
+            val fullscreenImageHandler = LocalFullscreenImageHandler.current
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
                     .data(entry?.staff?.image?.large)
@@ -177,7 +176,9 @@ object StaffListRow {
                     )
                     .combinedClickable(
                         onClick = onClick,
-                        onLongClick = onLongPressImage,
+                        onLongClick = {
+                            entry?.staff?.image?.large?.let(fullscreenImageHandler::openImage)
+                        },
                         onLongClickLabel = stringResource(
                             R.string.anime_staff_image_long_press_preview
                         ),

@@ -71,7 +71,6 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import coil.size.Dimension
-import com.anilist.fragment.MediaNavigationData
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
 import com.anilist.type.ScoreFormat
@@ -85,6 +84,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toStatusIco
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.ui.StartEndDateDialog
 import com.thekeeperofpie.artistalleydatabase.anime.ui.StartEndDateRow
+import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.compose.AutoSizeText
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
@@ -103,7 +103,6 @@ object AnimeMediaEditBottomSheet {
         screenKey: String,
         viewModel: MediaEditViewModel,
         modifier: Modifier = Modifier,
-        onLongPressImage: (MediaNavigationData) -> Unit = { /* TODO */ },
         onDismiss: () -> Unit,
         colorCalculationState: ColorCalculationState,
     ) {
@@ -136,7 +135,6 @@ object AnimeMediaEditBottomSheet {
                                 screenKey = screenKey,
                                 viewModel = viewModel,
                                 initialParams = initialParams,
-                                onLongPressImage = onLongPressImage,
                                 colorCalculationState = colorCalculationState,
                             )
                         }
@@ -244,7 +242,6 @@ object AnimeMediaEditBottomSheet {
         screenKey: String,
         viewModel: MediaEditViewModel,
         initialParams: MediaEditData.InitialParams?,
-        onLongPressImage: (MediaNavigationData) -> Unit = { /* TODO */ },
         colorCalculationState: ColorCalculationState,
     ) {
         var startEndDateShown by remember { mutableStateOf<Boolean?>(null) }
@@ -263,6 +260,7 @@ object AnimeMediaEditBottomSheet {
                 ) {
                     val navigationCallback = LocalNavigationCallback.current
                     var imageWidthToHeightRatio by remember { mutableFloatStateOf(1f) }
+                    val fullscreenImageHandler = LocalFullscreenImageHandler.current
                     AsyncImage(
                         model = ImageRequest.Builder(LocalContext.current)
                             .data(media.coverImage?.extraLarge)
@@ -292,12 +290,15 @@ object AnimeMediaEditBottomSheet {
                             .size(width = DEFAULT_IMAGE_WIDTH, height = DEFAULT_IMAGE_HEIGHT)
                             .combinedClickable(
                                 onClick = {
-                                    navigationCallback?.onMediaClick(
+                                    navigationCallback.onMediaClick(
                                         media,
                                         imageWidthToHeightRatio,
                                     )
                                 },
-                                onLongClick = { onLongPressImage(media) },
+                                onLongClick = {
+                                    media.coverImage?.extraLarge
+                                        ?.let(fullscreenImageHandler::openImage)
+                                },
                                 onLongClickLabel = stringResource(
                                     R.string.anime_media_cover_image_long_press_preview
                                 ),

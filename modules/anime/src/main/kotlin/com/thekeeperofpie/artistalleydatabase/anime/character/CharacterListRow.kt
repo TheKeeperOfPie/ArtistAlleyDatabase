@@ -65,6 +65,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.primaryName
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.ui.ListRowSmallImage
+import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
@@ -79,7 +80,6 @@ object CharacterListRow {
         entry: Entry?,
         modifier: Modifier = Modifier,
         showRole: Boolean = false,
-        onLongPressImage: (Entry) -> Unit = {},
         colorCalculationState: ColorCalculationState = ColorCalculationState(),
     ) {
         var imageWidthToHeightRatio by remember { MutableSingle(1f) }
@@ -109,7 +109,6 @@ object CharacterListRow {
                     screenKey = screenKey,
                     entry = entry,
                     onClick = onClick,
-                    onLongPressImage = { if (entry != null) onLongPressImage(entry) },
                     colorCalculationState = colorCalculationState,
                     onRatioAvailable = { imageWidthToHeightRatio = it }
                 )
@@ -158,7 +157,6 @@ object CharacterListRow {
         screenKey: String,
         entry: Entry?,
         onClick: () -> Unit,
-        onLongPressImage: () -> Unit,
         colorCalculationState: ColorCalculationState,
         onRatioAvailable: (Float) -> Unit,
     ) {
@@ -166,6 +164,7 @@ object CharacterListRow {
             key = "anime_character_${entry?.character?.id}_image",
             screenKey = screenKey,
         ) {
+            val fullscreenImageHandler = LocalFullscreenImageHandler.current
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
                     .data(entry?.character?.image?.large)
@@ -201,7 +200,9 @@ object CharacterListRow {
                     )
                     .combinedClickable(
                         onClick = onClick,
-                        onLongClick = onLongPressImage,
+                        onLongClick = {
+                            entry?.character?.image?.large?.let(fullscreenImageHandler::openImage)
+                        },
                         onLongClickLabel = stringResource(
                             R.string.anime_character_image_long_press_preview
                         ),

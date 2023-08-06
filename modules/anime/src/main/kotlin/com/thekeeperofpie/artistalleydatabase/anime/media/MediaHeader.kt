@@ -107,7 +107,7 @@ fun MediaHeader(
             coverImage = { headerValues.coverImage },
             coverImageAllowHardware = colorCalculationState.hasColor(mediaId),
             coverImageWidthToHeightRatio = headerValues.coverImageWidthToHeightRatio,
-            bannerImage = { headerValues.bannerImage },
+            bannerImage = headerValues.bannerImage,
             onClickEnabled = (titles?.size ?: 0) > 1,
             onClick = {
                 preferredTitle = (preferredTitle + 1) % (titles?.size ?: 1)

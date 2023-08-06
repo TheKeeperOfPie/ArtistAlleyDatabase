@@ -10,6 +10,7 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -68,13 +69,13 @@ import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.android_utils.AnimationUtils
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
+import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.compose.AccelerateEasing
 import com.thekeeperofpie.artistalleydatabase.compose.CustomHtmlText
 import com.thekeeperofpie.artistalleydatabase.compose.ImageHtmlText
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
-import com.thekeeperofpie.artistalleydatabase.compose.optionalClickable
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 
 @Composable
@@ -84,7 +85,7 @@ internal fun CoverAndBannerHeader(
     entryId: EntryId?,
     coverImage: @Composable () -> String?,
     coverImageAllowHardware: Boolean,
-    bannerImage: @Composable () -> String? = { null },
+    bannerImage: String? = null,
     pinnedHeight: Dp = 120.dp,
     progress: Float = 0f,
     coverSize: Dp = 256.dp,
@@ -102,6 +103,7 @@ internal fun CoverAndBannerHeader(
     val elevation = lerp(0.dp, 16.dp, AccelerateEasing.transform(progress))
     val bottomCornerDp = lerp(0.dp, 12.dp, progress)
 
+    val fullscreenImageHandler = LocalFullscreenImageHandler.current
     Surface(
         shape = RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp),
         color = MaterialTheme.colorScheme.surface,
@@ -110,12 +112,19 @@ internal fun CoverAndBannerHeader(
         shadowElevation = elevation,
         modifier = Modifier
             .clip(RoundedCornerShape(bottomStart = bottomCornerDp, bottomEnd = bottomCornerDp))
-            .optionalClickable(onClick = onClick, enabled = onClickEnabled)
+            .combinedClickable(
+                enabled = onClickEnabled,
+                onClick = onClick ?: {},
+                onLongClick = { bannerImage?.let(fullscreenImageHandler::openImage) },
+                onLongClickLabel = stringResource(
+                    R.string.anime_media_cover_image_long_press_preview
+                ),
+            )
     ) {
         Box {
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
-                    .data(bannerImage())
+                    .data(bannerImage)
                     .crossfade(true)
                     .size(
                         width = Dimension.Undefined,
@@ -206,9 +215,10 @@ internal fun CoverAndBannerHeader(
                             val imageHeight = rowHeight - 20.dp
                             var success by remember { mutableStateOf(false) }
                             val maxWidth = LocalConfiguration.current.screenWidthDp.dp * 0.4f
+                            val coverImage = coverImage()
                             AsyncImage(
                                 model = ImageRequest.Builder(LocalContext.current)
-                                    .data(coverImage())
+                                    .data(coverImage)
                                     .crossfade(true)
                                     .allowHardware(coverImageAllowHardware)
                                     .size(
@@ -239,6 +249,12 @@ internal fun CoverAndBannerHeader(
                                         } else this
                                     }
                                     .widthIn(max = maxWidth)
+                                    .combinedClickable(
+                                        onClick = {},
+                                        onLongClick = {
+                                            coverImage?.let(fullscreenImageHandler::openImage)
+                                        }
+                                    )
                             )
                         }
                     }

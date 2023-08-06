@@ -96,7 +96,7 @@ object AniListUserScreen {
                         name = { headerValues.name },
                         coverImage = { headerValues.image },
                         coverImageWidthToHeightRatio = headerValues.imageWidthToHeightRatio,
-                        bannerImage = { user?.bannerImage },
+                        bannerImage = user?.bannerImage,
                     )
 
                     val actuallyShowLogOut = showLogOut || viewModel.viewer.collectAsState().value

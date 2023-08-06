@@ -134,7 +134,7 @@ object MediaSearchScreen {
                     refreshing = refreshing,
                     onRefresh = viewModel::onRefresh,
                     modifier = Modifier.padding(scaffoldPadding)
-                ) { onLongPressImage ->
+                ) {
                     when (val refreshState = content.loadState.refresh) {
                         LoadState.Loading -> Unit
                         is LoadState.Error -> AnimeMediaListScreen.Error(
@@ -171,7 +171,6 @@ object MediaSearchScreen {
                                                     viewModel.ignoreList
                                                         .toggle(item.media.id.toString())
                                                 },
-                                                onLongPressImage = onLongPressImage,
                                                 colorCalculationState = colorCalculationState,
                                             )
 

@@ -198,7 +198,7 @@ object SeasonalScreen {
             refreshing = refreshing,
             onRefresh = viewModel::onRefresh,
             modifier = Modifier.padding(scaffoldPadding),
-        ) { onLongPressImage ->
+        ) {
             when (val refreshState = content.loadState.refresh) {
                 LoadState.Loading -> Unit
                 is LoadState.Error -> AnimeMediaListScreen.Error(exception = refreshState.error)
@@ -232,7 +232,6 @@ object SeasonalScreen {
                                         entry = item,
                                         onClickListEdit = { editViewModel.initialize(it.media) },
                                         onLongClick = viewModel::onMediaLongClick,
-                                        onLongPressImage = onLongPressImage,
                                         colorCalculationState = colorCalculationState,
                                     )
                                 }

@@ -13,6 +13,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -150,6 +151,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.staff.DetailsStaff
 import com.thekeeperofpie.artistalleydatabase.anime.staff.staffSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.descriptionSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.listSection
+import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.cds.grid.CdEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.compose.AssistChip
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
@@ -1644,13 +1646,21 @@ object AnimeMediaDetailsScreen {
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.animateContentSize()
                 ) {
+
+                    val fullscreenImageHandler = LocalFullscreenImageHandler.current
                     AsyncImage(
                         model = item.thumbnail,
                         contentScale = ContentScale.FillHeight,
                         contentDescription = stringResource(
                             R.string.anime_media_details_streaming_episode_content_description
                         ),
-                        modifier = Modifier.widthIn(max = 200.dp),
+                        modifier = Modifier.widthIn(max = 200.dp)
+                            .combinedClickable(
+                                onClick = { item.url?.let(uriHandler::openUri) },
+                                onLongClick = {
+                                    item.thumbnail?.let(fullscreenImageHandler::openImage)
+                                }
+                            )
                     )
 
                     Text(
