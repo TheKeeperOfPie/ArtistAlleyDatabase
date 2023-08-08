@@ -162,6 +162,8 @@ sealed class SortFilterSection(val id: String) {
             )
         )
 
+        private var locked by mutableStateOf(false)
+
         fun setDefaultValues(values: List<FilterEntry.FilterEntryImpl<FilterType>>) {
             this.values = values.map { it.value }
             filterOptions = values
@@ -174,6 +176,11 @@ sealed class SortFilterSection(val id: String) {
             filterOptions = FilterEntry.values(values)
         }
 
+        fun changeSelected(selected: FilterType, locked: Boolean) {
+            filterOptions = FilterEntry.values(values, included = listOf(selected))
+            this.locked = locked
+        }
+
         @Composable
         override fun Content(state: ExpandedState, showDivider: Boolean) {
             FilterSection(
@@ -181,7 +188,7 @@ sealed class SortFilterSection(val id: String) {
                 onExpandedChange = { state.expandedState[id] = it },
                 entries = { filterOptions },
                 onEntryClick = { selected ->
-                    if (selected.clickable) {
+                    if (!locked && selected.clickable) {
                         filterOptions = filterOptions.toMutableList()
                             .apply {
                                 when (selectionMethod) {
@@ -240,6 +247,7 @@ sealed class SortFilterSection(val id: String) {
                 valueToText = valueToText,
                 valueToImage = valueToImage,
                 iconContentDescriptionRes = includeExcludeIconContentDescriptionRes,
+                locked = !locked,
                 showDivider = showDivider,
                 showIcons = selectionMethod == SelectionMethod.ALLOW_EXCLUDE,
             )

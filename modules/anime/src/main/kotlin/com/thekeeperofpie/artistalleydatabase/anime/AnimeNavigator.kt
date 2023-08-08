@@ -36,6 +36,9 @@ import com.thekeeperofpie.artistalleydatabase.anime.character.details.AnimeChara
 import com.thekeeperofpie.artistalleydatabase.anime.character.details.CharacterDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.character.media.CharacterMediasScreen
 import com.thekeeperofpie.artistalleydatabase.anime.character.media.CharacterMediasViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.forum.ForumRootScreen
+import com.thekeeperofpie.artistalleydatabase.anime.forum.ForumSubsectionScreen
+import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.ForumThreadScreen
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeIgnoreScreen
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.list.AnimeUserListScreen
@@ -693,6 +696,63 @@ object AnimeNavigator {
                 onClickSettings = null,
             )
         }
+
+        navGraphBuilder.composable(route = AnimeNavDestinations.FORUM.id) {
+            ForumRootScreen(
+                upIconOption = UpIconOption.Back(navHostController),
+            )
+        }
+
+        navGraphBuilder.composable(
+            route = AnimeNavDestinations.FORUM_SEARCH.id
+                    + "?title={title}"
+                    + "&sort={sort}"
+                    + "&categoryId={categoryId}"
+                    + "&mediaCategoryId={mediaCategoryId}",
+            deepLinks = listOf(
+                navDeepLink {
+                    uriPattern =
+                        "${AniListUtils.ANILIST_BASE_URL}/forum/recent?category={categoryId}"
+                },
+                navDeepLink {
+                    uriPattern =
+                        "${AniListUtils.ANILIST_BASE_URL}/forum/recent?media={mediaCategoryId}"
+                },
+            ),
+            arguments = listOf("title", "sort", "categoryId", "mediaCategoryId")
+                .map {
+                    navArgument(it) {
+                        type = NavType.StringType
+                        nullable = true
+                    }
+                },
+        ) {
+            ForumSubsectionScreen(
+                upIconOption = UpIconOption.Back(navHostController),
+                title = it.arguments?.getString("title"),
+            )
+        }
+
+        // TODO: Forum deep links
+        navGraphBuilder.composable(
+            route = AnimeNavDestinations.FORUM_THREAD.id
+                    + "?threadId={threadId}"
+                    + "&title={title}",
+            arguments = listOf(
+                navArgument("threadId") {
+                    type = NavType.StringType
+                },
+                navArgument("title") {
+                    type = NavType.StringType
+                    nullable = true
+                },
+            ),
+        ) {
+            ForumThreadScreen(
+                upIconOption = UpIconOption.Back(navHostController),
+                title = it.arguments?.getString("title"),
+            )
+        }
     }
 
     fun onTagClick(
@@ -1241,6 +1301,31 @@ object AnimeNavigator {
             navHostController?.let {
                 onActivityDetailsClick(it, activityId)
             }
+        }
+
+        fun onForumRootClick() = navHostController?.navigate(AnimeNavDestinations.FORUM.id)
+
+        fun onForumSearchClick() = navHostController?.navigate(AnimeNavDestinations.FORUM_SEARCH.id)
+
+        fun onForumCategoryClick(categoryName: String, categoryId: String) {
+            navHostController?.navigate(
+                AnimeNavDestinations.FORUM_SEARCH.id
+                        + "?title=$categoryName&categoryId=$categoryId"
+            )
+        }
+
+        fun onForumMediaCategoryClick(mediaCategoryName: String, mediaCategoryId: String) {
+            navHostController?.navigate(
+                AnimeNavDestinations.FORUM_SEARCH.id
+                        + "?title=$mediaCategoryName&mediaCategoryId=$mediaCategoryId"
+            )
+        }
+
+        fun onForumThreadClick(title: String?, threadId: String) {
+            navHostController?.navigate(
+                AnimeNavDestinations.FORUM_THREAD.id
+                        + "?title=$title&threadId=$threadId"
+            )
         }
 
         fun navigate(route: String) = navHostController?.navigate(route)

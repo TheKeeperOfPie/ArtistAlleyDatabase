@@ -1,0 +1,109 @@
+fragment ForumThread on Thread {
+    id
+    title
+    body
+    replyCount
+    viewCount
+    replyCommentId
+    isLocked
+    isSticky
+    isSubscribed
+    repliedAt
+    createdAt
+    categories {
+        id
+        name
+    }
+    mediaCategories {
+        id
+        title {
+            ...MediaTitleFragment
+        }
+        isAdult
+    }
+    user {
+        ...UserNavigationData
+    }
+    replyUser {
+        ...UserNavigationData
+    }
+}
+
+query ForumRoot {
+    # TODO: This assumes there is at most 6 stickied threads at once
+    stickied: Page(perPage: 6) @nonnull {
+        threads(sort: IS_STICKY) @nonnull {
+            ...ForumThread
+        }
+    }
+
+    active: Page(perPage: 5) @nonnull {
+        threads(sort: REPLIED_AT_DESC) @nonnull {
+            ...ForumThread
+        }
+    }
+
+    new: Page(perPage: 5) @nonnull {
+        threads(sort: ID_DESC) @nonnull {
+            ...ForumThread
+        }
+    }
+
+    releases: Page(perPage: 5) @nonnull {
+        threads(categoryId: 5, sort: REPLIED_AT_DESC) @nonnull {
+            ...ForumThread
+        }
+    }
+}
+
+query ForumThreadSearch(
+    $search: String,
+    $subscribed: Boolean,
+    $categoryId: Int,
+    $mediaCategoryId: Int,
+    $sort: [ThreadSort],
+    $page: Int!,
+    $perPage: Int!,
+) {
+    Page(page: $page, perPage: $perPage) @nonnull {
+        pageInfo {
+            ...PaginationInfo
+        }
+        threads(
+            search: $search,
+            subscribed: $subscribed,
+            categoryId: $categoryId,
+            mediaCategoryId: $mediaCategoryId,
+            sort: $sort,
+        ) {
+            ...ForumThread
+        }
+    }
+}
+
+query ForumThreadDetails($threadId: Int!) {
+    Thread(id: $threadId) @nonnull {
+        ...ForumThread
+    }
+}
+
+query ForumThreadComments($threadId: Int!, $page: Int!, $perPage: Int!) {
+    Page(page: $page, perPage: $perPage) {
+        pageInfo {
+            ...PaginationInfo
+        }
+        threadComments(threadId: $threadId, sort: ID) {
+            id
+            comment(asHtml: true)
+            childComments
+            isLocked
+            likeCount
+            isLiked
+            createdAt
+            updatedAt
+            user {
+                ...UserNavigationData
+            }
+        }
+    }
+}

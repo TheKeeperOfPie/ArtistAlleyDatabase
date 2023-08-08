@@ -51,6 +51,8 @@ object AniListUtils {
 
     fun activityUrl(id: String) = "$ANILIST_BASE_URL/activity/$id"
 
+    fun forumThreadUrl(id: String) = "$ANILIST_BASE_URL/forum/thread/$id"
+
     fun mediaId(entry: Entry) = when (val value = (entry as? Entry.Prefilled<*>)?.value) {
         is AniListMedia -> value.id.toString()
         is MediaEntry -> value.id

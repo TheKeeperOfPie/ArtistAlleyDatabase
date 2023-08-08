@@ -21,6 +21,7 @@ import com.anilist.type.ReviewRating
 import com.anilist.type.ReviewSort
 import com.anilist.type.StaffSort
 import com.anilist.type.StudioSort
+import com.anilist.type.ThreadSort
 import com.anilist.type.UserSort
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.network_utils.NetworkSettings
@@ -636,4 +637,49 @@ class AuthedAniListApiWrapper(
             })
         )
     }
+
+    override suspend fun forumRoot() = super.forumRoot().let {
+        it.copy(
+            stickied = it.stickied.copy(threads = it.stickied.threads.filter { it?.mediaCategories?.none { it?.isAdult == true } != false }),
+            active = it.active.copy(threads = it.active.threads.filter { it?.mediaCategories?.none { it?.isAdult == true } != false }),
+            new = it.new.copy(threads = it.new.threads.filter { it?.mediaCategories?.none { it?.isAdult == true } != false }),
+            releases = it.releases.copy(threads = it.releases.threads.filter { it?.mediaCategories?.none { it?.isAdult == true } != false }),
+        )
+    }
+
+    override suspend fun forumThreadSearch(
+        search: String?,
+        subscribed: Boolean,
+        categoryId: String?,
+        mediaCategoryId: String?,
+        sort: List<ThreadSort>?,
+        page: Int,
+        perPage: Int,
+    ) = super.forumThreadSearch(
+        search,
+        subscribed,
+        categoryId,
+        mediaCategoryId,
+        sort,
+        page,
+        perPage
+    ).let {
+        it.copy(
+            page = it.page.copy(
+                threads = it.page.threads
+                    ?.filter { it?.mediaCategories?.none { it?.isAdult == true } != false })
+        )
+    }
+
+    override suspend fun forumThread(threadId: String) = super.forumThread(threadId).also {
+        if (it.thread?.mediaCategories?.any { it?.isAdult == true } == true) {
+            throw IOException("Cannot load this media")
+        }
+    }
+
+    override suspend fun forumThreadComments(
+        threadId: String,
+        page: Int,
+        perPage: Int,
+    ) = super.forumThreadComments(threadId, page, perPage)
 }

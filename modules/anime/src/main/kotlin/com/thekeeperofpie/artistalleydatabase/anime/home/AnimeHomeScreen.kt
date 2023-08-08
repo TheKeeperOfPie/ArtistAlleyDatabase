@@ -7,7 +7,6 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.snapping.SnapLayoutInfoProvider
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
@@ -15,7 +14,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -37,10 +35,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.Forum
 import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material.icons.filled.Monitor
 import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.OpenInNew
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
@@ -117,6 +115,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaListQuickEditI
 import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsArticleEntry
 import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsSmallCard
 import com.thekeeperofpie.artistalleydatabase.anime.ui.GenericViewAllCard
+import com.thekeeperofpie.artistalleydatabase.anime.ui.NavigationHeader
 import com.thekeeperofpie.artistalleydatabase.compose.AutoResizeHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
@@ -214,6 +213,15 @@ object AnimeHomeScreen {
                             }
 
                             val navigationCallback = LocalNavigationCallback.current
+                            IconButton(onClick = navigationCallback::onForumRootClick) {
+                                Icon(
+                                    imageVector = Icons.Filled.Forum,
+                                    contentDescription = stringResource(
+                                        R.string.anime_forum_icon_content_description
+                                    ),
+                                )
+                            }
+
                             // TODO: Unread notification count
                             if (viewer != null) {
                                 IconButton(onClick = navigationCallback::onNotificationsClick) {
@@ -484,35 +492,12 @@ object AnimeHomeScreen {
         viewAllRoute: String?,
     ) {
         item("header_$titleRes") {
-            val navigationCallback = LocalNavigationCallback.current
-            Row(
-                modifier = Modifier
-                    .clickable(enabled = viewAllRoute != null) {
-                        navigationCallback.navigate(viewAllRoute!!)
-                    }
-                    .animateItemPlacement()
-            ) {
-                Text(
-                    text = stringResource(titleRes),
-                    style = MaterialTheme.typography.titleMedium.copy(),
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 10.dp),
-                )
-                if (viewAllRoute != null) {
-                    IconButton(
-                        onClick = { navigationCallback.navigate(viewAllRoute) },
-                        modifier = Modifier.padding(top = 4.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.OpenInNew,
-                            contentDescription = stringResource(
-                                R.string.anime_home_row_view_all_content_description
-                            ),
-                        )
-                    }
-                }
-            }
+            NavigationHeader(
+                titleRes = titleRes,
+                viewAllRoute = viewAllRoute,
+                viewAllContentDescriptionTextRes = R.string.anime_home_row_view_all_content_description,
+                modifier = Modifier.animateItemPlacement()
+            )
         }
     }
 
@@ -712,7 +697,10 @@ object AnimeHomeScreen {
                         modifier = Modifier
                             .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
                             .alpha(alpha)
-                            .size(width = CURRENT_ROW_IMAGE_WIDTH, height = CURRENT_ROW_IMAGE_HEIGHT)
+                            .size(
+                                width = CURRENT_ROW_IMAGE_WIDTH,
+                                height = CURRENT_ROW_IMAGE_HEIGHT
+                            )
                             .animateContentSize()
                     )
 

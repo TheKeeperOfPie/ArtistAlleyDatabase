@@ -142,9 +142,20 @@ dependencyResolutionManagement {
                 library("androidx.compose.ui:ui-tooling:1.6.0-alpha02")
                 library("androidx.compose.ui:ui:1.6.0-alpha02")
             }
+
             prefix("junit5") {
                 library("de.mannodermaus.junit5:android-test-core:1.3.0")
                 library("de.mannodermaus.junit5:android-test-runner:1.3.0")
+            }
+
+            prefix("markwon") {
+                library("io.noties.markwon:core:4.6.2")
+                library("io.noties.markwon:editor:4.6.2")
+                library("io.noties.markwon:ext-strikethrough:4.6.2")
+                library("io.noties.markwon:ext-tables:4.6.2")
+                library("io.noties.markwon:html:4.6.2")
+                library("io.noties.markwon:image-coil:4.6.2")
+                library("io.noties.markwon:linkify:4.6.2")
             }
         }
     }

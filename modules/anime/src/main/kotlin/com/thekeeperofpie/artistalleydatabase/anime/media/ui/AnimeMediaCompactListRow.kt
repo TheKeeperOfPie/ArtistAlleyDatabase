@@ -254,7 +254,7 @@ object AnimeMediaCompactListRow {
         Text(
             text = entry?.media?.title?.primaryTitle() ?: "Loading...",
             style = MaterialTheme.typography.titleSmall,
-            fontWeight = FontWeight.Black,
+            fontWeight = FontWeight.Bold,
             overflow = TextOverflow.Ellipsis,
             minLines = 2,
             maxLines = 2,

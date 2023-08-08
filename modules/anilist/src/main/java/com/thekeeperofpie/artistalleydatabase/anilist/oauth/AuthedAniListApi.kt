@@ -15,6 +15,10 @@ import com.anilist.CharacterDetailsQuery
 import com.anilist.DeleteActivityMutation
 import com.anilist.DeleteActivityReplyMutation
 import com.anilist.DeleteMediaListEntryMutation
+import com.anilist.ForumRootQuery
+import com.anilist.ForumThreadCommentsQuery
+import com.anilist.ForumThreadDetailsQuery
+import com.anilist.ForumThreadSearchQuery
 import com.anilist.GenresQuery
 import com.anilist.HomeAnime2Query
 import com.anilist.HomeAnimeQuery
@@ -97,6 +101,7 @@ import com.anilist.type.ReviewRating
 import com.anilist.type.ReviewSort
 import com.anilist.type.StaffSort
 import com.anilist.type.StudioSort
+import com.anilist.type.ThreadSort
 import com.anilist.type.UserSort
 import com.apollographql.apollo3.ApolloClient
 import com.apollographql.apollo3.api.Mutation
@@ -910,6 +915,33 @@ open class AuthedAniListApi(
             activityIds = activityIds.map { it.toInt() },
         )
     )
+
+    open suspend fun forumRoot() = query(ForumRootQuery())
+
+    open suspend fun forumThreadSearch(
+        search: String?,
+        subscribed: Boolean,
+        categoryId: String?,
+        mediaCategoryId: String?,
+        sort: List<ThreadSort>?,
+        page: Int,
+        perPage: Int = 10,
+    ) = query(
+        ForumThreadSearchQuery(
+            search = Optional.presentIfNotNull(search?.ifEmpty { null }),
+            subscribed = Optional.presentIfNotNull(subscribed.takeIf { it }),
+            categoryId = Optional.presentIfNotNull(categoryId?.toIntOrNull()),
+            mediaCategoryId = Optional.presentIfNotNull(mediaCategoryId?.toIntOrNull()),
+            sort = Optional.presentIfNotNull(sort?.ifEmpty { null }),
+            page = page,
+            perPage = perPage,
+        )
+    )
+
+    open suspend fun forumThread(threadId: String) = query(ForumThreadDetailsQuery(threadId = threadId.toInt()))
+
+    open suspend fun forumThreadComments(threadId: String, page: Int, perPage: Int = 10) =
+        query(ForumThreadCommentsQuery(threadId = threadId.toInt(), page = page, perPage = perPage))
 
     // TODO: Use queryCacheAndNetwork for everything
     private suspend fun <D : Query.Data> query(query: Query<D>) =

@@ -127,6 +127,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalUriHandler
@@ -1010,34 +1011,45 @@ private fun HtmlText(
 
 private class CoilImageGetter(
     private val context: Context,
-    private val onUpdate: () -> Unit,
+    maxWidth: Int,
+    private val onUpdate: (String) -> Unit,
 ) : Html.ImageGetter {
+    var maxWidth = maxWidth
+
     private val loader = Coil.imageLoader(context)
 
     private val sourceToDrawable = mutableMapOf<String, Drawable>()
 
     private val brokenDrawable = context.getDrawable(R.drawable.baseline_broken_image_24)
 
-    override fun getDrawable(source: String?): Drawable? {
+    override fun getDrawable(source: String?): Drawable {
         if (source == null) return CustomDrawableWrapper.EMPTY
         val drawable = sourceToDrawable[source]
         if (drawable != null) {
             return drawable
         }
+        val wrapper = CustomDrawableWrapper()
 
         loader.enqueue(
             ImageRequest.Builder(context)
                 .data(source)
-                .listener(onSuccess = { _, result ->
-                    sourceToDrawable[source] = result.drawable.apply {
-                        setBounds(0, 0, intrinsicWidth, intrinsicHeight)
-                    }
-                    onUpdate()
-                })
+                .listener(
+                    onSuccess = { request, result ->
+                        val newDrawable = result.drawable.apply {
+                            val widthToHeightRatio = intrinsicHeight / intrinsicWidth
+                            val width = intrinsicWidth.coerceAtMost(maxWidth)
+                            setBounds(0, 0, width, width * widthToHeightRatio)
+                        }
+                        sourceToDrawable[source] = newDrawable
+                        wrapper.delegate = newDrawable
+                        onUpdate(source)
+                    },
+                    onError = { _, _ -> wrapper.delegate = brokenDrawable },
+                )
                 .build()
         )
 
-        return brokenDrawable
+        return wrapper
     }
 }
 
@@ -1306,7 +1318,8 @@ class LinkMovementMethodWithOnClick(private val onClickFallback: () -> Unit) :
         private const val CLICK = 1
         private const val UP = 2
         private const val DOWN = 3
-//        private const val HIDE_FLOATING_TOOLBAR_DELAY_MS = 200
+
+        //        private const val HIDE_FLOATING_TOOLBAR_DELAY_MS = 200
         private val FROM_BELOW: Any = NoCopySpan.Concrete()
     }
 }
@@ -1324,8 +1337,9 @@ fun ImageHtmlText(
 ) {
     val context = LocalContext.current
     var updateMillis by remember { mutableLongStateOf(-1L) }
+    val screenWidth = LocalDensity.current.run { LocalConfiguration.current.screenWidthDp.dp.roundToPx() }
     val imageGetter = remember {
-        ImageGetterWrapper(CoilImageGetter(context) {
+        ImageGetterWrapper(CoilImageGetter(context, maxWidth = screenWidth) {
             updateMillis = SystemClock.uptimeMillis()
         })
     }
@@ -1338,22 +1352,23 @@ fun ImageHtmlText(
             .trim()
     }
 
+    val textColor = color.takeOrElse { LocalContentColor.current }.toArgb()
     val linkMovementMethod = remember { LinkMovementMethodWithOnClick(onClickFallback) }
     AndroidView(
-        modifier = modifier,
+        modifier = modifier.onSizeChanged {
+            (imageGetter.delegate as? CoilImageGetter)?.maxWidth = it.width
+        },
         factory = {
             TextView(it).apply {
                 if (maxLines != null) {
                     this.maxLines = maxLines
                 }
-                setTextColor(color.toArgb())
+                setTextColor(textColor)
                 ellipsize = TextUtils.TruncateAt.END
                 movementMethod = linkMovementMethod
             }
         },
-        update = {
-            it.text = htmlText
-        }
+        update = { it.text = htmlText },
     )
 }
 

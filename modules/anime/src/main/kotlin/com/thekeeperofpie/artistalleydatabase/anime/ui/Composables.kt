@@ -276,7 +276,7 @@ fun <T> LazyListScope.listSection(
                 enabled = onClickViewAll != null,
                 onClick = { onClickViewAll?.invoke(navigationCallback) },
             ),
-            onClickViewAll = onClickViewAll?.let { { it(navigationCallback) }},
+            onClickViewAll = onClickViewAll?.let { { it(navigationCallback) } },
             viewAllContentDescriptionTextRes = viewAllContentDescriptionTextRes
         )
     }
@@ -505,4 +505,29 @@ fun FavoriteIconButton(
             }
         }
     }
+}
+
+
+@Composable
+fun NavigationHeader(
+    @StringRes titleRes: Int,
+    viewAllRoute: String?,
+    @StringRes viewAllContentDescriptionTextRes: Int? = null,
+    modifier: Modifier = Modifier,
+) {
+    val navigationCallback = LocalNavigationCallback.current
+    DetailsSectionHeader(
+        text = stringResource(titleRes),
+        onClickViewAll = viewAllRoute?.let {
+            {
+                navigationCallback.navigate(viewAllRoute)
+            }
+        },
+        viewAllContentDescriptionTextRes = viewAllContentDescriptionTextRes,
+        modifier = Modifier
+            .clickable(enabled = viewAllRoute != null) {
+                navigationCallback.navigate(viewAllRoute!!)
+            }
+            .then(modifier)
+    )
 }

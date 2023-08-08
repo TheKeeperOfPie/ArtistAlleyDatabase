@@ -50,4 +50,12 @@ dependencies {
     implementation(group = "", name = "shared-elements-0.1.0-20221204.093513-11", ext = "aar")
 
     implementation(libs.rome)
+
+    api(libs.markwon.core)
+//    implementation(libs.markwon.editor)
+    implementation(libs.markwon.ext.strikethrough)
+    implementation(libs.markwon.ext.tables)
+    api(libs.markwon.html)
+    implementation(libs.markwon.image.coil)
+    implementation(libs.markwon.linkify)
 }

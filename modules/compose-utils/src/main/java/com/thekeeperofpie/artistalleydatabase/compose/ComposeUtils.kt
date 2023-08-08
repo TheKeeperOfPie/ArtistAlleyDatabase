@@ -1,13 +1,18 @@
 package com.thekeeperofpie.artistalleydatabase.compose
 
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.res.stringResource
 import coil.compose.AsyncImagePainter
+import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
 import kotlin.reflect.KProperty
 
 fun <T> observableStateOf(value: T, onChange: (T) -> Unit) =
@@ -48,3 +53,17 @@ fun LazyListState.showFloatingActionButtonOnVerticalScroll(firstIndexToHide: Int
 
 fun AsyncImagePainter.State.Success.widthToHeightRatio() = result.drawable.intrinsicWidth /
         result.drawable.intrinsicHeight.coerceAtLeast(0).toFloat()
+
+@Composable
+fun LoadingResult<*>.ErrorSnackbar(snackbarHostState: SnackbarHostState) {
+    val errorMessage = error?.first?.let { stringResource(it) }
+    LaunchedEffect(errorMessage) {
+        if (errorMessage != null) {
+            snackbarHostState.showSnackbar(
+                message = errorMessage,
+                withDismissAction = true,
+                duration = SnackbarDuration.Long,
+            )
+        }
+    }
+}

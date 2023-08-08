@@ -26,4 +26,8 @@ enum class AnimeNavDestinations(val id: String) {
     STUDIO_MEDIAS("anime_studio_medias"),
     ACTIVITY_DETAILS("anime_activity_details"),
     FEATURE_TIERS("anime_feature_tiers"),
+
+    FORUM("anime_forum"),
+    FORUM_SEARCH("anime_forum_search"),
+    FORUM_THREAD("anime_forum_thread"),
 }

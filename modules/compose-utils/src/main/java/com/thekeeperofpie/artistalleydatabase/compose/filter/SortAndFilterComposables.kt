@@ -136,7 +136,8 @@ object SortAndFilterComposables {
                     }
 
                     if (!expanded && sortOptions()
-                            .any { it.state != FilterIncludeExcludeState.DEFAULT }
+                            .any { it.state != FilterIncludeExcludeState.DEFAULT
+                                    && it.value.supportsAscending }
                     ) {
                         val sortAscending = sortAscending()
                         FilterChip(
@@ -287,16 +288,17 @@ fun <Entry : FilterEntry<*>> FilterSection(
     valueToText: @Composable (Entry) -> String,
     valueToImage: (@Composable (Entry) -> String?)? = null,
     @StringRes iconContentDescriptionRes: Int,
+    locked: Boolean = true,
     showDivider: Boolean = true,
     showIcons: Boolean = true,
 ) {
     @Suppress("NAME_SHADOWING")
-    val expanded = expanded()
+    val expanded = expanded() && !locked
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onExpandedChange(!expanded) }
+            .clickable(enabled = !locked) { onExpandedChange(!expanded) }
     ) {
         FlowRow(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -330,7 +332,7 @@ fun <Entry : FilterEntry<*>> FilterSection(
                 FilterChip(
                     selected = it.state != FilterIncludeExcludeState.DEFAULT,
                     onClick = { onEntryClick(it) },
-                    enabled = it.clickable,
+                    enabled = it.clickable && !locked,
                     label = { Text(valueToText(it)) },
                     leadingIcon = leadingIcon,
                     modifier = Modifier
@@ -340,12 +342,14 @@ fun <Entry : FilterEntry<*>> FilterSection(
             }
         }
 
-        TrailingDropdownIconButton(
-            expanded = expanded,
-            contentDescription = stringResource(titleDropdownContentDescriptionRes),
-            onClick = { onExpandedChange(!expanded) },
-            modifier = Modifier.align(Alignment.Top),
-        )
+        if (!locked) {
+            TrailingDropdownIconButton(
+                expanded = expanded,
+                contentDescription = stringResource(titleDropdownContentDescriptionRes),
+                onClick = { onExpandedChange(!expanded) },
+                modifier = Modifier.align(Alignment.Top),
+            )
+        }
     }
 
     if (showDivider) {
