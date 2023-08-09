@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,6 +23,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Reply
 import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.material.icons.outlined.ThumbUp
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
@@ -31,21 +33,26 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -83,6 +90,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.ImageHtmlText
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
+import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.ZoneOffset
 
@@ -123,7 +131,12 @@ object ActivityDetailsScreen {
             colorCalculationState = colorCalculationState,
         ) {
             val refresh by viewModel.refresh.collectAsState()
+            val sheetState = rememberStandardBottomSheetState(
+                initialValue = SheetValue.Hidden,
+                skipHiddenState = false
+            )
             WritingReplyPanelScaffold(
+                sheetState = sheetState,
                 snackbarHostState = snackbarHostState,
                 refreshEvent = refresh,
                 committing = viewModel.replying,
@@ -137,172 +150,190 @@ object ActivityDetailsScreen {
                 },
                 modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
             ) {
-                val pullRefreshState = rememberPullRefreshState(
-                    refreshing = entry.loading,
-                    onRefresh = viewModel::refresh,
-                )
-                Box(
-                    modifier = Modifier
-                        .padding(it)
-                        .pullRefresh(pullRefreshState)
-                ) {
-                    val viewer by viewModel.viewer.collectAsState()
-                    val replies = viewModel.replies.collectAsLazyPagingItems()
-                    var deletePromptData by remember(refresh) {
-                        mutableStateOf<Either<Unit, ActivityDetailsViewModel.Entry.ReplyEntry>?>(
-                            null
-                        )
-                    }
-                    LazyColumn(modifier = Modifier.fillMaxSize()) {
-                        item(viewModel.activityId) {
-                            val result = entry.result
-                            when (val activity = result?.activity) {
-                                is ActivityDetailsQuery.Data.ListActivityActivity -> {
-                                    ListActivitySmallCard(
-                                        screenKey = SCREEN_KEY,
-                                        viewer = viewer,
-                                        activity = activity,
-                                        mediaEntry = result.mediaEntry,
-                                        entry = result,
-                                        onActivityStatusUpdate = viewModel.toggleHelper::toggle,
-                                        showActionsRow = true,
-                                        onClickDelete = {
-                                            deletePromptData = Either.Left(Unit)
-                                        },
-                                        onClickListEdit = {
-                                            editViewModel.initialize(it.media)
-                                        },
-                                        colorCalculationState = colorCalculationState,
-                                    )
-                                }
-                                is ActivityDetailsQuery.Data.TextActivityActivity -> {
-                                    TextActivitySmallCard(
-                                        screenKey = SCREEN_KEY,
-                                        activity = activity,
-                                        viewer = viewer,
-                                        entry = result,
-                                        onActivityStatusUpdate = viewModel.toggleHelper::toggle,
-                                        showActionsRow = true,
-                                        onClickDelete = {
-                                            deletePromptData = Either.Left(Unit)
-                                        },
-                                    )
-                                }
-                                is ActivityDetailsQuery.Data.MessageActivityActivity -> {
-                                    MessageActivitySmallCard(
-                                        screenKey = SCREEN_KEY,
-                                        activity = activity,
-                                        viewer = viewer,
-                                        entry = result,
-                                        onActivityStatusUpdate = viewModel.toggleHelper::toggle,
-                                        showActionsRow = true,
-                                        onClickDelete = {
-                                            deletePromptData = Either.Left(Unit)
-                                        },
-                                    )
-                                }
-                                is ActivityDetailsQuery.Data.OtherActivity,
-                                null,
-                                -> {
-                                    TextActivitySmallCard(
-                                        screenKey = SCREEN_KEY,
-                                        activity = null,
-                                        viewer = viewer,
-                                        entry = result,
-                                        onActivityStatusUpdate = viewModel.toggleHelper::toggle,
-                                    )
-                                }
-                            }
-                        }
-
-                        // TODO: Collapse the error UI with other screens
-                        if (replies.itemCount == 0) {
-                            when (replies.loadState.refresh) {
-                                is LoadState.Error ->
-                                    centeredMessage(R.string.anime_activity_details_error_loading_replies)
-                                is LoadState.NotLoading ->
-                                    centeredMessage(R.string.anime_activity_details_no_replies)
-                                LoadState.Loading -> Unit
-                            }
-                        }
-
-                        items(
-                            count = replies.itemCount,
-                            key = replies.itemKey { it.reply.id },
-                            contentType = replies.itemContentType { "reply" },
-                        ) {
-                            val replyEntry = replies[it]
-                            ReplyRow(
-                                viewer = viewer,
-                                replyEntry = replyEntry,
-                                onStatusUpdate = viewModel.replyToggleHelper::toggleLike,
-                                onClickDelete = {
-                                    if (replyEntry != null) {
-                                        deletePromptData = Either.Right(replyEntry)
-                                    }
-                                },
+                val scope = rememberCoroutineScope()
+                Scaffold(
+                    floatingActionButton = {
+                        FloatingActionButton(onClick = { scope.launch { sheetState.expand() } }) {
+                            Icon(
+                                Icons.Filled.Reply,
+                                contentDescription = stringResource(
+                                    R.string.anime_writing_reply_fab_content_description
+                                ),
                             )
                         }
-                    }
-
-                    val deletePromptDataFinal = deletePromptData
-                    if (deletePromptDataFinal != null) {
-                        AlertDialog(
-                            onDismissRequest = { deletePromptData = null },
-                            title = {
-                                Text(
-                                    text = stringResource(
-                                        if (deletePromptDataFinal is Either.Left) {
-                                            R.string.anime_activity_delete_confirmation
-                                        } else {
-                                            R.string.anime_activity_reply_delete_confirmation
-                                        }
-                                    )
-                                )
-                            },
-                            text = if (deletePromptDataFinal is Either.Right) {
-                                {
-                                    ImageHtmlText(
-                                        text = deletePromptDataFinal.value.reply.text.orEmpty(),
-                                        color = MaterialTheme.typography.bodySmall.color,
-                                    )
-                                }
-                            } else null,
-                            confirmButton = {
-                                Box(
-                                    contentAlignment = Alignment.Center,
-                                    modifier = Modifier.height(IntrinsicSize.Min)
-                                ) {
-                                    val loadingAlpha by animateFloatAsState(
-                                        targetValue = if (viewModel.deleting) 1f else 0f,
-                                        label = "Activity deleting crossfade",
-                                    )
-                                    TextButton(
-                                        onClick = { viewModel.delete(deletePromptDataFinal) },
-                                        modifier = Modifier.alpha(1f - loadingAlpha)
-                                    ) {
-                                        Text(text = stringResource(UtilsStringR.delete))
+                    },
+                    // Ignore bottom padding so FAB is linked to bottom
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(PaddingValues(top = it.calculateTopPadding())),
+                ) {
+                    val pullRefreshState = rememberPullRefreshState(
+                        refreshing = entry.loading,
+                        onRefresh = viewModel::refresh,
+                    )
+                    Box(
+                        modifier = Modifier
+                            .padding(it)
+                            .pullRefresh(pullRefreshState)
+                    ) {
+                        val viewer by viewModel.viewer.collectAsState()
+                        val replies = viewModel.replies.collectAsLazyPagingItems()
+                        var deletePromptData by remember(refresh) {
+                            mutableStateOf<Either<Unit, ActivityDetailsViewModel.Entry.ReplyEntry>?>(
+                                null
+                            )
+                        }
+                        LazyColumn(modifier = Modifier.fillMaxSize()) {
+                            item(viewModel.activityId) {
+                                val result = entry.result
+                                when (val activity = result?.activity) {
+                                    is ActivityDetailsQuery.Data.ListActivityActivity -> {
+                                        ListActivitySmallCard(
+                                            screenKey = SCREEN_KEY,
+                                            viewer = viewer,
+                                            activity = activity,
+                                            mediaEntry = result.mediaEntry,
+                                            entry = result,
+                                            onActivityStatusUpdate = viewModel.toggleHelper::toggle,
+                                            showActionsRow = true,
+                                            onClickDelete = {
+                                                deletePromptData = Either.Left(Unit)
+                                            },
+                                            onClickListEdit = {
+                                                editViewModel.initialize(it.media)
+                                            },
+                                            colorCalculationState = colorCalculationState,
+                                        )
                                     }
-                                    CircularProgressIndicator(
-                                        modifier = Modifier
-                                            .fillMaxHeight()
-                                            .alpha(loadingAlpha)
-                                    )
-                                }
-                            },
-                            dismissButton = {
-                                TextButton(onClick = { deletePromptData = null }) {
-                                    Text(text = stringResource(UtilsStringR.cancel))
+                                    is ActivityDetailsQuery.Data.TextActivityActivity -> {
+                                        TextActivitySmallCard(
+                                            screenKey = SCREEN_KEY,
+                                            activity = activity,
+                                            viewer = viewer,
+                                            entry = result,
+                                            onActivityStatusUpdate = viewModel.toggleHelper::toggle,
+                                            showActionsRow = true,
+                                            onClickDelete = {
+                                                deletePromptData = Either.Left(Unit)
+                                            },
+                                        )
+                                    }
+                                    is ActivityDetailsQuery.Data.MessageActivityActivity -> {
+                                        MessageActivitySmallCard(
+                                            screenKey = SCREEN_KEY,
+                                            activity = activity,
+                                            viewer = viewer,
+                                            entry = result,
+                                            onActivityStatusUpdate = viewModel.toggleHelper::toggle,
+                                            showActionsRow = true,
+                                            onClickDelete = {
+                                                deletePromptData = Either.Left(Unit)
+                                            },
+                                        )
+                                    }
+                                    is ActivityDetailsQuery.Data.OtherActivity,
+                                    null,
+                                    -> {
+                                        TextActivitySmallCard(
+                                            screenKey = SCREEN_KEY,
+                                            activity = null,
+                                            viewer = viewer,
+                                            entry = result,
+                                            onActivityStatusUpdate = viewModel.toggleHelper::toggle,
+                                        )
+                                    }
                                 }
                             }
+
+                            // TODO: Collapse the error UI with other screens
+                            if (replies.itemCount == 0) {
+                                when (replies.loadState.refresh) {
+                                    is LoadState.Error ->
+                                        centeredMessage(R.string.anime_activity_details_error_loading_replies)
+                                    is LoadState.NotLoading ->
+                                        centeredMessage(R.string.anime_activity_details_no_replies)
+                                    LoadState.Loading -> Unit
+                                }
+                            }
+
+                            items(
+                                count = replies.itemCount,
+                                key = replies.itemKey { it.reply.id },
+                                contentType = replies.itemContentType { "reply" },
+                            ) {
+                                val replyEntry = replies[it]
+                                ReplyRow(
+                                    viewer = viewer,
+                                    replyEntry = replyEntry,
+                                    onStatusUpdate = viewModel.replyToggleHelper::toggleLike,
+                                    onClickDelete = {
+                                        if (replyEntry != null) {
+                                            deletePromptData = Either.Right(replyEntry)
+                                        }
+                                    },
+                                )
+                            }
+                        }
+
+                        val deletePromptDataFinal = deletePromptData
+                        if (deletePromptDataFinal != null) {
+                            AlertDialog(
+                                onDismissRequest = { deletePromptData = null },
+                                title = {
+                                    Text(
+                                        text = stringResource(
+                                            if (deletePromptDataFinal is Either.Left) {
+                                                R.string.anime_activity_delete_confirmation
+                                            } else {
+                                                R.string.anime_activity_reply_delete_confirmation
+                                            }
+                                        )
+                                    )
+                                },
+                                text = if (deletePromptDataFinal is Either.Right) {
+                                    {
+                                        ImageHtmlText(
+                                            text = deletePromptDataFinal.value.reply.text.orEmpty(),
+                                            color = MaterialTheme.typography.bodySmall.color,
+                                        )
+                                    }
+                                } else null,
+                                confirmButton = {
+                                    Box(
+                                        contentAlignment = Alignment.Center,
+                                        modifier = Modifier.height(IntrinsicSize.Min)
+                                    ) {
+                                        val loadingAlpha by animateFloatAsState(
+                                            targetValue = if (viewModel.deleting) 1f else 0f,
+                                            label = "Activity deleting crossfade",
+                                        )
+                                        TextButton(
+                                            onClick = { viewModel.delete(deletePromptDataFinal) },
+                                            modifier = Modifier.alpha(1f - loadingAlpha)
+                                        ) {
+                                            Text(text = stringResource(UtilsStringR.delete))
+                                        }
+                                        CircularProgressIndicator(
+                                            modifier = Modifier
+                                                .fillMaxHeight()
+                                                .alpha(loadingAlpha)
+                                        )
+                                    }
+                                },
+                                dismissButton = {
+                                    TextButton(onClick = { deletePromptData = null }) {
+                                        Text(text = stringResource(UtilsStringR.cancel))
+                                    }
+                                }
+                            )
+                        }
+
+                        PullRefreshIndicator(
+                            refreshing = entry.loading,
+                            state = pullRefreshState,
+                            modifier = Modifier.align(Alignment.TopCenter)
                         )
                     }
-
-                    PullRefreshIndicator(
-                        refreshing = entry.loading,
-                        state = pullRefreshState,
-                        modifier = Modifier.align(Alignment.TopCenter)
-                    )
                 }
             }
         }

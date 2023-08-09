@@ -2,22 +2,25 @@
 
 package com.thekeeperofpie.artistalleydatabase.anime.forum
 
-import android.text.format.DateUtils
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Comment
-import androidx.compose.material.icons.filled.Reply
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.outlined.ModeComment
 import androidx.compose.material3.ElevatedCard
@@ -49,8 +52,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.compose.fadingEdgeEnd
-import java.time.Instant
-import java.time.ZoneOffset
 
 @Composable
 fun ThreadCompactCard(thread: ForumThread, modifier: Modifier = Modifier) {
@@ -85,74 +86,138 @@ fun ThreadCard(screenKey: String, thread: ForumThread?, modifier: Modifier = Mod
             Column(
                 modifier = Modifier
                     .weight(1f)
-                    .padding(horizontal = 12.dp, vertical = 10.dp)
+                    .padding(vertical = 10.dp)
             ) {
                 Text(
                     text = thread?.title ?: "Placeholder title",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Black,
-                    modifier = Modifier.placeholder(
-                        visible = thread == null,
-                        highlight = PlaceholderHighlight.shimmer(),
-                    )
-                )
-
-                val userName = thread?.user?.name
-                val timestamp = thread?.createdAt?.let(AniListUtils::relativeTimestamp)
-                if (thread == null || userName != null || timestamp != null) {
-                    Text(
-                        text = if (userName != null && timestamp != null) {
-                            stringResource(
-                                R.string.anime_forum_thread_author_and_timestamp,
-                                userName,
-                                timestamp,
-                            )
-                        } else {
-                            userName ?: timestamp.toString()
-                        },
-                        style = MaterialTheme.typography.labelSmall,
-                        modifier = Modifier.placeholder(
+                    modifier = Modifier
+                        .padding(horizontal = 12.dp)
+                        .placeholder(
                             visible = thread == null,
                             highlight = PlaceholderHighlight.shimmer(),
                         )
+                )
+
+                val userName = thread?.user?.name
+                val createdAt = thread?.createdAt?.let(AniListUtils::relativeTimestamp)
+                if (thread == null || userName != null || createdAt != null) {
+                    Text(
+                        text = if (userName != null && createdAt != null) {
+                            stringResource(
+                                R.string.anime_forum_thread_author_and_timestamp,
+                                userName,
+                                createdAt,
+                            )
+                        } else {
+                            userName ?: createdAt.toString()
+                        },
+                        style = MaterialTheme.typography.labelSmall,
+                        modifier = Modifier
+                            .padding(horizontal = 12.dp)
+                            .placeholder(
+                                visible = thread == null,
+                                highlight = PlaceholderHighlight.shimmer(),
+                            )
                     )
                 }
 
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Filled.Reply,
-                        contentDescription = stringResource(
-                            R.string.anime_forum_thread_last_reply_icon_content_description
-                        ),
-                    )
+                Spacer(Modifier.height(12.dp))
 
-                    ThreadAuthor(
-                        screenKey = screenKey,
-                        loading = thread == null,
-                        user = thread?.replyUser,
-                        aniListTimestamp = thread?.repliedAt,
-                    )
+//                Row(
+//                    modifier = Modifier.placeholder(
+//                        visible = thread == null,
+//                        highlight = PlaceholderHighlight.shimmer(),
+//                    )
+//                ) {
+//                    val viewCount = thread?.viewCount ?: 0
+//                    val replyCount = thread?.replyCount ?: 0
+//                    Icon(
+//                        imageVector = Icons.Filled.Visibility,
+//                        contentDescription = stringResource(
+//                            R.string.anime_forum_view_count_content_description
+//                        ),
+//                        modifier = Modifier.size(16.dp)
+//                    )
+//
+//                    Text(
+//                        text = viewCount.toString(),
+//                        style = MaterialTheme.typography.labelMedium,
+//                    )
+//
+//                    Spacer(Modifier.width(12.dp))
+//
+//                    Icon(
+//                        imageVector = if (replyCount == 0) {
+//                            Icons.Outlined.ModeComment
+//                        } else {
+//                            Icons.Filled.Comment
+//                        },
+//                        contentDescription = stringResource(
+//                            R.string.anime_forum_reply_count_icon_content_description
+//                        ),
+//                        modifier = Modifier.size(16.dp)
+//                    )
+//
+//                    Text(
+//                        text = replyCount.toString(),
+//                        style = MaterialTheme.typography.labelSmall,
+//                    )
+//                }
+
+                if (thread != null) {
+                    ThreadCategoryRow(thread)
                 }
             }
 
-            ThreadViewReplyCountIcons(
-                viewCount = thread?.viewCount,
-                replyCount = thread?.replyCount,
-            )
-        }
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp)
+            ) {
+                ThreadViewReplyCountIcons(
+                    viewCount = thread?.viewCount,
+                    replyCount = thread?.replyCount,
+                    modifier = Modifier.align(Alignment.End)
+                )
 
-        if (thread != null) {
-            ThreadCategoryRow(thread)
+                Spacer(Modifier.height(12.dp))
+
+                val replyUser = thread?.replyUser
+                if (thread == null || replyUser?.avatar?.large != null) {
+                    UserImage(
+                        screenKey = screenKey,
+                        loading = thread == null,
+                        user = replyUser,
+                    )
+
+                    Spacer(Modifier.height(4.dp))
+                }
+
+                val repliedAt = thread?.repliedAt?.let(AniListUtils::relativeTimestamp)
+                if (thread == null || repliedAt != null) {
+                    Text(
+                        text = repliedAt.toString(),
+                        style = MaterialTheme.typography.labelSmall,
+                        modifier = Modifier
+                            .widthIn(max = 180.dp)
+                            .placeholder(
+                                visible = thread == null,
+                                highlight = PlaceholderHighlight.shimmer(),
+                            )
+                    )
+                }
+            }
         }
     }
 }
 
 @Composable
-fun ThreadViewReplyCountIcons(viewCount: Int?, replyCount: Int?) {
+fun ThreadViewReplyCountIcons(viewCount: Int?, replyCount: Int?, modifier: Modifier = Modifier) {
     Column(
         verticalArrangement = Arrangement.spacedBy(4.dp),
         horizontalAlignment = Alignment.End,
-        modifier = Modifier.padding(top = 12.dp, end = 12.dp)
+        modifier = modifier,
     ) {
         Row(
             horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -205,7 +270,7 @@ fun ThreadViewReplyCountIcons(viewCount: Int?, replyCount: Int?) {
 }
 
 @Composable
-fun ThreadCategoryRow(thread: ForumThread) {
+fun ThreadCategoryRow(thread: ForumThread, modifier: Modifier = Modifier) {
     val categories = thread.categories?.filterNotNull().orEmpty()
     val mediaCategories = thread.mediaCategories?.filterNotNull().orEmpty()
     if (categories.isEmpty() && mediaCategories.isEmpty()) return
@@ -215,7 +280,6 @@ fun ThreadCategoryRow(thread: ForumThread) {
         contentPadding = PaddingValues(start = 12.dp, end = 32.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         modifier = Modifier
-            .padding(top = 4.dp, bottom = 10.dp)
             .fillMaxWidth()
             // SubcomposeLayout doesn't support fill max width, so use a really large number.
             // The parent will clamp the actual width so all content still fits on screen.
@@ -225,6 +289,7 @@ fun ThreadCategoryRow(thread: ForumThread) {
                 endOpaque = 32.dp,
                 endTransparent = 16.dp,
             )
+            .then(modifier)
     ) {
         // TODO: Enforce unique IDs
         items(categories, { "category-${it.id}" }) {
@@ -252,14 +317,7 @@ fun ThreadCategoryRow(thread: ForumThread) {
 @Composable
 fun ThreadCommentTimestamp(loading: Boolean, aniListTimestamp: Int?) {
     val timestamp = remember(aniListTimestamp) {
-        aniListTimestamp?.let {
-            DateUtils.getRelativeTimeSpanString(
-                it * 1000L,
-                Instant.now().atOffset(ZoneOffset.UTC).toEpochSecond() * 1000,
-                0,
-                DateUtils.FORMAT_ABBREV_ALL,
-            )
-        }
+        aniListTimestamp?.let(AniListUtils::relativeTimestamp)
     }
 
     if (loading || timestamp != null) {

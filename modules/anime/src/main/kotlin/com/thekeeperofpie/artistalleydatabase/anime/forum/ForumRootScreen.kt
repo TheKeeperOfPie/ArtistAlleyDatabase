@@ -41,6 +41,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -51,6 +52,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.ui.NavigationHeader
+import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.compose.ErrorSnackbar
 import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
@@ -80,24 +82,28 @@ object ForumRootScreen {
         Scaffold(
             topBar = {
                 val navigationCallback = LocalNavigationCallback.current
-                TopAppBar(
-                    title = { Text(text = stringResource(R.string.anime_forum_header)) },
-                    navigationIcon = { upIconOption?.let { UpIconButton(upIconOption) } },
-                    actions = {
-                        IconButton(onClick = { navigationCallback.onForumSearchClick() }) {
-                            Icon(
-                                imageVector = Icons.Filled.Search,
-                                contentDescription  = stringResource(
-                                    R.string.anime_forum_search_icon_content_description
-                                ),
-                            )
-                        }
-                    },
-                    scrollBehavior = scrollBehavior,
-                )
+                EnterAlwaysTopAppBarHeightChange(scrollBehavior = scrollBehavior) {
+                    TopAppBar(
+                        title = { Text(text = stringResource(R.string.anime_forum_header)) },
+                        navigationIcon = { upIconOption?.let { UpIconButton(upIconOption) } },
+                        actions = {
+                            IconButton(onClick = { navigationCallback.onForumSearchClick() }) {
+                                Icon(
+                                    imageVector = Icons.Filled.Search,
+                                    contentDescription  = stringResource(
+                                        R.string.anime_forum_search_icon_content_description
+                                    ),
+                                )
+                            }
+                        },
+                        scrollBehavior = scrollBehavior,
+                    )
+                }
             },
             snackbarHost = { SnackbarHost(snackbarHostState) },
-            modifier = Modifier.pullRefresh(pullRefreshState)
+            modifier = Modifier
+                .nestedScroll(scrollBehavior.nestedScrollConnection)
+                .pullRefresh(pullRefreshState)
         ) {
             var stickiedExpanded by rememberSaveable { mutableStateOf(false) }
             Box(

@@ -11,13 +11,18 @@ import io.noties.markwon.html.tag.SimpleTagHandler
 
 object AniListTempPlugin : AbstractMarkwonPlugin() {
 
+    private val webLinkRegex = Regex("""
+        \s(https?://(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.\S{2,}|https?://(?:www\.|(?!www))[a-zA-Z0-9]+\.\S{2,}|www\.[a-zA-Z0-9]+\.\S{2,})
+    """.trimIndent())
+
+    @Suppress("RestrictedApi")
     override fun processMarkdown(markdown: String) =
         markdown
             // AniList has custom img### methods which aren't handled in common Markdown
             .replace(Regex("""img(?:|\d\d[\d%])\((http[^)]*)\)""")) {
                 // TODO: Support sizing declarations
                 val imageUrl = it.groups[1]?.value
-                " <img src=\"$imageUrl\" alt=\"$imageUrl\"/>\n"
+                "<a href=\"$imageUrl\"><img src=\"$imageUrl\" alt=\"$imageUrl\"/></a>\n"
             }
             // Markwon doesn't support parsing Markdown syntax inside of HTML tags, so manually
             // convert the common syntax into HTML equivalents
@@ -39,6 +44,7 @@ object AniListTempPlugin : AbstractMarkwonPlugin() {
             .replace(Regex("""\[(.*?)]\((.*?)\)""")) {
                 "<a href=\"${it.groups[2]?.value}\">${it.groups[1]?.value}</a>"
             }
+            .replace(webLinkRegex) { "<a href=\"${it.value.trim()}\">${it.value.trim()}</a>" }
             .replace("\n---\n", "\n<hr/>\n")
             // <center> seems to break stuff that comes after it
             .replace("</center>\n", "</center><br/>")

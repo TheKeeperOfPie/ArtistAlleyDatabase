@@ -30,6 +30,7 @@ fun MarkdownText(
                 }
                 setTextColor(color)
                 ellipsize = TextUtils.TruncateAt.END
+                setTextIsSelectable(true)
             }
         },
         update = {

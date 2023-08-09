@@ -682,4 +682,12 @@ class AuthedAniListApiWrapper(
         page: Int,
         perPage: Int,
     ) = super.forumThreadComments(threadId, page, perPage)
+
+    override suspend fun toggleForumThreadSubscribe(id: String, subscribe: Boolean) =
+        super.toggleForumThreadSubscribe(id, subscribe)
+
+    override suspend fun toggleForumThreadLike(id: String) = super.toggleForumThreadLike(id)
+
+    override suspend fun toggleForumThreadCommentLike(id: String) =
+        super.toggleForumThreadCommentLike(id)
 }

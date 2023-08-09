@@ -787,6 +787,7 @@
     <string name="anime_writing_reply_fab_content_description">Reply</string>
     <string name="anime_forum_thread_error_loading">Error loading thread</string>
     <string name="anime_forum_thread_show_body_spoilers">Show body (may contain spoilers)</string>
+    <string name="anime_forum_thread_comment_delete_icon_content_description">Delete comment</string>
     <string name="anime_forum_thread_comment_like_icon_content_description">Comment liked</string>
     <string name="anime_forum_thread_delete_content_description">Delete thread</string>
     <string name="anime_forum_thread_no_comments">No comments</string>
@@ -796,4 +797,11 @@
     <string name="anime_forum_thread_more_actions_content_description">More actions</string>
     <string name="anime_forum_thread_open_in_browser">Open in browser</string>
     <string name="anime_forum_thread_open_in_browser_content_description">Open in browser</string>
+
+    <string name="anime_forum_thread_comments_page_back_content_description">Previous page</string>
+    <string name="anime_forum_thread_comments_page_forward_content_description">Next page</string>
+    <string name="anime_forum_thread_comments_page_first_content_description">First page</string>
+    <string name="anime_forum_thread_comments_page_last_content_description">Last page</string>
+    <string name="anime_forum_thread_like_icon_content_description">Thread liked</string>
+    <string name="anime_forum_thread_subscribe_icon_content_description">Thread subscribed</string>
 </resources>

@@ -35,6 +35,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusControl
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaStatusAware
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow
+import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIds
+import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIntIds
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -154,8 +156,9 @@ class ActivityDetailsViewModel @Inject constructor(
                             .orEmpty()
                     }
                 }.flow
-                    .cachedIn(viewModelScope)
             }
+                .enforceUniqueIntIds { it.id }
+                .cachedIn(viewModelScope)
                 .flatMapLatest { pagingData ->
                     replyStatusController.allChanges()
                         .mapLatest { updates ->

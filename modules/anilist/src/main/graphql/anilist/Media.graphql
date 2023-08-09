@@ -459,8 +459,6 @@ query HomeAnime(
 
     lastAdded: Page(perPage: $perPage) {
         media(
-            season: $currentSeason,
-            seasonYear: $currentYear,
             sort: ID_DESC,
             type: ANIME,
             isAdult: false,

@@ -450,7 +450,7 @@ object AnimeHomeScreen {
             LazyRow(
                 state = listState,
                 contentPadding = PaddingValues(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 items(
                     items = result,
@@ -565,7 +565,7 @@ object AnimeHomeScreen {
                         if (viewAllRoute == null) it else it - 16.dp - MEDIA_ROW_IMAGE_WIDTH
                     },
                 ),
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
                 flingBehavior = rememberSnapFlingBehavior(snapLayoutInfoProvider)
             ) {
                 itemsIndexed(entries, { _, item -> item.media.id }) { index, item ->

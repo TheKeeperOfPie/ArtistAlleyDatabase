@@ -7,6 +7,8 @@ import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityReplyStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoritesController
+import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.ForumThreadCommentStatusController
+import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.ForumThreadStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
 import com.thekeeperofpie.artistalleydatabase.anime.markdown.AniListSpoilerPlugin
 import com.thekeeperofpie.artistalleydatabase.anime.markdown.AniListTempPlugin
@@ -110,6 +112,14 @@ object AnimeHiltModule {
         scopedApplication: ScopedApplication,
         aniListApi: AuthedAniListApi,
     ) = MediaLicensorsController(scopedApplication, aniListApi)
+
+    @Singleton
+    @Provides
+    fun provideForumThreadStatusController() = ForumThreadStatusController()
+
+    @Singleton
+    @Provides
+    fun provideForumThreadCommentStatusController() = ForumThreadCommentStatusController()
 
     @Singleton
     @Provides

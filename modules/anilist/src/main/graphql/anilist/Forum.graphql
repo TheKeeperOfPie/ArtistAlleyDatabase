@@ -7,6 +7,7 @@ fragment ForumThread on Thread {
     replyCommentId
     isLocked
     isSticky
+    isLiked
     isSubscribed
     repliedAt
     createdAt
@@ -87,14 +88,16 @@ query ForumThreadDetails($threadId: Int!) {
     }
 }
 
-query ForumThreadComments($threadId: Int!, $page: Int!, $perPage: Int!) {
+# IMPORTANT: This query is crafted exactly so that the API returns childComments.
+# If it ever changes, it needs to be verified that child comments get returned
+query ForumThread_Comments($threadId: Int!, $page: Int!, $perPage: Int!) {
     Page(page: $page, perPage: $perPage) {
         pageInfo {
             ...PaginationInfo
         }
-        threadComments(threadId: $threadId, sort: ID) {
+        threadComments(threadId: $threadId) {
             id
-            comment(asHtml: true)
+            comment
             childComments
             isLocked
             likeCount
@@ -102,8 +105,34 @@ query ForumThreadComments($threadId: Int!, $page: Int!, $perPage: Int!) {
             createdAt
             updatedAt
             user {
-                ...UserNavigationData
+                id
+                avatar {
+                    large
+                }
+                name
             }
+        }
+    }
+}
+
+mutation ToggleForumThreadSubscribe($id: Int!, $subscribe: Boolean!) {
+    ToggleThreadSubscription(threadId: $id, subscribe: $subscribe) @nonnull {
+        isLiked
+    }
+}
+
+mutation ToggleForumThreadLike($id: Int!) {
+    ToggleLikeV2(id: $id, type: THREAD_COMMENT) @nonnull {
+        ... on Thread {
+            isLiked
+        }
+    }
+}
+
+mutation ToggleForumThreadCommentLike($id: Int!) {
+    ToggleLikeV2(id: $id, type: THREAD_COMMENT) @nonnull {
+        ... on ThreadComment {
+            isLiked
         }
     }
 }

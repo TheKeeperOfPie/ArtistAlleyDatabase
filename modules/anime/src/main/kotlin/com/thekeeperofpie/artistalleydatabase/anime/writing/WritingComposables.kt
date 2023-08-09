@@ -102,25 +102,8 @@ fun WritingReplyPanelScaffold(
         },
         topBar = topBar,
         modifier = modifier,
-    ) {
-        Scaffold(
-            floatingActionButton = {
-                FloatingActionButton(onClick = { scope.launch { sheetState.expand() } }) {
-                    Icon(
-                        Icons.Filled.Reply,
-                        contentDescription = stringResource(
-                            R.string.anime_writing_reply_fab_content_description
-                        ),
-                    )
-                }
-            },
-            // Ignore bottom padding so FAB is linked to bottom
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(PaddingValues(top = it.calculateTopPadding())),
-            content = content,
-        )
-    }
+        content = content,
+    )
 }
 
 

@@ -13,6 +13,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaColumnEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaEntry
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection.MultiText.Entry
+import com.thekeeperofpie.artistalleydatabase.entry.EntrySection.MultiText.Entry.Different.id
 import com.thekeeperofpie.artistalleydatabase.network_utils.NetworkSettings
 import java.time.Instant
 import java.time.Month
@@ -55,6 +56,8 @@ object AniListUtils {
     fun activityUrl(id: String) = "$ANILIST_BASE_URL/activity/$id"
 
     fun forumThreadUrl(id: String) = "$ANILIST_BASE_URL/forum/thread/$id"
+    fun forumThreadCommentUrl(threadId: String, commentId: String) =
+        "$ANILIST_BASE_URL/forum/thread/$threadId/comment/$commentId"
 
     fun mediaId(entry: Entry) = when (val value = (entry as? Entry.Prefilled<*>)?.value) {
         is AniListMedia -> value.id.toString()

@@ -16,9 +16,9 @@ import com.anilist.DeleteActivityMutation
 import com.anilist.DeleteActivityReplyMutation
 import com.anilist.DeleteMediaListEntryMutation
 import com.anilist.ForumRootQuery
-import com.anilist.ForumThreadCommentsQuery
 import com.anilist.ForumThreadDetailsQuery
 import com.anilist.ForumThreadSearchQuery
+import com.anilist.ForumThread_CommentsQuery
 import com.anilist.GenresQuery
 import com.anilist.HomeAnime2Query
 import com.anilist.HomeAnimeQuery
@@ -65,6 +65,11 @@ import com.anilist.ToggleAnimeFavoriteMutation
 import com.anilist.ToggleCharacterFavoriteMutation
 import com.anilist.ToggleCharacterResultQuery
 import com.anilist.ToggleFollowMutation
+import com.anilist.ToggleForumThreadCommentLikeMutation
+import com.anilist.ToggleForumThreadCommentLikeMutation.Data.ToggleLikeV2.Companion.asThreadComment
+import com.anilist.ToggleForumThreadLikeMutation
+import com.anilist.ToggleForumThreadLikeMutation.Data.ToggleLikeV2.Companion.asThread
+import com.anilist.ToggleForumThreadSubscribeMutation
 import com.anilist.ToggleMangaFavoriteMutation
 import com.anilist.ToggleMediaResultQuery
 import com.anilist.ToggleStaffFavoriteMutation
@@ -724,7 +729,7 @@ open class AuthedAniListApi(
     open suspend fun staffAndCharacters(
         staffId: String,
         sort: List<CharacterSort>,
-        charactersPerPage: Int = 5,
+        charactersPerPage: Int = 10,
     ) = query(
         StaffAndCharactersQuery(
             staffId = staffId.toInt(),
@@ -737,7 +742,7 @@ open class AuthedAniListApi(
         staffId: String,
         sort: List<CharacterSort>,
         page: Int,
-        charactersPerPage: Int = 5,
+        charactersPerPage: Int = 10,
     ) = query(
         StaffAndCharactersPaginationQuery(
             staffId = staffId.toInt(),
@@ -941,7 +946,19 @@ open class AuthedAniListApi(
     open suspend fun forumThread(threadId: String) = query(ForumThreadDetailsQuery(threadId = threadId.toInt()))
 
     open suspend fun forumThreadComments(threadId: String, page: Int, perPage: Int = 10) =
-        query(ForumThreadCommentsQuery(threadId = threadId.toInt(), page = page, perPage = perPage))
+        query(ForumThread_CommentsQuery(threadId = threadId.toInt(), page = page, perPage = perPage))
+
+    open suspend fun toggleForumThreadSubscribe(id: String, subscribe: Boolean) =
+        mutate(ToggleForumThreadSubscribeMutation(id = id.toInt(), subscribe = subscribe))
+            .toggleThreadSubscription.isLiked
+
+    open suspend fun toggleForumThreadLike(id: String) =
+        mutate(ToggleForumThreadLikeMutation(id = id.toInt()))
+            .toggleLikeV2.asThread()!!.isLiked
+
+    open suspend fun toggleForumThreadCommentLike(id: String) =
+        mutate(ToggleForumThreadCommentLikeMutation(id = id.toInt()))
+            .toggleLikeV2.asThreadComment()!!.isLiked
 
     // TODO: Use queryCacheAndNetwork for everything
     private suspend fun <D : Query.Data> query(query: Query<D>) =

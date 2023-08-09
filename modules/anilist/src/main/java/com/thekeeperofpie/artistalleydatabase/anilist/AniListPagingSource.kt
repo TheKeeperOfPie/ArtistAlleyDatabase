@@ -5,16 +5,13 @@ import androidx.paging.PagingState
 import com.anilist.fragment.PaginationInfo
 
 class AniListPagingSource<T : Any>(
-    private val apiCall: suspend (page: Int) -> Pair<PaginationInfo?, List<T>>
+    private val apiCall: suspend (page: Int) -> Pair<PaginationInfo?, List<T>>,
 ) : PagingSource<Int, T>() {
 
     override val jumpingSupported = true
 
     override fun getRefreshKey(state: PagingState<Int, T>) =
-        state.anchorPosition?.let {
-            state.closestPageToPosition(it)?.prevKey?.plus(1)
-                ?: state.closestPageToPosition(it)?.nextKey?.minus(1)
-        }
+        state.anchorPosition?.let { (it / 10) + 1 }
 
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, T> =
         try {
@@ -25,6 +22,7 @@ class AniListPagingSource<T : Any>(
             val itemsAfter = if (pageInfo?.hasNextPage != true) {
                 0
             } else {
+                // TODO: Pass perPage in so it can be customized
                 pageInfo.total?.let { (it - (page * 10)) }?.takeIf { it > 0 }
             }
             LoadResult.Page(
