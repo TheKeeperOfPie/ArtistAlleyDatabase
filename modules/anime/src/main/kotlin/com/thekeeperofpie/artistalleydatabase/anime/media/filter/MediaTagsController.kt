@@ -6,6 +6,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatc
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
@@ -25,6 +26,7 @@ class MediaTagsController(scopedApplication: ScopedApplication, aniListApi: Auth
                     ?.let(::buildTagSections)
                     .orEmpty()
             }
+                .catch { emit(emptyMap()) }
                 .collectLatest(tags::emit)
         }
     }

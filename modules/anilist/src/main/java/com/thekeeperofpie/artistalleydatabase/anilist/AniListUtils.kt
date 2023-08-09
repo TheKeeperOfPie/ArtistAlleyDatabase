@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anilist
 
+import android.text.format.DateUtils
 import android.util.Log
 import com.anilist.fragment.AniListCharacter
 import com.anilist.fragment.AniListMedia
@@ -13,8 +14,10 @@ import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaColumnEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaEntry
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection.MultiText.Entry
 import com.thekeeperofpie.artistalleydatabase.network_utils.NetworkSettings
+import java.time.Instant
 import java.time.Month
 import java.time.ZoneId
+import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import kotlin.math.absoluteValue
 
@@ -94,7 +97,8 @@ object AniListUtils {
             MediaSeason.SPRING -> MediaSeason.SUMMER
             MediaSeason.SUMMER -> MediaSeason.FALL
             MediaSeason.FALL,
-            MediaSeason.UNKNOWN__ -> MediaSeason.WINTER
+            MediaSeason.UNKNOWN__,
+            -> MediaSeason.WINTER
         }
 
         return if (thisSeason == MediaSeason.FALL) {
@@ -111,7 +115,8 @@ object AniListUtils {
             MediaSeason.SPRING -> MediaSeason.WINTER
             MediaSeason.SUMMER -> MediaSeason.SPRING
             MediaSeason.FALL,
-            MediaSeason.UNKNOWN__ -> MediaSeason.SUMMER
+            MediaSeason.UNKNOWN__,
+            -> MediaSeason.SUMMER
         }
 
         return if (thisSeason == MediaSeason.WINTER) {
@@ -138,6 +143,13 @@ object AniListUtils {
         }
         return newSeasonYear
     }
+
+    fun relativeTimestamp(timestamp: Int) = DateUtils.getRelativeTimeSpanString(
+        timestamp * 1000L,
+        Instant.now().atOffset(ZoneOffset.UTC).toEpochSecond() * 1000,
+        0,
+        DateUtils.FORMAT_ABBREV_ALL,
+    )
 }
 
 internal fun ApolloClient.Builder.addLoggingInterceptors(

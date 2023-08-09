@@ -4,6 +4,7 @@ import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -71,19 +72,27 @@ object AnimeMediaListScreen {
                 .wrapContentSize()
                 .verticalScroll(rememberScrollState()),
         ) {
+            ErrorContent(errorTextRes, exception)
+        }
+    }
+
+    @Composable
+    fun ErrorContent(
+        @StringRes errorTextRes: Int? = null,
+        exception: Throwable? = null,
+    ) {
+        Text(
+            text = stringResource(errorTextRes ?: R.string.anime_media_list_error_loading),
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+        )
+
+        if (exception != null) {
             Text(
-                text = stringResource(errorTextRes ?: R.string.anime_media_list_error_loading),
-                style = MaterialTheme.typography.bodyLarge,
+                text = exception.stackTraceToString(),
+                style = MaterialTheme.typography.bodySmall,
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
             )
-
-            if (exception != null) {
-                Text(
-                    text = exception.stackTraceToString(),
-                    style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
-                )
-            }
         }
     }
 

@@ -31,7 +31,7 @@ import javax.inject.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
-class ForumSubsectionViewModel @Inject constructor(
+class ForumSearchViewModel @Inject constructor(
     aniListApi: AuthedAniListApi,
     settings: AnimeSettings,
     featureOverrideProvider: FeatureOverrideProvider,

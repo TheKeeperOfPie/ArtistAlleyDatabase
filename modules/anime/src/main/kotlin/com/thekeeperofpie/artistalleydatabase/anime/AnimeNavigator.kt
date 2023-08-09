@@ -37,7 +37,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.character.details.CharacterD
 import com.thekeeperofpie.artistalleydatabase.anime.character.media.CharacterMediasScreen
 import com.thekeeperofpie.artistalleydatabase.anime.character.media.CharacterMediasViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.forum.ForumRootScreen
-import com.thekeeperofpie.artistalleydatabase.anime.forum.ForumSubsectionScreen
+import com.thekeeperofpie.artistalleydatabase.anime.forum.ForumSearchScreen
 import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.ForumThreadScreen
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeIgnoreScreen
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreViewModel
@@ -727,7 +727,7 @@ object AnimeNavigator {
                     }
                 },
         ) {
-            ForumSubsectionScreen(
+            ForumSearchScreen(
                 upIconOption = UpIconOption.Back(navHostController),
                 title = it.arguments?.getString("title"),
             )
@@ -738,6 +738,14 @@ object AnimeNavigator {
             route = AnimeNavDestinations.FORUM_THREAD.id
                     + "?threadId={threadId}"
                     + "&title={title}",
+            deepLinks = listOf(
+                navDeepLink {
+                    uriPattern = "${AniListUtils.ANILIST_BASE_URL}/forum/thread/{threadId}"
+                },
+                navDeepLink {
+                    uriPattern = "${AniListUtils.ANILIST_BASE_URL}/forum/thread/{threadId}/.*"
+                },
+            ),
             arguments = listOf(
                 navArgument("threadId") {
                     type = NavType.StringType

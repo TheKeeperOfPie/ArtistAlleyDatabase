@@ -2,6 +2,9 @@
 
 package com.thekeeperofpie.artistalleydatabase.anime.forum
 
+import android.text.format.DateUtils
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -11,8 +14,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Comment
+import androidx.compose.material.icons.filled.Reply
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.outlined.ModeComment
 import androidx.compose.material3.ElevatedCard
@@ -22,24 +27,30 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.anilist.ForumRootQuery
+import coil.compose.AsyncImage
 import com.anilist.fragment.ForumThread
+import com.anilist.fragment.UserNavigationData
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.material.placeholder
 import com.google.accompanist.placeholder.material.shimmer
+import com.mxalbert.sharedelements.SharedElement
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
-import com.thekeeperofpie.artistalleydatabase.compose.CustomHtmlText
 import com.thekeeperofpie.artistalleydatabase.compose.fadingEdgeEnd
+import java.time.Instant
+import java.time.ZoneOffset
 
 @Composable
 fun ThreadCompactCard(thread: ForumThread, modifier: Modifier = Modifier) {
@@ -60,7 +71,7 @@ fun ThreadCompactCard(thread: ForumThread, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun ThreadCard(thread: ForumThread?, modifier: Modifier = Modifier) {
+fun ThreadCard(screenKey: String, thread: ForumThread?, modifier: Modifier = Modifier) {
     val navigationCallback = LocalNavigationCallback.current
     ElevatedCard(
         onClick = {
@@ -72,7 +83,6 @@ fun ThreadCard(thread: ForumThread?, modifier: Modifier = Modifier) {
     ) {
         Row(modifier = Modifier.fillMaxWidth()) {
             Column(
-                verticalArrangement = Arrangement.spacedBy(4.dp),
                 modifier = Modifier
                     .weight(1f)
                     .padding(horizontal = 12.dp, vertical = 10.dp)
@@ -87,25 +97,40 @@ fun ThreadCard(thread: ForumThread?, modifier: Modifier = Modifier) {
                     )
                 )
 
-                val mayHaveSpoilers = thread?.title?.contains("Spoilers", ignoreCase = true) == true
-                if (!mayHaveSpoilers) {
-                    CustomHtmlText(
-                        text = thread?.body ?: "Some forum thread body text",
-                        overflow = TextOverflow.Ellipsis,
-                        maxLines = 3,
-                        style = MaterialTheme.typography.bodySmall,
-                        onFallbackClick = {
-                            if (thread != null) {
-                                navigationCallback.onForumThreadClick(
-                                    thread.title,
-                                    thread.id.toString(),
-                                )
-                            }
+                val userName = thread?.user?.name
+                val timestamp = thread?.createdAt?.let(AniListUtils::relativeTimestamp)
+                if (thread == null || userName != null || timestamp != null) {
+                    Text(
+                        text = if (userName != null && timestamp != null) {
+                            stringResource(
+                                R.string.anime_forum_thread_author_and_timestamp,
+                                userName,
+                                timestamp,
+                            )
+                        } else {
+                            userName ?: timestamp.toString()
                         },
+                        style = MaterialTheme.typography.labelSmall,
                         modifier = Modifier.placeholder(
                             visible = thread == null,
                             highlight = PlaceholderHighlight.shimmer(),
                         )
+                    )
+                }
+
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Filled.Reply,
+                        contentDescription = stringResource(
+                            R.string.anime_forum_thread_last_reply_icon_content_description
+                        ),
+                    )
+
+                    ThreadAuthor(
+                        screenKey = screenKey,
+                        loading = thread == null,
+                        user = thread?.replyUser,
+                        aniListTimestamp = thread?.repliedAt,
                     )
                 }
             }
@@ -127,7 +152,7 @@ fun ThreadViewReplyCountIcons(viewCount: Int?, replyCount: Int?) {
     Column(
         verticalArrangement = Arrangement.spacedBy(4.dp),
         horizontalAlignment = Alignment.End,
-        modifier = Modifier.padding(top = 8.dp, end = 8.dp)
+        modifier = Modifier.padding(top = 12.dp, end = 12.dp)
     ) {
         Row(
             horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -224,15 +249,92 @@ fun ThreadCategoryRow(thread: ForumThread) {
     }
 }
 
-@Preview
 @Composable
-private fun Thread() {
-    ThreadCard(
-        thread = ForumRootQuery.Data.Active.Thread(
-            title = "Some interesting forum thread title",
-            body = "Sample test thread body, sample test thread body, sample test thread body, sample test thread body",
-            viewCount = 12345,
-            replyCount = 987,
+fun ThreadCommentTimestamp(loading: Boolean, aniListTimestamp: Int?) {
+    val timestamp = remember(aniListTimestamp) {
+        aniListTimestamp?.let {
+            DateUtils.getRelativeTimeSpanString(
+                it * 1000L,
+                Instant.now().atOffset(ZoneOffset.UTC).toEpochSecond() * 1000,
+                0,
+                DateUtils.FORMAT_ABBREV_ALL,
+            )
+        }
+    }
+
+    if (loading || timestamp != null) {
+        Text(
+            text = timestamp.toString(),
+            style = MaterialTheme.typography.labelSmall,
+            modifier = Modifier.placeholder(
+                visible = loading,
+                highlight = PlaceholderHighlight.shimmer(),
+            )
         )
-    )
+    }
+}
+
+@Composable
+fun ThreadAuthor(
+    screenKey: String,
+    loading: Boolean,
+    user: UserNavigationData?,
+    aniListTimestamp: Int?,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        modifier = modifier.padding(horizontal = 8.dp, vertical = 8.dp)
+    ) {
+        val image = user?.avatar?.large
+        if (loading || image != null) {
+            UserImage(
+                screenKey = screenKey,
+                loading = loading,
+                user = user,
+            )
+        }
+
+        Column {
+            Text(
+                text = user?.name ?: "USERNAME",
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.placeholder(
+                    visible = loading,
+                    highlight = PlaceholderHighlight.shimmer(),
+                )
+            )
+
+            ThreadCommentTimestamp(loading = loading, aniListTimestamp = aniListTimestamp)
+        }
+    }
+}
+
+@Composable
+private fun UserImage(
+    screenKey: String,
+    loading: Boolean,
+    user: UserNavigationData?,
+) {
+    val shape = RoundedCornerShape(12.dp)
+    SharedElement(key = "anime_user_${user?.id}_image", screenKey = screenKey) {
+        val navigationCallback = LocalNavigationCallback.current
+        AsyncImage(
+            model = user?.avatar?.large,
+            contentDescription = stringResource(R.string.anime_user_image),
+            modifier = Modifier
+                .size(32.dp)
+                .clip(shape)
+                .border(width = Dp.Hairline, MaterialTheme.colorScheme.primary, shape)
+                .clickable {
+                    if (user != null) {
+                        navigationCallback.onUserClick(user, 1f)
+                    }
+                }
+                .placeholder(
+                    visible = loading,
+                    highlight = PlaceholderHighlight.shimmer(),
+                )
+        )
+    }
 }

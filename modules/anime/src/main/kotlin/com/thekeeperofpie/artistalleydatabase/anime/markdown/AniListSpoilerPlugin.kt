@@ -11,7 +11,6 @@ import android.text.Spanned
 import android.text.TextPaint
 import android.text.style.CharacterStyle
 import android.text.style.ClickableSpan
-import android.util.Log
 import android.view.View
 import android.widget.TextView
 import androidx.compose.ui.graphics.Color
@@ -39,12 +38,11 @@ object AniListSpoilerPlugin : AbstractMarkwonPlugin() {
                 continue
             }
 
-            Log.d("MarkdownDebug", "spoiler added to $startIndex, $endIndex")
             val link = spannable.subSequence(startIndex, endIndex).toString()
                 .removePrefix("~!")
                 .removeSuffix("!~")
+                .trim()
 
-            // Strip images because they can't be hidden
             val imageSpans = spannable.getSpans<AsyncDrawableSpan>(startIndex, endIndex)
             imageSpans.forEach(spannable::removeSpan)
 
@@ -57,14 +55,15 @@ object AniListSpoilerPlugin : AbstractMarkwonPlugin() {
             val clickableSpan: ClickableSpan = object : ClickableSpan() {
                 override fun onClick(widget: View) {
                     if (spoilerSpan.unveiled) {
-                        val uri = Uri.parse(link)
-                        val context = widget.context
-                        val intent = Intent(Intent.ACTION_VIEW, uri)
-                            .putExtra(Browser.EXTRA_APPLICATION_ID, context.packageName)
-                        try {
-                            context.startActivity(intent)
-                        } catch (ignored: ActivityNotFoundException) {
-                            Log.w("URLSpan", "Activity was not found for intent, $intent")
+                        if (link.startsWith("http")) {
+                            val uri = Uri.parse(link)
+                            val context = widget.context
+                            val intent = Intent(Intent.ACTION_VIEW, uri)
+                                .putExtra(Browser.EXTRA_APPLICATION_ID, context.packageName)
+                            try {
+                                context.startActivity(intent)
+                            } catch (ignored: ActivityNotFoundException) {
+                            }
                         }
                     } else {
                         spoilerSpan.unveil()

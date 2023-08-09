@@ -17,6 +17,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.OpenInBrowser
 import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.material.icons.outlined.ThumbUp
@@ -25,6 +26,8 @@ import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.Button
 import androidx.compose.material3.Divider
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -64,9 +67,12 @@ import com.google.accompanist.placeholder.material.placeholder
 import com.google.accompanist.placeholder.material.shimmer
 import com.thekeeperofpie.artistalleydatabase.android_utils.UriUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.forum.ThreadAuthor
 import com.thekeeperofpie.artistalleydatabase.anime.forum.ThreadCategoryRow
+import com.thekeeperofpie.artistalleydatabase.anime.forum.ThreadCommentTimestamp
 import com.thekeeperofpie.artistalleydatabase.anime.forum.ThreadViewReplyCountIcons
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.markdown.MarkdownText
@@ -75,6 +81,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.AppBar
 import com.thekeeperofpie.artistalleydatabase.compose.ImageHtmlText
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
+import com.thekeeperofpie.artistalleydatabase.compose.openForceExternal
 import java.time.Instant
 import java.time.ZoneOffset
 
@@ -83,6 +90,8 @@ import java.time.ZoneOffset
     ExperimentalMaterialApi::class
 )
 object ForumThreadScreen {
+
+    private val SCREEN_KEY = AnimeNavDestinations.FORUM_THREAD.id
 
     @Composable
     operator fun invoke(
@@ -142,14 +151,31 @@ object ForumThreadScreen {
                         if (!refreshing) {
                             if (refreshState is LoadState.Error) {
                                 item("commentsError") {
-                                    AnimeMediaListScreen.Error(
-                                        errorTextRes = R.string.anime_forum_search_error_loading,
-                                        exception = refreshState.error,
-                                    )
+                                    Column(
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        AnimeMediaListScreen.ErrorContent(
+                                            errorTextRes = R.string.anime_forum_search_error_loading,
+                                            exception = refreshState.error,
+                                        )
+                                    }
                                 }
                             } else {
                                 item("commentsNoResults") {
-                                    AnimeMediaListScreen.NoResults()
+                                    Column(
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        Text(
+                                            text = stringResource(id = R.string.anime_forum_thread_no_comments),
+                                            style = MaterialTheme.typography.bodyLarge,
+                                            modifier = Modifier.padding(
+                                                horizontal = 16.dp,
+                                                vertical = 10.dp
+                                            ),
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -193,28 +219,79 @@ object ForumThreadScreen {
         Column {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
-                modifier = Modifier.padding(horizontal = 16.dp)
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = thread?.title ?: "Placeholder title",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Black,
-                        modifier = Modifier.placeholder(
-                            visible = entry == null,
-                            highlight = PlaceholderHighlight.shimmer(),
-                        )
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp)
+                            .placeholder(
+                                visible = entry == null,
+                                highlight = PlaceholderHighlight.shimmer(),
+                            )
                     )
+
+                    ThreadAuthor(
+                        screenKey = SCREEN_KEY,
+                        loading = entry == null,
+                        user = thread?.replyUser,
+                        aniListTimestamp = thread?.createdAt,
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    )
+
+                    if (thread != null) {
+                        ThreadCategoryRow(thread)
+                    }
                 }
 
-                ThreadViewReplyCountIcons(
-                    viewCount = thread?.viewCount,
-                    replyCount = thread?.replyCount,
-                )
-            }
+                Column(horizontalAlignment = Alignment.End) {
+                    ThreadViewReplyCountIcons(
+                        viewCount = thread?.viewCount,
+                        replyCount = thread?.replyCount,
+                    )
 
-            if (thread != null) {
-                ThreadCategoryRow(thread)
+                    Box {
+                        var showMenu by remember { mutableStateOf(false) }
+                        IconButton(onClick = { showMenu = true }) {
+                            Icon(
+                                imageVector = Icons.Filled.MoreVert,
+                                contentDescription = stringResource(
+                                    R.string.anime_forum_thread_more_actions_content_description,
+                                ),
+                            )
+                        }
+
+                        val uriHandler = LocalUriHandler.current
+                        DropdownMenu(
+                            expanded = showMenu,
+                            onDismissRequest = { showMenu = false },
+                        ) {
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        stringResource(R.string.anime_forum_thread_open_in_browser)
+                                    )
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Filled.OpenInBrowser,
+                                        contentDescription = stringResource(
+                                            R.string.anime_forum_thread_open_in_browser_content_description
+                                        )
+                                    )
+                                },
+                                onClick = {
+                                    showMenu = false
+                                    uriHandler.openForceExternal(
+                                        AniListUtils.forumThreadUrl(viewModel.threadId)
+                                    )
+                                }
+                            )
+                        }
+                    }
+                }
             }
 
             if (thread == null || !thread.body.isNullOrBlank()) {
@@ -225,6 +302,7 @@ object ForumThreadScreen {
                     MarkdownText(
                         markwon = viewModel.markwon,
                         text = entry?.bodyMarkdown,
+                        textColor = MaterialTheme.typography.bodySmall.color,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp)
@@ -325,27 +403,10 @@ object ForumThreadScreen {
                         )
                     )
 
-                    val timestamp = remember(comment) {
-                        comment?.let {
-                            DateUtils.getRelativeTimeSpanString(
-                                it.createdAt * 1000L,
-                                Instant.now().atOffset(ZoneOffset.UTC).toEpochSecond() * 1000,
-                                0,
-                                DateUtils.FORMAT_ABBREV_ALL,
-                            )
-                        }
-                    }
-
-                    if (entry == null || timestamp != null) {
-                        Text(
-                            text = timestamp.toString(),
-                            style = MaterialTheme.typography.labelSmall,
-                            modifier = Modifier.placeholder(
-                                visible = entry == null,
-                                highlight = PlaceholderHighlight.shimmer(),
-                            )
-                        )
-                    }
+                    ThreadCommentTimestamp(
+                        loading = entry == null,
+                        aniListTimestamp = comment?.createdAt,
+                    )
                 }
 
                 Row(verticalAlignment = Alignment.CenterVertically) {

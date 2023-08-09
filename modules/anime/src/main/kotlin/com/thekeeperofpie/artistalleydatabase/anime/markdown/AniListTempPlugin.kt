@@ -17,13 +17,38 @@ object AniListTempPlugin : AbstractMarkwonPlugin() {
             .replace(Regex("""img(?:|\d\d[\d%])\((http[^)]*)\)""")) {
                 // TODO: Support sizing declarations
                 val imageUrl = it.groups[1]?.value
-                "<img src=\"$imageUrl\" alt=\"$imageUrl\"/>\n"
-//                "![$imageUrl]($imageUrl)\n"
+                " <img src=\"$imageUrl\" alt=\"$imageUrl\"/>\n"
             }
-            // <center> seems to break a lot of parsing
-            .replace("<center>", "<center>\n")
-//            .replace("</center>", "")
-
+            // Markwon doesn't support parsing Markdown syntax inside of HTML tags, so manually
+            // convert the common syntax into HTML equivalents
+            .replace(Regex("""([^\\*])\*\*([^*][\S\s]*?[^\\*])\*\*([^_])""")) {
+                "${it.groups[1]?.value}<b>${it.groups[2]?.value}</b>${it.groups[3]?.value}"
+            }
+            .replace(Regex("""([^\\_])__([^_][\S\s]*?[^\\_])__([^_])""")) {
+                "${it.groups[1]?.value}<b>${it.groups[2]?.value}</b>${it.groups[3]?.value}"
+            }
+            .replace(Regex("""([^\\_])_([^_][\S\s]*?[^\\_])_([^_])""")) {
+                "${it.groups[1]?.value}<i>${it.groups[2]?.value}</i>${it.groups[3]?.value}"
+            }
+            .replace(Regex("""([^\\])~~~([\S\s]*?[^\\])~~~""")) {
+                "${it.groups[1]?.value}<center>${it.groups[2]?.value}</center>"
+            }
+            .replace(Regex("""([^\\])\+\+\+([\S\s]*?[^\\])\+\+\+""")) {
+                "${it.groups[1]?.value}<center>${it.groups[2]?.value}</center>"
+            }
+            .replace(Regex("""\[(.*?)]\((.*?)\)""")) {
+                "<a href=\"${it.groups[2]?.value}\">${it.groups[1]?.value}</a>"
+            }
+            .replace("\n---\n", "\n<hr/>\n")
+            // <center> seems to break stuff that comes after it
+            .replace("</center>\n", "</center><br/>")
+            // A new line isn't guaranteed after each heading, force it
+            .replace("</h1>", "</h1>\n")
+            .replace("</h2>", "</h2>\n")
+            .replace("</h3>", "</h3>\n")
+            .replace("</h4>", "</h4>\n")
+            .replace("</h5>", "</h5>\n")
+            .replace("</h6>", "</h6>\n")
 
     object CenterAlignTagHandler : SimpleTagHandler() {
         override fun getSpans(

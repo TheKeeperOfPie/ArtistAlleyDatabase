@@ -36,6 +36,7 @@ import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.SortFilterBottomScaffold
@@ -48,11 +49,13 @@ import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
     ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class,
     ExperimentalMaterialApi::class
 )
-object ForumSubsectionScreen {
+object ForumSearchScreen {
+
+    private val SCREEN_KEY = AnimeNavDestinations.FORUM_SEARCH.id
 
     @Composable
     operator fun invoke(
-        viewModel: ForumSubsectionViewModel = hiltViewModel(),
+        viewModel: ForumSearchViewModel = hiltViewModel(),
         upIconOption: UpIconOption?,
         title: String?,
     ) {
@@ -113,6 +116,7 @@ object ForumSubsectionScreen {
                         ) {
                             val thread = content[it]
                             ThreadCard(
+                                screenKey = SCREEN_KEY,
                                 thread = thread,
                             )
                         }
@@ -130,7 +134,7 @@ object ForumSubsectionScreen {
 
     @Composable
     private fun TopBar(
-        viewModel: ForumSubsectionViewModel,
+        viewModel: ForumSearchViewModel,
         title: String?,
         upIconOption: UpIconOption?,
         scrollBehavior: TopAppBarScrollBehavior,

@@ -3,7 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.anime.markdown
 import android.text.Spanned
 import android.text.TextUtils
 import android.widget.TextView
-import androidx.compose.material.LocalContentColor
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -18,6 +18,7 @@ fun MarkdownText(
     text: Spanned?,
     modifier: Modifier = Modifier,
     textColor: Color? = null,
+    maxLines: Int? = null,
 ) {
     val contentColor = LocalContentColor.current
     val color = (textColor?.takeOrElse { contentColor } ?: contentColor).toArgb()
@@ -33,6 +34,7 @@ fun MarkdownText(
         },
         update = {
             if (text != null) {
+                it.setTextColor(color)
                 markwon.setParsedMarkdown(it, text)
             }
         },

@@ -156,6 +156,7 @@ dependencyResolutionManagement {
                 library("io.noties.markwon:html:4.6.2")
                 library("io.noties.markwon:image-coil:4.6.2")
                 library("io.noties.markwon:linkify:4.6.2")
+                library("io.noties.markwon:simple-ext:4.6.2")
             }
         }
     }

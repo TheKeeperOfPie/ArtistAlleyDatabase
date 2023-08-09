@@ -22,6 +22,8 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import io.noties.markwon.Markwon
 import io.noties.markwon.PrecomputedTextSetterCompat
+import io.noties.markwon.SoftBreakAddsNewLinePlugin
+import io.noties.markwon.core.CorePlugin
 import io.noties.markwon.ext.strikethrough.StrikethroughPlugin
 import io.noties.markwon.ext.tables.TableAwareMovementMethod
 import io.noties.markwon.ext.tables.TablePlugin
@@ -111,7 +113,9 @@ object AnimeHiltModule {
 
     @Singleton
     @Provides
-    fun provideMarkwon(application: Application) = Markwon.builder(application)
+    fun provideMarkwon(application: Application) = Markwon.builderNoCore(application)
+        .usePlugin(CorePlugin.create())
+        .usePlugin(SoftBreakAddsNewLinePlugin.create())
         .usePlugin(HtmlPlugin.create().apply {
             allowNonClosedTags(true)
             addHandler(AniListTempPlugin.CenterAlignTagHandler)

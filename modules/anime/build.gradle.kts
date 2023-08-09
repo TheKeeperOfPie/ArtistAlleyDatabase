@@ -58,4 +58,5 @@ dependencies {
     api(libs.markwon.html)
     implementation(libs.markwon.image.coil)
     implementation(libs.markwon.linkify)
+//    implementation(libs.markwon.simple.ext)
 }

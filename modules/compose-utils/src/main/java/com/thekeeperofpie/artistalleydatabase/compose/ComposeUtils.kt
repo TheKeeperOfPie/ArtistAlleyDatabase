@@ -10,9 +10,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.res.stringResource
 import coil.compose.AsyncImagePainter
 import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
+import com.thekeeperofpie.artistalleydatabase.android_utils.UriUtils
 import kotlin.reflect.KProperty
 
 fun <T> observableStateOf(value: T, onChange: (T) -> Unit) =
@@ -67,3 +69,7 @@ fun LoadingResult<*>.ErrorSnackbar(snackbarHostState: SnackbarHostState) {
         }
     }
 }
+
+// TODO: Replace other usages
+fun UriHandler.openForceExternal(uri: String) =
+    openUri("$uri?${UriUtils.FORCE_EXTERNAL_URI_PARAM}=true")

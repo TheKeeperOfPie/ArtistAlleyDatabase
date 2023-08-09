@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.core.text.getSpans
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -32,6 +33,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import java.util.Arrays
 import javax.inject.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -42,6 +44,7 @@ class ForumThreadViewModel @Inject constructor(
     val markwon: Markwon,
 ) : ViewModel() {
 
+    val threadId = savedStateHandle.get<String>("threadId")!!
     val viewer = aniListApi.authedUser
     val refresh = MutableStateFlow(-1L)
     var entry by mutableStateOf<LoadingResult<ThreadEntry>>(LoadingResult.loading())
@@ -51,7 +54,6 @@ class ForumThreadViewModel @Inject constructor(
     var deleting by mutableStateOf(false)
 
     init {
-        val threadId = savedStateHandle.get<String>("threadId")!!
         viewModelScope.launch(CustomDispatchers.Main) {
             flowForRefreshableContent(refresh, R.string.anime_forum_thread_error_loading) {
                 flowFromSuspend {

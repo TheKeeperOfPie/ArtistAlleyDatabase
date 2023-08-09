@@ -46,6 +46,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.anilist.fragment.ForumThread
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
@@ -60,6 +61,8 @@ import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
     ExperimentalMaterialApi::class
 )
 object ForumRootScreen {
+
+    private val SCREEN_KEY = AnimeNavDestinations.FORUM.id
 
     @Composable
     operator fun invoke(
@@ -156,14 +159,12 @@ object ForumRootScreen {
             ) {
                 val categories = ForumCategoryOption.values()
                 items(items = categories, key = { it.categoryId }, contentType = { "category" }) {
+                    val name = stringResource(it.textRes)
                     SuggestionChip(
                         onClick = {
-                            navigationCallback.onForumCategoryClick(
-                                it.name,
-                                it.categoryId.toString(),
-                            )
+                            navigationCallback.onForumCategoryClick(name, it.categoryId.toString())
                         },
-                        label = { Text(text = stringResource(it.textRes)) },
+                        label = { Text(text = name) },
                     )
                 }
             }
@@ -239,6 +240,7 @@ object ForumRootScreen {
             contentType = { _, _ -> "thread" },
         ) { index, item ->
             ThreadCard(
+                screenKey = SCREEN_KEY,
                 thread = item,
                 modifier = Modifier
                     .padding(

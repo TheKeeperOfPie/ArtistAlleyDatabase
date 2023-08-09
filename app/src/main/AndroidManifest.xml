@@ -63,6 +63,8 @@
                 <data android:pathAdvancedPattern="/review/[0-9]+/.*" />
                 <data android:pathAdvancedPattern="/activity/[0-9]+" />
                 <data android:pathAdvancedPattern="/activity/[0-9]+/.*" />
+                <data android:pathAdvancedPattern="/forum/thread/[0-9]+" />
+                <data android:pathAdvancedPattern="/forum/thread/[0-9]+/.*" />
             </intent-filter>
 
             <intent-filter>

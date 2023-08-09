@@ -789,5 +789,11 @@
     <string name="anime_forum_thread_show_body_spoilers">Show body (may contain spoilers)</string>
     <string name="anime_forum_thread_comment_like_icon_content_description">Comment liked</string>
     <string name="anime_forum_thread_delete_content_description">Delete thread</string>
+    <string name="anime_forum_thread_no_comments">No comments</string>
+    <string name="anime_forum_thread_last_reply_icon_content_description">Last reply</string>
+    <string name="anime_forum_thread_author_and_timestamp">%1$s • %2$s</string>
+
+    <string name="anime_forum_thread_more_actions_content_description">More actions</string>
+    <string name="anime_forum_thread_open_in_browser">Open in browser</string>
     <string name="anime_forum_thread_open_in_browser_content_description">Open in browser</string>
 </resources>

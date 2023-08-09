@@ -247,7 +247,7 @@ sealed class SortFilterSection(val id: String) {
                 valueToText = valueToText,
                 valueToImage = valueToImage,
                 iconContentDescriptionRes = includeExcludeIconContentDescriptionRes,
-                locked = !locked,
+                locked = locked,
                 showDivider = showDivider,
                 showIcons = selectionMethod == SelectionMethod.ALLOW_EXCLUDE,
             )
