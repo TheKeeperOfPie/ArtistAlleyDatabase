@@ -92,7 +92,7 @@ object ForumRootScreen {
                             IconButton(onClick = { navigationCallback.onForumSearchClick() }) {
                                 Icon(
                                     imageVector = Icons.Filled.Search,
-                                    contentDescription  = stringResource(
+                                    contentDescription = stringResource(
                                         R.string.anime_forum_search_icon_content_description
                                     ),
                                 )
@@ -149,9 +149,27 @@ object ForumRootScreen {
     ) {
         stickiedSection(data.stickied, stickiedExpanded, onStickiedExpandedChange)
 
-        threadSection(titleRes = R.string.anime_forum_root_active_header, data.active)
-        threadSection(titleRes = R.string.anime_forum_root_new_header, data.new)
-        threadSection(titleRes = R.string.anime_forum_root_releases_header, data.releases)
+        threadSection(
+            titleRes = R.string.anime_forum_root_active_header,
+            data.active,
+            AnimeNavDestinations.FORUM_SEARCH.id
+                    + "?titleRes=${R.string.anime_forum_root_active_title}"
+                    + "&sort=${ForumThreadSortOption.REPLIED_AT.name}"
+        )
+        threadSection(
+            titleRes = R.string.anime_forum_root_new_header,
+            data.new,
+            AnimeNavDestinations.FORUM_SEARCH.id
+                    + "?titleRes=${R.string.anime_forum_root_new_title}"
+                    + "&sort=${ForumThreadSortOption.CREATED_AT.name}"
+        )
+        threadSection(
+            titleRes = R.string.anime_forum_root_releases_header,
+            data.releases,
+            AnimeNavDestinations.FORUM_SEARCH.id
+                    + "?titleRes=${R.string.anime_forum_root_releases_title}"
+                    + "&categoryId=${ForumCategoryOption.RELEASE_DISCUSSIONS.categoryId}"
+        )
     }
 
     private fun LazyListScope.categoryChips() {
@@ -244,8 +262,12 @@ object ForumRootScreen {
         }
     }
 
-    private fun LazyListScope.threadSection(@StringRes titleRes: Int, threads: List<ForumThread>) {
-        header(titleRes = titleRes, viewAllRoute = null)
+    private fun LazyListScope.threadSection(
+        @StringRes titleRes: Int,
+        threads: List<ForumThread>,
+        viewAllRoute: String,
+    ) {
+        header(titleRes = titleRes, viewAllRoute = viewAllRoute)
         itemsIndexed(
             items = threads,
             key = { _, item -> "$titleRes-${item.id}" },

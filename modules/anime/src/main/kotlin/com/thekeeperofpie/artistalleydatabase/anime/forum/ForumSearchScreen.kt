@@ -12,10 +12,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
@@ -156,6 +160,16 @@ object ForumSearchScreen {
                 leadingIcon = if (upIconOption != null) {
                     { UpIconButton(upIconOption) }
                 } else null,
+                trailingIcon = {
+                    IconButton(onClick = { viewModel.query = "" }) {
+                        Icon(
+                            imageVector = Icons.Filled.Clear,
+                            contentDescription = stringResource(
+                                R.string.anime_forum_search_clear
+                            ),
+                        )
+                    }
+                },
                 placeholder = {
                     Text(text = title ?: stringResource(R.string.anime_forum_search))
                 },

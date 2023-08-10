@@ -532,7 +532,7 @@ object AnimeHomeScreen {
             HorizontalPager(
                 state = pagerState,
                 contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 12.dp),
-                pageSpacing = 16.dp,
+                pageSpacing = 8.dp,
             ) {
                 val entry = entries[it]
                 AnimeMediaLargeCard(

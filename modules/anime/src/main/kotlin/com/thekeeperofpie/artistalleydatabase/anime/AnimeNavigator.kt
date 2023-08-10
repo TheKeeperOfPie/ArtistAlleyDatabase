@@ -5,6 +5,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraphBuilder
@@ -706,6 +707,7 @@ object AnimeNavigator {
         navGraphBuilder.composable(
             route = AnimeNavDestinations.FORUM_SEARCH.id
                     + "?title={title}"
+                    + "&titleRes={titleRes}"
                     + "&sort={sort}"
                     + "&categoryId={categoryId}"
                     + "&mediaCategoryId={mediaCategoryId}",
@@ -719,7 +721,7 @@ object AnimeNavigator {
                         "${AniListUtils.ANILIST_BASE_URL}/forum/recent?media={mediaCategoryId}"
                 },
             ),
-            arguments = listOf("title", "sort", "categoryId", "mediaCategoryId")
+            arguments = listOf("title", "titleRes", "sort", "categoryId", "mediaCategoryId")
                 .map {
                     navArgument(it) {
                         type = NavType.StringType
@@ -729,7 +731,10 @@ object AnimeNavigator {
         ) {
             ForumSearchScreen(
                 upIconOption = UpIconOption.Back(navHostController),
-                title = it.arguments?.getString("title"),
+                title = it.arguments?.getString("title")
+                    ?: it.arguments?.getString("titleRes")
+                        ?.toIntOrNull()
+                        ?.let { stringResource(it) },
             )
         }
 

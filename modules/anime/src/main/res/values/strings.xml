@@ -577,7 +577,7 @@
     <string name="anime_home_error_loading_manga">Error loading manga</string>
     <string name="anime_home_label_anime">Anime</string>
     <string name="anime_home_label_manga">Manga</string>
-    <string name="anime_home_activity_label">Activity</string>
+    <string name="anime_home_activity_label">ACTIVITY</string>
     <string name="anime_home_row_view_all_content_description">View all</string>
     <string name="anime_home_anime_current_header">WATCHING</string>
     <string name="anime_home_manga_current_header">READING</string>
@@ -763,10 +763,13 @@
     <string name="anime_forum_view_all_content_description">View all</string>
     <string name="anime_forum_view_count_content_description">View count</string>
     <string name="anime_forum_reply_count_icon_content_description">Reply count</string>
-    <string name="anime_forum_root_active_header">Active</string>
-    <string name="anime_forum_root_new_header">New</string>
-    <string name="anime_forum_root_releases_header">Releases</string>
-    <string name="anime_forum_stickied_header">Stickied</string>
+    <string name="anime_forum_root_active_header">ACTIVE</string>
+    <string name="anime_forum_root_active_title">Active</string>
+    <string name="anime_forum_root_new_header">NEW</string>
+    <string name="anime_forum_root_new_title">New</string>
+    <string name="anime_forum_root_releases_header">RELEASES</string>
+    <string name="anime_forum_root_releases_title">Releases</string>
+    <string name="anime_forum_stickied_header">STICKIED</string>
     <string name="anime_forum_stickied_header_expand_icon_content_description">Stickied expand/collapse</string>
 
     <string name="anime_forum_sort_label">Sort</string>
@@ -818,4 +821,5 @@
     <string name="anime_forum_thread_error_replying">Error saving comment</string>
     <string name="anime_forum_thread_error_deleting">Error deleting comment</string>
     <string name="anime_home_media_increment_progress_content_description">Increment media progress</string>
+    <string name="anime_forum_search_clear">Clear</string>
 </resources>
