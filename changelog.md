@@ -1,6 +1,9 @@
 # Changelog
 
 ### Next
+- 
+
+### 0.40
 - Add long press images to view expanded
 - Add basic forum support, still in early stages
 - Add quick increment progress to home screen
