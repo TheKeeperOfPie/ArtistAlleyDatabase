@@ -366,6 +366,18 @@ open class AuthedAniListApi(
         )
     ).saveMediaListEntry!!
 
+    open suspend fun saveMediaListEntryProgressOnly(
+        id: String?,
+        mediaId: String,
+        progress: Int,
+    ) = mutate(
+        SaveMediaListEntryMutation(
+            id = Optional.presentIfNotNull(id?.toIntOrNull()),
+            mediaId = mediaId.toInt(),
+            progress = Optional.present(progress),
+        )
+    ).saveMediaListEntry!!
+
     open suspend fun mediaByIds(ids: List<Int>) =
         query(MediaByIdsQuery(ids = Optional.present(ids)))
             .page?.media?.filterNotNull()

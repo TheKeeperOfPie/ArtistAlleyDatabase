@@ -29,6 +29,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityUtils.subsc
 import com.thekeeperofpie.artistalleydatabase.anime.activity.AnimeActivityViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
 import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsController
+import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationController
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -46,8 +47,10 @@ class AnimeHomeViewModel @Inject constructor(
     ignoreList: AnimeMediaIgnoreList,
     activityStatusController: ActivityStatusController,
     settings: AnimeSettings,
+    monetizationController: MonetizationController,
 ) : ViewModel() {
 
+    val unlocked = monetizationController.unlocked
     val preferredMediaType= settings.preferredMediaType.value
     val viewer = aniListApi.authedUser
     val colorMap = mutableStateMapOf<String, Pair<Color, Color>>()

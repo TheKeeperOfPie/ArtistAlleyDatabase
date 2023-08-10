@@ -817,4 +817,5 @@
     <string name="anime_forum_thread_comment_cancel">Cancel</string>
     <string name="anime_forum_thread_error_replying">Error saving comment</string>
     <string name="anime_forum_thread_error_deleting">Error deleting comment</string>
+    <string name="anime_home_media_increment_progress_content_description">Increment media progress</string>
 </resources>

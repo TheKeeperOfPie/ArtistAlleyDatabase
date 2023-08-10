@@ -15,8 +15,10 @@ import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
+import com.thekeeperofpie.artistalleydatabase.anime.media.UserMediaListController
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
@@ -32,6 +34,7 @@ import kotlinx.coroutines.withContext
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
+import java.util.Collections
 import javax.inject.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class, ExperimentalMaterial3Api::class)
@@ -50,6 +53,8 @@ class MediaEditViewModel @Inject constructor(
     val scoreFormat = MutableStateFlow(ScoreFormat.POINT_100)
 
     val dismissRequests = MutableSharedFlow<Long>()
+
+    private val jobs = Collections.synchronizedMap(mutableMapOf<String, Job>())
 
     init {
         viewModelScope.launch(CustomDispatchers.IO) {
@@ -156,6 +161,24 @@ class MediaEditViewModel @Inject constructor(
         editData.updatedAt = mediaListEntry?.updatedAt?.toLong()
         editData.createdAt = mediaListEntry?.createdAt?.toLong()
         rawScore.tryEmit(mediaListEntry?.score)
+    }
+
+    fun incrementProgress(entry: UserMediaListController.MediaEntry) {
+        val newProgress = (entry.progress ?: 0) + 1
+        if (newProgress > (MediaUtils.maxProgress(entry.media) ?: 0)) return
+        viewModelScope.launch(CustomDispatchers.IO) {
+            try {
+                val mediaId = entry.media.id.toString()
+                val result = aniListApi.saveMediaListEntryProgressOnly(
+                    entry.media.mediaListEntry?.id?.toString(),
+                    mediaId,
+                    newProgress,
+                )
+                statusController.onUpdate(mediaId, result)
+            } catch (ignored: Throwable) {
+                // TODO: Handle loading state and errors
+            }
+        }
     }
 
     fun hide() {

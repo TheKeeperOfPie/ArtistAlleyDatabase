@@ -201,6 +201,14 @@ class AuthedAniListApiWrapper(
         if (it.media?.isAdult != false) throw IOException("Cannot load this media")
     }
 
+    override suspend fun saveMediaListEntryProgressOnly(
+        id: String?,
+        mediaId: String,
+        progress: Int,
+    ) = super.saveMediaListEntryProgressOnly(id, mediaId, progress).also {
+        if (it.media?.isAdult != false) throw IOException("Cannot load this media")
+    }
+
     override suspend fun mediaByIds(ids: List<Int>) = super.mediaByIds(ids).let {
         it.filter { it.isAdult == false }
     }

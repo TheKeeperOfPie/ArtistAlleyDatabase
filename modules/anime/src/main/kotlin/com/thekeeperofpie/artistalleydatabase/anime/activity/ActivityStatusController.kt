@@ -68,7 +68,7 @@ fun <ActivityEntry> applyActivityFiltering(
         val progressVolumes: Int?
         val mediaId = media.id.toString()
         if (mediaListStatuses.containsKey(mediaId)) {
-            val mediaUpdate = mediaListStatuses[media.toString()]?.entry
+            val mediaUpdate = mediaListStatuses[mediaId]?.entry
             status = mediaUpdate?.status
             progress = mediaUpdate?.progress
             progressVolumes = mediaUpdate?.progressVolumes
@@ -84,7 +84,7 @@ fun <ActivityEntry> applyActivityFiltering(
             || mediaStatusAware.showLessImportantTags != showLessImportantTags
             || mediaStatusAware.showSpoilerTags != showSpoilerTags
         ) {
-            copiedEntry = entry.copyMedia(status, progress, progressVolumes, ignored, showLessImportantTags, showSpoilerTags)
+            copiedEntry = copiedEntry.copyMedia(status, progress, progressVolumes, ignored, showLessImportantTags, showSpoilerTags)
         }
     }
 

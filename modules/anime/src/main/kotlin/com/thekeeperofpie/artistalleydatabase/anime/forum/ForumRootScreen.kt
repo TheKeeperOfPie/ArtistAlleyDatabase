@@ -33,6 +33,7 @@ import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -45,6 +46,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.lerp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.anilist.fragment.ForumThread
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
@@ -96,7 +98,11 @@ object ForumRootScreen {
                                 )
                             }
                         },
-                        scrollBehavior = scrollBehavior,
+                        colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(
+                                lerp(0.dp, 16.dp, scrollBehavior.state.overlappedFraction)
+                            )
+                        ),
                     )
                 }
             },

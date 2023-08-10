@@ -316,7 +316,9 @@ fun MediaListQuickEditIconButton(
     maxProgressVolumes: Int?,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    textVerticalPadding: Dp = 4.dp,
     padding: Dp = 8.dp,
+    iconSize: Dp = 20.dp,
     forceListEditIcon: Boolean = false,
 ) {
     Row(
@@ -337,7 +339,7 @@ fun MediaListQuickEditIconButton(
         Icon(
             imageVector = imageVector,
             contentDescription = stringResource(contentDescriptionRes),
-            modifier = Modifier.size(20.dp)
+            modifier = Modifier.size(iconSize)
         )
 
         if (listStatus == MediaListStatus.CURRENT) {
@@ -355,7 +357,7 @@ fun MediaListQuickEditIconButton(
                         realProgress.toString()
                     ),
                     style = MaterialTheme.typography.labelSmall,
-                    modifier = Modifier.padding(vertical = 4.dp)
+                    modifier = Modifier.padding(vertical = textVerticalPadding)
                 )
             }
         }

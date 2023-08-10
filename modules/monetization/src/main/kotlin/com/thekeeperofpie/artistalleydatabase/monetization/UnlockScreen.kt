@@ -297,7 +297,7 @@ object UnlockScreen {
                 text = "Search more types like characters, staff, studios, users"
             )
             BulletPoint(type = SupportedType.SUPPORTED, text = "Watching/reading and user lists")
-            BulletPoint(type = SupportedType.SUPPORTED, text = "Following and global user activity")
+            BulletPoint(type = SupportedType.SUPPORTED, text = "All user activity and forum access")
             BulletPoint(
                 type = SupportedType.UNSUPPORTED,
                 text = "Experimental database/catalog features"

@@ -7,6 +7,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.snapping.SnapLayoutInfoProvider
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
@@ -39,6 +40,7 @@ import androidx.compose.material.icons.filled.Forum
 import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material.icons.filled.Monitor
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.PlusOne
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
@@ -213,13 +215,17 @@ object AnimeHomeScreen {
                             }
 
                             val navigationCallback = LocalNavigationCallback.current
-                            IconButton(onClick = navigationCallback::onForumRootClick) {
-                                Icon(
-                                    imageVector = Icons.Filled.Forum,
-                                    contentDescription = stringResource(
-                                        R.string.anime_forum_icon_content_description
-                                    ),
-                                )
+
+                            val unlocked by viewModel.unlocked.collectAsState(initial = false)
+                            if (unlocked) {
+                                IconButton(onClick = navigationCallback::onForumRootClick) {
+                                    Icon(
+                                        imageVector = Icons.Filled.Forum,
+                                        contentDescription = stringResource(
+                                            R.string.anime_forum_icon_content_description
+                                        ),
+                                    )
+                                }
                             }
 
                             // TODO: Unread notification count
@@ -283,6 +289,7 @@ object AnimeHomeScreen {
                         mediaViewModel = mediaViewModel,
                         viewer = viewer,
                         onClickListEdit = { editViewModel.initialize(it) },
+                        onClickIncrementProgress = { editViewModel.incrementProgress(it) },
                         selectedItemTracker = selectedItemTracker,
                         colorCalculationState = colorCalculationState,
                     )
@@ -302,6 +309,7 @@ object AnimeHomeScreen {
         mediaViewModel: AnimeHomeMediaViewModel,
         viewer: AuthedUserQuery.Data.Viewer?,
         onClickListEdit: (MediaCompactWithTags) -> Unit,
+        onClickIncrementProgress: (UserMediaListController.MediaEntry) -> Unit,
         selectedItemTracker: SelectedItemTracker,
         colorCalculationState: ColorCalculationState,
     ) {
@@ -311,6 +319,7 @@ object AnimeHomeScreen {
             current = mediaViewModel.current,
             viewer = viewer,
             onClickListEdit = onClickListEdit,
+            onClickIncrementProgress = onClickIncrementProgress,
             colorCalculationState = colorCalculationState,
         )
 
@@ -434,7 +443,8 @@ object AnimeHomeScreen {
         @StringRes headerTextRes: Int,
         current: LoadingResult<List<UserMediaListController.MediaEntry>>,
         viewer: AuthedUserQuery.Data.Viewer?,
-        onClickListEdit: (MediaPreview) -> Unit,
+        onClickListEdit: (MediaCompactWithTags) -> Unit,
+        onClickIncrementProgress: (UserMediaListController.MediaEntry) -> Unit,
         colorCalculationState: ColorCalculationState,
     ) {
         val result = current.result
@@ -458,13 +468,10 @@ object AnimeHomeScreen {
                     contentType = { "media" },
                 ) {
                     CurrentMediaCard(
-                        media = it.media,
-                        listStatus = it.mediaListStatus,
-                        progress = it.progress,
-                        progressVolumes = it.progressVolumes,
-                        ignored = it.ignored,
+                        entry = it,
                         viewer = viewer,
                         onClickListEdit = onClickListEdit,
+                        onClickIncrementProgress = onClickIncrementProgress,
                         onLongClickEntry = { /* TODO */ },
                         colorCalculationState = colorCalculationState,
                         modifier = Modifier.animateItemPlacement(),
@@ -605,17 +612,15 @@ object AnimeHomeScreen {
 
     @Composable
     private fun CurrentMediaCard(
-        media: MediaPreview,
-        listStatus: MediaListStatus?,
-        progress: Int?,
-        progressVolumes: Int?,
-        ignored: Boolean,
+        entry: UserMediaListController.MediaEntry,
         viewer: AuthedUserQuery.Data.Viewer?,
         onClickListEdit: (MediaPreview) -> Unit,
+        onClickIncrementProgress: (UserMediaListController.MediaEntry) -> Unit,
         onLongClickEntry: (MediaNavigationData) -> Unit,
         modifier: Modifier = Modifier,
         colorCalculationState: ColorCalculationState,
     ) {
+        val media = entry.media
         val id = media.id.toString()
         val colors = colorCalculationState.colorMap[id]
         val animationProgress by animateIntAsState(
@@ -642,7 +647,7 @@ object AnimeHomeScreen {
         val navigationCallback = LocalNavigationCallback.current
         var widthToHeightRatio by remember(id) { mutableStateOf<Float?>(null) }
         val onClick = {
-            navigationCallback.onMediaClick(media, widthToHeightRatio ?: 1f)
+            navigationCallback.onMediaClick(media as MediaPreview, widthToHeightRatio ?: 1f)
         }
 
         SharedElement(
@@ -660,7 +665,7 @@ object AnimeHomeScreen {
                         onClick = onClick,
                         onLongClick = { onLongClickEntry(media) },
                     )
-                    .alpha(if (ignored) 0.38f else 1f)
+                    .alpha(if (entry.ignored) 0.38f else 1f)
                     .padding(2.dp)
             ) {
                 Box {
@@ -705,16 +710,36 @@ object AnimeHomeScreen {
                     )
 
                     if (viewer != null) {
+                        val maxProgress = MediaUtils.maxProgress(media)
                         MediaListQuickEditIconButton(
                             mediaType = media.type,
-                            listStatus = listStatus,
-                            progress = progress,
-                            progressVolumes = progressVolumes,
-                            maxProgress = MediaUtils.maxProgress(media),
+                            listStatus = entry.mediaListStatus,
+                            progress = entry.progress,
+                            progressVolumes = entry.progressVolumes,
+                            maxProgress = maxProgress,
                             maxProgressVolumes = media.volumes,
                             onClick = { onClickListEdit(media) },
+                            iconSize = 12.dp,
+                            textVerticalPadding = 2.dp,
                             modifier = Modifier.align(Alignment.BottomStart)
                         )
+
+                        if ((entry.progress ?: 0) < (maxProgress ?: 1)) {
+                            IconButton(
+                                onClick = { onClickIncrementProgress(entry) },
+                                modifier = Modifier.align(Alignment.TopEnd)
+                                    .clip(RoundedCornerShape(bottomStart = 12.dp))
+                                    .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.66f))
+                                    .size(36.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.PlusOne,
+                                    contentDescription = stringResource(
+                                        R.string.anime_home_media_increment_progress_content_description
+                                    )
+                                )
+                            }
+                        }
                     }
                 }
 

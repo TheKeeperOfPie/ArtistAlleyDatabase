@@ -62,8 +62,10 @@ import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberStandardBottomSheetState
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -84,7 +86,9 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.lerp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
@@ -111,8 +115,9 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactLi
 import com.thekeeperofpie.artistalleydatabase.anime.utils.PagingPlaceholderContentType
 import com.thekeeperofpie.artistalleydatabase.anime.utils.PagingPlaceholderKey
 import com.thekeeperofpie.artistalleydatabase.anime.writing.WritingReplyPanelScaffold
-import com.thekeeperofpie.artistalleydatabase.compose.AppBar
+import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.compose.MinWidthTextField
+import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.compose.openForceExternal
@@ -164,11 +169,28 @@ object ForumThreadScreen {
             committing = viewModel.committing,
             onClickSend = viewModel::sendReply,
             topBar = {
-                AppBar(
-                    text = title ?: stringResource(R.string.anime_forum_thread_default_title),
-                    upIconOption = upIconOption,
-                    scrollBehavior = scrollBehavior,
-                )
+                EnterAlwaysTopAppBarHeightChange(scrollBehavior = scrollBehavior) {
+                    TopAppBar(
+                        title = {
+                            Text(
+                                text = title
+                                    ?: stringResource(R.string.anime_forum_thread_default_title),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                        },
+                        navigationIcon = {
+                            if (upIconOption != null) {
+                                UpIconButton(upIconOption)
+                            }
+                        },
+                        colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(
+                                lerp(0.dp, 16.dp, scrollBehavior.state.overlappedFraction)
+                            )
+                        ),
+                    )
+                }
             },
             writingPreview = viewModel.replyData?.text,
             modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
@@ -186,7 +208,7 @@ object ForumThreadScreen {
                 Scaffold(
                     floatingActionButton = {
                         val showFloatingActionButton = viewer != null &&
-                                    lazyListState.showFloatingActionButtonOnVerticalScroll()
+                                lazyListState.showFloatingActionButtonOnVerticalScroll()
                         AnimatedVisibility(
                             visible = showFloatingActionButton,
                             enter = fadeIn(),
@@ -468,14 +490,6 @@ object ForumThreadScreen {
                         aniListTimestamp = thread?.createdAt,
                         modifier = Modifier.padding(horizontal = 16.dp)
                     )
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    if (thread != null) {
-                        ThreadCategoryRow(thread)
-                    }
-
-                    Spacer(modifier = Modifier.height(8.dp))
                 }
 
                 Column(horizontalAlignment = Alignment.End) {
@@ -527,10 +541,20 @@ object ForumThreadScreen {
                 }
             }
 
+            Spacer(modifier = Modifier.height(8.dp))
+
+            if (thread != null) {
+                ThreadCategoryRow(thread)
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
             if (thread == null || !thread.body.isNullOrBlank()) {
-                val mayHaveSpoilers =
-                    thread?.title?.contains("Spoilers", ignoreCase = true) == true
-                var bodyShown by rememberSaveable { mutableStateOf(!mayHaveSpoilers) }
+                var bodyShown by rememberSaveable(thread?.title) {
+                    val mayHaveSpoilers =
+                        thread?.title?.contains("Spoilers", ignoreCase = true) == true
+                    mutableStateOf(!mayHaveSpoilers)
+                }
                 if (bodyShown) {
                     MarkdownText(
                         text = entry?.bodyMarkdown,
@@ -548,6 +572,7 @@ object ForumThreadScreen {
                         onClick = { bodyShown = true },
                         modifier = Modifier
                             .padding(horizontal = 16.dp)
+                            .align(Alignment.CenterHorizontally)
                     ) {
                         Text(text = stringResource(R.string.anime_forum_thread_show_body_spoilers))
                     }
