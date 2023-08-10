@@ -2,6 +2,7 @@
 
 package com.thekeeperofpie.artistalleydatabase.anime.writing
 
+import android.text.Spanned
 import androidx.activity.compose.BackHandler
 import androidx.annotation.StringRes
 import androidx.compose.animation.core.animateFloatAsState
@@ -14,21 +15,17 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Reply
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.BottomSheetScaffoldState
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.SnackbarHostState
@@ -52,6 +49,7 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.markdown.MarkdownText
 import kotlinx.coroutines.launch
 
 @Composable
@@ -71,6 +69,7 @@ fun WritingReplyPanelScaffold(
         snackbarHostState = snackbarHostState,
     ),
     @StringRes sendButtonTextRes: Int = R.string.anime_writing_send_button,
+    writingPreview: Spanned? = null,
     content: @Composable (PaddingValues) -> Unit,
 ) {
     val scope = rememberCoroutineScope()
@@ -98,6 +97,7 @@ fun WritingReplyPanelScaffold(
                 onValueChange = { replyValue = it },
                 onClickSend = { onClickSend(replyValue) },
                 sendButtonTextRes = sendButtonTextRes,
+                writingPreview = writingPreview,
             )
         },
         topBar = topBar,
@@ -114,8 +114,31 @@ fun WritingSheetContent(
     onValueChange: (String) -> Unit,
     onClickSend: () -> Unit,
     @StringRes sendButtonTextRes: Int = R.string.anime_writing_send_button,
+    writingPreview: Spanned?,
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
+        Text(
+            text = stringResource(if (writingPreview == null) {
+                R.string.anime_writing_replying_to_op
+            } else {
+                R.string.anime_writing_replying_to
+            }
+            ),
+            modifier = Modifier.padding(horizontal = 16.dp)
+        )
+        if (writingPreview != null) {
+            Column(
+                modifier = Modifier
+                    .weight(1f, fill = false)
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 16.dp)
+            ) {
+                MarkdownText(
+                    text = writingPreview,
+                )
+            }
+        }
+
         TextField(
             value = value(),
             onValueChange = onValueChange,

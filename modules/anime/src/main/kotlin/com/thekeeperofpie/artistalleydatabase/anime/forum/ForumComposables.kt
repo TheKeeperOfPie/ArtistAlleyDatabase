@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -80,7 +79,7 @@ fun ThreadCard(screenKey: String, thread: ForumThread?, modifier: Modifier = Mod
                 navigationCallback.onForumThreadClick(thread.title, thread.id.toString())
             }
         },
-        modifier = modifier,
+        modifier = Modifier.height(IntrinsicSize.Min).then(modifier),
     ) {
         Row(modifier = Modifier.fillMaxWidth()) {
             Column(
@@ -123,48 +122,8 @@ fun ThreadCard(screenKey: String, thread: ForumThread?, modifier: Modifier = Mod
                     )
                 }
 
+                Spacer(Modifier.weight(1f))
                 Spacer(Modifier.height(12.dp))
-
-//                Row(
-//                    modifier = Modifier.placeholder(
-//                        visible = thread == null,
-//                        highlight = PlaceholderHighlight.shimmer(),
-//                    )
-//                ) {
-//                    val viewCount = thread?.viewCount ?: 0
-//                    val replyCount = thread?.replyCount ?: 0
-//                    Icon(
-//                        imageVector = Icons.Filled.Visibility,
-//                        contentDescription = stringResource(
-//                            R.string.anime_forum_view_count_content_description
-//                        ),
-//                        modifier = Modifier.size(16.dp)
-//                    )
-//
-//                    Text(
-//                        text = viewCount.toString(),
-//                        style = MaterialTheme.typography.labelMedium,
-//                    )
-//
-//                    Spacer(Modifier.width(12.dp))
-//
-//                    Icon(
-//                        imageVector = if (replyCount == 0) {
-//                            Icons.Outlined.ModeComment
-//                        } else {
-//                            Icons.Filled.Comment
-//                        },
-//                        contentDescription = stringResource(
-//                            R.string.anime_forum_reply_count_icon_content_description
-//                        ),
-//                        modifier = Modifier.size(16.dp)
-//                    )
-//
-//                    Text(
-//                        text = replyCount.toString(),
-//                        style = MaterialTheme.typography.labelSmall,
-//                    )
-//                }
 
                 if (thread != null) {
                     ThreadCategoryRow(thread)

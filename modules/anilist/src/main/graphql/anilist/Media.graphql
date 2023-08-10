@@ -69,6 +69,24 @@ fragment MediaCompactWithTags on Media {
     }
 }
 
+fragment MediaCompactWithoutTags on Media {
+    ...MediaWithListStatus
+    coverImage {
+        color
+    }
+    averageScore
+    popularity
+    format
+    season
+    seasonYear
+    episodes
+    chapters
+    volumes
+    nextAiringEpisode {
+        episode
+    }
+}
+
 query MediaAdvancedSearch(
     $page: Int,
     $perPage: Int,

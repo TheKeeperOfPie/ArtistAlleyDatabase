@@ -85,6 +85,9 @@ query ForumThreadSearch(
 query ForumThreadDetails($threadId: Int!) {
     Thread(id: $threadId) @nonnull {
         ...ForumThread
+        mediaCategories {
+            ...MediaCompactWithoutTags
+        }
     }
 }
 
@@ -134,5 +137,22 @@ mutation ToggleForumThreadCommentLike($id: Int!) {
         ... on ThreadComment {
             isLiked
         }
+    }
+}
+
+mutation DeleteForumThreadComment($id: Int!) {
+    DeleteThreadComment(id: $id) {
+        deleted
+    }
+}
+
+mutation SaveForumThreadComment(
+    $threadId: Int!,
+    $commentId: Int,
+    $parentCommentId: Int,
+    $text: String!,
+) {
+    SaveThreadComment(threadId: $threadId, id: $commentId, parentCommentId: $parentCommentId, comment: $text) {
+        id
     }
 }

@@ -78,6 +78,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListOAuthStore
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
+import com.thekeeperofpie.artistalleydatabase.anime.markdown.LocalMarkwon
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.LocalMediaTagDialogController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaTagDialogController
@@ -112,6 +113,7 @@ import com.thekeeperofpie.artistalleydatabase.settings.SettingsViewModel
 import com.thekeeperofpie.artistalleydatabase.ui.theme.ArtistAlleyDatabaseTheme
 import com.thekeeperofpie.artistalleydatabase.utils.DatabaseSyncWorker
 import dagger.hilt.android.AndroidEntryPoint
+import io.noties.markwon.Markwon
 import kotlinx.coroutines.launch
 import java.util.Optional
 import javax.inject.Inject
@@ -159,6 +161,9 @@ class MainActivity : ComponentActivity() {
 
     @Inject
     lateinit var appMetadataProvider: AppMetadataProvider
+
+    @Inject
+    lateinit var markwon: Markwon
 
     private val fullScreenImageHandler = FullscreenImageHandler()
 
@@ -210,6 +215,7 @@ class MainActivity : ComponentActivity() {
                     LocalLanguageOptionStaff provides languageOptionStaff,
                     LocalNavigationCallback provides navigationCallback,
                     LocalFullscreenImageHandler provides fullScreenImageHandler,
+                    LocalMarkwon provides markwon,
                 ) {
                     // TODO: Draw inside insets for applicable screens
                     Surface(modifier = Modifier.safeDrawingPadding()) {

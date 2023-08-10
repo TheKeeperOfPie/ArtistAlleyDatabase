@@ -14,6 +14,7 @@ import com.anilist.CharacterDetailsMediaPageQuery
 import com.anilist.CharacterDetailsQuery
 import com.anilist.DeleteActivityMutation
 import com.anilist.DeleteActivityReplyMutation
+import com.anilist.DeleteForumThreadCommentMutation
 import com.anilist.DeleteMediaListEntryMutation
 import com.anilist.ForumRootQuery
 import com.anilist.ForumThreadDetailsQuery
@@ -46,6 +47,7 @@ import com.anilist.NotificationsQuery
 import com.anilist.RateReviewMutation
 import com.anilist.ReviewDetailsQuery
 import com.anilist.SaveActivityReplyMutation
+import com.anilist.SaveForumThreadCommentMutation
 import com.anilist.SaveMediaListEntryMutation
 import com.anilist.StaffAndCharactersPaginationQuery
 import com.anilist.StaffAndCharactersQuery
@@ -125,6 +127,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.addLoggingInterceptors
+import com.thekeeperofpie.artistalleydatabase.entry.EntrySection.MultiText.Entry.Different.id
 import com.thekeeperofpie.artistalleydatabase.network_utils.NetworkSettings
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -943,10 +946,17 @@ open class AuthedAniListApi(
         )
     )
 
-    open suspend fun forumThread(threadId: String) = query(ForumThreadDetailsQuery(threadId = threadId.toInt()))
+    open suspend fun forumThread(threadId: String) =
+        query(ForumThreadDetailsQuery(threadId = threadId.toInt()))
 
     open suspend fun forumThreadComments(threadId: String, page: Int, perPage: Int = 10) =
-        query(ForumThread_CommentsQuery(threadId = threadId.toInt(), page = page, perPage = perPage))
+        query(
+            ForumThread_CommentsQuery(
+                threadId = threadId.toInt(),
+                page = page,
+                perPage = perPage
+            )
+        )
 
     open suspend fun toggleForumThreadSubscribe(id: String, subscribe: Boolean) =
         mutate(ToggleForumThreadSubscribeMutation(id = id.toInt(), subscribe = subscribe))
@@ -959,6 +969,23 @@ open class AuthedAniListApi(
     open suspend fun toggleForumThreadCommentLike(id: String) =
         mutate(ToggleForumThreadCommentLikeMutation(id = id.toInt()))
             .toggleLikeV2.asThreadComment()!!.isLiked
+
+    open suspend fun deleteForumThreadComment(id: String) =
+        mutate(DeleteForumThreadCommentMutation(id = id.toInt()))
+
+    open suspend fun saveForumThreadComment(
+        threadId: String,
+        commentId: String?,
+        parentCommentId: String?,
+        text: String?,
+    ) = mutate(
+        SaveForumThreadCommentMutation(
+            threadId = threadId.toInt(),
+            commentId = Optional.presentIfNotNull(commentId?.toInt()),
+            parentCommentId = Optional.presentIfNotNull(parentCommentId?.toInt()),
+            text = text.orEmpty(),
+        )
+    )
 
     // TODO: Use queryCacheAndNetwork for everything
     private suspend fun <D : Query.Data> query(query: Query<D>) =

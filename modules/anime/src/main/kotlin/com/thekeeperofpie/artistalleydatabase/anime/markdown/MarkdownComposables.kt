@@ -5,6 +5,7 @@ import android.text.TextUtils
 import android.widget.TextView
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.takeOrElse
@@ -14,7 +15,6 @@ import io.noties.markwon.Markwon
 
 @Composable
 fun MarkdownText(
-    markwon: Markwon,
     text: Spanned?,
     modifier: Modifier = Modifier,
     textColor: Color? = null,
@@ -22,6 +22,7 @@ fun MarkdownText(
 ) {
     val contentColor = LocalContentColor.current
     val color = (textColor?.takeOrElse { contentColor } ?: contentColor).toArgb()
+    val markwon = LocalMarkwon.current
     AndroidView(
         factory = {
             TextView(it).apply {
@@ -42,3 +43,5 @@ fun MarkdownText(
         modifier = modifier,
     )
 }
+
+val LocalMarkwon = staticCompositionLocalOf<Markwon> { throw IllegalStateException() }

@@ -24,6 +24,10 @@ object AniListTempPlugin : AbstractMarkwonPlugin() {
                 val imageUrl = it.groups[1]?.value
                 "<a href=\"$imageUrl\"><img src=\"$imageUrl\" alt=\"$imageUrl\"/></a>\n"
             }
+            .replace(Regex("""img100%\((http[^)]*)\)""")) {
+                val imageUrl = it.groups[1]?.value
+                "<a href=\"$imageUrl\"><img src=\"$imageUrl\" alt=\"$imageUrl\"/></a>\n"
+            }
             // Markwon doesn't support parsing Markdown syntax inside of HTML tags, so manually
             // convert the common syntax into HTML equivalents
             .replace(Regex("""([^\\*])\*\*([^*][\S\s]*?[^\\*])\*\*([^_])""")) {

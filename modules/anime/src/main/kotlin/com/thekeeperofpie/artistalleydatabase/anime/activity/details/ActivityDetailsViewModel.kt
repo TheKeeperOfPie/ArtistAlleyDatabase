@@ -35,7 +35,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusControl
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaStatusAware
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow
-import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIds
 import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIntIds
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -71,6 +70,7 @@ class ActivityDetailsViewModel @Inject constructor(
 
     var replying by mutableStateOf(false)
     var deleting by mutableStateOf(false)
+    var error by mutableStateOf<Pair<Int, Throwable?>?>(null)
 
     val toggleHelper = ActivityToggleHelper(aniListApi, statusController, viewModelScope)
     val replyToggleHelper =
@@ -98,49 +98,49 @@ class ActivityDetailsViewModel @Inject constructor(
                         settings.showLessImportantTags,
                         settings.showSpoilerTags,
                     ) { activityUpdates, mediaListUpdate, ignoredIds, showLessImportantTags, showSpoilerTags ->
-                            activity.transformResult {
-                                val liked = activityUpdates?.liked ?: when (it) {
-                                    is ActivityDetailsQuery.Data.ListActivityActivity -> it.isLiked
-                                    is ActivityDetailsQuery.Data.MessageActivityActivity -> it.isLiked
-                                    is ActivityDetailsQuery.Data.TextActivityActivity -> it.isLiked
-                                    is ActivityDetailsQuery.Data.OtherActivity -> false
-                                } ?: false
-                                val subscribed = activityUpdates?.subscribed ?: when (it) {
-                                    is ActivityDetailsQuery.Data.ListActivityActivity -> it.isSubscribed
-                                    is ActivityDetailsQuery.Data.MessageActivityActivity -> it.isSubscribed
-                                    is ActivityDetailsQuery.Data.TextActivityActivity -> it.isSubscribed
-                                    is ActivityDetailsQuery.Data.OtherActivity -> false
-                                } ?: false
-                                Entry(
-                                    activity = it,
-                                    liked = liked,
-                                    subscribed = subscribed,
-                                    mediaEntry = (it as? ActivityDetailsQuery.Data.ListActivityActivity)?.media?.let {
-                                        if (mediaListUpdate == null) {
-                                            Entry.MediaEntry(
-                                                media = it,
-                                                mediaListStatus = it.mediaListEntry?.status,
-                                                progress = it.mediaListEntry?.progress,
-                                                progressVolumes = it.mediaListEntry?.progressVolumes,
-                                                ignored = ignoredIds.contains(it.id),
-                                                showLessImportantTags = showLessImportantTags,
-                                                showSpoilerTags = showSpoilerTags,
-                                            )
-                                        } else {
-                                            Entry.MediaEntry(
-                                                media = it,
-                                                mediaListStatus = mediaListUpdate.entry?.status,
-                                                progress = mediaListUpdate.entry?.progress,
-                                                progressVolumes = mediaListUpdate.entry?.progressVolumes,
-                                                ignored = ignoredIds.contains(it.id),
-                                                showLessImportantTags = showLessImportantTags,
-                                                showSpoilerTags = showSpoilerTags,
-                                            )
-                                        }
+                        activity.transformResult {
+                            val liked = activityUpdates?.liked ?: when (it) {
+                                is ActivityDetailsQuery.Data.ListActivityActivity -> it.isLiked
+                                is ActivityDetailsQuery.Data.MessageActivityActivity -> it.isLiked
+                                is ActivityDetailsQuery.Data.TextActivityActivity -> it.isLiked
+                                is ActivityDetailsQuery.Data.OtherActivity -> false
+                            } ?: false
+                            val subscribed = activityUpdates?.subscribed ?: when (it) {
+                                is ActivityDetailsQuery.Data.ListActivityActivity -> it.isSubscribed
+                                is ActivityDetailsQuery.Data.MessageActivityActivity -> it.isSubscribed
+                                is ActivityDetailsQuery.Data.TextActivityActivity -> it.isSubscribed
+                                is ActivityDetailsQuery.Data.OtherActivity -> false
+                            } ?: false
+                            Entry(
+                                activity = it,
+                                liked = liked,
+                                subscribed = subscribed,
+                                mediaEntry = (it as? ActivityDetailsQuery.Data.ListActivityActivity)?.media?.let {
+                                    if (mediaListUpdate == null) {
+                                        Entry.MediaEntry(
+                                            media = it,
+                                            mediaListStatus = it.mediaListEntry?.status,
+                                            progress = it.mediaListEntry?.progress,
+                                            progressVolumes = it.mediaListEntry?.progressVolumes,
+                                            ignored = ignoredIds.contains(it.id),
+                                            showLessImportantTags = showLessImportantTags,
+                                            showSpoilerTags = showSpoilerTags,
+                                        )
+                                    } else {
+                                        Entry.MediaEntry(
+                                            media = it,
+                                            mediaListStatus = mediaListUpdate.entry?.status,
+                                            progress = mediaListUpdate.entry?.progress,
+                                            progressVolumes = mediaListUpdate.entry?.progressVolumes,
+                                            ignored = ignoredIds.contains(it.id),
+                                            showLessImportantTags = showLessImportantTags,
+                                            showSpoilerTags = showSpoilerTags,
+                                        )
                                     }
-                                )
-                            }
+                                }
+                            )
                         }
+                    }
 
                 }
                 .flowOn(CustomDispatchers.IO)
@@ -181,14 +181,21 @@ class ActivityDetailsViewModel @Inject constructor(
         if (deleting) return
         deleting = true
         viewModelScope.launch(CustomDispatchers.IO) {
-            if (deletePromptData is Either.Right) {
-                aniListApi.deleteActivityReply(deletePromptData.value.reply.id.toString())
-            } else {
-                aniListApi.deleteActivity(activityId)
-            }
-            withContext(CustomDispatchers.Main) {
-                refresh.emit(SystemClock.uptimeMillis())
-                deleting = false
+            try {
+                if (deletePromptData is Either.Right) {
+                    aniListApi.deleteActivityReply(deletePromptData.value.reply.id.toString())
+                } else {
+                    aniListApi.deleteActivity(activityId)
+                }
+                withContext(CustomDispatchers.Main) {
+                    refresh.emit(SystemClock.uptimeMillis())
+                    deleting = false
+                }
+            } catch (t: Throwable) {
+                withContext(CustomDispatchers.Main) {
+                    error = R.string.anime_activity_error_deleting to t
+                    deleting = false
+                }
             }
         }
     }
@@ -197,10 +204,17 @@ class ActivityDetailsViewModel @Inject constructor(
         if (replying) return
         replying = true
         viewModelScope.launch(CustomDispatchers.IO) {
-            aniListApi.saveActivityReply(activityId = activityId, replyId = null, text = reply)
-            withContext(CustomDispatchers.Main) {
-                refresh.emit(SystemClock.uptimeMillis())
-                replying = false
+            try {
+                aniListApi.saveActivityReply(activityId = activityId, replyId = null, text = reply)
+                withContext(CustomDispatchers.Main) {
+                    refresh.emit(SystemClock.uptimeMillis())
+                    replying = false
+                }
+            } catch (t: Throwable) {
+                withContext(CustomDispatchers.Main) {
+                    error = R.string.anime_activity_error_replying to t
+                    replying = false
+                }
             }
         }
     }

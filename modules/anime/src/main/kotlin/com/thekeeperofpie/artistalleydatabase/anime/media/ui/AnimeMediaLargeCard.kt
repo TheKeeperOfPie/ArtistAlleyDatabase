@@ -282,7 +282,7 @@ object AnimeMediaLargeCard {
                 seasonYear = media?.seasonYear,
             ),
             style = MaterialTheme.typography.bodySmall,
-            fontWeight = FontWeight.W700,
+            fontWeight = FontWeight.W500,
             color = MaterialTheme.typography.bodySmall.color
                 .takeOrElse { LocalContentColor.current }
                 .copy(alpha = 0.8f),

@@ -686,6 +686,9 @@
     <string name="anime_activity_reply_delete_content_description">Delete activity reply</string>
     <string name="anime_activity_reply_delete_confirmation">Delete reply?</string>
 
+    <string name="anime_activity_error_replying">Error saving reply</string>
+    <string name="anime_activity_error_deleting">Error deleting</string>
+
     <string name="anime_reviews_sort_id">Last added</string>
     <string name="anime_reviews_sort_score">Score</string>
     <string name="anime_reviews_sort_rating">Rating</string>
@@ -804,4 +807,14 @@
     <string name="anime_forum_thread_comments_page_last_content_description">Last page</string>
     <string name="anime_forum_thread_like_icon_content_description">Thread liked</string>
     <string name="anime_forum_thread_subscribe_icon_content_description">Thread subscribed</string>
+
+    <string name="anime_forum_thread_comment_reply">Reply</string>
+    <string name="anime_forum_thread_comment_reply_content_description">Reply</string>
+    <string name="anime_writing_replying_to_op">Replying to OP</string>
+    <string name="anime_writing_replying_to">Replying to</string>
+    <string name="anime_forum_thread_comment_delete_confirmation">Delete comment?</string>
+    <string name="anime_forum_thread_comment_delete">Delete</string>
+    <string name="anime_forum_thread_comment_cancel">Cancel</string>
+    <string name="anime_forum_thread_error_replying">Error saving comment</string>
+    <string name="anime_forum_thread_error_deleting">Error deleting comment</string>
 </resources>

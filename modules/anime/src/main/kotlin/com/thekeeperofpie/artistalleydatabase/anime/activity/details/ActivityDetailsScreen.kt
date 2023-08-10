@@ -113,6 +113,7 @@ object ActivityDetailsScreen {
         val snackbarHostState = remember { SnackbarHostState() }
         val entry = viewModel.entry
         val errorText = entry.error?.let { stringResource(it.first) }
+            ?: viewModel.error?.first?.let { stringResource(it) }
         LaunchedEffect(errorText) {
             if (errorText != null) {
                 snackbarHostState.showSnackbar(
@@ -120,7 +121,9 @@ object ActivityDetailsScreen {
                     withDismissAction = true,
                     duration = SnackbarDuration.Long,
                 )
+                // TODO: Unified error handling
                 viewModel.entry = viewModel.entry.copy(error = null)
+                viewModel.error = null
             }
         }
 

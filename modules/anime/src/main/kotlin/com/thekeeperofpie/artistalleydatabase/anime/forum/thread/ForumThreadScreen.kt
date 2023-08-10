@@ -1,9 +1,8 @@
 package com.thekeeperofpie.artistalleydatabase.anime.forum.thread
 
 import android.text.Spanned
-import android.text.format.DateUtils
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.border
@@ -16,19 +15,19 @@ import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.TextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
@@ -45,8 +44,9 @@ import androidx.compose.material.icons.outlined.ThumbUp
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.Divider
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -54,7 +54,6 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -62,8 +61,8 @@ import androidx.compose.material3.SheetValue
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.VerticalDivider
 import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -80,7 +79,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
@@ -90,8 +88,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
-import androidx.paging.compose.itemContentType
-import androidx.paging.compose.itemKey
 import coil.compose.AsyncImage
 import com.anilist.AuthedUserQuery
 import com.anilist.fragment.UserNavigationData
@@ -103,27 +99,26 @@ import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
-import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityToggleUpdate
 import com.thekeeperofpie.artistalleydatabase.anime.forum.ThreadAuthor
 import com.thekeeperofpie.artistalleydatabase.anime.forum.ThreadCategoryRow
 import com.thekeeperofpie.artistalleydatabase.anime.forum.ThreadCommentTimestamp
 import com.thekeeperofpie.artistalleydatabase.anime.forum.ThreadViewReplyCountIcons
-import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.markdown.MarkdownText
+import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
+import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
+import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow
 import com.thekeeperofpie.artistalleydatabase.anime.utils.PagingPlaceholderContentType
 import com.thekeeperofpie.artistalleydatabase.anime.utils.PagingPlaceholderKey
 import com.thekeeperofpie.artistalleydatabase.anime.writing.WritingReplyPanelScaffold
 import com.thekeeperofpie.artistalleydatabase.compose.AppBar
-import com.thekeeperofpie.artistalleydatabase.compose.ImageHtmlText
 import com.thekeeperofpie.artistalleydatabase.compose.MinWidthTextField
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
-import com.thekeeperofpie.artistalleydatabase.compose.border
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.compose.openForceExternal
+import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.showFloatingActionButtonOnVerticalScroll
 import kotlinx.coroutines.launch
-import java.time.Instant
-import java.time.ZoneOffset
 
 @OptIn(
     ExperimentalMaterial3Api::class,
@@ -139,11 +134,13 @@ object ForumThreadScreen {
         upIconOption: UpIconOption?,
         title: String?,
     ) {
+        val colorCalculationState = rememberColorCalculationState(viewModel.colorMap)
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
         val refresh by viewModel.refresh.collectAsState()
         val snackbarHostState = remember { SnackbarHostState() }
         val entry = viewModel.entry
         val errorText = entry.error?.let { stringResource(it.first) }
+            ?: viewModel.error?.first?.let { stringResource(it) }
         LaunchedEffect(errorText) {
             if (errorText != null) {
                 snackbarHostState.showSnackbar(
@@ -151,7 +148,9 @@ object ForumThreadScreen {
                     withDismissAction = true,
                     duration = SnackbarDuration.Long,
                 )
+                // TODO: Unified error handling
                 viewModel.entry = viewModel.entry.copy(error = null)
+                viewModel.error = null
             }
         }
         val sheetState = rememberStandardBottomSheetState(
@@ -171,169 +170,267 @@ object ForumThreadScreen {
                     scrollBehavior = scrollBehavior,
                 )
             },
+            writingPreview = viewModel.replyData?.text,
             modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
         ) {
             val scope = rememberCoroutineScope()
             val lazyListState = rememberLazyListState()
-            Scaffold(
-                floatingActionButton = {
-                    val showFloatingActionButton =
-                        lazyListState.showFloatingActionButtonOnVerticalScroll()
-                    AnimatedVisibility(
-                        visible = showFloatingActionButton,
-                        enter = fadeIn(),
-                        exit = fadeOut(),
-                    ) {
-                        FloatingActionButton(onClick = { scope.launch { sheetState.expand() } }) {
-                            Icon(
-                                Icons.Filled.Reply,
-                                contentDescription = stringResource(
-                                    R.string.anime_writing_reply_fab_content_description
-                                ),
-                            )
-                        }
-                    }
-                },
-                // Ignore bottom padding so FAB is linked to bottom
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(PaddingValues(top = it.calculateTopPadding())),
+            val editViewModel = hiltViewModel<MediaEditViewModel>()
+            val viewer by viewModel.viewer.collectAsState()
+            MediaEditBottomSheetScaffold(
+                screenKey = SCREEN_KEY,
+                viewModel = editViewModel,
+                colorCalculationState = colorCalculationState,
+                modifier = Modifier.padding(PaddingValues(top = it.calculateTopPadding())),
             ) {
-                val comments = viewModel.comments.collectAsLazyPagingItems()
-                val refreshState = comments.loadState.refresh
-                val refreshing = refreshState is LoadState.Loading
-                val pullRefreshState = rememberPullRefreshState(
-                    refreshing = refreshing,
-                    onRefresh = comments::refresh,
-                )
-                Box(
-                    modifier = Modifier
-                        .padding(it)
-                        .pullRefresh(pullRefreshState)
-                ) {
-                    var maxPage = (comments.itemCount - 1) / 10 + 1
-                    var page by rememberSaveable { mutableIntStateOf(1) }
-                    var pageString by rememberSaveable { mutableStateOf("1") }
-                    val viewer by viewModel.viewer.collectAsState()
-                    LazyColumn(
-                        state = lazyListState,
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        val threadEntry = entry.result
-                        item("threadHeader") {
-                            ThreadHeader(
-                                viewModel = viewModel,
-                                viewer = viewer,
-                                entry = threadEntry,
-                                onStatusUpdate = viewModel.threadToggleHelper::toggle,
-                            )
+                Scaffold(
+                    floatingActionButton = {
+                        val showFloatingActionButton = viewer != null &&
+                                    lazyListState.showFloatingActionButtonOnVerticalScroll()
+                        AnimatedVisibility(
+                            visible = showFloatingActionButton,
+                            enter = fadeIn(),
+                            exit = fadeOut(),
+                        ) {
+                            FloatingActionButton(onClick = {
+                                viewModel.replyData = ForumThreadViewModel.ReplyData(null, null)
+                                scope.launch { sheetState.expand() }
+                            }) {
+                                Icon(
+                                    Icons.Filled.Reply,
+                                    contentDescription = stringResource(
+                                        R.string.anime_writing_reply_fab_content_description
+                                    ),
+                                )
+                            }
                         }
+                    },
+                    // Ignore bottom padding so FAB is linked to bottom
+                    modifier = Modifier
+                        .fillMaxSize()
+                ) {
+                    val comments = viewModel.comments.collectAsLazyPagingItems()
+                    val refreshState = comments.loadState.refresh
+                    val refreshing = refreshState is LoadState.Loading
+                    val pullRefreshState = rememberPullRefreshState(
+                        refreshing = refreshing,
+                        onRefresh = comments::refresh,
+                    )
+                    var deletePromptData by remember { mutableStateOf<Pair<String, Spanned?>?>(null) }
 
-                        if (comments.itemCount == 0) {
-                            if (!refreshing) {
-                                if (refreshState is LoadState.Error) {
-                                    item("commentsError") {
-                                        Column(
-                                            horizontalAlignment = Alignment.CenterHorizontally,
-                                            modifier = Modifier.fillMaxWidth()
-                                        ) {
-                                            AnimeMediaListScreen.ErrorContent(
-                                                errorTextRes = R.string.anime_forum_search_error_loading,
-                                                exception = refreshState.error,
-                                            )
-                                        }
-                                    }
-                                } else {
-                                    item("commentsNoResults") {
-                                        Column(
-                                            horizontalAlignment = Alignment.CenterHorizontally,
-                                            modifier = Modifier.fillMaxWidth()
-                                        ) {
-                                            Text(
-                                                text = stringResource(id = R.string.anime_forum_thread_no_comments),
-                                                style = MaterialTheme.typography.bodyLarge,
-                                                modifier = Modifier.padding(
-                                                    horizontal = 16.dp,
-                                                    vertical = 10.dp
-                                                ),
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-                        } else {
-                            item("pageIndicatorTop") {
-                                Column {
-                                    PageIndicator(
-                                        page = page,
-                                        pageString = pageString,
-                                        maxPage = maxPage,
-                                        onPageChange = { page = it },
-                                        onPageStringChange = { pageString = it },
-                                    )
-
-                                    HorizontalDivider()
-                                }
-                            }
-
-                            // TODO: Recomposition requires this to be set here since API can
-                            //  change the max count
-                            maxPage = (comments.itemCount - 1) / 10 + 1
-                            if (page > maxPage) {
-                                page = maxPage
-                                pageString = page.toString()
-                            }
-                            val count = if (page == maxPage) {
-                                val remainder = comments.itemCount % 10
-                                if (remainder == 0) 10 else remainder
-                            } else {
-                                10.coerceAtMost(comments.itemCount)
-                            }
-                            val indexPrefix = (page - 1) * 10
-                            items(
-                                count = count,
-                                key = {
-                                    comments[indexPrefix + it]?.comment?.id
-                                        ?: PagingPlaceholderKey(it)
-                                },
-                                contentType = {
-                                    comments[indexPrefix + it]?.let { "comment" }
-                                        ?: PagingPlaceholderContentType
-                                },
-                            ) {
-                                val commentEntry = comments[indexPrefix + it]
-                                ThreadComment(
+                    Box(
+                        modifier = Modifier
+                            .padding(it)
+                            .pullRefresh(pullRefreshState)
+                    ) {
+                        var maxPage = (comments.itemCount - 1) / 10 + 1
+                        var page by rememberSaveable { mutableIntStateOf(1) }
+                        var pageString by rememberSaveable { mutableStateOf("1") }
+                        LazyColumn(
+                            state = lazyListState,
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            val threadEntry = entry.result
+                            item("threadHeader") {
+                                ThreadHeader(
                                     viewModel = viewModel,
                                     viewer = viewer,
-                                    entry = commentEntry,
-                                    onStatusUpdate = viewModel.commentToggleHelper::toggleLike,
-                                    onClickDelete = {
-                                        if (commentEntry != null) {
-                                            // deletePromptData = Either.Right(replyEntry)
-                                        }
-                                    },
+                                    entry = threadEntry,
+                                    onStatusUpdate = viewModel.threadToggleHelper::toggle,
                                 )
                             }
 
-                            if (maxPage > 1) {
-                                item("pageIndicatorBottom") {
-                                    PageIndicator(
-                                        page = page,
-                                        pageString = pageString,
-                                        maxPage = maxPage,
-                                        onPageChange = { page = it },
-                                        onPageStringChange = { pageString = it },
+                            val media = viewModel.media
+                            itemsIndexed(
+                                items = media,
+                                key = { _, item -> "media-${item.media.id}" },
+                                contentType = { _, _ -> "media" },
+                            ) { index, item ->
+                                AnimeMediaCompactListRow(
+                                    screenKey = SCREEN_KEY,
+                                    viewer = viewer,
+                                    entry = item,
+                                    onLongClick = {
+                                        viewModel.ignoreList.toggle(it.media.id.toString())
+                                    },
+                                    onClickListEdit = { editViewModel.initialize(it.media) },
+                                    colorCalculationState = colorCalculationState,
+                                    modifier = Modifier.padding(
+                                        start = 16.dp,
+                                        end = 16.dp,
+                                        bottom = 8.dp,
                                     )
+                                )
+                            }
+
+                            if (comments.itemCount == 0) {
+                                if (!refreshing) {
+                                    if (refreshState is LoadState.Error) {
+                                        item("commentsError") {
+                                            Column(
+                                                horizontalAlignment = Alignment.CenterHorizontally,
+                                                modifier = Modifier.fillMaxWidth()
+                                            ) {
+                                                AnimeMediaListScreen.ErrorContent(
+                                                    errorTextRes = R.string.anime_forum_search_error_loading,
+                                                    exception = refreshState.error,
+                                                )
+                                            }
+                                        }
+                                    } else {
+                                        item("commentsNoResults") {
+                                            Column(
+                                                horizontalAlignment = Alignment.CenterHorizontally,
+                                                modifier = Modifier.fillMaxWidth()
+                                            ) {
+                                                Text(
+                                                    text = stringResource(id = R.string.anime_forum_thread_no_comments),
+                                                    style = MaterialTheme.typography.bodyLarge,
+                                                    modifier = Modifier.padding(
+                                                        horizontal = 16.dp,
+                                                        vertical = 10.dp
+                                                    ),
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                            } else {
+                                item("pageIndicatorTop") {
+                                    Column {
+                                        PageIndicator(
+                                            page = page,
+                                            pageString = pageString,
+                                            maxPage = maxPage,
+                                            onPageChange = { page = it },
+                                            onPageStringChange = { pageString = it },
+                                        )
+
+                                        HorizontalDivider()
+                                    }
+                                }
+
+                                // TODO: Recomposition requires this to be set here since API can
+                                //  change the max count
+                                maxPage = (comments.itemCount - 1) / 10 + 1
+                                if (page > maxPage) {
+                                    page = maxPage
+                                    pageString = page.toString()
+                                }
+                                val count = if (page == maxPage) {
+                                    val remainder = comments.itemCount % 10
+                                    if (remainder == 0) 10 else remainder
+                                } else {
+                                    10.coerceAtMost(comments.itemCount)
+                                }
+                                val indexPrefix = (page - 1) * 10
+                                items(
+                                    count = count,
+                                    key = {
+                                        comments[indexPrefix + it]?.comment?.id
+                                            ?: PagingPlaceholderKey(it)
+                                    },
+                                    contentType = {
+                                        comments[indexPrefix + it]?.let { "comment" }
+                                            ?: PagingPlaceholderContentType
+                                    },
+                                ) {
+                                    val commentEntry = comments[indexPrefix + it]
+                                    ThreadComment(
+                                        viewModel = viewModel,
+                                        viewer = viewer,
+                                        entry = commentEntry,
+                                        onStatusUpdate = viewModel.commentToggleHelper::toggleLike,
+                                        onClickDelete = { commentId, commentMarkdown ->
+                                            deletePromptData = commentId to commentMarkdown
+                                        },
+                                        onClickReplyComment = { commentId, commentMarkdown ->
+                                            viewModel.onClickReplyComment(
+                                                commentId,
+                                                commentMarkdown
+                                            )
+                                            scope.launch { sheetState.expand() }
+                                        }
+                                    )
+                                }
+
+                                if (maxPage > 1) {
+                                    item("pageIndicatorBottom") {
+                                        PageIndicator(
+                                            page = page,
+                                            pageString = pageString,
+                                            maxPage = maxPage,
+                                            onPageChange = { page = it },
+                                            onPageStringChange = { pageString = it },
+                                        )
+                                    }
                                 }
                             }
                         }
+
+                        PullRefreshIndicator(
+                            refreshing = refreshing,
+                            state = pullRefreshState,
+                            modifier = Modifier.align(Alignment.TopCenter)
+                        )
                     }
 
-                    PullRefreshIndicator(
-                        refreshing = refreshing,
-                        state = pullRefreshState,
-                        modifier = Modifier.align(Alignment.TopCenter)
-                    )
+                    val deletePromptDataFinal = deletePromptData
+                    if (deletePromptDataFinal != null) {
+                        AlertDialog(
+                            onDismissRequest = { deletePromptData = null },
+                            title = {
+                                Text(
+                                    text = stringResource(
+                                        R.string.anime_forum_thread_comment_delete_confirmation
+                                    )
+                                )
+                            },
+                            text = {
+                                MarkdownText(
+                                    text = deletePromptDataFinal.second,
+                                    textColor = MaterialTheme.typography.bodySmall.color,
+                                )
+                            },
+                            confirmButton = {
+                                Box(
+                                    contentAlignment = Alignment.Center,
+                                    modifier = Modifier.height(IntrinsicSize.Min)
+                                ) {
+                                    val loadingAlpha by animateFloatAsState(
+                                        targetValue = if (viewModel.deleting) 1f else 0f,
+                                        label = "Forum thread comment deleting crossfade",
+                                    )
+                                    TextButton(
+                                        onClick = {
+                                            viewModel.deleteComment(deletePromptDataFinal.first)
+                                        },
+                                        modifier = Modifier.alpha(1f - loadingAlpha)
+                                    ) {
+                                        Text(
+                                            text = stringResource(
+                                                R.string.anime_forum_thread_comment_delete
+                                            )
+                                        )
+                                    }
+                                    CircularProgressIndicator(
+                                        modifier = Modifier
+                                            .fillMaxHeight()
+                                            .alpha(loadingAlpha)
+                                    )
+                                }
+                            },
+                            dismissButton = {
+                                TextButton(onClick = { deletePromptData = null }) {
+                                    Text(
+                                        text = stringResource(
+                                            R.string.anime_forum_thread_comment_cancel
+                                        )
+                                    )
+                                }
+                            }
+                        )
+                    }
                 }
             }
         }
@@ -367,7 +464,7 @@ object ForumThreadScreen {
                     ThreadAuthor(
                         screenKey = SCREEN_KEY,
                         loading = entry == null,
-                        user = thread?.replyUser,
+                        user = thread?.user,
                         aniListTimestamp = thread?.createdAt,
                         modifier = Modifier.padding(horizontal = 16.dp)
                     )
@@ -436,7 +533,6 @@ object ForumThreadScreen {
                 var bodyShown by rememberSaveable { mutableStateOf(!mayHaveSpoilers) }
                 if (bodyShown) {
                     MarkdownText(
-                        markwon = viewModel.markwon,
                         text = entry?.bodyMarkdown,
                         textColor = MaterialTheme.typography.bodySmall.color,
                         modifier = Modifier
@@ -448,7 +544,11 @@ object ForumThreadScreen {
                             )
                     )
                 } else {
-                    Button(onClick = { bodyShown = true }) {
+                    Button(
+                        onClick = { bodyShown = true },
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp)
+                    ) {
                         Text(text = stringResource(R.string.anime_forum_thread_show_body_spoilers))
                     }
                 }
@@ -548,7 +648,8 @@ object ForumThreadScreen {
         viewer: AuthedUserQuery.Data.Viewer?,
         entry: ForumThreadViewModel.CommentEntry?,
         onStatusUpdate: (String, Boolean) -> Unit,
-        onClickDelete: (String) -> Unit,
+        onClickDelete: (String, Spanned?) -> Unit,
+        onClickReplyComment: (String, Spanned?) -> Unit,
     ) {
         // TODO: Child comments
 
@@ -566,6 +667,7 @@ object ForumThreadScreen {
                 user = entry?.user,
                 onStatusUpdate = onStatusUpdate,
                 onClickDelete = onClickDelete,
+                onClickReplyComment = onClickReplyComment,
             )
 
             val children = entry?.children
@@ -578,6 +680,7 @@ object ForumThreadScreen {
                         child = it,
                         onStatusUpdate = onStatusUpdate,
                         onClickDelete = onClickDelete,
+                        onClickReplyComment = onClickReplyComment,
                     )
                 }
             }
@@ -598,7 +701,8 @@ object ForumThreadScreen {
         likeCount: Int,
         user: UserNavigationData?,
         onStatusUpdate: (String, Boolean) -> Unit,
-        onClickDelete: (String) -> Unit,
+        onClickDelete: (String, Spanned?) -> Unit,
+        onClickReplyComment: (String, Spanned?) -> Unit,
     ) {
         val navigationCallback = LocalNavigationCallback.current
         Row(
@@ -609,7 +713,7 @@ object ForumThreadScreen {
                         navigationCallback.onUserClick(user, 1f)
                     }
                 }
-                .padding(start = 16.dp, end = 16.dp, top = 10.dp, bottom = 8.dp)
+                .padding(start = 16.dp, end = 4.dp, top = 10.dp, bottom = 8.dp)
         ) {
             val image = user?.avatar?.large
             if (loading || image != null) {
@@ -643,7 +747,11 @@ object ForumThreadScreen {
 
             Row(verticalAlignment = Alignment.CenterVertically) {
                 if (viewer != null && viewer.id == user?.id) {
-                    IconButton(onClick = { if (commentId != null) onClickDelete(commentId) }) {
+                    IconButton(onClick = {
+                        if (commentId != null) {
+                            onClickDelete(commentId, commentMarkdown)
+                        }
+                    }) {
                         Icon(
                             imageVector = Icons.Filled.Delete,
                             contentDescription = stringResource(
@@ -684,8 +792,6 @@ object ForumThreadScreen {
                         ),
                     )
                 }
-
-
 
                 Box {
                     var showMenu by remember { mutableStateOf(false) }
@@ -729,13 +835,33 @@ object ForumThreadScreen {
                                 }
                             }
                         )
+                        DropdownMenuItem(
+                            text = {
+                                Text(
+                                    stringResource(R.string.anime_forum_thread_comment_reply)
+                                )
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Filled.Reply,
+                                    contentDescription = stringResource(
+                                        R.string.anime_forum_thread_comment_reply_content_description
+                                    )
+                                )
+                            },
+                            onClick = {
+                                showMenu = false
+                                if (commentId != null) {
+                                    onClickReplyComment(commentId, commentMarkdown)
+                                }
+                            }
+                        )
                     }
                 }
             }
         }
 
         MarkdownText(
-            viewModel.markwon,
             text = commentMarkdown,
             modifier = Modifier
                 .conditionally(loading) { fillMaxWidth() }
@@ -754,7 +880,8 @@ object ForumThreadScreen {
         level: Int,
         child: ForumThreadViewModel.CommentChild,
         onStatusUpdate: (String, Boolean) -> Unit,
-        onClickDelete: (String) -> Unit,
+        onClickDelete: (String, Spanned?) -> Unit,
+        onClickReplyComment: (String, Spanned?) -> Unit,
     ) {
         Column(
             modifier = Modifier
@@ -779,6 +906,7 @@ object ForumThreadScreen {
                 user = child.user,
                 onStatusUpdate = onStatusUpdate,
                 onClickDelete = onClickDelete,
+                onClickReplyComment = onClickReplyComment,
             )
         }
 
@@ -790,6 +918,7 @@ object ForumThreadScreen {
                 child = it,
                 onStatusUpdate = onStatusUpdate,
                 onClickDelete = onClickDelete,
+                onClickReplyComment = onClickReplyComment,
             )
         }
     }
