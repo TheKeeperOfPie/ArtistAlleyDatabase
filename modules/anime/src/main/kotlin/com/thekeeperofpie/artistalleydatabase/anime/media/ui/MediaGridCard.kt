@@ -6,15 +6,18 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ImageNotSupported
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -51,6 +54,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaStatusAware
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toIcon
 import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
@@ -69,6 +73,8 @@ object MediaGridCard {
         colorCalculationState: ColorCalculationState,
         modifier: Modifier = Modifier,
         forceListEditIcon: Boolean = false,
+        showTypeIcon: Boolean = false,
+        label: @Composable ColumnScope.(textColor: Color) -> Unit = {},
     ) {
         val colors = colorCalculationState.colorMap[entry?.media?.id?.toString()]
         val animationProgress by animateIntAsState(
@@ -130,23 +136,46 @@ object MediaGridCard {
                             forceListEditIcon = forceListEditIcon,
                         )
 
+                        if (showTypeIcon) {
+                            Icon(
+                                imageVector = entry?.type.toIcon(),
+                                contentDescription = stringResource(
+                                    if (entry?.type == MediaType.ANIME) {
+                                        R.string.anime_media_type_anime_icon_content_description
+                                    } else {
+                                        R.string.anime_media_type_manga_icon_content_description
+                                    }
+                                ),
+                                modifier = Modifier
+                                    .align(Alignment.TopStart)
+                                    .clip(RoundedCornerShape(bottomEnd = 6.dp))
+                                    .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.66f))
+                                    .padding(4.dp)
+                                    .size(16.dp)
+                            )
+                        }
+
                         MediaRatingIconsSection(
                             rating = entry?.averageScore,
                             popularity = null,
                             loading = entry == null,
                             modifier = Modifier
                                 .align(Alignment.TopEnd)
-                                .clip(RoundedCornerShape(bottomStart = 12.dp))
+                                .clip(RoundedCornerShape(bottomStart = 6.dp))
                                 .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.66f))
-                                .padding(start = 8.dp, top = 2.dp, bottom = 4.dp)
+                                .padding(start = 8.dp, top = 2.dp, bottom = 2.dp)
                         )
                     }
+
+                    val textColor = (ComposeColorUtils.bestTextColor(containerColor)
+                        ?: Color.Unspecified)
+
+                    label(textColor)
 
                     Text(
                         text = entry?.media?.title?.primaryTitle() ?: "Placeholder",
                         style = MaterialTheme.typography.labelSmall,
-                        color = ComposeColorUtils.bestTextColor(containerColor)
-                            ?: Color.Unspecified,
+                        color = textColor,
                         overflow = TextOverflow.Ellipsis,
                         maxLines = 2,
                         minLines = 2,

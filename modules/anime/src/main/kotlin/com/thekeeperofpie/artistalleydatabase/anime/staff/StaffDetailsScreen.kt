@@ -10,14 +10,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Scaffold
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.ScrollableTabRow
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -34,17 +36,19 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.anilist.StaffDetailsQuery.Data.Staff
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
+import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.compose.CollapsingToolbar
-import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 object StaffDetailsScreen {
+
+    private val SCREEN_KEY = AnimeNavDestinations.STAFF_DETAILS.id
 
     @Composable
     operator fun invoke(
@@ -62,7 +66,20 @@ object StaffDetailsScreen {
             mutableFloatStateOf(headerValues.imageWidthToHeightRatio)
         }
 
-        Scaffold(
+        val snackbarHostState = remember { SnackbarHostState() }
+        val error = viewModel.error
+        val errorText = error?.first?.let { stringResource(it) }
+        LaunchedEffect(errorText) {
+            if (errorText != null) {
+                snackbarHostState.showSnackbar(
+                    message = errorText,
+                    withDismissAction = true,
+                    duration = SnackbarDuration.Long,
+                )
+            }
+        }
+        MediaEditBottomSheetScaffold(
+            screenKey = SCREEN_KEY,
             topBar = {
                 CollapsingToolbar(
                     maxHeight = 356.dp,
@@ -83,16 +100,7 @@ object StaffDetailsScreen {
                     )
                 }
             },
-            snackbarHost = {
-                val errorRes = viewModel.errorResource
-                if (errorRes != null) {
-                    SnackbarErrorText(
-                        errorRes.first,
-                        errorRes.second,
-                        onErrorDismiss = { viewModel.errorResource = null },
-                    )
-                }
-            },
+            colorCalculationState = colorCalculationState,
             modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
         ) { scaffoldPadding ->
             Column(modifier = Modifier.padding(scaffoldPadding)) {
@@ -107,7 +115,7 @@ object StaffDetailsScreen {
                             )
                         }
                     } else {
-                        val errorRes = viewModel.errorResource
+                        val errorRes = viewModel.error
                         AnimeMediaListScreen.Error(
                             errorTextRes = errorRes?.first,
                             exception = errorRes?.second,
@@ -137,7 +145,7 @@ object StaffDetailsScreen {
                         }
                     }
 
-                    Divider()
+                    HorizontalDivider()
 
                     HorizontalPager(
                         state = pagerState,
@@ -158,8 +166,8 @@ object StaffDetailsScreen {
                                 colorCalculationState = colorCalculationState,
                             )
                             StaffTab.STAFF -> StaffStaffScreen(
+                                screenKey = SCREEN_KEY,
                                 staffTimeline = staffTimeline,
-                                onRequestYear = viewModel::onRequestStaffYear,
                                 colorCalculationState = colorCalculationState,
                             )
                         }

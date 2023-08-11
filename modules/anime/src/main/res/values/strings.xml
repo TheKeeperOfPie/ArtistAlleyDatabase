@@ -25,6 +25,9 @@
     <string name="anime_screen_unlock">Unlock</string>
     <string name="anime_description_spoiler">[Spoiler]</string>
 
+    <string name="anime_media_type_anime_icon_content_description">Media type anime</string>
+    <string name="anime_media_type_manga_icon_content_description">Media type manga</string>
+
     <string name="anime_media_sort_default">Default</string>
     <string name="anime_media_sort_id">Last added</string>
     <string name="anime_media_sort_search_match">Search match</string>

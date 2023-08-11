@@ -16,6 +16,8 @@ import androidx.paging.map
 import com.anilist.fragment.StaffDetailsCharacterMediaPage
 import com.anilist.fragment.StaffDetailsStaffMediaPage
 import com.anilist.type.CharacterRole
+import com.anilist.type.MediaListStatus
+import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListPagingSource
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
@@ -25,7 +27,13 @@ import com.thekeeperofpie.artistalleydatabase.anime.character.DetailsCharacter
 import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoritesController
 import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoritesToggleHelper
+import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
+import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaFiltering
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaGridCard
 import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIds
+import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -35,7 +43,6 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -46,17 +53,20 @@ import javax.inject.Inject
 @HiltViewModel
 class StaffDetailsViewModel @Inject constructor(
     private val aniListApi: AuthedAniListApi,
-    private val animeSettings: AnimeSettings,
+    private val settings: AnimeSettings,
     favoritesController: FavoritesController,
+    private val mediaListStatusController: MediaListStatusController,
+    val ignoreList: AnimeMediaIgnoreList,
 ) : ViewModel() {
 
+    val viewer = aniListApi.authedUser
     lateinit var staffId: String
 
     var entry by mutableStateOf<StaffDetailsScreen.Entry?>(null)
     var loading by mutableStateOf(true)
-    var errorResource by mutableStateOf<Pair<Int, Exception?>?>(null)
+    var error by mutableStateOf<Pair<Int, Exception?>?>(null)
     val colorMap = mutableStateMapOf<String, Pair<Color, Color>>()
-    val showAdult get() = animeSettings.showAdult
+    val showAdult get() = settings.showAdult
 
     val characters = MutableStateFlow(PagingData.empty<DetailsCharacter>())
 
@@ -64,9 +74,11 @@ class StaffDetailsViewModel @Inject constructor(
     private val mediaTimelineLastRequestedYear = MutableStateFlow<Int?>(null)
     private var mediaTimelineResults = MutableStateFlow(emptyList<StaffDetailsCharacterMediaPage>())
 
-    var staffTimeline = MutableStateFlow(StaffTimeline())
+    val staffTimeline = MutableStateFlow(StaffTimeline())
     private val staffTimelineLastRequestedYear = MutableStateFlow<Int?>(null)
-    private var staffTimelineResults = MutableStateFlow(emptyList<StaffDetailsStaffMediaPage>())
+    private val staffTimelineResults = MutableStateFlow(emptyList<StaffDetailsStaffMediaPage>())
+    private val mediaListStatusUpdates =
+        MutableStateFlow(emptyMap<String, MediaListStatusController.Update>())
 
     val favoritesToggleHelper =
         FavoritesToggleHelper(aniListApi, favoritesController, viewModelScope)
@@ -86,7 +98,7 @@ class StaffDetailsViewModel @Inject constructor(
                 }
             } catch (exception: Exception) {
                 withContext(CustomDispatchers.Main) {
-                    errorResource = R.string.anime_staff_error_loading to exception
+                    error = R.string.anime_staff_error_loading to exception
                 }
             } finally {
                 withContext(CustomDispatchers.Main) {
@@ -138,7 +150,7 @@ class StaffDetailsViewModel @Inject constructor(
                 mediaTimeline,
                 mediaTimelineLastRequestedYear,
                 mediaTimelineResults,
-                animeSettings.showAdult,
+                settings.showAdult,
                 ::MediaTimelineRefreshParams
             )
                 .filter { (timeline) -> timeline.loadMoreState == MediaTimeline.LoadMoreState.None }
@@ -157,7 +169,7 @@ class StaffDetailsViewModel @Inject constructor(
                         )
                     }
                 }
-                .map { (timeline, _, existingResults, showAdult) ->
+                .mapLatest { (timeline, _, existingResults, showAdult) ->
                     val nextPage = existingResults.size + 1
                     try {
                         val result =
@@ -183,12 +195,20 @@ class StaffDetailsViewModel @Inject constructor(
                 }
         }
 
+        // Each staff timeline emission will reset the Flow, so the default behavior of allChanges()
+        // won't work as it'll lose all previous changes made before the current page. Instead,
+        // manually cache every update made since the screen was shown.
+        viewModelScope.launch(CustomDispatchers.IO) {
+            mediaListStatusController.allChanges()
+                .collectLatest(mediaListStatusUpdates::emit)
+        }
+
         viewModelScope.launch(CustomDispatchers.IO) {
             combine(
                 staffTimeline,
                 staffTimelineLastRequestedYear,
                 staffTimelineResults,
-                animeSettings.showAdult,
+                settings.showAdult,
                 ::StaffTimelineRefreshParams
             )
                 .filter { (timeline) -> timeline.loadMoreState == StaffTimeline.LoadMoreState.None }
@@ -207,7 +227,7 @@ class StaffDetailsViewModel @Inject constructor(
                         )
                     }
                 }
-                .map { (timeline, _, existingResults, showAdult) ->
+                .mapLatest { (timeline, _, existingResults, showAdult) ->
                     val nextPage = existingResults.size + 1
                     try {
                         val result =
@@ -223,6 +243,43 @@ class StaffDetailsViewModel @Inject constructor(
                                 throwable
                             )
                         ) to existingResults
+                    }
+                }
+                .flatMapLatest { (timeline, newResults) ->
+                    combine(
+                        mediaListStatusUpdates,
+                        ignoreList.updates,
+                        settings.showAdult,
+                        settings.showLessImportantTags,
+                        settings.showSpoilerTags,
+                    ) { updates, ignoredIds, showAdult, showLessImportantTags, showSpoilerTags ->
+                        timeline.copy(
+                            yearsToMedia = timeline.yearsToMedia.map { (year, media) ->
+                                year to media.mapNotNull {
+                                    applyMediaFiltering(
+                                        statuses = updates,
+                                        ignoredIds = ignoredIds,
+                                        showAdult = showAdult,
+                                        showIgnored = true,
+                                        showLessImportantTags = showLessImportantTags,
+                                        showSpoilerTags = showSpoilerTags,
+                                        entry = it,
+                                        transform = { it },
+                                        media = it.media,
+                                        copy = { mediaListStatus, progress, progressVolumes, ignored, showLessImportantTags, showSpoilerTags ->
+                                            copy(
+                                                mediaListStatus = mediaListStatus,
+                                                progress = progress,
+                                                progressVolumes = progressVolumes,
+                                                ignored = ignored,
+                                                showLessImportantTags = showLessImportantTags,
+                                                showSpoilerTags = showSpoilerTags,
+                                            )
+                                        }
+                                    )
+                                }
+                            }
+                        ) to newResults
                     }
                 }
                 .collectLatest { (timeline, newResults) ->
@@ -310,7 +367,6 @@ class StaffDetailsViewModel @Inject constructor(
                         id = "${edge.id}_${node.id}",
                         media = node,
                         role = edge.staffRole,
-                        character = edge.characters?.firstOrNull(),
                     )
                 }
                 .distinctBy { it.id }
@@ -338,8 +394,8 @@ class StaffDetailsViewModel @Inject constructor(
         )
 
         sealed interface LoadMoreState {
-            object None : LoadMoreState
-            object Loading : LoadMoreState
+            data object None : LoadMoreState
+            data object Loading : LoadMoreState
             data class Error(val throwable: Throwable) : LoadMoreState
         }
     }
@@ -357,14 +413,30 @@ class StaffDetailsViewModel @Inject constructor(
     ) {
         data class Media(
             val id: String,
-            val media: StaffDetailsStaffMediaPage.Edge.Node,
             val role: String?,
-            val character: StaffDetailsStaffMediaPage.Edge.Character?,
-        )
+            override val media: StaffDetailsStaffMediaPage.Edge.Node,
+            override val mediaListStatus: MediaListStatus? = media.mediaListEntry?.status,
+            override val progress: Int? = media.mediaListEntry?.progress,
+            override val progressVolumes: Int? = media.mediaListEntry?.progressVolumes,
+            override val ignored: Boolean = false,
+            override val showLessImportantTags: Boolean = false,
+            override val showSpoilerTags: Boolean = false,
+            override val type: MediaType? = media.type,
+            override val color: Color? = media.coverImage?.color
+                ?.let(ComposeColorUtils::hexToColor),
+            override val maxProgress: Int? = MediaUtils.maxProgress(
+                type = media.type,
+                chapters = media.chapters,
+                episodes = media.episodes,
+                nextAiringEpisode = media.nextAiringEpisode?.episode,
+            ),
+            override val maxProgressVolumes: Int? = media.volumes,
+            override val averageScore: Int? = media.averageScore,
+        ) : MediaGridCard.Entry
 
         sealed interface LoadMoreState {
-            object None : LoadMoreState
-            object Loading : LoadMoreState
+            data object None : LoadMoreState
+            data object Loading : LoadMoreState
             data class Error(val throwable: Throwable) : LoadMoreState
         }
     }

@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -15,41 +16,39 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.unit.dp
-import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
-import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
-import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
-import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.R
-import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterSmallCard
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
+import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaGridCard
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
-import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
-import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 
 @OptIn(ExperimentalMaterial3Api::class)
 object StaffStaffScreen {
 
     @Composable
     operator fun invoke(
+        screenKey: String,
         staffTimeline: StaffDetailsViewModel.StaffTimeline,
-        onRequestYear: (Int?) -> Unit,
         colorCalculationState: ColorCalculationState,
     ) {
+        val viewModel = hiltViewModel<StaffDetailsViewModel>()
+        val viewer by viewModel.viewer.collectAsState()
+        val editViewModel = hiltViewModel<MediaEditViewModel>()
         LazyColumn(
             contentPadding = PaddingValues(bottom = 16.dp),
             modifier = Modifier.fillMaxSize()
         ) {
             staffTimeline.yearsToMedia.forEach { (year, entries) ->
                 item {
-                    onRequestYear(year)
+                    viewModel.onRequestStaffYear(year)
                     Text(
                         text = year?.toString()
                             ?: stringResource(R.string.anime_staff_media_year_unknown),
@@ -61,44 +60,20 @@ object StaffStaffScreen {
                 }
 
                 item {
-                    val navigationCallback = LocalNavigationCallback.current
                     LazyRow(
                         contentPadding = PaddingValues(horizontal = 16.dp),
                         horizontalArrangement = Arrangement.spacedBy(16.dp),
                     ) {
                         items(entries, { it.id }) {
-                            var imageWidthToHeightRatio by remember { MutableSingle(1f) }
-                            var innerImageWidthToHeightRatio by remember { MutableSingle(1f) }
-                            CharacterSmallCard(
-                                screenKey = AnimeNavDestinations.STAFF_DETAILS.id,
-                                id = EntryId("anime_media", it.media.id.toString()),
-                                image = it.media.coverImage?.extraLarge,
+                            MediaGridCard(
+                                screenKey = screenKey,
+                                entry = it,
+                                viewer = viewer,
+                                onClickListEdit = { editViewModel.initialize(it.media) },
+                                onLongClick = { viewModel.ignoreList.toggle(it.id.toString()) },
                                 colorCalculationState = colorCalculationState,
-                                innerImage = it.character?.image?.large,
-                                innerImageKey = "anime_character_${it.character?.id}_image",
-                                onImageSuccess = {
-                                    imageWidthToHeightRatio = it.widthToHeightRatio()
-                                },
-                                onInnerImageSuccess = {
-                                    innerImageWidthToHeightRatio = it.widthToHeightRatio()
-                                },
-                                onClick = {
-                                    navigationCallback.onMediaClick(
-                                        it.media,
-                                        imageWidthToHeightRatio
-                                    )
-                                },
-                                onClickInnerImage = {
-                                    it.character?.let {
-                                        navigationCallback.onCharacterClick(
-                                            it,
-                                            null,
-                                            innerImageWidthToHeightRatio,
-                                            colorCalculationState.getColors(it.id.toString()).first,
-                                        )
-                                    }
-                                },
-                                width = 140.dp,
+                                showTypeIcon = true,
+                                modifier = Modifier.width(120.dp),
                             ) { textColor ->
                                 it.role?.let {
                                     AutoHeightText(
@@ -116,27 +91,7 @@ object StaffStaffScreen {
                                         minTextSizeSp = 8f,
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .padding(start = 12.dp, end = 12.dp, top = 8.dp)
-                                    )
-                                }
-
-                                it.media.title?.primaryTitle()?.let {
-                                    AutoHeightText(
-                                        text = it,
-                                        color = textColor,
-                                        style = MaterialTheme.typography.bodyMedium.copy(
-                                            lineBreak = LineBreak(
-                                                strategy = LineBreak.Strategy.Balanced,
-                                                strictness = LineBreak.Strictness.Strict,
-                                                wordBreak = LineBreak.WordBreak.Default,
-                                            )
-                                        ),
-                                        minTextSizeSp = 8f,
-                                        minLines = 3,
-                                        maxLines = 3,
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(horizontal = 12.dp, vertical = 8.dp)
+                                            .padding(start = 8.dp, end = 8.dp, top = 8.dp)
                                     )
                                 }
                             }
@@ -151,7 +106,9 @@ object StaffStaffScreen {
                         loadMoreState.throwable,
                         onClick = {
                             // TODO: This doesn't actually work, need to signal a manual override
-                            onRequestYear(staffTimeline.yearsToMedia.lastOrNull()?.first)
+                            viewModel.onRequestStaffYear(
+                                staffTimeline.yearsToMedia.lastOrNull()?.first
+                            )
                         }
                     )
                 }

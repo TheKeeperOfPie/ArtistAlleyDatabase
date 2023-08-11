@@ -105,17 +105,27 @@ fragment StaffDetailsStaffMediaPage on MediaConnection {
         id
         staffRole
         node {
-            ...MediaNavigationData
-            type
+            ...MediaWithListStatus
+            averageScore
+            coverImage {
+                color
+            }
+            episodes
+            chapters
+            volumes
+            nextAiringEpisode {
+                episode
+            }
             startDate {
                 year
                 month
                 day
             }
         }
-        characters {
-            ...CharacterNavigationData
-        }
+        # TODO: Characters don't actually load
+#        characters {
+#            ...CharacterNavigationData
+#        }
     }
 }
 

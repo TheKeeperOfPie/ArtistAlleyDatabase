@@ -770,4 +770,10 @@ object MediaUtils {
         ?.distinctBy { it.id }
         ?.toList()
         .orEmpty()
+
+    fun MediaType?.toIcon() = if (this == MediaType.ANIME) {
+        Icons.Filled.Monitor
+    } else {
+        Icons.Filled.MenuBook
+    }
 }
