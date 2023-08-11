@@ -24,6 +24,9 @@ import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityStatusAware
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityToggleHelper
 import com.thekeeperofpie.artistalleydatabase.anime.activity.applyActivityFiltering
+import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.ForumThreadCommentStatusController
+import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.ForumThreadCommentToggleHelper
+import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.comment.ForumCommentEntry
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaStatusAware
@@ -33,6 +36,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIds
 import com.thekeeperofpie.artistalleydatabase.anime.utils.mapNotNull
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 import dagger.hilt.android.lifecycle.HiltViewModel
+import io.noties.markwon.Markwon
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -49,7 +53,9 @@ class NotificationsViewModel @Inject constructor(
     settings: AnimeSettings,
     private val activityStatusController: ActivityStatusController,
     private val mediaListStatusController: MediaListStatusController,
+    commentStatusController: ForumThreadCommentStatusController,
     private val ignoreList: AnimeMediaIgnoreList,
+    markwon: Markwon,
 ) : ViewModel() {
 
     val colorMap = mutableStateMapOf<String, Pair<Color, Color>>()
@@ -57,6 +63,9 @@ class NotificationsViewModel @Inject constructor(
 
     val activityToggleHelper =
         ActivityToggleHelper(aniListApi, activityStatusController, viewModelScope)
+
+    val commentToggleHelper =
+        ForumThreadCommentToggleHelper(aniListApi, commentStatusController, viewModelScope)
 
     val content = MutableStateFlow(PagingData.empty<NotificationEntry>())
 
@@ -136,6 +145,13 @@ class NotificationsViewModel @Inject constructor(
                                 mediaEntry = media?.let { NotificationEntry.MediaEntry(it, it) }
                                     ?: activity?.asListActivity()?.media
                                         ?.let { NotificationEntry.MediaEntry(it, it) },
+                                commentEntry = it.comment?.let {
+                                    ForumCommentEntry(
+                                        comment = it,
+                                        commentMarkdown = it.comment?.let(markwon::toMarkdown),
+                                        children = emptyList(),
+                                    )
+                                }
                             )
                         }
                     }
@@ -148,13 +164,14 @@ class NotificationsViewModel @Inject constructor(
                     combine(
                         mediaListStatusController.allChanges(),
                         activityStatusController.allChanges(),
+                        commentStatusController.allChanges(),
                         ignoreList.updates,
                         settings.showAdult,
                         settings.showIgnored,
                         settings.showLessImportantTags,
                         settings.showSpoilerTags,
-                    ) { mediaListStatuses, activityStatuses, ignoredIds, showAdult, showIgnored, showLessImportantTags, showSpoilerTags ->
-                        pagingData.mapNotNull {
+                    ) { mediaListStatuses, activityStatuses, commentUpdates, ignoredIds, showAdult, showIgnored, showLessImportantTags, showSpoilerTags ->
+                        pagingData.mapNotNull { entry ->
                             applyActivityFiltering(
                                 mediaListStatuses = mediaListStatuses,
                                 activityStatuses = activityStatuses,
@@ -163,11 +180,11 @@ class NotificationsViewModel @Inject constructor(
                                 showIgnored = showIgnored,
                                 showLessImportantTags = showLessImportantTags,
                                 showSpoilerTags = showSpoilerTags,
-                                entry = it,
-                                activityId = it.activityEntry?.id,
-                                activityStatusAware = it.activityEntry,
-                                media = it.mediaEntry?.mediaWithListStatus,
-                                mediaStatusAware = it.mediaEntry,
+                                entry = entry,
+                                activityId = entry.activityEntry?.id,
+                                activityStatusAware = entry.activityEntry,
+                                media = entry.mediaEntry?.mediaWithListStatus,
+                                mediaStatusAware = entry.mediaEntry,
                                 copyMedia = { status, progress, progressVolumes, ignored, showLessImportantTags, showSpoilerTags ->
                                     copy(
                                         mediaEntry = mediaEntry?.copy(
@@ -182,13 +199,24 @@ class NotificationsViewModel @Inject constructor(
                                 },
                                 copyActivity = { liked, subscribed ->
                                     copy(
-                                        activityEntry = it.activityEntry?.copy(
+                                        activityEntry = activityEntry?.copy(
                                             liked = liked,
                                             subscribed = subscribed
                                         )
                                     )
                                 }
-                            )
+                            )?.let {
+                                val commentId = it.commentEntry?.comment?.id?.toString()
+                                if (commentId == null) return@let it
+                                val liked = commentUpdates[commentId]?.liked
+                                    ?: it.commentEntry.comment.isLiked
+                                    ?: false
+                                it.copy(
+                                    commentEntry = it.commentEntry.copy(
+                                        liked = liked,
+                                    )
+                                )
+                            }
                         }
                     }
                 }
@@ -202,6 +230,7 @@ class NotificationsViewModel @Inject constructor(
         val notification: NotificationsQuery.Data.Page.Notification,
         val activityEntry: ActivityEntry?,
         val mediaEntry: MediaEntry?,
+        val commentEntry: ForumCommentEntry?,
     ) {
         data class ActivityEntry(
             val id: String,

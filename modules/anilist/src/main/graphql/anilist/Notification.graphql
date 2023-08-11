@@ -3,8 +3,6 @@ fragment NotificationMedia on Media {
 }
 
 fragment NotificationItem on NotificationUnion {
-    __typename
-
     ... on AiringNotification {
         id
         episode
@@ -118,9 +116,11 @@ fragment NotificationItem on NotificationUnion {
         context
         createdAt
         thread {
-            id
+            ...ForumThread
         }
-        commentId
+        comment {
+            ...ForumThreadComment
+        }
         user {
             ...UserNavigationData
         }
@@ -130,9 +130,11 @@ fragment NotificationItem on NotificationUnion {
         context
         createdAt
         thread {
-            id
+            ...ForumThread
         }
-        commentId
+        comment {
+            ...ForumThreadComment
+        }
         user {
             ...UserNavigationData
         }
@@ -142,9 +144,11 @@ fragment NotificationItem on NotificationUnion {
         context
         createdAt
         thread {
-            id
+            ...ForumThread
         }
-        commentId
+        comment {
+            ...ForumThreadComment
+        }
         user {
             ...UserNavigationData
         }
@@ -154,9 +158,11 @@ fragment NotificationItem on NotificationUnion {
         context
         createdAt
         thread {
-            id
+            ...ForumThread
         }
-        commentId
+        comment {
+            ...ForumThreadComment
+        }
         user {
             ...UserNavigationData
         }
@@ -166,7 +172,7 @@ fragment NotificationItem on NotificationUnion {
         context
         createdAt
         thread {
-            id
+            ...ForumThread
         }
         user {
             ...UserNavigationData

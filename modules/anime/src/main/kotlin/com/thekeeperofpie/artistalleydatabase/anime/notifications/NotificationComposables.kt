@@ -8,13 +8,19 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
@@ -34,6 +40,7 @@ import com.anilist.NotificationsQuery.Data.Page.ActivityMentionNotificationNotif
 import com.anilist.NotificationsQuery.Data.Page.ActivityReplyLikeNotificationNotification
 import com.anilist.NotificationsQuery.Data.Page.ActivityReplyNotificationNotification
 import com.anilist.NotificationsQuery.Data.Page.ActivityReplySubscribedNotificationNotification
+import com.anilist.fragment.ForumThread
 import com.anilist.fragment.UserNavigationData
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.material.placeholder
@@ -45,6 +52,9 @@ import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityToggleUpdat
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ListActivityCardContent
 import com.thekeeperofpie.artistalleydatabase.anime.activity.MessageActivityCardContent
 import com.thekeeperofpie.artistalleydatabase.anime.activity.TextActivityCardContent
+import com.thekeeperofpie.artistalleydatabase.anime.forum.ThreadCardContent
+import com.thekeeperofpie.artistalleydatabase.anime.forum.ThreadCommentContent
+import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.comment.ForumCommentEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import java.time.Instant
@@ -520,96 +530,163 @@ fun MediaMergeNotificationCard(
 @Composable
 fun ThreadCommentMentionNotificationCard(
     screenKey: String,
+    viewer: AuthedUserQuery.Data.Viewer?,
     notification: NotificationsQuery.Data.Page.ThreadCommentMentionNotificationNotification,
+    entry: ForumCommentEntry?,
+    onStatusUpdate: (String, Boolean) -> Unit,
 ) {
-    val navigationCallback = LocalNavigationCallback.current
-    ElevatedCard(onClick = {
-        notification.thread?.id?.toString()?.let {
-            navigationCallback.onForumThreadCommentClick(
-                title = null,
-                threadId = it,
-                commentId = notification.commentId.toString(),
-            )
-        }
-    }) {
-        ContextHeader(
-            screenKey = screenKey,
-            user = notification.user,
-            context = notification.context,
-            createdAt = notification.createdAt,
-        )
-    }
+    ThreadAndCommentNotificationCard(
+        screenKey = screenKey,
+        viewer = viewer,
+        user = notification.user,
+        context = notification.context,
+        createdAt = notification.createdAt,
+        thread = notification.thread,
+        entry = entry,
+        onStatusUpdate = onStatusUpdate,
+    )
 }
 
 @Composable
 fun ThreadCommentLikeNotificationCard(
     screenKey: String,
+    viewer: AuthedUserQuery.Data.Viewer?,
     notification: NotificationsQuery.Data.Page.ThreadCommentLikeNotificationNotification,
+    entry: ForumCommentEntry?,
+    onStatusUpdate: (String, Boolean) -> Unit,
 ) {
-    val navigationCallback = LocalNavigationCallback.current
-    ElevatedCard(onClick = {
-        notification.thread?.id?.toString()?.let {
-            navigationCallback.onForumThreadCommentClick(
-                title = null,
-                threadId = it,
-                commentId = notification.commentId.toString(),
-            )
-        }
-    }) {
-        ContextHeader(
-            screenKey = screenKey,
-            user = notification.user,
-            context = notification.context,
-            createdAt = notification.createdAt,
-        )
-    }
+    ThreadAndCommentNotificationCard(
+        screenKey = screenKey,
+        viewer = viewer,
+        user = notification.user,
+        context = notification.context,
+        createdAt = notification.createdAt,
+        thread = notification.thread,
+        entry = entry,
+        onStatusUpdate = onStatusUpdate,
+    )
 }
 
 @Composable
 fun ThreadCommentReplyNotificationCard(
     screenKey: String,
+    viewer: AuthedUserQuery.Data.Viewer?,
     notification: NotificationsQuery.Data.Page.ThreadCommentReplyNotificationNotification,
+    entry: ForumCommentEntry?,
+    onStatusUpdate: (String, Boolean) -> Unit,
 ) {
-    val navigationCallback = LocalNavigationCallback.current
-    ElevatedCard(onClick = {
-        notification.thread?.id?.toString()?.let {
-            navigationCallback.onForumThreadCommentClick(
-                title = null,
-                threadId = it,
-                commentId = notification.commentId.toString(),
-            )
-        }
-    }) {
-        ContextHeader(
-            screenKey = screenKey,
-            user = notification.user,
-            context = notification.context,
-            createdAt = notification.createdAt,
-        )
-    }
+    ThreadAndCommentNotificationCard(
+        screenKey = screenKey,
+        viewer = viewer,
+        user = notification.user,
+        context = notification.context,
+        createdAt = notification.createdAt,
+        thread = notification.thread,
+        entry = entry,
+        onStatusUpdate = onStatusUpdate,
+    )
 }
 
 @Composable
 fun ThreadCommentSubscribedNotificationCard(
     screenKey: String,
+    viewer: AuthedUserQuery.Data.Viewer?,
     notification: NotificationsQuery.Data.Page.ThreadCommentSubscribedNotificationNotification,
+    entry: ForumCommentEntry?,
+    onStatusUpdate: (String, Boolean) -> Unit,
+) {
+    ThreadAndCommentNotificationCard(
+        screenKey = screenKey,
+        viewer = viewer,
+        user = notification.user,
+        context = notification.context,
+        createdAt = notification.createdAt,
+        thread = notification.thread,
+        entry = entry,
+        onStatusUpdate = onStatusUpdate,
+    )
+}
+
+@Composable
+private fun ThreadAndCommentNotificationCard(
+    screenKey: String,
+    viewer: AuthedUserQuery.Data.Viewer?,
+    user: UserNavigationData?,
+    context: String?,
+    createdAt: Int?,
+    thread: ForumThread?,
+    entry: ForumCommentEntry?,
+    onStatusUpdate: (String, Boolean) -> Unit,
 ) {
     val navigationCallback = LocalNavigationCallback.current
+    val threadId = thread?.id?.toString()
     ElevatedCard(onClick = {
-        notification.thread?.id?.toString()?.let {
+        val commentId = entry?.comment?.id?.toString()
+        if (threadId != null && commentId != null) {
             navigationCallback.onForumThreadCommentClick(
-                title = null,
-                threadId = it,
-                commentId = notification.commentId.toString(),
+                title = thread.title,
+                threadId = threadId,
+                commentId = commentId,
             )
         }
     }) {
         ContextHeader(
             screenKey = screenKey,
-            user = notification.user,
-            context = notification.context,
-            createdAt = notification.createdAt,
+            user = user,
+            context = context,
+            createdAt = createdAt,
         )
+
+        OutlinedCard(
+            modifier = Modifier
+                .height(IntrinsicSize.Min)
+                .padding(start = 8.dp, end = 8.dp, bottom = 8.dp)
+        ) {
+            ThreadCardContent(
+                screenKey = screenKey,
+                thread = thread,
+                modifier = Modifier.clickable {
+                    if (threadId != null) {
+                        navigationCallback.onForumThreadClick(
+                            title = thread.title,
+                            threadId = threadId,
+                        )
+                    }
+                }
+            )
+
+            HorizontalDivider()
+
+            val comment = entry?.comment
+            if (threadId != null && comment != null) {
+                Column(
+                    modifier = Modifier
+                        .heightIn(max = 140.dp)
+                        .verticalScroll(rememberScrollState())
+                        .clickable {
+                            navigationCallback.onForumThreadCommentClick(
+                                title = thread.title,
+                                threadId = threadId,
+                                commentId = comment.id.toString(),
+                            )
+                        }
+                ) {
+                    ThreadCommentContent(
+                        screenKey = screenKey,
+                        threadId = threadId,
+                        viewer = viewer,
+                        loading = false,
+                        commentId = comment.id.toString(),
+                        commentMarkdown = entry.commentMarkdown,
+                        createdAt = comment.createdAt,
+                        liked = entry.liked,
+                        likeCount = comment.likeCount,
+                        user = entry.user,
+                        onStatusUpdate = onStatusUpdate,
+                    )
+                }
+            }
+        }
     }
 }
 
@@ -619,9 +696,13 @@ fun ThreadLikeNotificationCard(
     notification: NotificationsQuery.Data.Page.ThreadLikeNotificationNotification,
 ) {
     val navigationCallback = LocalNavigationCallback.current
+    val thread = notification.thread
     ElevatedCard(onClick = {
-        notification.thread?.id?.toString()?.let {
-            navigationCallback.onForumThreadClick(title = null, threadId = it)
+        if (thread != null) {
+            navigationCallback.onForumThreadClick(
+                title = thread.title,
+                threadId = thread.id.toString(),
+            )
         }
     }) {
         ContextHeader(
@@ -630,6 +711,16 @@ fun ThreadLikeNotificationCard(
             context = notification.context,
             createdAt = notification.createdAt,
         )
+
+        if (thread != null) {
+            OutlinedCard(
+                modifier = Modifier
+                    .height(IntrinsicSize.Min)
+                    .padding(start = 8.dp, end = 8.dp, bottom = 8.dp)
+            ) {
+                ThreadCardContent(screenKey = screenKey, thread = thread)
+            }
+        }
     }
 }
 
@@ -673,7 +764,7 @@ private fun ContextHeader(
                 )
             }
             Text(
-                text = context.orEmpty().trim().removeSuffix("."),
+                text = context.orEmpty().trim().removeSuffix(".").removeSuffix(","),
                 style = MaterialTheme.typography.labelMedium,
             )
         }

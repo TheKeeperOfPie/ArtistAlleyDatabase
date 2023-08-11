@@ -83,9 +83,7 @@ class ForumThreadCommentTreeViewModel @Inject constructor(
             flowForRefreshableContent(refresh, R.string.anime_forum_thread_error_loading) {
                 flowFromSuspend {
                     val thread = aniListApi.forumThread(threadId)
-                    val bodyMarkdown = thread.thread.body
-                        ?.let(markwon::parse)
-                        ?.let(markwon::render)
+                    val bodyMarkdown = thread.thread.body?.let(markwon::toMarkdown)
                     ForumThreadEntry(
                         thread = thread.thread,
                         bodyMarkdown = bodyMarkdown,
@@ -177,9 +175,7 @@ class ForumThreadCommentTreeViewModel @Inject constructor(
                             val children = (it.childComments as? List<*>)?.filterNotNull()
                                 ?.mapNotNull { decodeChild(markwon, it) }
                                 .orEmpty()
-                            val commentMarkdown = it.comment
-                                ?.let(markwon::parse)
-                                ?.let(markwon::render)
+                            val commentMarkdown = it.comment?.let(markwon::toMarkdown)
                             ForumCommentEntry(
                                 comment = it,
                                 commentMarkdown = commentMarkdown,

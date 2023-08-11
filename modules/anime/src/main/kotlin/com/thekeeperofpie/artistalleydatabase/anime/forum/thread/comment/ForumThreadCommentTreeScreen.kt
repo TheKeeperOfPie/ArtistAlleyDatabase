@@ -295,6 +295,7 @@ object ForumThreadCommentTreeScreen {
                                     contentType = { "comment" },
                                 ) {
                                     ThreadComment(
+                                        screenKey = SCREEN_KEY,
                                         threadId = viewModel.threadId,
                                         viewer = viewer,
                                         entry = it,

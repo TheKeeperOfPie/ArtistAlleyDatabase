@@ -308,6 +308,7 @@ object ForumThreadScreen {
                                 ) {
                                     val commentEntry = comments[indexPrefix + it]
                                     ThreadComment(
+                                        screenKey = SCREEN_KEY,
                                         threadId = viewModel.threadId,
                                         viewer = viewer,
                                         entry = commentEntry,

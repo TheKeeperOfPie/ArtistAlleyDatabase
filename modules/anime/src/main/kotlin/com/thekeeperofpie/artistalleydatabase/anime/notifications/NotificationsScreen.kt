@@ -245,22 +245,34 @@ object NotificationsScreen {
                                         is NotificationsQuery.Data.Page.ThreadCommentMentionNotificationNotification ->
                                             ThreadCommentMentionNotificationCard(
                                                 screenKey = SCREEN_KEY,
+                                                viewer = viewer,
                                                 notification = notification,
+                                                entry = entry.commentEntry,
+                                                onStatusUpdate = viewModel.commentToggleHelper::toggleLike,
                                             )
                                         is NotificationsQuery.Data.Page.ThreadCommentLikeNotificationNotification ->
                                             ThreadCommentLikeNotificationCard(
                                                 screenKey = SCREEN_KEY,
+                                                viewer = viewer,
                                                 notification = notification,
+                                                entry = entry.commentEntry,
+                                                onStatusUpdate = viewModel.commentToggleHelper::toggleLike,
                                             )
                                         is NotificationsQuery.Data.Page.ThreadCommentReplyNotificationNotification ->
                                             ThreadCommentReplyNotificationCard(
                                                 screenKey = SCREEN_KEY,
+                                                viewer = viewer,
                                                 notification = notification,
+                                                entry = entry.commentEntry,
+                                                onStatusUpdate = viewModel.commentToggleHelper::toggleLike,
                                             )
                                         is NotificationsQuery.Data.Page.ThreadCommentSubscribedNotificationNotification ->
                                             ThreadCommentSubscribedNotificationCard(
                                                 screenKey = SCREEN_KEY,
+                                                viewer = viewer,
                                                 notification = notification,
+                                                entry = entry.commentEntry,
+                                                onStatusUpdate = viewModel.commentToggleHelper::toggleLike,
                                             )
                                         is NotificationsQuery.Data.Page.ThreadLikeNotificationNotification ->
                                             ThreadLikeNotificationCard(

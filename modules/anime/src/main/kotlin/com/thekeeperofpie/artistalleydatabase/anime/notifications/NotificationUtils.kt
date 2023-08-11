@@ -69,3 +69,26 @@ val Page.Notification.mediaId
         is Page.OtherNotification,
         -> null
     }
+
+val Page.Notification.comment
+    get() = when (this) {
+        is Page.ThreadCommentMentionNotificationNotification -> comment
+        is Page.ThreadCommentLikeNotificationNotification -> comment
+        is Page.ThreadCommentReplyNotificationNotification -> comment
+        is Page.ThreadCommentSubscribedNotificationNotification -> comment
+        is Page.ThreadLikeNotificationNotification,
+        is Page.ActivityLikeNotificationNotification,
+        is Page.ActivityMentionNotificationNotification,
+        is Page.ActivityMessageNotificationNotification,
+        is Page.ActivityReplyLikeNotificationNotification,
+        is Page.ActivityReplyNotificationNotification,
+        is Page.ActivityReplySubscribedNotificationNotification,
+        is Page.AiringNotificationNotification,
+        is Page.FollowingNotificationNotification,
+        is Page.MediaDataChangeNotificationNotification,
+        is Page.MediaDeletionNotificationNotification,
+        is Page.MediaMergeNotificationNotification,
+        is Page.OtherNotification,
+        is Page.RelatedMediaAdditionNotificationNotification,
+        -> null
+    }

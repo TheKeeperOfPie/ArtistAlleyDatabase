@@ -1,7 +1,6 @@
 fragment ForumThread on Thread {
     id
     title
-    body
     replyCount
     viewCount
     replyCommentId
@@ -85,6 +84,7 @@ query ForumThreadSearch(
 query ForumThreadDetails($threadId: Int!) {
     Thread(id: $threadId) @nonnull {
         ...ForumThread
+        body
         mediaCategories {
             ...MediaCompactWithoutTags
         }
@@ -94,7 +94,6 @@ query ForumThreadDetails($threadId: Int!) {
 fragment ForumThreadComment on ThreadComment {
     id
     comment
-    childComments
     isLocked
     likeCount
     isLiked
@@ -117,7 +116,21 @@ query ForumThread_Comments($threadId: Int!, $page: Int!, $perPage: Int!) {
             ...PaginationInfo
         }
         threadComments(threadId: $threadId) {
-            ...ForumThreadComment
+            id
+            comment
+            isLocked
+            likeCount
+            isLiked
+            createdAt
+            updatedAt
+            user {
+                id
+                avatar {
+                    large
+                }
+                name
+            }
+            childComments
         }
     }
 }
@@ -170,5 +183,6 @@ query ForumThreadComment($threadId: Int!, $commentId: Int!) {
 
     ThreadComment(threadId: $threadId, id: $commentId) {
         ...ForumThreadComment
+        childComments
     }
 }

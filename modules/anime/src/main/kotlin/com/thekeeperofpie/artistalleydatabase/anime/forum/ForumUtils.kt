@@ -1,8 +1,10 @@
 package com.thekeeperofpie.artistalleydatabase.anime.forum
 
+import com.anilist.ForumThread_CommentsQuery
+import com.anilist.fragment.ForumThreadComment
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.transformIf
-import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.comment.ForumCommentChild
 import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.ForumThreadCommentStatusController
+import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.comment.ForumCommentChild
 import io.noties.markwon.Markwon
 
 object ForumUtils {
@@ -49,9 +51,7 @@ object ForumUtils {
             val likeCount = map["likeCount"] as? Int
             val comment = map["comment"] as? String
             val isLiked = map["isLiked"] as? Boolean ?: false
-            val commentMarkdown = comment
-                ?.let(markwon::parse)
-                ?.let(markwon::render)
+            val commentMarkdown = comment?.let(markwon::toMarkdown)
 
             val childComments = (map["childComments"] as? List<*>)
                 ?.filterNotNull()
@@ -69,6 +69,29 @@ object ForumUtils {
             )
         } catch (ignored: Throwable) {
             return null
+        }
+    }
+}
+
+fun ForumThread_CommentsQuery.Data.Page.ThreadComment.toForumThreadComment() = let {
+    object : ForumThreadComment {
+        override val id = it.id
+        override val comment = it.comment
+        override val isLocked = it.isLocked
+        override val likeCount = it.likeCount
+        override val isLiked = it.isLiked
+        override val createdAt = it.createdAt
+        override val updatedAt = it.updatedAt
+        override val user = it.user?.let {
+            object : ForumThreadComment.User {
+                override val id = it.id
+                override val avatar = it.avatar?.let {
+                    object : ForumThreadComment.User.Avatar {
+                        override val large = it.large
+                    }
+                }
+                override val name = it.name
+            }
         }
     }
 }

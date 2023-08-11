@@ -128,16 +128,54 @@ fun ThreadCard(screenKey: String, thread: ForumThread?, modifier: Modifier = Mod
             .height(IntrinsicSize.Min)
             .then(modifier),
     ) {
-        Row(modifier = Modifier.fillMaxWidth()) {
-            Column(
+        ThreadCardContent(screenKey, thread)
+    }
+}
+
+@Suppress("UnusedReceiverParameter")
+@Composable
+fun ColumnScope.ThreadCardContent(
+    screenKey: String,
+    thread: ForumThread?,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(IntrinsicSize.Min)
+            .then(modifier)
+    ) {
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .padding(vertical = 10.dp)
+        ) {
+            Text(
+                text = thread?.title ?: "Placeholder title",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Black,
                 modifier = Modifier
-                    .weight(1f)
-                    .padding(vertical = 10.dp)
-            ) {
+                    .padding(horizontal = 12.dp)
+                    .placeholder(
+                        visible = thread == null,
+                        highlight = PlaceholderHighlight.shimmer(),
+                    )
+            )
+
+            val userName = thread?.user?.name
+            val createdAt = thread?.createdAt?.let(AniListUtils::relativeTimestamp)
+            if (thread == null || userName != null || createdAt != null) {
                 Text(
-                    text = thread?.title ?: "Placeholder title",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Black,
+                    text = if (userName != null && createdAt != null) {
+                        stringResource(
+                            R.string.anime_forum_thread_author_and_timestamp,
+                            userName,
+                            createdAt,
+                        )
+                    } else {
+                        userName ?: createdAt.toString()
+                    },
+                    style = MaterialTheme.typography.labelSmall,
                     modifier = Modifier
                         .padding(horizontal = 12.dp)
                         .placeholder(
@@ -145,74 +183,51 @@ fun ThreadCard(screenKey: String, thread: ForumThread?, modifier: Modifier = Mod
                             highlight = PlaceholderHighlight.shimmer(),
                         )
                 )
-
-                val userName = thread?.user?.name
-                val createdAt = thread?.createdAt?.let(AniListUtils::relativeTimestamp)
-                if (thread == null || userName != null || createdAt != null) {
-                    Text(
-                        text = if (userName != null && createdAt != null) {
-                            stringResource(
-                                R.string.anime_forum_thread_author_and_timestamp,
-                                userName,
-                                createdAt,
-                            )
-                        } else {
-                            userName ?: createdAt.toString()
-                        },
-                        style = MaterialTheme.typography.labelSmall,
-                        modifier = Modifier
-                            .padding(horizontal = 12.dp)
-                            .placeholder(
-                                visible = thread == null,
-                                highlight = PlaceholderHighlight.shimmer(),
-                            )
-                    )
-                }
-
-                Spacer(Modifier.weight(1f))
-                Spacer(Modifier.height(12.dp))
-
-                if (thread != null) {
-                    ThreadCategoryRow(thread)
-                }
             }
 
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp)
-            ) {
-                ThreadViewReplyCountIcons(
-                    viewCount = thread?.viewCount,
-                    replyCount = thread?.replyCount,
-                    modifier = Modifier.align(Alignment.End)
+            Spacer(Modifier.weight(1f))
+            Spacer(Modifier.height(12.dp))
+
+            if (thread != null) {
+                ThreadCategoryRow(thread)
+            }
+        }
+
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp)
+        ) {
+            ThreadViewReplyCountIcons(
+                viewCount = thread?.viewCount,
+                replyCount = thread?.replyCount,
+                modifier = Modifier.align(Alignment.End)
+            )
+
+            Spacer(Modifier.height(12.dp))
+
+            val replyUser = thread?.replyUser
+            if (thread == null || replyUser?.avatar?.large != null) {
+                UserImage(
+                    screenKey = screenKey,
+                    loading = thread == null,
+                    user = replyUser,
                 )
 
-                Spacer(Modifier.height(12.dp))
+                Spacer(Modifier.height(4.dp))
+            }
 
-                val replyUser = thread?.replyUser
-                if (thread == null || replyUser?.avatar?.large != null) {
-                    UserImage(
-                        screenKey = screenKey,
-                        loading = thread == null,
-                        user = replyUser,
-                    )
-
-                    Spacer(Modifier.height(4.dp))
-                }
-
-                val repliedAt = thread?.repliedAt?.let(AniListUtils::relativeTimestamp)
-                if (thread == null || repliedAt != null) {
-                    Text(
-                        text = repliedAt.toString(),
-                        style = MaterialTheme.typography.labelSmall,
-                        modifier = Modifier
-                            .widthIn(max = 180.dp)
-                            .placeholder(
-                                visible = thread == null,
-                                highlight = PlaceholderHighlight.shimmer(),
-                            )
-                    )
-                }
+            val repliedAt = thread?.repliedAt?.let(AniListUtils::relativeTimestamp)
+            if (thread == null || repliedAt != null) {
+                Text(
+                    text = repliedAt.toString(),
+                    style = MaterialTheme.typography.labelSmall,
+                    modifier = Modifier
+                        .widthIn(max = 180.dp)
+                        .placeholder(
+                            visible = thread == null,
+                            highlight = PlaceholderHighlight.shimmer(),
+                        )
+                )
             }
         }
     }
@@ -495,7 +510,7 @@ fun ThreadHeader(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        if (thread == null || !thread.body.isNullOrBlank()) {
+        if (thread == null || !entry.bodyMarkdown.isNullOrBlank()) {
             var bodyShown by rememberSaveable(thread?.title) {
                 val mayHaveSpoilers =
                     thread?.title?.contains("Spoilers", ignoreCase = true) == true
@@ -674,21 +689,23 @@ fun ThreadDeleteCommentPrompt(
     )
 }
 
-
+// TODO: Add updatedAt timestamp
 @Composable
 fun ThreadComment(
+    screenKey: String,
     threadId: String,
     viewer: AuthedUserQuery.Data.Viewer?,
     entry: ForumCommentEntry?,
     onStatusUpdate: (String, Boolean) -> Unit,
-    onClickDelete: (String, Spanned?) -> Unit,
-    onClickReplyComment: (String, Spanned?) -> Unit,
+    onClickDelete: ((String, Spanned?) -> Unit)? = null,
+    onClickReplyComment: ((String, Spanned?) -> Unit)? = null,
 ) {
     // TODO: Child comments
 
     val comment = entry?.comment
     Column(modifier = Modifier.fillMaxWidth()) {
         ThreadCommentContent(
+            screenKey = screenKey,
             threadId = threadId,
             viewer = viewer,
             loading = entry == null,
@@ -707,6 +724,7 @@ fun ThreadComment(
         if (!children.isNullOrEmpty()) {
             children.forEach {
                 ThreadCommentChild(
+                    screenKey = screenKey,
                     threadId = threadId,
                     viewer = viewer,
                     level = 1,
@@ -724,6 +742,7 @@ fun ThreadComment(
 
 @Composable
 fun ThreadCommentContent(
+    screenKey: String,
     threadId: String,
     viewer: AuthedUserQuery.Data.Viewer?,
     loading: Boolean,
@@ -734,8 +753,8 @@ fun ThreadCommentContent(
     likeCount: Int,
     user: UserNavigationData?,
     onStatusUpdate: (String, Boolean) -> Unit,
-    onClickDelete: (String, Spanned?) -> Unit,
-    onClickReplyComment: (String, Spanned?) -> Unit,
+    onClickDelete: ((String, Spanned?) -> Unit)? = null,
+    onClickReplyComment: ((String, Spanned?) -> Unit)? = null,
 ) {
     val navigationCallback = LocalNavigationCallback.current
     Row(
@@ -750,16 +769,10 @@ fun ThreadCommentContent(
     ) {
         val image = user?.avatar?.large
         if (loading || image != null) {
-            AsyncImage(
-                model = image,
-                contentDescription = stringResource(R.string.anime_user_image),
-                modifier = Modifier
-                    .size(32.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .placeholder(
-                        visible = loading,
-                        highlight = PlaceholderHighlight.shimmer(),
-                    )
+            UserImage(
+                screenKey = screenKey,
+                loading = loading,
+                user = user,
             )
         }
 
@@ -779,7 +792,7 @@ fun ThreadCommentContent(
         }
 
         Row(verticalAlignment = Alignment.CenterVertically) {
-            if (viewer != null && viewer.id == user?.id) {
+            if (onClickDelete != null && viewer != null && viewer.id == user?.id) {
                 IconButton(onClick = {
                     if (commentId != null) {
                         onClickDelete(commentId, commentMarkdown)
@@ -865,27 +878,29 @@ fun ThreadCommentContent(
                             }
                         }
                     )
-                    DropdownMenuItem(
-                        text = {
-                            Text(
-                                stringResource(R.string.anime_forum_thread_comment_reply)
-                            )
-                        },
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Filled.Reply,
-                                contentDescription = stringResource(
-                                    R.string.anime_forum_thread_comment_reply_content_description
+                    if (onClickReplyComment != null) {
+                        DropdownMenuItem(
+                            text = {
+                                Text(
+                                    stringResource(R.string.anime_forum_thread_comment_reply)
                                 )
-                            )
-                        },
-                        onClick = {
-                            showMenu = false
-                            if (commentId != null) {
-                                onClickReplyComment(commentId, commentMarkdown)
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Filled.Reply,
+                                    contentDescription = stringResource(
+                                        R.string.anime_forum_thread_comment_reply_content_description
+                                    )
+                                )
+                            },
+                            onClick = {
+                                showMenu = false
+                                if (commentId != null) {
+                                    onClickReplyComment(commentId, commentMarkdown)
+                                }
                             }
-                        }
-                    )
+                        )
+                    }
                 }
             }
         }
@@ -905,13 +920,14 @@ fun ThreadCommentContent(
 
 @Composable
 fun ColumnScope.ThreadCommentChild(
+    screenKey: String,
     threadId: String,
     viewer: AuthedUserQuery.Data.Viewer?,
     level: Int,
     child: ForumCommentChild,
     onStatusUpdate: (String, Boolean) -> Unit,
-    onClickDelete: (String, Spanned?) -> Unit,
-    onClickReplyComment: (String, Spanned?) -> Unit,
+    onClickDelete: ((String, Spanned?) -> Unit)? = null,
+    onClickReplyComment: ((String, Spanned?) -> Unit)? = null,
 ) {
     Column(
         modifier = Modifier
@@ -925,6 +941,7 @@ fun ColumnScope.ThreadCommentChild(
             )
     ) {
         ThreadCommentContent(
+            screenKey = screenKey,
             threadId = threadId,
             viewer = viewer,
             loading = false,
@@ -942,6 +959,7 @@ fun ColumnScope.ThreadCommentChild(
 
     child.childComments.forEach {
         ThreadCommentChild(
+            screenKey = screenKey,
             threadId = threadId,
             viewer = viewer,
             level = level + 1,
