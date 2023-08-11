@@ -399,6 +399,7 @@
     <string name="anime_media_edit_priority_increment_content_description">Increment priority</string>
 
     <string name="anime_media_edit_private_label">Private</string>
+    <string name="anime_media_edit_hidden_from_status_lists_label">Hide from status lists</string>
 
     <string name="anime_media_edit_created_at">Created: %1$s</string>
     <string name="anime_media_edit_updated_at">Updated: %1$s</string>
@@ -409,6 +410,8 @@
     <string name="anime_media_edit_confirm_delete_exit_button">Exit</string>
     <string name="anime_media_edit_confirm_delete_save_button">Save</string>
     <string name="anime_media_edit_clear_content_description">Clear</string>
+
+    <string name="anime_media_edit_notes_label">Notes</string>
 
     <string name="anime_media_current_progress">%1$s/%2$s</string>
     <string name="anime_media_current_progress_unknown_max">%1$s/?</string>

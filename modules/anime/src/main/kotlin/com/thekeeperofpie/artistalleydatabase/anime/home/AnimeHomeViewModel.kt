@@ -3,10 +3,7 @@
 package com.thekeeperofpie.artistalleydatabase.anime.home
 
 import android.os.SystemClock
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -16,6 +13,7 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.map
 import com.anilist.UserSocialActivityQuery
+import com.hoc081098.flowext.combine
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.transformIf
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListPagingSource
@@ -28,6 +26,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityUtils.liked
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityUtils.subscribed
 import com.thekeeperofpie.artistalleydatabase.anime.activity.AnimeActivityViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
+import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaFiltering
 import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsController
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationController
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -44,6 +44,7 @@ import javax.inject.Inject
 class AnimeHomeViewModel @Inject constructor(
     val newsController: AnimeNewsController,
     private val aniListApi: AuthedAniListApi,
+    mediaListStatusController: MediaListStatusController,
     ignoreList: AnimeMediaIgnoreList,
     activityStatusController: ActivityStatusController,
     settings: AnimeSettings,
@@ -51,7 +52,7 @@ class AnimeHomeViewModel @Inject constructor(
 ) : ViewModel() {
 
     val unlocked = monetizationController.unlocked
-    val preferredMediaType= settings.preferredMediaType.value
+    val preferredMediaType = settings.preferredMediaType.value
     val viewer = aniListApi.authedUser
     val colorMap = mutableStateMapOf<String, Pair<Color, Color>>()
     val activityToggleHelper =
@@ -79,10 +80,13 @@ class AnimeHomeViewModel @Inject constructor(
                 }
                 .flatMapLatest { pagingData ->
                     combine(
+                        mediaListStatusController.allChanges(),
                         ignoreList.updates,
+                        settings.showIgnored,
+                        settings.showAdult,
                         settings.showLessImportantTags,
                         settings.showSpoilerTags,
-                    ) { ignoredIds, showLessImportantTags, showSpoilerTags ->
+                    ) { mediaUpdates, ignoredIds, showIgnored, showAdult, showLessImportantTags, showSpoilerTags ->
                         pagingData.map {
                             AnimeActivityViewModel.ActivityEntry(
                                 it.entryId,
@@ -96,6 +100,28 @@ class AnimeHomeViewModel @Inject constructor(
                                             ignored = ignoredIds.contains(it.id),
                                             showLessImportantTags = showLessImportantTags,
                                             showSpoilerTags = showSpoilerTags,
+                                        )
+                                    }?.let {
+                                        applyMediaFiltering(
+                                            statuses = mediaUpdates,
+                                            ignoredIds = ignoredIds,
+                                            showAdult = showAdult,
+                                            showIgnored = showIgnored,
+                                            showLessImportantTags = showLessImportantTags,
+                                            showSpoilerTags = showSpoilerTags,
+                                            entry = it,
+                                            transform = { it },
+                                            media = it.media,
+                                            copy = { mediaListStatus, progress, progressVolumes, ignored, showLessImportantTags, showSpoilerTags ->
+                                                copy(
+                                                    mediaListStatus = mediaListStatus,
+                                                    progress = progress,
+                                                    progressVolumes = progressVolumes,
+                                                    ignored = ignored,
+                                                    showLessImportantTags = showLessImportantTags,
+                                                    showSpoilerTags = showSpoilerTags,
+                                                )
+                                            }
                                         )
                                     },
                             )

@@ -181,9 +181,10 @@ class AuthedAniListApiWrapper(
         repeat: Int,
         priority: Int,
         private: Boolean,
+        notes: String,
         startedAt: LocalDate?,
         completedAt: LocalDate?,
-        hiddenFromStatusLists: Boolean?,
+        hiddenFromStatusLists: Boolean,
     ) = super.saveMediaListEntry(
         id,
         mediaId,
@@ -194,6 +195,7 @@ class AuthedAniListApiWrapper(
         repeat,
         priority,
         private,
+        notes,
         startedAt,
         completedAt,
         hiddenFromStatusLists

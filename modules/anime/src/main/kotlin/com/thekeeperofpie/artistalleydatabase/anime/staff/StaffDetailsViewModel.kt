@@ -18,6 +18,7 @@ import com.anilist.fragment.StaffDetailsStaffMediaPage
 import com.anilist.type.CharacterRole
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
+import com.hoc081098.flowext.combine
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListPagingSource
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
@@ -249,10 +250,11 @@ class StaffDetailsViewModel @Inject constructor(
                     combine(
                         mediaListStatusUpdates,
                         ignoreList.updates,
+                        settings.showIgnored,
                         settings.showAdult,
                         settings.showLessImportantTags,
                         settings.showSpoilerTags,
-                    ) { updates, ignoredIds, showAdult, showLessImportantTags, showSpoilerTags ->
+                    ) { updates, ignoredIds, showIgnored, showAdult, showLessImportantTags, showSpoilerTags ->
                         timeline.copy(
                             yearsToMedia = timeline.yearsToMedia.map { (year, media) ->
                                 year to media.mapNotNull {
@@ -260,7 +262,7 @@ class StaffDetailsViewModel @Inject constructor(
                                         statuses = updates,
                                         ignoredIds = ignoredIds,
                                         showAdult = showAdult,
-                                        showIgnored = true,
+                                        showIgnored = showIgnored,
                                         showLessImportantTags = showLessImportantTags,
                                         showSpoilerTags = showSpoilerTags,
                                         entry = it,

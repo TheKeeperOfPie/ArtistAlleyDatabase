@@ -171,6 +171,7 @@ fragment MediaDetailsListEntry on MediaList {
     repeat
     priority
     private
+    hiddenFromStatusLists
     notes
     advancedScores
     startedAt {

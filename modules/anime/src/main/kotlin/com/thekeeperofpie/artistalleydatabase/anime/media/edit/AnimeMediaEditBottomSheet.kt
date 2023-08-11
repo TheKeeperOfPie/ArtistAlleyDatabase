@@ -246,7 +246,8 @@ object AnimeMediaEditBottomSheet {
     ) {
         var startEndDateShown by remember { mutableStateOf<Boolean?>(null) }
         val media = initialParams?.media
-        if (media != null && viewModel.editData.showing) {
+        val editData = viewModel.editData
+        if (media != null && editData.showing) {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalAlignment = Alignment.CenterVertically,
@@ -321,7 +322,7 @@ object AnimeMediaEditBottomSheet {
         val isAnime = initialParams?.mediaType == MediaType.ANIME
         SectionHeader(R.string.anime_media_edit_status_label)
         ItemDropdown(
-            value = viewModel.editData.status,
+            value = editData.status,
             iconContentDescription = R.string.anime_media_edit_status_dropdown_content_description,
             values = {
                 listOf(
@@ -352,17 +353,17 @@ object AnimeMediaEditBottomSheet {
                 labelOneRes = R.string.anime_media_edit_volumes_label,
                 columnOneContent = {
                     ProgressSection(
-                        progress = viewModel.editData.progressVolumes,
+                        progress = editData.progressVolumes,
                         progressMax = initialParams.maxProgressVolumes,
-                        onProgressChange = { viewModel.editData.progressVolumes = it },
+                        onProgressChange = { editData.progressVolumes = it },
                     )
                 },
                 labelTwoRes = R.string.anime_media_edit_chapters_label,
                 columnTwoContent = {
                     ProgressSection(
-                        progress = viewModel.editData.progress,
+                        progress = editData.progress,
                         progressMax = initialParams.maxProgress,
-                        onProgressChange = { viewModel.editData.progress = it },
+                        onProgressChange = { editData.progress = it },
                     )
                 },
             )
@@ -371,9 +372,9 @@ object AnimeMediaEditBottomSheet {
                 labelOneRes = R.string.anime_media_edit_episodes_label,
                 columnOneContent = {
                     ProgressSection(
-                        progress = viewModel.editData.progress,
+                        progress = editData.progress,
                         progressMax = initialParams?.maxProgress,
-                        onProgressChange = { viewModel.editData.progress = it },
+                        onProgressChange = { editData.progress = it },
                     )
                 },
             )
@@ -381,14 +382,14 @@ object AnimeMediaEditBottomSheet {
 
         ScoreSection(
             format = { viewModel.scoreFormat.collectAsState().value },
-            score = { viewModel.editData.score },
-            onScoreChange = { viewModel.editData.score = it },
+            score = { editData.score },
+            onScoreChange = { editData.score = it },
         )
 
         SectionHeader(R.string.anime_media_edit_date_label)
         StartEndDateRow(
-            startDate = viewModel.editData.startDate,
-            endDate = viewModel.editData.endDate,
+            startDate = editData.startDate,
+            endDate = editData.endDate,
             onRequestDatePicker = { startEndDateShown = it },
             onDateChange = viewModel::onDateChange,
         )
@@ -404,10 +405,10 @@ object AnimeMediaEditBottomSheet {
         TwoColumn(
             labelOneRes = R.string.anime_media_edit_priority_label,
             columnOneContent = {
-                val priority = viewModel.editData.priority
+                val priority = editData.priority
                 TextField(
                     value = priority,
-                    onValueChange = { viewModel.editData.priority = it },
+                    onValueChange = { editData.priority = it },
                     singleLine = true,
                     textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
                     keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
@@ -422,7 +423,7 @@ object AnimeMediaEditBottomSheet {
                             enabled = visible,
                             onClick = {
                                 priority.toIntOrNull()?.let {
-                                    viewModel.editData.priority = (it - 1).toString()
+                                    editData.priority = (it - 1).toString()
                                 }
                             },
                             modifier = Modifier.alpha(alpha),
@@ -439,10 +440,10 @@ object AnimeMediaEditBottomSheet {
                         IconButton(
                             onClick = {
                                 if (priority.isBlank()) {
-                                    viewModel.editData.priority = "1"
+                                    editData.priority = "1"
                                 } else {
                                     priority.toIntOrNull()?.let {
-                                        viewModel.editData.priority = (it + 1).toString()
+                                        editData.priority = (it + 1).toString()
                                     }
                                 }
                             }) {
@@ -459,10 +460,10 @@ object AnimeMediaEditBottomSheet {
             },
             labelTwoRes = R.string.anime_media_edit_repeat_label,
             columnTwoContent = {
-                val repeat = viewModel.editData.repeat
+                val repeat = editData.repeat
                 TextField(
                     value = repeat,
-                    onValueChange = { viewModel.editData.repeat = it },
+                    onValueChange = { editData.repeat = it },
                     singleLine = true,
                     textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
                     keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
@@ -477,7 +478,7 @@ object AnimeMediaEditBottomSheet {
                             enabled = visible,
                             onClick = {
                                 repeat.toIntOrNull()?.let {
-                                    viewModel.editData.repeat = (it - 1).toString()
+                                    editData.repeat = (it - 1).toString()
                                 }
                             },
                             modifier = Modifier.alpha(alpha),
@@ -494,10 +495,10 @@ object AnimeMediaEditBottomSheet {
                         IconButton(
                             onClick = {
                                 if (repeat.isBlank()) {
-                                    viewModel.editData.repeat = "1"
+                                    editData.repeat = "1"
                                 } else {
                                     repeat.toIntOrNull()?.let {
-                                        viewModel.editData.repeat = (it + 1).toString()
+                                        editData.repeat = (it + 1).toString()
                                     }
                                 }
                             }) {
@@ -514,9 +515,19 @@ object AnimeMediaEditBottomSheet {
             }
         )
 
+
+        SectionHeader(R.string.anime_media_edit_notes_label)
+        TextField(
+            value = editData.notes,
+            onValueChange = { editData.notes = it },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+        )
+
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(modifier = Modifier.weight(1f)) {
-                val createdAt = viewModel.editData.createdAt
+                val createdAt = editData.createdAt
                 val createdAtShown = createdAt != null && createdAt > 0
                 if (createdAtShown) {
                     Text(
@@ -532,7 +543,7 @@ object AnimeMediaEditBottomSheet {
                     )
                 }
 
-                val updatedAt = viewModel.editData.updatedAt
+                val updatedAt = editData.updatedAt
                 if (updatedAt != null && updatedAt > 0) {
                     Text(
                         text = stringResource(
@@ -555,19 +566,39 @@ object AnimeMediaEditBottomSheet {
 
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)
+                modifier = Modifier.padding(horizontal = 16.dp)
             ) {
-                val private = viewModel.editData.private
+                val private = editData.private
                 Text(
                     text = stringResource(R.string.anime_media_edit_private_label),
                     style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(vertical = 4.dp)
                 )
 
                 Checkbox(
                     checked = private,
-                    onCheckedChange = { viewModel.editData.private = it },
+                    onCheckedChange = { editData.private = it },
                 )
             }
+        }
+
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(horizontal = 16.dp)
+                .align(Alignment.End)
+        ) {
+            val private = editData.hiddenFromStatusLists
+            Text(
+                text = stringResource(R.string.anime_media_edit_hidden_from_status_lists_label),
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(vertical = 4.dp)
+            )
+
+            Checkbox(
+                checked = private,
+                onCheckedChange = { editData.hiddenFromStatusLists = it },
+            )
         }
     }
 

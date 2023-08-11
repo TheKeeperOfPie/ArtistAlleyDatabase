@@ -22,8 +22,10 @@ class MediaEditData {
     var endDate by mutableStateOf<LocalDate?>(null)
     var priority by mutableStateOf("")
     var private by mutableStateOf(false)
+    var hiddenFromStatusLists by mutableStateOf(false)
     var updatedAt by mutableStateOf<Long?>(null)
     var createdAt by mutableStateOf<Long?>(null)
+    var notes by mutableStateOf("")
 
     var showing by mutableStateOf(false)
     var deleting by mutableStateOf(false)
@@ -51,6 +53,8 @@ class MediaEditData {
                     dayOfMonth = other?.completedAtDay
                 )
                 && private == (other?.private ?: false)
+                && hiddenFromStatusLists == (other?.hiddenFromStatusLists ?: false)
+                && notes == (other?.notes.orEmpty())
     }
 
     fun scoreRaw(scoreFormat: ScoreFormat): SimpleResult<Int> {
@@ -89,6 +93,7 @@ class MediaEditData {
         val repeat: Int?,
         val priority: Int?,
         val private: Boolean?,
+        val hiddenFromStatusLists: Boolean?,
         val notes: String?,
         val startedAtYear: Int?,
         val startedAtMonth: Int?,
@@ -122,6 +127,7 @@ class MediaEditData {
             repeat = mediaListEntry?.repeat,
             priority = mediaListEntry?.priority,
             private = mediaListEntry?.private,
+            hiddenFromStatusLists = mediaListEntry?.hiddenFromStatusLists,
             notes = mediaListEntry?.notes,
             startedAtYear = mediaListEntry?.startedAt?.year,
             startedAtMonth = mediaListEntry?.startedAt?.month,

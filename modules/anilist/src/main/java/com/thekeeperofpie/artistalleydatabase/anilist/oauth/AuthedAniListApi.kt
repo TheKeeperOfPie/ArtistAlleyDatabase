@@ -128,7 +128,6 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.addLoggingInterceptors
-import com.thekeeperofpie.artistalleydatabase.entry.EntrySection.MultiText.Entry.Different.id
 import com.thekeeperofpie.artistalleydatabase.network_utils.NetworkSettings
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -335,9 +334,10 @@ open class AuthedAniListApi(
         repeat: Int,
         priority: Int,
         private: Boolean,
+        notes: String,
         startedAt: LocalDate?,
         completedAt: LocalDate?,
-        hiddenFromStatusLists: Boolean?,
+        hiddenFromStatusLists: Boolean,
     ) = mutate(
         SaveMediaListEntryMutation(
             id = Optional.presentIfNotNull(id?.toIntOrNull()),
@@ -349,6 +349,7 @@ open class AuthedAniListApi(
             repeat = Optional.present(repeat),
             priority = Optional.present(priority),
             private = Optional.present(private),
+            notes = Optional.present(notes),
             startedAt = Optional.present(startedAt?.let {
                 FuzzyDateInput(
                     year = Optional.present(it.year),
@@ -363,7 +364,7 @@ open class AuthedAniListApi(
                     day = Optional.present(it.dayOfMonth),
                 )
             }),
-            hiddenFromStatusLists = Optional.presentIfNotNull(hiddenFromStatusLists),
+            hiddenFromStatusLists = Optional.present(hiddenFromStatusLists),
         )
     ).saveMediaListEntry!!
 

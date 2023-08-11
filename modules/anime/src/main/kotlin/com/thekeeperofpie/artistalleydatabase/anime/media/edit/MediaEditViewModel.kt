@@ -158,8 +158,10 @@ class MediaEditViewModel @Inject constructor(
         editData.endDate = MediaUtils.parseLocalDate(mediaListEntry?.completedAt)
         editData.priority = mediaListEntry?.priority.takeUnless { it == 0 }?.toString().orEmpty()
         editData.private = mediaListEntry?.private ?: false
+        editData.hiddenFromStatusLists = mediaListEntry?.hiddenFromStatusLists ?: false
         editData.updatedAt = mediaListEntry?.updatedAt?.toLong()
         editData.createdAt = mediaListEntry?.createdAt?.toLong()
+        editData.notes = mediaListEntry?.notes.orEmpty()
         rawScore.tryEmit(mediaListEntry?.score)
     }
 
@@ -283,8 +285,10 @@ class MediaEditViewModel @Inject constructor(
         val priority = editData.priority
         val status = editData.status
         val private = editData.private
+        val hiddenFromStatusLists = editData.hiddenFromStatusLists
         val startDate = editData.startDate
         val endDate = editData.endDate
+        val notes = editData.notes
 
         viewModelScope.launch(CustomDispatchers.IO) {
             val initialParams = initialParams.value!!
@@ -353,9 +357,10 @@ class MediaEditViewModel @Inject constructor(
                     repeat = repeatAsInt.getOrThrow(),
                     priority = priorityAsInt.getOrThrow(),
                     private = private,
+                    notes = notes,
                     startedAt = startDate,
                     completedAt = endDate,
-                    hiddenFromStatusLists = null,
+                    hiddenFromStatusLists = hiddenFromStatusLists,
                 )
 
                 statusController.onUpdate(mediaId, result)
