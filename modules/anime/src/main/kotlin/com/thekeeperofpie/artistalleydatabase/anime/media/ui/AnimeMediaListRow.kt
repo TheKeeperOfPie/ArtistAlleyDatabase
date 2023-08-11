@@ -92,7 +92,7 @@ object AnimeMediaListRow {
                 .combinedClickable(
                     enabled = entry != null,
                     onClick = {
-                        navigationCallback?.onMediaClick(
+                        navigationCallback.onMediaClick(
                             entry!!,
                             null,
                             imageWidthToHeightRatio
@@ -107,7 +107,7 @@ object AnimeMediaListRow {
                     viewer = viewer,
                     onClick = {
                         if (entry != null) {
-                            navigationCallback?.onMediaClick(entry, null, imageWidthToHeightRatio)
+                            navigationCallback.onMediaClick(entry, null, imageWidthToHeightRatio)
                         }
                     },
                     onClickListEdit = onClickListEdit,
@@ -143,7 +143,7 @@ object AnimeMediaListRow {
                         tags = entry?.tags.orEmpty(),
                         onTagClick = { id, name ->
                             if (entry != null) {
-                                navigationCallback?.onTagClick(
+                                navigationCallback.onTagClick(
                                     entry.media.type ?: com.anilist.type.MediaType.ANIME,
                                     id,
                                     name

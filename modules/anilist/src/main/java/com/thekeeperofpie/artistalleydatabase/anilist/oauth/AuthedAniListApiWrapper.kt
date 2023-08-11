@@ -680,8 +680,8 @@ class AuthedAniListApiWrapper(
     }
 
     override suspend fun forumThread(threadId: String) = super.forumThread(threadId).also {
-        if (it.thread?.mediaCategories?.any { it?.isAdult == true } == true) {
-            throw IOException("Cannot load this media")
+        if (it.thread.mediaCategories?.any { it?.isAdult == true } == true) {
+            throw IOException("Cannot load this thread")
         }
     }
 
@@ -698,4 +698,20 @@ class AuthedAniListApiWrapper(
 
     override suspend fun toggleForumThreadCommentLike(id: String) =
         super.toggleForumThreadCommentLike(id)
+
+    override suspend fun deleteForumThreadComment(id: String) = super.deleteForumThreadComment(id)
+
+    override suspend fun saveForumThreadComment(
+        threadId: String,
+        commentId: String?,
+        parentCommentId: String?,
+        text: String?,
+    ) = super.saveForumThreadComment(threadId, commentId, parentCommentId, text)
+
+    override suspend fun forumThreadSingleCommentTree(threadId: String, commentId: String) =
+        super.forumThreadSingleCommentTree(threadId, commentId).also {
+            if (it.thread?.mediaCategories?.any { it?.isAdult == true } == true) {
+                throw IOException("Cannot load this thread")
+            }
+        }
 }

@@ -518,6 +518,122 @@ fun MediaMergeNotificationCard(
 }
 
 @Composable
+fun ThreadCommentMentionNotificationCard(
+    screenKey: String,
+    notification: NotificationsQuery.Data.Page.ThreadCommentMentionNotificationNotification,
+) {
+    val navigationCallback = LocalNavigationCallback.current
+    ElevatedCard(onClick = {
+        notification.thread?.id?.toString()?.let {
+            navigationCallback.onForumThreadCommentClick(
+                title = null,
+                threadId = it,
+                commentId = notification.commentId.toString(),
+            )
+        }
+    }) {
+        ContextHeader(
+            screenKey = screenKey,
+            user = notification.user,
+            context = notification.context,
+            createdAt = notification.createdAt,
+        )
+    }
+}
+
+@Composable
+fun ThreadCommentLikeNotificationCard(
+    screenKey: String,
+    notification: NotificationsQuery.Data.Page.ThreadCommentLikeNotificationNotification,
+) {
+    val navigationCallback = LocalNavigationCallback.current
+    ElevatedCard(onClick = {
+        notification.thread?.id?.toString()?.let {
+            navigationCallback.onForumThreadCommentClick(
+                title = null,
+                threadId = it,
+                commentId = notification.commentId.toString(),
+            )
+        }
+    }) {
+        ContextHeader(
+            screenKey = screenKey,
+            user = notification.user,
+            context = notification.context,
+            createdAt = notification.createdAt,
+        )
+    }
+}
+
+@Composable
+fun ThreadCommentReplyNotificationCard(
+    screenKey: String,
+    notification: NotificationsQuery.Data.Page.ThreadCommentReplyNotificationNotification,
+) {
+    val navigationCallback = LocalNavigationCallback.current
+    ElevatedCard(onClick = {
+        notification.thread?.id?.toString()?.let {
+            navigationCallback.onForumThreadCommentClick(
+                title = null,
+                threadId = it,
+                commentId = notification.commentId.toString(),
+            )
+        }
+    }) {
+        ContextHeader(
+            screenKey = screenKey,
+            user = notification.user,
+            context = notification.context,
+            createdAt = notification.createdAt,
+        )
+    }
+}
+
+@Composable
+fun ThreadCommentSubscribedNotificationCard(
+    screenKey: String,
+    notification: NotificationsQuery.Data.Page.ThreadCommentSubscribedNotificationNotification,
+) {
+    val navigationCallback = LocalNavigationCallback.current
+    ElevatedCard(onClick = {
+        notification.thread?.id?.toString()?.let {
+            navigationCallback.onForumThreadCommentClick(
+                title = null,
+                threadId = it,
+                commentId = notification.commentId.toString(),
+            )
+        }
+    }) {
+        ContextHeader(
+            screenKey = screenKey,
+            user = notification.user,
+            context = notification.context,
+            createdAt = notification.createdAt,
+        )
+    }
+}
+
+@Composable
+fun ThreadLikeNotificationCard(
+    screenKey: String,
+    notification: NotificationsQuery.Data.Page.ThreadLikeNotificationNotification,
+) {
+    val navigationCallback = LocalNavigationCallback.current
+    ElevatedCard(onClick = {
+        notification.thread?.id?.toString()?.let {
+            navigationCallback.onForumThreadClick(title = null, threadId = it)
+        }
+    }) {
+        ContextHeader(
+            screenKey = screenKey,
+            user = notification.user,
+            context = notification.context,
+            createdAt = notification.createdAt,
+        )
+    }
+}
+
+@Composable
 private fun ContextHeader(
     screenKey: String,
     user: UserNavigationData?,
@@ -542,7 +658,7 @@ private fun ContextHeader(
                     .border(width = Dp.Hairline, MaterialTheme.colorScheme.primary, shape)
                     .clickable {
                         if (user != null) {
-                            navigationCallback?.onUserClick(user, 1f)
+                            navigationCallback.onUserClick(user, 1f)
                         }
                     }
             )
@@ -579,7 +695,7 @@ private fun ActivityCard(
     val navigationCallback = LocalNavigationCallback.current
     OutlinedCard(
         onClick = {
-            activityEntry?.id?.let { navigationCallback?.onActivityDetailsClick(it) }
+            activityEntry?.id?.let { navigationCallback.onActivityDetailsClick(it) }
         },
         modifier = Modifier.padding(8.dp)
     ) {

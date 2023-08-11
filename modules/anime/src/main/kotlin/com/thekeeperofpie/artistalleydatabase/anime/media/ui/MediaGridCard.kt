@@ -104,7 +104,7 @@ object MediaGridCard {
                     enabled = entry != null,
                     onClick = {
                         if (entry != null) {
-                            navigationCallback?.onMediaClick(entry.media, imageWidthToHeightRatio)
+                            navigationCallback.onMediaClick(entry.media, imageWidthToHeightRatio)
                         }
                     },
                     onLongClick = { if (entry?.media != null) onLongClick(entry.media) }
@@ -118,7 +118,7 @@ object MediaGridCard {
                             viewer = viewer,
                             onClick = {
                                 if (entry != null) {
-                                    navigationCallback?.onMediaClick(
+                                    navigationCallback.onMediaClick(
                                         entry.media,
                                         imageWidthToHeightRatio
                                     )

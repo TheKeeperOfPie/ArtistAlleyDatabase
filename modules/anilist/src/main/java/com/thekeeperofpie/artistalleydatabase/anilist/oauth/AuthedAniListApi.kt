@@ -17,6 +17,7 @@ import com.anilist.DeleteActivityReplyMutation
 import com.anilist.DeleteForumThreadCommentMutation
 import com.anilist.DeleteMediaListEntryMutation
 import com.anilist.ForumRootQuery
+import com.anilist.ForumThreadCommentQuery
 import com.anilist.ForumThreadDetailsQuery
 import com.anilist.ForumThreadSearchQuery
 import com.anilist.ForumThread_CommentsQuery
@@ -998,6 +999,14 @@ open class AuthedAniListApi(
             text = text.orEmpty(),
         )
     )
+
+    open suspend fun forumThreadSingleCommentTree(threadId: String, commentId: String) =
+        query(
+            ForumThreadCommentQuery(
+                threadId = threadId.toInt(),
+                commentId = commentId.toInt(),
+            )
+        )
 
     // TODO: Use queryCacheAndNetwork for everything
     private suspend fun <D : Query.Data> query(query: Query<D>) =

@@ -91,6 +91,24 @@ query ForumThreadDetails($threadId: Int!) {
     }
 }
 
+fragment ForumThreadComment on ThreadComment {
+    id
+    comment
+    childComments
+    isLocked
+    likeCount
+    isLiked
+    createdAt
+    updatedAt
+    user {
+        id
+        avatar {
+            large
+        }
+        name
+    }
+}
+
 # IMPORTANT: This query is crafted exactly so that the API returns childComments.
 # If it ever changes, it needs to be verified that child comments get returned
 query ForumThread_Comments($threadId: Int!, $page: Int!, $perPage: Int!) {
@@ -99,21 +117,7 @@ query ForumThread_Comments($threadId: Int!, $page: Int!, $perPage: Int!) {
             ...PaginationInfo
         }
         threadComments(threadId: $threadId) {
-            id
-            comment
-            childComments
-            isLocked
-            likeCount
-            isLiked
-            createdAt
-            updatedAt
-            user {
-                id
-                avatar {
-                    large
-                }
-                name
-            }
+            ...ForumThreadComment
         }
     }
 }
@@ -154,5 +158,17 @@ mutation SaveForumThreadComment(
 ) {
     SaveThreadComment(threadId: $threadId, id: $commentId, parentCommentId: $parentCommentId, comment: $text) {
         id
+    }
+}
+
+query ForumThreadComment($threadId: Int!, $commentId: Int!) {
+    Thread(id: $threadId) {
+        mediaCategories {
+            isAdult
+        }
+    }
+
+    ThreadComment(threadId: $threadId, id: $commentId) {
+        ...ForumThreadComment
     }
 }

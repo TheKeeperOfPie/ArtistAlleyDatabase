@@ -242,6 +242,31 @@ object NotificationsScreen {
                                                 },
                                                 colorCalculationState = colorCalculationState,
                                             )
+                                        is NotificationsQuery.Data.Page.ThreadCommentMentionNotificationNotification ->
+                                            ThreadCommentMentionNotificationCard(
+                                                screenKey = SCREEN_KEY,
+                                                notification = notification,
+                                            )
+                                        is NotificationsQuery.Data.Page.ThreadCommentLikeNotificationNotification ->
+                                            ThreadCommentLikeNotificationCard(
+                                                screenKey = SCREEN_KEY,
+                                                notification = notification,
+                                            )
+                                        is NotificationsQuery.Data.Page.ThreadCommentReplyNotificationNotification ->
+                                            ThreadCommentReplyNotificationCard(
+                                                screenKey = SCREEN_KEY,
+                                                notification = notification,
+                                            )
+                                        is NotificationsQuery.Data.Page.ThreadCommentSubscribedNotificationNotification ->
+                                            ThreadCommentSubscribedNotificationCard(
+                                                screenKey = SCREEN_KEY,
+                                                notification = notification,
+                                            )
+                                        is NotificationsQuery.Data.Page.ThreadLikeNotificationNotification ->
+                                            ThreadLikeNotificationCard(
+                                                screenKey = SCREEN_KEY,
+                                                notification = notification,
+                                            )
                                         is NotificationsQuery.Data.Page.OtherNotification,
                                         null -> NotificationPlaceholderCard()
                                     }

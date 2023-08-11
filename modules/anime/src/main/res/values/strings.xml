@@ -822,4 +822,6 @@
     <string name="anime_forum_thread_error_deleting">Error deleting comment</string>
     <string name="anime_home_media_increment_progress_content_description">Increment media progress</string>
     <string name="anime_forum_search_clear">Clear</string>
+    <string name="anime_forum_thread_viewing_comment_tree">Viewing single comment tree</string>
+    <string name="anime_forum_thread_comment_tree_view_parent_button">Open parent</string>
 </resources>

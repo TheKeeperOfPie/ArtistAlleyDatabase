@@ -113,11 +113,65 @@ fragment NotificationItem on NotificationUnion {
     }
 
     # TODO: Forum related notifications
-    #ThreadCommentMentionNotification
-    #ThreadCommentReplyNotification
-    #ThreadCommentSubscribedNotification
-    #ThreadCommentLikeNotification
-    #ThreadLikeNotification
+    ... on ThreadCommentMentionNotification {
+        id
+        context
+        createdAt
+        thread {
+            id
+        }
+        commentId
+        user {
+            ...UserNavigationData
+        }
+    }
+    ... on ThreadCommentReplyNotification {
+        id
+        context
+        createdAt
+        thread {
+            id
+        }
+        commentId
+        user {
+            ...UserNavigationData
+        }
+    }
+    ... on ThreadCommentSubscribedNotification {
+        id
+        context
+        createdAt
+        thread {
+            id
+        }
+        commentId
+        user {
+            ...UserNavigationData
+        }
+    }
+    ... on ThreadCommentLikeNotification {
+        id
+        context
+        createdAt
+        thread {
+            id
+        }
+        commentId
+        user {
+            ...UserNavigationData
+        }
+    }
+    ... on ThreadLikeNotification {
+        id
+        context
+        createdAt
+        thread {
+            id
+        }
+        user {
+            ...UserNavigationData
+        }
+    }
 }
 
 query Notifications(

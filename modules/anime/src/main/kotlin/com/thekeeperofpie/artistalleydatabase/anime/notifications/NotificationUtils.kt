@@ -16,6 +16,11 @@ val Page.Notification.id
         is Page.MediaDataChangeNotificationNotification -> id
         is Page.MediaDeletionNotificationNotification -> id
         is Page.MediaMergeNotificationNotification -> id
+        is Page.ThreadCommentMentionNotificationNotification -> id
+        is Page.ThreadCommentLikeNotificationNotification -> id
+        is Page.ThreadCommentReplyNotificationNotification -> id
+        is Page.ThreadCommentSubscribedNotificationNotification -> id
+        is Page.ThreadLikeNotificationNotification -> id
         is Page.OtherNotification -> null
     }
 
@@ -33,6 +38,11 @@ val Page.Notification.activityId
         is Page.MediaDataChangeNotificationNotification,
         is Page.MediaDeletionNotificationNotification,
         is Page.MediaMergeNotificationNotification,
+        is Page.ThreadCommentMentionNotificationNotification,
+        is Page.ThreadCommentLikeNotificationNotification,
+        is Page.ThreadCommentReplyNotificationNotification,
+        is Page.ThreadCommentSubscribedNotificationNotification,
+        is Page.ThreadLikeNotificationNotification,
         is Page.OtherNotification,
         -> null
     }
@@ -51,6 +61,11 @@ val Page.Notification.mediaId
         is Page.ActivityReplySubscribedNotificationNotification,
         is Page.MediaDeletionNotificationNotification,
         is Page.FollowingNotificationNotification,
+        is Page.ThreadCommentMentionNotificationNotification,
+        is Page.ThreadCommentLikeNotificationNotification,
+        is Page.ThreadCommentReplyNotificationNotification,
+        is Page.ThreadCommentSubscribedNotificationNotification,
+        is Page.ThreadLikeNotificationNotification,
         is Page.OtherNotification,
         -> null
     }

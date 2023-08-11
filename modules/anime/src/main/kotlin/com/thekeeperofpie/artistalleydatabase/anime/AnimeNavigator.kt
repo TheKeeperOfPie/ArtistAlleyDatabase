@@ -40,6 +40,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.character.media.CharacterMed
 import com.thekeeperofpie.artistalleydatabase.anime.forum.ForumRootScreen
 import com.thekeeperofpie.artistalleydatabase.anime.forum.ForumSearchScreen
 import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.ForumThreadScreen
+import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.comment.ForumThreadCommentTreeScreen
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeIgnoreScreen
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.list.AnimeUserListScreen
@@ -766,6 +767,38 @@ object AnimeNavigator {
                 title = it.arguments?.getString("title"),
             )
         }
+
+        navGraphBuilder.composable(
+            route = AnimeNavDestinations.FORUM_THREAD_COMMENT.id
+                    + "?threadId={threadId}"
+                    + "&commentId={commentId}"
+                    + "&title={title}",
+            deepLinks = listOf(
+                navDeepLink {
+                    uriPattern = "${AniListUtils.ANILIST_BASE_URL}/forum/thread/{threadId}/comment/{commentId}"
+                },
+                navDeepLink {
+                    uriPattern = "${AniListUtils.ANILIST_BASE_URL}/forum/thread/{threadId}/comment/{commentId}/.*"
+                },
+            ),
+            arguments = listOf(
+                navArgument("threadId") {
+                    type = NavType.StringType
+                },
+                navArgument("commentId") {
+                    type = NavType.StringType
+                },
+                navArgument("title") {
+                    type = NavType.StringType
+                    nullable = true
+                },
+            ),
+        ) {
+            ForumThreadCommentTreeScreen(
+                upIconOption = UpIconOption.Back(navHostController),
+                title = it.arguments?.getString("title"),
+            )
+        }
     }
 
     fun onTagClick(
@@ -1338,6 +1371,13 @@ object AnimeNavigator {
             navHostController?.navigate(
                 AnimeNavDestinations.FORUM_THREAD.id
                         + "?title=$title&threadId=$threadId"
+            )
+        }
+
+        fun onForumThreadCommentClick(title: String?, threadId: String, commentId: String) {
+            navHostController?.navigate(
+                AnimeNavDestinations.FORUM_THREAD_COMMENT.id
+                        + "?title=$title&threadId=$threadId&commentId=$commentId"
             )
         }
 

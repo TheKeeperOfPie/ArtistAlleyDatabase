@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.anime.forum.thread
+package com.thekeeperofpie.artistalleydatabase.anime.forum.thread.comment
 
 import android.os.SystemClock
 import android.text.Spanned
@@ -11,30 +11,27 @@ import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.paging.Pager
-import androidx.paging.PagingConfig
-import androidx.paging.PagingData
-import androidx.paging.cachedIn
-import androidx.paging.map
 import com.anilist.fragment.MediaCompactWithTags
 import com.anilist.type.MediaListStatus
 import com.hoc081098.flowext.flowFromSuspend
 import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.android_utils.flowForRefreshableContent
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListPagingSource
-import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListOAuthStore
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.forum.ForumUtils
-import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.comment.ForumCommentEntry
+import com.thekeeperofpie.artistalleydatabase.anime.forum.ForumUtils.decodeChild
+import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.ForumThreadCommentStatusController
+import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.ForumThreadCommentToggleHelper
+import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.ForumThreadEntry
+import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.ForumThreadStatusController
+import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.ForumThreadToggleHelper
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaFiltering
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow
-import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIntIds
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.noties.markwon.Markwon
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -43,7 +40,6 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -51,7 +47,7 @@ import javax.inject.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
-class ForumThreadViewModel @Inject constructor(
+class ForumThreadCommentTreeViewModel @Inject constructor(
     private val aniListApi: AuthedAniListApi,
     savedStateHandle: SavedStateHandle,
     val markwon: Markwon,
@@ -60,19 +56,17 @@ class ForumThreadViewModel @Inject constructor(
     commentStatusController: ForumThreadCommentStatusController,
     val ignoreList: AnimeMediaIgnoreList,
     settings: AnimeSettings,
-    oAuthStore: AniListOAuthStore,
 ) : ViewModel() {
-
-    // TODO: Block forum screens if not unlocked
-    val hasAuth = oAuthStore.hasAuth
 
     val colorMap = mutableStateMapOf<String, Pair<Color, Color>>()
     val threadId = savedStateHandle.get<String>("threadId")!!
+    val commentId = savedStateHandle.get<String>("commentId")!!
     val viewer = aniListApi.authedUser
     val refresh = MutableStateFlow(-1L)
     var entry by mutableStateOf(LoadingResult.loading<ForumThreadEntry>())
     var media by mutableStateOf<List<MediaEntry>>(emptyList())
-    val comments = MutableStateFlow(PagingData.empty<ForumCommentEntry>())
+    var comments by mutableStateOf(LoadingResult.loading<List<ForumCommentEntry>>())
+        private set
 
     var replyData by mutableStateOf<ReplyData?>(null)
     var committing by mutableStateOf(false)
@@ -168,53 +162,57 @@ class ForumThreadViewModel @Inject constructor(
         }
 
         viewModelScope.launch(CustomDispatchers.Main) {
-            refresh.flatMapLatest {
-                // TODO: Make an AniListPager which forces jumpThreshold to skip network requests
-                Pager(config = PagingConfig(pageSize = 10, jumpThreshold = 10)) {
-                    AniListPagingSource {
-                        val result = aniListApi.forumThreadComments(threadId, page = it)
-                        result.page?.pageInfo to result.page?.threadComments?.filterNotNull()
-                            .orEmpty()
-                    }
-                }.flow
+            flowForRefreshableContent(refresh, R.string.anime_forum_thread_error_loading) {
+                flowFromSuspend {
+                    aniListApi.forumThreadSingleCommentTree(threadId, commentId)
+                        .threadComment
+                        ?.filterNotNull()
+                        ?.distinctBy { it.id }
+                        .orEmpty()
+                }
             }
-                .map {
-                    it.map {
-                        val children = (it.childComments as? List<*>)?.filterNotNull()
-                            ?.mapNotNull { ForumUtils.decodeChild(markwon, it) }
-                            .orEmpty()
-                        val commentMarkdown = it.comment
-                            ?.let(markwon::parse)
-                            ?.let(markwon::render)
-                        ForumCommentEntry(
-                            comment = it,
-                            commentMarkdown = commentMarkdown,
-                            children = children,
-                        )
+                .mapLatest {
+                    it.transformResult {
+                        it.map {
+                            val children = (it.childComments as? List<*>)?.filterNotNull()
+                                ?.mapNotNull { decodeChild(markwon, it) }
+                                .orEmpty()
+                            val commentMarkdown = it.comment
+                                ?.let(markwon::parse)
+                                ?.let(markwon::render)
+                            ForumCommentEntry(
+                                comment = it,
+                                commentMarkdown = commentMarkdown,
+                                children = children,
+                            )
+                        }
                     }
                 }
-                .enforceUniqueIntIds { it.comment.id }
-                .cachedIn(viewModelScope)
-                .flatMapLatest { pagingData ->
+                .flatMapLatest { result ->
                     commentStatusController.allChanges()
                         .mapLatest { updates ->
-                            pagingData.map {
-                                val liked = updates[it.comment.id.toString()]?.liked
-                                    ?: it.comment.isLiked
-                                    ?: false
-                                it.copy(
-                                    liked = liked,
-                                    children = it.children.map {
-                                        ForumUtils.copyUpdatedChild(it, updates)
-                                    },
-                                )
+                            result.transformResult {
+                                it.map {
+                                    val liked = updates[it.comment.id.toString()]?.liked
+                                        ?: it.comment.isLiked
+                                        ?: false
+                                    it.copy(
+                                        liked = liked,
+                                        children = it.children.map {
+                                            ForumUtils.copyUpdatedChild(it, updates)
+                                        },
+                                    )
+                                }
                             }
                         }
                 }
-                .cachedIn(viewModelScope)
                 .flowOn(CustomDispatchers.IO)
-                .collectLatest(comments::emit)
+                .collectLatest { comments = it }
         }
+    }
+
+    fun refresh() {
+        refresh.value = SystemClock.uptimeMillis()
     }
 
     fun onClickReplyComment(commentId: String?, commentMarkdown: Spanned?) {
@@ -236,7 +234,7 @@ class ForumThreadViewModel @Inject constructor(
                 )
                 withContext(CustomDispatchers.Main) {
                     refresh.emit(SystemClock.uptimeMillis())
-                    this@ForumThreadViewModel.replyData = null
+                    this@ForumThreadCommentTreeViewModel.replyData = null
                     committing = false
                 }
             } catch (t: Throwable) {
