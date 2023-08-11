@@ -33,7 +33,7 @@ class AnimeNewsViewModel @Inject constructor(
 
     val sortFilterController = NewsSortFilterController(settings, featureOverrideProvider)
 
-    var news by mutableStateOf<List<AnimeNewsArticleEntry>?>(null)
+    var news by mutableStateOf<List<AnimeNewsArticleEntry<*>>?>(null)
         private set
 
     private val refresh = MutableStateFlow(-1L)
@@ -50,7 +50,7 @@ class AnimeNewsViewModel @Inject constructor(
                     animeNewsController.news().mapLatest { news ->
                         val sortOption =
                             filterParams.sort.selectedOption(AnimeNewsSortOption.DATETIME)
-                        val baseComparator: Comparator<AnimeNewsArticleEntry> =
+                        val baseComparator: Comparator<AnimeNewsArticleEntry<*>> =
                             when (sortOption) {
                                 AnimeNewsSortOption.DATETIME -> compareBy { it.date }
                                 AnimeNewsSortOption.TITLE -> compareBy { it.title }

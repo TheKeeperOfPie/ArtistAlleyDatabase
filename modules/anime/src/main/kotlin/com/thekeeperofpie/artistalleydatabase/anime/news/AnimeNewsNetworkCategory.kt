@@ -11,5 +11,6 @@ enum class AnimeNewsNetworkCategory(val id: String, @StringRes val textRes: Int)
     NOVELS("Novels", R.string.anime_news_network_category_novels),
     MUSIC("Music", R.string.anime_news_network_category_music),
     PEOPLE("People", R.string.anime_news_network_category_people),
+    INDUSTRY("Industry", R.string.anime_news_network_category_industry),
     UNKNOWN("Unknown", R.string.anime_news_network_category_unknown),
 }

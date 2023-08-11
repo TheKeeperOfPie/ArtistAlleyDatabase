@@ -38,7 +38,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun AnimeNewsSmallCard(
-    entry: AnimeNewsArticleEntry,
+    entry: AnimeNewsArticleEntry<*>,
     uriHandler: UriHandler,
 ) {
     val onClick = entry.link?.let { { uriHandler.openUri(it) } }

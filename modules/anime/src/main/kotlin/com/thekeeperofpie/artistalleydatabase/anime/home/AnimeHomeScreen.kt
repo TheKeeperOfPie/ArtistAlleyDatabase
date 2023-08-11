@@ -336,7 +336,7 @@ object AnimeHomeScreen {
     }
 
     private fun LazyListScope.newsRow(
-        data: List<AnimeNewsArticleEntry>,
+        data: List<AnimeNewsArticleEntry<*>>,
     ) {
         rowHeader(
             titleRes = R.string.anime_news_home_title,

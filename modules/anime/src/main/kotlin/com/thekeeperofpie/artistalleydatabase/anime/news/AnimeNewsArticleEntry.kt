@@ -2,7 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.anime.news
 
 import java.util.Date
 
-data class AnimeNewsArticleEntry(
+data class AnimeNewsArticleEntry<Category>(
     val id: String,
     val type: AnimeNewsType,
     val icon: String?,
@@ -12,5 +12,5 @@ data class AnimeNewsArticleEntry(
     val link: String?,
     val copyright: String?,
     val date: Date,
-    val categories: List<String>,
+    val categories: List<Category>,
 )
