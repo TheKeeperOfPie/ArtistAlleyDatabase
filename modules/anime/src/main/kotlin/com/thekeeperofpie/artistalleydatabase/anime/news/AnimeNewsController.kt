@@ -87,13 +87,15 @@ class AnimeNewsController(
                             includes = it.animeNewsNetworkCategoriesIncluded.map { it.id },
                             excludes = it.animeNewsNetworkCategoriesExcluded.map { it.id },
                             list = it.animeNewsNetworkEntries,
-                            transform = { it.categories }
+                            transform = { it.categories },
+                            mustContainAll = false,
                         )
                         this += FilterIncludeExcludeState.applyFiltering(
                             includes = it.crunchyrollNewsCategoriesIncluded.map { it.id },
                             excludes = it.crunchyrollNewsCategoriesExcluded.map { it.id },
                             list = it.crunchyrollNewsEntries,
-                            transform = { it.categories }
+                            transform = { it.categories },
+                            mustContainAll = false,
                         )
                     }
                 }

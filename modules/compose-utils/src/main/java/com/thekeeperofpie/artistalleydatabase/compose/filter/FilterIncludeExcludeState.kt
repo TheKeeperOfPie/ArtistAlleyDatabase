@@ -18,12 +18,14 @@ enum class FilterIncludeExcludeState {
             key: (StateHolder) -> Comparison,
             transform: (Base) -> List<Comparison>,
             transformIncludes: ((Base) -> List<Comparison>)? = null,
+            mustContainAll: Boolean = true,
         ) = applyFiltering(
             includes = filters.filter { state(it) == INCLUDE }.map(key),
             excludes = filters.filter { state(it) == EXCLUDE }.map(key),
             list = list,
             transform = transform,
-            transformIncludes = transformIncludes
+            transformIncludes = transformIncludes,
+            mustContainAll = mustContainAll,
         )
 
         fun <Base, Comparison> applyFiltering(
@@ -31,12 +33,14 @@ enum class FilterIncludeExcludeState {
             list: List<Base>,
             transform: (Base) -> List<Comparison>,
             transformIncludes: ((Base) -> List<Comparison>)? = null,
+            mustContainAll: Boolean = true,
         ) = applyFiltering(
             includes = filters.filter { it.state == INCLUDE }.map { it.value },
             excludes = filters.filter { it.state == EXCLUDE }.map { it.value },
             list = list,
             transform = transform,
-            transformIncludes = transformIncludes
+            transformIncludes = transformIncludes,
+            mustContainAll = mustContainAll,
         )
 
         fun <Base, Comparison> applyFiltering(
@@ -45,6 +49,7 @@ enum class FilterIncludeExcludeState {
             list: List<Base>,
             transform: (Base) -> List<Comparison>,
             transformIncludes: ((Base) -> List<Comparison>)? = null,
+            mustContainAll: Boolean = true,
         ): List<Base> {
             if (includes.isEmpty() && excludes.isEmpty()) return list
 
@@ -53,8 +58,13 @@ enum class FilterIncludeExcludeState {
 
                 if (excludes.isNotEmpty() && !target.none(excludes::contains)) return@filter false
 
+                if (includes.isEmpty()) return@filter true
                 val targetIncludes = transformIncludes?.invoke(it) ?: target
-                includes.isEmpty() || targetIncludes.containsAll(includes)
+                return@filter if (mustContainAll) {
+                    targetIncludes.containsAll(includes)
+                } else {
+                    includes.any { targetIncludes.contains(it) }
+                }
             }
         }
     }

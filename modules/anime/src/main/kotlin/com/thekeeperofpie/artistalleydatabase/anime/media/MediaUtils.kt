@@ -487,13 +487,15 @@ object MediaUtils {
         filteredEntries = FilterIncludeExcludeState.applyFiltering(
             filterParams.statuses,
             filteredEntries,
-            transform = { listOfNotNull(media(it).status) }
+            transform = { listOfNotNull(media(it).status) },
+            mustContainAll = false,
         )
 
         filteredEntries = FilterIncludeExcludeState.applyFiltering(
             filterParams.formats,
             filteredEntries,
-            transform = { listOfNotNull(media(it).format) }
+            transform = { listOfNotNull(media(it).format) },
+            mustContainAll = false,
         )
 
         filteredEntries = FilterIncludeExcludeState.applyFiltering(
@@ -691,7 +693,8 @@ object MediaUtils {
         filteredEntries = FilterIncludeExcludeState.applyFiltering(
             filterParams.sources,
             filteredEntries,
-            transform = { listOfNotNull(media(it).source) }
+            transform = { listOfNotNull(media(it).source) },
+            mustContainAll = false,
         )
 
         filteredEntries = FilterIncludeExcludeState.applyFiltering(
@@ -700,6 +703,7 @@ object MediaUtils {
             state = { it.state },
             key = { it.value.siteId },
             transform = { media(it).externalLinks?.mapNotNull { it?.siteId }.orEmpty() },
+            mustContainAll = false,
         )
 
         return filteredEntries
