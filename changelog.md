@@ -2,6 +2,7 @@
 
 ### Next
 - Add unread notification badge
+- Add recommendation voting, doesn't support creating one
 
 ### 0.41
 - Add forum notifications

@@ -181,6 +181,7 @@ object MediaSearchScreen {
                                                 entry = null,
                                                 onClickListEdit = {},
                                                 onLongClick = {},
+                                                colorCalculationState = colorCalculationState,
                                             )
                                         }
                                     }

@@ -19,6 +19,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaLicensorsC
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaTagsController
 import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsController
 import com.thekeeperofpie.artistalleydatabase.anime.notifications.NotificationsController
+import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationStatusController
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -128,6 +129,10 @@ object AnimeHiltModule {
         scopedApplication: ScopedApplication,
         aniListApi: AuthedAniListApi,
     ) = NotificationsController(scopedApplication, aniListApi)
+
+    @Singleton
+    @Provides
+    fun provideRecommendationStatusController() = RecommendationStatusController()
 
     @Singleton
     @Provides

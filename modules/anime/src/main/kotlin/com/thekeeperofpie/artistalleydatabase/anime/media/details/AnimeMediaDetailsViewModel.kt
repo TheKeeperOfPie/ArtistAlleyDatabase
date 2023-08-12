@@ -20,6 +20,8 @@ import androidx.paging.cachedIn
 import androidx.paging.map
 import com.anilist.MediaActivityPageQuery
 import com.anilist.type.MediaType
+import com.anilist.type.RecommendationRating
+import com.hoc081098.flowext.combine
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.android_utils.foldPreviousResult
@@ -48,6 +50,9 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusControl
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toFavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaFiltering
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
+import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationData
+import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationStatusController
+import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationToggleHelper
 import com.thekeeperofpie.artistalleydatabase.anime.songs.AnimeSongEntry
 import com.thekeeperofpie.artistalleydatabase.anime.songs.AnimeSongsProvider
 import com.thekeeperofpie.artistalleydatabase.anime.staff.DetailsStaff
@@ -85,7 +90,8 @@ class AnimeMediaDetailsViewModel @Inject constructor(
     private val animeSongsProviderOptional: Optional<AnimeSongsProvider>,
     val mediaPlayer: AppMediaPlayer,
     oAuthStore: AniListOAuthStore,
-    val statusController: MediaListStatusController,
+    val mediaListStatusController: MediaListStatusController,
+    val recommendationStatusController: RecommendationStatusController,
     val ignoreList: AnimeMediaIgnoreList,
     val settings: AnimeSettings,
     favoritesController: FavoritesController,
@@ -111,6 +117,9 @@ class AnimeMediaDetailsViewModel @Inject constructor(
 
     val threadToggleHelper =
         ForumThreadToggleHelper(aniListApi, threadStatusController, viewModelScope)
+
+    val recommendationToggleHelper =
+        RecommendationToggleHelper(aniListApi, recommendationStatusController, viewModelScope)
 
     val hasAuth = oAuthStore.hasAuth
 
@@ -175,11 +184,16 @@ class AnimeMediaDetailsViewModel @Inject constructor(
                             val recommendations = media.recommendations?.edges?.filterNotNull()
                                 ?.mapNotNull {
                                     val node = it.node ?: return@mapNotNull null
-                                    val mediaRecommendation =
-                                        node.mediaRecommendation ?: return@mapNotNull null
+                                    val mediaRecommendation = node.mediaRecommendation
                                     AnimeMediaDetailsScreen.Entry.Recommendation(
                                         node.id.toString(),
-                                        node.rating,
+                                        RecommendationData(
+                                            mediaId = mediaId,
+                                            recommendationMediaId = mediaRecommendation.id.toString(),
+                                            rating = node.rating ?: 0,
+                                            userRating = node.userRating
+                                                ?: RecommendationRating.NO_RATING,
+                                        ),
                                         AnimeMediaListRow.Entry(mediaRecommendation)
                                     )
                                 }
@@ -188,20 +202,27 @@ class AnimeMediaDetailsViewModel @Inject constructor(
                             val mediaIds = setOf(media.id.toString()) +
                                     relations.map { it.entry.media.id.toString() } +
                                     recommendations.map { it.entry.media.id.toString() }
+
+                            val recommendationMediaIds =
+                                recommendations.map { it.data.recommendationMediaId }.toSet()
                             combine(
-                                statusController.allChanges(mediaIds),
+                                mediaListStatusController.allChanges(mediaIds),
+                                recommendationStatusController.allChanges(
+                                    mediaId,
+                                    recommendationMediaIds,
+                                ),
                                 ignoreList.updates,
                                 settings.showAdult,
                                 settings.showLessImportantTags,
                                 settings.showSpoilerTags,
-                            ) { statuses, ignoredIds, showAdult, showLessImportantTags, showSpoilerTags ->
+                            ) { mediaListUpdates, recommendationUpdates, ignoredIds, showAdult, showLessImportantTags, showSpoilerTags ->
                                 loadingResult.transformResult {
                                     AnimeMediaDetailsScreen.Entry(
                                         mediaId,
                                         media,
                                         relations = relations.mapNotNull {
                                             applyMediaFiltering(
-                                                statuses = statuses,
+                                                statuses = mediaListUpdates,
                                                 ignoredIds = ignoredIds,
                                                 showAdult = showAdult,
                                                 showIgnored = true,
@@ -227,7 +248,7 @@ class AnimeMediaDetailsViewModel @Inject constructor(
                                         },
                                         recommendations = recommendations.mapNotNull {
                                             applyMediaFiltering(
-                                                statuses = statuses,
+                                                statuses = mediaListUpdates,
                                                 ignoredIds = ignoredIds,
                                                 showAdult = showAdult,
                                                 showIgnored = true,
@@ -249,7 +270,19 @@ class AnimeMediaDetailsViewModel @Inject constructor(
                                                         )
                                                     )
                                                 }
-                                            )
+                                            )?.let {
+                                                val recommendationUpdate =
+                                                    recommendationUpdates[it.data.mediaId to it.data.recommendationMediaId]
+                                                val userRating = recommendationUpdate?.rating
+                                                    ?: it.data.userRating
+                                                it.transformIf(userRating != it.data.userRating) {
+                                                    copy(
+                                                        data = data.copy(
+                                                            userRating = userRating
+                                                        )
+                                                    )
+                                                }
+                                            }
                                         }
                                     )
                                 }
@@ -265,7 +298,7 @@ class AnimeMediaDetailsViewModel @Inject constructor(
         viewModelScope.launch(CustomDispatchers.Main) {
             combine(
                 snapshotFlow { entry.result }.filterNotNull().flowOn(CustomDispatchers.Main),
-                statusController.allChanges(mediaId),
+                mediaListStatusController.allChanges(mediaId),
             ) { entry, update ->
                 val mediaListEntry = entry.media.mediaListEntry
                 MediaListStatusController.Update(

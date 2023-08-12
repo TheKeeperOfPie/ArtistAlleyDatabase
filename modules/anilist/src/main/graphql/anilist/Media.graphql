@@ -302,7 +302,8 @@ query MediaDetails($mediaId: Int!, $includeDescription: Boolean = true) {
                 node {
                     id
                     rating
-                    mediaRecommendation {
+                    userRating
+                    mediaRecommendation @nonnull {
                         ...MediaPreview
                     }
                 }
@@ -657,9 +658,10 @@ fragment MediaAndRecommendationsRecommendation on Recommendation {
         ...UserNavigationData
     }
     rating
-    mediaRecommendation {
+    mediaRecommendation @nonnull {
         ...MediaPreview
     }
+    userRating
 }
 
 query MediaAndRecommendations(
@@ -754,4 +756,18 @@ fragment MediaTitleFragment on MediaTitle {
     romaji
     english
     native
+}
+
+mutation SaveRecommendationRating(
+    $mediaId: Int!,
+    $recommendationMediaId: Int!,
+    $rating: RecommendationRating!,
+) {
+    SaveRecommendation(
+        mediaId: $mediaId,
+        mediaRecommendationId: $recommendationMediaId,
+        rating: $rating,
+    ) @nonnull {
+        userRating @nonnull
+    }
 }

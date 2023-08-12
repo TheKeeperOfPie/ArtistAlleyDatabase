@@ -255,6 +255,7 @@ object AnimeSearchScreen {
                                                     entry = null,
                                                     onClickListEdit = {},
                                                     onLongClick = {},
+                                                    colorCalculationState = colorCalculationState,
                                                 )
                                             }
                                         }

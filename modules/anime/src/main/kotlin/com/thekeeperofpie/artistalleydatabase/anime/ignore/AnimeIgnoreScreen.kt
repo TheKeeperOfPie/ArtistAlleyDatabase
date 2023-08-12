@@ -115,6 +115,7 @@ object AnimeIgnoreScreen {
                                                 viewer = null,
                                                 onClickListEdit = {},
                                                 onLongClick = {},
+                                                colorCalculationState = colorCalculationState,
                                             )
                                         }
                                     }

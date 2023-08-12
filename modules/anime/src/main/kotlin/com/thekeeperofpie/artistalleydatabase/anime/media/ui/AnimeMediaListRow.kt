@@ -3,6 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.anime.media.ui
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -13,13 +14,20 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ImageNotSupported
+import androidx.compose.material.icons.filled.ThumbDown
+import androidx.compose.material.icons.filled.ThumbUp
+import androidx.compose.material.icons.outlined.ThumbDown
+import androidx.compose.material.icons.outlined.ThumbUp
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -45,6 +53,7 @@ import com.anilist.AuthedUserQuery
 import com.anilist.fragment.MediaHeaderData
 import com.anilist.fragment.MediaPreview
 import com.anilist.type.MediaListStatus
+import com.anilist.type.RecommendationRating
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.material.placeholder
 import com.google.accompanist.placeholder.material.shimmer
@@ -58,6 +67,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaTagEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaStatusAware
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
+import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationData
 import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
@@ -75,9 +85,14 @@ object AnimeMediaListRow {
         label: (@Composable () -> Unit)? = null,
         onClickListEdit: (Entry<MediaType>) -> Unit,
         onLongClick: (Entry<MediaType>) -> Unit,
+        colorCalculationState: ColorCalculationState,
         nextAiringEpisode: MediaPreview.NextAiringEpisode? = entry?.media?.nextAiringEpisode,
         showDate: Boolean = true,
-        colorCalculationState: ColorCalculationState = ColorCalculationState(),
+        recommendation: RecommendationData? = null,
+        onUserRecommendationRating: (
+            recommendation: RecommendationData,
+            newRating: RecommendationRating,
+        ) -> Unit = { _, _ -> },
     ) {
         var imageWidthToHeightRatio by remember { MutableSingle(1f) }
         val navigationCallback = LocalNavigationCallback.current
@@ -114,6 +129,8 @@ object AnimeMediaListRow {
                     onClickListEdit = onClickListEdit,
                     colorCalculationState = colorCalculationState,
                     onRatioAvailable = { imageWidthToHeightRatio = it },
+                    recommendation = recommendation,
+                    onUserRecommendationRating = onUserRecommendationRating,
                 )
 
                 Column(modifier = Modifier.heightIn(min = 180.dp)) {
@@ -173,6 +190,11 @@ object AnimeMediaListRow {
         onClickListEdit: (Entry<MediaType>) -> Unit,
         colorCalculationState: ColorCalculationState,
         onRatioAvailable: (Float) -> Unit,
+        recommendation: RecommendationData?,
+        onUserRecommendationRating: (
+            recommendation: RecommendationData,
+            newRating: RecommendationRating,
+        ) -> Unit,
     ) {
         SharedElement(
             key = "anime_media_${entry?.media?.id}_image",
@@ -225,6 +247,78 @@ object AnimeMediaListRow {
                             ),
                         )
                 )
+
+                if (viewer != null && recommendation != null) {
+                    Row(
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .width(130.dp)
+                            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.66f))
+                            .align(Alignment.TopStart)
+                    ) {
+                        val userRating = recommendation.userRating
+                        IconButton(
+                            onClick = {
+                                val newRating = if (userRating == RecommendationRating.RATE_DOWN) {
+                                    RecommendationRating.NO_RATING
+                                } else {
+                                    RecommendationRating.RATE_DOWN
+                                }
+                                onUserRecommendationRating(recommendation, newRating)
+                            },
+                            modifier = Modifier.size(32.dp)
+                        ) {
+                            Icon(
+                                imageVector = if (userRating == RecommendationRating.RATE_DOWN) {
+                                    Icons.Filled.ThumbDown
+                                } else {
+                                    Icons.Outlined.ThumbDown
+                                },
+                                contentDescription = stringResource(
+                                    if (userRating == RecommendationRating.RATE_DOWN) {
+                                        R.string.anime_media_recommendation_rate_down_filled_content_description
+                                    } else {
+                                        R.string.anime_media_recommendation_rate_down_empty_content_description
+                                    }
+                                ),
+                            )
+                        }
+
+                        Text(
+                            text = recommendation.rating.toString(),
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier.padding(vertical = 4.dp, horizontal = 16.dp)
+                        )
+
+                        IconButton(
+                            onClick = {
+                                val newRating = if (userRating == RecommendationRating.RATE_UP) {
+                                    RecommendationRating.NO_RATING
+                                } else {
+                                    RecommendationRating.RATE_UP
+                                }
+                                onUserRecommendationRating(recommendation, newRating)
+                            },
+                            modifier = Modifier.size(32.dp)
+                        ) {
+                            Icon(
+                                imageVector = if (userRating == RecommendationRating.RATE_UP) {
+                                    Icons.Filled.ThumbUp
+                                } else {
+                                    Icons.Outlined.ThumbUp
+                                },
+                                contentDescription = stringResource(
+                                    if (userRating == RecommendationRating.RATE_UP) {
+                                        R.string.anime_media_recommendation_rate_up_filled_content_description
+                                    } else {
+                                        R.string.anime_media_recommendation_rate_up_empty_content_description
+                                    }
+                                ),
+                            )
+                        }
+                    }
+                }
 
                 if (viewer != null && entry != null) {
                     MediaListQuickEditIconButton(

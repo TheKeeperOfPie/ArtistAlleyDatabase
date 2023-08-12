@@ -50,6 +50,7 @@ import com.anilist.ReviewDetailsQuery
 import com.anilist.SaveActivityReplyMutation
 import com.anilist.SaveForumThreadCommentMutation
 import com.anilist.SaveMediaListEntryMutation
+import com.anilist.SaveRecommendationRatingMutation
 import com.anilist.StaffAndCharactersPaginationQuery
 import com.anilist.StaffAndCharactersQuery
 import com.anilist.StaffDetailsCharacterMediaPaginationQuery
@@ -105,6 +106,7 @@ import com.anilist.type.MediaSource
 import com.anilist.type.MediaStatus
 import com.anilist.type.MediaType
 import com.anilist.type.NotificationType
+import com.anilist.type.RecommendationRating
 import com.anilist.type.RecommendationSort
 import com.anilist.type.ReviewRating
 import com.anilist.type.ReviewSort
@@ -1010,7 +1012,20 @@ open class AuthedAniListApi(
             )
         )
 
-    open suspend fun unreadNotificationCount() = query(UnreadNotificationCountQuery()).viewer.unreadNotificationCount
+    open suspend fun unreadNotificationCount() =
+        query(UnreadNotificationCountQuery()).viewer.unreadNotificationCount
+
+    open suspend fun saveRecommendationRating(
+        mediaId: String,
+        recommendationMediaId: String,
+        rating: RecommendationRating,
+    ) = mutate(
+        SaveRecommendationRatingMutation(
+            mediaId = mediaId.toInt(),
+            recommendationMediaId = recommendationMediaId.toInt(),
+            rating = rating,
+        )
+    ).saveRecommendation.userRating
 
     // TODO: Use queryCacheAndNetwork for everything
     private suspend fun <D : Query.Data> query(query: Query<D>) =

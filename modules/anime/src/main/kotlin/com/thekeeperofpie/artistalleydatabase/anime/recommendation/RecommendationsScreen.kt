@@ -73,7 +73,6 @@ object RecommendationsScreen {
             },
             itemKey = { it.recommendation.id },
             item = {
-                // TODO: Show recommendation rating alongside user rating
                 AnimeMediaListRow(
                     screenKey = SCREEN_KEY,
                     entry = it?.entry,
@@ -81,6 +80,8 @@ object RecommendationsScreen {
                     onClickListEdit = { editViewModel.initialize(it.media) },
                     onLongClick = viewModel::onMediaLongClick,
                     colorCalculationState = colorCalculationState,
+                    recommendation = it?.recommendationData,
+                    onUserRecommendationRating = viewModel.recommendationToggleHelper::toggle,
                     modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
                 )
             },

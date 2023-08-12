@@ -148,6 +148,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSh
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.mediaListSection
+import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationData
 import com.thekeeperofpie.artistalleydatabase.anime.review.ReviewSmallCard
 import com.thekeeperofpie.artistalleydatabase.anime.songs.AnimeSongEntry
 import com.thekeeperofpie.artistalleydatabase.anime.staff.DetailsStaff
@@ -1325,19 +1326,14 @@ object AnimeMediaDetailsScreen {
         colorCalculationState: ColorCalculationState,
         onLongClick: (AnimeMediaListRow.Entry<*>) -> Unit,
     ) {
-        mediaListSection(
-            screenKey = screenKey,
-            viewer = viewer,
+        listSection(
             titleRes = R.string.anime_media_details_recommendations_label,
             values = entry.recommendations,
-            valueToEntry = { it.entry },
+            valueToId = { "anime_media_${it.entry.media.id}" },
             aboveFold = RECOMMENDATIONS_ABOVE_FOLD,
             hasMoreValues = entry.recommendationsHasMore,
             expanded = expanded,
             onExpandedChange = onExpandedChange,
-            colorCalculationState = colorCalculationState,
-            onClickListEdit = onClickListEdit,
-            onLongClick = onLongClick,
             onClickViewAll = {
                 it.onMediaRecommendationsClick(
                     entry,
@@ -1346,7 +1342,20 @@ object AnimeMediaDetailsScreen {
                 )
             },
             viewAllContentDescriptionTextRes = R.string.anime_media_details_view_all_content_description,
-        )
+        ) { item, paddingBottom, modifier ->
+            val entry = item.entry
+            AnimeMediaListRow(
+                screenKey = screenKey,
+                entry = entry,
+                viewer = viewer,
+                onClickListEdit = onClickListEdit,
+                onLongClick = onLongClick,
+                colorCalculationState = colorCalculationState,
+                recommendation = item.data,
+                onUserRecommendationRating = viewModel.recommendationToggleHelper::toggle,
+                modifier = modifier.padding(start = 16.dp, end = 16.dp, bottom = paddingBottom)
+            )
+        }
     }
 
     @Composable
@@ -2011,8 +2020,7 @@ object AnimeMediaDetailsScreen {
 
         data class Recommendation(
             val id: String,
-            // TODO: Actually surface rating
-            val rating: Int?,
+            val data: RecommendationData,
             val entry: AnimeMediaListRow.Entry<MediaPreview>,
         )
 

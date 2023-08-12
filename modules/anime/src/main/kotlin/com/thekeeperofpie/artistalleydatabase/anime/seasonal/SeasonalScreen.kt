@@ -224,6 +224,7 @@ object SeasonalScreen {
                                         entry = null,
                                         onClickListEdit = {},
                                         onLongClick = {},
+                                        colorCalculationState = colorCalculationState,
                                     )
                                 } else {
                                     AnimeMediaListRow(

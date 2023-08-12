@@ -494,6 +494,11 @@
     <string name="anime_media_view_option_grid">Grid</string>
     <string name="anime_media_view_option_icon_content_description">Change view type</string>
 
+    <string name="anime_media_recommendation_rate_down_empty_content_description">Rate down empty</string>
+    <string name="anime_media_recommendation_rate_down_filled_content_description">Rate down filled</string>
+    <string name="anime_media_recommendation_rate_up_empty_content_description">Rate up empty</string>
+    <string name="anime_media_recommendation_rate_up_filled_content_description">Rate up filled</string>
+
     <string name="anime_character_filter_sort_label">Sort</string>
 
     <string name="anime_character_details_voice_actors_label">Voice actors</string>
