@@ -1360,7 +1360,7 @@ object AnimeNavigator {
             )
         }
 
-        fun onForumMediaCategoryClick(mediaCategoryName: String, mediaCategoryId: String) {
+        fun onForumMediaCategoryClick(mediaCategoryName: String?, mediaCategoryId: String) {
             navHostController?.navigate(
                 AnimeNavDestinations.FORUM_SEARCH.id
                         + "?title=$mediaCategoryName&mediaCategoryId=$mediaCategoryId"

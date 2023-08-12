@@ -72,7 +72,8 @@ import com.thekeeperofpie.artistalleydatabase.compose.showFloatingActionButtonOn
 import kotlinx.coroutines.launch
 
 // TODO: Dedupe this with the full thread screen
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class,
+@OptIn(
+    ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class,
     ExperimentalFoundationApi::class
 )
 object ForumThreadCommentTreeScreen {
@@ -232,10 +233,15 @@ object ForumThreadCommentTreeScreen {
                             item("divider") {
                                 Column(modifier = Modifier.animateItemPlacement()) {
                                     HorizontalDivider()
-                                    Row(modifier = Modifier.fillMaxWidth()) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
                                         Text(
                                             text = stringResource(R.string.anime_forum_thread_viewing_comment_tree),
-                                            modifier = Modifier.weight(1f)
+                                            modifier = Modifier
+                                                .weight(1f)
+                                                .padding(horizontal = 16.dp, vertical = 10.dp)
                                         )
                                         val navigationCallback = LocalNavigationCallback.current
                                         TextButton(onClick = {
@@ -251,6 +257,7 @@ object ForumThreadCommentTreeScreen {
                                             )
                                         }
                                     }
+                                    HorizontalDivider()
                                 }
                             }
 

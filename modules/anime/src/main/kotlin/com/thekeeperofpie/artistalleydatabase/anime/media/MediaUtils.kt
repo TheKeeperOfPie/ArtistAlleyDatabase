@@ -180,14 +180,20 @@ object MediaUtils {
         MediaListStatus.PLANNING -> stringResource(
             R.string.anime_media_details_fab_user_status_planning
         )
-        MediaListStatus.COMPLETED -> if (score == null || scoreFormat == null) {
-            stringResource(R.string.anime_media_details_fab_user_status_completed)
-        } else {
-            // TODO: Show smileys instead for that score format
-            stringResource(
-                R.string.anime_media_details_fab_user_status_completed_with_score,
-                scoreFormatToText(score, scoreFormat),
-            )
+        MediaListStatus.COMPLETED -> {
+            val scoreText = if (score != null && scoreFormat != null) {
+                scoreFormatToText(score, scoreFormat)
+            } else null
+
+            if (scoreText.isNullOrEmpty()) {
+                stringResource(R.string.anime_media_details_fab_user_status_completed)
+            } else {
+                // TODO: Show smileys instead for that score format
+                stringResource(
+                    R.string.anime_media_details_fab_user_status_completed_with_score,
+                    scoreText,
+                )
+            }
         }
         MediaListStatus.DROPPED -> if (progressMax == null) {
             stringResource(

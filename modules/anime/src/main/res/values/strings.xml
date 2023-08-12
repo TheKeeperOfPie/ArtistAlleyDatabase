@@ -348,6 +348,8 @@
 
     <string name="anime_media_details_activities_label">Activity</string>
 
+    <string name="anime_media_details_forum_threads_label">Forum threads</string>
+
     <string name="anime_media_details_reviews_label">Reviews</string>
     <string name="anime_media_details_reviews_user_avatar_content_description">Review author avatar</string>
     <string name="anime_media_details_reviews_rating_upvote_content_description">Review rating upvotes</string>

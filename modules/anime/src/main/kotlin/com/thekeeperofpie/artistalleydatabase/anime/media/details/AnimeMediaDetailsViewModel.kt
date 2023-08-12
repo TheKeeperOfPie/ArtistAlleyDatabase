@@ -24,6 +24,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.android_utils.foldPreviousResult
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.transformIf
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListPagingSource
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListOAuthStore
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
@@ -38,11 +39,15 @@ import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils
 import com.thekeeperofpie.artistalleydatabase.anime.character.DetailsCharacter
 import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoritesController
 import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoritesToggleHelper
+import com.thekeeperofpie.artistalleydatabase.anime.forum.ForumThreadSortOption
+import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.ForumThreadEntry
+import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.ForumThreadStatusController
+import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.ForumThreadToggleHelper
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
-import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toFavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaFiltering
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.songs.AnimeSongEntry
 import com.thekeeperofpie.artistalleydatabase.anime.songs.AnimeSongsProvider
 import com.thekeeperofpie.artistalleydatabase.anime.staff.DetailsStaff
@@ -52,6 +57,7 @@ import com.thekeeperofpie.artistalleydatabase.cds.grid.CdEntryGridModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
@@ -84,11 +90,11 @@ class AnimeMediaDetailsViewModel @Inject constructor(
     val settings: AnimeSettings,
     favoritesController: FavoritesController,
     private val activityStatusController: ActivityStatusController,
+    private val threadStatusController: ForumThreadStatusController,
 ) : ViewModel(), DefaultLifecycleObserver {
 
     companion object {
         private const val TAG = "AnimeMediaDetailsViewModel"
-        private var counter = 0
     }
 
     val screenKey = "${AnimeNavDestinations.MEDIA_DETAILS.id}-${UUID.randomUUID()}"
@@ -103,6 +109,9 @@ class AnimeMediaDetailsViewModel @Inject constructor(
     val activityToggleHelper =
         ActivityToggleHelper(aniListApi, activityStatusController, viewModelScope)
 
+    val threadToggleHelper =
+        ForumThreadToggleHelper(aniListApi, threadStatusController, viewModelScope)
+
     val hasAuth = oAuthStore.hasAuth
 
     val refresh = MutableStateFlow(-1L)
@@ -110,6 +119,7 @@ class AnimeMediaDetailsViewModel @Inject constructor(
     var entry by mutableStateOf<LoadingResult<AnimeMediaDetailsScreen.Entry>>(LoadingResult.loading())
     var listStatus by mutableStateOf<MediaListStatusController.Update?>(null)
     var activities by mutableStateOf<List<ActivityEntry>?>(null)
+    var forumThreads by mutableStateOf<List<ForumThreadEntry>?>(null)
     val charactersDeferred = MutableStateFlow(PagingData.empty<DetailsCharacter>())
     val staff = MutableStateFlow(PagingData.empty<DetailsStaff>())
 
@@ -252,25 +262,20 @@ class AnimeMediaDetailsViewModel @Inject constructor(
                 .collectLatest { entry = it }
         }
 
-        viewModelScope.launch(CustomDispatchers.IO) {
-            snapshotFlow { entry.result }
-                .flowOn(CustomDispatchers.Main)
-                .filterNotNull()
-                .flatMapLatest {
-                    combine(flowOf(it), statusController.allChanges(it.mediaId), ::Pair)
-                }
-                .mapLatest { (entry, update) ->
-                    val mediaListEntry = entry.media.mediaListEntry
-                    MediaListStatusController.Update(
-                        mediaId = entry.mediaId,
-                        entry = if (update == null) mediaListEntry else update.entry,
-                    )
-                }
-                .collectLatest {
-                    withContext(CustomDispatchers.Main) {
-                        listStatus = it
-                    }
-                }
+        viewModelScope.launch(CustomDispatchers.Main) {
+            combine(
+                snapshotFlow { entry.result }.filterNotNull().flowOn(CustomDispatchers.Main),
+                statusController.allChanges(mediaId),
+            ) { entry, update ->
+                val mediaListEntry = entry.media.mediaListEntry
+                MediaListStatusController.Update(
+                    mediaId = entry.mediaId,
+                    entry = if (update == null) mediaListEntry else update.entry,
+                )
+            }
+                .catch {}
+                .flowOn(CustomDispatchers.IO)
+                .collectLatest { listStatus = it }
         }
 
         viewModelScope.launch(CustomDispatchers.IO) {
@@ -407,8 +412,42 @@ class AnimeMediaDetailsViewModel @Inject constructor(
                             }
                         }
                 }
+                .catch {}
                 .flowOn(CustomDispatchers.IO)
                 .collectLatest { activities = it }
+        }
+
+        viewModelScope.launch(CustomDispatchers.Main) {
+            snapshotFlow { entry.result }
+                .filterNotNull()
+                .flowOn(CustomDispatchers.Main)
+                .mapLatest {
+                    aniListApi.forumThreadSearch(
+                        null,
+                        false,
+                        null,
+                        mediaCategoryId = it.mediaId,
+                        sort = ForumThreadSortOption.REPLIED_AT.toApiValue(sortAscending = false),
+                        page = 1,
+                    ).page.threads?.filterNotNull().orEmpty()
+                        .map { ForumThreadEntry(thread = it, bodyMarkdown = null) }
+                }
+                .flatMapLatest { threads ->
+                    threadStatusController.allChanges(threads.map { it.thread.id.toString() }
+                        .toSet())
+                        .mapLatest { updates ->
+                            threads.map {
+                                val update = updates[it.thread.id.toString()]
+                                val liked = update?.liked ?: it.liked
+                                val subscribed = update?.subscribed ?: it.subscribed
+                                it.transformIf(liked != it.liked || subscribed != it.subscribed) {
+                                    copy(liked = liked, subscribed = subscribed)
+                                }
+                            }
+                        }
+                }
+                .catch {}
+                .collectLatest { forumThreads = it }
         }
     }
 

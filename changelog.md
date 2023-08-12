@@ -2,6 +2,7 @@
 
 ### Next
 - Add forum notifications
+- Add forum threads to media details
 - Add notes and hidden from status lists to edit entry
 - Update missing news categories and fix filtering logic
 - Update staffMedia UI and add quick edit

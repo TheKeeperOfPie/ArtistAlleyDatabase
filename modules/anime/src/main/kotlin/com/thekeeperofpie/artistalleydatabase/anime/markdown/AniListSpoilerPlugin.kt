@@ -68,6 +68,8 @@ object AniListSpoilerPlugin : AbstractMarkwonPlugin() {
                     } else {
                         spoilerSpan.unveil()
                         widget.postInvalidate()
+                        // Invalidate doesn't seem to be enough
+                        (widget as? TextView)?.run { text = text }
                     }
                 }
 

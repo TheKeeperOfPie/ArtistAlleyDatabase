@@ -116,6 +116,108 @@ fun ThreadCompactCard(thread: ForumThread, modifier: Modifier = Modifier) {
 }
 
 @Composable
+fun ThreadSmallCard(
+    viewer: AuthedUserQuery.Data.Viewer?,
+    entry: ForumThreadEntry,
+    onStatusUpdate: (ForumThreadToggleUpdate) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val navigationCallback = LocalNavigationCallback.current
+    val thread = entry.thread
+    ElevatedCard(
+        onClick = {
+            navigationCallback.onForumThreadClick(thread.title, thread.id.toString())
+        },
+        modifier = Modifier
+            .height(IntrinsicSize.Min)
+            .then(modifier),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(IntrinsicSize.Min)
+        ) {
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(vertical = 10.dp)
+            ) {
+                Text(
+                    text = thread.title.orEmpty(),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Black,
+                    modifier = Modifier.padding(horizontal = 12.dp)
+                )
+
+                val userName = thread.replyUser?.name ?: thread.user?.name
+                val timestamp = (thread.repliedAt ?: thread.createdAt)
+                    .let(AniListUtils::relativeTimestamp)
+                if (userName != null || timestamp != null) {
+                    Text(
+                        text = if (userName != null && timestamp != null) {
+                            stringResource(
+                                R.string.anime_forum_thread_author_and_timestamp,
+                                userName,
+                                timestamp,
+                            )
+                        } else {
+                            userName ?: timestamp.toString()
+                        },
+                        style = MaterialTheme.typography.labelSmall,
+                        modifier = Modifier.padding(horizontal = 12.dp)
+                    )
+                }
+            }
+
+            if (viewer != null) {
+                val liked = entry.liked
+                val subscribed = entry.subscribed
+                IconButton(
+                    onClick = {
+                        onStatusUpdate(
+                            ForumThreadToggleUpdate.Liked(
+                                id = thread.id.toString(),
+                                liked = !liked,
+                                subscribed = subscribed,
+                            )
+                        )
+                    }
+                ) {
+                    Icon(
+                        imageVector = if (liked) Icons.Filled.ThumbUp else Icons.Outlined.ThumbUp,
+                        contentDescription = stringResource(
+                            R.string.anime_forum_thread_like_icon_content_description
+                        ),
+                    )
+                }
+                IconButton(
+                    onClick = {
+                        onStatusUpdate(
+                            ForumThreadToggleUpdate.Subscribe(
+                                id = thread.id.toString(),
+                                liked = liked,
+                                subscribed = !subscribed,
+                            )
+                        )
+                    }
+                ) {
+                    Icon(
+                        imageVector = if (subscribed) {
+                            Icons.Filled.NotificationsActive
+                        } else {
+                            Icons.Filled.NotificationsNone
+                        },
+                        contentDescription = stringResource(
+                            R.string.anime_forum_thread_subscribe_icon_content_description
+                        ),
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
 fun ThreadCard(screenKey: String, thread: ForumThread?, modifier: Modifier = Modifier) {
     val navigationCallback = LocalNavigationCallback.current
     ElevatedCard(
@@ -205,21 +307,22 @@ fun ColumnScope.ThreadCardContent(
 
             Spacer(Modifier.height(12.dp))
 
-            val replyUser = thread?.replyUser
-            if (thread == null || replyUser?.avatar?.large != null) {
+            val user = thread?.replyUser ?: thread?.user
+            if (thread == null || user?.avatar?.large != null) {
                 UserImage(
                     screenKey = screenKey,
                     loading = thread == null,
-                    user = replyUser,
+                    user = user,
                 )
 
                 Spacer(Modifier.height(4.dp))
             }
 
-            val repliedAt = thread?.repliedAt?.let(AniListUtils::relativeTimestamp)
-            if (thread == null || repliedAt != null) {
+            val timestamp = (thread?.repliedAt ?: thread?.createdAt)
+                ?.let(AniListUtils::relativeTimestamp)
+            if (thread == null || timestamp != null) {
                 Text(
-                    text = repliedAt.toString(),
+                    text = timestamp.toString(),
                     style = MaterialTheme.typography.labelSmall,
                     modifier = Modifier
                         .widthIn(max = 180.dp)
@@ -571,14 +674,13 @@ fun ThreadHeader(
                                 )
                             )
                         }
-                    }, modifier = Modifier.size(36.dp)
+                    }
                 ) {
                     Icon(
                         imageVector = if (liked) Icons.Filled.ThumbUp else Icons.Outlined.ThumbUp,
                         contentDescription = stringResource(
                             R.string.anime_forum_thread_like_icon_content_description
                         ),
-                        modifier = Modifier.size(20.dp)
                     )
                 }
                 IconButton(
@@ -592,7 +694,7 @@ fun ThreadHeader(
                                 )
                             )
                         }
-                    }, modifier = Modifier.size(36.dp)
+                    }
                 ) {
                     Icon(
                         imageVector = if (subscribed) {
@@ -603,7 +705,6 @@ fun ThreadHeader(
                         contentDescription = stringResource(
                             R.string.anime_forum_thread_subscribe_icon_content_description
                         ),
-                        modifier = Modifier.size(20.dp)
                     )
                 }
             }

@@ -269,6 +269,7 @@ object ForumThreadScreen {
                             } else {
                                 item("pageIndicatorTop") {
                                     Column {
+                                        HorizontalDivider()
                                         ThreadPageIndicator(
                                             page = page,
                                             pageString = pageString,

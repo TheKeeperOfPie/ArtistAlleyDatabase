@@ -79,6 +79,7 @@ data class AnimeMediaTagEntry(
                             contentDescription = stringResource(
                                 tag.leadingIconContentDescription
                             ),
+                            tint = textColor,
                             modifier = Modifier
                                 .padding(vertical = 4.dp)
                                 .size(16.dp)

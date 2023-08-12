@@ -131,6 +131,9 @@ import com.thekeeperofpie.artistalleydatabase.anime.activity.ListActivitySmallCa
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils
 import com.thekeeperofpie.artistalleydatabase.anime.character.DetailsCharacter
 import com.thekeeperofpie.artistalleydatabase.anime.character.charactersSection
+import com.thekeeperofpie.artistalleydatabase.anime.forum.ThreadSmallCard
+import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.ForumThreadEntry
+import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.ForumThreadToggleUpdate
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaTagEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeader
@@ -195,6 +198,7 @@ object AnimeMediaDetailsScreen {
     private const val STREAMING_EPISODES_ABOVE_FOLD = 3
     private const val REVIEWS_ABOVE_FOLD = 3
     private const val ACTIVITIES_ABOVE_FOLD = 3
+    private const val FORUM_THREADS_ABOVE_FOLD = 3
 
     // Sorted by most relevant for an anime-first viewer
     val RELATION_SORT_ORDER = listOf(
@@ -250,6 +254,7 @@ object AnimeMediaDetailsScreen {
             animeSongs,
             viewModel.cdEntries,
             viewModel.activities,
+            viewModel.forumThreads,
         )
 
         var loadingThresholdPassed by remember { mutableStateOf(false) }
@@ -618,6 +623,17 @@ object AnimeMediaDetailsScreen {
                 )
             },
             colorCalculationState = colorCalculationState,
+        )
+
+        forumThreadsSection(
+            viewer = viewer,
+            viewModel = viewModel,
+            expanded = expandedState::forumThreads,
+            onExpandedChange = { expandedState.forumThreads = it },
+            onClickViewAll = {
+                it.onForumMediaCategoryClick(entry.media.title?.userPreferred, entry.mediaId)
+            },
+            onStatusUpdate = viewModel.threadToggleHelper::toggle,
         )
 
         reviewsSection(
@@ -1654,7 +1670,8 @@ object AnimeMediaDetailsScreen {
                         contentDescription = stringResource(
                             R.string.anime_media_details_streaming_episode_content_description
                         ),
-                        modifier = Modifier.widthIn(max = 200.dp)
+                        modifier = Modifier
+                            .widthIn(max = 200.dp)
                             .combinedClickable(
                                 onClick = { item.url?.let(uriHandler::openUri) },
                                 onLongClick = {
@@ -1781,6 +1798,36 @@ object AnimeMediaDetailsScreen {
                 onClickListEdit = { editViewModel.initialize(it.media) },
                 colorCalculationState = colorCalculationState,
                 clickable = true,
+                modifier = modifier
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, end = 16.dp, bottom = paddingBottom)
+            )
+        }
+    }
+
+    private fun LazyListScope.forumThreadsSection(
+        viewer: AuthedUserQuery.Data.Viewer?,
+        viewModel: AnimeMediaDetailsViewModel,
+        expanded: () -> Boolean,
+        onExpandedChange: (Boolean) -> Unit,
+        onClickViewAll: (AnimeNavigator.NavigationCallback) -> Unit,
+        onStatusUpdate: (ForumThreadToggleUpdate) -> Unit,
+    ) {
+        listSection(
+            titleRes = R.string.anime_media_details_forum_threads_label,
+            values = viewModel.forumThreads,
+            valueToId = { it.thread.id.toString() },
+            aboveFold = FORUM_THREADS_ABOVE_FOLD,
+            hasMoreValues = true,
+            expanded = expanded,
+            onExpandedChange = onExpandedChange,
+            onClickViewAll = onClickViewAll,
+            viewAllContentDescriptionTextRes = R.string.anime_media_details_view_all_content_description,
+        ) { item, paddingBottom, modifier ->
+            ThreadSmallCard(
+                viewer = viewer,
+                entry = item,
+                onStatusUpdate = onStatusUpdate,
                 modifier = modifier
                     .fillMaxWidth()
                     .padding(start = 16.dp, end = 16.dp, bottom = paddingBottom)
@@ -1999,6 +2046,7 @@ object AnimeMediaDetailsScreen {
                 it.streamingEpisodesHidden,
                 it.reviews,
                 it.activities,
+                it.forumThreads,
             )
         },
         restore = {
@@ -2011,6 +2059,7 @@ object AnimeMediaDetailsScreen {
                 streamingEpisodesHidden = it[5],
                 reviews = it[6],
                 activities = it[7],
+                forumThreads = it[8],
             )
         }
     )) {
@@ -2026,6 +2075,7 @@ object AnimeMediaDetailsScreen {
         streamingEpisodesHidden: Boolean = true,
         reviews: Boolean = false,
         activities: Boolean = false,
+        forumThreads: Boolean = false,
     ) {
         var description by mutableStateOf(description)
         var relations by mutableStateOf(relations)
@@ -2035,6 +2085,7 @@ object AnimeMediaDetailsScreen {
         var streamingEpisodesHidden by mutableStateOf(streamingEpisodesHidden)
         var reviews by mutableStateOf(reviews)
         var activities by mutableStateOf(activities)
+        var forumThreads by mutableStateOf(forumThreads)
 
         fun allValues() = listOf(
             description,
@@ -2044,6 +2095,7 @@ object AnimeMediaDetailsScreen {
             streamingEpisodes,
             streamingEpisodesHidden,
             activities,
+            forumThreads,
         )
     }
 
@@ -2057,6 +2109,7 @@ object AnimeMediaDetailsScreen {
         animeSongs: AnimeMediaDetailsViewModel.AnimeSongs?,
         cdEntries: List<CdEntryGridModel>,
         activities: List<AnimeMediaDetailsViewModel.ActivityEntry>?,
+        forumThreads: List<ForumThreadEntry>?,
     ) = remember(
         entry,
         characters.itemCount,
@@ -2191,6 +2244,16 @@ object AnimeMediaDetailsScreen {
             )
         }
 
+        if (!forumThreads.isNullOrEmpty()) {
+            list += SectionIndexInfo.Section.FORUM_THREADS to currentIndex
+            runListSection(
+                size = forumThreads.size,
+                aboveFold = FORUM_THREADS_ABOVE_FOLD,
+                expanded = expandedState.forumThreads,
+                hasMore = true,
+            )
+        }
+
         val reviews = entry.reviews
         if (reviews.isNotEmpty()) {
             list += SectionIndexInfo.Section.REVIEWS to currentIndex
@@ -2222,6 +2285,7 @@ object AnimeMediaDetailsScreen {
             RECOMMENDATIONS(R.string.anime_media_details_recommendations_label),
             REVIEWS(R.string.anime_media_details_reviews_label),
             ACTIVITIES(R.string.anime_media_details_activities_label),
+            FORUM_THREADS(R.string.anime_media_details_forum_threads_label),
         }
     }
 }
