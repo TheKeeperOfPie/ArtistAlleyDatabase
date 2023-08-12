@@ -76,6 +76,7 @@ object AnimeMediaListRow {
         onClickListEdit: (Entry<MediaType>) -> Unit,
         onLongClick: (Entry<MediaType>) -> Unit,
         nextAiringEpisode: MediaPreview.NextAiringEpisode? = entry?.media?.nextAiringEpisode,
+        showDate: Boolean = true,
         colorCalculationState: ColorCalculationState = ColorCalculationState(),
     ) {
         var imageWidthToHeightRatio by remember { MutableSingle(1f) }
@@ -135,24 +136,29 @@ object AnimeMediaListRow {
 
                     Spacer(Modifier.weight(1f))
 
-                    nextAiringEpisode?.let { MediaNextAiringSection(it) }
+                    nextAiringEpisode?.let { MediaNextAiringSection(it, showDate = showDate) }
 
                     val (containerColor, textColor) =
                         colorCalculationState.getColors(entry?.media?.id?.toString())
-                    MediaTagRow(
-                        tags = entry?.tags.orEmpty(),
-                        onTagClick = { id, name ->
-                            if (entry != null) {
-                                navigationCallback.onTagClick(
-                                    entry.media.type ?: com.anilist.type.MediaType.ANIME,
-                                    id,
-                                    name
-                                )
-                            }
-                        },
-                        tagContainerColor = containerColor,
-                        tagTextColor = textColor,
-                    )
+                    val tags = entry?.tags.orEmpty()
+                    if (tags.isEmpty()) {
+                        Spacer(Modifier.height(8.dp))
+                    } else {
+                        MediaTagRow(
+                            tags = tags,
+                            onTagClick = { id, name ->
+                                if (entry != null) {
+                                    navigationCallback.onTagClick(
+                                        entry.media.type ?: com.anilist.type.MediaType.ANIME,
+                                        id,
+                                        name
+                                    )
+                                }
+                            },
+                            tagContainerColor = containerColor,
+                            tagTextColor = textColor,
+                        )
+                    }
                 }
             }
         }

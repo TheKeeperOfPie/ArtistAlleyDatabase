@@ -79,6 +79,7 @@ import com.anilist.ToggleStaffFavoriteMutation
 import com.anilist.ToggleStaffResultQuery
 import com.anilist.ToggleStudioFavoriteMutation
 import com.anilist.ToggleStudioResultQuery
+import com.anilist.UnreadNotificationCountQuery
 import com.anilist.UserByIdQuery
 import com.anilist.UserDetailsAnimePageQuery
 import com.anilist.UserDetailsCharactersPageQuery
@@ -1008,6 +1009,8 @@ open class AuthedAniListApi(
                 commentId = commentId.toInt(),
             )
         )
+
+    open suspend fun unreadNotificationCount() = query(UnreadNotificationCountQuery()).viewer.unreadNotificationCount
 
     // TODO: Use queryCacheAndNetwork for everything
     private suspend fun <D : Query.Data> query(query: Query<D>) =

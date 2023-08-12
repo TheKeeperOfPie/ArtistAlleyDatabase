@@ -29,6 +29,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaFiltering
 import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsController
+import com.thekeeperofpie.artistalleydatabase.anime.notifications.NotificationsController
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationController
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -49,6 +50,7 @@ class AnimeHomeViewModel @Inject constructor(
     activityStatusController: ActivityStatusController,
     settings: AnimeSettings,
     monetizationController: MonetizationController,
+    val notificationsController: NotificationsController,
 ) : ViewModel() {
 
     val unlocked = monetizationController.unlocked
@@ -150,5 +152,6 @@ class AnimeHomeViewModel @Inject constructor(
     fun refresh() {
         newsController.refresh()
         refreshUptimeMillis.value = SystemClock.uptimeMillis()
+        notificationsController.forceRefresh()
     }
 }

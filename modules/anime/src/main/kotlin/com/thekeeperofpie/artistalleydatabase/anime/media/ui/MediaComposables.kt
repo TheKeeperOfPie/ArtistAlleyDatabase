@@ -227,10 +227,13 @@ fun MediaRatingIconsSection(
 }
 
 @Composable
-fun MediaNextAiringSection(nextAiringEpisode: MediaPreview.NextAiringEpisode) {
+fun MediaNextAiringSection(
+    nextAiringEpisode: MediaPreview.NextAiringEpisode,
+    showDate: Boolean = true,
+) {
     val context = LocalContext.current
     val airingAt = remember(nextAiringEpisode) {
-        MediaUtils.formatAiringAt(context, nextAiringEpisode.airingAt * 1000L)
+        MediaUtils.formatAiringAt(context, nextAiringEpisode.airingAt * 1000L, showDate = showDate)
     }
 
     // TODO: De-dupe airingAt and remainingTime if both show a specific date

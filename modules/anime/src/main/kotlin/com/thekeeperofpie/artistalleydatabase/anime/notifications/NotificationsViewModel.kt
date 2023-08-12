@@ -56,6 +56,7 @@ class NotificationsViewModel @Inject constructor(
     commentStatusController: ForumThreadCommentStatusController,
     private val ignoreList: AnimeMediaIgnoreList,
     markwon: Markwon,
+    notificationsController: NotificationsController,
 ) : ViewModel() {
 
     val colorMap = mutableStateMapOf<String, Pair<Color, Color>>()
@@ -82,6 +83,10 @@ class NotificationsViewModel @Inject constructor(
                     AniListPagingSource {
                         val result =
                             aniListApi.notifications(it, resetNotificationCount = it == 1)
+
+                        if (it == 1) {
+                            notificationsController.clear()
+                        }
 
                         val notifications = result.page?.notifications?.filterNotNull().orEmpty()
                         val mediaToFetch = mutableListOf<String>()

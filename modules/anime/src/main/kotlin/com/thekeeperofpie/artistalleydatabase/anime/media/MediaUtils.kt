@@ -32,6 +32,7 @@ import com.anilist.type.MediaSource
 import com.anilist.type.MediaStatus
 import com.anilist.type.MediaType
 import com.anilist.type.ScoreFormat
+import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.transformIf
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.anime.R
@@ -388,10 +389,12 @@ object MediaUtils {
                     DateUtils.FORMAT_SHOW_TIME
         )
 
-    fun formatAiringAt(context: Context, timeInMillis: Long): String = DateUtils.formatDateTime(
+    fun formatAiringAt(context: Context, timeInMillis: Long, showDate: Boolean = true): String = DateUtils.formatDateTime(
         context,
         timeInMillis,
-        BASE_DATE_FORMAT_FLAGS or DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_WEEKDAY or DateUtils.FORMAT_SHOW_TIME
+        (BASE_DATE_FORMAT_FLAGS or DateUtils.FORMAT_SHOW_TIME).transformIf(showDate) {
+            this or DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_WEEKDAY
+        }
     )
 
     fun formatRemainingTime(timeInMillis: Long): CharSequence = DateUtils.getRelativeTimeSpanString(

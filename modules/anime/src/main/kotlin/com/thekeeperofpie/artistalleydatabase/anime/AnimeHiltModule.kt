@@ -18,6 +18,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.UserMediaListControlle
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaLicensorsController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaTagsController
 import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsController
+import com.thekeeperofpie.artistalleydatabase.anime.notifications.NotificationsController
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -120,6 +121,13 @@ object AnimeHiltModule {
     @Singleton
     @Provides
     fun provideForumThreadCommentStatusController() = ForumThreadCommentStatusController()
+
+    @Singleton
+    @Provides
+    fun provideNotificationsController(
+        scopedApplication: ScopedApplication,
+        aniListApi: AuthedAniListApi,
+    ) = NotificationsController(scopedApplication, aniListApi)
 
     @Singleton
     @Provides

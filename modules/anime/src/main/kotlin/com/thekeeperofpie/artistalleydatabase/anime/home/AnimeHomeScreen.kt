@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
@@ -44,6 +45,8 @@ import androidx.compose.material.icons.filled.PlusOne
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
@@ -228,15 +231,25 @@ object AnimeHomeScreen {
                                 }
                             }
 
-                            // TODO: Unread notification count
                             if (viewer != null) {
-                                IconButton(onClick = navigationCallback::onNotificationsClick) {
-                                    Icon(
-                                        imageVector = Icons.Filled.Notifications,
-                                        contentDescription = stringResource(
-                                            R.string.anime_notifications_icon_content_description
-                                        ),
-                                    )
+                                BadgedBox(badge = {
+                                    val unreadCount = viewModel.notificationsController.unreadCount
+                                    if (unreadCount > 0) {
+                                        Badge(modifier = Modifier.offset(x = (-18).dp, y = 6.dp)) {
+                                            Text(
+                                                text = unreadCount.toString()
+                                            )
+                                        }
+                                    }
+                                }) {
+                                    IconButton(onClick = navigationCallback::onNotificationsClick) {
+                                        Icon(
+                                            imageVector = Icons.Filled.Notifications,
+                                            contentDescription = stringResource(
+                                                R.string.anime_notifications_icon_content_description
+                                            ),
+                                        )
+                                    }
                                 }
                             }
 
@@ -727,7 +740,8 @@ object AnimeHomeScreen {
                         if ((entry.progress ?: 0) < (maxProgress ?: 1)) {
                             IconButton(
                                 onClick = { onClickIncrementProgress(entry) },
-                                modifier = Modifier.align(Alignment.TopEnd)
+                                modifier = Modifier
+                                    .align(Alignment.TopEnd)
                                     .clip(RoundedCornerShape(bottomStart = 12.dp))
                                     .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.66f))
                                     .size(36.dp)

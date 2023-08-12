@@ -82,6 +82,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.markdown.LocalMarkwon
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.LocalMediaTagDialogController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaTagDialogController
+import com.thekeeperofpie.artistalleydatabase.anime.notifications.NotificationsController
 import com.thekeeperofpie.artistalleydatabase.anime.utils.FullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.art.ArtEntryNavigator
@@ -164,6 +165,9 @@ class MainActivity : ComponentActivity() {
 
     @Inject
     lateinit var markwon: Markwon
+
+    @Inject
+    lateinit var notificationsController: NotificationsController
 
     private val fullScreenImageHandler = FullscreenImageHandler()
 
@@ -647,5 +651,10 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        notificationsController.refresh()
     }
 }

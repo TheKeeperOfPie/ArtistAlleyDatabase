@@ -133,3 +133,9 @@ query Licensors($mediaType: ExternalLinkMediaType!) {
         isDisabled
     }
 }
+
+query UnreadNotificationCount {
+    Viewer @nonnull {
+        unreadNotificationCount @nonnull
+    }
+}

@@ -1,7 +1,7 @@
 # Changelog
 
 ### Next
-- 
+- Add unread notification badge
 
 ### 0.41
 - Add forum notifications

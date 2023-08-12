@@ -230,6 +230,7 @@ object AiringScheduleScreen {
                                                         airingAt = it.airingAt,
                                                     )
                                                 },
+                                                showDate = false,
                                                 colorCalculationState = colorCalculationState,
                                             )
                                         }
