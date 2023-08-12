@@ -1,6 +1,9 @@
 # Changelog
 
 ### Next
+- 
+
+### 0.41
 - Add forum notifications
 - Add forum threads to media details
 - Add notes and hidden from status lists to edit entry
