@@ -44,7 +44,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.anilist.AuthedUserQuery
-import com.anilist.fragment.MediaPreviewWithDescription
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.R
@@ -192,7 +191,7 @@ object AnimeUserListScreen {
                                             val expanded = expandedState[it.name] ?: true
                                             item(
                                                 "header-${it.name}",
-                                                span = { GridItemSpan(maxCurrentLineSpan) },
+                                                span = { GridItemSpan(maxLineSpan) },
                                             ) {
                                                 Header(
                                                     name = it.name,

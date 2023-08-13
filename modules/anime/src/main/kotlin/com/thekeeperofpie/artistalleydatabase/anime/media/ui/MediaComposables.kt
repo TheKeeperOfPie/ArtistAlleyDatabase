@@ -366,8 +366,8 @@ fun MediaListQuickEditIconButton(
         modifier = modifier
             .clip(RoundedCornerShape(topEnd = 12.dp))
             .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.66f))
-            .padding(padding)
             .clickable(onClick = onClick)
+            .padding(padding)
     ) {
         val (imageVector, contentDescriptionRes) = if (forceListEditIcon) {
             Icons.Filled.Edit to

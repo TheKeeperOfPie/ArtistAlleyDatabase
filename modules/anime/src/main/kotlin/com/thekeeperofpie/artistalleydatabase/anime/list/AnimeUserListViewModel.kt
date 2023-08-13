@@ -18,9 +18,11 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatc
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaStatusAware
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.UserMediaListController
+import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaFiltering
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MangaSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaGenresController
@@ -40,9 +42,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -60,6 +62,7 @@ class AnimeUserListViewModel @Inject constructor(
     private val mediaLicensorsController: MediaLicensorsController,
     private val userMediaListController: UserMediaListController,
     private val featureOverrideProvider: FeatureOverrideProvider,
+    private val mediaListStatusController: MediaListStatusController,
 ) : ViewModel() {
 
     var mediaViewOption by mutableStateOf(settings.mediaViewOption.value)
@@ -159,27 +162,69 @@ class AnimeUserListViewModel @Inject constructor(
                 }
             }
 
+            val mediaUpdates = response.mapLatest {
+                it.result?.flatMap { it.entries.map { it.media.id.toString() } }?.toSet().orEmpty()
+            }
+                .distinctUntilChanged()
+                .flatMapLatest(mediaListStatusController::allChanges)
+
             @Suppress("UNCHECKED_CAST")
             combine(
                 response,
+                mediaUpdates,
                 snapshotFlow { query }.debounce(500.milliseconds),
                 (sortFilterController as? AnimeSortFilterController<MediaListSortOption>)?.filterParams()
                     ?: (sortFilterController as MangaSortFilterController<MediaListSortOption>).filterParams(),
                 ::FilterParams
-            ).map { (lists, query, filterParams) ->
-                lists.transformResult {
-                    it.filter {
-                        val listStatuses = filterParams.listStatuses
-                            .filter { it.state == FilterIncludeExcludeState.INCLUDE }
-                            .map { it.value }
-                        if (listStatuses.isEmpty()) {
-                            true
-                        } else {
-                            listStatuses.contains(it.status)
+            ).flatMapLatest { (lists, mediaUpdates, query, filterParams) ->
+                combine(
+                    ignoreList.updates,
+                    settings.showAdult,
+                    settings.showLessImportantTags,
+                    settings.showSpoilerTags,
+                ) { ignoredIds, showAdult, showLessImportantTags, showSpoilerTags ->
+                    lists.transformResult {
+                        it.filter {
+                            val listStatuses = filterParams.listStatuses
+                                .filter { it.state == FilterIncludeExcludeState.INCLUDE }
+                                .map { it.value }
+                            if (listStatuses.isEmpty()) {
+                                true
+                            } else {
+                                listStatuses.contains(it.status)
+                            }
                         }
+                            .map {
+                                it.copy(
+                                    entries = it.entries.mapNotNull {
+                                        applyMediaFiltering(
+                                            statuses = mediaUpdates,
+                                            ignoredIds = ignoredIds,
+                                            showAdult = showAdult,
+                                            showIgnored = true,
+                                            showLessImportantTags = showLessImportantTags,
+                                            showSpoilerTags = showSpoilerTags,
+                                            entry = it,
+                                            transform = { it },
+                                            media = it.media,
+                                            copy = { mediaListStatus, progress, progressVolumes, scoreRaw, ignored, showLessImportantTags, showSpoilerTags ->
+                                                copy(
+                                                    mediaListStatus = mediaListStatus,
+                                                    progress = progress,
+                                                    progressVolumes = progressVolumes,
+                                                    scoreRaw = scoreRaw,
+                                                    ignored = ignored,
+                                                    showLessImportantTags = showLessImportantTags,
+                                                    showSpoilerTags = showSpoilerTags,
+                                                )
+                                            }
+                                        )
+                                    }
+                                )
+                            }
+                            .map { toFilteredEntries(query, filterParams, it) }
+                            .distinctBy { it.name }
                     }
-                        .map { toFilteredEntries(query, filterParams, it) }
-                        .distinctBy { it.name }
                 }
             }
                 .flowOn(CustomDispatchers.IO)
@@ -265,13 +310,25 @@ class AnimeUserListViewModel @Inject constructor(
 
         return ListEntry(
             name = list.name,
-            entries = filteredEntries.map { MediaEntry(it.media) }
+            entries = filteredEntries.map {
+                MediaEntry(
+                    it.media,
+                    mediaListStatus = it.mediaListStatus,
+                    progress = it.progress,
+                    progressVolumes = it.progressVolumes,
+                    scoreRaw = it.scoreRaw,
+                    ignored = it.ignored,
+                    showLessImportantTags = it.showLessImportantTags,
+                    showSpoilerTags = it.showSpoilerTags,
+                )
+            }
                 .distinctBy { it.media.id },
         )
     }
 
     private data class FilterParams(
         val response: LoadingResult<List<UserMediaListController.ListEntry>>,
+        val mediaUpdates: Map<String, MediaListStatusController.Update>,
         val query: String,
         val filterParams: MediaSortFilterController.FilterParams<MediaListSortOption>,
     )
