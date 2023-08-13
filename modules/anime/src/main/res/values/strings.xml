@@ -360,6 +360,7 @@
     <string name="anime_media_details_more_actions_content_description">More actions</string>
     <string name="anime_media_details_open_external">Open in external</string>
     <string name="anime_media_details_open_external_icon_content_description">Open in external</string>
+    <string name="anime_media_details_error_loading">Error loading media</string>
 
     <string name="anime_media_edit_date_today_content_description">Set to today</string>
     <string name="anime_media_edit_date_start_date_label">Start</string>
@@ -417,6 +418,9 @@
 
     <string name="anime_media_current_progress">%1$s/%2$s</string>
     <string name="anime_media_current_progress_unknown_max">%1$s/?</string>
+
+    <string name="anime_media_tag_info_content_description">Tag details</string>
+    <string name="anime_media_genre_info_content_description">Genre details</string>
 
     <string name="anime_user_error_loading">Error loading user</string>
 

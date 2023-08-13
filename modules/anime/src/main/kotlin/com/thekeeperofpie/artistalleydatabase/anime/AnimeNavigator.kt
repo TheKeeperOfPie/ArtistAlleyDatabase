@@ -166,6 +166,8 @@ object AnimeNavigator {
                 },
                 upIconOption = UpIconOption.Back(navHostController),
                 viewModel = viewModel,
+                tagId = tagId,
+                genre = genre,
                 scrollStateSaver = ScrollStateSaver(),
             )
         }

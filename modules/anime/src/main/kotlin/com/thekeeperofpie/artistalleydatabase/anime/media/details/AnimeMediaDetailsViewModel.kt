@@ -33,6 +33,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.AppMediaPlayer
+import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivitySortOption
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityStatusAware
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityStatusController
@@ -293,6 +294,7 @@ class AnimeMediaDetailsViewModel @Inject constructor(
                     }
             }
                 .foldPreviousResult()
+                .catch { emit(LoadingResult.error(R.string.anime_media_details_error_loading, it))}
                 .flowOn(CustomDispatchers.IO)
                 .collectLatest { entry = it }
         }
