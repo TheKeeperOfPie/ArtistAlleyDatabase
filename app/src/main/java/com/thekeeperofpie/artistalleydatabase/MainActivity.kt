@@ -80,8 +80,12 @@ import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.markdown.LocalMarkwon
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
+import com.thekeeperofpie.artistalleydatabase.anime.media.LocalMediaGenreDialogController
 import com.thekeeperofpie.artistalleydatabase.anime.media.LocalMediaTagDialogController
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaGenreDialogController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaTagDialogController
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaGenrePreview
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaTagPreview
 import com.thekeeperofpie.artistalleydatabase.anime.notifications.NotificationsController
 import com.thekeeperofpie.artistalleydatabase.anime.utils.FullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
@@ -161,6 +165,9 @@ class MainActivity : ComponentActivity() {
     lateinit var mediaTagDialogController: MediaTagDialogController
 
     @Inject
+    lateinit var mediaGenreDialogController: MediaGenreDialogController
+
+    @Inject
     lateinit var appMetadataProvider: AppMetadataProvider
 
     @Inject
@@ -213,6 +220,7 @@ class MainActivity : ComponentActivity() {
                     LocalMonetizationProvider provides monetizationProvider,
                     LocalSubscriptionProvider provides subscriptionProvider,
                     LocalMediaTagDialogController provides mediaTagDialogController,
+                    LocalMediaGenreDialogController provides mediaGenreDialogController,
                     LocalAppUpdateChecker provides appUpdateChecker,
                     LocalLanguageOptionMedia provides languageOptionMedia,
                     LocalLanguageOptionCharacters provides languageOptionCharacters,
@@ -296,8 +304,15 @@ class MainActivity : ComponentActivity() {
 
                 val tagShown = mediaTagDialogController.tagShown
                 if (tagShown != null) {
-                    AnimeMediaListScreen.TagPreview(tag = tagShown) {
+                    MediaTagPreview(tag = tagShown) {
                         mediaTagDialogController.tagShown = null
+                    }
+                }
+
+                val genreShown = mediaGenreDialogController.genreShown
+                if (genreShown != null) {
+                    MediaGenrePreview(genre = genreShown) {
+                        mediaGenreDialogController.genreShown = null
                     }
                 }
 

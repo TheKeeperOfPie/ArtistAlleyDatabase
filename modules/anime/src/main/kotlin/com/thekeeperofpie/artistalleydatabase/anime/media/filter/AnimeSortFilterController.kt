@@ -45,6 +45,7 @@ class AnimeSortFilterController<SortType : SortOption>(
     settings: AnimeSettings,
     featureOverrideProvider: FeatureOverrideProvider,
     mediaTagsController: MediaTagsController,
+    mediaGenresController: MediaGenresController,
     mediaLicensorsController: MediaLicensorsController,
 ) : MediaSortFilterController<SortType, AnimeSortFilterController.InitialParams<SortType>>(
     sortTypeEnumClass = sortTypeEnumClass,
@@ -52,6 +53,7 @@ class AnimeSortFilterController<SortType : SortOption>(
     settings = settings,
     featureOverrideProvider = featureOverrideProvider,
     mediaTagsController = mediaTagsController,
+    mediaGenresController = mediaGenresController,
     mediaLicensorsController = mediaLicensorsController,
     mediaType = MediaType.ANIME,
 ) {

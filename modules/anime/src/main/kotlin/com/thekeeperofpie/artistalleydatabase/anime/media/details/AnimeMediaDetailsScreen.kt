@@ -109,7 +109,6 @@ import coil.compose.AsyncImage
 import coil.size.Dimension
 import com.anilist.AuthedUserQuery
 import com.anilist.MediaDetailsQuery.Data.Media
-import com.anilist.fragment.MediaPreview
 import com.anilist.type.ExternalLinkType
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaRankType
@@ -136,6 +135,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.ForumThreadEntr
 import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.ForumThreadToggleUpdate
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaTagEntry
+import com.thekeeperofpie.artistalleydatabase.anime.media.LocalMediaGenreDialogController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeader
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderValues
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewEntry
@@ -225,7 +225,6 @@ object AnimeMediaDetailsScreen {
         viewModel: AnimeMediaDetailsViewModel = hiltViewModel(),
         upIconOption: UpIconOption,
         headerValues: MediaHeaderValues,
-        onGenreLongClick: (String) -> Unit = {},
         onCharacterLongClick: (String) -> Unit = {},
         onStaffLongClick: (String) -> Unit = {},
     ) {
@@ -477,7 +476,6 @@ object AnimeMediaDetailsScreen {
                                     characters = characters,
                                     staff = staff,
                                     onClickListEdit = { editViewModel.initialize(it.media) },
-                                    onGenreLongClick = onGenreLongClick,
                                     onCharacterLongClick = onCharacterLongClick,
                                     onStaffLongClick = onStaffLongClick,
                                     expandedState = expandedState,
@@ -506,7 +504,6 @@ object AnimeMediaDetailsScreen {
         characters: LazyPagingItems<DetailsCharacter>,
         staff: LazyPagingItems<DetailsStaff>,
         onClickListEdit: (AnimeMediaListRow.Entry) -> Unit,
-        onGenreLongClick: (String) -> Unit,
         onCharacterLongClick: (String) -> Unit,
         onStaffLongClick: (String) -> Unit,
         expandedState: ExpandedState,
@@ -514,10 +511,7 @@ object AnimeMediaDetailsScreen {
         coverImageWidthToHeightRatio: () -> Float,
     ) {
         val screenKey = viewModel.screenKey
-        genreSection(
-            entry = entry,
-            onGenreLongClick = onGenreLongClick,
-        )
+        genreSection(entry = entry)
 
         descriptionSection(
             markdownText = entry.media.description,
@@ -647,13 +641,11 @@ object AnimeMediaDetailsScreen {
         )
     }
 
-    private fun LazyListScope.genreSection(
-        entry: Entry,
-        onGenreLongClick: (String) -> Unit,
-    ) {
+    private fun LazyListScope.genreSection(entry: Entry) {
         if (entry.genres.isNotEmpty()) {
             item("genreSection") {
                 val navigationCallback = LocalNavigationCallback.current
+                val mediaGenreDialogController = LocalMediaGenreDialogController.current
                 FlowRow(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier
@@ -673,7 +665,7 @@ object AnimeMediaDetailsScreen {
                             onLongClickLabel = stringResource(
                                 R.string.anime_media_tag_long_click_content_description
                             ),
-                            onLongClick = { onGenreLongClick(it.name) },
+                            onLongClick = { mediaGenreDialogController.onLongClickGenre(it.name) },
                             label = { AutoHeightText(it.name) },
                             colors = assistChipColors(
                                 containerColor = it.color,

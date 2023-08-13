@@ -38,7 +38,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
@@ -54,6 +53,7 @@ abstract class MediaSortFilterController<SortType : SortOption, ParamsType : Med
     settings: AnimeSettings,
     featureOverrideProvider: FeatureOverrideProvider,
     private val mediaTagsController: MediaTagsController,
+    private val mediaGenresController: MediaGenresController,
     private val mediaLicensorsController: MediaLicensorsController,
     private val mediaType: MediaType,
 ) : SortFilterController(settings, featureOverrideProvider) {
@@ -242,13 +242,7 @@ abstract class MediaSortFilterController<SortType : SortOption, ParamsType : Med
         }
 
         viewModel.viewModelScope.launch(CustomDispatchers.Main) {
-            refreshUptimeMillis.mapLatest {
-                aniListApi.genres()
-                    .genreCollection
-                    ?.filterNotNull()
-                    .orEmpty()
-            }
-                .distinctUntilChanged()
+            mediaGenresController.genres
                 .flatMapLatest { genres ->
                     settings.showAdult.mapLatest { showAdult ->
                         FilterEntry.values(genres.filter { showAdult || it != "Hentai" })

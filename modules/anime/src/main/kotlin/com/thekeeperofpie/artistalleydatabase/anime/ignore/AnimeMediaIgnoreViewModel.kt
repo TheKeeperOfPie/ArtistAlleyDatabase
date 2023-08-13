@@ -26,6 +26,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusControl
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaStatusChanges
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeSortFilterController
+import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaGenresController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaLicensorsController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaTagsController
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow
@@ -54,6 +55,7 @@ class AnimeMediaIgnoreViewModel @Inject constructor(
     private val ignoreList: AnimeMediaIgnoreList,
     private val statusController: MediaListStatusController,
     mediaTagsController: MediaTagsController,
+    mediaGenresController: MediaGenresController,
     mediaLicensorsController: MediaLicensorsController,
     featureOverrideProvider: FeatureOverrideProvider,
 ) : ViewModel() {
@@ -72,6 +74,7 @@ class AnimeMediaIgnoreViewModel @Inject constructor(
         settings = settings,
         featureOverrideProvider = featureOverrideProvider,
         mediaTagsController = mediaTagsController,
+        mediaGenresController = mediaGenresController,
         mediaLicensorsController = mediaLicensorsController,
     )
 

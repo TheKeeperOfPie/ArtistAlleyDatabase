@@ -3,6 +3,7 @@
 ### Next
 - Add unread notification badge
 - Add recommendation voting, doesn't support creating one
+- Add long press genre to show description
 - Show score in edit preview icon when media completed
 
 ### 0.41

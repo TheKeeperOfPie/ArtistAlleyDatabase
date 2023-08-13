@@ -12,9 +12,11 @@ import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.ForumThreadStat
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
 import com.thekeeperofpie.artistalleydatabase.anime.markdown.AniListSpoilerPlugin
 import com.thekeeperofpie.artistalleydatabase.anime.markdown.AniListTempPlugin
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaGenreDialogController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaTagDialogController
 import com.thekeeperofpie.artistalleydatabase.anime.media.UserMediaListController
+import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaGenresController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaLicensorsController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaTagsController
 import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsController
@@ -77,6 +79,13 @@ object AnimeHiltModule {
 
     @Singleton
     @Provides
+    fun provideMediaGenresController(
+        scopedApplication: ScopedApplication,
+        aniListApi: AuthedAniListApi,
+    ) = MediaGenresController(scopedApplication, aniListApi)
+
+    @Singleton
+    @Provides
     fun provideUserMediaListController(
         scopedApplication: ScopedApplication,
         aniListApi: AuthedAniListApi,
@@ -107,6 +116,10 @@ object AnimeHiltModule {
     @Provides
     fun provideMediaTagDialogController(mediaTagsController: MediaTagsController) =
         MediaTagDialogController(mediaTagsController)
+
+    @Singleton
+    @Provides
+    fun provideMediaGenreDialogController() = MediaGenreDialogController()
 
     @Singleton
     @Provides

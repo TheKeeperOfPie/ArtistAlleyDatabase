@@ -10,11 +10,10 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.filter.TagSection
 class MediaTagDialogController(
     private val mediaTagsController: MediaTagsController,
 ){
-
     var tagShown by mutableStateOf<TagSection.Tag?>(null)
 
     fun onLongClickTag(tagId: String) {
-        tagShown = mediaTagsController.tags.value.values
+        tagShown = mediaTagsController.tags.replayCache.firstOrNull().orEmpty().values
             .asSequence()
             .mapNotNull { it.findTag(tagId) }
             .firstOrNull()

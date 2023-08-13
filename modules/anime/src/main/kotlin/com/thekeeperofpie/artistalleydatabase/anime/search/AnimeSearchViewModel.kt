@@ -34,6 +34,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusControl
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaStatusChanges
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MangaSortFilterController
+import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaGenresController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaLicensorsController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaTagsController
@@ -71,6 +72,7 @@ class AnimeSearchViewModel @Inject constructor(
     val ignoreList: AnimeMediaIgnoreList,
     private val statusController: MediaListStatusController,
     mediaTagsController: MediaTagsController,
+    mediaGenresController: MediaGenresController,
     mediaLicensorsController: MediaLicensorsController,
     featureOverrideProvider: FeatureOverrideProvider,
     private val monetizationController: MonetizationController,
@@ -92,6 +94,7 @@ class AnimeSearchViewModel @Inject constructor(
         settings = settings,
         featureOverrideProvider = featureOverrideProvider,
         mediaTagsController = mediaTagsController,
+        mediaGenresController = mediaGenresController,
         mediaLicensorsController = mediaLicensorsController,
     )
 
@@ -101,6 +104,7 @@ class AnimeSearchViewModel @Inject constructor(
         settings = settings,
         featureOverrideProvider = featureOverrideProvider,
         mediaTagsController = mediaTagsController,
+        mediaGenresController = mediaGenresController,
         mediaLicensorsController = mediaLicensorsController,
     )
 

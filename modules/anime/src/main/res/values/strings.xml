@@ -839,4 +839,22 @@
     <string name="anime_forum_search_clear">Clear</string>
     <string name="anime_forum_thread_viewing_comment_tree">Viewing single comment tree</string>
     <string name="anime_forum_thread_comment_tree_view_parent_button">Open parent</string>
+    <string name="anime_media_genre_action_description">A work that is focused on characters physically fighting one another. This can involve or escalate to otherworldly levels.</string>
+    <string name="anime_media_genre_adventure_description">A work depicting characters exploring and learning about their world. A focus should be on the travel from one location to the next.</string>
+    <string name="anime_media_genre_comedy_description">A work that is focused on making the audience laugh.</string>
+    <string name="anime_media_genre_drama_description">A work that is intended to be more serious than comedic in tone, however comedy and drama are not mutually exclusive.</string>
+    <string name="anime_media_genre_fantasy_description">A work that takes place in a fantastical world as compared to our world. Typically has some focus on medieval settings but this is not required.</string>
+    <string name="anime_media_genre_horror_description">A work that is meant to evoke fear or disgust.</string>
+    <string name="anime_media_genre_mecha_description">A work that has a significant focus on mechs. Will often be paired with Sci-Fi.</string>
+    <string name="anime_media_genre_mahou_shoujo_description">Also called \"magical girl,\" the mahou shoujo genre is centered around young girls that possess magical abilities, typically used through transformation sequences with a magical companion of some sort.</string>
+    <string name="anime_media_genre_music_description">A work thats story has some focus on music, whether its the production or performance of music.</string>
+    <string name="anime_media_genre_mystery_description">A work that has a focus on a mystery being solved. May be associated with crimes of some sort.</string>
+    <string name="anime_media_genre_psychological_description">A work that focuses internal motivations and desires to explore the emotional and mental states of the characters/world.</string>
+    <string name="anime_media_genre_romance_description">A work that focuses on a romantic relationship being formed between characters.</string>
+    <string name="anime_media_genre_sci_fi_description">"A work that has focuses on futuristic settings and technology. "</string>
+    <string name="anime_media_slice_of_life_action_description">A work that focuses on the day to day lives of the characters. Will typically be mutually exclusive with Action, Adventure, and Thriller genres.</string>
+    <string name="anime_media_genre_sports_description">A work that focuses on a sport or competitive game of some sort.</string>
+    <string name="anime_media_genre_supernatural_description">A work that takes place in \"the real world\" but has fantastical elements in that world.</string>
+    <string name="anime_media_genre_thriller_description">A work that focuses on inducing suspense, surprise, and anxiety in the viewer.</string>
+    <string name="anime_media_genre_description_attribution">Description provided by AniList</string>
 </resources>

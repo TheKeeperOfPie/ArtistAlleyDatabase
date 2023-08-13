@@ -4,7 +4,6 @@ import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -15,20 +14,16 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.anime.R
-import com.thekeeperofpie.artistalleydatabase.anime.media.filter.TagSection
 
 @OptIn(ExperimentalMaterialApi::class)
 object AnimeMediaListScreen {
@@ -138,35 +133,5 @@ object AnimeMediaListScreen {
         ) {
             CircularProgressIndicator()
         }
-    }
-
-    @Composable
-    fun TagPreview(
-        tag: TagSection.Tag,
-        onDismiss: () -> Unit,
-    ) {
-        AlertDialog(
-            onDismissRequest = onDismiss,
-            title = { Text(tag.name) },
-            text = {
-                Column {
-                    if (tag.category != null) {
-                        Text(
-                            tag.category,
-                            style = MaterialTheme.typography.labelSmall,
-                            modifier = Modifier.padding(bottom = 10.dp)
-                        )
-                    }
-                    Text(
-                        tag.description ?: stringResource(R.string.anime_media_tag_no_description_error)
-                    )
-                }
-            },
-            confirmButton = {
-                TextButton(onClick = onDismiss) {
-                    Text(text = stringResource(UtilsStringR.close))
-                }
-            }
-        )
     }
 }

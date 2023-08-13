@@ -249,7 +249,6 @@ object AnimeNavigator {
                 viewModel = viewModel,
                 upIconOption = UpIconOption.Back(navHostController),
                 headerValues = headerValues,
-                onGenreLongClick = { /*TODO*/ },
                 onCharacterLongClick = { /*TODO*/ },
                 onStaffLongClick = { /*TODO*/ },
             )
