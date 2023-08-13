@@ -255,10 +255,9 @@ object MediaGridCard {
 
                 if (viewer != null && entry != null) {
                     MediaListQuickEditIconButton(
+                        viewer = viewer,
                         mediaType = entry.type,
-                        listStatus = entry.mediaListStatus,
-                        progress = entry.progress,
-                        progressVolumes = entry.progressVolumes,
+                        media = entry,
                         maxProgress = entry.maxProgress,
                         maxProgressVolumes = entry.maxProgressVolumes,
                         onClick = { onClickListEdit(entry) },

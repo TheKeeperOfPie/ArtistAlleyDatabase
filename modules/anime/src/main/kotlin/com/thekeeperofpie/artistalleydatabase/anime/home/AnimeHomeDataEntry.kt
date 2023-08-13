@@ -12,8 +12,9 @@ data class AnimeHomeDataEntry(
     data class MediaEntry(
         override val media: MediaPreviewWithDescription,
         override val mediaListStatus: MediaListStatus? = media.mediaListEntry?.status,
-        override val progress: Int? = null,
-        override val progressVolumes: Int? = null,
+        override val progress: Int? = media.mediaListEntry?.progress,
+        override val progressVolumes: Int? = media.mediaListEntry?.progressVolumes,
+        override val scoreRaw: Double? = media.mediaListEntry?.score,
         override val ignored: Boolean = false,
         override val showLessImportantTags: Boolean = false,
         override val showSpoilerTags: Boolean = false,

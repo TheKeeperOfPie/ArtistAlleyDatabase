@@ -37,6 +37,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
@@ -50,9 +51,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import coil.size.Dimension
 import com.anilist.AuthedUserQuery
-import com.anilist.fragment.MediaHeaderData
 import com.anilist.fragment.MediaPreview
-import com.anilist.type.MediaListStatus
 import com.anilist.type.RecommendationRating
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.material.placeholder
@@ -77,14 +76,14 @@ import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
 object AnimeMediaListRow {
 
     @Composable
-    operator fun <MediaType : MediaPreview> invoke(
+    operator fun invoke(
         screenKey: String,
-        entry: Entry<MediaType>?,
+        entry: Entry?,
         viewer: AuthedUserQuery.Data.Viewer?,
         modifier: Modifier = Modifier,
         label: (@Composable () -> Unit)? = null,
-        onClickListEdit: (Entry<MediaType>) -> Unit,
-        onLongClick: (Entry<MediaType>) -> Unit,
+        onClickListEdit: (Entry) -> Unit,
+        onLongClick: (Entry) -> Unit,
         colorCalculationState: ColorCalculationState,
         nextAiringEpisode: MediaPreview.NextAiringEpisode? = entry?.media?.nextAiringEpisode,
         showDate: Boolean = true,
@@ -182,12 +181,12 @@ object AnimeMediaListRow {
     }
 
     @Composable
-    private fun <MediaType : MediaPreview> CoverImage(
+    private fun CoverImage(
         screenKey: String,
-        entry: Entry<MediaType>?,
+        entry: Entry?,
         viewer: AuthedUserQuery.Data.Viewer?,
-        onClick: (Entry<MediaType>) -> Unit = {},
-        onClickListEdit: (Entry<MediaType>) -> Unit,
+        onClick: (Entry) -> Unit = {},
+        onClickListEdit: (Entry) -> Unit,
         colorCalculationState: ColorCalculationState,
         onRatioAvailable: (Float) -> Unit,
         recommendation: RecommendationData?,
@@ -322,10 +321,9 @@ object AnimeMediaListRow {
 
                 if (viewer != null && entry != null) {
                     MediaListQuickEditIconButton(
+                        viewer = viewer,
                         mediaType = entry.media.type,
-                        listStatus = entry.mediaListStatus,
-                        progress = entry.progress,
-                        progressVolumes = entry.progressVolumes,
+                        media = entry,
                         maxProgress = MediaUtils.maxProgress(entry.media),
                         maxProgressVolumes = entry.media.volumes,
                         onClick = { onClickListEdit(entry) },
@@ -337,10 +335,7 @@ object AnimeMediaListRow {
     }
 
     @Composable
-    private fun <MediaType : MediaPreview> TitleText(
-        entry: Entry<MediaType>?,
-        paddingTop: Dp,
-    ) {
+    private fun TitleText(entry: Entry?, paddingTop: Dp) {
         Text(
             text = entry?.media?.title?.primaryTitle() ?: "Loading...",
             style = MaterialTheme.typography.titleMedium,
@@ -357,7 +352,7 @@ object AnimeMediaListRow {
     }
 
     @Composable
-    private fun <MediaType : MediaPreview> SubtitleText(entry: Entry<MediaType>?) {
+    private fun SubtitleText(entry: Entry?) {
         val media = entry?.media
         Text(
             text = MediaUtils.formatSubtitle(
@@ -380,28 +375,9 @@ object AnimeMediaListRow {
         )
     }
 
-    open class Entry<MediaType>(
-        val media: MediaType,
-        override val mediaListStatus: MediaListStatus? = media.mediaListEntry?.status,
-        override val progress: Int? = null,
-        override val progressVolumes: Int? = null,
-        override val ignored: Boolean = false,
-        override val showLessImportantTags: Boolean = false,
-        override val showSpoilerTags: Boolean = false,
-    ) : MediaStatusAware where MediaType : MediaPreview, MediaType : MediaHeaderData {
-        open val color = media.coverImage?.color?.let(ComposeColorUtils::hexToColor)
-        val tags = media.tags?.asSequence()
-            ?.filterNotNull()
-            ?.filter {
-                showLessImportantTags
-                        || it.category !in MediaUtils.LESS_IMPORTANT_MEDIA_TAG_CATEGORIES
-            }
-            ?.filter {
-                showSpoilerTags || (it.isGeneralSpoiler != true && it.isMediaSpoiler != true)
-            }
-            ?.map(::AnimeMediaTagEntry)
-            ?.distinctBy { it.id }
-            ?.toList()
-            .orEmpty()
+    interface Entry : MediaStatusAware {
+        val media: MediaPreview
+        val color: Color?
+        val tags: List<AnimeMediaTagEntry>
     }
 }

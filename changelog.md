@@ -3,6 +3,7 @@
 ### Next
 - Add unread notification badge
 - Add recommendation voting, doesn't support creating one
+- Show score in edit preview icon when media completed
 
 ### 0.41
 - Add forum notifications

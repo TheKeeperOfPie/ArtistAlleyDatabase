@@ -138,6 +138,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaTagEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeader
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderValues
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toColor
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toFavoriteType
@@ -504,7 +505,7 @@ object AnimeMediaDetailsScreen {
         entry: Entry,
         characters: LazyPagingItems<DetailsCharacter>,
         staff: LazyPagingItems<DetailsStaff>,
-        onClickListEdit: (AnimeMediaListRow.Entry<*>) -> Unit,
+        onClickListEdit: (AnimeMediaListRow.Entry) -> Unit,
         onGenreLongClick: (String) -> Unit,
         onCharacterLongClick: (String) -> Unit,
         onStaffLongClick: (String) -> Unit,
@@ -691,8 +692,8 @@ object AnimeMediaDetailsScreen {
         entry: Entry,
         relationsExpanded: () -> Boolean,
         onRelationsExpandedChange: (Boolean) -> Unit,
-        onClickListEdit: (AnimeMediaListRow.Entry<*>) -> Unit,
-        onLongClick: (AnimeMediaListRow.Entry<*>) -> Unit,
+        onClickListEdit: (AnimeMediaListRow.Entry) -> Unit,
+        onLongClick: (AnimeMediaListRow.Entry) -> Unit,
         colorCalculationState: ColorCalculationState,
     ) {
         mediaListSection(
@@ -1322,9 +1323,9 @@ object AnimeMediaDetailsScreen {
         coverImageWidthToHeightRatio: () -> Float,
         expanded: () -> Boolean,
         onExpandedChange: (Boolean) -> Unit,
-        onClickListEdit: (AnimeMediaListRow.Entry<*>) -> Unit,
+        onClickListEdit: (AnimeMediaListRow.Entry) -> Unit,
         colorCalculationState: ColorCalculationState,
-        onLongClick: (AnimeMediaListRow.Entry<*>) -> Unit,
+        onLongClick: (AnimeMediaListRow.Entry) -> Unit,
     ) {
         listSection(
             titleRes = R.string.anime_media_details_recommendations_label,
@@ -2015,13 +2016,13 @@ object AnimeMediaDetailsScreen {
         data class Relation(
             val id: String,
             val relation: MediaRelation,
-            val entry: AnimeMediaListRow.Entry<MediaPreview>,
+            val entry: MediaPreviewEntry,
         )
 
         data class Recommendation(
             val id: String,
             val data: RecommendationData,
-            val entry: AnimeMediaListRow.Entry<MediaPreview>,
+            val entry: MediaPreviewEntry,
         )
 
         data class Link(

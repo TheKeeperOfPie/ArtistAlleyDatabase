@@ -98,7 +98,6 @@ import com.anilist.UserSocialActivityQuery
 import com.anilist.fragment.MediaCompactWithTags
 import com.anilist.fragment.MediaNavigationData
 import com.anilist.fragment.MediaPreview
-import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
 import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
@@ -110,6 +109,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.activity.AnimeActivityViewMo
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ListActivitySmallCard
 import com.thekeeperofpie.artistalleydatabase.anime.activity.MessageActivitySmallCard
 import com.thekeeperofpie.artistalleydatabase.anime.activity.TextActivitySmallCard
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaStatusAware
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.media.UserMediaListController
@@ -591,9 +591,7 @@ object AnimeHomeScreen {
                 itemsIndexed(entries, { _, item -> item.media.id }) { index, item ->
                     MediaCard(
                         media = item.media,
-                        listStatus = item.mediaListStatus,
-                        progress = item.progress,
-                        progressVolumes = item.progressVolumes,
+                        mediaStatusAware = item,
                         ignored = item.ignored,
                         viewer = viewer,
                         cardOutlineBorder = cardOutlineBorder,
@@ -725,10 +723,9 @@ object AnimeHomeScreen {
                     if (viewer != null) {
                         val maxProgress = MediaUtils.maxProgress(media)
                         MediaListQuickEditIconButton(
+                            viewer = viewer,
                             mediaType = media.type,
-                            listStatus = entry.mediaListStatus,
-                            progress = entry.progress,
-                            progressVolumes = entry.progressVolumes,
+                            media = entry,
                             maxProgress = maxProgress,
                             maxProgressVolumes = media.volumes,
                             onClick = { onClickListEdit(media) },
@@ -774,9 +771,7 @@ object AnimeHomeScreen {
     @Composable
     private fun MediaCard(
         media: MediaPreview,
-        listStatus: MediaListStatus?,
-        progress: Int?,
-        progressVolumes: Int?,
+        mediaStatusAware: MediaStatusAware,
         ignored: Boolean,
         viewer: AuthedUserQuery.Data.Viewer?,
         cardOutlineBorder: BorderStroke,
@@ -905,10 +900,9 @@ object AnimeHomeScreen {
 
                     if (viewer != null) {
                         MediaListQuickEditIconButton(
+                            viewer = viewer,
                             mediaType = media.type,
-                            listStatus = listStatus,
-                            progress = progress,
-                            progressVolumes = progressVolumes,
+                            media = mediaStatusAware,
                             maxProgress = MediaUtils.maxProgress(media),
                             maxProgressVolumes = media.volumes,
                             onClick = { onClickListEdit(media) },

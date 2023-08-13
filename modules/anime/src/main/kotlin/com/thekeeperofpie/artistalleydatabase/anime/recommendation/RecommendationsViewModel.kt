@@ -113,11 +113,12 @@ class RecommendationsViewModel @Inject constructor(
                         entry = it,
                         transform = { it },
                         media = mediaPreview,
-                        copy = { mediaListStatus, progress, progressVolumes, ignored, showLessImportantTags, showSpoilerTags ->
+                        copy = { mediaListStatus, progress, progressVolumes, scoreRaw, ignored, showLessImportantTags, showSpoilerTags ->
                             copy(
                                 mediaListStatus = mediaListStatus,
                                 progress = progress,
                                 progressVolumes = progressVolumes,
+                                scoreRaw = scoreRaw,
                                 ignored = ignored,
                                 showLessImportantTags = showLessImportantTags,
                                 showSpoilerTags = showSpoilerTags,
@@ -135,6 +136,6 @@ class RecommendationsViewModel @Inject constructor(
             }
         }
 
-    fun onMediaLongClick(entry: AnimeMediaListRow.Entry<*>) =
+    fun onMediaLongClick(entry: AnimeMediaListRow.Entry) =
         ignoreList.toggle(entry.media.id.toString())
 }

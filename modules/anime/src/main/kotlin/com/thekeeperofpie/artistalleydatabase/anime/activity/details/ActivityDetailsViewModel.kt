@@ -15,7 +15,6 @@ import androidx.paging.cachedIn
 import androidx.paging.map
 import com.anilist.ActivityDetailsQuery
 import com.anilist.ActivityDetailsRepliesQuery
-import com.anilist.type.MediaListStatus
 import com.hoc081098.flowext.flowFromSuspend
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
@@ -31,10 +30,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityStatusAware
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityToggleHelper
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaCompactWithTagsEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaStatusAware
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
-import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow
 import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIntIds
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -117,21 +114,15 @@ class ActivityDetailsViewModel @Inject constructor(
                                 subscribed = subscribed,
                                 mediaEntry = (it as? ActivityDetailsQuery.Data.ListActivityActivity)?.media?.let {
                                     if (mediaListUpdate == null) {
-                                        Entry.MediaEntry(
+                                        MediaCompactWithTagsEntry(
                                             media = it,
-                                            mediaListStatus = it.mediaListEntry?.status,
-                                            progress = it.mediaListEntry?.progress,
-                                            progressVolumes = it.mediaListEntry?.progressVolumes,
                                             ignored = ignoredIds.contains(it.id),
                                             showLessImportantTags = showLessImportantTags,
                                             showSpoilerTags = showSpoilerTags,
                                         )
                                     } else {
-                                        Entry.MediaEntry(
+                                        MediaCompactWithTagsEntry(
                                             media = it,
-                                            mediaListStatus = mediaListUpdate.entry?.status,
-                                            progress = mediaListUpdate.entry?.progress,
-                                            progressVolumes = mediaListUpdate.entry?.progressVolumes,
                                             ignored = ignoredIds.contains(it.id),
                                             showLessImportantTags = showLessImportantTags,
                                             showSpoilerTags = showSpoilerTags,
@@ -221,21 +212,10 @@ class ActivityDetailsViewModel @Inject constructor(
 
     data class Entry(
         val activity: ActivityDetailsQuery.Data.Activity,
-        val mediaEntry: MediaEntry?,
+        val mediaEntry: MediaCompactWithTagsEntry?,
         override val liked: Boolean,
         override val subscribed: Boolean,
     ) : ActivityStatusAware {
-        data class MediaEntry(
-            override val media: ActivityDetailsQuery.Data.ListActivityActivity.Media,
-            override val mediaListStatus: MediaListStatus?,
-            override val progress: Int?,
-            override val progressVolumes: Int?,
-            override val ignored: Boolean,
-            override val showLessImportantTags: Boolean,
-            override val showSpoilerTags: Boolean,
-        ) : MediaStatusAware, AnimeMediaCompactListRow.Entry {
-            override val tags = MediaUtils.buildTags(media, showLessImportantTags, showSpoilerTags)
-        }
 
         data class ReplyEntry(
             val reply: ActivityDetailsRepliesQuery.Data.Page.ActivityReply,

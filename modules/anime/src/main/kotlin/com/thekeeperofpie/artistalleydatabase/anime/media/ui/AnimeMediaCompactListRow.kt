@@ -1,6 +1,5 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media.ui
 
-import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
@@ -235,10 +234,9 @@ object AnimeMediaCompactListRow {
 
             if (viewer != null && entry != null) {
                 MediaListQuickEditIconButton(
+                    viewer = viewer,
                     mediaType = entry.media.type,
-                    listStatus = entry.mediaListStatus,
-                    progress = entry.progress,
-                    progressVolumes = entry.progressVolumes,
+                    media = entry,
                     maxProgress = MediaUtils.maxProgress(entry.media),
                     maxProgressVolumes = entry.media.volumes,
                     onClick = { onClickListEdit(entry) },
@@ -297,5 +295,4 @@ object AnimeMediaCompactListRow {
         val media: MediaCompactWithTags
         val tags: List<AnimeMediaTagEntry>
     }
-
 }

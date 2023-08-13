@@ -10,7 +10,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.anilist.UserMediaListQuery
-import com.anilist.fragment.MediaPreviewWithDescription
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
@@ -193,7 +192,7 @@ class AnimeUserListViewModel @Inject constructor(
         }
     }
 
-    fun onMediaLongClick(entry: AnimeMediaListRow.Entry<*>) =
+    fun onMediaLongClick(entry: AnimeMediaListRow.Entry) =
         ignoreList.toggle(entry.media.id.toString())
 
     private fun toFilteredEntries(
@@ -278,23 +277,17 @@ class AnimeUserListViewModel @Inject constructor(
         val entries: List<MediaEntry>,
     )
 
-    class MediaEntry(
-        media: UserMediaListQuery.Data.MediaListCollection.List.Entry.Media,
-        mediaListStatus: MediaListStatus? = media.mediaListEntry?.status,
-        override val progress: Int? = null,
-        override val progressVolumes: Int? = null,
+    data class MediaEntry(
+        override val media: UserMediaListQuery.Data.MediaListCollection.List.Entry.Media,
+        override val mediaListStatus: MediaListStatus? = media.mediaListEntry?.status,
+        override val progress: Int? = media.mediaListEntry?.progress,
+        override val progressVolumes: Int? = media.mediaListEntry?.progressVolumes,
+        override val scoreRaw: Double? = media.mediaListEntry?.score,
         override val ignored: Boolean = false,
         override val showLessImportantTags: Boolean = false,
         override val showSpoilerTags: Boolean = false,
-    ) : AnimeMediaListRow.Entry<MediaPreviewWithDescription>(
-        media = media,
-        mediaListStatus = mediaListStatus,
-        progress = progress,
-        progressVolumes = progressVolumes,
-        ignored = ignored,
-        showLessImportantTags = showLessImportantTags,
-        showSpoilerTags = showSpoilerTags,
-    ), MediaStatusAware, AnimeMediaLargeCard.Entry, MediaGridCard.Entry, AnimeMediaCompactListRow.Entry {
+    ) : AnimeMediaListRow.Entry, MediaStatusAware, AnimeMediaLargeCard.Entry, MediaGridCard.Entry,
+        AnimeMediaCompactListRow.Entry {
         override val color = media.coverImage?.color?.let(ComposeColorUtils::hexToColor)
         override val type = media.type
         override val maxProgress = MediaUtils.maxProgress(media)
@@ -303,5 +296,6 @@ class AnimeUserListViewModel @Inject constructor(
 
         // So that enough meaningful text is shown, strip any double newlines
         override val description = media.description?.replace("<br><br />\n<br><br />\n", "\n")
+        override val tags = MediaUtils.buildTags(media, showLessImportantTags, showSpoilerTags)
     }
 }

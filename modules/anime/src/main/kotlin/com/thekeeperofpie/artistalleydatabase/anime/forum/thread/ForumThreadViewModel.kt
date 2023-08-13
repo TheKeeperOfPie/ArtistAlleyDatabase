@@ -31,6 +31,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.forum.ForumUtils
 import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.comment.ForumCommentEntry
 import com.thekeeperofpie.artistalleydatabase.anime.forum.toForumThreadComment
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaCompactWithTagsEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaFiltering
@@ -72,7 +73,7 @@ class ForumThreadViewModel @Inject constructor(
     val viewer = aniListApi.authedUser
     val refresh = MutableStateFlow(-1L)
     var entry by mutableStateOf(LoadingResult.loading<ForumThreadEntry>())
-    var media by mutableStateOf<List<MediaEntry>>(emptyList())
+    var media by mutableStateOf<List<MediaCompactWithTagsEntry>>(emptyList())
     val comments = MutableStateFlow(PagingData.empty<ForumCommentEntry>())
 
     var replyData by mutableStateOf<ReplyData?>(null)
@@ -125,7 +126,7 @@ class ForumThreadViewModel @Inject constructor(
                         emptyList()
                     } else {
                         aniListApi.mediaByIds(mediaIds)
-                            .map { MediaEntry(it) }
+                            .map { MediaCompactWithTagsEntry(it) }
                     }
                 }
                 .flatMapLatest { media ->
@@ -146,18 +147,6 @@ class ForumThreadViewModel @Inject constructor(
                                 showLessImportantTags = showLessImportantTags,
                                 showSpoilerTags = showSpoilerTags,
                                 entry = it,
-                                transform = { it },
-                                media = it.media,
-                                copy = { mediaListStatus, progress, progressVolumes, ignored, showLessImportantTags, showSpoilerTags ->
-                                    copy(
-                                        mediaListStatus = mediaListStatus,
-                                        progress = progress,
-                                        progressVolumes = progressVolumes,
-                                        ignored = ignored,
-                                        showLessImportantTags = showLessImportantTags,
-                                        showSpoilerTags = showSpoilerTags,
-                                    )
-                                }
                             )
                         }
                     }
@@ -262,18 +251,6 @@ class ForumThreadViewModel @Inject constructor(
                 }
             }
         }
-    }
-
-    data class MediaEntry(
-        override val media: MediaCompactWithTags,
-        override val mediaListStatus: MediaListStatus? = media.mediaListEntry?.status,
-        override val progress: Int? = media.mediaListEntry?.progress,
-        override val progressVolumes: Int? = media.mediaListEntry?.progressVolumes,
-        override val ignored: Boolean = false,
-        override val showLessImportantTags: Boolean = false,
-        override val showSpoilerTags: Boolean = false,
-    ) : AnimeMediaCompactListRow.Entry {
-        override val tags = MediaUtils.buildTags(media, showLessImportantTags, showSpoilerTags)
     }
 
     data class ReplyData(

@@ -152,11 +152,12 @@ class AniListUserViewModel @Inject constructor(
                     ignoreList = ignoreList,
                     settings = settings,
                     media = { it.media },
-                    copy = { mediaListStatus, progress, progressVolumes, ignored, showLessImportantTags, showSpoilerTags ->
+                    copy = { mediaListStatus, progress, progressVolumes, scoreRaw, ignored, showLessImportantTags, showSpoilerTags ->
                         copy(
                             mediaListStatus = mediaListStatus,
                             progress = progress,
                             progressVolumes = progressVolumes,
+                            scoreRaw = scoreRaw,
                             ignored = ignored,
                             showLessImportantTags = showLessImportantTags,
                             showSpoilerTags = showSpoilerTags,
@@ -188,11 +189,12 @@ class AniListUserViewModel @Inject constructor(
                     ignoreList = ignoreList,
                     settings = settings,
                     media = { it.media },
-                    copy = { mediaListStatus, progress, progressVolumes, ignored, showLessImportantTags, showSpoilerTags ->
+                    copy = { mediaListStatus, progress, progressVolumes, scoreRaw, ignored, showLessImportantTags, showSpoilerTags ->
                         copy(
                             mediaListStatus = mediaListStatus,
                             progress = progress,
                             progressVolumes = progressVolumes,
+                            scoreRaw = scoreRaw,
                             ignored = ignored,
                             showLessImportantTags = showLessImportantTags,
                             showSpoilerTags = showSpoilerTags,
@@ -404,6 +406,7 @@ class AniListUserViewModel @Inject constructor(
             nextAiringEpisode = userMedia.nextAiringEpisode?.episode,
         ),
         override val progressVolumes: Int? = userMedia.volumes,
+        override val scoreRaw: Double? = userMedia.mediaListEntry?.score,
         override val ignored: Boolean = false,
         override val showLessImportantTags: Boolean = false,
         override val showSpoilerTags: Boolean = false,

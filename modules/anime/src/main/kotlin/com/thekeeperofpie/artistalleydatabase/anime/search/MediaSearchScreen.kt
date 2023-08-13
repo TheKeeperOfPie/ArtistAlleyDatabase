@@ -24,7 +24,6 @@ import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
-import com.anilist.fragment.MediaPreview
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
@@ -175,7 +174,7 @@ object MediaSearchScreen {
                                             )
 
                                             // TODO: Separated placeholder types
-                                            else -> AnimeMediaListRow<MediaPreview>(
+                                            else -> AnimeMediaListRow(
                                                 screenKey = SCREEN_KEY,
                                                 viewer = null,
                                                 entry = null,

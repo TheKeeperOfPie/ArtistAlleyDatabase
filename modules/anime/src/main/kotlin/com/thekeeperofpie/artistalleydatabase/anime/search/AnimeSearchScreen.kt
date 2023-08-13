@@ -49,7 +49,6 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
 import com.anilist.AuthedUserQuery
-import com.anilist.fragment.MediaPreview
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
@@ -249,7 +248,7 @@ object AnimeSearchScreen {
                                                 )
 
                                                 // TODO: Separated placeholder types
-                                                null -> AnimeMediaListRow<MediaPreview>(
+                                                null -> AnimeMediaListRow(
                                                     screenKey = SCREEN_KEY,
                                                     viewer = null,
                                                     entry = null,

@@ -11,8 +11,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.anilist.fragment.MediaCompactWithTags
-import com.anilist.type.MediaListStatus
 import com.hoc081098.flowext.flowFromSuspend
 import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.android_utils.flowForRefreshableContent
@@ -28,10 +26,9 @@ import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.ForumThreadEntr
 import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.ForumThreadStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.ForumThreadToggleHelper
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaCompactWithTagsEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaFiltering
-import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.noties.markwon.Markwon
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -64,7 +61,7 @@ class ForumThreadCommentTreeViewModel @Inject constructor(
     val viewer = aniListApi.authedUser
     val refresh = MutableStateFlow(-1L)
     var entry by mutableStateOf(LoadingResult.loading<ForumThreadEntry>())
-    var media by mutableStateOf<List<MediaEntry>>(emptyList())
+    var media by mutableStateOf<List<MediaCompactWithTagsEntry>>(emptyList())
     var comments by mutableStateOf(LoadingResult.loading<List<ForumCommentEntry>>())
         private set
 
@@ -118,7 +115,7 @@ class ForumThreadCommentTreeViewModel @Inject constructor(
                         emptyList()
                     } else {
                         aniListApi.mediaByIds(mediaIds)
-                            .map { MediaEntry(it) }
+                            .map { MediaCompactWithTagsEntry(it) }
                     }
                 }
                 .flatMapLatest { media ->
@@ -141,11 +138,12 @@ class ForumThreadCommentTreeViewModel @Inject constructor(
                                 entry = it,
                                 transform = { it },
                                 media = it.media,
-                                copy = { mediaListStatus, progress, progressVolumes, ignored, showLessImportantTags, showSpoilerTags ->
+                                copy = { mediaListStatus, progress, progressVolumes, scoreRaw, ignored, showLessImportantTags, showSpoilerTags ->
                                     copy(
                                         mediaListStatus = mediaListStatus,
                                         progress = progress,
                                         progressVolumes = progressVolumes,
+                                        scoreRaw = scoreRaw,
                                         ignored = ignored,
                                         showLessImportantTags = showLessImportantTags,
                                         showSpoilerTags = showSpoilerTags,
@@ -259,18 +257,6 @@ class ForumThreadCommentTreeViewModel @Inject constructor(
                 }
             }
         }
-    }
-
-    data class MediaEntry(
-        override val media: MediaCompactWithTags,
-        override val mediaListStatus: MediaListStatus? = media.mediaListEntry?.status,
-        override val progress: Int? = media.mediaListEntry?.progress,
-        override val progressVolumes: Int? = media.mediaListEntry?.progressVolumes,
-        override val ignored: Boolean = false,
-        override val showLessImportantTags: Boolean = false,
-        override val showSpoilerTags: Boolean = false,
-    ) : AnimeMediaCompactListRow.Entry {
-        override val tags = MediaUtils.buildTags(media, showLessImportantTags, showSpoilerTags)
     }
 
     data class ReplyData(

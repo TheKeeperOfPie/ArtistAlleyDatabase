@@ -24,9 +24,10 @@ import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoritesController
 import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoritesToggleHelper
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
-import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaFiltering
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.staff.DetailsStaff
 import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIds
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -77,7 +78,7 @@ class AnimeCharacterDetailsViewModel @Inject constructor(
                 .flatMapLatest { result ->
                     val media = result.result?.character?.media?.edges
                         ?.distinctBy { it?.node?.id }
-                        ?.mapNotNull { it?.node?.let(AnimeMediaListRow::Entry) }
+                        ?.mapNotNull { it?.node?.let(::MediaPreviewEntry) }
                         .orEmpty()
                     combine(
                         statusController.allChanges(media.map { it.media.id.toString() }.toSet()),
@@ -98,19 +99,6 @@ class AnimeCharacterDetailsViewModel @Inject constructor(
                                         showLessImportantTags = showLessImportantTags,
                                         showSpoilerTags = showSpoilerTags,
                                         entry = it,
-                                        transform = { it },
-                                        media = it.media,
-                                        copy = { mediaListStatus, progress, progressVolumes, ignored, showLessImportantTags, showSpoilerTags ->
-                                            AnimeMediaListRow.Entry(
-                                                media = this.media,
-                                                mediaListStatus = mediaListStatus,
-                                                progress = progress,
-                                                progressVolumes = progressVolumes,
-                                                ignored = ignored,
-                                                showLessImportantTags = showLessImportantTags,
-                                                showSpoilerTags = showSpoilerTags,
-                                            )
-                                        }
                                     )
                                 },
                             )
@@ -177,6 +165,6 @@ class AnimeCharacterDetailsViewModel @Inject constructor(
         refresh.value = SystemClock.uptimeMillis()
     }
 
-    fun onMediaLongClick(entry: AnimeMediaListRow.Entry<*>) =
+    fun onMediaLongClick(entry: AnimeMediaListRow.Entry) =
         ignoreList.toggle(entry.media.id.toString())
 }

@@ -59,6 +59,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterHeader
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterHeaderValues
 import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
@@ -407,8 +408,8 @@ object CharacterDetailsScreen {
         expanded: () -> Boolean,
         onExpandedChange: (Boolean) -> Unit,
         colorCalculationState: ColorCalculationState,
-        onClickListEdit: (AnimeMediaListRow.Entry<*>) -> Unit,
-        onLongClick: (AnimeMediaListRow.Entry<*>) -> Unit,
+        onClickListEdit: (AnimeMediaListRow.Entry) -> Unit,
+        onLongClick: (AnimeMediaListRow.Entry) -> Unit,
     ) {
         mediaListSection(
             screenKey = AnimeNavDestinations.CHARACTER_DETAILS.id,
@@ -437,7 +438,7 @@ object CharacterDetailsScreen {
 
     data class Entry(
         val character: Character,
-        val media: List<AnimeMediaListRow.Entry<*>>,
+        val media: List<MediaPreviewEntry>,
     ) {
         val voiceActorsInitial = MutableStateFlow(
             PagingData.from(

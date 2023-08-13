@@ -1100,7 +1100,7 @@ object AnimeNavigator {
         private val languageOptionStaff: AniListLanguageOption = AniListLanguageOption.DEFAULT,
     ) {
         fun onMediaClick(
-            media: AnimeMediaListRow.Entry<*>,
+            media: AnimeMediaListRow.Entry,
             favorite: Boolean?,
             imageWidthToHeightRatio: Float,
         ) {

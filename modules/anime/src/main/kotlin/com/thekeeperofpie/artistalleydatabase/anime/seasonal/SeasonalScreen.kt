@@ -43,6 +43,8 @@ import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaCompactWithTagsEntry
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
@@ -188,7 +190,7 @@ object SeasonalScreen {
     private fun ListContent(
         viewModel: SeasonalViewModel,
         editViewModel: MediaEditViewModel,
-        content: LazyPagingItems<SeasonalViewModel.MediaEntry>,
+        content: LazyPagingItems<MediaPreviewEntry>,
         scaffoldPadding: PaddingValues,
         colorCalculationState: ColorCalculationState,
     ) {
@@ -218,7 +220,7 @@ object SeasonalScreen {
 
                                 val item = content[index]
                                 if (item == null) {
-                                    AnimeMediaListRow<MediaPreview>(
+                                    AnimeMediaListRow(
                                         screenKey = AnimeNavDestinations.SEASONAL.id,
                                         viewer = null,
                                         entry = null,

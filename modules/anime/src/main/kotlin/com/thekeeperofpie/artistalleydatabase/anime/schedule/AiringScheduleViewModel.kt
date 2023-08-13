@@ -23,10 +23,11 @@ import com.thekeeperofpie.artistalleydatabase.anilist.AniListPagingSource
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
-import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaStatusAware
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaStatusChanges
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.compose.filter.selectedOption
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -87,11 +88,12 @@ class AiringScheduleViewModel @Inject constructor(
                     ignoreList = ignoreList,
                     settings = settings,
                     media = { it.data.media },
-                    copy = { mediaListStatus, progress, progressVolumes, ignored, showLessImportantTags, showSpoilerTags ->
+                    copy = { mediaListStatus, progress, progressVolumes, scoreRaw, ignored, showLessImportantTags, showSpoilerTags ->
                         copy(
                             mediaListStatus = mediaListStatus,
                             progress = progress,
                             progressVolumes = progressVolumes,
+                            scoreRaw = scoreRaw,
                             ignored = ignored,
                             showLessImportantTags = showLessImportantTags,
                             showSpoilerTags = showSpoilerTags,
@@ -188,24 +190,26 @@ class AiringScheduleViewModel @Inject constructor(
         return dayFlows[index].collectAsLazyPagingItems()
     }
 
-    fun onLongClickEntry(entry: AnimeMediaListRow.Entry<*>) =
+    fun onLongClickEntry(entry: AnimeMediaListRow.Entry) =
         ignoreList.toggle(entry.media.id.toString())
 
     data class Entry(
         val data: AiringScheduleQuery.Data.Page.AiringSchedule,
         override val mediaListStatus: MediaListStatus? = data.media?.mediaListEntry?.status,
-        override val progress: Int? = null,
-        override val progressVolumes: Int? = null,
+        override val progress: Int? = data.media?.mediaListEntry?.progress,
+        override val progressVolumes: Int? = data.media?.mediaListEntry?.progressVolumes,
+        override val scoreRaw: Double? = data.media?.mediaListEntry?.score,
         override val ignored: Boolean = false,
         override val showLessImportantTags: Boolean = false,
         override val showSpoilerTags: Boolean = false,
     ) : MediaStatusAware {
         val entry = data.media?.let {
-            AnimeMediaListRow.Entry(
+            MediaPreviewEntry(
                 media = it,
                 mediaListStatus = mediaListStatus,
                 progress = progress,
                 progressVolumes = progressVolumes,
+                scoreRaw = scoreRaw,
                 ignored = ignored,
                 showLessImportantTags = showLessImportantTags,
                 showSpoilerTags = showSpoilerTags,

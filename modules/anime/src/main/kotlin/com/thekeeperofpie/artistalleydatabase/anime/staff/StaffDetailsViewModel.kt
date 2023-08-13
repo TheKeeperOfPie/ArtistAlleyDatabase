@@ -268,11 +268,12 @@ class StaffDetailsViewModel @Inject constructor(
                                         entry = it,
                                         transform = { it },
                                         media = it.media,
-                                        copy = { mediaListStatus, progress, progressVolumes, ignored, showLessImportantTags, showSpoilerTags ->
+                                        copy = { mediaListStatus, progress, progressVolumes, scoreRaw, ignored, showLessImportantTags, showSpoilerTags ->
                                             copy(
                                                 mediaListStatus = mediaListStatus,
                                                 progress = progress,
                                                 progressVolumes = progressVolumes,
+                                                scoreRaw = scoreRaw,
                                                 ignored = ignored,
                                                 showLessImportantTags = showLessImportantTags,
                                                 showSpoilerTags = showSpoilerTags,
@@ -420,6 +421,7 @@ class StaffDetailsViewModel @Inject constructor(
             override val mediaListStatus: MediaListStatus? = media.mediaListEntry?.status,
             override val progress: Int? = media.mediaListEntry?.progress,
             override val progressVolumes: Int? = media.mediaListEntry?.progressVolumes,
+            override val scoreRaw: Double? = media.mediaListEntry?.score,
             override val ignored: Boolean = false,
             override val showLessImportantTags: Boolean = false,
             override val showSpoilerTags: Boolean = false,

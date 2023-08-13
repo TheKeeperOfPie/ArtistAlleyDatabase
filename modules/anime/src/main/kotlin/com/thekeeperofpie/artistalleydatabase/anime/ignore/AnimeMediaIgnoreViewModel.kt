@@ -15,19 +15,22 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.filter
 import androidx.paging.map
-import com.anilist.MediaByIdsQuery.Data.Page.Medium
+import com.anilist.MediaByIdsQuery
+import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
-import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaStatusChanges
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaLicensorsController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaTagsController
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
+import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -57,7 +60,7 @@ class AnimeMediaIgnoreViewModel @Inject constructor(
 
     val viewer = aniListApi.authedUser
     var query by mutableStateOf("")
-    var content = MutableStateFlow(PagingData.empty<AnimeMediaListRow.Entry<Medium>>())
+    var content = MutableStateFlow(PagingData.empty<MediaEntry>())
     val colorMap = mutableStateMapOf<String, Pair<Color, Color>>()
 
     private var initialized = false
@@ -102,7 +105,7 @@ class AnimeMediaIgnoreViewModel @Inject constructor(
                         AnimeMediaIgnorePagingSource(aniListApi, it)
                     }.flow
                 }
-                .map { it.map { AnimeMediaListRow.Entry(it) } }
+                .map { it.map { MediaEntry(it) } }
                 .cachedIn(viewModelScope)
                 .applyMediaStatusChanges(
                     statusController = statusController,
@@ -110,12 +113,13 @@ class AnimeMediaIgnoreViewModel @Inject constructor(
                     settings = settings,
                     media = { it.media },
                     forceShowIgnored = true,
-                    copy = { mediaListStatus, progress, progressVolumes, ignored, showLessImportantTags, showSpoilerTags ->
-                        AnimeMediaListRow.Entry(
+                    copy = { mediaListStatus, progress, progressVolumes, scoreRaw, ignored, showLessImportantTags, showSpoilerTags ->
+                        copy(
                             media = media,
                             mediaListStatus = mediaListStatus,
                             progress = progress,
                             progressVolumes = progressVolumes,
+                            scoreRaw = scoreRaw,
                             ignored = ignored,
                             showLessImportantTags = showLessImportantTags,
                             showSpoilerTags = showSpoilerTags,
@@ -173,6 +177,20 @@ class AnimeMediaIgnoreViewModel @Inject constructor(
 
     fun onRefresh() = refreshUptimeMillis.update { SystemClock.uptimeMillis() }
 
-    fun onMediaLongClick(entry: AnimeMediaListRow.Entry<*>) =
+    fun onMediaLongClick(entry: AnimeMediaListRow.Entry) =
         ignoreList.toggle(entry.media.id.toString())
+
+    data class MediaEntry(
+        override val media: MediaByIdsQuery.Data.Page.Medium,
+        override val mediaListStatus: MediaListStatus? = media.mediaListEntry?.status,
+        override val progress: Int? = media.mediaListEntry?.progress,
+        override val progressVolumes: Int? = media.mediaListEntry?.progressVolumes,
+        override val scoreRaw: Double? = media.mediaListEntry?.score,
+        override val ignored: Boolean = false,
+        override val showLessImportantTags: Boolean = false,
+        override val showSpoilerTags: Boolean = false,
+    ) : AnimeMediaListRow.Entry, AnimeMediaCompactListRow.Entry {
+        override val color = media.coverImage?.color?.let(ComposeColorUtils::hexToColor)
+        override val tags = MediaUtils.buildTags(media, showLessImportantTags, showSpoilerTags)
+    }
 }

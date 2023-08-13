@@ -1,9 +1,6 @@
-@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
-
 package com.thekeeperofpie.artistalleydatabase.anime.media.ui
 
 import androidx.annotation.StringRes
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -28,7 +25,6 @@ import androidx.compose.material.icons.filled.PeopleAlt
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PersonOutline
 import androidx.compose.material.icons.outlined.PeopleAlt
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
@@ -59,6 +55,7 @@ import com.google.accompanist.placeholder.material.shimmer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaTagEntry
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaStatusAware
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toStatusIcon
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
@@ -72,14 +69,14 @@ fun <T> LazyListScope.mediaListSection(
     viewer: AuthedUserQuery.Data.Viewer?,
     @StringRes titleRes: Int,
     values: Collection<T>,
-    valueToEntry: (T) -> AnimeMediaListRow.Entry<*>,
+    valueToEntry: (T) -> AnimeMediaListRow.Entry,
     aboveFold: Int,
     hasMoreValues: Boolean,
     expanded: () -> Boolean = { false },
     onExpandedChange: (Boolean) -> Unit = {},
     colorCalculationState: ColorCalculationState,
-    onClickListEdit: (AnimeMediaListRow.Entry<*>) -> Unit,
-    onLongClick: (AnimeMediaListRow.Entry<*>) -> Unit,
+    onClickListEdit: (AnimeMediaListRow.Entry) -> Unit,
+    onLongClick: (AnimeMediaListRow.Entry) -> Unit,
     label: (@Composable (T) -> Unit)? = null,
     onClickViewAll: ((AnimeNavigator.NavigationCallback) -> Unit)? = null,
     @StringRes viewAllContentDescriptionTextRes: Int? = null,
@@ -311,10 +308,44 @@ fun MediaTagRow(
 
 @Composable
 fun MediaListQuickEditIconButton(
+    viewer: AuthedUserQuery.Data.Viewer?,
+    mediaType: MediaType?,
+    media: MediaStatusAware,
+    maxProgress: Int?,
+    maxProgressVolumes: Int?,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    textVerticalPadding: Dp = 4.dp,
+    padding: Dp = 8.dp,
+    iconSize: Dp = 20.dp,
+    forceListEditIcon: Boolean = false,
+) {
+    MediaListQuickEditIconButton(
+        viewer = viewer,
+        mediaType = mediaType,
+        listStatus = media.mediaListStatus,
+        progress = media.progress,
+        progressVolumes = media.progressVolumes,
+        scoreRaw = media.scoreRaw,
+        maxProgress = maxProgress,
+        maxProgressVolumes = maxProgressVolumes,
+        onClick = onClick,
+        modifier = modifier,
+        textVerticalPadding = textVerticalPadding,
+        padding = padding,
+        iconSize = iconSize,
+        forceListEditIcon = forceListEditIcon
+    )
+}
+
+@Composable
+fun MediaListQuickEditIconButton(
+    viewer: AuthedUserQuery.Data.Viewer?,
     mediaType: MediaType?,
     listStatus: MediaListStatus?,
     progress: Int?,
     progressVolumes: Int?,
+    scoreRaw: Double?,
     maxProgress: Int?,
     maxProgressVolumes: Int?,
     onClick: () -> Unit,
@@ -345,24 +376,38 @@ fun MediaListQuickEditIconButton(
             modifier = Modifier.size(iconSize)
         )
 
-        if (listStatus == MediaListStatus.CURRENT) {
-            val realProgress = if (mediaType == MediaType.MANGA) progressVolumes else progress
-            if (realProgress != null) {
-                val realMaxProgress =
-                    if (mediaType == MediaType.MANGA) maxProgressVolumes else maxProgress
-                Text(
-                    text = if (realMaxProgress != null) stringResource(
-                        R.string.anime_media_current_progress,
-                        realProgress.toString(),
-                        realMaxProgress.toString(),
-                    ) else stringResource(
-                        R.string.anime_media_current_progress_unknown_max,
-                        realProgress.toString()
-                    ),
-                    style = MaterialTheme.typography.labelSmall,
-                    modifier = Modifier.padding(vertical = textVerticalPadding)
-                )
+        val scoreFormat = viewer?.mediaListOptions?.scoreFormat
+        val trailingText = when {
+            listStatus == MediaListStatus.CURRENT -> {
+                val realProgress = if (mediaType == MediaType.MANGA) progressVolumes else progress
+                if (realProgress != null) {
+                    val realMaxProgress =
+                        if (mediaType == MediaType.MANGA) maxProgressVolumes else maxProgress
+                    if (realMaxProgress != null) {
+                        stringResource(
+                            R.string.anime_media_current_progress,
+                            realProgress.toString(),
+                            realMaxProgress.toString(),
+                        )
+                    } else {
+                        stringResource(
+                            R.string.anime_media_current_progress_unknown_max,
+                            realProgress.toString()
+                        )
+                    }
+                } else null
             }
+            listStatus == MediaListStatus.COMPLETED && scoreRaw != null && scoreFormat != null -> {
+                MediaUtils.scoreFormatToText(scoreRaw, scoreFormat)
+            }
+            else -> null
+        }
+        if (trailingText != null) {
+            Text(
+                text = trailingText,
+                style = MaterialTheme.typography.labelSmall,
+                modifier = Modifier.padding(vertical = textVerticalPadding)
+            )
         }
     }
 }

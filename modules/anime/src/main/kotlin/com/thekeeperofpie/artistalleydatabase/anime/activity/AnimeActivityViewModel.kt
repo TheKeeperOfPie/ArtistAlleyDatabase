@@ -15,7 +15,6 @@ import com.anilist.UserSocialActivityQuery.Data.Page.ListActivityActivity
 import com.anilist.UserSocialActivityQuery.Data.Page.MessageActivityActivity
 import com.anilist.UserSocialActivityQuery.Data.Page.OtherActivity
 import com.anilist.UserSocialActivityQuery.Data.Page.TextActivityActivity
-import com.anilist.type.MediaListStatus
 import com.hoc081098.flowext.combine
 import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
@@ -27,10 +26,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityUtils.isAdu
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityUtils.liked
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityUtils.subscribed
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaCompactWithTagsEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaStatusAware
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
-import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow
 import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIntIds
 import com.thekeeperofpie.artistalleydatabase.anime.utils.mapNotNull
 import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
@@ -224,26 +221,14 @@ class AnimeActivityViewModel @Inject constructor(
         val activity: UserSocialActivityQuery.Data.Page.Activity,
         override val liked: Boolean,
         override val subscribed: Boolean,
-        val media: MediaEntry?,
+        val media: MediaCompactWithTagsEntry?,
     ) : ActivityStatusAware {
         constructor(activity: UserSocialActivityQuery.Data.Page.Activity) : this(
             activityId = activity.entryId,
             activity = activity,
             liked = activity.liked,
             subscribed = activity.subscribed,
-            media = (activity as? ListActivityActivity)?.media?.let(::MediaEntry),
+            media = (activity as? ListActivityActivity)?.media?.let(::MediaCompactWithTagsEntry),
         )
-
-        data class MediaEntry(
-            override val media: ListActivityActivity.Media,
-            override val mediaListStatus: MediaListStatus? = media.mediaListEntry?.status,
-            override val progress: Int? = media.mediaListEntry?.progress,
-            override val progressVolumes: Int? = media.mediaListEntry?.progressVolumes,
-            override val ignored: Boolean = false,
-            override val showLessImportantTags: Boolean = false,
-            override val showSpoilerTags: Boolean = false,
-        ) : MediaStatusAware, AnimeMediaCompactListRow.Entry {
-            override val tags = MediaUtils.buildTags(media, showLessImportantTags, showSpoilerTags)
-        }
     }
 }

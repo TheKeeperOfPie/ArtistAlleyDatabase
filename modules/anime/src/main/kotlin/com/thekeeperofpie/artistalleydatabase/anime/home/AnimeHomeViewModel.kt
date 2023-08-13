@@ -26,6 +26,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityUtils.liked
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityUtils.subscribed
 import com.thekeeperofpie.artistalleydatabase.anime.activity.AnimeActivityViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaCompactWithTagsEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaFiltering
 import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsController
@@ -97,7 +98,7 @@ class AnimeHomeViewModel @Inject constructor(
                                 it.subscribed,
                                 (it as? UserSocialActivityQuery.Data.Page.ListActivityActivity)
                                     ?.media?.let {
-                                        AnimeActivityViewModel.ActivityEntry.MediaEntry(
+                                        MediaCompactWithTagsEntry(
                                             media = it,
                                             ignored = ignoredIds.contains(it.id),
                                             showLessImportantTags = showLessImportantTags,
@@ -112,18 +113,6 @@ class AnimeHomeViewModel @Inject constructor(
                                             showLessImportantTags = showLessImportantTags,
                                             showSpoilerTags = showSpoilerTags,
                                             entry = it,
-                                            transform = { it },
-                                            media = it.media,
-                                            copy = { mediaListStatus, progress, progressVolumes, ignored, showLessImportantTags, showSpoilerTags ->
-                                                copy(
-                                                    mediaListStatus = mediaListStatus,
-                                                    progress = progress,
-                                                    progressVolumes = progressVolumes,
-                                                    ignored = ignored,
-                                                    showLessImportantTags = showLessImportantTags,
-                                                    showSpoilerTags = showSpoilerTags,
-                                                )
-                                            }
                                         )
                                     },
                             )

@@ -11,10 +11,11 @@ import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoritesController
 import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoritesToggleHelper
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
-import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaStatusChanges
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortOption
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.utils.HeaderAndListViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
@@ -27,7 +28,7 @@ class CharacterMediasViewModel @Inject constructor(
     private val ignoreList: AnimeMediaIgnoreList,
     private val settings: AnimeSettings,
     favoritesController: FavoritesController,
-) : HeaderAndListViewModel<CharacterMediasScreen.Entry, MediaPreview, AnimeMediaListRow.Entry<MediaPreview>, MediaSortOption>(
+) : HeaderAndListViewModel<CharacterMediasScreen.Entry, MediaPreview, MediaPreviewEntry, MediaSortOption>(
     aniListApi = aniListApi,
     sortOptionEnum = MediaSortOption::class,
     sortOptionEnumDefault = MediaSortOption.POPULARITY,
@@ -47,9 +48,9 @@ class CharacterMediasViewModel @Inject constructor(
         )
     }
 
-    override fun makeEntry(item: MediaPreview) = AnimeMediaListRow.Entry(item)
+    override fun makeEntry(item: MediaPreview) = MediaPreviewEntry(item)
 
-    override fun entryId(entry: AnimeMediaListRow.Entry<MediaPreview>) = entry.media.id.toString()
+    override fun entryId(entry: MediaPreviewEntry) = entry.media.id.toString()
 
     override suspend fun initialRequest(
         headerId: String,
@@ -79,25 +80,13 @@ class CharacterMediasViewModel @Inject constructor(
         result?.pageInfo to result?.nodes?.filterNotNull().orEmpty()
     }
 
-    override fun Flow<PagingData<AnimeMediaListRow.Entry<MediaPreview>>>.transformFlow() =
+    override fun Flow<PagingData<MediaPreviewEntry>>.transformFlow() =
         applyMediaStatusChanges(
             statusController = statusController,
             ignoreList = ignoreList,
             settings = settings,
-            media = { it.media },
-            copy = { mediaListStatus, progress, progressVolumes, ignored, showLessImportantTags, showSpoilerTags ->
-                AnimeMediaListRow.Entry(
-                    media = this.media,
-                    mediaListStatus = mediaListStatus,
-                    progress = progress,
-                    progressVolumes = progressVolumes,
-                    ignored = ignored,
-                    showLessImportantTags = showLessImportantTags,
-                    showSpoilerTags = showSpoilerTags,
-                )
-            },
         )
 
-    fun onMediaLongClick(entry: AnimeMediaListRow.Entry<*>) =
+    fun onMediaLongClick(entry: AnimeMediaListRow.Entry) =
         ignoreList.toggle(entry.media.id.toString())
 }

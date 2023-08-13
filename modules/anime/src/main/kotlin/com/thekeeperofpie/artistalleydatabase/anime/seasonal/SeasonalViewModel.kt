@@ -16,8 +16,6 @@ import androidx.paging.cachedIn
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.map
-import com.anilist.MediaAdvancedSearchQuery
-import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaSeason
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
@@ -26,13 +24,14 @@ import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
-import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaStatusChanges
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaLicensorsController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaTagsController
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.search.AnimeSearchMediaPagingSource
 import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIntIds
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -104,7 +103,7 @@ class SeasonalViewModel @Inject constructor(
     fun onRefresh() = refreshUptimeMillis.update { SystemClock.uptimeMillis() }
 
     @Composable
-    fun items(page: Int): LazyPagingItems<MediaEntry> {
+    fun items(page: Int): LazyPagingItems<MediaPreviewEntry> {
         var pageData = pages.get(page)
         if (pageData == null) {
             val seasonYear = AniListUtils.calculateSeasonYearWithOffset(
@@ -118,26 +117,8 @@ class SeasonalViewModel @Inject constructor(
         return pageData.content.collectAsLazyPagingItems()
     }
 
-    fun onMediaLongClick(entry: AnimeMediaListRow.Entry<*>) =
+    fun onMediaLongClick(entry: AnimeMediaListRow.Entry) =
         ignoreList.toggle(entry.media.id.toString())
-
-    class MediaEntry(
-        media: MediaAdvancedSearchQuery.Data.Page.Medium,
-        mediaListStatus: MediaListStatus? = media.mediaListEntry?.status,
-        progress: Int? = null,
-        progressVolumes: Int? = null,
-        ignored: Boolean = false,
-        showLessImportantTags: Boolean = false,
-        showSpoilerTags: Boolean = false,
-    ) : AnimeMediaListRow.Entry<MediaAdvancedSearchQuery.Data.Page.Medium>(
-        media = media,
-        mediaListStatus = mediaListStatus,
-        progress = progress,
-        progressVolumes = progressVolumes,
-        ignored = ignored,
-        showLessImportantTags = showLessImportantTags,
-        showSpoilerTags = showSpoilerTags,
-    )
 
     enum class Type {
         LAST,
@@ -146,7 +127,7 @@ class SeasonalViewModel @Inject constructor(
     }
 
     inner class Page(seasonYear: Pair<MediaSeason, Int>) {
-        var content = MutableStateFlow(PagingData.empty<MediaEntry>())
+        var content = MutableStateFlow(PagingData.empty<MediaPreviewEntry>())
 
         init {
             viewModelScope.launch(CustomDispatchers.Main) {
@@ -170,24 +151,12 @@ class SeasonalViewModel @Inject constructor(
                         }.flow
                     }
                     .enforceUniqueIntIds { it.id }
-                    .map { it.map { MediaEntry(it) } }
+                    .map { it.map { MediaPreviewEntry(it) } }
                     .cachedIn(viewModelScope)
                     .applyMediaStatusChanges(
                         statusController = statusController,
                         ignoreList = ignoreList,
                         settings = settings,
-                        media = { it.media },
-                        copy = { mediaListStatus, progress, progressVolumes, ignored, showLessImportantTags, showSpoilerTags ->
-                            MediaEntry(
-                                media = media,
-                                mediaListStatus = mediaListStatus,
-                                progress = progress,
-                                progressVolumes = progressVolumes,
-                                ignored = ignored,
-                                showLessImportantTags = showLessImportantTags,
-                                showSpoilerTags = showSpoilerTags,
-                            )
-                        },
                     )
                     .flatMapLatest { sortFilterController.filterMedia(it) { it.media } }
                     .cachedIn(viewModelScope)

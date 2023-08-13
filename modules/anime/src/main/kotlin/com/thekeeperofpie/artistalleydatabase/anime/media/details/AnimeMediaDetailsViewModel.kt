@@ -47,6 +47,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.ForumThreadStat
 import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.ForumThreadToggleHelper
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toFavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaFiltering
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
@@ -175,7 +176,7 @@ class AnimeMediaDetailsViewModel @Inject constructor(
                                     AnimeMediaDetailsScreen.Entry.Relation(
                                         it.id.toString(),
                                         relation,
-                                        AnimeMediaListRow.Entry(node)
+                                        MediaPreviewEntry(node)
                                     )
                                 }
                                 .orEmpty()
@@ -194,7 +195,7 @@ class AnimeMediaDetailsViewModel @Inject constructor(
                                             userRating = node.userRating
                                                 ?: RecommendationRating.NO_RATING,
                                         ),
-                                        AnimeMediaListRow.Entry(mediaRecommendation)
+                                        MediaPreviewEntry(mediaRecommendation)
                                     )
                                 }
                                 .orEmpty()
@@ -231,13 +232,13 @@ class AnimeMediaDetailsViewModel @Inject constructor(
                                                 entry = it,
                                                 transform = { it.entry },
                                                 media = it.entry.media,
-                                                copy = { mediaListStatus, progress, progressVolumes, ignored, showLessImportantTags, showSpoilerTags ->
+                                                copy = { mediaListStatus, progress, progressVolumes, scoreRaw, ignored, showLessImportantTags, showSpoilerTags ->
                                                     copy(
-                                                        entry = AnimeMediaListRow.Entry(
-                                                            media = it.entry.media,
+                                                        entry = entry.copy(
                                                             mediaListStatus = mediaListStatus,
                                                             progress = progress,
                                                             progressVolumes = progressVolumes,
+                                                            scoreRaw = scoreRaw,
                                                             ignored = ignored,
                                                             showLessImportantTags = showLessImportantTags,
                                                             showSpoilerTags = showSpoilerTags,
@@ -257,13 +258,14 @@ class AnimeMediaDetailsViewModel @Inject constructor(
                                                 entry = it,
                                                 transform = { it.entry },
                                                 media = it.entry.media,
-                                                copy = { mediaListStatus, progress, progressVolumes, ignored, showLessImportantTags, showSpoilerTags ->
+                                                copy = { mediaListStatus, progress, progressVolumes, scoreRaw, ignored, showLessImportantTags, showSpoilerTags ->
                                                     copy(
-                                                        entry = AnimeMediaListRow.Entry(
+                                                        entry = entry.copy(
                                                             media = it.entry.media,
                                                             mediaListStatus = mediaListStatus,
                                                             progress = progress,
                                                             progressVolumes = progressVolumes,
+                                                            scoreRaw = scoreRaw,
                                                             ignored = ignored,
                                                             showLessImportantTags = showLessImportantTags,
                                                             showSpoilerTags = showSpoilerTags,
@@ -540,7 +542,7 @@ class AnimeMediaDetailsViewModel @Inject constructor(
         mediaPlayer.pause(null)
     }
 
-    fun onMediaLongClick(entry: AnimeMediaListRow.Entry<*>) =
+    fun onMediaLongClick(entry: AnimeMediaListRow.Entry) =
         ignoreList.toggle(entry.media.id.toString())
 
     data class AnimeSongs(

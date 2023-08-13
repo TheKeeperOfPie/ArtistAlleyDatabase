@@ -115,12 +115,13 @@ class UserMediaListController(
                     entry = it,
                     transform = { it },
                     media = it.media,
-                    copy = { mediaListStatus, progress, progressVolumes, ignored, showLessImportantTags, showSpoilerTags ->
+                    copy = { mediaListStatus, progress, progressVolumes, scoreRaw, ignored, showLessImportantTags, showSpoilerTags ->
                         MediaEntry(
                             media = media,
                             mediaListStatus = mediaListStatus,
                             progress = progress,
                             progressVolumes = progressVolumes,
+                            scoreRaw = scoreRaw,
                             ignored = ignored,
                             showLessImportantTags = showLessImportantTags,
                             showSpoilerTags = showSpoilerTags,
@@ -156,8 +157,9 @@ class UserMediaListController(
     data class MediaEntry(
         val media: UserMediaListQuery.Data.MediaListCollection.List.Entry.Media,
         override val mediaListStatus: MediaListStatus? = media.mediaListEntry?.status,
-        override val progress: Int? = null,
-        override val progressVolumes: Int? = null,
+        override val progress: Int? = media.mediaListEntry?.progress,
+        override val progressVolumes: Int? = media.mediaListEntry?.progressVolumes,
+        override val scoreRaw: Double? = media.mediaListEntry?.score,
         override val ignored: Boolean = false,
         override val showLessImportantTags: Boolean = false,
         override val showSpoilerTags: Boolean = false,

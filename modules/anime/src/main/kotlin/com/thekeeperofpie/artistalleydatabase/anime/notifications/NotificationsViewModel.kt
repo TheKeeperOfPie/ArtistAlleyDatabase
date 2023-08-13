@@ -12,9 +12,6 @@ import androidx.paging.filter
 import com.anilist.NotificationMediaAndActivityQuery
 import com.anilist.NotificationsQuery
 import com.anilist.fragment.ActivityItem.Companion.asListActivity
-import com.anilist.fragment.MediaCompactWithTags
-import com.anilist.fragment.MediaWithListStatus
-import com.anilist.type.MediaListStatus
 import com.hoc081098.flowext.combine
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListPagingSource
@@ -28,10 +25,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.ForumThreadComm
 import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.ForumThreadCommentToggleHelper
 import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.comment.ForumCommentEntry
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaCompactWithTagsEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaStatusAware
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
-import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow
 import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIds
 import com.thekeeperofpie.artistalleydatabase.anime.utils.mapNotNull
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
@@ -147,9 +142,9 @@ class NotificationsViewModel @Inject constructor(
                                         } ?: false,
                                     )
                                 },
-                                mediaEntry = media?.let { NotificationEntry.MediaEntry(it, it) }
+                                mediaEntry = media?.let { MediaCompactWithTagsEntry(it) }
                                     ?: activity?.asListActivity()?.media
-                                        ?.let { NotificationEntry.MediaEntry(it, it) },
+                                        ?.let { MediaCompactWithTagsEntry(it) },
                                 commentEntry = it.comment?.let {
                                     ForumCommentEntry(
                                         comment = it,
@@ -188,7 +183,7 @@ class NotificationsViewModel @Inject constructor(
                                 entry = entry,
                                 activityId = entry.activityEntry?.id,
                                 activityStatusAware = entry.activityEntry,
-                                media = entry.mediaEntry?.mediaWithListStatus,
+                                media = entry.mediaEntry?.media,
                                 mediaStatusAware = entry.mediaEntry,
                                 copyMedia = { status, progress, progressVolumes, ignored, showLessImportantTags, showSpoilerTags ->
                                     copy(
@@ -234,7 +229,7 @@ class NotificationsViewModel @Inject constructor(
         val notificationId: EntryId,
         val notification: NotificationsQuery.Data.Page.Notification,
         val activityEntry: ActivityEntry?,
-        val mediaEntry: MediaEntry?,
+        val mediaEntry: MediaCompactWithTagsEntry?,
         val commentEntry: ForumCommentEntry?,
     ) {
         data class ActivityEntry(
@@ -243,19 +238,5 @@ class NotificationsViewModel @Inject constructor(
             override val liked: Boolean,
             override val subscribed: Boolean,
         ) : ActivityStatusAware
-
-        data class MediaEntry(
-            override val media: MediaCompactWithTags,
-            val mediaWithListStatus: MediaWithListStatus,
-            val id: String = media.id.toString(),
-            override val mediaListStatus: MediaListStatus? = mediaWithListStatus.mediaListEntry?.status,
-            override val progress: Int? = mediaWithListStatus.mediaListEntry?.progress,
-            override val progressVolumes: Int? = mediaWithListStatus.mediaListEntry?.progressVolumes,
-            override val ignored: Boolean = false,
-            override val showLessImportantTags: Boolean = false,
-            override val showSpoilerTags: Boolean = false,
-        ) : MediaStatusAware, AnimeMediaCompactListRow.Entry {
-            override val tags = MediaUtils.buildTags(media, showLessImportantTags, showSpoilerTags)
-        }
     }
 }

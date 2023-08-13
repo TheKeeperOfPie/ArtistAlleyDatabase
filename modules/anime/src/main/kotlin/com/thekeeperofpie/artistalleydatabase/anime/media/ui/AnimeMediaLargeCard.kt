@@ -172,10 +172,9 @@ object AnimeMediaLargeCard {
                                 .clip(RoundedCornerShape(12.dp))
                             ) {
                                 MediaListQuickEditIconButton(
+                                    viewer = viewer,
                                     mediaType = entry.media.type,
-                                    listStatus = entry.mediaListStatus,
-                                    progress = entry.progress,
-                                    progressVolumes = entry.progressVolumes,
+                                    media = entry,
                                     maxProgress = MediaUtils.maxProgress(entry.media),
                                     maxProgressVolumes = entry.media.volumes,
                                     onClick = { onClickListEdit(entry) },

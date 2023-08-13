@@ -19,23 +19,16 @@ sealed interface AnimeSearchEntry {
 
     val entryId: EntryId
 
-    class Media(
-        media: MediaPreviewWithDescription,
+    data class Media(
+        override val media: MediaPreviewWithDescription,
         override val mediaListStatus: MediaListStatus? = media.mediaListEntry?.status,
-        override val progress: Int? = null,
-        override val progressVolumes: Int? = null,
+        override val progress: Int? = media.mediaListEntry?.progress,
+        override val progressVolumes: Int? = media.mediaListEntry?.progressVolumes,
+        override val scoreRaw: Double? = media.mediaListEntry?.score,
         override val ignored: Boolean = false,
         override val showLessImportantTags: Boolean = false,
         override val showSpoilerTags: Boolean = false,
-    ) : AnimeMediaListRow.Entry<MediaPreviewWithDescription>(
-        media = media,
-        mediaListStatus = mediaListStatus,
-        progress = progress,
-        progressVolumes = progressVolumes,
-        ignored = ignored,
-        showLessImportantTags = showLessImportantTags,
-        showSpoilerTags = showSpoilerTags,
-    ), AnimeSearchEntry, MediaStatusAware, AnimeMediaLargeCard.Entry, MediaGridCard.Entry, AnimeMediaCompactListRow.Entry {
+    ) : AnimeMediaListRow.Entry, AnimeSearchEntry, MediaStatusAware, AnimeMediaLargeCard.Entry, MediaGridCard.Entry, AnimeMediaCompactListRow.Entry {
         override val entryId = EntryId("media", media.id.toString())
         override val color = media.coverImage?.color?.let(ComposeColorUtils::hexToColor)
         override val type = media.type
@@ -45,7 +38,7 @@ sealed interface AnimeSearchEntry {
 
         // So that enough meaningful text is shown, strip any double newlines
         override val description = media.description?.replace("<br><br />\n<br><br />\n", "\n")
-
+        override val tags = MediaUtils.buildTags(media, showLessImportantTags, showSpoilerTags)
     }
 
     data class Character(

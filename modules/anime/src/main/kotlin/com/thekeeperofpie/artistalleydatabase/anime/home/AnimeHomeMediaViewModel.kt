@@ -121,12 +121,13 @@ abstract class AnimeHomeMediaViewModel(
                                     entry = it,
                                     transform = { it },
                                     media = it.media,
-                                    copy = { mediaListStatus, progress, progressVolumes, ignored, showLessImportantTags, showSpoilerTags ->
+                                    copy = { mediaListStatus, progress, progressVolumes, scoreRaw, ignored, showLessImportantTags, showSpoilerTags ->
                                         UserMediaListController.MediaEntry(
                                             media = media,
                                             mediaListStatus = mediaListStatus,
                                             progress = progress,
                                             progressVolumes = progressVolumes,
+                                            scoreRaw = scoreRaw,
                                             ignored = ignored,
                                             showLessImportantTags = showLessImportantTags,
                                             showSpoilerTags = showSpoilerTags,
@@ -175,12 +176,12 @@ abstract class AnimeHomeMediaViewModel(
                                                     entry = it,
                                                     transform = { it },
                                                     media = it.media,
-                                                    copy = { mediaListStatus, progress, progressVolumes, ignored, showLessImportantTags, showSpoilerTags ->
-                                                        AnimeHomeDataEntry.MediaEntry(
-                                                            media = media,
+                                                    copy = { mediaListStatus, progress, progressVolumes, scoreRaw, ignored, showLessImportantTags, showSpoilerTags ->
+                                                        copy(
                                                             mediaListStatus = mediaListStatus,
                                                             progress = progress,
                                                             progressVolumes = progressVolumes,
+                                                            scoreRaw = scoreRaw,
                                                             ignored = ignored,
                                                             showLessImportantTags = showLessImportantTags,
                                                             showSpoilerTags = showSpoilerTags,

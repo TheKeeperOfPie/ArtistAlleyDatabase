@@ -24,6 +24,7 @@ fragment MediaWithListStatus on Media {
         status
         progressVolumes
         progress
+        score(format: POINT_100)
     }
 }
 

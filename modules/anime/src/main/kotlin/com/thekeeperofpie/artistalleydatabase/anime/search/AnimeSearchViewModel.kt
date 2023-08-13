@@ -171,12 +171,13 @@ class AnimeSearchViewModel @Inject constructor(
                     ignoreList = ignoreList,
                     settings = settings,
                     media = { it.media },
-                    copy = { mediaListStatus, progress, progressVolumes, ignored, showLessImportantTags, showSpoilerTags ->
+                    copy = { mediaListStatus, progress, progressVolumes, scoreRaw, ignored, showLessImportantTags, showSpoilerTags ->
                         AnimeSearchEntry.Media(
                             media = media,
                             mediaListStatus = mediaListStatus,
                             progress = progress,
                             progressVolumes = progressVolumes,
+                            scoreRaw = scoreRaw,
                             ignored = ignored,
                             showLessImportantTags = showLessImportantTags,
                             showSpoilerTags = showSpoilerTags,
@@ -206,12 +207,13 @@ class AnimeSearchViewModel @Inject constructor(
                     ignoreList = ignoreList,
                     settings = settings,
                     media = { it.media },
-                    copy = { mediaListStatus, progress, progressVolumes, ignored, showLessImportantTags, showSpoilerTags ->
+                    copy = { mediaListStatus, progress, progressVolumes, scoreRaw, ignored, showLessImportantTags, showSpoilerTags ->
                         AnimeSearchEntry.Media(
                             media = media,
                             mediaListStatus = mediaListStatus,
                             progress = progress,
                             progressVolumes = progressVolumes,
+                            scoreRaw = scoreRaw,
                             ignored = ignored,
                             showLessImportantTags = showLessImportantTags,
                             showSpoilerTags = showSpoilerTags,
