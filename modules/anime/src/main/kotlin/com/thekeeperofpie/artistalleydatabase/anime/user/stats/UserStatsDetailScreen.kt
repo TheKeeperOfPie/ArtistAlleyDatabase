@@ -69,6 +69,7 @@ object UserStatsDetailScreen {
         onValueClick: (Value, imageWidthToHeightRatio: Float) -> Unit,
         initialItemId: ((Value) -> String)? = null,
         initialItemImage: ((Value) -> String?)? = null,
+        initialItemSharedElementKey: ((Value) -> String)? = null,
     ) {
         val statistics = statistics()
         LazyColumn(
@@ -107,6 +108,7 @@ object UserStatsDetailScreen {
                         onValueClick = onValueClick,
                         initialItemId = initialItemId,
                         initialItemImage = initialItemImage,
+                        initialItemSharedElementKey = initialItemSharedElementKey,
                         state = state,
                         isAnime = isAnime,
                     )
@@ -128,6 +130,7 @@ object UserStatsDetailScreen {
         onValueClick: (Value, imageWidthToHeightRatio: Float) -> Unit,
         initialItemId: ((Value) -> String)?,
         initialItemImage: ((Value) -> String?)?,
+        initialItemSharedElementKey: ((Value) -> String)?,
         state: AniListUserViewModel.States.State<Value>,
         isAnime: Boolean,
     ) {
@@ -170,21 +173,24 @@ object UserStatsDetailScreen {
                             .padding(vertical = 16.dp)
                             .height(180.dp)
                     ) {
-                        val initialItemImage = initialItemImage?.invoke(value)
-                        if (initialItemImage != null) {
-                            item {
-                                InnerCard(
-                                    screenKey = screenKey,
-                                    id = initialItemId!!.invoke(value),
-                                    image = initialItemImage,
-                                    loading = false,
-                                    onClick = {
-                                        onValueClick(value, firstItemImageWidthToHeightRatio)
-                                    },
-                                    onImageRatioCalculated = {
-                                        firstItemImageWidthToHeightRatio = it
-                                    },
-                                )
+                        if (initialItemSharedElementKey != null) {
+                            if (initialItemImage != null) {
+                                val initialItemImage = initialItemImage.invoke(value)
+                                item {
+                                    InnerCard(
+                                        screenKey = screenKey,
+                                        sharedElementKey = initialItemSharedElementKey(value),
+                                        id = initialItemId!!.invoke(value),
+                                        image = initialItemImage,
+                                        loading = false,
+                                        onClick = {
+                                            onValueClick(value, firstItemImageWidthToHeightRatio)
+                                        },
+                                        onImageRatioCalculated = {
+                                            firstItemImageWidthToHeightRatio = it
+                                        },
+                                    )
+                                }
                             }
                         }
 
@@ -193,6 +199,7 @@ object UserStatsDetailScreen {
                             val navigationCallback = LocalNavigationCallback.current
                             InnerCard(
                                 screenKey = screenKey,
+                                sharedElementKey = "anime_media_${media?.id}_image",
                                 id = media?.id.toString(),
                                 image = media?.coverImage?.extraLarge,
                                 loading = media == null,
@@ -219,6 +226,7 @@ object UserStatsDetailScreen {
     @Composable
     private fun InnerCard(
         screenKey: String,
+        sharedElementKey: String,
         id: String,
         image: String?,
         loading: Boolean,
@@ -228,7 +236,7 @@ object UserStatsDetailScreen {
         Card(onClick = onClick) {
             val density = LocalDensity.current
             SharedElement(
-                key = "anime_media_${id}_image",
+                key = sharedElementKey,
                 screenKey = screenKey,
             ) {
                 AsyncImage(
@@ -259,6 +267,7 @@ object UserStatsDetailScreen {
     @Composable
     private fun InnerCard(
         screenKey: String,
+        sharedElementKey: String,
         id: String,
         image: String?,
         loading: Boolean,
@@ -267,6 +276,7 @@ object UserStatsDetailScreen {
         var widthToHeightRatio by remember { MutableSingle(1f) }
         InnerCard(
             screenKey = screenKey,
+            sharedElementKey = sharedElementKey,
             id = id,
             image = image,
             loading = loading,

@@ -40,10 +40,12 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.ui.UserAvatarImage
 import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
 
 @Composable
 fun ReviewSmallCard(
+    screenKey: String,
     review: MediaAndReviewsReview?,
     onClick: (AnimeNavigator.NavigationCallback) -> Unit,
     modifier: Modifier = Modifier,
@@ -64,12 +66,12 @@ fun ReviewSmallCard(
                 .heightIn(min = 72.dp)
         ) {
             var imageWidthToHeightRatio by remember { MutableSingle(1f) }
-            AsyncImage(
-                model = review?.user?.avatar?.large,
+            UserAvatarImage(
+                screenKey = screenKey,
+                userId = review?.user?.id?.toString(),
+                image = review?.user?.avatar?.large,
                 contentScale = ContentScale.FillHeight,
-                contentDescription = stringResource(
-                    R.string.anime_media_details_reviews_user_avatar_content_description
-                ),
+                contentDescriptionTextRes = R.string.anime_media_details_reviews_user_avatar_content_description,
                 onSuccess = { imageWidthToHeightRatio = it.widthToHeightRatio() },
                 modifier = Modifier
                     .heightIn(min = 64.dp)

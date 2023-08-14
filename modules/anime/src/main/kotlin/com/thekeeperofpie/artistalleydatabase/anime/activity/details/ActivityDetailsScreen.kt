@@ -84,6 +84,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.activity.MessageActivitySmal
 import com.thekeeperofpie.artistalleydatabase.anime.activity.TextActivitySmallCard
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.ui.UserAvatarImage
 import com.thekeeperofpie.artistalleydatabase.anime.writing.WritingReplyPanelScaffold
 import com.thekeeperofpie.artistalleydatabase.compose.AppBar
 import com.thekeeperofpie.artistalleydatabase.compose.ImageHtmlText
@@ -266,6 +267,7 @@ object ActivityDetailsScreen {
                             ) {
                                 val replyEntry = replies[it]
                                 ReplyRow(
+                                    screenKey = SCREEN_KEY,
                                     viewer = viewer,
                                     replyEntry = replyEntry,
                                     onStatusUpdate = viewModel.replyToggleHelper::toggleLike,
@@ -360,6 +362,7 @@ private fun LazyListScope.centeredMessage(@StringRes textRes: Int) {
 
 @Composable
 private fun ReplyRow(
+    screenKey: String,
     viewer: AuthedUserQuery.Data.Viewer?,
     replyEntry: ActivityDetailsViewModel.Entry.ReplyEntry?,
     onStatusUpdate: (String, Boolean) -> Unit,
@@ -380,9 +383,10 @@ private fun ReplyRow(
         ) {
             val image = user?.avatar?.large
             if (replyEntry == null || image != null) {
-                AsyncImage(
-                    model = image,
-                    contentDescription = stringResource(R.string.anime_user_image),
+                UserAvatarImage(
+                    screenKey = screenKey,
+                    userId = user?.id?.toString(),
+                    image = image,
                     modifier = Modifier
                         .size(32.dp)
                         .clip(RoundedCornerShape(8.dp))

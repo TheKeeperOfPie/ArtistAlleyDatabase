@@ -51,6 +51,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.ui.ListRowSmallImage
+import com.thekeeperofpie.artistalleydatabase.anime.ui.UserAvatarImage
 import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
@@ -128,49 +129,47 @@ object UserListRow {
         colorCalculationState: ColorCalculationState,
         onRatioAvailable: (Float) -> Unit,
     ) {
-        SharedElement(key = "anime_user_${entry.user.id}_image", screenKey = screenKey) {
-            val fullscreenImageHandler = LocalFullscreenImageHandler.current
-            AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(entry.user.avatar?.large)
-                    .crossfade(true)
-                    .allowHardware(colorCalculationState.hasColor(entry.user.id.toString()))
-                    .size(
-                        width = Dimension.Pixels(LocalDensity.current.run { 130.dp.roundToPx() }),
-                        height = Dimension.Undefined
-                    )
-                    .build(),
-                contentScale = ContentScale.Crop,
-                fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
-                onSuccess = {
-                    onRatioAvailable(it.widthToHeightRatio())
-                    ComposeColorUtils.calculatePalette(
-                        entry.user.id.toString(),
-                        it,
-                        colorCalculationState,
-                    )
-                },
-                contentDescription = stringResource(R.string.anime_user_image),
-                modifier = Modifier
-                    .background(MaterialTheme.colorScheme.surfaceVariant)
-                    .fillMaxHeight()
-                    .heightIn(min = 180.dp)
-                    .width(130.dp)
-                    .placeholder(
-                        visible = false, // TODO: placeholder,
-                        highlight = PlaceholderHighlight.shimmer(),
-                    )
-                    .combinedClickable(
-                        onClick = onClick,
-                        onLongClick = {
-                            entry.user.avatar?.large?.let(fullscreenImageHandler::openImage)
-                        },
-                        onLongClickLabel = stringResource(
-                            R.string.anime_user_image_long_press_preview
-                        ),
-                    )
-            )
-        }
+        val fullscreenImageHandler = LocalFullscreenImageHandler.current
+        UserAvatarImage(
+            screenKey = screenKey,
+            userId = entry.user.id.toString(),
+            image = ImageRequest.Builder(LocalContext.current)
+                .data(entry.user.avatar?.large)
+                .crossfade(true)
+                .allowHardware(colorCalculationState.hasColor(entry.user.id.toString()))
+                .size(
+                    width = Dimension.Pixels(LocalDensity.current.run { 130.dp.roundToPx() }),
+                    height = Dimension.Undefined
+                )
+                .build(),
+            contentScale = ContentScale.Crop,
+            onSuccess = {
+                onRatioAvailable(it.widthToHeightRatio())
+                ComposeColorUtils.calculatePalette(
+                    entry.user.id.toString(),
+                    it,
+                    colorCalculationState,
+                )
+            },
+            modifier = Modifier
+                .background(MaterialTheme.colorScheme.surfaceVariant)
+                .fillMaxHeight()
+                .heightIn(min = 180.dp)
+                .width(130.dp)
+                .placeholder(
+                    visible = false, // TODO: placeholder,
+                    highlight = PlaceholderHighlight.shimmer(),
+                )
+                .combinedClickable(
+                    onClick = onClick,
+                    onLongClick = {
+                        entry.user.avatar?.large?.let(fullscreenImageHandler::openImage)
+                    },
+                    onLongClickLabel = stringResource(
+                        R.string.anime_user_image_long_press_preview
+                    ),
+                )
+        )
     }
 
     @Composable

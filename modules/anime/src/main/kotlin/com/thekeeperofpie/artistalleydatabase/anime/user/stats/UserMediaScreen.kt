@@ -16,7 +16,6 @@ import androidx.compose.ui.res.stringResource
 import com.anilist.UserByIdQuery
 import com.anilist.fragment.UserMediaStatistics
 import com.anilist.type.MediaType
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserScreen
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserViewModel
@@ -129,6 +128,7 @@ object UserMediaScreen {
                     },
                     initialItemId = { it.voiceActor?.id.toString() },
                     initialItemImage = { it.voiceActor?.image?.large },
+                    initialItemSharedElementKey = { "anime_staff_${it.voiceActor?.id}_image" },
                 )
                 UserStatsTab.STUDIOS -> UserStatsDetailScreen(
                     screenKey = SCREEN_KEY,
@@ -172,6 +172,7 @@ object UserMediaScreen {
                     },
                     initialItemId = { it.staff?.id.toString() },
                     initialItemImage = { it.staff?.image?.large },
+                    initialItemSharedElementKey = { "anime_staff_${it.staff?.id}_image" },
                 )
             }
         }

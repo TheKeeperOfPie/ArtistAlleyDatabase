@@ -52,6 +52,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
 import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.ui.UserAvatarImage
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
@@ -190,37 +191,36 @@ object UserSocialScreen {
             Box {
                 val dimension =
                     Dimension.Pixels(LocalDensity.current.run { USER_IMAGE_SIZE.roundToPx() })
-                SharedElement(key = "anime_user_${user?.id}_image", screenKey = screenKey) {
-                    AsyncImage(
-                        model = ImageRequest.Builder(LocalContext.current)
-                            .data(user?.avatar?.large)
-                            .crossfade(true)
-                            .allowHardware(colorCalculationState.hasColor(user?.id.toString()))
-                            .size(width = dimension, height = dimension)
-                            .build(),
-                        contentScale = ContentScale.Crop,
-                        fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
-                        onSuccess = {
-                            imageWidthToHeightRatio = it.widthToHeightRatio()
-                            user ?: return@AsyncImage
+                UserAvatarImage(
+                    screenKey = screenKey,
+                    userId = user?.id?.toString(),
+                    image = ImageRequest.Builder(LocalContext.current)
+                        .data(user?.avatar?.large)
+                        .crossfade(true)
+                        .allowHardware(colorCalculationState.hasColor(user?.id.toString()))
+                        .size(width = dimension, height = dimension)
+                        .build(),
+                    contentScale = ContentScale.Crop,
+                    onSuccess = {
+                        imageWidthToHeightRatio = it.widthToHeightRatio()
+                        if (user != null) {
                             ComposeColorUtils.calculatePalette(
                                 user.id.toString(),
                                 it,
                                 colorCalculationState,
                             )
-                        },
-                        contentDescription = stringResource(R.string.anime_user_image),
-                        modifier = Modifier
-                            .background(MaterialTheme.colorScheme.surfaceVariant)
-                            .fillMaxHeight()
-                            .size(USER_IMAGE_SIZE)
-                            .placeholder(
-                                visible = user == null,
-                                highlight = PlaceholderHighlight.shimmer(),
-                            )
-                            .clip(RoundedCornerShape(12.dp))
-                    )
-                }
+                        }
+                    },
+                    modifier = Modifier
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                        .fillMaxHeight()
+                        .size(USER_IMAGE_SIZE)
+                        .placeholder(
+                            visible = user == null,
+                            highlight = PlaceholderHighlight.shimmer(),
+                        )
+                        .clip(RoundedCornerShape(12.dp))
+                )
 
                 Text(
                     text = user?.name ?: "USERNAME",

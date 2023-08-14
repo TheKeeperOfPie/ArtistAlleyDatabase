@@ -25,8 +25,6 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ImageNotSupported
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -44,7 +42,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -72,6 +69,9 @@ import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.primaryName
+import com.thekeeperofpie.artistalleydatabase.anime.ui.CharacterCoverImage
+import com.thekeeperofpie.artistalleydatabase.anime.ui.StaffCoverImage
+import com.thekeeperofpie.artistalleydatabase.anime.ui.blurForScreenshotMode
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.AutoSizeText
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
@@ -142,48 +142,41 @@ fun CharacterSmallCard(
     ) {
         Box {
             val density = LocalDensity.current
-            SharedElement(
-                key = "${id.scopedId}_image",
+            CharacterCoverImage(
                 screenKey = screenKey,
-            ) {
-                AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(image)
-                        .crossfade(true)
-                        .allowHardware(colorCalculationState.hasColor(id.scopedId))
-                        .size(
-                            width = density.run { width.roundToPx() },
-                            height = density.run { (width * 1.5f).roundToPx() },
+                characterId = id.valueId,
+                image = ImageRequest.Builder(LocalContext.current)
+                    .data(image)
+                    .crossfade(true)
+                    .allowHardware(colorCalculationState.hasColor(id.scopedId))
+                    .size(
+                        width = density.run { width.roundToPx() },
+                        height = density.run { (width * 1.5f).roundToPx() },
+                    )
+                    .build(),
+                contentScale = ContentScale.Crop,
+                onSuccess = {
+                    onImageSuccess(it)
+                    ComposeColorUtils.calculatePalette(
+                        id = id.scopedId,
+                        success = it,
+                        colorCalculationState = colorCalculationState,
+                        heightStartThreshold = 3 / 4f,
+                        // Only capture left 3/5ths to ignore
+                        // part covered by voice actor
+                        widthEndThreshold = if (innerImage == null) 1f else 3 / 5f,
+                        selectMaxPopulation = true,
+                    )
+                },
+                modifier = Modifier
+                    .size(width = width, height = width * 1.5f)
+                    .clip(
+                        RoundedCornerShape(
+                            topStart = 12.dp,
+                            topEnd = 12.dp,
                         )
-                        .build(),
-                    contentScale = ContentScale.Crop,
-                    fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
-                    contentDescription = stringResource(
-                        R.string.anime_character_image_content_description
-                    ),
-                    onSuccess = {
-                        onImageSuccess(it)
-                        ComposeColorUtils.calculatePalette(
-                            id = id.scopedId,
-                            success = it,
-                            colorCalculationState = colorCalculationState,
-                            heightStartThreshold = 3 / 4f,
-                            // Only capture left 3/5ths to ignore
-                            // part covered by voice actor
-                            widthEndThreshold = if (innerImage == null) 1f else 3 / 5f,
-                            selectMaxPopulation = true,
-                        )
-                    },
-                    modifier = Modifier
-                        .size(width = width, height = width * 1.5f)
-                        .clip(
-                            RoundedCornerShape(
-                                topStart = 12.dp,
-                                topEnd = 12.dp,
-                            )
-                        )
-                )
-            }
+                    )
+            )
 
             if (innerImage != null) {
                 var showInnerImage by remember { mutableStateOf(true) }
@@ -206,6 +199,7 @@ fun CharacterSmallCard(
                                     .build(),
                                 contentScale = ContentScale.Crop,
                                 contentDescription = stringResource(
+                                    // TODO: Swap based on innerImageKey
                                     R.string.anime_media_voice_actor_image
                                 ),
                                 onSuccess = onInnerImageSuccess,
@@ -218,6 +212,7 @@ fun CharacterSmallCard(
                                         color = containerColor,
                                         shape = clipShape
                                     )
+                                    .blurForScreenshotMode()
                             )
                         }
                     }
@@ -351,33 +346,26 @@ fun CharacterCard(
         ) {
             val density = LocalDensity.current
             val width = density.run { imageWidth.roundToPx() }
-            SharedElement(
-                key = "anime_character_${character?.id}_image",
+            CharacterCoverImage(
                 screenKey = screenKey,
-            ) {
-                AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(character?.image)
-                        .crossfade(true)
-                        .allowHardware(true)
-                        .size(width = Dimension.Pixels(width), height = Dimension.Undefined)
-                        .build(),
-                    contentScale = ContentScale.Crop,
-                    fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
-                    contentDescription = stringResource(
-                        R.string.anime_character_image_content_description
-                    ),
-                    onSuccess = { imageWidthToHeightRatio = it.widthToHeightRatio() },
-                    modifier = Modifier
-                        .width(imageWidth)
-                        .fillMaxHeight()
-                        .clip(RoundedCornerShape(topStart = 12.dp, bottomStart = 12.dp))
-                        .placeholder(
-                            visible = character == null,
-                            highlight = PlaceholderHighlight.shimmer(),
-                        )
-                )
-            }
+                characterId = character?.id,
+                image = ImageRequest.Builder(LocalContext.current)
+                    .data(character?.image)
+                    .crossfade(true)
+                    .allowHardware(true)
+                    .size(width = Dimension.Pixels(width), height = Dimension.Undefined)
+                    .build(),
+                contentScale = ContentScale.Crop,
+                onSuccess = { imageWidthToHeightRatio = it.widthToHeightRatio() },
+                modifier = Modifier
+                    .width(imageWidth)
+                    .fillMaxHeight()
+                    .clip(RoundedCornerShape(topStart = 12.dp, bottomStart = 12.dp))
+                    .placeholder(
+                        visible = character == null,
+                        highlight = PlaceholderHighlight.shimmer(),
+                    )
+            )
 
             val voiceActor = (character?.languageToVoiceActor?.get("Japanese")
                 ?: character?.languageToVoiceActor?.values?.firstOrNull())
@@ -445,47 +433,41 @@ fun CharacterCard(
 
             if (character == null || voiceActor?.image != null) {
                 var voiceActorImageWidthToHeightRatio by remember { MutableSingle(1f) }
-                SharedElement(
-                    key = "anime_staff_${voiceActor?.id}_image",
+                StaffCoverImage(
                     screenKey = screenKey,
-                ) {
-                    AsyncImage(
-                        model = ImageRequest.Builder(LocalContext.current)
-                            .data(voiceActor?.image)
-                            .crossfade(true)
-                            .allowHardware(true)
-                            .size(width = Dimension.Pixels(width), height = Dimension.Undefined)
-                            .build(),
-                        contentScale = ContentScale.Crop,
-                        fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
-                        contentDescription = stringResource(
-                            R.string.anime_media_voice_actor_image
-                        ),
-                        onSuccess = {
-                            voiceActorImageWidthToHeightRatio = it.widthToHeightRatio()
-                        },
-                        modifier = Modifier
-                            .width(imageWidth)
-                            .fillMaxHeight()
-                            .clip(RoundedCornerShape(topEnd = 12.dp, bottomEnd = 12.dp))
-                            .placeholder(
-                                visible = character == null,
-                                highlight = PlaceholderHighlight.shimmer(),
-                            )
-                            .clickable {
-                                if (voiceActor != null) {
-                                    navigationCallback.onStaffClick(
-                                        voiceActor.staff,
-                                        null,
-                                        voiceActorImageWidthToHeightRatio,
-                                        colorCalculationState.getColors(
-                                            voiceActor.staff.id.toString()
-                                        ).first,
-                                    )
-                                }
+                    staffId = voiceActor?.id,
+                    image = ImageRequest.Builder(LocalContext.current)
+                        .data(voiceActor?.image)
+                        .crossfade(true)
+                        .allowHardware(true)
+                        .size(width = Dimension.Pixels(width), height = Dimension.Undefined)
+                        .build(),
+                    contentScale = ContentScale.Crop,
+                    contentDescriptionTextRes = R.string.anime_media_voice_actor_image,
+                    onSuccess = {
+                        voiceActorImageWidthToHeightRatio = it.widthToHeightRatio()
+                    },
+                    modifier = Modifier
+                        .width(imageWidth)
+                        .fillMaxHeight()
+                        .clip(RoundedCornerShape(topEnd = 12.dp, bottomEnd = 12.dp))
+                        .placeholder(
+                            visible = character == null,
+                            highlight = PlaceholderHighlight.shimmer(),
+                        )
+                        .clickable {
+                            if (voiceActor != null) {
+                                navigationCallback.onStaffClick(
+                                    voiceActor.staff,
+                                    null,
+                                    voiceActorImageWidthToHeightRatio,
+                                    colorCalculationState.getColors(
+                                        voiceActor.staff.id.toString()
+                                    ).first,
+                                )
                             }
-                    )
-                }
+                        }
+                )
             }
         }
     }

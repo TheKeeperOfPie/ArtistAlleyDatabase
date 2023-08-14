@@ -77,9 +77,9 @@ import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionStaff
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListOAuthStore
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
+import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComposeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.markdown.LocalMarkwon
-import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.LocalMediaGenreDialogController
 import com.thekeeperofpie.artistalleydatabase.anime.media.LocalMediaTagDialogController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaGenreDialogController
@@ -228,6 +228,7 @@ class MainActivity : ComponentActivity() {
                     LocalNavigationCallback provides navigationCallback,
                     LocalFullscreenImageHandler provides fullScreenImageHandler,
                     LocalMarkwon provides markwon,
+                    LocalAnimeComposeSettings provides settings.composeSettingsData(),
                 ) {
                     // TODO: Draw inside insets for applicable screens
                     Surface(modifier = Modifier.safeDrawingPadding()) {
@@ -651,7 +652,8 @@ class MainActivity : ComponentActivity() {
                 )
             }
 
-            if (!featureOverrideProvider.isReleaseBuild) {
+            if (!featureOverrideProvider.isReleaseBuild
+                && !settings.screenshotMode.collectAsState().value) {
                 Box(
                     modifier = Modifier
                         .background(colorResource(R.color.launcher_background))

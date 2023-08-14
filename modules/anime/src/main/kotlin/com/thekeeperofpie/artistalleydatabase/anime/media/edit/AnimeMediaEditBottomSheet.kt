@@ -27,7 +27,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircleOutline
 import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.ImageNotSupported
 import androidx.compose.material.icons.filled.RemoveCircleOutline
 import androidx.compose.material.icons.filled.SentimentNeutral
 import androidx.compose.material.icons.filled.SentimentVeryDissatisfied
@@ -58,7 +57,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -68,13 +66,11 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import coil.size.Dimension
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
 import com.anilist.type.ScoreFormat
-import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
@@ -82,6 +78,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toStatusIcon
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
+import com.thekeeperofpie.artistalleydatabase.anime.ui.MediaCoverImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.StartEndDateDialog
 import com.thekeeperofpie.artistalleydatabase.anime.ui.StartEndDateRow
 import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
@@ -255,57 +252,52 @@ object AnimeMediaEditBottomSheet {
                     .height(IntrinsicSize.Min)
                     .padding(horizontal = 16.dp, vertical = 10.dp)
             ) {
-                SharedElement(
-                    key = "anime_media_${media.id}_image",
+                val navigationCallback = LocalNavigationCallback.current
+                var imageWidthToHeightRatio by remember { mutableFloatStateOf(1f) }
+                val fullscreenImageHandler = LocalFullscreenImageHandler.current
+                MediaCoverImage(
                     screenKey = screenKey,
-                ) {
-                    val navigationCallback = LocalNavigationCallback.current
-                    var imageWidthToHeightRatio by remember { mutableFloatStateOf(1f) }
-                    val fullscreenImageHandler = LocalFullscreenImageHandler.current
-                    AsyncImage(
-                        model = ImageRequest.Builder(LocalContext.current)
-                            .data(media.coverImage?.extraLarge)
-                            .crossfade(true)
-                            .allowHardware(colorCalculationState.hasColor(media.id.toString()))
-                            .size(
-                                width = Dimension.Pixels(
-                                    LocalDensity.current.run { DEFAULT_IMAGE_WIDTH.roundToPx() }
-                                ),
-                                height = Dimension.Undefined
-                            )
-                            .build(),
-                        contentScale = ContentScale.Crop,
-                        fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
-                        onSuccess = {
-                            imageWidthToHeightRatio = it.widthToHeightRatio()
-                            ComposeColorUtils.calculatePalette(
-                                media.id.toString(),
-                                it,
-                                colorCalculationState,
-                            )
-                        },
-                        contentDescription = stringResource(R.string.anime_media_cover_image_content_description),
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(MaterialTheme.colorScheme.surfaceVariant)
-                            .size(width = DEFAULT_IMAGE_WIDTH, height = DEFAULT_IMAGE_HEIGHT)
-                            .combinedClickable(
-                                onClick = {
-                                    navigationCallback.onMediaClick(
-                                        media,
-                                        imageWidthToHeightRatio,
-                                    )
-                                },
-                                onLongClick = {
-                                    media.coverImage?.extraLarge
-                                        ?.let(fullscreenImageHandler::openImage)
-                                },
-                                onLongClickLabel = stringResource(
-                                    R.string.anime_media_cover_image_long_press_preview
-                                ),
-                            )
-                    )
-                }
+                    mediaId = media.id.toString(),
+                    image = ImageRequest.Builder(LocalContext.current)
+                        .data(media.coverImage?.extraLarge)
+                        .crossfade(true)
+                        .allowHardware(colorCalculationState.hasColor(media.id.toString()))
+                        .size(
+                            width = Dimension.Pixels(
+                                LocalDensity.current.run { DEFAULT_IMAGE_WIDTH.roundToPx() }
+                            ),
+                            height = Dimension.Undefined
+                        )
+                        .build(),
+                    contentScale = ContentScale.Crop,
+                    onSuccess = {
+                        imageWidthToHeightRatio = it.widthToHeightRatio()
+                        ComposeColorUtils.calculatePalette(
+                            media.id.toString(),
+                            it,
+                            colorCalculationState,
+                        )
+                    },
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                        .size(width = DEFAULT_IMAGE_WIDTH, height = DEFAULT_IMAGE_HEIGHT)
+                        .combinedClickable(
+                            onClick = {
+                                navigationCallback.onMediaClick(
+                                    media,
+                                    imageWidthToHeightRatio,
+                                )
+                            },
+                            onLongClick = {
+                                media.coverImage?.extraLarge
+                                    ?.let(fullscreenImageHandler::openImage)
+                            },
+                            onLongClickLabel = stringResource(
+                                R.string.anime_media_cover_image_long_press_preview
+                            ),
+                        )
+                )
 
                 AutoSizeText(
                     text = media.title?.primaryTitle().orEmpty(),
@@ -585,7 +577,8 @@ object AnimeMediaEditBottomSheet {
 
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(horizontal = 16.dp)
+            modifier = Modifier
+                .padding(horizontal = 16.dp)
                 .align(Alignment.End)
         ) {
             val private = editData.hiddenFromStatusLists

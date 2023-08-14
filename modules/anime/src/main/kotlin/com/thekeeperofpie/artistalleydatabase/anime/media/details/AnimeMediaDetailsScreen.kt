@@ -1865,6 +1865,7 @@ object AnimeMediaDetailsScreen {
         ) { item, paddingBottom, modifier ->
             val navigationCallback = LocalNavigationCallback.current
             ReviewSmallCard(
+                screenKey = viewModel.screenKey,
                 review = item,
                 onClick = {
                     navigationCallback.onReviewClick(
@@ -2119,6 +2120,7 @@ object AnimeMediaDetailsScreen {
         animeSongs,
         cdEntries,
         activities,
+        forumThreads,
     ) {
         if (entry == null) return@remember SectionIndexInfo(emptyList())
         val list = mutableListOf<Pair<SectionIndexInfo.Section, Int>>()

@@ -91,7 +91,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
-import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.anilist.AuthedUserQuery
 import com.anilist.UserSocialActivityQuery
@@ -99,7 +98,6 @@ import com.anilist.fragment.MediaCompactWithTags
 import com.anilist.fragment.MediaNavigationData
 import com.anilist.fragment.MediaPreview
 import com.anilist.type.MediaType
-import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
@@ -120,6 +118,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaListQuickEditI
 import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsArticleEntry
 import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsSmallCard
 import com.thekeeperofpie.artistalleydatabase.anime.ui.GenericViewAllCard
+import com.thekeeperofpie.artistalleydatabase.anime.ui.MediaCoverImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.NavigationHeader
 import com.thekeeperofpie.artistalleydatabase.compose.AutoResizeHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
@@ -661,110 +660,106 @@ object AnimeHomeScreen {
             navigationCallback.onMediaClick(media as MediaPreview, widthToHeightRatio ?: 1f)
         }
 
-        SharedElement(
-            key = "anime_media_${media.id}_image",
-            screenKey = SCREEN_KEY,
+        ElevatedCard(
+            colors = CardDefaults.elevatedCardColors(
+                containerColor = containerColor,
+            ),
+            modifier = modifier
+                .widthIn(max = CURRENT_ROW_IMAGE_WIDTH)
+                .clip(RoundedCornerShape(12.dp))
+                .combinedClickable(
+                    onClick = onClick,
+                    onLongClick = { onLongClickEntry(media) },
+                )
+                .alpha(if (entry.ignored) 0.38f else 1f)
+                .padding(2.dp)
         ) {
-            ElevatedCard(
-                colors = CardDefaults.elevatedCardColors(
-                    containerColor = containerColor,
-                ),
-                modifier = modifier
-                    .widthIn(max = CURRENT_ROW_IMAGE_WIDTH)
-                    .clip(RoundedCornerShape(12.dp))
-                    .combinedClickable(
-                        onClick = onClick,
-                        onLongClick = { onLongClickEntry(media) },
-                    )
-                    .alpha(if (entry.ignored) 0.38f else 1f)
-                    .padding(2.dp)
-            ) {
-                Box {
-                    val alpha by animateFloatAsState(
-                        if (widthToHeightRatio == null) 0f else 1f,
-                        label = "Cover image alpha",
-                    )
+            Box {
+                val alpha by animateFloatAsState(
+                    if (widthToHeightRatio == null) 0f else 1f,
+                    label = "Cover image alpha",
+                )
 
-                    val density = LocalDensity.current
-                    val coilWidth = coil.size.Dimension.Pixels(
-                        density.run { CURRENT_ROW_IMAGE_WIDTH.roundToPx() / 4 * 3 }
-                    )
-                    val coilHeight = coil.size.Dimension.Pixels(
-                        density.run { CURRENT_ROW_IMAGE_HEIGHT.roundToPx() / 4 * 3 }
-                    )
-                    AsyncImage(
-                        model = ImageRequest.Builder(LocalContext.current)
-                            .data(media.coverImage?.extraLarge)
-                            .allowHardware(colorCalculationState.hasColor(id))
-                            .size(width = coilWidth, height = coilHeight)
-                            .build(),
-                        contentScale = ContentScale.Crop,
-                        contentDescription = stringResource(R.string.anime_media_cover_image_content_description),
-                        onSuccess = {
-                            widthToHeightRatio = it.widthToHeightRatio()
-                            ComposeColorUtils.calculatePalette(
-                                id = id,
-                                success = it,
-                                colorCalculationState = colorCalculationState,
-                                heightStartThreshold = 3 / 4f,
-                                selectMaxPopulation = true,
-                            )
-                        },
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
-                            .alpha(alpha)
-                            .size(
-                                width = CURRENT_ROW_IMAGE_WIDTH,
-                                height = CURRENT_ROW_IMAGE_HEIGHT
-                            )
-                            .animateContentSize()
-                    )
-
-                    if (viewer != null) {
-                        val maxProgress = MediaUtils.maxProgress(media)
-                        MediaListQuickEditIconButton(
-                            viewer = viewer,
-                            mediaType = media.type,
-                            media = entry,
-                            maxProgress = maxProgress,
-                            maxProgressVolumes = media.volumes,
-                            onClick = { onClickListEdit(media) },
-                            iconSize = 12.dp,
-                            textVerticalPadding = 2.dp,
-                            modifier = Modifier.align(Alignment.BottomStart)
+                val density = LocalDensity.current
+                val coilWidth = coil.size.Dimension.Pixels(
+                    density.run { CURRENT_ROW_IMAGE_WIDTH.roundToPx() / 4 * 3 }
+                )
+                val coilHeight = coil.size.Dimension.Pixels(
+                    density.run { CURRENT_ROW_IMAGE_HEIGHT.roundToPx() / 4 * 3 }
+                )
+                MediaCoverImage(
+                    screenKey = SCREEN_KEY,
+                    mediaId = media.id.toString(),
+                    image = ImageRequest.Builder(LocalContext.current)
+                        .data(media.coverImage?.extraLarge)
+                        .allowHardware(colorCalculationState.hasColor(id))
+                        .size(width = coilWidth, height = coilHeight)
+                        .build(),
+                    contentScale = ContentScale.Crop,
+                    onSuccess = {
+                        widthToHeightRatio = it.widthToHeightRatio()
+                        ComposeColorUtils.calculatePalette(
+                            id = id,
+                            success = it,
+                            colorCalculationState = colorCalculationState,
+                            heightStartThreshold = 3 / 4f,
+                            selectMaxPopulation = true,
                         )
+                    },
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
+                        .alpha(alpha)
+                        .size(
+                            width = CURRENT_ROW_IMAGE_WIDTH,
+                            height = CURRENT_ROW_IMAGE_HEIGHT
+                        )
+                        .animateContentSize()
+                )
 
-                        if ((entry.progress ?: 0) < (maxProgress ?: 1)) {
-                            IconButton(
-                                onClick = { onClickIncrementProgress(entry) },
-                                modifier = Modifier
-                                    .align(Alignment.TopEnd)
-                                    .clip(RoundedCornerShape(bottomStart = 12.dp))
-                                    .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.66f))
-                                    .size(36.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Filled.PlusOne,
-                                    contentDescription = stringResource(
-                                        R.string.anime_home_media_increment_progress_content_description
-                                    )
+                if (viewer != null) {
+                    val maxProgress = MediaUtils.maxProgress(media)
+                    MediaListQuickEditIconButton(
+                        viewer = viewer,
+                        mediaType = media.type,
+                        media = entry,
+                        maxProgress = maxProgress,
+                        maxProgressVolumes = media.volumes,
+                        onClick = { onClickListEdit(media) },
+                        iconSize = 12.dp,
+                        textVerticalPadding = 2.dp,
+                        modifier = Modifier.align(Alignment.BottomStart)
+                    )
+
+                    if ((entry.progress ?: 0) < (maxProgress ?: 1)) {
+                        IconButton(
+                            onClick = { onClickIncrementProgress(entry) },
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .clip(RoundedCornerShape(bottomStart = 12.dp))
+                                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.66f))
+                                .size(36.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.PlusOne,
+                                contentDescription = stringResource(
+                                    R.string.anime_home_media_increment_progress_content_description
                                 )
-                            }
+                            )
                         }
                     }
                 }
-
-                Text(
-                    text = media.title?.primaryTitle().orEmpty(),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = ComposeColorUtils.bestTextColor(containerColor)
-                        ?: Color.Unspecified,
-                    overflow = TextOverflow.Ellipsis,
-                    maxLines = 2,
-                    minLines = 2,
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                )
             }
+
+            Text(
+                text = media.title?.primaryTitle().orEmpty(),
+                style = MaterialTheme.typography.labelSmall,
+                color = ComposeColorUtils.bestTextColor(containerColor)
+                    ?: Color.Unspecified,
+                overflow = TextOverflow.Ellipsis,
+                maxLines = 2,
+                minLines = 2,
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+            )
         }
     }
 
@@ -849,66 +844,62 @@ object AnimeHomeScreen {
                 }
             }
 
-        SharedElement(
-            key = "anime_media_${media.id}_image",
-            screenKey = SCREEN_KEY,
-        ) {
-            card {
-                Box {
-                    val alpha by animateFloatAsState(
-                        if (widthToHeightRatio == null) 0f else 1f,
-                        label = "Cover image alpha",
-                    )
-                    var showTitle by remember(media) { mutableStateOf(false) }
-                    AsyncImage(
-                        model = ImageRequest.Builder(LocalContext.current)
-                            .data(media.coverImage?.extraLarge)
-                            .allowHardware(colorCalculationState.hasColor(id))
-                            .size(width = coilWidth, height = coilHeight)
-                            .build(),
-                        contentScale = ContentScale.Crop,
-                        contentDescription = stringResource(R.string.anime_media_cover_image_content_description),
-                        onSuccess = {
-                            widthToHeightRatio = it.widthToHeightRatio()
-                            ComposeColorUtils.calculatePalette(
-                                id = id,
-                                success = it,
-                                colorCalculationState = colorCalculationState,
-                                heightStartThreshold = 3 / 4f,
-                                selectMaxPopulation = true,
-                            )
-                        },
-                        onError = { showTitle = true },
+        card {
+            Box {
+                val alpha by animateFloatAsState(
+                    if (widthToHeightRatio == null) 0f else 1f,
+                    label = "Cover image alpha",
+                )
+                var showTitle by remember(media) { mutableStateOf(false) }
+                MediaCoverImage(
+                    screenKey = SCREEN_KEY,
+                    mediaId = media.id.toString(),
+                    image = ImageRequest.Builder(LocalContext.current)
+                        .data(media.coverImage?.extraLarge)
+                        .allowHardware(colorCalculationState.hasColor(id))
+                        .size(width = coilWidth, height = coilHeight)
+                        .build(),
+                    contentScale = ContentScale.Crop,
+                    onSuccess = {
+                        widthToHeightRatio = it.widthToHeightRatio()
+                        ComposeColorUtils.calculatePalette(
+                            id = id,
+                            success = it,
+                            colorCalculationState = colorCalculationState,
+                            heightStartThreshold = 3 / 4f,
+                            selectMaxPopulation = true,
+                        )
+                    },
+                    onError = { showTitle = true },
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(12.dp))
+                        .alpha(alpha)
+                        .size(width = width, height = height)
+                        .animateContentSize()
+                )
+
+                if (showTitle) {
+                    AutoResizeHeightText(
+                        text = media.title?.primaryTitle().orEmpty(),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = ComposeColorUtils.bestTextColor(containerColor)
+                            ?: Color.Unspecified,
                         modifier = Modifier
-                            .clip(RoundedCornerShape(12.dp))
-                            .alpha(alpha)
                             .size(width = width, height = height)
-                            .animateContentSize()
+                            .padding(start = 8.dp, end = 8.dp, top = 8.dp, bottom = 40.dp)
                     )
+                }
 
-                    if (showTitle) {
-                        AutoResizeHeightText(
-                            text = media.title?.primaryTitle().orEmpty(),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = ComposeColorUtils.bestTextColor(containerColor)
-                                ?: Color.Unspecified,
-                            modifier = Modifier
-                                .size(width = width, height = height)
-                                .padding(start = 8.dp, end = 8.dp, top = 8.dp, bottom = 40.dp)
-                        )
-                    }
-
-                    if (viewer != null) {
-                        MediaListQuickEditIconButton(
-                            viewer = viewer,
-                            mediaType = media.type,
-                            media = mediaStatusAware,
-                            maxProgress = MediaUtils.maxProgress(media),
-                            maxProgressVolumes = media.volumes,
-                            onClick = { onClickListEdit(media) },
-                            modifier = Modifier.align(Alignment.BottomStart)
-                        )
-                    }
+                if (viewer != null) {
+                    MediaListQuickEditIconButton(
+                        viewer = viewer,
+                        mediaType = media.type,
+                        media = mediaStatusAware,
+                        maxProgress = MediaUtils.maxProgress(media),
+                        maxProgressVolumes = media.volumes,
+                        onClick = { onClickListEdit(media) },
+                        modifier = Modifier.align(Alignment.BottomStart)
+                    )
                 }
             }
         }

@@ -22,7 +22,6 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ImageNotSupported
 import androidx.compose.material.icons.filled.PeopleAlt
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PersonOutline
@@ -36,7 +35,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -44,7 +42,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import coil.size.Dimension
 import com.anilist.CharacterAdvancedSearchQuery.Data.Page.Character
@@ -64,6 +61,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.primaryName
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.toTextRes
+import com.thekeeperofpie.artistalleydatabase.anime.ui.CharacterCoverImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.ListRowSmallImage
 import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
@@ -160,55 +158,50 @@ object CharacterListRow {
         colorCalculationState: ColorCalculationState,
         onRatioAvailable: (Float) -> Unit,
     ) {
-        SharedElement(
-            key = "anime_character_${entry?.character?.id}_image",
+        val fullscreenImageHandler = LocalFullscreenImageHandler.current
+        CharacterCoverImage(
             screenKey = screenKey,
-        ) {
-            val fullscreenImageHandler = LocalFullscreenImageHandler.current
-            AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(entry?.character?.image?.large)
-                    .crossfade(true)
-                    .allowHardware(colorCalculationState.hasColor(entry?.character?.id?.toString()))
-                    .size(
-                        width = Dimension.Pixels(LocalDensity.current.run { 130.dp.roundToPx() }),
-                        height = Dimension.Undefined
+            characterId = entry?.character?.id?.toString(),
+            image = ImageRequest.Builder(LocalContext.current)
+                .data(entry?.character?.image?.large)
+                .crossfade(true)
+                .allowHardware(colorCalculationState.hasColor(entry?.character?.id?.toString()))
+                .size(
+                    width = Dimension.Pixels(LocalDensity.current.run { 130.dp.roundToPx() }),
+                    height = Dimension.Undefined
+                )
+                .build(),
+            contentScale = ContentScale.Crop,
+            onSuccess = {
+                onRatioAvailable(it.widthToHeightRatio())
+                if (entry != null) {
+                    ComposeColorUtils.calculatePalette(
+                        entry.character.id.toString(),
+                        it,
+                        colorCalculationState,
                     )
-                    .build(),
-                contentScale = ContentScale.Crop,
-                fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
-                onSuccess = {
-                    onRatioAvailable(it.widthToHeightRatio())
-                    if (entry != null) {
-                        ComposeColorUtils.calculatePalette(
-                            entry.character.id.toString(),
-                            it,
-                            colorCalculationState,
-                        )
-                    }
-                },
-                contentDescription = stringResource(R.string.anime_character_image),
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .heightIn(min = 180.dp)
-                    .width(130.dp)
-                    .clip(RoundedCornerShape(topStart = 12.dp, bottomStart = 12.dp))
-                    .background(MaterialTheme.colorScheme.surfaceVariant)
-                    .placeholder(
-                        visible = entry == null,
-                        highlight = PlaceholderHighlight.shimmer(),
-                    )
-                    .combinedClickable(
-                        onClick = onClick,
-                        onLongClick = {
-                            entry?.character?.image?.large?.let(fullscreenImageHandler::openImage)
-                        },
-                        onLongClickLabel = stringResource(
-                            R.string.anime_character_image_long_press_preview
-                        ),
-                    )
-            )
-        }
+                }
+            },
+            modifier = Modifier
+                .fillMaxHeight()
+                .heightIn(min = 180.dp)
+                .width(130.dp)
+                .clip(RoundedCornerShape(topStart = 12.dp, bottomStart = 12.dp))
+                .background(MaterialTheme.colorScheme.surfaceVariant)
+                .placeholder(
+                    visible = entry == null,
+                    highlight = PlaceholderHighlight.shimmer(),
+                )
+                .combinedClickable(
+                    onClick = onClick,
+                    onLongClick = {
+                        entry?.character?.image?.large?.let(fullscreenImageHandler::openImage)
+                    },
+                    onLongClickLabel = stringResource(
+                        R.string.anime_character_image_long_press_preview
+                    ),
+                )
+        )
     }
 
     @Composable

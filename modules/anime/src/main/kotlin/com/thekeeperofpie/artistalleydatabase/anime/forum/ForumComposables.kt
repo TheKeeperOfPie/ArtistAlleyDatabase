@@ -92,6 +92,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.comment.ForumCo
 import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.comment.ForumCommentEntry
 import com.thekeeperofpie.artistalleydatabase.anime.markdown.MarkdownText
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
+import com.thekeeperofpie.artistalleydatabase.anime.ui.UserAvatarImage
 import com.thekeeperofpie.artistalleydatabase.compose.MinWidthTextField
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.compose.fadingEdgeEnd
@@ -499,26 +500,25 @@ private fun UserImage(
     user: UserNavigationData?,
 ) {
     val shape = RoundedCornerShape(12.dp)
-    SharedElement(key = "anime_user_${user?.id}_image", screenKey = screenKey) {
-        val navigationCallback = LocalNavigationCallback.current
-        AsyncImage(
-            model = user?.avatar?.large,
-            contentDescription = stringResource(R.string.anime_user_image),
-            modifier = Modifier
-                .size(32.dp)
-                .clip(shape)
-                .border(width = Dp.Hairline, MaterialTheme.colorScheme.primary, shape)
-                .clickable {
-                    if (user != null) {
-                        navigationCallback.onUserClick(user, 1f)
-                    }
+    val navigationCallback = LocalNavigationCallback.current
+    UserAvatarImage(
+        screenKey = screenKey,
+        userId = user?.id?.toString(),
+        image = user?.avatar?.large,
+        modifier = Modifier
+            .size(32.dp)
+            .clip(shape)
+            .border(width = Dp.Hairline, MaterialTheme.colorScheme.primary, shape)
+            .clickable {
+                if (user != null) {
+                    navigationCallback.onUserClick(user, 1f)
                 }
-                .placeholder(
-                    visible = loading,
-                    highlight = PlaceholderHighlight.shimmer(),
-                )
-        )
-    }
+            }
+            .placeholder(
+                visible = loading,
+                highlight = PlaceholderHighlight.shimmer(),
+            )
+    )
 }
 
 @Composable

@@ -164,6 +164,7 @@ internal fun CoverAndBannerHeader(
                             background(color!!.copy(alpha = alpha))
                         } else this
                     }
+                    .blurForScreenshotMode()
             )
 
             if (upIconOption != null && progress != 1f) {
@@ -255,6 +256,7 @@ internal fun CoverAndBannerHeader(
                                             coverImage?.let(fullscreenImageHandler::openImage)
                                         }
                                     )
+                                    .blurForScreenshotMode()
                             )
                         }
                     }

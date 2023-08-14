@@ -13,8 +13,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ImageNotSupported
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
@@ -29,7 +27,6 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -37,7 +34,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.ColorUtils
-import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import coil.size.Dimension
 import com.anilist.AuthedUserQuery
@@ -46,7 +42,6 @@ import com.anilist.type.MediaType
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.material.placeholder
 import com.google.accompanist.placeholder.material.shimmer
-import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
 import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
 import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
@@ -55,6 +50,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaStatusAware
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toIcon
+import com.thekeeperofpie.artistalleydatabase.anime.ui.MediaCoverImage
 import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
@@ -202,69 +198,64 @@ object MediaGridCard {
         onRatioAvailable: (Float) -> Unit,
         forceListEditIcon: Boolean,
     ) {
-        SharedElement(
-            key = "anime_media_${entry?.media?.id}_image",
-            screenKey = screenKey,
-        ) {
-            Box {
-                val fullscreenImageHandler = LocalFullscreenImageHandler.current
-                AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(entry?.media?.coverImage?.extraLarge)
-                        .crossfade(true)
-                        .allowHardware(colorCalculationState.hasColor(entry?.media?.id?.toString()))
-                        .size(
-                            width = Dimension.Pixels(LocalDensity.current.run { 120.dp.roundToPx() }),
-                            height = Dimension.Undefined
-                        )
-                        .build(),
-                    contentScale = ContentScale.Crop,
-                    fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
-                    onSuccess = {
-                        onRatioAvailable(it.widthToHeightRatio())
-                        entry?.media?.id?.let { mediaId ->
-                            ComposeColorUtils.calculatePalette(
-                                mediaId.toString(),
-                                it,
-                                colorCalculationState,
-                            )
-                        }
-                    },
-                    contentDescription = stringResource(R.string.anime_media_cover_image_content_description),
-                    modifier = Modifier
-                        // Clip to match card so that shared element animation keeps rounded corner
-                        .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
-                        .background(MaterialTheme.colorScheme.surfaceVariant)
-                        .fillMaxSize()
-                        .aspectRatio(0.66f)
-                        .placeholder(
-                            visible = entry == null,
-                            highlight = PlaceholderHighlight.shimmer(),
-                        )
-                        .combinedClickable(
-                            onClick = { if (entry != null) onClick(entry) },
-                            onLongClick = {
-                                entry?.media?.coverImage?.extraLarge
-                                    ?.let(fullscreenImageHandler::openImage)
-                            },
-                            onLongClickLabel = stringResource(
-                                R.string.anime_media_cover_image_long_press_preview
-                            ),
-                        )
-                )
-
-                if (viewer != null && entry != null) {
-                    MediaListQuickEditIconButton(
-                        viewer = viewer,
-                        mediaType = entry.type,
-                        media = entry,
-                        maxProgress = entry.maxProgress,
-                        maxProgressVolumes = entry.maxProgressVolumes,
-                        onClick = { onClickListEdit(entry) },
-                        forceListEditIcon = forceListEditIcon,
-                        modifier = Modifier.align(Alignment.BottomStart)
+        Box {
+            val fullscreenImageHandler = LocalFullscreenImageHandler.current
+            MediaCoverImage(
+                screenKey = screenKey,
+                mediaId = entry?.media?.id.toString(),
+                image = ImageRequest.Builder(LocalContext.current)
+                    .data(entry?.media?.coverImage?.extraLarge)
+                    .crossfade(true)
+                    .allowHardware(colorCalculationState.hasColor(entry?.media?.id?.toString()))
+                    .size(
+                        width = Dimension.Pixels(LocalDensity.current.run { 120.dp.roundToPx() }),
+                        height = Dimension.Undefined
                     )
-                }
+                    .build(),
+                contentScale = ContentScale.Crop,
+                onSuccess = {
+                    onRatioAvailable(it.widthToHeightRatio())
+                    entry?.media?.id?.let { mediaId ->
+                        ComposeColorUtils.calculatePalette(
+                            mediaId.toString(),
+                            it,
+                            colorCalculationState,
+                        )
+                    }
+                },
+                modifier = Modifier
+                    // Clip to match card so that shared element animation keeps rounded corner
+                    .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                    .fillMaxSize()
+                    .aspectRatio(0.66f)
+                    .placeholder(
+                        visible = entry == null,
+                        highlight = PlaceholderHighlight.shimmer(),
+                    )
+                    .combinedClickable(
+                        onClick = { if (entry != null) onClick(entry) },
+                        onLongClick = {
+                            entry?.media?.coverImage?.extraLarge
+                                ?.let(fullscreenImageHandler::openImage)
+                        },
+                        onLongClickLabel = stringResource(
+                            R.string.anime_media_cover_image_long_press_preview
+                        ),
+                    )
+            )
+
+            if (viewer != null && entry != null) {
+                MediaListQuickEditIconButton(
+                    viewer = viewer,
+                    mediaType = entry.type,
+                    media = entry,
+                    maxProgress = entry.maxProgress,
+                    maxProgressVolumes = entry.maxProgressVolumes,
+                    onClick = { onClickListEdit(entry) },
+                    forceListEditIcon = forceListEditIcon,
+                    modifier = Modifier.align(Alignment.BottomStart)
+                )
             }
         }
     }

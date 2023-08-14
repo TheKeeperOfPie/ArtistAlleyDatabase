@@ -66,6 +66,7 @@ object ReviewsScreen {
             itemKey = { it.id },
             item = { review ->
                 ReviewSmallCard(
+                    screenKey = SCREEN_KEY,
                     review = review,
                     onClick = {
                         if (review != null) {

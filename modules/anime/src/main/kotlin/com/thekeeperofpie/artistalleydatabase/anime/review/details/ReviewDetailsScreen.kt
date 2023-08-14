@@ -58,6 +58,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toFavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.review.ReviewRatingIconsSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.DetailsLoadingOrError
+import com.thekeeperofpie.artistalleydatabase.anime.ui.UserAvatarImage
 import com.thekeeperofpie.artistalleydatabase.compose.AutoSizeText
 import com.thekeeperofpie.artistalleydatabase.compose.CollapsingToolbar
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
@@ -144,12 +145,12 @@ object ReviewDetailsScreen {
                     ) {
                         var userImageWidthToHeightRatio by remember { MutableSingle(1f) }
                         val navigationCallback = LocalNavigationCallback.current
-                        AsyncImage(
-                            model = review.user?.avatar?.large,
+                        UserAvatarImage(
+                            screenKey = SCREEN_KEY,
+                            userId = review.user?.id?.toString(),
+                            image = review.user?.avatar?.large,
                             contentScale = ContentScale.FillHeight,
-                            contentDescription = stringResource(
-                                R.string.anime_media_details_reviews_user_avatar_content_description
-                            ),
+                            contentDescriptionTextRes = R.string.anime_media_details_reviews_user_avatar_content_description,
                             onSuccess = { userImageWidthToHeightRatio = it.widthToHeightRatio() },
                             modifier = Modifier
                                 .heightIn(min = 64.dp)

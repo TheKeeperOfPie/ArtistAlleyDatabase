@@ -56,6 +56,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.forum.ThreadCardContent
 import com.thekeeperofpie.artistalleydatabase.anime.forum.ThreadCommentContent
 import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.comment.ForumCommentEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow
+import com.thekeeperofpie.artistalleydatabase.anime.ui.UserAvatarImage
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import java.time.Instant
 import java.time.ZoneOffset
@@ -739,21 +740,20 @@ private fun ContextHeader(
     ) {
         val shape = RoundedCornerShape(12.dp)
         val navigationCallback = LocalNavigationCallback.current
-        SharedElement(key = "anime_user_${user?.id}_image", screenKey = screenKey) {
-            AsyncImage(
-                model = user?.avatar?.large,
-                contentDescription = stringResource(R.string.anime_user_image),
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(shape)
-                    .border(width = Dp.Hairline, MaterialTheme.colorScheme.primary, shape)
-                    .clickable {
-                        if (user != null) {
-                            navigationCallback.onUserClick(user, 1f)
-                        }
+        UserAvatarImage(
+            screenKey = screenKey,
+            userId = user?.id?.toString(),
+            image = user?.avatar?.large,
+            modifier = Modifier
+                .size(40.dp)
+                .clip(shape)
+                .border(width = Dp.Hairline, MaterialTheme.colorScheme.primary, shape)
+                .clickable {
+                    if (user != null) {
+                        navigationCallback.onUserClick(user, 1f)
                     }
-            )
-        }
+                }
+        )
 
         Column(Modifier.weight(1f)) {
             user?.name?.let {

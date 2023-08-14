@@ -61,6 +61,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaTagEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaStatusAware
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
+import com.thekeeperofpie.artistalleydatabase.anime.ui.blurForScreenshotMode
 import com.thekeeperofpie.artistalleydatabase.compose.AppThemeSetting
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
@@ -247,6 +248,7 @@ object AnimeMediaLargeCard {
                     // Clip to match card so that shared element animation keeps rounded corner
                     .clip(RoundedCornerShape(topStart = 12.dp, bottomStart = 12.dp))
                     .alpha(alpha)
+                    .blurForScreenshotMode()
             )
         }
     }

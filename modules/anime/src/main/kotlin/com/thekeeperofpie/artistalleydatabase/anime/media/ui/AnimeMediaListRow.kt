@@ -20,7 +20,6 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ImageNotSupported
 import androidx.compose.material.icons.filled.ThumbDown
 import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.material.icons.outlined.ThumbDown
@@ -39,7 +38,6 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.takeOrElse
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -47,7 +45,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import coil.size.Dimension
 import com.anilist.AuthedUserQuery
@@ -56,7 +53,6 @@ import com.anilist.type.RecommendationRating
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.material.placeholder
 import com.google.accompanist.placeholder.material.shimmer
-import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
 import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
 import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
@@ -67,6 +63,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaStatusAware
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationData
+import com.thekeeperofpie.artistalleydatabase.anime.ui.MediaCoverImage
 import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
@@ -195,141 +192,136 @@ object AnimeMediaListRow {
             newRating: RecommendationRating,
         ) -> Unit,
     ) {
-        SharedElement(
-            key = "anime_media_${entry?.media?.id}_image",
-            screenKey = screenKey,
-        ) {
-            Box {
-                val fullscreenImageHandler = LocalFullscreenImageHandler.current
-                AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(entry?.media?.coverImage?.extraLarge)
-                        .crossfade(true)
-                        .allowHardware(colorCalculationState.hasColor(entry?.media?.id?.toString()))
-                        .size(
-                            width = Dimension.Pixels(LocalDensity.current.run { 130.dp.roundToPx() }),
-                            height = Dimension.Undefined
+        Box {
+            val fullscreenImageHandler = LocalFullscreenImageHandler.current
+            MediaCoverImage(
+                screenKey = screenKey,
+                mediaId = entry?.media?.id?.toString(),
+                image = ImageRequest.Builder(LocalContext.current)
+                    .data(entry?.media?.coverImage?.extraLarge)
+                    .crossfade(true)
+                    .allowHardware(colorCalculationState.hasColor(entry?.media?.id?.toString()))
+                    .size(
+                        width = Dimension.Pixels(LocalDensity.current.run { 130.dp.roundToPx() }),
+                        height = Dimension.Undefined
+                    )
+                    .build(),
+                contentScale = ContentScale.Crop,
+                onSuccess = {
+                    onRatioAvailable(it.widthToHeightRatio())
+                    entry?.media?.id?.let { mediaId ->
+                        ComposeColorUtils.calculatePalette(
+                            mediaId.toString(),
+                            it,
+                            colorCalculationState,
                         )
-                        .build(),
-                    contentScale = ContentScale.Crop,
-                    fallback = rememberVectorPainter(Icons.Filled.ImageNotSupported),
-                    onSuccess = {
-                        onRatioAvailable(it.widthToHeightRatio())
-                        entry?.media?.id?.let { mediaId ->
-                            ComposeColorUtils.calculatePalette(
-                                mediaId.toString(),
-                                it,
-                                colorCalculationState,
-                            )
-                        }
-                    },
-                    contentDescription = stringResource(R.string.anime_media_cover_image_content_description),
+                    }
+                },
+                modifier = Modifier
+                    // Clip to match card so that shared element animation keeps rounded corner
+                    .clip(RoundedCornerShape(topStart = 12.dp, bottomStart = 12.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                    .fillMaxHeight()
+                    .heightIn(min = 180.dp)
+                    .width(130.dp)
+                    .placeholder(
+                        visible = entry == null,
+                        highlight = PlaceholderHighlight.shimmer(),
+                    )
+                    .combinedClickable(
+                        onClick = { if (entry != null) onClick(entry) },
+                        onLongClick = {
+                            entry?.media?.coverImage?.extraLarge
+                                ?.let(fullscreenImageHandler::openImage)
+                        },
+                        onLongClickLabel = stringResource(
+                            R.string.anime_media_cover_image_long_press_preview
+                        ),
+                    )
+            )
+
+            if (viewer != null && recommendation != null) {
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
-                        // Clip to match card so that shared element animation keeps rounded corner
-                        .clip(RoundedCornerShape(topStart = 12.dp, bottomStart = 12.dp))
-                        .background(MaterialTheme.colorScheme.surfaceVariant)
-                        .fillMaxHeight()
-                        .heightIn(min = 180.dp)
                         .width(130.dp)
-                        .placeholder(
-                            visible = entry == null,
-                            highlight = PlaceholderHighlight.shimmer(),
-                        )
-                        .combinedClickable(
-                            onClick = { if (entry != null) onClick(entry) },
-                            onLongClick = {
-                                entry?.media?.coverImage?.extraLarge
-                                    ?.let(fullscreenImageHandler::openImage)
+                        .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.66f))
+                        .align(Alignment.TopStart)
+                ) {
+                    val userRating = recommendation.userRating
+                    IconButton(
+                        onClick = {
+                            val newRating = if (userRating == RecommendationRating.RATE_DOWN) {
+                                RecommendationRating.NO_RATING
+                            } else {
+                                RecommendationRating.RATE_DOWN
+                            }
+                            onUserRecommendationRating(recommendation, newRating)
+                        },
+                        modifier = Modifier.size(32.dp)
+                    ) {
+                        Icon(
+                            imageVector = if (userRating == RecommendationRating.RATE_DOWN) {
+                                Icons.Filled.ThumbDown
+                            } else {
+                                Icons.Outlined.ThumbDown
                             },
-                            onLongClickLabel = stringResource(
-                                R.string.anime_media_cover_image_long_press_preview
+                            contentDescription = stringResource(
+                                if (userRating == RecommendationRating.RATE_DOWN) {
+                                    R.string.anime_media_recommendation_rate_down_filled_content_description
+                                } else {
+                                    R.string.anime_media_recommendation_rate_down_empty_content_description
+                                }
                             ),
                         )
-                )
+                    }
 
-                if (viewer != null && recommendation != null) {
-                    Row(
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .width(130.dp)
-                            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.66f))
-                            .align(Alignment.TopStart)
+                    Text(
+                        text = recommendation.rating.toString(),
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(vertical = 4.dp, horizontal = 16.dp)
+                    )
+
+                    IconButton(
+                        onClick = {
+                            val newRating = if (userRating == RecommendationRating.RATE_UP) {
+                                RecommendationRating.NO_RATING
+                            } else {
+                                RecommendationRating.RATE_UP
+                            }
+                            onUserRecommendationRating(recommendation, newRating)
+                        },
+                        modifier = Modifier.size(32.dp)
                     ) {
-                        val userRating = recommendation.userRating
-                        IconButton(
-                            onClick = {
-                                val newRating = if (userRating == RecommendationRating.RATE_DOWN) {
-                                    RecommendationRating.NO_RATING
-                                } else {
-                                    RecommendationRating.RATE_DOWN
-                                }
-                                onUserRecommendationRating(recommendation, newRating)
+                        Icon(
+                            imageVector = if (userRating == RecommendationRating.RATE_UP) {
+                                Icons.Filled.ThumbUp
+                            } else {
+                                Icons.Outlined.ThumbUp
                             },
-                            modifier = Modifier.size(32.dp)
-                        ) {
-                            Icon(
-                                imageVector = if (userRating == RecommendationRating.RATE_DOWN) {
-                                    Icons.Filled.ThumbDown
+                            contentDescription = stringResource(
+                                if (userRating == RecommendationRating.RATE_UP) {
+                                    R.string.anime_media_recommendation_rate_up_filled_content_description
                                 } else {
-                                    Icons.Outlined.ThumbDown
-                                },
-                                contentDescription = stringResource(
-                                    if (userRating == RecommendationRating.RATE_DOWN) {
-                                        R.string.anime_media_recommendation_rate_down_filled_content_description
-                                    } else {
-                                        R.string.anime_media_recommendation_rate_down_empty_content_description
-                                    }
-                                ),
-                            )
-                        }
-
-                        Text(
-                            text = recommendation.rating.toString(),
-                            style = MaterialTheme.typography.bodySmall,
-                            modifier = Modifier.padding(vertical = 4.dp, horizontal = 16.dp)
+                                    R.string.anime_media_recommendation_rate_up_empty_content_description
+                                }
+                            ),
                         )
-
-                        IconButton(
-                            onClick = {
-                                val newRating = if (userRating == RecommendationRating.RATE_UP) {
-                                    RecommendationRating.NO_RATING
-                                } else {
-                                    RecommendationRating.RATE_UP
-                                }
-                                onUserRecommendationRating(recommendation, newRating)
-                            },
-                            modifier = Modifier.size(32.dp)
-                        ) {
-                            Icon(
-                                imageVector = if (userRating == RecommendationRating.RATE_UP) {
-                                    Icons.Filled.ThumbUp
-                                } else {
-                                    Icons.Outlined.ThumbUp
-                                },
-                                contentDescription = stringResource(
-                                    if (userRating == RecommendationRating.RATE_UP) {
-                                        R.string.anime_media_recommendation_rate_up_filled_content_description
-                                    } else {
-                                        R.string.anime_media_recommendation_rate_up_empty_content_description
-                                    }
-                                ),
-                            )
-                        }
                     }
                 }
+            }
 
-                if (viewer != null && entry != null) {
-                    MediaListQuickEditIconButton(
-                        viewer = viewer,
-                        mediaType = entry.media.type,
-                        media = entry,
-                        maxProgress = MediaUtils.maxProgress(entry.media),
-                        maxProgressVolumes = entry.media.volumes,
-                        onClick = { onClickListEdit(entry) },
-                        modifier = Modifier.align(Alignment.BottomStart)
-                    )
-                }
+            if (viewer != null && entry != null) {
+                MediaListQuickEditIconButton(
+                    viewer = viewer,
+                    mediaType = entry.media.type,
+                    media = entry,
+                    maxProgress = MediaUtils.maxProgress(entry.media),
+                    maxProgressVolumes = entry.media.volumes,
+                    onClick = { onClickListEdit(entry) },
+                    modifier = Modifier.align(Alignment.BottomStart)
+                )
             }
         }
     }

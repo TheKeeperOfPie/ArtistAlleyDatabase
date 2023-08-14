@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.ui.blurForScreenshotMode
 import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.compose.CustomHtmlText
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
@@ -66,6 +67,7 @@ fun AnimeNewsSmallCard(
                                 onClick = { onClick?.invoke() },
                                 onLongClick = { fullscreenImageHandler.openImage(it) },
                             )
+                            .blurForScreenshotMode()
                     )
 
                     entry.icon?.let {
@@ -78,6 +80,7 @@ fun AnimeNewsSmallCard(
                             modifier = Modifier
                                 .width(80.dp)
                                 .align(Alignment.BottomCenter)
+                                .blurForScreenshotMode()
                         )
                     }
                 }

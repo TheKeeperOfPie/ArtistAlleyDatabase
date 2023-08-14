@@ -55,6 +55,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow
+import com.thekeeperofpie.artistalleydatabase.anime.ui.UserAvatarImage
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ImageHtmlText
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
@@ -345,9 +346,10 @@ fun ColumnScope.MessageActivityCardContent(
         )
         val image = activity?.recipient?.avatar?.large
         if (activity == null || image != null) {
-            AsyncImage(
-                model = image,
-                contentDescription = stringResource(R.string.anime_user_image),
+            UserAvatarImage(
+                screenKey = screenKey,
+                userId = activity?.recipient?.id?.toString(),
+                image = image,
                 modifier = Modifier
                     .size(32.dp)
                     .clip(RoundedCornerShape(12.dp))
@@ -754,24 +756,23 @@ private fun UserImage(
     user: UserNavigationData?,
 ) {
     val shape = RoundedCornerShape(12.dp)
-    SharedElement(key = "anime_user_${user?.id}_image", screenKey = screenKey) {
-        val navigationCallback = LocalNavigationCallback.current
-        AsyncImage(
-            model = user?.avatar?.large,
-            contentDescription = stringResource(R.string.anime_user_image),
-            modifier = Modifier
-                .size(40.dp)
-                .clip(shape)
-                .border(width = Dp.Hairline, MaterialTheme.colorScheme.primary, shape)
-                .clickable {
-                    if (user != null) {
-                        navigationCallback.onUserClick(user, 1f)
-                    }
+    val navigationCallback = LocalNavigationCallback.current
+    UserAvatarImage(
+        screenKey = screenKey,
+        userId = user?.id?.toString(),
+        image = user?.avatar?.large,
+        modifier = Modifier
+            .size(40.dp)
+            .clip(shape)
+            .border(width = Dp.Hairline, MaterialTheme.colorScheme.primary, shape)
+            .clickable {
+                if (user != null) {
+                    navigationCallback.onUserClick(user, 1f)
                 }
-                .placeholder(
-                    visible = loading,
-                    highlight = PlaceholderHighlight.shimmer(),
-                )
-        )
-    }
+            }
+            .placeholder(
+                visible = loading,
+                highlight = PlaceholderHighlight.shimmer(),
+            )
+    )
 }

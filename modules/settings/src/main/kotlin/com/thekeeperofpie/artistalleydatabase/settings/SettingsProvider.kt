@@ -7,6 +7,10 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Looper
 import androidx.annotation.VisibleForTesting
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
@@ -314,6 +318,16 @@ class SettingsProvider(
     ) = scope.launch(CustomDispatchers.IO) {
         property.get().drop(1).collectLatest {
             serialize(property.name, it)
+        }
+    }
+
+    @Composable
+    fun composeSettingsData(): ComposeSettingsData {
+        val screenshotMode by screenshotMode.collectAsState()
+        return remember(screenshotMode) {
+            ComposeSettingsData(
+                screenshotMode = screenshotMode,
+            )
         }
     }
 
