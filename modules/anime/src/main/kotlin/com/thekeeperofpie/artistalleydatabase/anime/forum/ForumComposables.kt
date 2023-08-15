@@ -74,16 +74,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
-import com.anilist.AuthedUserQuery
 import com.anilist.fragment.ForumThread
 import com.anilist.fragment.UserNavigationData
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.material.placeholder
 import com.google.accompanist.placeholder.material.shimmer
-import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.android_utils.UriUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
+import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.ForumThreadEntry
@@ -118,7 +116,7 @@ fun ThreadCompactCard(thread: ForumThread, modifier: Modifier = Modifier) {
 
 @Composable
 fun ThreadSmallCard(
-    viewer: AuthedUserQuery.Data.Viewer?,
+    viewer: AniListViewer?,
     entry: ForumThreadEntry,
     onStatusUpdate: (ForumThreadToggleUpdate) -> Unit,
     modifier: Modifier = Modifier,
@@ -525,7 +523,7 @@ private fun UserImage(
 fun ThreadHeader(
     screenKey: String,
     threadId: String,
-    viewer: AuthedUserQuery.Data.Viewer?,
+    viewer: AniListViewer?,
     entry: ForumThreadEntry?,
     onStatusUpdate: (ForumThreadToggleUpdate) -> Unit,
 ) {
@@ -649,7 +647,7 @@ fun ThreadHeader(
             horizontalArrangement = Arrangement.End,
             modifier = Modifier.fillMaxWidth()
         ) {
-            if (thread?.user != null && viewer?.id == thread.user?.id) {
+            if (thread?.user != null && viewer?.id == thread.user?.id?.toString()) {
                 IconButton(onClick = { /* TODO */ }) {
                     Icon(
                         imageVector = Icons.Filled.Delete,
@@ -795,7 +793,7 @@ fun ThreadDeleteCommentPrompt(
 fun ThreadComment(
     screenKey: String,
     threadId: String,
-    viewer: AuthedUserQuery.Data.Viewer?,
+    viewer: AniListViewer?,
     entry: ForumCommentEntry?,
     onStatusUpdate: (String, Boolean) -> Unit,
     onClickDelete: ((String, Spanned?) -> Unit)? = null,
@@ -845,7 +843,7 @@ fun ThreadComment(
 fun ThreadCommentContent(
     screenKey: String,
     threadId: String,
-    viewer: AuthedUserQuery.Data.Viewer?,
+    viewer: AniListViewer?,
     loading: Boolean,
     commentId: String?,
     commentMarkdown: Spanned?,
@@ -893,7 +891,7 @@ fun ThreadCommentContent(
         }
 
         Row(verticalAlignment = Alignment.CenterVertically) {
-            if (onClickDelete != null && viewer != null && viewer.id == user?.id) {
+            if (onClickDelete != null && viewer != null && viewer.id == user?.id?.toString()) {
                 IconButton(onClick = {
                     if (commentId != null) {
                         onClickDelete(commentId, commentMarkdown)
@@ -1023,7 +1021,7 @@ fun ThreadCommentContent(
 fun ColumnScope.ThreadCommentChild(
     screenKey: String,
     threadId: String,
-    viewer: AuthedUserQuery.Data.Viewer?,
+    viewer: AniListViewer?,
     level: Int,
     child: ForumCommentChild,
     onStatusUpdate: (String, Boolean) -> Unit,

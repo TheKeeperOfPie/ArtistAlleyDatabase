@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.settings
 
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListSettings
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.art.persistence.ArtSettings
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySettings
@@ -37,4 +38,9 @@ object SettingsHiltModule {
     @Provides
     fun provideMonetizationSettings(settingsProvider: SettingsProvider) =
         settingsProvider as MonetizationSettings
+
+    @Singleton
+    @Provides
+    fun provideAniListSettings(settingsProvider: SettingsProvider) =
+        settingsProvider as AniListSettings
 }

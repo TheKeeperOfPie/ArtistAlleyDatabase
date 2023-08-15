@@ -92,13 +92,13 @@ import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import coil.request.ImageRequest
-import com.anilist.AuthedUserQuery
 import com.anilist.UserSocialActivityQuery
 import com.anilist.fragment.MediaCompactWithTags
 import com.anilist.fragment.MediaNavigationData
 import com.anilist.fragment.MediaPreview
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
+import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
@@ -319,7 +319,7 @@ object AnimeHomeScreen {
 
     private fun LazyListScope.mediaList(
         mediaViewModel: AnimeHomeMediaViewModel,
-        viewer: AuthedUserQuery.Data.Viewer?,
+        viewer: AniListViewer?,
         onClickListEdit: (MediaCompactWithTags) -> Unit,
         onClickIncrementProgress: (UserMediaListController.MediaEntry) -> Unit,
         selectedItemTracker: SelectedItemTracker,
@@ -377,7 +377,7 @@ object AnimeHomeScreen {
 
     private fun LazyListScope.activityRow(
         editViewModel: MediaEditViewModel,
-        viewer: AuthedUserQuery.Data.Viewer?,
+        viewer: AniListViewer?,
         data: LazyPagingItems<AnimeActivityViewModel.ActivityEntry>,
         onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
         colorCalculationState: ColorCalculationState,
@@ -454,7 +454,7 @@ object AnimeHomeScreen {
     private fun LazyListScope.currentMediaRow(
         @StringRes headerTextRes: Int,
         current: LoadingResult<List<UserMediaListController.MediaEntry>>,
-        viewer: AuthedUserQuery.Data.Viewer?,
+        viewer: AniListViewer?,
         onClickListEdit: (MediaCompactWithTags) -> Unit,
         onClickIncrementProgress: (UserMediaListController.MediaEntry) -> Unit,
         colorCalculationState: ColorCalculationState,
@@ -522,7 +522,7 @@ object AnimeHomeScreen {
 
     private fun LazyListScope.mediaRow(
         data: AnimeHomeDataEntry.RowData,
-        viewer: AuthedUserQuery.Data.Viewer?,
+        viewer: AniListViewer?,
         onClickListEdit: (MediaCompactWithTags) -> Unit,
         onLongClickEntry: (MediaNavigationData) -> Unit,
         selectedItemTracker: SelectedItemTracker,
@@ -623,7 +623,7 @@ object AnimeHomeScreen {
     @Composable
     private fun CurrentMediaCard(
         entry: UserMediaListController.MediaEntry,
-        viewer: AuthedUserQuery.Data.Viewer?,
+        viewer: AniListViewer?,
         onClickListEdit: (MediaPreview) -> Unit,
         onClickIncrementProgress: (UserMediaListController.MediaEntry) -> Unit,
         onLongClickEntry: (MediaNavigationData) -> Unit,
@@ -768,7 +768,7 @@ object AnimeHomeScreen {
         media: MediaPreview,
         mediaStatusAware: MediaStatusAware,
         ignored: Boolean,
-        viewer: AuthedUserQuery.Data.Viewer?,
+        viewer: AniListViewer?,
         cardOutlineBorder: BorderStroke,
         width: Dp,
         height: Dp,

@@ -24,6 +24,8 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatc
 import com.thekeeperofpie.artistalleydatabase.android_utils.notification.NotificationChannels
 import com.thekeeperofpie.artistalleydatabase.android_utils.notification.NotificationIds
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListSettings
+import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeRootNavDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.FilterData
@@ -57,7 +59,8 @@ class SettingsProvider(
     sharedPreferencesFileName: String = PREFERENCES_NAME,
     private val crashNotificationContentIntent: PendingIntent?,
     private val featureOverrideProvider: FeatureOverrideProvider,
-) : ArtSettings, EntrySettings, NetworkSettings, AnimeSettings, MonetizationSettings {
+) : ArtSettings, EntrySettings, NetworkSettings, AnimeSettings, MonetizationSettings,
+    AniListSettings {
 
     companion object {
         const val EXPORT_FILE_NAME = "settings.json"
@@ -139,10 +142,14 @@ class SettingsProvider(
     val languageOptionStaff =
         MutableStateFlow(deserialize("languageOptionStaff") ?: AniListLanguageOption.DEFAULT)
 
+    override val mediaHistoryEnabled = MutableStateFlow(deserialize("mediaHistoryEnabled") ?: false)
+    override val mediaHistoryMaxEntries = MutableStateFlow(deserialize("mediaHistoryMaxEntries") ?: 200)
+
     // Not exported
-    var lastCrash = MutableStateFlow(deserialize("lastCrash") ?: "")
-    var lastCrashShown = MutableStateFlow(deserialize("lastCrashShown") ?: false)
-    var screenshotMode = MutableStateFlow(deserialize("screenshotMode") ?: false)
+    override val aniListViewer = MutableStateFlow<AniListViewer?>(deserialize("aniListViewer"))
+    val lastCrash = MutableStateFlow(deserialize("lastCrash") ?: "")
+    val lastCrashShown = MutableStateFlow(deserialize("lastCrashShown") ?: false)
+    val screenshotMode = MutableStateFlow(deserialize("screenshotMode") ?: false)
 
     override var unlockAllFeatures = ignoreOnRelease("unlockAllFeatures", false)
 
@@ -231,6 +238,8 @@ class SettingsProvider(
             languageOptionMedia = languageOptionMedia.value,
             languageOptionCharacters = languageOptionCharacters.value,
             languageOptionStaff = languageOptionStaff.value,
+            mediaHistoryEnabled = mediaHistoryEnabled.value,
+            mediaHistoryMaxEntries = mediaHistoryMaxEntries.value,
         )
 
     // Initialization separated into its own method so that tests can cancel the StateFlow job
@@ -245,6 +254,7 @@ class SettingsProvider(
         subscribeProperty(scope, ::showIgnored)
         subscribeProperty(scope, ::navDrawerStartDestination)
         subscribeProperty(scope, ::hideStatusBar)
+        subscribeProperty(scope, ::aniListViewer)
         subscribeProperty(scope, ::lastCrash)
         subscribeProperty(scope, ::lastCrashShown)
         subscribeProperty(scope, ::screenshotMode)
@@ -261,6 +271,8 @@ class SettingsProvider(
         subscribeProperty(scope, ::languageOptionMedia)
         subscribeProperty(scope, ::languageOptionCharacters)
         subscribeProperty(scope, ::languageOptionStaff)
+        subscribeProperty(scope, ::mediaHistoryEnabled)
+        subscribeProperty(scope, ::mediaHistoryMaxEntries)
 
         scope.launch(CustomDispatchers.IO) {
             ignoredAniListMediaIds.drop(1).collectLatest {
@@ -360,6 +372,8 @@ class SettingsProvider(
         languageOptionMedia.emit(data.languageOptionMedia)
         languageOptionCharacters.emit(data.languageOptionCharacters)
         languageOptionStaff.emit(data.languageOptionStaff)
+        mediaHistoryEnabled.emit(data.mediaHistoryEnabled)
+        mediaHistoryMaxEntries.emit(data.mediaHistoryMaxEntries)
     }
 
     private inline fun <reified T> deserialize(name: String): T? {

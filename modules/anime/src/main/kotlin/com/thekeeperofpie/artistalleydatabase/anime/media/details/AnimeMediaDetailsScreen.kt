@@ -107,7 +107,6 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import coil.compose.AsyncImage
 import coil.size.Dimension
-import com.anilist.AuthedUserQuery
 import com.anilist.MediaDetailsQuery.Data.Media
 import com.anilist.type.ExternalLinkType
 import com.anilist.type.MediaListStatus
@@ -123,6 +122,7 @@ import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTube
 import com.thekeeperofpie.artistalleydatabase.android_utils.UriUtils
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
+import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
@@ -499,7 +499,7 @@ object AnimeMediaDetailsScreen {
     private fun LazyListScope.content(
         viewModel: AnimeMediaDetailsViewModel,
         editViewModel: MediaEditViewModel,
-        viewer: AuthedUserQuery.Data.Viewer?,
+        viewer: AniListViewer?,
         entry: Entry,
         characters: LazyPagingItems<DetailsCharacter>,
         staff: LazyPagingItems<DetailsStaff>,
@@ -680,7 +680,7 @@ object AnimeMediaDetailsScreen {
 
     private fun LazyListScope.relationsSection(
         screenKey: String,
-        viewer: AuthedUserQuery.Data.Viewer?,
+        viewer: AniListViewer?,
         entry: Entry,
         relationsExpanded: () -> Boolean,
         onRelationsExpandedChange: (Boolean) -> Unit,
@@ -1310,7 +1310,7 @@ object AnimeMediaDetailsScreen {
     private fun LazyListScope.recommendationsSection(
         screenKey: String,
         viewModel: AnimeMediaDetailsViewModel,
-        viewer: AuthedUserQuery.Data.Viewer?,
+        viewer: AniListViewer?,
         entry: Entry,
         coverImageWidthToHeightRatio: () -> Float,
         expanded: () -> Boolean,
@@ -1772,7 +1772,7 @@ object AnimeMediaDetailsScreen {
 
     private fun LazyListScope.activitiesSection(
         screenKey: String,
-        viewer: AuthedUserQuery.Data.Viewer?,
+        viewer: AniListViewer?,
         editViewModel: MediaEditViewModel,
         viewModel: AnimeMediaDetailsViewModel,
         expanded: () -> Boolean,
@@ -1808,7 +1808,7 @@ object AnimeMediaDetailsScreen {
     }
 
     private fun LazyListScope.forumThreadsSection(
-        viewer: AuthedUserQuery.Data.Viewer?,
+        viewer: AniListViewer?,
         viewModel: AnimeMediaDetailsViewModel,
         expanded: () -> Boolean,
         onExpandedChange: (Boolean) -> Unit,

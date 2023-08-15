@@ -37,7 +37,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.request.ImageRequest
 import coil.size.Dimension
-import com.anilist.AuthedUserQuery
 import com.anilist.fragment.MediaCompactWithTags
 import com.anilist.type.MediaType
 import com.google.accompanist.placeholder.PlaceholderHighlight
@@ -47,6 +46,7 @@ import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
 import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
 import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
+import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaTagEntry
@@ -68,11 +68,12 @@ object AnimeMediaCompactListRow {
     @Composable
     operator fun invoke(
         screenKey: String,
-        viewer: AuthedUserQuery.Data.Viewer?,
+        viewer: AniListViewer?,
         entry: Entry?,
         modifier: Modifier = Modifier,
         onLongClick: (Entry) -> Unit,
         onClickListEdit: (Entry) -> Unit,
+        showQuickEdit: Boolean = true,
         colorCalculationState: ColorCalculationState,
     ) {
         var imageWidthToHeightRatio by remember { MutableSingle(1f) }
@@ -113,7 +114,8 @@ object AnimeMediaCompactListRow {
                         },
                         onClickListEdit = onClickListEdit,
                         colorCalculationState = colorCalculationState,
-                        onRatioAvailable = { imageWidthToHeightRatio = it }
+                        onRatioAvailable = { imageWidthToHeightRatio = it },
+                        showQuickEdit = showQuickEdit,
                     )
 
                     Column(
@@ -170,12 +172,13 @@ object AnimeMediaCompactListRow {
     @Composable
     private fun CoverImage(
         screenKey: String,
-        viewer: AuthedUserQuery.Data.Viewer?,
+        viewer: AniListViewer?,
         entry: Entry?,
         onClick: (Entry) -> Unit = {},
         onClickListEdit: (Entry) -> Unit,
         colorCalculationState: ColorCalculationState,
         onRatioAvailable: (Float) -> Unit,
+        showQuickEdit: Boolean,
     ) {
         Box {
             val fullscreenImageHandler = LocalFullscreenImageHandler.current
@@ -224,7 +227,7 @@ object AnimeMediaCompactListRow {
                     )
             )
 
-            if (viewer != null && entry != null) {
+            if (viewer != null && entry != null && showQuickEdit) {
                 MediaListQuickEditIconButton(
                     viewer = viewer,
                     mediaType = entry.media.type,

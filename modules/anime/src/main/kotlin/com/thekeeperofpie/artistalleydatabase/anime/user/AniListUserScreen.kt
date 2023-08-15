@@ -43,7 +43,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.anilist.UserByIdQuery.Data.User
 import com.anilist.fragment.UserMediaStatistics
-import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
@@ -100,7 +99,7 @@ object AniListUserScreen {
                     )
 
                     val actuallyShowLogOut = showLogOut || viewModel.viewer.collectAsState().value
-                        .let { it != null && it.id == viewModel.entry?.user?.id }
+                        .let { it != null && it.id == viewModel.entry?.user?.id?.toString() }
                     if (onClickSettings != null || actuallyShowLogOut) {
                         Row(modifier = Modifier.align(Alignment.TopEnd)) {
                             if (onClickSettings != null) {

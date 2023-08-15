@@ -9,6 +9,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AppSettingsAlt
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.ColorLens
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Text
@@ -36,6 +37,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaEntryDao
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListOAuthStore
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeRootNavDestination
+import com.thekeeperofpie.artistalleydatabase.anime.history.HistoryController
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOption
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntry
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDao
@@ -70,6 +72,7 @@ class SettingsViewModel @Inject constructor(
     featureOverrideProvider: FeatureOverrideProvider,
     appMetadataProvider: AppMetadataProvider,
     private val aniListApi: AuthedAniListApi,
+    historyController: HistoryController,
 ) : ViewModel() {
 
     companion object {
@@ -154,6 +157,32 @@ class SettingsViewModel @Inject constructor(
         )
     )
 
+    private val historySection = SettingsSection.Subsection(
+        icon = Icons.Filled.History,
+        labelTextRes = R.string.settings_subsection_history_label,
+        children = listOf(
+            SettingsSection.Switch(
+                labelTextRes = R.string.settings_media_history_toggle,
+                property = settings.mediaHistoryEnabled,
+            ),
+            SettingsSection.TextField(
+                labelTextRes = R.string.settings_media_history_size,
+                initialValue = settings.mediaHistoryMaxEntries.value.toString(),
+                onValueChange = {
+                    it.toIntOrNull()?.let {
+                        settings.mediaHistoryMaxEntries.value = it
+                    }
+                }
+            ),
+            SettingsSection.Button(
+                labelTextRes = R.string.settings_media_history_clear,
+                buttonTextRes = R.string.settings_clear,
+                onClick = historyController::clear,
+            ),
+            SettingsSection.Placeholder("viewMediaHistory"),
+        ),
+    )
+
     private val aboutSection = SettingsSection.Subsection(
         icon = Icons.Filled.Info,
         labelTextRes = R.string.settings_subsection_about_label,
@@ -196,6 +225,7 @@ class SettingsViewModel @Inject constructor(
                 }
             },
             SettingsSection.Placeholder(id = "showLicenses"),
+            SettingsSection.Placeholder(id = "openLastCrash"),
         )
     )
 
@@ -304,6 +334,7 @@ class SettingsViewModel @Inject constructor(
         SettingsSection.Placeholder(id = "header"),
         themeSection,
         behaviorSection,
+        historySection,
         SettingsSection.Placeholder(id = "featureTiers"),
         aboutSection,
         debugSection.takeIf { !featureOverrideProvider.isReleaseBuild },

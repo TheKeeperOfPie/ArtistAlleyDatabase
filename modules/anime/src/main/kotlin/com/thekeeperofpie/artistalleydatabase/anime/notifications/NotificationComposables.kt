@@ -31,8 +31,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
-import com.anilist.AuthedUserQuery
 import com.anilist.NotificationMediaAndActivityQuery
 import com.anilist.NotificationsQuery
 import com.anilist.NotificationsQuery.Data.Page.ActivityLikeNotificationNotification
@@ -45,7 +43,7 @@ import com.anilist.fragment.UserNavigationData
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.material.placeholder
 import com.google.accompanist.placeholder.material.shimmer
-import com.mxalbert.sharedelements.SharedElement
+import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityToggleUpdate
@@ -119,7 +117,7 @@ fun NotificationPlaceholderCard() {
 @Composable
 fun ActivityMentionNotificationCard(
     screenKey: String,
-    viewer: AuthedUserQuery.Data.Viewer?,
+    viewer: AniListViewer?,
     notification: ActivityMentionNotificationNotification,
     activityEntry: NotificationsViewModel.NotificationEntry.ActivityEntry?,
     mediaEntry: AnimeMediaCompactListRow.Entry?,
@@ -150,7 +148,7 @@ fun ActivityMentionNotificationCard(
 @Composable
 fun ActivityMessageNotificationCard(
     screenKey: String,
-    viewer: AuthedUserQuery.Data.Viewer?,
+    viewer: AniListViewer?,
     notification: NotificationsQuery.Data.Page.ActivityMessageNotificationNotification,
     activityEntry: NotificationsViewModel.NotificationEntry.ActivityEntry?,
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
@@ -180,7 +178,7 @@ fun ActivityMessageNotificationCard(
 @Composable
 fun ActivityReplyNotificationCard(
     screenKey: String,
-    viewer: AuthedUserQuery.Data.Viewer?,
+    viewer: AniListViewer?,
     notification: ActivityReplyNotificationNotification,
     activityEntry: NotificationsViewModel.NotificationEntry.ActivityEntry?,
     mediaEntry: AnimeMediaCompactListRow.Entry?,
@@ -211,7 +209,7 @@ fun ActivityReplyNotificationCard(
 @Composable
 fun ActivityReplySubscribedNotificationCard(
     screenKey: String,
-    viewer: AuthedUserQuery.Data.Viewer?,
+    viewer: AniListViewer?,
     notification: ActivityReplySubscribedNotificationNotification,
     activityEntry: NotificationsViewModel.NotificationEntry.ActivityEntry?,
     mediaEntry: AnimeMediaCompactListRow.Entry?,
@@ -242,7 +240,7 @@ fun ActivityReplySubscribedNotificationCard(
 @Composable
 fun ActivityLikedNotificationCard(
     screenKey: String,
-    viewer: AuthedUserQuery.Data.Viewer?,
+    viewer: AniListViewer?,
     notification: ActivityLikeNotificationNotification,
     activityEntry: NotificationsViewModel.NotificationEntry.ActivityEntry?,
     mediaEntry: AnimeMediaCompactListRow.Entry?,
@@ -273,7 +271,7 @@ fun ActivityLikedNotificationCard(
 @Composable
 fun ActivityReplyLikedNotificationCard(
     screenKey: String,
-    viewer: AuthedUserQuery.Data.Viewer?,
+    viewer: AniListViewer?,
     notification: ActivityReplyLikeNotificationNotification,
     activityEntry: NotificationsViewModel.NotificationEntry.ActivityEntry?,
     mediaEntry: AnimeMediaCompactListRow.Entry?,
@@ -304,7 +302,7 @@ fun ActivityReplyLikedNotificationCard(
 @Composable
 fun AiringNotificationCard(
     screenKey: String,
-    viewer: AuthedUserQuery.Data.Viewer?,
+    viewer: AniListViewer?,
     notification: NotificationsQuery.Data.Page.AiringNotificationNotification,
     mediaEntry: AnimeMediaCompactListRow.Entry?,
     onClickListEdit: (AnimeMediaCompactListRow.Entry) -> Unit,
@@ -362,7 +360,7 @@ fun FollowingNotificationCard(
 @Composable
 fun RelatedMediaAdditionNotificationCard(
     screenKey: String,
-    viewer: AuthedUserQuery.Data.Viewer?,
+    viewer: AniListViewer?,
     notification: NotificationsQuery.Data.Page.RelatedMediaAdditionNotificationNotification,
     mediaEntry: AnimeMediaCompactListRow.Entry?,
     onClickListEdit: (AnimeMediaCompactListRow.Entry) -> Unit,
@@ -396,7 +394,7 @@ fun RelatedMediaAdditionNotificationCard(
 @Composable
 fun MediaDataChangeNotificationCard(
     screenKey: String,
-    viewer: AuthedUserQuery.Data.Viewer?,
+    viewer: AniListViewer?,
     notification: NotificationsQuery.Data.Page.MediaDataChangeNotificationNotification,
     mediaEntry: AnimeMediaCompactListRow.Entry?,
     onClickListEdit: (AnimeMediaCompactListRow.Entry) -> Unit,
@@ -440,7 +438,7 @@ fun MediaDataChangeNotificationCard(
 @Composable
 fun MediaDeletionNotificationCard(
     screenKey: String,
-    viewer: AuthedUserQuery.Data.Viewer?,
+    viewer: AniListViewer?,
     notification: NotificationsQuery.Data.Page.MediaDeletionNotificationNotification,
     mediaEntry: AnimeMediaCompactListRow.Entry?,
     onClickListEdit: (AnimeMediaCompactListRow.Entry) -> Unit,
@@ -487,7 +485,7 @@ fun MediaDeletionNotificationCard(
 @Composable
 fun MediaMergeNotificationCard(
     screenKey: String,
-    viewer: AuthedUserQuery.Data.Viewer?,
+    viewer: AniListViewer?,
     notification: NotificationsQuery.Data.Page.MediaMergeNotificationNotification,
     mediaEntry: AnimeMediaCompactListRow.Entry?,
     onClickListEdit: (AnimeMediaCompactListRow.Entry) -> Unit,
@@ -531,7 +529,7 @@ fun MediaMergeNotificationCard(
 @Composable
 fun ThreadCommentMentionNotificationCard(
     screenKey: String,
-    viewer: AuthedUserQuery.Data.Viewer?,
+    viewer: AniListViewer?,
     notification: NotificationsQuery.Data.Page.ThreadCommentMentionNotificationNotification,
     entry: ForumCommentEntry?,
     onStatusUpdate: (String, Boolean) -> Unit,
@@ -551,7 +549,7 @@ fun ThreadCommentMentionNotificationCard(
 @Composable
 fun ThreadCommentLikeNotificationCard(
     screenKey: String,
-    viewer: AuthedUserQuery.Data.Viewer?,
+    viewer: AniListViewer?,
     notification: NotificationsQuery.Data.Page.ThreadCommentLikeNotificationNotification,
     entry: ForumCommentEntry?,
     onStatusUpdate: (String, Boolean) -> Unit,
@@ -571,7 +569,7 @@ fun ThreadCommentLikeNotificationCard(
 @Composable
 fun ThreadCommentReplyNotificationCard(
     screenKey: String,
-    viewer: AuthedUserQuery.Data.Viewer?,
+    viewer: AniListViewer?,
     notification: NotificationsQuery.Data.Page.ThreadCommentReplyNotificationNotification,
     entry: ForumCommentEntry?,
     onStatusUpdate: (String, Boolean) -> Unit,
@@ -591,7 +589,7 @@ fun ThreadCommentReplyNotificationCard(
 @Composable
 fun ThreadCommentSubscribedNotificationCard(
     screenKey: String,
-    viewer: AuthedUserQuery.Data.Viewer?,
+    viewer: AniListViewer?,
     notification: NotificationsQuery.Data.Page.ThreadCommentSubscribedNotificationNotification,
     entry: ForumCommentEntry?,
     onStatusUpdate: (String, Boolean) -> Unit,
@@ -611,7 +609,7 @@ fun ThreadCommentSubscribedNotificationCard(
 @Composable
 private fun ThreadAndCommentNotificationCard(
     screenKey: String,
-    viewer: AuthedUserQuery.Data.Viewer?,
+    viewer: AniListViewer?,
     user: UserNavigationData?,
     context: String?,
     createdAt: Int?,
@@ -776,7 +774,7 @@ private fun ContextHeader(
 @Composable
 private fun ActivityCard(
     screenKey: String,
-    viewer: AuthedUserQuery.Data.Viewer?,
+    viewer: AniListViewer?,
     activityEntry: NotificationsViewModel.NotificationEntry.ActivityEntry?,
     mediaEntry: AnimeMediaCompactListRow.Entry?,
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,

@@ -9,6 +9,8 @@ import com.thekeeperofpie.artistalleydatabase.anilist.AniListDatabase
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterEntryFts
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaEntry
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDatabase
+import com.thekeeperofpie.artistalleydatabase.anime.history.AnimeMediaHistoryEntry
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntry
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryDatabase
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryFts
@@ -33,13 +35,15 @@ import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.VgmdbArtist
         AlbumEntry::class,
         VgmdbArtist::class,
         MusicalArtist::class,
+        AnimeMediaHistoryEntry::class,
     ],
     exportSchema = true,
-    version = 4,
+    version = 5,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3),
         AutoMigration(from = 3, to = 4),
+        AutoMigration(from = 4, to = 5),
     ]
 )
 @TypeConverters(
@@ -52,4 +56,4 @@ import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.VgmdbArtist
     ]
 )
 abstract class AppDatabase : RoomDatabase(), AniListDatabase, ArtEntryDatabase, CdEntryDatabase,
-    MusicalArtistDatabase, VgmdbDatabase
+    MusicalArtistDatabase, VgmdbDatabase, AnimeDatabase

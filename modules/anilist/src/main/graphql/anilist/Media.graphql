@@ -405,10 +405,10 @@ query MediaTitlesAndImages($ids: [Int]) {
     }
 }
 
-query MediaByIds($ids: [Int]) {
+query MediaByIds($ids: [Int]!, $includeDescription: Boolean!) {
     Page {
         media(id_in: $ids) {
-            ...MediaPreview
+            ...MediaPreviewWithDescription
             title {
                 romaji
                 native

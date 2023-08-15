@@ -47,7 +47,6 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import coil.size.Dimension
-import com.anilist.AuthedUserQuery
 import com.anilist.fragment.MediaNavigationData
 import com.anilist.fragment.MediaPreviewWithDescription
 import com.anilist.type.MediaType
@@ -55,6 +54,7 @@ import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.material.placeholder
 import com.google.accompanist.placeholder.material.shimmer
 import com.mxalbert.sharedelements.SharedElement
+import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaTagEntry
@@ -77,12 +77,13 @@ object AnimeMediaLargeCard {
     @Composable
     operator fun invoke(
         screenKey: String,
-        viewer: AuthedUserQuery.Data.Viewer?,
+        viewer: AniListViewer?,
         entry: Entry?,
         modifier: Modifier = Modifier,
         label: (@Composable () -> Unit)? = null,
         onLongClick: (MediaNavigationData) -> Unit = {},
         onClickListEdit: (Entry) -> Unit,
+        showQuickEdit: Boolean = true,
         colorCalculationState: ColorCalculationState = ColorCalculationState(),
     ) {
         ElevatedCard(
@@ -168,7 +169,7 @@ object AnimeMediaLargeCard {
                             )
                         }
 
-                        if (viewer != null && entry != null) {
+                        if (viewer != null && entry != null && showQuickEdit) {
                             Box(modifier = Modifier.padding(end = 4.dp, bottom = 4.dp)
                                 .clip(RoundedCornerShape(12.dp))
                             ) {

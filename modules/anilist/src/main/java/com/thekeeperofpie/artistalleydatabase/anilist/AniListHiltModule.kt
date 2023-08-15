@@ -46,6 +46,7 @@ class AniListHiltModule {
         scopedApplication: ScopedApplication,
         aniListOAuthStore: AniListOAuthStore,
         networkSettings: NetworkSettings,
+        aniListSettings: AniListSettings,
         okHttpClient: OkHttpClient,
         featureOverrideProvider: FeatureOverrideProvider,
     ) = if (featureOverrideProvider.isReleaseBuild) {
@@ -53,6 +54,7 @@ class AniListHiltModule {
             scopedApplication,
             aniListOAuthStore,
             networkSettings,
+            aniListSettings,
             okHttpClient,
         )
     } else {
@@ -60,6 +62,7 @@ class AniListHiltModule {
             scopedApplication,
             aniListOAuthStore,
             networkSettings,
+            aniListSettings,
             okHttpClient,
         )
     }

@@ -44,6 +44,12 @@
     <string name="settings_subsection_behavior_language_option_characters_label">Character name language</string>
     <string name="settings_subsection_behavior_language_option_staff_label">Staff name language</string>
 
+    <string name="settings_subsection_history_label">History</string>
+    <string name="settings_media_history_toggle">Track viewed media history</string>
+    <string name="settings_media_history_clear">Clear media history</string>
+    <string name="settings_media_history_size">Media history size</string>
+    <string name="settings_media_history_view">View media history</string>
+
     <string name="settings_subsection_about_label">About</string>
     <string name="settings_subsection_about_build_title">Build</string>
     <string name="settings_subsection_about_build_description">Version %1$s (%2$s)</string>

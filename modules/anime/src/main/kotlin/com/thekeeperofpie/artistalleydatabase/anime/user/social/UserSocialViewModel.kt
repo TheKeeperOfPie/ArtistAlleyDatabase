@@ -28,7 +28,7 @@ import javax.inject.Inject
 @OptIn(ExperimentalCoroutinesApi::class)
 abstract class UserSocialViewModel<T : Any>(
     private val aniListApi: AuthedAniListApi,
-    private val apiCall: suspend (userId: Int, page: Int) -> Pair<PaginationInfo?, List<T>>
+    private val apiCall: suspend (userId: String, page: Int) -> Pair<PaginationInfo?, List<T>>
 ) : ViewModel() {
 
     private val viewer = aniListApi.authedUser
@@ -46,8 +46,8 @@ abstract class UserSocialViewModel<T : Any>(
     fun data(): StateFlow<PagingData<T>> {
         if (job == null) {
             job = viewModelScope.launch(CustomDispatchers.IO) {
-                val userIdInt = userId?.toIntOrNull()
-                (if (userIdInt != null) flowOf(userIdInt) else viewer.mapNotNull { it?.id })
+                val userId = userId
+                (if (userId != null) flowOf(userId) else viewer.mapNotNull { it?.id })
                     .flatMapLatest { userId ->
                         refreshUptimeMillis
                             .flatMapLatest {

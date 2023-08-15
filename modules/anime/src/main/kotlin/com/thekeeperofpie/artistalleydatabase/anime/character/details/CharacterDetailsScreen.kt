@@ -51,8 +51,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
-import com.anilist.AuthedUserQuery
 import com.anilist.CharacterDetailsQuery.Data.Character
+import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterHeader
@@ -207,7 +207,7 @@ object CharacterDetailsScreen {
         headerValues: CharacterHeaderValues,
         entry: Entry,
         voiceActors: LazyPagingItems<DetailsStaff>,
-        viewer: AuthedUserQuery.Data.Viewer?,
+        viewer: AniListViewer?,
         characterImageWidthToHeightRatio: () -> Float,
         expandedState: ExpandedState,
         colorCalculationState: ColorCalculationState,
@@ -401,7 +401,7 @@ object CharacterDetailsScreen {
     }
 
     private fun LazyListScope.mediaSection(
-        viewer: AuthedUserQuery.Data.Viewer?,
+        viewer: AniListViewer?,
         entry: Entry,
         headerValues: CharacterHeaderValues,
         characterImageWidthToHeightRatio: () -> Float,

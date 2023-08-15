@@ -59,7 +59,7 @@ class MediaEditViewModel @Inject constructor(
     init {
         viewModelScope.launch(CustomDispatchers.IO) {
             aniListApi.authedUser
-                .mapNotNull { it?.mediaListOptions?.scoreFormat }
+                .mapNotNull { it?.scoreFormat }
                 .collect(scoreFormat::emit)
         }
 

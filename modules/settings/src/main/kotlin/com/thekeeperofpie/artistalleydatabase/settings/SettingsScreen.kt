@@ -35,7 +35,6 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppMetadataProvider
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
-import com.thekeeperofpie.artistalleydatabase.anilist.AniListStringR
 import com.thekeeperofpie.artistalleydatabase.compose.AppBar
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.monetization.LocalMonetizationProvider
@@ -53,6 +52,7 @@ object SettingsScreen {
         onClickShowLastCrash: () -> Unit,
         onClickShowLicenses: () -> Unit,
         onClickFeatureTiers: () -> Unit,
+        onClickViewMediaHistory: () -> Unit,
     ) {
         var currentSubsectionId by rememberSaveable { mutableStateOf<String?>(null) }
         val currentSubsection = remember(currentSubsectionId) {
@@ -99,6 +99,11 @@ object SettingsScreen {
                                 labelTextRes = R.string.settings_show_licenses,
                                 buttonTextRes = UtilsStringR.open,
                                 onClick = onClickShowLicenses,
+                            )
+                            "viewMediaHistory" -> ButtonRow(
+                                labelTextRes = R.string.settings_media_history_view,
+                                buttonTextRes = UtilsStringR.open,
+                                onClick = onClickViewMediaHistory,
                             )
                             "featureTiers" -> {
                                 Row(
@@ -230,8 +235,8 @@ object SettingsScreen {
     }
 
     enum class DatabaseType(@StringRes val labelRes: Int) {
-        ANILIST_CHARACTERS(AniListStringR.aniList_characters),
-        ANILIST_MEDIA(AniListStringR.aniList_media),
+        ANILIST_CHARACTERS(0),//AniListStringR.aniList_characters),
+        ANILIST_MEDIA(0),//AniListStringR.aniList_media),
         VGMDB_ALBUMS(VgmdbStringR.vgmdb_albums),
         VGMDB_ARTISTS(VgmdbStringR.vgmdb_artists),
         MUSICAL_ARTISTS(MusicalArtistsStringR.musical_artists),

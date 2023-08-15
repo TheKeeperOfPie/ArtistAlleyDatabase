@@ -11,11 +11,8 @@ class AppFeatureOverrideProvider : FeatureOverrideProvider {
     override val isReleaseBuild = BuildConfig.BUILD_TYPE == "release"
 }
 
-class AppMonetizationOverrideProvider(
-    aniListApi: AuthedAniListApi,
-    featureOverrideProvider: FeatureOverrideProvider,
-) : MonetizationOverrideProvider {
+class AppMonetizationOverrideProvider(aniListApi: AuthedAniListApi) : MonetizationOverrideProvider {
     // To allow store review testing, hardcode user ID of known test account to unlock all features
     override val overrideUnlock =
-        aniListApi.authedUser.map { it?.id == BuildConfig.aniListTestAccountUserId.toInt() }
+        aniListApi.authedUser.map { it?.id == BuildConfig.aniListTestAccountUserId }
 }

@@ -30,4 +30,7 @@ interface AnimeSettings {
     val preferredMediaType: MutableStateFlow<MediaType>
     val mediaViewOption: MutableStateFlow<MediaViewOption>
     val rootNavDestination: MutableStateFlow<AnimeRootNavDestination>
+
+    val mediaHistoryEnabled: MutableStateFlow<Boolean>
+    val mediaHistoryMaxEntries: MutableStateFlow<Int>
 }

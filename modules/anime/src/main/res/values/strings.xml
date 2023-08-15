@@ -861,4 +861,6 @@
     <string name="anime_media_genre_supernatural_description">A work that takes place in \"the real world\" but has fantastical elements in that world.</string>
     <string name="anime_media_genre_thriller_description">A work that focuses on inducing suspense, surprise, and anxiety in the viewer.</string>
     <string name="anime_media_genre_description_attribution">Description provided by AniList</string>
+    <string name="anime_media_history_header">Media history</string>
+    <string name="anime_media_history_error_loading">Error loading history</string>
 </resources>

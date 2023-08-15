@@ -36,7 +36,6 @@ import androidx.compose.ui.unit.dp
 import androidx.core.graphics.ColorUtils
 import coil.request.ImageRequest
 import coil.size.Dimension
-import com.anilist.AuthedUserQuery
 import com.anilist.fragment.MediaNavigationData
 import com.anilist.type.MediaType
 import com.google.accompanist.placeholder.PlaceholderHighlight
@@ -45,6 +44,7 @@ import com.google.accompanist.placeholder.material.shimmer
 import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
 import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
 import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
+import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaStatusAware
@@ -63,12 +63,13 @@ object MediaGridCard {
     operator fun invoke(
         screenKey: String,
         entry: Entry?,
-        viewer: AuthedUserQuery.Data.Viewer?,
+        viewer: AniListViewer?,
         onClickListEdit: (Entry) -> Unit,
         onLongClick: (MediaNavigationData) -> Unit,
         colorCalculationState: ColorCalculationState,
         modifier: Modifier = Modifier,
         forceListEditIcon: Boolean = false,
+        showQuickEdit: Boolean = true,
         showTypeIcon: Boolean = false,
         label: @Composable ColumnScope.(textColor: Color) -> Unit = {},
     ) {
@@ -130,6 +131,7 @@ object MediaGridCard {
                             colorCalculationState = colorCalculationState,
                             onRatioAvailable = { imageWidthToHeightRatio = it },
                             forceListEditIcon = forceListEditIcon,
+                            showQuickEdit = showQuickEdit,
                         )
 
                         if (showTypeIcon) {
@@ -191,12 +193,13 @@ object MediaGridCard {
     private fun CoverImage(
         screenKey: String,
         entry: Entry?,
-        viewer: AuthedUserQuery.Data.Viewer?,
+        viewer: AniListViewer?,
         onClick: (Entry) -> Unit = {},
         onClickListEdit: (Entry) -> Unit,
         colorCalculationState: ColorCalculationState,
         onRatioAvailable: (Float) -> Unit,
         forceListEditIcon: Boolean,
+        showQuickEdit: Boolean,
     ) {
         Box {
             val fullscreenImageHandler = LocalFullscreenImageHandler.current
@@ -245,7 +248,7 @@ object MediaGridCard {
                     )
             )
 
-            if (viewer != null && entry != null) {
+            if (viewer != null && entry != null && showQuickEdit) {
                 MediaListQuickEditIconButton(
                     viewer = viewer,
                     mediaType = entry.type,

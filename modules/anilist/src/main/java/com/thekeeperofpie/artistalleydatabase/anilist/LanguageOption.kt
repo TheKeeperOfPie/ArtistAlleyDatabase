@@ -10,6 +10,6 @@ enum class AniListLanguageOption(@StringRes val textRes: Int) {
     ROMAJI(R.string.aniList_language_option_romaji),
 }
 
-val LocalLanguageOptionMedia = compositionLocalOf { AniListLanguageOption.DEFAULT }
-val LocalLanguageOptionCharacters = compositionLocalOf { AniListLanguageOption.DEFAULT }
-val LocalLanguageOptionStaff = compositionLocalOf { AniListLanguageOption.DEFAULT }
+public val LocalLanguageOptionMedia = compositionLocalOf { AniListLanguageOption.DEFAULT }
+public val LocalLanguageOptionCharacters = compositionLocalOf { AniListLanguageOption.DEFAULT }
+public val LocalLanguageOptionStaff = compositionLocalOf { AniListLanguageOption.DEFAULT }

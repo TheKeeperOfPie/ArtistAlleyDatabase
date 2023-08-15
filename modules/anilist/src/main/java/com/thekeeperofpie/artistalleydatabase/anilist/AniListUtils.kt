@@ -13,7 +13,6 @@ import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaColumnEntry
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaEntry
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection.MultiText.Entry
-import com.thekeeperofpie.artistalleydatabase.entry.EntrySection.MultiText.Entry.Different.id
 import com.thekeeperofpie.artistalleydatabase.network_utils.NetworkSettings
 import java.time.Instant
 import java.time.Month
@@ -155,7 +154,7 @@ object AniListUtils {
     )
 }
 
-internal fun ApolloClient.Builder.addLoggingInterceptors(
+fun ApolloClient.Builder.addLoggingInterceptors(
     tag: String,
     networkSettings: NetworkSettings,
 ) = apply {

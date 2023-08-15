@@ -46,4 +46,6 @@ data class SettingsData(
     val languageOptionMedia: AniListLanguageOption = AniListLanguageOption.DEFAULT,
     val languageOptionCharacters: AniListLanguageOption = AniListLanguageOption.DEFAULT,
     val languageOptionStaff: AniListLanguageOption = AniListLanguageOption.DEFAULT,
+    val mediaHistoryEnabled: Boolean = false,
+    val mediaHistoryMaxEntries: Int = 200,
 )

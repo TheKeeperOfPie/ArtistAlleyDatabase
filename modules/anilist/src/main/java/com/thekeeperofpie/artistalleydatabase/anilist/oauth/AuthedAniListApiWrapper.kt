@@ -16,6 +16,7 @@ import com.anilist.type.MediaSource
 import com.anilist.type.MediaStatus
 import com.anilist.type.MediaType
 import com.anilist.type.NotificationType
+import com.anilist.type.RecommendationRating
 import com.anilist.type.RecommendationSort
 import com.anilist.type.ReviewRating
 import com.anilist.type.ReviewSort
@@ -24,6 +25,7 @@ import com.anilist.type.StudioSort
 import com.anilist.type.ThreadSort
 import com.anilist.type.UserSort
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListSettings
 import com.thekeeperofpie.artistalleydatabase.network_utils.NetworkSettings
 import kotlinx.coroutines.flow.map
 import okhttp3.OkHttpClient
@@ -37,11 +39,18 @@ class AuthedAniListApiWrapper(
     scopedApplication: ScopedApplication,
     oAuthStore: AniListOAuthStore,
     networkSettings: NetworkSettings,
+    aniListSettings: AniListSettings,
     okHttpClient: OkHttpClient,
-) : AuthedAniListApi(scopedApplication, oAuthStore, networkSettings, okHttpClient) {
+) : AuthedAniListApi(
+    scopedApplication,
+    oAuthStore,
+    networkSettings,
+    aniListSettings,
+    okHttpClient,
+) {
 
     override suspend fun userMediaList(
-        userId: Int,
+        userId: String,
         type: MediaType,
         status: MediaListStatus?,
     ) = super.userMediaList(userId, type, status).map {
@@ -211,7 +220,10 @@ class AuthedAniListApiWrapper(
         if (it.media?.isAdult != false) throw IOException("Cannot load this media")
     }
 
-    override suspend fun mediaByIds(ids: List<Int>) = super.mediaByIds(ids).let {
+    override suspend fun mediaByIds(
+        ids: List<Int>,
+        includeDescription: Boolean,
+    ) = super.mediaByIds(ids, includeDescription).let {
         it.filter { it.isAdult == false }
     }
 
@@ -301,7 +313,7 @@ class AuthedAniListApiWrapper(
 
     override suspend fun user(id: String) = super.user(id).let {
         it?.copy(
-            favourites = it?.favourites?.copy(
+            favourites = it.favourites?.copy(
                 anime = it.favourites.anime?.copy(nodes = it.favourites.anime.nodes?.filter { it?.isAdult == false }),
                 manga = it.favourites.manga?.copy(nodes = it.favourites.manga.nodes?.filter { it?.isAdult == false }),
             )
@@ -383,13 +395,13 @@ class AuthedAniListApiWrapper(
     override suspend fun toggleFollow(userId: Int) = super.toggleFollow(userId)
 
     override suspend fun userSocialFollowers(
-        userId: Int,
+        userId: String,
         page: Int,
         perPage: Int,
     ) = super.userSocialFollowers(userId, page, perPage)
 
     override suspend fun userSocialFollowing(
-        userId: Int,
+        userId: String,
         page: Int,
         perPage: Int,
     ) = super.userSocialFollowing(userId, page, perPage)
@@ -399,8 +411,8 @@ class AuthedAniListApiWrapper(
         page: Int,
         perPage: Int,
         sort: List<ActivitySort>,
-        userId: Int?,
-        userIdNot: Int?,
+        userId: String?,
+        userIdNot: String?,
         typeIn: List<ActivityType>?,
         typeNotIn: List<ActivityType>?,
         hasReplies: Boolean?,
@@ -716,4 +728,12 @@ class AuthedAniListApiWrapper(
                 throw IOException("Cannot load this thread")
             }
         }
+
+    override suspend fun unreadNotificationCount() = super.unreadNotificationCount()
+
+    override suspend fun saveRecommendationRating(
+        mediaId: String,
+        recommendationMediaId: String,
+        rating: RecommendationRating,
+    ) = super.saveRecommendationRating(mediaId, recommendationMediaId, rating)
 }

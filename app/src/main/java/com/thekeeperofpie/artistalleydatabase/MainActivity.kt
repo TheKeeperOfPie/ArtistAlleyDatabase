@@ -614,7 +614,12 @@ class MainActivity : ComponentActivity() {
                                     navigationCallback.navigate(
                                         AnimeNavDestinations.FEATURE_TIERS.id
                                     )
-                                }
+                                },
+                                onClickViewMediaHistory = {
+                                    navigationCallback.navigate(
+                                        AnimeNavDestinations.MEDIA_HISTORY.id
+                                    )
+                                },
                             )
                         }
 

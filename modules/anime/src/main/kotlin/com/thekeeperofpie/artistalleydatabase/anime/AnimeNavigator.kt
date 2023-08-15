@@ -41,6 +41,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.forum.ForumRootScreen
 import com.thekeeperofpie.artistalleydatabase.anime.forum.ForumSearchScreen
 import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.ForumThreadScreen
 import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.comment.ForumThreadCommentTreeScreen
+import com.thekeeperofpie.artistalleydatabase.anime.history.MediaHistoryScreen
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeIgnoreScreen
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.list.AnimeUserListScreen
@@ -798,6 +799,12 @@ object AnimeNavigator {
             ForumThreadCommentTreeScreen(
                 upIconOption = UpIconOption.Back(navHostController),
                 title = it.arguments?.getString("title"),
+            )
+        }
+
+        navGraphBuilder.composable(route = AnimeNavDestinations.MEDIA_HISTORY.id) {
+            MediaHistoryScreen(
+                upIconOption = UpIconOption.Back(navHostController),
             )
         }
     }

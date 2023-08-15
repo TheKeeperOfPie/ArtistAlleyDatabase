@@ -31,8 +31,8 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
-import com.anilist.AuthedUserQuery
 import com.anilist.UserByIdQuery
+import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.charactersSection
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
@@ -53,7 +53,7 @@ object UserOverviewScreen {
         entry: AniListUserScreen.Entry,
         viewModel: AniListUserViewModel,
         editViewModel: MediaEditViewModel,
-        viewer: AuthedUserQuery.Data.Viewer?,
+        viewer: AniListViewer?,
         isFollowing: @Composable () -> Boolean,
         onFollowingClick: () -> Unit,
         colorCalculationState: ColorCalculationState,
@@ -135,11 +135,11 @@ object UserOverviewScreen {
 
     private fun LazyListScope.followingSection(
         user: UserByIdQuery.Data.User,
-        viewer: AuthedUserQuery.Data.Viewer?,
+        viewer: AniListViewer?,
         isFollowing: @Composable () -> Boolean,
         onFollowingClick: () -> Unit,
     ) {
-        if (user.id == viewer?.id) return
+        if (user.id.toString() == viewer?.id) return
         item {
             FlowRow(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),

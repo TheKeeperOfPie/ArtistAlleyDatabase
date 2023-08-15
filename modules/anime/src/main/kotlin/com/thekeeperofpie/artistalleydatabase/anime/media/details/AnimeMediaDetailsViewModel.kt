@@ -46,6 +46,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.forum.ForumThreadSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.ForumThreadEntry
 import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.ForumThreadStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.ForumThreadToggleHelper
+import com.thekeeperofpie.artistalleydatabase.anime.history.HistoryController
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewEntry
@@ -73,6 +74,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.IOException
@@ -99,6 +101,7 @@ class AnimeMediaDetailsViewModel @Inject constructor(
     favoritesController: FavoritesController,
     private val activityStatusController: ActivityStatusController,
     private val threadStatusController: ForumThreadStatusController,
+    private val historyController: HistoryController,
 ) : ViewModel(), DefaultLifecycleObserver {
 
     companion object {
@@ -144,6 +147,7 @@ class AnimeMediaDetailsViewModel @Inject constructor(
     fun initialize(mediaId: String) {
         if (::mediaId.isInitialized) return
         this.mediaId = mediaId
+
         favoritesToggleHelper.initializeTracking(
             viewModel = this,
             entry = { snapshotFlow { entry.result } },
@@ -163,6 +167,20 @@ class AnimeMediaDetailsViewModel @Inject constructor(
                             throw IOException("Cannot load media")
                         }
                         it
+                    }
+                    .onEach {
+                        it.result?.media?.let {
+                            historyController.onVisitMediaDetails(
+                                mediaId = it.id.toString(),
+                                type = it.type,
+                                isAdult = it.isAdult,
+                                bannerImage = it.bannerImage,
+                                coverImage = it.coverImage?.extraLarge,
+                                titleRomaji = it.title?.romaji,
+                                titleEnglish = it.title?.english,
+                                titleNative = it.title?.native,
+                            )
+                        }
                     }
                     .flatMapLatest { loadingResult ->
                         val media = loadingResult.result?.media
@@ -294,7 +312,7 @@ class AnimeMediaDetailsViewModel @Inject constructor(
                     }
             }
                 .foldPreviousResult()
-                .catch { emit(LoadingResult.error(R.string.anime_media_details_error_loading, it))}
+                .catch { emit(LoadingResult.error(R.string.anime_media_details_error_loading, it)) }
                 .flowOn(CustomDispatchers.IO)
                 .collectLatest { entry = it }
         }

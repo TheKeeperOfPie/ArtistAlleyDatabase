@@ -17,6 +17,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListDatabase
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListJson
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeDatabase
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryDatabase
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDatabase
 import com.thekeeperofpie.artistalleydatabase.json.AppMoshi
@@ -59,6 +60,10 @@ object AppHiltModule {
     @Singleton
     @Provides
     fun provideAniListDatabase(appDatabase: AppDatabase): AniListDatabase = appDatabase
+
+    @Singleton
+    @Provides
+    fun provideAnimeDatabase(appDatabase: AppDatabase): AnimeDatabase = appDatabase
 
     @Singleton
     @Provides
@@ -138,9 +143,7 @@ object AppHiltModule {
     @Provides
     fun provideMonetizationFeatureOverrideProvider(
         aniListApi: AuthedAniListApi,
-        featureOverrideProvider: FeatureOverrideProvider,
-    ): MonetizationOverrideProvider =
-        AppMonetizationOverrideProvider(aniListApi, featureOverrideProvider)
+    ): MonetizationOverrideProvider = AppMonetizationOverrideProvider(aniListApi)
 
     @Singleton
     @Provides

@@ -31,4 +31,6 @@ enum class AnimeNavDestinations(val id: String) {
     FORUM_SEARCH("anime_forum_search"),
     FORUM_THREAD("anime_forum_thread"),
     FORUM_THREAD_COMMENT("anime_forum_thread_comment"),
+
+    MEDIA_HISTORY("anime_media_history"),
 }

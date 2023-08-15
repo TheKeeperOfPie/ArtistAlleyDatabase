@@ -47,7 +47,6 @@ import androidx.compose.ui.unit.dp
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
-import com.anilist.AuthedUserQuery
 import com.anilist.fragment.MediaPreview
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
@@ -55,6 +54,7 @@ import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.material.placeholder
 import com.google.accompanist.placeholder.material.shimmer
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
+import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaTagEntry
@@ -71,7 +71,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.fadingEdgeEnd
 
 fun <T> LazyListScope.mediaListSection(
     screenKey: String,
-    viewer: AuthedUserQuery.Data.Viewer?,
+    viewer: AniListViewer?,
     @StringRes titleRes: Int,
     values: Collection<T>,
     valueToEntry: (T) -> AnimeMediaListRow.Entry,
@@ -113,7 +113,7 @@ fun <T> LazyListScope.mediaListSection(
 
 fun LazyListScope.mediaHorizontalRow(
     screenKey: String,
-    viewer: AuthedUserQuery.Data.Viewer?,
+    viewer: AniListViewer?,
     editViewModel: MediaEditViewModel,
     @StringRes titleRes: Int,
     entries: LazyPagingItems<out MediaGridCard.Entry>,
@@ -313,7 +313,7 @@ fun MediaTagRow(
 
 @Composable
 fun MediaListQuickEditIconButton(
-    viewer: AuthedUserQuery.Data.Viewer?,
+    viewer: AniListViewer?,
     mediaType: MediaType?,
     media: MediaStatusAware,
     maxProgress: Int?,
@@ -345,7 +345,7 @@ fun MediaListQuickEditIconButton(
 
 @Composable
 fun MediaListQuickEditIconButton(
-    viewer: AuthedUserQuery.Data.Viewer?,
+    viewer: AniListViewer?,
     mediaType: MediaType?,
     listStatus: MediaListStatus?,
     progress: Int?,
@@ -381,7 +381,7 @@ fun MediaListQuickEditIconButton(
             modifier = Modifier.size(iconSize)
         )
 
-        val scoreFormat = viewer?.mediaListOptions?.scoreFormat
+        val scoreFormat = viewer?.scoreFormat
         val trailingText = when {
             listStatus == MediaListStatus.CURRENT -> {
                 val realProgress = if (mediaType == MediaType.MANGA) progressVolumes else progress

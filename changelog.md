@@ -1,13 +1,15 @@
 # Changelog
 
-### Next
+### Next (7)
 - Add unread notification badge
 - Add recommendation voting, doesn't support creating one
 - Add long press genre to show description
 - Add show tag/genre description in filtered search screen
+- Add media history (disabled by default, accessed in settings)
 - Show score in edit preview icon when media completed
+- Update app icon
 
-### 0.41
+### 0.41 (6)
 - Add forum notifications
 - Add forum threads to media details
 - Add notes and hidden from status lists to edit entry
@@ -15,7 +17,7 @@
 - Update staffMedia UI and add quick edit
 - Fix some filter sections to use OR instead of AND
 
-### 0.40
+### 0.40 (5)
 - Add long press images to view expanded
 - Add basic forum support, still in early stages
 - Add quick increment progress to home screen

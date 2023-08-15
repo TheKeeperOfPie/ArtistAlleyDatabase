@@ -13,6 +13,7 @@ import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -29,7 +30,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.thekeeperofpie.artistalleydatabase.compose.MinWidthTextField
 import kotlinx.coroutines.flow.MutableStateFlow
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -235,6 +238,35 @@ sealed class SettingsSection(open val id: String) {
                 Text(
                     text = description(),
                     style = MaterialTheme.typography.bodyMedium,
+                )
+            }
+        }
+    }
+
+    class TextField(
+        @StringRes private val labelTextRes: Int,
+        initialValue: String,
+        private val onValueChange: (String) -> Unit,
+    ) : SettingsSection("textField-$labelTextRes") {
+
+        private var value by mutableStateOf(initialValue)
+
+        @Composable
+        override fun Content(modifier: Modifier) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = stringResource(labelTextRes),
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)
+                        .weight(1f)
+                )
+                MinWidthTextField(
+                    value = value,
+                    textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.End),
+                    onValueChange = {
+                        value = it
+                        onValueChange(it)
+                    },
+                    minWidth = 120.dp,
                 )
             }
         }

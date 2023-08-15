@@ -43,11 +43,12 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.anilist.AuthedUserQuery
 import com.anilist.type.MediaType
+import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewWithDescriptionEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.SortFilterBottomScaffoldNoAppBarOffset
@@ -337,10 +338,10 @@ object AnimeUserListScreen {
 
     @Composable
     private fun MediaRow(
-        viewer: AuthedUserQuery.Data.Viewer?,
+        viewer: AniListViewer?,
         viewModel: AnimeUserListViewModel,
         editViewModel: MediaEditViewModel,
-        entry: AnimeUserListViewModel.MediaEntry,
+        entry: MediaPreviewWithDescriptionEntry,
         colorCalculationState: ColorCalculationState = ColorCalculationState(),
         modifier: Modifier = Modifier,
     ) {

@@ -3,6 +3,8 @@ package com.thekeeperofpie.artistalleydatabase.anilist
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.anilist.fragment.PaginationInfo
+import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
+import kotlinx.coroutines.withContext
 
 class AniListPagingSource<T : Any>(
     private val apiCall: suspend (page: Int) -> Pair<PaginationInfo?, List<T>>,
@@ -13,7 +15,7 @@ class AniListPagingSource<T : Any>(
     override fun getRefreshKey(state: PagingState<Int, T>) =
         state.anchorPosition?.let { (it / 10) + 1 }
 
-    override suspend fun load(params: LoadParams<Int>): LoadResult<Int, T> =
+    override suspend fun load(params: LoadParams<Int>) = withContext(CustomDispatchers.IO) {
         try {
             // AniList pages start at 1
             val page = params.key ?: 1
@@ -35,4 +37,5 @@ class AniListPagingSource<T : Any>(
         } catch (e: Exception) {
             LoadResult.Error(e)
         }
+    }
 }

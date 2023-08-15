@@ -59,4 +59,9 @@ dependencies {
     implementation(libs.markwon.image.coil)
     implementation(libs.markwon.linkify)
 //    implementation(libs.markwon.simple.ext)
+
+    runtimeOnly(libs.room.runtime)
+    ksp(kspProcessors.room.compiler)
+    implementation(libs.room.ktx)
+    implementation(libs.room.paging)
 }

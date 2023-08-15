@@ -48,7 +48,7 @@ import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
-import com.anilist.AuthedUserQuery
+import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
@@ -280,7 +280,7 @@ object AnimeSearchScreen {
 
     @Composable
     private fun MediaRow(
-        viewer: AuthedUserQuery.Data.Viewer?,
+        viewer: AniListViewer?,
         viewModel: AnimeSearchViewModel,
         editViewModel: MediaEditViewModel,
         entry: AnimeSearchEntry.Media,

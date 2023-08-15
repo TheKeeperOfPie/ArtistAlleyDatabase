@@ -40,8 +40,6 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
-import com.anilist.AuthedUserQuery
 import com.anilist.fragment.ListActivityWithoutMedia
 import com.anilist.fragment.MessageActivityFragment
 import com.anilist.fragment.TextActivityFragment
@@ -49,9 +47,9 @@ import com.anilist.fragment.UserNavigationData
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.material.placeholder
 import com.google.accompanist.placeholder.material.shimmer
-import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.android_utils.UriUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
+import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow
@@ -65,7 +63,7 @@ import java.time.ZoneOffset
 @Composable
 fun TextActivitySmallCard(
     screenKey: String,
-    viewer: AuthedUserQuery.Data.Viewer?,
+    viewer: AniListViewer?,
     activity: TextActivityFragment?,
     entry: ActivityStatusAware?,
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
@@ -109,7 +107,7 @@ fun TextActivitySmallCard(
 @Composable
 fun ColumnScope.TextActivityCardContent(
     screenKey: String,
-    viewer: AuthedUserQuery.Data.Viewer?,
+    viewer: AniListViewer?,
     activity: TextActivityFragment?,
     user: UserNavigationData?,
     entry: ActivityStatusAware?,
@@ -197,7 +195,7 @@ fun ColumnScope.TextActivityCardContent(
     if (showActionsRow) {
         ActivityDetailsActionRow(
             activityId = activity?.id?.toString(),
-            isViewer = viewer != null && user?.id == viewer.id,
+            isViewer = viewer != null && user?.id?.toString() == viewer.id,
             onClickDelete = onClickDelete,
         )
     }
@@ -206,7 +204,7 @@ fun ColumnScope.TextActivityCardContent(
 @Composable
 fun MessageActivitySmallCard(
     screenKey: String,
-    viewer: AuthedUserQuery.Data.Viewer?,
+    viewer: AniListViewer?,
     activity: MessageActivityFragment?,
     entry: ActivityStatusAware?,
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
@@ -249,7 +247,7 @@ fun MessageActivitySmallCard(
 @Composable
 fun ColumnScope.MessageActivityCardContent(
     screenKey: String,
-    viewer: AuthedUserQuery.Data.Viewer?,
+    viewer: AniListViewer?,
     activity: MessageActivityFragment?,
     messenger: UserNavigationData?,
     entry: ActivityStatusAware?,
@@ -384,7 +382,7 @@ fun ColumnScope.MessageActivityCardContent(
     if (showActionsRow) {
         ActivityDetailsActionRow(
             activityId = activity?.id?.toString(),
-            isViewer = viewer != null && messenger?.id == viewer.id,
+            isViewer = viewer != null && messenger?.id?.toString() == viewer.id,
             onClickDelete = onClickDelete,
         )
     }
@@ -393,7 +391,7 @@ fun ColumnScope.MessageActivityCardContent(
 @Composable
 fun ListActivitySmallCard(
     screenKey: String,
-    viewer: AuthedUserQuery.Data.Viewer?,
+    viewer: AniListViewer?,
     activity: ListActivityWithoutMedia?,
     entry: ActivityStatusAware?,
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
@@ -425,7 +423,7 @@ fun ListActivitySmallCard(
 @Composable
 fun ListActivitySmallCard(
     screenKey: String,
-    viewer: AuthedUserQuery.Data.Viewer?,
+    viewer: AniListViewer?,
     activity: ListActivityWithoutMedia?,
     mediaEntry: AnimeMediaCompactListRow.Entry?,
     entry: ActivityStatusAware?,
@@ -458,7 +456,7 @@ fun ListActivitySmallCard(
 @Composable
 private fun ListActivitySmallCard(
     screenKey: String,
-    viewer: AuthedUserQuery.Data.Viewer?,
+    viewer: AniListViewer?,
     activity: ListActivityWithoutMedia?,
     showMedia: Boolean,
     entry: AnimeMediaCompactListRow.Entry?,
@@ -510,7 +508,7 @@ private fun ListActivitySmallCard(
 @Composable
 fun ColumnScope.ListActivityCardContent(
     screenKey: String,
-    viewer: AuthedUserQuery.Data.Viewer?,
+    viewer: AniListViewer?,
     activity: ListActivityWithoutMedia?,
     user: UserNavigationData?,
     entry: AnimeMediaCompactListRow.Entry?,
@@ -615,7 +613,7 @@ fun ColumnScope.ListActivityCardContent(
     if (showActionsRow) {
         ActivityDetailsActionRow(
             activityId = activity?.id?.toString(),
-            isViewer = viewer != null && user?.id == viewer.id,
+            isViewer = viewer != null && user?.id?.toString() == viewer.id,
             onClickDelete = onClickDelete,
         )
     }
@@ -664,7 +662,7 @@ fun ActivityDetailsActionRow(
 fun ActivityStatusIcons(
     activityId: String?,
     replies: Int?,
-    viewer: AuthedUserQuery.Data.Viewer?,
+    viewer: AniListViewer?,
     liked: Boolean,
     subscribed: Boolean,
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,

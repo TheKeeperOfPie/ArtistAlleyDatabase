@@ -47,7 +47,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil.request.ImageRequest
 import coil.size.Dimension
-import com.anilist.AuthedUserQuery
 import com.anilist.fragment.MediaPreview
 import com.anilist.type.RecommendationRating
 import com.google.accompanist.placeholder.PlaceholderHighlight
@@ -56,6 +55,7 @@ import com.google.accompanist.placeholder.material.shimmer
 import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
 import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
 import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
+import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaTagEntry
@@ -76,12 +76,13 @@ object AnimeMediaListRow {
     operator fun invoke(
         screenKey: String,
         entry: Entry?,
-        viewer: AuthedUserQuery.Data.Viewer?,
+        viewer: AniListViewer?,
         modifier: Modifier = Modifier,
         label: (@Composable () -> Unit)? = null,
         onClickListEdit: (Entry) -> Unit,
         onLongClick: (Entry) -> Unit,
         colorCalculationState: ColorCalculationState,
+        showQuickEdit: Boolean = true,
         nextAiringEpisode: MediaPreview.NextAiringEpisode? = entry?.media?.nextAiringEpisode,
         showDate: Boolean = true,
         recommendation: RecommendationData? = null,
@@ -127,6 +128,7 @@ object AnimeMediaListRow {
                     onRatioAvailable = { imageWidthToHeightRatio = it },
                     recommendation = recommendation,
                     onUserRecommendationRating = onUserRecommendationRating,
+                    showQuickEdit = showQuickEdit,
                 )
 
                 Column(modifier = Modifier.heightIn(min = 180.dp)) {
@@ -181,7 +183,7 @@ object AnimeMediaListRow {
     private fun CoverImage(
         screenKey: String,
         entry: Entry?,
-        viewer: AuthedUserQuery.Data.Viewer?,
+        viewer: AniListViewer?,
         onClick: (Entry) -> Unit = {},
         onClickListEdit: (Entry) -> Unit,
         colorCalculationState: ColorCalculationState,
@@ -191,6 +193,7 @@ object AnimeMediaListRow {
             recommendation: RecommendationData,
             newRating: RecommendationRating,
         ) -> Unit,
+        showQuickEdit: Boolean,
     ) {
         Box {
             val fullscreenImageHandler = LocalFullscreenImageHandler.current
@@ -312,7 +315,7 @@ object AnimeMediaListRow {
                 }
             }
 
-            if (viewer != null && entry != null) {
+            if (viewer != null && entry != null && showQuickEdit) {
                 MediaListQuickEditIconButton(
                     viewer = viewer,
                     mediaType = entry.media.type,

@@ -68,14 +68,13 @@ import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
-import coil.compose.AsyncImage
 import com.anilist.ActivityDetailsQuery
-import com.anilist.AuthedUserQuery
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.material.placeholder
 import com.google.accompanist.placeholder.material.shimmer
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
+import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
@@ -363,7 +362,7 @@ private fun LazyListScope.centeredMessage(@StringRes textRes: Int) {
 @Composable
 private fun ReplyRow(
     screenKey: String,
-    viewer: AuthedUserQuery.Data.Viewer?,
+    viewer: AniListViewer?,
     replyEntry: ActivityDetailsViewModel.Entry.ReplyEntry?,
     onStatusUpdate: (String, Boolean) -> Unit,
     onClickDelete: (String) -> Unit,
@@ -430,7 +429,7 @@ private fun ReplyRow(
             }
 
             Row(verticalAlignment = Alignment.CenterVertically) {
-                if (viewer != null && viewer.id == user?.id) {
+                if (viewer != null && viewer.id == user?.id?.toString()) {
                     IconButton(onClick = { onClickDelete(replyEntry.reply.id.toString()) }) {
                         Icon(
                             imageVector = Icons.Filled.Delete,

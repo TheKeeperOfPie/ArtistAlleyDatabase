@@ -9,6 +9,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityStatusContr
 import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoritesController
 import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.ForumThreadCommentStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.ForumThreadStatusController
+import com.thekeeperofpie.artistalleydatabase.anime.history.AnimeHistoryDao
+import com.thekeeperofpie.artistalleydatabase.anime.history.HistoryController
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
 import com.thekeeperofpie.artistalleydatabase.anime.markdown.AniListSpoilerPlugin
 import com.thekeeperofpie.artistalleydatabase.anime.markdown.AniListTempPlugin
@@ -165,4 +167,16 @@ object AnimeHiltModule {
         .usePlugin(CoilImagesPlugin.create(application))
         .textSetter(PrecomputedTextSetterCompat.create(Executors.newCachedThreadPool()))
         .build()
+
+    @Singleton
+    @Provides
+    fun provideAnimeHistoryDao(database: AnimeDatabase) = database.animeHistoryDao()
+
+    @Singleton
+    @Provides
+    fun provideHistoryController(
+        scopedApplication: ScopedApplication,
+        historyDao: AnimeHistoryDao,
+        settings: AnimeSettings,
+    ) = HistoryController(scopedApplication, historyDao, settings)
 }

@@ -129,6 +129,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListSettings
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.addLoggingInterceptors
 import com.thekeeperofpie.artistalleydatabase.network_utils.NetworkSettings
@@ -138,11 +139,14 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import okhttp3.Call
@@ -160,6 +164,7 @@ open class AuthedAniListApi(
     private val scopedApplication: ScopedApplication,
     private val oAuthStore: AniListOAuthStore,
     networkSettings: NetworkSettings,
+    aniListSettings: AniListSettings,
     private val okHttpClient: OkHttpClient,
 ) {
     companion object {
@@ -186,7 +191,7 @@ open class AuthedAniListApi(
         .normalizedCache(memoryThenDiskCache, writeToCacheAsynchronously = true)
         .build()
 
-    val authedUser = MutableStateFlow<AuthedUserQuery.Data.Viewer?>(null)
+    val authedUser = MutableStateFlow<AniListViewer?>(null)
 
     init {
         scopedApplication.scope.launch(CustomDispatchers.IO) {
@@ -197,21 +202,24 @@ open class AuthedAniListApi(
                     } else {
                         queryCacheAndNetwork(AuthedUserQuery())
                             .mapNotNull { it.result?.viewer }
+                            .catch { Log.d(TAG, "Error loading authed user") }
+                            .map(::AniListViewer)
+                            .startWith(aniListSettings.aniListViewer.take(1).filterNotNull())
                             .distinctUntilChanged()
                     }
                 }
-                .catch { Log.d(TAG, "Error loading authed user") }
+                .onEach(aniListSettings.aniListViewer::emit)
                 .collectLatest(authedUser::emit)
         }
     }
 
     open suspend fun userMediaList(
-        userId: Int,
+        userId: String,
         type: MediaType,
         status: MediaListStatus? = null,
     ) = queryCacheAndNetwork(
         UserMediaListQuery(
-            userId = userId,
+            userId = userId.toInt(),
             type = type,
             status = Optional.presentIfNotNull(status),
         )
@@ -383,8 +391,8 @@ open class AuthedAniListApi(
         )
     ).saveMediaListEntry!!
 
-    open suspend fun mediaByIds(ids: List<Int>) =
-        query(MediaByIdsQuery(ids = Optional.present(ids)))
+    open suspend fun mediaByIds(ids: List<Int>, includeDescription: Boolean = false) =
+        query(MediaByIdsQuery(ids = ids, includeDescription = includeDescription))
             .page?.media?.filterNotNull()
             .orEmpty()
 
@@ -609,19 +617,19 @@ open class AuthedAniListApi(
 
     open suspend fun toggleFollow(userId: Int) = mutate(ToggleFollowMutation(userId)).toggleFollow
 
-    open suspend fun userSocialFollowers(userId: Int, page: Int, perPage: Int = 10) =
-        query(UserSocialFollowersQuery(userId = userId, perPage = perPage, page = page))
+    open suspend fun userSocialFollowers(userId: String, page: Int, perPage: Int = 10) =
+        query(UserSocialFollowersQuery(userId = userId.toInt(), perPage = perPage, page = page))
 
-    open suspend fun userSocialFollowing(userId: Int, page: Int, perPage: Int = 10) =
-        query(UserSocialFollowingQuery(userId = userId, perPage = perPage, page = page))
+    open suspend fun userSocialFollowing(userId: String, page: Int, perPage: Int = 10) =
+        query(UserSocialFollowingQuery(userId = userId.toInt(), perPage = perPage, page = page))
 
     open suspend fun userSocialActivity(
         isFollowing: Boolean,
         page: Int,
         perPage: Int = 10,
         sort: List<ActivitySort> = listOf(ActivitySort.PINNED, ActivitySort.ID_DESC),
-        userId: Int? = null,
-        userIdNot: Int? = null,
+        userId: String? = null,
+        userIdNot: String? = null,
         typeIn: List<ActivityType>? = null,
         typeNotIn: List<ActivityType>? = null,
         hasReplies: Boolean? = null,
@@ -633,8 +641,8 @@ open class AuthedAniListApi(
             sort = sort,
             perPage = perPage,
             page = page,
-            userId = Optional.presentIfNotNull(userId),
-            userIdNotIn = Optional.presentIfNotNull(userIdNot?.let(::listOf)),
+            userId = Optional.presentIfNotNull(userId?.toInt()),
+            userIdNotIn = Optional.presentIfNotNull(userIdNot?.toInt()?.let(::listOf)),
             typeIn = Optional.presentIfNotNull(typeIn),
             typeNotIn = Optional.presentIfNotNull(typeNotIn),
             hasReplies = Optional.presentIfNotNull(hasReplies),

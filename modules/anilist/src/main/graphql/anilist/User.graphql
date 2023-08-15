@@ -6,6 +6,9 @@ query AuthedUser {
 #        options {
 #            profileColor
 #        }
+        options {
+            titleLanguage
+        }
         mediaListOptions {
             scoreFormat
         }
