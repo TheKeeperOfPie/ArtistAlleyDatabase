@@ -269,7 +269,11 @@ class SettingsViewModel @Inject constructor(
                 labelTextRes = R.string.settings_screenshot_mode,
                 property = settings.screenshotMode,
             ),
-            SettingsSection.Placeholder(id = "openLastCrash"),
+            SettingsSection.Button(
+                labelTextRes = R.string.settings_force_crash,
+                buttonTextRes = R.string.settings_force_crash_button,
+                onClick = { throw Exception() },
+            ),
             SettingsSection.Button(
                 labelTextRes = R.string.settings_database_fetch,
                 buttonTextRes = R.string.settings_fetch,

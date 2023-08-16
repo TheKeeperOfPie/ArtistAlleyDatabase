@@ -33,4 +33,7 @@ interface AnimeSettings {
 
     val mediaHistoryEnabled: MutableStateFlow<Boolean>
     val mediaHistoryMaxEntries: MutableStateFlow<Int>
+
+    val lastCrash: MutableStateFlow<String>
+    val lastCrashShown: MutableStateFlow<Boolean>
 }

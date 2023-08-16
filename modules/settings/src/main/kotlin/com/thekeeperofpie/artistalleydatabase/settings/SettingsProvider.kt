@@ -3,7 +3,6 @@ package com.thekeeperofpie.artistalleydatabase.settings
 import android.app.Application
 import android.app.PendingIntent
 import android.content.SharedPreferences
-import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Looper
 import androidx.annotation.VisibleForTesting
@@ -11,18 +10,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
-import androidx.core.content.ContextCompat
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.android_utils.AppJson
 import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
-import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
-import com.thekeeperofpie.artistalleydatabase.android_utils.notification.NotificationChannels
-import com.thekeeperofpie.artistalleydatabase.android_utils.notification.NotificationIds
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListSettings
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
@@ -57,7 +50,6 @@ class SettingsProvider(
     masterKey: MasterKey,
     private val appJson: AppJson,
     sharedPreferencesFileName: String = PREFERENCES_NAME,
-    private val crashNotificationContentIntent: PendingIntent?,
     private val featureOverrideProvider: FeatureOverrideProvider,
 ) : ArtSettings, EntrySettings, NetworkSettings, AnimeSettings, MonetizationSettings,
     AniListSettings {
@@ -147,8 +139,8 @@ class SettingsProvider(
 
     // Not exported
     override val aniListViewer = MutableStateFlow<AniListViewer?>(deserialize("aniListViewer"))
-    val lastCrash = MutableStateFlow(deserialize("lastCrash") ?: "")
-    val lastCrashShown = MutableStateFlow(deserialize("lastCrashShown") ?: false)
+    override val lastCrash = MutableStateFlow(deserialize("lastCrash") ?: "")
+    override val lastCrashShown = MutableStateFlow(deserialize("lastCrashShown") ?: false)
     val screenshotMode = MutableStateFlow(deserialize("screenshotMode") ?: false)
 
     override var unlockAllFeatures = ignoreOnRelease("unlockAllFeatures", false)
@@ -165,40 +157,6 @@ class SettingsProvider(
                 serializeWithoutApply("lastCrashShown", false).commit()
             }
             existingExceptionHandler?.uncaughtException(thread, throwable)
-        }
-
-        val lastCrashText = lastCrash.value
-        if (crashNotificationContentIntent != null
-            && lastCrashText.isNotBlank()
-            && !lastCrashShown.value
-        ) {
-            NotificationManagerCompat.from(application).apply {
-                // TODO: Prompt user for POST_NOTIFICATIONS permission
-                if (ContextCompat.checkSelfPermission(
-                        application,
-                        android.Manifest.permission.POST_NOTIFICATIONS
-                    ) != PackageManager.PERMISSION_GRANTED
-                ) {
-                    return@apply
-                }
-
-                // TODO: This should live somewhere else
-                notify(
-                    NotificationIds.INFO_CRASH.id,
-                    NotificationCompat.Builder(application, NotificationChannels.INFO.channel)
-                        .setAutoCancel(true)
-                        .setContentTitle(
-                            application.getString(
-                                R.string.settings_notification_info_crash_title,
-                                application.getString(UtilsStringR.app_name)
-                            )
-                        )
-                        .setSmallIcon(R.drawable.baseline_error_outline_24)
-                        .setContentText(lastCrashText)
-                        .setContentIntent(crashNotificationContentIntent)
-                        .build()
-                )
-            }
         }
     }
 

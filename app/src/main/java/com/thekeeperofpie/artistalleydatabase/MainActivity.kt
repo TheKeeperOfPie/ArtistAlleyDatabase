@@ -416,6 +416,9 @@ class MainActivity : ComponentActivity() {
                             onClickSettings = {
                                 navHostController.navigate(AppNavDestinations.SETTINGS.id)
                             },
+                            onClickShowLastCrash = {
+                                navHostController.navigate(AppNavDestinations.CRASH.id)
+                            }
                         )
 
                         artEntryNavigator.initialize(

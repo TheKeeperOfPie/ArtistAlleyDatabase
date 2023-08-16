@@ -863,4 +863,8 @@
     <string name="anime_media_genre_description_attribution">Description provided by AniList</string>
     <string name="anime_media_history_header">Media history</string>
     <string name="anime_media_history_error_loading">Error loading history</string>
+
+    <!-- TODO: Move this elsewhere -->
+    <string name="last_crash_notification">App crash detected</string>
+    <string name="last_crash_notification_button">Show</string>
 </resources>

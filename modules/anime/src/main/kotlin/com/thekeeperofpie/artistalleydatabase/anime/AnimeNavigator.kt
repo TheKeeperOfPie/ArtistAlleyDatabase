@@ -92,6 +92,7 @@ object AnimeNavigator {
         upIconOption: UpIconOption?,
         onClickAuth: () -> Unit,
         onClickSettings: () -> Unit,
+        onClickShowLastCrash: () -> Unit,
     ) {
         navGraphBuilder.composable(
             route = AnimeNavDestinations.HOME.id,
@@ -104,6 +105,7 @@ object AnimeNavigator {
                 onClickAuth = onClickAuth,
                 onSubmitAuthToken = viewModel::onSubmitAuthToken,
                 onClickSettings = onClickSettings,
+                onClickShowLastCrash = onClickShowLastCrash,
             )
         }
 

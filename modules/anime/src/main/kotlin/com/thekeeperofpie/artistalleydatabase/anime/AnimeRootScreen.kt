@@ -9,9 +9,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -20,6 +23,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.anilist.type.MediaType
@@ -45,6 +49,7 @@ object AnimeRootScreen {
         onClickAuth: () -> Unit,
         onSubmitAuthToken: (String) -> Unit,
         onClickSettings: () -> Unit,
+        onClickShowLastCrash: () -> Unit,
     ) {
 
         val scrollBehavior = navigationBarEnterAlwaysScrollBehavior()
@@ -64,7 +69,29 @@ object AnimeRootScreen {
             snackbarHost = {
                 val appUpdateChecker = LocalAppUpdateChecker.current
                 val snackbarHostState = remember { SnackbarHostState() }
-                appUpdateChecker?.applySnackbarState(snackbarHostState)
+                val lastCrashShown by viewModel.lastCrashShown.collectAsState()
+                val lastCrashText by viewModel.lastCrash.collectAsState()
+                val lastCrashMessage = stringResource(R.string.last_crash_notification)
+                val lastCrashButton = stringResource(R.string.last_crash_notification_button)
+                LaunchedEffect(lastCrashText, lastCrashShown) {
+                    if (lastCrashText.isNotBlank() && !lastCrashShown) {
+                        val result = snackbarHostState.showSnackbar(
+                            message = lastCrashMessage,
+                            actionLabel = lastCrashButton,
+                            withDismissAction = true,
+                            duration = SnackbarDuration.Long,
+                        )
+                        if (result == SnackbarResult.ActionPerformed) {
+                            onClickShowLastCrash()
+                        } else {
+                            viewModel.lastCrashShown.value = true
+                        }
+                    }
+                }
+
+                if (lastCrashText.isBlank() || lastCrashShown) {
+                    appUpdateChecker?.applySnackbarState(snackbarHostState)
+                }
                 SnackbarHost(hostState = snackbarHostState)
             },
             bottomBar = {

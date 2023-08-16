@@ -17,6 +17,8 @@ class AnimeRootViewModel @Inject constructor(
     settings: AnimeSettings,
 ) : ViewModel() {
 
+    val lastCrash = settings.lastCrash
+    val lastCrashShown = settings.lastCrashShown
     val persistedSelectedScreen = settings.rootNavDestination.value
 
     val authToken = oAuthStore.authToken
