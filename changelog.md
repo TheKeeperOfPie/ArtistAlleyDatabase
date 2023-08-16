@@ -1,6 +1,9 @@
 # Changelog
 
-### Next (7)
+### Next (8)
+- 
+
+### 0.42 (7)
 - Add unread notification badge
 - Add recommendation voting, doesn't support creating one
 - Add long press genre to show description
