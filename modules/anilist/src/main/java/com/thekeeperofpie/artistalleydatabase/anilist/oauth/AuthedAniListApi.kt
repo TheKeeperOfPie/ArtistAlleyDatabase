@@ -217,11 +217,13 @@ open class AuthedAniListApi(
         userId: String,
         type: MediaType,
         status: MediaListStatus? = null,
+        includeDescription: Boolean,
     ) = queryCacheAndNetwork(
         UserMediaListQuery(
             userId = userId.toInt(),
             type = type,
             status = Optional.presentIfNotNull(status),
+            includeDescription = includeDescription,
         )
     ).map { it.transformResult { it.mediaListCollection } }
 

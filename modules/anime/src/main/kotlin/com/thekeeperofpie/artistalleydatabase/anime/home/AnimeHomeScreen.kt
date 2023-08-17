@@ -98,9 +98,9 @@ import com.anilist.UserSocialActivityQuery
 import com.anilist.fragment.MediaCompactWithTags
 import com.anilist.fragment.MediaNavigationData
 import com.anilist.fragment.MediaPreview
+import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
 import com.mxalbert.sharedelements.SharedElement
-import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
@@ -325,8 +325,7 @@ object AnimeHomeScreen {
     ) {
         val entry = mediaViewModel.entry
         currentMediaRow(
-            headerTextRes = mediaViewModel.currentHeaderTextRes,
-            current = mediaViewModel.current,
+            mediaViewModel = mediaViewModel,
             viewer = viewer,
             onClickListEdit = onClickListEdit,
             onClickIncrementProgress = onClickIncrementProgress,
@@ -446,17 +445,23 @@ object AnimeHomeScreen {
      * @return true if loading shown
      */
     private fun LazyListScope.currentMediaRow(
-        @StringRes headerTextRes: Int,
-        current: LoadingResult<List<UserMediaListController.MediaEntry>>,
+        mediaViewModel: AnimeHomeMediaViewModel,
         viewer: AniListViewer?,
         onClickListEdit: (MediaCompactWithTags) -> Unit,
         onClickIncrementProgress: (UserMediaListController.MediaEntry) -> Unit,
     ) {
-        val result = current.result
+        val result = mediaViewModel.current.result
         if (result.isNullOrEmpty()) return
+        val headerTextRes = mediaViewModel.currentHeaderTextRes
         rowHeader(
             titleRes = headerTextRes,
-            viewAllRoute = null, // TODO: full current lists
+            viewAllRoute = viewer?.let {
+                AnimeNavDestinations.USER_LIST.id +
+                        "?userId=${it.id}" +
+                        "&userName=${it.name}" +
+                        "&mediaType=${mediaViewModel.mediaType.rawValue}" +
+                        "&mediaListStatus=${MediaListStatus.CURRENT.rawValue}"
+            }
         )
 
         item("$headerTextRes-current") {

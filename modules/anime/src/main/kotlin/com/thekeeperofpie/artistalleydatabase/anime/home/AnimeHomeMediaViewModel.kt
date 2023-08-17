@@ -48,7 +48,7 @@ abstract class AnimeHomeMediaViewModel(
     protected val userMediaListController: UserMediaListController,
     private val statusController: MediaListStatusController,
     @StringRes val currentHeaderTextRes: Int,
-    protected val mediaType: MediaType,
+    val mediaType: MediaType,
     @StringRes private val errorTextRes: Int,
 ) : ViewModel() {
 
@@ -76,7 +76,8 @@ abstract class AnimeHomeMediaViewModel(
             aniListApi.userMediaList(
                 userId = it.id,
                 type = mediaType,
-                status = MediaListStatus.CURRENT
+                status = MediaListStatus.CURRENT,
+                includeDescription = false,
             ).map {
                 it.transformResult {
                     it.lists

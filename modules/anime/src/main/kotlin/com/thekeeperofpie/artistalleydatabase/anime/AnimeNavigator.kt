@@ -23,6 +23,7 @@ import com.anilist.fragment.MediaPreviewWithDescription
 import com.anilist.fragment.StaffHeaderData
 import com.anilist.fragment.StaffNavigationData
 import com.anilist.fragment.UserNavigationData
+import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
@@ -179,21 +180,14 @@ object AnimeNavigator {
             route = AnimeNavDestinations.USER_LIST.id +
                     "?userId={userId}" +
                     "&userName={userName}" +
-                    "&mediaType={mediaType}",
-            arguments = listOf(
-                navArgument("userId") {
-                    type = NavType.StringType
-                    nullable = true
-                },
-                navArgument("userName") {
-                    type = NavType.StringType
-                    nullable = true
-                },
-                navArgument("mediaType") {
+                    "&mediaType={mediaType}" +
+                    "&mediaListStatus={mediaListStatus}",
+            arguments = listOf("userId", "userName", "mediaType", "mediaListStatus").map {
+                navArgument(it) {
                     type = NavType.StringType
                     nullable = true
                 }
-            ),
+            }
         ) {
             val arguments = it.arguments!!
             val userId = arguments.getString("userId")
@@ -201,11 +195,16 @@ object AnimeNavigator {
             val mediaType = arguments.getString("mediaType")
                 ?.let { MediaType.safeValueOf(it).takeUnless { it == MediaType.UNKNOWN__ } }
                 ?: MediaType.ANIME
+            val mediaListStatus = arguments.getString("mediaListStatus")
+                ?.let {
+                    MediaListStatus.safeValueOf(it).takeUnless { it == MediaListStatus.UNKNOWN__ }
+                }
             UserListScreen(
                 userId = userId,
                 userName = userName,
                 mediaType = mediaType,
                 upIconOption = UpIconOption.Back(navHostController),
+                mediaListStatus = mediaListStatus,
                 scrollStateSaver = ScrollStateSaver.fromMap(
                     AnimeNavDestinations.USER_LIST.id,
                     ScrollStateSaver.scrollPositions(),
@@ -779,10 +778,12 @@ object AnimeNavigator {
                     + "&title={title}",
             deepLinks = listOf(
                 navDeepLink {
-                    uriPattern = "${AniListUtils.ANILIST_BASE_URL}/forum/thread/{threadId}/comment/{commentId}"
+                    uriPattern =
+                        "${AniListUtils.ANILIST_BASE_URL}/forum/thread/{threadId}/comment/{commentId}"
                 },
                 navDeepLink {
-                    uriPattern = "${AniListUtils.ANILIST_BASE_URL}/forum/thread/{threadId}/comment/{commentId}/.*"
+                    uriPattern =
+                        "${AniListUtils.ANILIST_BASE_URL}/forum/thread/{threadId}/comment/{commentId}/.*"
                 },
             ),
             arguments = listOf(
@@ -1038,12 +1039,14 @@ object AnimeNavigator {
         userId: String,
         userName: String?,
         mediaType: MediaType?,
+        mediaListStatus: MediaListStatus?,
     ) {
         navHostController.navigate(
             AnimeNavDestinations.USER_LIST.id +
                     "?userId=$userId" +
                     "&userName=$userName" +
-                    "&mediaType=${mediaType?.rawValue}"
+                    "&mediaType=${mediaType?.rawValue}" +
+                    "&mediaListStatus=${mediaListStatus?.rawValue}"
         )
     }
 
@@ -1088,10 +1091,11 @@ object AnimeNavigator {
         mediaType: MediaType,
         upIconOption: UpIconOption?,
         scrollStateSaver: ScrollStateSaver,
+        mediaListStatus: MediaListStatus? = null,
         bottomNavigationState: BottomNavigationState? = null,
     ) {
         val viewModel = hiltViewModel<AnimeUserListViewModel>(key = mediaType.rawValue)
-            .apply { initialize(userId, userName, mediaType) }
+            .apply { initialize(userId, userName, mediaType, mediaListStatus) }
         AnimeUserListScreen(
             upIconOption = upIconOption,
             mediaType = mediaType,
@@ -1219,7 +1223,15 @@ object AnimeNavigator {
         }
 
         fun onUserListClick(userId: String, userName: String?, mediaType: MediaType?) {
-            navHostController?.let { onUserListClick(it, userId, userName, mediaType) }
+            navHostController?.let {
+                onUserListClick(
+                    navHostController = it,
+                    userId = userId,
+                    userName = userName,
+                    mediaType = mediaType,
+                    mediaListStatus = null,
+                )
+            }
         }
 
         fun onUserClick(userNavigationData: UserNavigationData, imageWidthToHeightRatio: Float) {

@@ -43,11 +43,10 @@ class UserMediaListController(
     private val refreshAnime = MutableStateFlow(-1L)
     private val refreshManga = MutableStateFlow(-1L)
 
-    var anime: Flow<LoadingResult<List<ListEntry>>>
-        private set
+    private val includeDescription = MutableStateFlow(false)
 
-    var manga: Flow<LoadingResult<List<ListEntry>>>
-        private set
+    private var anime: Flow<LoadingResult<List<ListEntry>>>
+    private var manga: Flow<LoadingResult<List<ListEntry>>>
 
     init {
         anime = loadMedia(refreshAnime, MediaType.ANIME)
@@ -55,18 +54,26 @@ class UserMediaListController(
     }
 
     private fun loadMedia(refresh: StateFlow<Long>, mediaType: MediaType) =
-        combine(aniListApi.authedUser, refresh, ::Pair)
-            .flatMapLatest { (viewer) ->
+        combine(aniListApi.authedUser, includeDescription, refresh, ::Triple)
+            .flatMapLatest { (viewer, includeDescription) ->
                 if (viewer == null) return@flatMapLatest flowOf(LoadingResult.empty())
-                aniListApi.userMediaList(viewer.id, mediaType)
-                    .map {
-                        it.transformResult {
-                            it.lists?.filterNotNull()?.map(::ListEntry)
-                                .orEmpty()
-                        }
+                aniListApi.userMediaList(
+                    userId = viewer.id,
+                    type = mediaType,
+                    includeDescription = includeDescription
+                ).map {
+                    it.transformResult {
+                        it.lists?.filterNotNull()?.map(::ListEntry)
+                            .orEmpty()
                     }
+                }
             }
-            .runningFold(LoadingResult<List<ListEntry>>(loading = true, success = true)) { accumulator, value ->
+            .runningFold(
+                LoadingResult<List<ListEntry>>(
+                    loading = true,
+                    success = true
+                )
+            ) { accumulator, value ->
                 value.transformIf(value.loading && value.result == null) {
                     copy(result = accumulator.result)
                 }
@@ -130,6 +137,20 @@ class UserMediaListController(
                 )
             })
         }
+    }
+
+    fun anime(includeDescription: Boolean): Flow<LoadingResult<List<ListEntry>>> {
+        if (includeDescription) {
+            this.includeDescription.value = true
+        }
+        return anime
+    }
+
+    fun manga(includeDescription: Boolean): Flow<LoadingResult<List<ListEntry>>> {
+        if (includeDescription) {
+            this.includeDescription.value = true
+        }
+        return manga
     }
 
     fun refresh(mediaType: MediaType) {

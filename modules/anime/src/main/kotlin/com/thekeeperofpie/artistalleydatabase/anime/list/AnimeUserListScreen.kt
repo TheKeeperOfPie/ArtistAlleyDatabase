@@ -49,6 +49,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewWithDescriptionEntry
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.SortFilterBottomScaffoldNoAppBarOffset
@@ -187,18 +188,20 @@ object AnimeUserListScreen {
                                     content.result?.forEach {
                                         if (it.entries.isNotEmpty()) {
                                             val expanded = expandedState[it.name] ?: true
-                                            item(
-                                                "header-${it.name}",
-                                                span = { GridItemSpan(maxLineSpan) },
-                                            ) {
-                                                Header(
-                                                    name = it.name,
-                                                    expanded = expanded,
-                                                    onClick = {
-                                                        expandedState[it.name] = !expanded
-                                                    },
-                                                    modifier = Modifier.animateItemPlacement(),
-                                                )
+                                            if (viewModel.mediaListStatus == null) {
+                                                item(
+                                                    "header-${it.name}",
+                                                    span = { GridItemSpan(maxLineSpan) },
+                                                ) {
+                                                    Header(
+                                                        name = it.name,
+                                                        expanded = expanded,
+                                                        onClick = {
+                                                            expandedState[it.name] = !expanded
+                                                        },
+                                                        modifier = Modifier.animateItemPlacement(),
+                                                    )
+                                                }
                                             }
 
                                             if (expanded) {
@@ -248,8 +251,11 @@ object AnimeUserListScreen {
                 } else null,
                 placeholder = {
                     val userName = viewModel.userName
+                    val mediaListStatus = viewModel.mediaListStatus
                     Text(
-                        if (userName != null) {
+                        if (mediaListStatus != null) {
+                            stringResource(mediaListStatus.toTextRes(viewModel.mediaType))
+                        } else if (userName != null) {
                             stringResource(
                                 when (mediaType) {
                                     MediaType.ANIME,

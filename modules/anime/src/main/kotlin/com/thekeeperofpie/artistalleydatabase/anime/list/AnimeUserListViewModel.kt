@@ -7,6 +7,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
@@ -26,6 +27,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaLicensorsC
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaTagsController
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOption
 import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -37,7 +39,9 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.transformWhile
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -66,18 +70,27 @@ class AnimeUserListViewModel @Inject constructor(
 
     private var userId: String? = null
     private var initialized = false
-    private lateinit var mediaType: MediaType
+    var mediaListStatus: MediaListStatus? = null
+        private set
+    lateinit var mediaType: MediaType
+        private set
 
     lateinit var sortFilterController: MediaSortFilterController<*, *>
 
     private val refreshUptimeMillis = MutableStateFlow(-1L)
 
-    fun initialize(userId: String?, userName: String?, mediaType: MediaType) {
+    fun initialize(
+        userId: String?,
+        userName: String?,
+        mediaType: MediaType,
+        status: MediaListStatus? = null,
+    ) {
         if (initialized) return
         initialized = true
         this.userId = userId
         this.mediaType = mediaType
         this.userName = userName
+        this.mediaListStatus = status
         sortFilterController = if (mediaType == MediaType.ANIME) {
             AnimeSortFilterController(
                 sortTypeEnumClass = MediaListSortOption::class,
@@ -95,6 +108,8 @@ class AnimeUserListViewModel @Inject constructor(
                         onListEnabled = false,
                         defaultSort = MediaListSortOption.UPDATED_TIME,
                         lockSort = false,
+                        mediaListStatus = status,
+                        lockMediaListStatus = status != null,
                     )
                 )
             }
@@ -115,6 +130,8 @@ class AnimeUserListViewModel @Inject constructor(
                         onListEnabled = false,
                         defaultSort = MediaListSortOption.UPDATED_TIME,
                         lockSort = false,
+                        mediaListStatus = status,
+                        lockMediaListStatus = status != null,
                     )
                 )
             }
@@ -131,25 +148,42 @@ class AnimeUserListViewModel @Inject constructor(
             }
         }
 
+        val includeDescriptionFlow = snapshotFlow { mediaViewOption }
+            .map { it == MediaViewOption.LARGE_CARD }
+            .transformWhile {
+                // Take until description is ever requested,
+                // then always request to prevent unnecessary refreshes
+                emit(it)
+                !it
+            }
+            .distinctUntilChanged()
+
         viewModelScope.launch(CustomDispatchers.Main) {
             val response = if (userId == null) {
-                when (mediaType) {
-                    MediaType.MANGA -> userMediaListController.manga
-                    MediaType.ANIME,
-                    MediaType.UNKNOWN__,
-                    -> userMediaListController.anime
+                includeDescriptionFlow.flatMapLatest {
+                    when (mediaType) {
+                        MediaType.MANGA -> userMediaListController.manga(it)
+                        MediaType.ANIME,
+                        MediaType.UNKNOWN__,
+                        -> userMediaListController.anime(it)
+                    }
                 }
             } else {
-                refreshUptimeMillis.flatMapLatest {
-                    aniListApi.userMediaList(userId = userId, type = mediaType)
-                        .mapLatest {
-                            it.transformResult {
-                                it.lists?.filterNotNull()
-                                    ?.map(UserMediaListController::ListEntry)
-                                    .orEmpty()
-                            }
+                combine(includeDescriptionFlow, refreshUptimeMillis, ::Pair)
+                    .flatMapLatest { (includeDescription) ->
+                        aniListApi.userMediaList(
+                            userId = userId,
+                            type = mediaType,
+                            includeDescription = includeDescription,
+                        )
+                    }
+                    .mapLatest {
+                        it.transformResult {
+                            it.lists?.filterNotNull()
+                                ?.map(UserMediaListController::ListEntry)
+                                .orEmpty()
                         }
-                }
+                    }
             }
 
             val mediaUpdates = response.mapLatest {

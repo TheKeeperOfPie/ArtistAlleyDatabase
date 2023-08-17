@@ -4,7 +4,7 @@ query UserMediaList(
     $chunk: Int,
     $perChunk: Int,
     $status: MediaListStatus,
-    $includeDescription: Boolean = true,
+    $includeDescription: Boolean!,
 ) {
     # Sort for this API is completely broken
     MediaListCollection(
@@ -20,7 +20,6 @@ query UserMediaList(
                 id
                 media @nonnull {
                     ...MediaPreviewWithDescription
-                    synonyms
                     mediaListEntry {
                         priority
                         updatedAt

@@ -160,6 +160,13 @@ class AnimeSortFilterController<SortType : SortOption>(
                                     filterOptions = filterOptions.filter { it.value != null }
                                 }
                             }
+
+                            if (initialParams.mediaListStatus != null) {
+                                changeSelected(
+                                    initialParams.mediaListStatus,
+                                    initialParams.lockMediaListStatus,
+                                )
+                            }
                         },
                         episodesSection,
                         sourceSection,
@@ -259,5 +266,7 @@ class AnimeSortFilterController<SortType : SortOption>(
         val showIgnoredEnabled: Boolean = true,
         val defaultSort: SortType?,
         val lockSort: Boolean,
+        val mediaListStatus: MediaListStatus? = null,
+        val lockMediaListStatus: Boolean = false,
     ) : MediaSortFilterController.InitialParams<SortType>
 }

@@ -165,6 +165,13 @@ class MangaSortFilterController<SortType : SortOption>(
                                     filterOptions =
                                         filterOptions + FilterEntry.FilterEntryImpl(null)
                                 }
+
+                                if (initialParams.mediaListStatus != null) {
+                                    changeSelected(
+                                        initialParams.mediaListStatus,
+                                        initialParams.lockMediaListStatus,
+                                    )
+                                }
                             } else {
                                 if (filterOptions.any { it.value == null }) {
                                     filterOptions = filterOptions.filter { it.value != null }
@@ -268,5 +275,7 @@ class MangaSortFilterController<SortType : SortOption>(
         val showIgnoredEnabled: Boolean = true,
         val defaultSort: SortType?,
         val lockSort: Boolean,
+        val mediaListStatus: MediaListStatus? = null,
+        val lockMediaListStatus: Boolean = false,
     ) : MediaSortFilterController.InitialParams<SortType>
 }

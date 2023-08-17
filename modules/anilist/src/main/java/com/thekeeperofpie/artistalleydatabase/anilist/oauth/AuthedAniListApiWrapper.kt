@@ -53,7 +53,8 @@ class AuthedAniListApiWrapper(
         userId: String,
         type: MediaType,
         status: MediaListStatus?,
-    ) = super.userMediaList(userId, type, status).map {
+        includeDescription: Boolean,
+    ) = super.userMediaList(userId, type, status, includeDescription).map {
         it.transformResult {
             it.copy(lists = it.lists?.map {
                 it?.copy(entries = it.entries?.filter { it?.media?.isAdult == false })
