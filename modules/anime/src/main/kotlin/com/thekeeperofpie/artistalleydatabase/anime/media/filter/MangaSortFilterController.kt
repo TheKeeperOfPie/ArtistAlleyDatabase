@@ -182,6 +182,7 @@ class MangaSortFilterController<SortType : SortOption>(
                         chaptersSection,
                         sourceSection,
                         licensedBySection,
+                        titleLanguageSection,
                         advancedSection.apply {
                             children = listOfNotNull(
                                 showAdultSection,

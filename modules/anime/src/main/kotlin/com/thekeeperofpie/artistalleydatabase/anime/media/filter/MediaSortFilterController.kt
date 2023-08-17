@@ -20,6 +20,7 @@ import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.transformIf
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
@@ -226,6 +227,13 @@ abstract class MediaSortFilterController<SortType : SortOption, ParamsType : Med
         titleRes = R.string.anime_media_filter_show_spoiler_tags,
         settings = settings,
         property = { it.showSpoilerTags },
+    )
+
+    protected val titleLanguageSection = SortFilterSection.Dropdown(
+        labelTextRes = R.string.anime_media_filter_setting_title_language,
+        values = AniListLanguageOption.values().toList(),
+        valueToText = { stringResource(it.textRes) },
+        property = settings.languageOptionMedia,
     )
 
     override var sections by mutableStateOf(emptyList<SortFilterSection>())

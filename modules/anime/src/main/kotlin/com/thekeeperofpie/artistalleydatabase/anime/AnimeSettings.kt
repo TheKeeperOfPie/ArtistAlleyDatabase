@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.anime
 
 import com.anilist.type.MediaType
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.FilterData
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOption
 import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsNetworkCategory
@@ -33,6 +34,10 @@ interface AnimeSettings {
 
     val mediaHistoryEnabled: MutableStateFlow<Boolean>
     val mediaHistoryMaxEntries: MutableStateFlow<Int>
+
+    val languageOptionMedia: MutableStateFlow<AniListLanguageOption>
+    val languageOptionCharacters: MutableStateFlow<AniListLanguageOption>
+    val languageOptionStaff: MutableStateFlow<AniListLanguageOption>
 
     val lastCrash: MutableStateFlow<String>
     val lastCrashShown: MutableStateFlow<Boolean>

@@ -1,7 +1,8 @@
 # Changelog
 
 ### Next (8)
-- 
+- Add full current media screen
+- Add language setting to search filters
 
 ### 0.42 (7)
 - Add unread notification badge

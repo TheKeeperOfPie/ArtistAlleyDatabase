@@ -1,7 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.settings
 
 import android.app.Application
-import android.app.PendingIntent
 import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Looper
@@ -127,11 +126,11 @@ class SettingsProvider(
     override val rootNavDestination =
         MutableStateFlow(deserialize("rootNavDestination") ?: AnimeRootNavDestination.HOME)
 
-    val languageOptionMedia =
+    override val languageOptionMedia =
         MutableStateFlow(deserialize("languageOptionMedia") ?: AniListLanguageOption.DEFAULT)
-    val languageOptionCharacters =
+    override val languageOptionCharacters =
         MutableStateFlow(deserialize("languageOptionCharacters") ?: AniListLanguageOption.DEFAULT)
-    val languageOptionStaff =
+    override val languageOptionStaff =
         MutableStateFlow(deserialize("languageOptionStaff") ?: AniListLanguageOption.DEFAULT)
 
     override val mediaHistoryEnabled = MutableStateFlow(deserialize("mediaHistoryEnabled") ?: false)

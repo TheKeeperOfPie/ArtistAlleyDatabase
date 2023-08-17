@@ -171,6 +171,7 @@ class AnimeSortFilterController<SortType : SortOption>(
                         episodesSection,
                         sourceSection,
                         licensedBySection,
+                        titleLanguageSection,
                         advancedSection.apply {
                             children = listOfNotNull(
                                 showAdultSection,

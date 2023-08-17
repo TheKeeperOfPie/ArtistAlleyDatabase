@@ -1,8 +1,10 @@
 package com.thekeeperofpie.artistalleydatabase.anime.staff
 
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.filter.SortFilterController
@@ -34,9 +36,17 @@ class StaffSortFilterController(
         defaultEnabled = false,
     )
 
+    private val titleLanguageSection = SortFilterSection.Dropdown(
+        labelTextRes = R.string.anime_staff_filter_setting_title_language,
+        values = AniListLanguageOption.values().toList(),
+        valueToText = { stringResource(it.textRes) },
+        property = settings.languageOptionStaff,
+    )
+
     override var sections = listOf(
         sortSection,
         birthdaySection,
+        titleLanguageSection,
         advancedSection,
         SortFilterSection.Spacer(height = 32.dp),
     )

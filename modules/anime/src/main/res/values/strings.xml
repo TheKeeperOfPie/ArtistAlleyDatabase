@@ -215,6 +215,8 @@
     <string name="anime_media_filter_expand_all_content_description">Expand/collapse all sections</string>
     <string name="anime_media_filter_show_less_important_tags">Show less important tags</string>
     <string name="anime_media_filter_show_spoiler_tags">Show spoiler tags</string>
+    <string name="anime_media_filter_setting_title_language">Title language</string>
+
     <string name="anime_media_cover_image_long_press_preview">Preview cover image</string>
     <string name="anime_media_banner_image_long_press_preview">Preview banner image</string>
     <string name="anime_media_tag_long_click_content_description">Preview tag</string>
@@ -504,6 +506,8 @@
     <string name="anime_media_recommendation_rate_up_filled_content_description">Rate up filled</string>
 
     <string name="anime_character_filter_sort_label">Sort</string>
+    <string name="anime_character_filter_birthday_label">Birthday today</string>
+    <string name="anime_character_filter_setting_title_language">Name language</string>
 
     <string name="anime_character_details_voice_actors_label">Voice actors</string>
     <string name="anime_character_details_media_label">Media</string>
@@ -576,6 +580,7 @@
 
     <string name="anime_staff_filter_sort_label">Sort</string>
     <string name="anime_staff_filter_birthday_label">Birthday today</string>
+    <string name="anime_staff_filter_setting_title_language">Name language</string>
 
     <string name="anime_home_tab_anime">Anime</string>
     <string name="anime_home_tab_manga">Manga</string>
@@ -731,7 +736,6 @@
 
     <string name="anime_staff_characters_error_loading">Error loading characters</string>
     <string name="anime_staff_characters_header">Characters</string>
-    <string name="anime_character_filter_birthday_label">Birthday today</string>
 
     <string name="anime_generic_filter_show_adult_content">Show adult content</string>
     <string name="anime_generic_view_all_content_description">View all</string>
