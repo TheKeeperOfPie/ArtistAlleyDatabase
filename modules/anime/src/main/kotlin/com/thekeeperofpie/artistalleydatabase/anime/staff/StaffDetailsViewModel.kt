@@ -1,7 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.staff
 
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
@@ -12,7 +11,6 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import androidx.paging.map
 import com.anilist.fragment.StaffDetailsCharacterMediaPage
 import com.anilist.fragment.StaffDetailsStaffMediaPage
 import com.anilist.type.CharacterRole
@@ -34,6 +32,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaFiltering
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaGridCard
 import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIds
+import com.thekeeperofpie.artistalleydatabase.anime.utils.mapOnIO
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -66,7 +65,6 @@ class StaffDetailsViewModel @Inject constructor(
     var entry by mutableStateOf<StaffDetailsScreen.Entry?>(null)
     var loading by mutableStateOf(true)
     var error by mutableStateOf<Pair<Int, Exception?>?>(null)
-    val colorMap = mutableStateMapOf<String, Pair<Color, Color>>()
     val showAdult get() = settings.showAdult
 
     val characters = MutableStateFlow(PagingData.empty<DetailsCharacter>())
@@ -130,7 +128,7 @@ class StaffDetailsViewModel @Inject constructor(
                     }.flow
                 }
                 .mapLatest {
-                    it.map {
+                    it.mapOnIO {
                         DetailsCharacter(
                             id = it.id.toString(),
                             name = it.name,

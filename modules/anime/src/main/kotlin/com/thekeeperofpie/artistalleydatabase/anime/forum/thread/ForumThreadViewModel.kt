@@ -3,11 +3,9 @@ package com.thekeeperofpie.artistalleydatabase.anime.forum.thread
 import android.os.SystemClock
 import android.text.Spanned
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
-import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -15,9 +13,6 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import androidx.paging.map
-import com.anilist.fragment.MediaCompactWithTags
-import com.anilist.type.MediaListStatus
 import com.hoc081098.flowext.flowFromSuspend
 import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.android_utils.flowForRefreshableContent
@@ -33,10 +28,9 @@ import com.thekeeperofpie.artistalleydatabase.anime.forum.toForumThreadComment
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaCompactWithTagsEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaFiltering
-import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow
 import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIntIds
+import com.thekeeperofpie.artistalleydatabase.anime.utils.mapOnIO
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.noties.markwon.Markwon
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -68,7 +62,6 @@ class ForumThreadViewModel @Inject constructor(
     // TODO: Block forum screens if not unlocked
     val hasAuth = oAuthStore.hasAuth
 
-    val colorMap = mutableStateMapOf<String, Pair<Color, Color>>()
     val threadId = savedStateHandle.get<String>("threadId")!!
     val viewer = aniListApi.authedUser
     val refresh = MutableStateFlow(-1L)
@@ -167,7 +160,7 @@ class ForumThreadViewModel @Inject constructor(
                 }.flow
             }
                 .map {
-                    it.map {
+                    it.mapOnIO {
                         val children = (it.childComments as? List<*>)?.filterNotNull()
                             ?.mapNotNull { ForumUtils.decodeChild(markwon, it) }
                             .orEmpty()
@@ -184,7 +177,7 @@ class ForumThreadViewModel @Inject constructor(
                 .flatMapLatest { pagingData ->
                     commentStatusController.allChanges()
                         .mapLatest { updates ->
-                            pagingData.map {
+                            pagingData.mapOnIO {
                                 val liked = updates[it.comment.id.toString()]?.liked
                                     ?: it.comment.isLiked
                                     ?: false

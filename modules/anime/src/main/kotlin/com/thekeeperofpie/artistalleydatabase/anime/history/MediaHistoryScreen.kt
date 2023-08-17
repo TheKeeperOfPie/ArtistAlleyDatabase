@@ -45,7 +45,6 @@ import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
-import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 object MediaHistoryScreen {
@@ -58,7 +57,6 @@ object MediaHistoryScreen {
         viewModel: MediaHistoryViewModel = hiltViewModel(),
     ) {
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
-        val colorCalculationState = rememberColorCalculationState(viewModel.colorMap)
         val editViewModel = hiltViewModel<MediaEditViewModel>()
         val snackbarHostState = remember { SnackbarHostState() }
         MediaEditBottomSheetScaffold(
@@ -92,7 +90,6 @@ object MediaHistoryScreen {
                     )
                 }
             },
-            colorCalculationState = colorCalculationState,
             snackbarHostState = snackbarHostState,
         ) {
             val content = viewModel.content.collectAsLazyPagingItems()
@@ -143,7 +140,6 @@ object MediaHistoryScreen {
                                 viewModel = viewModel,
                                 entry = entry,
                                 editViewModel = editViewModel,
-                                colorCalculationState = colorCalculationState,
                                 showQuickEdit = showQuickEdit,
                                 modifier = Modifier
                                     .animateItemPlacement(),
@@ -176,7 +172,6 @@ object MediaHistoryScreen {
                         viewModel.ignoreList.toggle(entry.media.id.toString())
                     }
                 },
-                colorCalculationState = colorCalculationState,
                 showQuickEdit = showQuickEdit,
                 modifier = modifier,
             )
@@ -204,7 +199,6 @@ object MediaHistoryScreen {
                     }
                 },
                 onClickListEdit = { editViewModel.initialize(it.media) },
-                colorCalculationState = colorCalculationState,
                 showQuickEdit = showQuickEdit,
                 modifier = modifier,
             )
@@ -218,7 +212,6 @@ object MediaHistoryScreen {
                         viewModel.ignoreList.toggle(entry.media.id.toString())
                     }
                 },
-                colorCalculationState = colorCalculationState,
                 showQuickEdit = showQuickEdit,
                 modifier = modifier,
             )

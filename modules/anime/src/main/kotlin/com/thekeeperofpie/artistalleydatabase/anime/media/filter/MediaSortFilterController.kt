@@ -10,7 +10,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
-import androidx.paging.filter
 import com.anilist.LicensorsQuery
 import com.anilist.fragment.MediaPreview
 import com.anilist.type.MediaFormat
@@ -28,6 +27,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.filter.SortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.filter.SortFilterSection
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaStatusAware
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
+import com.thekeeperofpie.artistalleydatabase.anime.utils.filterOnIO
 import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterEntry
 import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
 import com.thekeeperofpie.artistalleydatabase.compose.filter.RangeData
@@ -326,19 +326,19 @@ abstract class MediaSortFilterController<SortType : SortOption, ParamsType : Med
         val excludes = listStatuses
             .filter { it.state == FilterIncludeExcludeState.EXCLUDE }
             .mapNotNull { it.value }
-        pagingData.filter {
+        pagingData.filterOnIO {
             val media = transform(it)
             val listStatus = media.mediaListEntry?.status
             if (excludes.isNotEmpty() && excludes.contains(listStatus)) {
-                return@filter false
+                return@filterOnIO false
             }
 
             if (includes.isNotEmpty() && !includes.contains(listStatus)) {
-                return@filter false
+                return@filterOnIO false
             }
 
             if (!showAdult && media.isAdult != false) {
-                return@filter false
+                return@filterOnIO false
             }
 
             if (showIgnored) true else !it.ignored

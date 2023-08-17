@@ -3,11 +3,9 @@ package com.thekeeperofpie.artistalleydatabase.anime.search
 import android.os.SystemClock
 import androidx.annotation.StringRes
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
-import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.LoadState
@@ -17,8 +15,6 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.PagingSource
 import androidx.paging.cachedIn
-import androidx.paging.filter
-import androidx.paging.map
 import com.anilist.type.MediaType
 import com.anilist.type.StudioSort
 import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
@@ -38,12 +34,15 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaGenresCont
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaLicensorsController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaTagsController
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOption
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffListRow
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.studio.StudioListRow
 import com.thekeeperofpie.artistalleydatabase.anime.studio.StudioSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.user.UserListRow
 import com.thekeeperofpie.artistalleydatabase.anime.user.UserSortFilterController
+import com.thekeeperofpie.artistalleydatabase.anime.utils.filterOnIO
+import com.thekeeperofpie.artistalleydatabase.anime.utils.mapOnIO
 import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationController
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -59,6 +58,7 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.transformWhile
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -82,7 +82,6 @@ class AnimeSearchViewModel @Inject constructor(
     val viewer = aniListApi.authedUser
     var query by mutableStateOf("")
     var content = MutableStateFlow(PagingData.empty<AnimeSearchEntry>())
-    val colorMap = mutableStateMapOf<String, Pair<Color, Color>>()
 
     val unlocked = monetizationController.unlocked
 
@@ -155,11 +154,22 @@ class AnimeSearchViewModel @Inject constructor(
                 }
         }
 
+        val includeDescriptionFlow = snapshotFlow { mediaViewOption }
+            .map { it == MediaViewOption.LARGE_CARD }
+            .transformWhile {
+                // Take until description is ever requested,
+                // then always request to prevent unnecessary refreshes
+                emit(it)
+                !it
+            }
+            .distinctUntilChanged()
+
         collectSearch(
             searchType = SearchType.ANIME,
             flow = {
                 combine(
                     snapshotFlow { query }.debounce(500.milliseconds),
+                    includeDescriptionFlow,
                     refreshUptimeMillis,
                     animeSortFilterController.filterParams(),
                     AnimeSearchMediaPagingSource::RefreshParams
@@ -196,6 +206,7 @@ class AnimeSearchViewModel @Inject constructor(
             flow = {
                 combine(
                     snapshotFlow { query }.debounce(500.milliseconds),
+                    includeDescriptionFlow,
                     refreshUptimeMillis,
                     mangaSortFilterController.filterParams(),
                     AnimeSearchMediaPagingSource::RefreshParams
@@ -261,15 +272,14 @@ class AnimeSearchViewModel @Inject constructor(
                         settings.showIgnored,
                         settings.showAdult,
                     ) { ignoredIds, showIgnored, showAdult ->
-                        pagingData
-                            .map {
-                                it.copy(entry = it.entry.copy(
-                                    media = it.entry.media
-                                        .filter { showAdult || it.isAdult == false }
-                                        .map { it.copy(ignored = ignoredIds.contains(it.media.id)) }
-                                        .filter { showIgnored || !it.ignored }
-                                ))
-                            }
+                        pagingData.mapOnIO {
+                            it.copy(entry = it.entry.copy(
+                                media = it.entry.media
+                                    .filter { showAdult || it.isAdult == false }
+                                    .map { it.copy(ignored = ignoredIds.contains(it.media.id)) }
+                                    .filter { showIgnored || !it.ignored }
+                            ))
+                        }
                     }
                 }
             }
@@ -304,15 +314,14 @@ class AnimeSearchViewModel @Inject constructor(
                         settings.showIgnored,
                         settings.showAdult,
                     ) { ignoredIds, showIgnored, showAdult ->
-                        pagingData
-                            .map {
-                                it.copy(entry = it.entry.copy(
-                                    media = it.entry.media
-                                        .filter { showAdult || it.isAdult == false }
-                                        .map { it.copy(ignored = ignoredIds.contains(it.media.id)) }
-                                        .filter { showIgnored || !it.ignored }
-                                ))
-                            }
+                        pagingData.mapOnIO {
+                            it.copy(entry = it.entry.copy(
+                                media = it.entry.media
+                                    .filter { showAdult || it.isAdult == false }
+                                    .map { it.copy(ignored = ignoredIds.contains(it.media.id)) }
+                                    .filter { showIgnored || !it.ignored }
+                            ))
+                        }
                     }
                 }
             }
@@ -365,15 +374,14 @@ class AnimeSearchViewModel @Inject constructor(
                         settings.showIgnored,
                         settings.showAdult,
                     ) { ignoredIds, showIgnored, showAdult ->
-                        pagingData
-                            .map {
-                                it.copy(entry = it.entry.copy(
-                                    media = it.entry.media
-                                        .filter { showAdult || it.isAdult == false }
-                                        .map { it.copy(ignored = ignoredIds.contains(it.media.id)) }
-                                        .filter { showIgnored || !it.ignored }
-                                ))
-                            }
+                        pagingData.mapOnIO {
+                            it.copy(entry = it.entry.copy(
+                                media = it.entry.media
+                                    .filter { showAdult || it.isAdult == false }
+                                    .map { it.copy(ignored = ignoredIds.contains(it.media.id)) }
+                                    .filter { showIgnored || !it.ignored }
+                            ))
+                        }
                     }
                 }
             }
@@ -419,15 +427,14 @@ class AnimeSearchViewModel @Inject constructor(
                         settings.showIgnored,
                         settings.showAdult,
                     ) { ignoredIds, showIgnored, showAdult ->
-                        pagingData
-                            .map {
-                                it.copy(entry = it.entry.copy(
-                                    media = it.entry.media
-                                        .filter { showAdult || it.isAdult == false }
-                                        .map { it.copy(ignored = ignoredIds.contains(it.media.id)) }
-                                        .filter { showIgnored || !it.ignored }
-                                ))
-                            }
+                        pagingData.mapOnIO {
+                            it.copy(entry = it.entry.copy(
+                                media = it.entry.media
+                                    .filter { showAdult || it.isAdult == false }
+                                    .map { it.copy(ignored = ignoredIds.contains(it.media.id)) }
+                                    .filter { showIgnored || !it.ignored }
+                            ))
+                        }
                     }
                 }
             }
@@ -460,7 +467,7 @@ class AnimeSearchViewModel @Inject constructor(
                 .map {
                     // AniList can return duplicates across pages, manually enforce uniqueness
                     val seenIds = mutableSetOf<Int>()
-                    it.filter { seenIds.add(id(it)) }.map { entry(it) }
+                    it.filterOnIO { seenIds.add(id(it)) }.mapOnIO { entry(it) }
                 }
                 .cachedIn(viewModelScope)
                 .run {

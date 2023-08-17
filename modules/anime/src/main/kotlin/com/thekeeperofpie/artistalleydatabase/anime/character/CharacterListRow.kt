@@ -65,8 +65,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.CharacterCoverImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.ListRowSmallImage
 import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
-import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
+import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -78,10 +78,10 @@ object CharacterListRow {
         entry: Entry?,
         modifier: Modifier = Modifier,
         showRole: Boolean = false,
-        colorCalculationState: ColorCalculationState = ColorCalculationState(),
     ) {
         var imageWidthToHeightRatio by remember { MutableSingle(1f) }
         val navigationCallback = LocalNavigationCallback.current
+        val colorCalculationState = LocalColorCalculationState.current
         val onClick = {
             if (entry != null) {
                 navigationCallback.onCharacterClick(
@@ -107,7 +107,6 @@ object CharacterListRow {
                     screenKey = screenKey,
                     entry = entry,
                     onClick = onClick,
-                    colorCalculationState = colorCalculationState,
                     onRatioAvailable = { imageWidthToHeightRatio = it }
                 )
 
@@ -143,7 +142,6 @@ object CharacterListRow {
                     MediaRow(
                         screenKey = screenKey,
                         entry = entry,
-                        colorCalculationState = colorCalculationState,
                     )
                 }
             }
@@ -155,10 +153,10 @@ object CharacterListRow {
         screenKey: String,
         entry: Entry?,
         onClick: () -> Unit,
-        colorCalculationState: ColorCalculationState,
         onRatioAvailable: (Float) -> Unit,
     ) {
         val fullscreenImageHandler = LocalFullscreenImageHandler.current
+        val colorCalculationState = LocalColorCalculationState.current
         CharacterCoverImage(
             screenKey = screenKey,
             characterId = entry?.character?.id?.toString(),
@@ -279,13 +277,13 @@ object CharacterListRow {
     private fun MediaRow(
         screenKey: String,
         entry: Entry?,
-        colorCalculationState: ColorCalculationState,
     ) {
         val media = entry?.media?.takeIf { it.isNotEmpty() }
             ?: listOf(null, null, null, null, null)
         val context = LocalContext.current
         val density = LocalDensity.current
         val navigationCallback = LocalNavigationCallback.current
+        val colorCalculationState = LocalColorCalculationState.current
         LazyRow(
             contentPadding = PaddingValues(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp),

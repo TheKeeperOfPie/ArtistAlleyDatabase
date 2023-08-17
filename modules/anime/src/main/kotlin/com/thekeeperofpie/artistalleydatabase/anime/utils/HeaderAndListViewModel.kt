@@ -3,18 +3,15 @@ package com.thekeeperofpie.artistalleydatabase.anime.utils
 import androidx.annotation.CallSuper
 import androidx.annotation.StringRes
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
-import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import androidx.paging.map
 import com.anilist.fragment.PaginationInfo
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListPagingSource
@@ -49,8 +46,6 @@ abstract class HeaderAndListViewModel<EntryType, ListItemType : Any, ListEntryTy
 
     var headerId by mutableStateOf("")
         private set
-
-    val colorMap = mutableStateMapOf<String, Pair<Color, Color>>()
 
     var entry by mutableStateOf<EntryType?>(null)
         private set
@@ -115,7 +110,7 @@ abstract class HeaderAndListViewModel<EntryType, ListItemType : Any, ListEntryTy
                         AniListPagingSource { pagedRequest(entry, it, sortOption, sortAscending) }
                     }.flow
                 }
-                .map { it.map { makeEntry(it) } }
+                .map { it.mapOnIO { makeEntry(it) } }
                 .enforceUniqueIds { entryId(it) }
                 .cachedIn(viewModelScope)
                 .transformFlow()

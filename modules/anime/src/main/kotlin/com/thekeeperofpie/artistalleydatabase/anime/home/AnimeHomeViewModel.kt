@@ -3,15 +3,12 @@
 package com.thekeeperofpie.artistalleydatabase.anime.home
 
 import android.os.SystemClock
-import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import androidx.paging.map
 import com.anilist.UserSocialActivityQuery
 import com.hoc081098.flowext.combine
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
@@ -31,6 +28,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusControl
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaFiltering
 import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsController
 import com.thekeeperofpie.artistalleydatabase.anime.notifications.NotificationsController
+import com.thekeeperofpie.artistalleydatabase.anime.utils.mapOnIO
 import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationController
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -57,7 +55,7 @@ class AnimeHomeViewModel @Inject constructor(
     val unlocked = monetizationController.unlocked
     val preferredMediaType = settings.preferredMediaType.value
     val viewer = aniListApi.authedUser
-    val colorMap = mutableStateMapOf<String, Pair<Color, Color>>()
+
     val activityToggleHelper =
         ActivityToggleHelper(aniListApi, activityStatusController, viewModelScope)
 
@@ -90,7 +88,7 @@ class AnimeHomeViewModel @Inject constructor(
                         settings.showLessImportantTags,
                         settings.showSpoilerTags,
                     ) { mediaUpdates, ignoredIds, showIgnored, showAdult, showLessImportantTags, showSpoilerTags ->
-                        pagingData.map {
+                        pagingData.mapOnIO {
                             AnimeActivityViewModel.ActivityEntry(
                                 it.entryId,
                                 it,
@@ -123,7 +121,7 @@ class AnimeHomeViewModel @Inject constructor(
                 .flatMapLatest { pagingData ->
                     activityStatusController.allChanges()
                         .mapLatest { updates ->
-                            pagingData.map {
+                            pagingData.mapOnIO {
                                 val liked = updates[it.activityId.valueId]?.liked ?: it.liked
                                 val subscribed =
                                     updates[it.activityId.valueId]?.subscribed ?: it.subscribed

@@ -73,10 +73,10 @@ import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.compose.DetailsSubsectionHeader
 import com.thekeeperofpie.artistalleydatabase.compose.InfoText
+import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.fadingEdgeBottom
-import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.twoColumnInfoText
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -97,7 +97,6 @@ object CharacterDetailsScreen {
         val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
             snapAnimationSpec = spring(stiffness = Spring.StiffnessMedium)
         )
-        val colorCalculationState = rememberColorCalculationState(viewModel.colorMap)
 
         var characterImageWidthToHeightRatio by remember {
             mutableFloatStateOf(headerValues.imageWidthToHeightRatio)
@@ -125,7 +124,6 @@ object CharacterDetailsScreen {
             MediaEditBottomSheetScaffold(
                 screenKey = SCREEN_KEY,
                 viewModel = editViewModel,
-                colorCalculationState = colorCalculationState,
                 topBar = {
                     CollapsingToolbar(
                         maxHeight = 356.dp,
@@ -142,7 +140,6 @@ object CharacterDetailsScreen {
                                 viewModel.favoritesToggleHelper
                                     .set(FavoriteType.CHARACTER, viewModel.characterId, it)
                             },
-                            colorCalculationState = colorCalculationState,
                             onImageWidthToHeightRatioAvailable = {
                                 characterImageWidthToHeightRatio = it
                             },
@@ -171,6 +168,7 @@ object CharacterDetailsScreen {
                             viewModel.voiceActorsDeferred.collectAsLazyPagingItems()
                         val voiceActors =
                             voiceActorsDeferred.takeIf { it.itemCount > 0 } ?: voiceActorsInitial
+                        val colorCalculationState = LocalColorCalculationState.current
                         LazyColumn(
                             contentPadding = PaddingValues(bottom = 16.dp),
                             modifier = Modifier
@@ -222,7 +220,6 @@ object CharacterDetailsScreen {
             screenKey = AnimeNavDestinations.CHARACTER_DETAILS.id,
             titleRes = R.string.anime_character_details_voice_actors_label,
             staffList = voiceActors,
-            colorCalculationState = colorCalculationState,
             roleLines = 1,
         )
 
@@ -421,7 +418,6 @@ object CharacterDetailsScreen {
             hasMoreValues = entry.mediaHasMore,
             expanded = expanded,
             onExpandedChange = onExpandedChange,
-            colorCalculationState = colorCalculationState,
             onClickListEdit = onClickListEdit,
             onLongClick = onLongClick,
             onClickViewAll = {

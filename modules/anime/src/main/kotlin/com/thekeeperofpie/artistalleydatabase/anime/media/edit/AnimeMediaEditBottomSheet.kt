@@ -83,9 +83,9 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.StartEndDateDialog
 import com.thekeeperofpie.artistalleydatabase.anime.ui.StartEndDateRow
 import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.compose.AutoSizeText
-import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.ItemDropdown
+import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -101,7 +101,6 @@ object AnimeMediaEditBottomSheet {
         viewModel: MediaEditViewModel,
         modifier: Modifier = Modifier,
         onDismiss: () -> Unit,
-        colorCalculationState: ColorCalculationState,
     ) {
         var showDelete by remember { mutableStateOf(false) }
 
@@ -132,7 +131,6 @@ object AnimeMediaEditBottomSheet {
                                 screenKey = screenKey,
                                 viewModel = viewModel,
                                 initialParams = initialParams,
-                                colorCalculationState = colorCalculationState,
                             )
                         }
                     }
@@ -239,7 +237,6 @@ object AnimeMediaEditBottomSheet {
         screenKey: String,
         viewModel: MediaEditViewModel,
         initialParams: MediaEditData.InitialParams?,
-        colorCalculationState: ColorCalculationState,
     ) {
         var startEndDateShown by remember { mutableStateOf<Boolean?>(null) }
         val media = initialParams?.media
@@ -255,6 +252,7 @@ object AnimeMediaEditBottomSheet {
                 val navigationCallback = LocalNavigationCallback.current
                 var imageWidthToHeightRatio by remember { mutableFloatStateOf(1f) }
                 val fullscreenImageHandler = LocalFullscreenImageHandler.current
+                val colorCalculationState = LocalColorCalculationState.current
                 MediaCoverImage(
                     screenKey = screenKey,
                     mediaId = media.id.toString(),

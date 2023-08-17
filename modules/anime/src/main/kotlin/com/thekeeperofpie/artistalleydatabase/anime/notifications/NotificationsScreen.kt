@@ -33,7 +33,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSh
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.compose.AppBar
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
-import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 object NotificationsScreen {
@@ -45,8 +44,6 @@ object NotificationsScreen {
         viewModel: NotificationsViewModel = hiltViewModel(),
         upIconOption: UpIconOption?,
     ) {
-        val colorCalculationState = rememberColorCalculationState(viewModel.colorMap)
-
         val viewer by viewModel.viewer.collectAsState()
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
@@ -61,7 +58,6 @@ object NotificationsScreen {
                     scrollBehavior = scrollBehavior,
                 )
             },
-            colorCalculationState = colorCalculationState,
             modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
         ) {
             Box(
@@ -116,7 +112,6 @@ object NotificationsScreen {
                                                 onClickListEdit = {
                                                     editViewModel.initialize(it.media)
                                                 },
-                                                colorCalculationState = colorCalculationState,
                                             )
                                         is NotificationsQuery.Data.Page.ActivityMessageNotificationNotification ->
                                             ActivityMessageNotificationCard(
@@ -128,7 +123,6 @@ object NotificationsScreen {
                                                 onClickListEdit = {
                                                     editViewModel.initialize(it.media)
                                                 },
-                                                colorCalculationState = colorCalculationState,
                                             )
                                         is NotificationsQuery.Data.Page.AiringNotificationNotification ->
                                             AiringNotificationCard(
@@ -139,7 +133,6 @@ object NotificationsScreen {
                                                 onClickListEdit = {
                                                     editViewModel.initialize(it.media)
                                                 },
-                                                colorCalculationState = colorCalculationState,
                                             )
                                         is NotificationsQuery.Data.Page.FollowingNotificationNotification ->
                                             FollowingNotificationCard(
@@ -157,7 +150,6 @@ object NotificationsScreen {
                                                 onClickListEdit = {
                                                     editViewModel.initialize(it.media)
                                                 },
-                                                colorCalculationState = colorCalculationState,
                                             )
                                         is NotificationsQuery.Data.Page.ActivityReplySubscribedNotificationNotification ->
                                             ActivityReplySubscribedNotificationCard(
@@ -170,7 +162,6 @@ object NotificationsScreen {
                                                 onClickListEdit = {
                                                     editViewModel.initialize(it.media)
                                                 },
-                                                colorCalculationState = colorCalculationState,
                                             )
                                         is NotificationsQuery.Data.Page.ActivityLikeNotificationNotification ->
                                             ActivityLikedNotificationCard(
@@ -183,7 +174,6 @@ object NotificationsScreen {
                                                 onClickListEdit = {
                                                     editViewModel.initialize(it.media)
                                                 },
-                                                colorCalculationState = colorCalculationState,
                                             )
                                         is NotificationsQuery.Data.Page.ActivityReplyLikeNotificationNotification ->
                                             ActivityReplyLikedNotificationCard(
@@ -196,7 +186,6 @@ object NotificationsScreen {
                                                 onClickListEdit = {
                                                     editViewModel.initialize(it.media)
                                                 },
-                                                colorCalculationState = colorCalculationState,
                                             )
                                         is NotificationsQuery.Data.Page.RelatedMediaAdditionNotificationNotification ->
                                             RelatedMediaAdditionNotificationCard(
@@ -207,7 +196,6 @@ object NotificationsScreen {
                                                 onClickListEdit = {
                                                     editViewModel.initialize(it.media)
                                                 },
-                                                colorCalculationState = colorCalculationState,
                                             )
                                         is NotificationsQuery.Data.Page.MediaDataChangeNotificationNotification ->
                                             MediaDataChangeNotificationCard(
@@ -218,7 +206,6 @@ object NotificationsScreen {
                                                 onClickListEdit = {
                                                     editViewModel.initialize(it.media)
                                                 },
-                                                colorCalculationState = colorCalculationState,
                                             )
                                         is NotificationsQuery.Data.Page.MediaDeletionNotificationNotification ->
                                             MediaDeletionNotificationCard(
@@ -229,7 +216,6 @@ object NotificationsScreen {
                                                 onClickListEdit = {
                                                     editViewModel.initialize(it.media)
                                                 },
-                                                colorCalculationState = colorCalculationState,
                                             )
                                         is NotificationsQuery.Data.Page.MediaMergeNotificationNotification ->
                                             MediaMergeNotificationCard(
@@ -240,7 +226,6 @@ object NotificationsScreen {
                                                 onClickListEdit = {
                                                     editViewModel.initialize(it.media)
                                                 },
-                                                colorCalculationState = colorCalculationState,
                                             )
                                         is NotificationsQuery.Data.Page.ThreadCommentMentionNotificationNotification ->
                                             ThreadCommentMentionNotificationCard(

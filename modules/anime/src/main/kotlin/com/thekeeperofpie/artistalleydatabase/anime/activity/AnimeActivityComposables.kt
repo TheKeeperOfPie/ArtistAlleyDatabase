@@ -54,7 +54,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow
 import com.thekeeperofpie.artistalleydatabase.anime.ui.UserAvatarImage
-import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ImageHtmlText
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import java.time.Instant
@@ -396,7 +395,6 @@ fun ListActivitySmallCard(
     entry: ActivityStatusAware?,
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
     onClickListEdit: (AnimeMediaCompactListRow.Entry) -> Unit,
-    colorCalculationState: ColorCalculationState,
     modifier: Modifier = Modifier,
     clickable: Boolean = false,
     showActionsRow: Boolean = false,
@@ -412,7 +410,6 @@ fun ListActivitySmallCard(
         subscribed = entry?.subscribed ?: false,
         onActivityStatusUpdate = onActivityStatusUpdate,
         onClickListEdit = onClickListEdit,
-        colorCalculationState = colorCalculationState,
         clickable = clickable,
         showActionsRow = showActionsRow,
         onClickDelete = onClickDelete,
@@ -429,7 +426,6 @@ fun ListActivitySmallCard(
     entry: ActivityStatusAware?,
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
     onClickListEdit: (AnimeMediaCompactListRow.Entry) -> Unit,
-    colorCalculationState: ColorCalculationState,
     clickable: Boolean = false,
     showActionsRow: Boolean = false,
     onClickDelete: (String) -> Unit = {},
@@ -445,7 +441,6 @@ fun ListActivitySmallCard(
         subscribed = entry?.subscribed ?: false,
         onActivityStatusUpdate = onActivityStatusUpdate,
         onClickListEdit = onClickListEdit,
-        colorCalculationState = colorCalculationState,
         clickable = clickable,
         showActionsRow = showActionsRow,
         onClickDelete = onClickDelete,
@@ -464,7 +459,6 @@ private fun ListActivitySmallCard(
     subscribed: Boolean,
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
     onClickListEdit: (AnimeMediaCompactListRow.Entry) -> Unit,
-    colorCalculationState: ColorCalculationState,
     clickable: Boolean,
     showActionsRow: Boolean,
     onClickDelete: (String) -> Unit,
@@ -482,7 +476,6 @@ private fun ListActivitySmallCard(
             subscribed = subscribed,
             onActivityStatusUpdate = onActivityStatusUpdate,
             onClickListEdit = onClickListEdit,
-            colorCalculationState = colorCalculationState,
             showActionsRow = showActionsRow,
             onClickDelete = onClickDelete,
         )
@@ -516,7 +509,6 @@ fun ColumnScope.ListActivityCardContent(
     subscribed: Boolean,
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
     onClickListEdit: (AnimeMediaCompactListRow.Entry) -> Unit,
-    colorCalculationState: ColorCalculationState,
     showMedia: Boolean = entry != null,
     showUser: Boolean = true,
     showActionsRow: Boolean = false,
@@ -605,7 +597,6 @@ fun ColumnScope.ListActivityCardContent(
                 // TODO: Ignored
             },
             onClickListEdit = onClickListEdit,
-            colorCalculationState = colorCalculationState,
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
         )
     }

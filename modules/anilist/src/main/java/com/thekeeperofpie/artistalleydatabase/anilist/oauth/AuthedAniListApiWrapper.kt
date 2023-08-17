@@ -92,6 +92,7 @@ class AuthedAniListApiWrapper(
         sourcesIn: List<MediaSource>?,
         minimumTagRank: Int?,
         licensedByIdIn: List<Int>?,
+        includeDescription: Boolean,
     ) = super.searchMedia(
         query,
         mediaType,
@@ -123,6 +124,7 @@ class AuthedAniListApiWrapper(
         sourcesIn,
         minimumTagRank,
         licensedByIdIn,
+        includeDescription,
     ).let {
         it.copy(page = it.page.copy(media = it.page.media.filter { it?.isAdult == false }))
     }

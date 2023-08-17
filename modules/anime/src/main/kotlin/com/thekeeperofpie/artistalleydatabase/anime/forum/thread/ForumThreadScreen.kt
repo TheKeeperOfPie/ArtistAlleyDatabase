@@ -69,7 +69,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.writing.WritingReplyPanelSca
 import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
-import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.showFloatingActionButtonOnVerticalScroll
 import kotlinx.coroutines.launch
 
@@ -87,7 +86,6 @@ object ForumThreadScreen {
         upIconOption: UpIconOption?,
         title: String?,
     ) {
-        val colorCalculationState = rememberColorCalculationState(viewModel.colorMap)
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
         val refresh by viewModel.refresh.collectAsState()
         val snackbarHostState = remember { SnackbarHostState() }
@@ -150,7 +148,6 @@ object ForumThreadScreen {
             MediaEditBottomSheetScaffold(
                 screenKey = SCREEN_KEY,
                 viewModel = editViewModel,
-                colorCalculationState = colorCalculationState,
                 modifier = Modifier.padding(PaddingValues(top = it.calculateTopPadding())),
             ) {
                 Scaffold(
@@ -225,7 +222,6 @@ object ForumThreadScreen {
                                         viewModel.ignoreList.toggle(it.media.id.toString())
                                     },
                                     onClickListEdit = { editViewModel.initialize(it.media) },
-                                    colorCalculationState = colorCalculationState,
                                     modifier = Modifier.padding(
                                         start = 16.dp,
                                         end = 16.dp,

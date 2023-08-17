@@ -33,7 +33,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.compose.CollapsingToolbar
-import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
 
@@ -83,10 +82,9 @@ fun <ListEntryType : Any> HeaderAndMediaListScreen(
     viewModel: HeaderAndListViewModel<*, *, ListEntryType, *>,
     editViewModel: MediaEditViewModel,
     @StringRes headerTextRes: Int?,
-    header: @Composable() (BoxScope.(progress: Float) -> Unit),
+    header: @Composable (BoxScope.(progress: Float) -> Unit),
     itemKey: (ListEntryType) -> Any,
     item: @Composable (LazyGridItemScope.(ListEntryType?) -> Unit),
-    colorCalculationState: ColorCalculationState,
 ) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
         snapAnimationSpec = spring(stiffness = Spring.StiffnessMedium)
@@ -117,7 +115,6 @@ fun <ListEntryType : Any> HeaderAndMediaListScreen(
             )
         },
         snackbarHostState = snackbarHostState,
-        colorCalculationState = colorCalculationState,
     ) {
         List(
             viewModel = viewModel,

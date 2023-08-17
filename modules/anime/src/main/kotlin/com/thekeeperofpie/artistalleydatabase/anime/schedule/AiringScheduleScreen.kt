@@ -57,7 +57,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.filter.SortFilterBotto
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBarHeightChange
-import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 
@@ -74,7 +73,6 @@ object AiringScheduleScreen {
         viewModel: AiringScheduleViewModel = hiltViewModel(),
         onClickBack: () -> Unit,
     ) {
-        val colorCalculationState = rememberColorCalculationState(viewModel.colorMap)
         val initialDayIndex = remember { 6 + LocalDate.now().dayOfWeek.value }
         val pagerState = rememberPagerState(
             initialPage = initialDayIndex,
@@ -86,7 +84,6 @@ object AiringScheduleScreen {
         MediaEditBottomSheetScaffold(
             screenKey = SCREEN_KEY,
             viewModel = editViewModel,
-            colorCalculationState = colorCalculationState,
             topBar = {
                 EnterAlwaysTopAppBarHeightChange(scrollBehavior = scrollBehavior) {
                     Column {
@@ -231,7 +228,6 @@ object AiringScheduleScreen {
                                                     )
                                                 },
                                                 showDate = false,
-                                                colorCalculationState = colorCalculationState,
                                             )
                                         }
 

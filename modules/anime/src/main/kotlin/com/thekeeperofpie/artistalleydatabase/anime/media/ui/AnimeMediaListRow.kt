@@ -65,8 +65,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitl
 import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationData
 import com.thekeeperofpie.artistalleydatabase.anime.ui.MediaCoverImage
 import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
-import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
+import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -81,7 +81,6 @@ object AnimeMediaListRow {
         label: (@Composable () -> Unit)? = null,
         onClickListEdit: (Entry) -> Unit,
         onLongClick: (Entry) -> Unit,
-        colorCalculationState: ColorCalculationState,
         showQuickEdit: Boolean = true,
         nextAiringEpisode: MediaPreview.NextAiringEpisode? = entry?.media?.nextAiringEpisode,
         showDate: Boolean = true,
@@ -124,7 +123,6 @@ object AnimeMediaListRow {
                         }
                     },
                     onClickListEdit = onClickListEdit,
-                    colorCalculationState = colorCalculationState,
                     onRatioAvailable = { imageWidthToHeightRatio = it },
                     recommendation = recommendation,
                     onUserRecommendationRating = onUserRecommendationRating,
@@ -153,6 +151,7 @@ object AnimeMediaListRow {
 
                     nextAiringEpisode?.let { MediaNextAiringSection(it, showDate = showDate) }
 
+                    val colorCalculationState = LocalColorCalculationState.current
                     val (containerColor, textColor) =
                         colorCalculationState.getColors(entry?.media?.id?.toString())
                     val tags = entry?.tags.orEmpty()
@@ -186,7 +185,6 @@ object AnimeMediaListRow {
         viewer: AniListViewer?,
         onClick: (Entry) -> Unit = {},
         onClickListEdit: (Entry) -> Unit,
-        colorCalculationState: ColorCalculationState,
         onRatioAvailable: (Float) -> Unit,
         recommendation: RecommendationData?,
         onUserRecommendationRating: (
@@ -197,6 +195,7 @@ object AnimeMediaListRow {
     ) {
         Box {
             val fullscreenImageHandler = LocalFullscreenImageHandler.current
+            val colorCalculationState = LocalColorCalculationState.current
             MediaCoverImage(
                 screenKey = screenKey,
                 mediaId = entry?.media?.id?.toString(),

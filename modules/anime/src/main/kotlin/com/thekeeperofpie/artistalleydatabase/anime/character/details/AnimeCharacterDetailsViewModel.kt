@@ -2,11 +2,9 @@ package com.thekeeperofpie.artistalleydatabase.anime.character.details
 
 import android.os.SystemClock
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
-import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
@@ -58,7 +56,6 @@ class AnimeCharacterDetailsViewModel @Inject constructor(
     lateinit var characterId: String
 
     var entry by mutableStateOf<LoadingResult<CharacterDetailsScreen.Entry>>(LoadingResult.loading())
-    val colorMap = mutableStateMapOf<String, Pair<Color, Color>>()
 
     val refresh = MutableStateFlow(-1L)
 

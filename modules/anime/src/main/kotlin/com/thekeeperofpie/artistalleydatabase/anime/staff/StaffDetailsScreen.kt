@@ -42,7 +42,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.compose.CollapsingToolbar
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
-import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
@@ -59,7 +58,6 @@ object StaffDetailsScreen {
         val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
             snapAnimationSpec = spring(stiffness = Spring.StiffnessMedium)
         )
-        val colorCalculationState = rememberColorCalculationState(viewModel.colorMap)
         val expandedState = rememberExpandedState()
 
         var staffImageWidthToHeightRatio by remember {
@@ -95,12 +93,10 @@ object StaffDetailsScreen {
                             viewModel.favoritesToggleHelper
                                 .set(FavoriteType.STAFF, viewModel.staffId, it)
                         },
-                        colorCalculationState = colorCalculationState,
                         onImageWidthToHeightRatioAvailable = { staffImageWidthToHeightRatio = it },
                     )
                 }
             },
-            colorCalculationState = colorCalculationState,
             modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
         ) { scaffoldPadding ->
             Column(modifier = Modifier.padding(scaffoldPadding)) {
@@ -157,18 +153,15 @@ object StaffDetailsScreen {
                                 viewModel = viewModel,
                                 entry = entry,
                                 staffImageWidthToHeightRatio = { staffImageWidthToHeightRatio },
-                                colorCalculationState = colorCalculationState,
                                 expandedState = expandedState,
                             )
                             StaffTab.MEDIA -> StaffMediaScreen(
                                 mediaTimeline = mediaTimeline,
                                 onRequestYear = viewModel::onRequestMediaYear,
-                                colorCalculationState = colorCalculationState,
                             )
                             StaffTab.STAFF -> StaffStaffScreen(
                                 screenKey = SCREEN_KEY,
                                 staffTimeline = staffTimeline,
-                                colorCalculationState = colorCalculationState,
                             )
                         }
                     }

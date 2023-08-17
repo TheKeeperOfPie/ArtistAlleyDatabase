@@ -28,7 +28,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaGridCard
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
-import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 
 @OptIn(ExperimentalMaterial3Api::class)
 object StaffStaffScreen {
@@ -37,7 +36,6 @@ object StaffStaffScreen {
     operator fun invoke(
         screenKey: String,
         staffTimeline: StaffDetailsViewModel.StaffTimeline,
-        colorCalculationState: ColorCalculationState,
     ) {
         val viewModel = hiltViewModel<StaffDetailsViewModel>()
         val viewer by viewModel.viewer.collectAsState()
@@ -71,7 +69,6 @@ object StaffStaffScreen {
                                 viewer = viewer,
                                 onClickListEdit = { editViewModel.initialize(it.media) },
                                 onLongClick = { viewModel.ignoreList.toggle(it.id.toString()) },
-                                colorCalculationState = colorCalculationState,
                                 showTypeIcon = true,
                                 modifier = Modifier.width(120.dp),
                             ) { textColor ->

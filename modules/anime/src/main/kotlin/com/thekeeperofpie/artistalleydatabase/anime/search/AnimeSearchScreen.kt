@@ -73,7 +73,6 @@ import com.thekeeperofpie.artistalleydatabase.compose.StaticSearchBar
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
-import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 object AnimeSearchScreen {
@@ -88,7 +87,6 @@ object AnimeSearchScreen {
         bottomNavigationState: BottomNavigationState? = null,
     ) {
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(snapAnimationSpec = null)
-        val colorCalculationState = rememberColorCalculationState(viewModel.colorMap)
 
         val editViewModel = hiltViewModel<MediaEditViewModel>()
         val editSheetState = rememberStandardBottomSheetState(
@@ -100,7 +98,6 @@ object AnimeSearchScreen {
             screenKey = SCREEN_KEY,
             viewModel = editViewModel,
             sheetState = editSheetState,
-            colorCalculationState = colorCalculationState,
             bottomNavigationState = bottomNavigationState,
         ) {
             val sortFilterController = when (viewModel.selectedType) {
@@ -225,37 +222,55 @@ object AnimeSearchScreen {
                                                     viewModel = viewModel,
                                                     editViewModel = editViewModel,
                                                     entry = item,
-                                                    colorCalculationState = colorCalculationState,
                                                 )
                                                 is AnimeSearchEntry.Character -> CharacterListRow(
                                                     screenKey = SCREEN_KEY,
                                                     entry = item.entry,
-                                                    colorCalculationState = colorCalculationState,
                                                 )
                                                 is AnimeSearchEntry.Staff -> StaffListRow(
                                                     screenKey = SCREEN_KEY,
                                                     entry = item.entry,
-                                                    colorCalculationState = colorCalculationState,
-                                                )
-                                                is AnimeSearchEntry.User -> UserListRow(
-                                                    screenKey = SCREEN_KEY,
-                                                    entry = item.entry,
-                                                    colorCalculationState = colorCalculationState,
                                                 )
                                                 is AnimeSearchEntry.Studio -> StudioListRow(
                                                     screenKey = SCREEN_KEY,
                                                     entry = item.entry,
                                                 )
+                                                is AnimeSearchEntry.User -> UserListRow(
+                                                    screenKey = SCREEN_KEY,
+                                                    entry = item.entry,
+                                                )
 
                                                 // TODO: Separated placeholder types
-                                                null -> AnimeMediaListRow(
-                                                    screenKey = SCREEN_KEY,
-                                                    viewer = null,
-                                                    entry = null,
-                                                    onClickListEdit = {},
-                                                    onLongClick = {},
-                                                    colorCalculationState = colorCalculationState,
-                                                )
+                                                null -> when (selectedType) {
+                                                    AnimeSearchViewModel.SearchType.ANIME,
+                                                    AnimeSearchViewModel.SearchType.MANGA,
+                                                    -> MediaRow(
+                                                        viewer = viewer,
+                                                        viewModel = viewModel,
+                                                        editViewModel = editViewModel,
+                                                        entry = null,
+                                                    )
+                                                    AnimeSearchViewModel.SearchType.CHARACTER ->
+                                                        CharacterListRow(
+                                                            screenKey = SCREEN_KEY,
+                                                            entry = null,
+                                                        )
+                                                    AnimeSearchViewModel.SearchType.STAFF ->
+                                                        StaffListRow(
+                                                            screenKey = SCREEN_KEY,
+                                                            entry = null,
+                                                        )
+                                                    AnimeSearchViewModel.SearchType.STUDIO ->
+                                                        StudioListRow(
+                                                            screenKey = SCREEN_KEY,
+                                                            entry = null,
+                                                        )
+                                                    AnimeSearchViewModel.SearchType.USER ->
+                                                        UserListRow(
+                                                            screenKey = SCREEN_KEY,
+                                                            entry = null,
+                                                        )
+                                                }
                                             }
                                         }
 
@@ -283,7 +298,7 @@ object AnimeSearchScreen {
         viewer: AniListViewer?,
         viewModel: AnimeSearchViewModel,
         editViewModel: MediaEditViewModel,
-        entry: AnimeSearchEntry.Media,
+        entry: AnimeSearchEntry.Media?,
         colorCalculationState: ColorCalculationState = ColorCalculationState(),
     ) {
         when (viewModel.mediaViewOption) {
@@ -292,14 +307,21 @@ object AnimeSearchScreen {
                 viewer = viewer,
                 entry = entry,
                 onClickListEdit = { editViewModel.initialize(it.media) },
-                onLongClick = { viewModel.ignoreList.toggle(entry.media.id.toString()) },
-                colorCalculationState = colorCalculationState,
+                onLongClick = {
+                    if (entry != null) {
+                        viewModel.ignoreList.toggle(entry.media.id.toString())
+                    }
+                },
             )
             MediaViewOption.LARGE_CARD -> AnimeMediaLargeCard(
                 screenKey = SCREEN_KEY,
                 viewer = viewer,
                 entry = entry,
-                onLongClick = { viewModel.ignoreList.toggle(entry.media.id.toString()) },
+                onLongClick = {
+                    if (entry != null) {
+                        viewModel.ignoreList.toggle(entry.media.id.toString())
+                    }
+                },
                 onClickListEdit = { editViewModel.initialize(it.media) },
                 colorCalculationState = colorCalculationState,
             )
@@ -307,17 +329,23 @@ object AnimeSearchScreen {
                 screenKey = SCREEN_KEY,
                 viewer = viewer,
                 entry = entry,
-                onLongClick = { viewModel.ignoreList.toggle(entry.media.id.toString()) },
+                onLongClick = {
+                    if (entry != null) {
+                        viewModel.ignoreList.toggle(entry.media.id.toString())
+                    }
+                },
                 onClickListEdit = { editViewModel.initialize(it.media) },
-                colorCalculationState = colorCalculationState,
             )
             MediaViewOption.GRID -> MediaGridCard(
                 screenKey = SCREEN_KEY,
                 entry = entry,
                 viewer = viewer,
                 onClickListEdit = { editViewModel.initialize(it.media) },
-                onLongClick = { viewModel.ignoreList.toggle(entry.media.id.toString()) },
-                colorCalculationState = colorCalculationState,
+                onLongClick = {
+                    if (entry != null) {
+                        viewModel.ignoreList.toggle(entry.media.id.toString())
+                    }
+                },
             )
         }
     }

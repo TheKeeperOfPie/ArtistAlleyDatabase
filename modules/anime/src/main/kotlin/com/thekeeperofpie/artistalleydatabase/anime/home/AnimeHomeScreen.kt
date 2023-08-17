@@ -74,6 +74,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.isUnspecified
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
@@ -91,12 +92,14 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
+import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.anilist.UserSocialActivityQuery
 import com.anilist.fragment.MediaCompactWithTags
 import com.anilist.fragment.MediaNavigationData
 import com.anilist.fragment.MediaPreview
 import com.anilist.type.MediaType
+import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
@@ -120,15 +123,15 @@ import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsSmallCard
 import com.thekeeperofpie.artistalleydatabase.anime.ui.GenericViewAllCard
 import com.thekeeperofpie.artistalleydatabase.anime.ui.MediaCoverImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.NavigationHeader
+import com.thekeeperofpie.artistalleydatabase.anime.ui.blurForScreenshotMode
 import com.thekeeperofpie.artistalleydatabase.compose.AutoResizeHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
-import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBarHeightChange
+import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
-import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
 
 @OptIn(
@@ -154,7 +157,6 @@ object AnimeHomeScreen {
         var selectedIsAnime by rememberSaveable {
             mutableStateOf(viewModel.preferredMediaType == MediaType.ANIME)
         }
-        val colorCalculationState = rememberColorCalculationState(viewModel.colorMap)
         val selectedItemTracker = remember { SelectedItemTracker() }
 
         val mediaViewModel = if (selectedIsAnime) {
@@ -181,7 +183,6 @@ object AnimeHomeScreen {
         MediaEditBottomSheetScaffold(
             screenKey = SCREEN_KEY,
             viewModel = editViewModel,
-            colorCalculationState = colorCalculationState,
             bottomNavigationState = bottomNavigationState,
             topBar = {
                 EnterAlwaysTopAppBarHeightChange(scrollBehavior = scrollBehavior) {
@@ -294,7 +295,6 @@ object AnimeHomeScreen {
                         viewer = viewer,
                         data = activity,
                         onActivityStatusUpdate = viewModel.activityToggleHelper::toggle,
-                        colorCalculationState = colorCalculationState,
                     )
 
                     mediaList(
@@ -303,7 +303,6 @@ object AnimeHomeScreen {
                         onClickListEdit = { editViewModel.initialize(it) },
                         onClickIncrementProgress = { editViewModel.incrementProgress(it) },
                         selectedItemTracker = selectedItemTracker,
-                        colorCalculationState = colorCalculationState,
                     )
                 }
 
@@ -323,7 +322,6 @@ object AnimeHomeScreen {
         onClickListEdit: (MediaCompactWithTags) -> Unit,
         onClickIncrementProgress: (UserMediaListController.MediaEntry) -> Unit,
         selectedItemTracker: SelectedItemTracker,
-        colorCalculationState: ColorCalculationState,
     ) {
         val entry = mediaViewModel.entry
         currentMediaRow(
@@ -332,7 +330,6 @@ object AnimeHomeScreen {
             viewer = viewer,
             onClickListEdit = onClickListEdit,
             onClickIncrementProgress = onClickIncrementProgress,
-            colorCalculationState = colorCalculationState,
         )
 
         entry.result?.lists?.forEach {
@@ -342,7 +339,6 @@ object AnimeHomeScreen {
                 onClickListEdit = onClickListEdit,
                 onLongClickEntry = mediaViewModel::onLongClickEntry,
                 selectedItemTracker = selectedItemTracker,
-                colorCalculationState = colorCalculationState,
             )
         }
     }
@@ -380,7 +376,6 @@ object AnimeHomeScreen {
         viewer: AniListViewer?,
         data: LazyPagingItems<AnimeActivityViewModel.ActivityEntry>,
         onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
-        colorCalculationState: ColorCalculationState,
     ) {
         rowHeader(
             titleRes = R.string.anime_home_activity_label,
@@ -419,7 +414,6 @@ object AnimeHomeScreen {
                             entry = entry,
                             onActivityStatusUpdate = onActivityStatusUpdate,
                             onClickListEdit = { editViewModel.initialize(it.media) },
-                            colorCalculationState = colorCalculationState,
                             clickable = true,
                             modifier = Modifier.fillMaxWidth()
                         )
@@ -457,7 +451,6 @@ object AnimeHomeScreen {
         viewer: AniListViewer?,
         onClickListEdit: (MediaCompactWithTags) -> Unit,
         onClickIncrementProgress: (UserMediaListController.MediaEntry) -> Unit,
-        colorCalculationState: ColorCalculationState,
     ) {
         val result = current.result
         if (result.isNullOrEmpty()) return
@@ -485,7 +478,6 @@ object AnimeHomeScreen {
                         onClickListEdit = onClickListEdit,
                         onClickIncrementProgress = onClickIncrementProgress,
                         onLongClickEntry = { /* TODO */ },
-                        colorCalculationState = colorCalculationState,
                         modifier = Modifier.animateItemPlacement(),
                     )
                 }
@@ -526,7 +518,6 @@ object AnimeHomeScreen {
         onClickListEdit: (MediaCompactWithTags) -> Unit,
         onLongClickEntry: (MediaNavigationData) -> Unit,
         selectedItemTracker: SelectedItemTracker,
-        colorCalculationState: ColorCalculationState,
     ) {
         val (rowKey, titleRes, entries, viewAllRoute) = data
         rowHeader(
@@ -553,7 +544,6 @@ object AnimeHomeScreen {
                     entry = entry,
                     onLongClick = { onLongClickEntry(entry.media) },
                     onClickListEdit = { onClickListEdit(it.media) },
-                    colorCalculationState = colorCalculationState,
                 )
             }
 
@@ -601,7 +591,6 @@ object AnimeHomeScreen {
                         selected = selectedItemTracker.keyToPosition[rowKey]?.second == index,
                         onClickListEdit = onClickListEdit,
                         onLongClickEntry = onLongClickEntry,
-                        colorCalculationState = colorCalculationState,
                         modifier = Modifier.animateItemPlacement(),
                     )
                 }
@@ -628,20 +617,21 @@ object AnimeHomeScreen {
         onClickIncrementProgress: (UserMediaListController.MediaEntry) -> Unit,
         onLongClickEntry: (MediaNavigationData) -> Unit,
         modifier: Modifier = Modifier,
-        colorCalculationState: ColorCalculationState,
     ) {
         val media = entry.media
         val id = media.id.toString()
-        val colors = colorCalculationState.colorMap[id]
+
+        val colorCalculationState = LocalColorCalculationState.current
+        val colors = colorCalculationState.getColors(id)
         val animationProgress by animateIntAsState(
-            if (colors == null) 0 else 255,
+            if (colors.first.isUnspecified) 0 else 255,
             label = "Media card color fade in",
         )
 
         val surfaceColor = media.coverImage?.color?.let(ComposeColorUtils::hexToColor)
             ?: MaterialTheme.colorScheme.surface
         val containerColor = when {
-            colors == null || animationProgress == 0 -> surfaceColor
+            colors.first.isUnspecified || animationProgress == 0 -> surfaceColor
             animationProgress == 255 -> colors.first
             else -> Color(
                 ColorUtils.compositeColors(
@@ -778,19 +768,19 @@ object AnimeHomeScreen {
         onClickListEdit: (MediaPreview) -> Unit,
         onLongClickEntry: (MediaNavigationData) -> Unit,
         modifier: Modifier = Modifier,
-        colorCalculationState: ColorCalculationState,
     ) {
         val id = media.id.toString()
-        val colors = colorCalculationState.colorMap[id]
+        val colorCalculationState = LocalColorCalculationState.current
+        val colors = colorCalculationState.getColors(id)
         val animationProgress by animateIntAsState(
-            if (colors == null) 0 else 255,
+            if (colors.first.isUnspecified) 0 else 255,
             label = "Media card color fade in",
         )
 
         val surfaceColor = media.coverImage?.color?.let(ComposeColorUtils::hexToColor)
             ?: MaterialTheme.colorScheme.surface
         val containerColor = when {
-            colors == null || animationProgress == 0 -> surfaceColor
+            colors.first.isUnspecified || animationProgress == 0 -> surfaceColor
             animationProgress == 255 -> colors.first
             else -> Color(
                 ColorUtils.compositeColors(
@@ -844,62 +834,67 @@ object AnimeHomeScreen {
                 }
             }
 
-        card {
-            Box {
-                val alpha by animateFloatAsState(
-                    if (widthToHeightRatio == null) 0f else 1f,
-                    label = "Cover image alpha",
-                )
-                var showTitle by remember(media) { mutableStateOf(false) }
-                MediaCoverImage(
-                    screenKey = SCREEN_KEY,
-                    mediaId = media.id.toString(),
-                    image = ImageRequest.Builder(LocalContext.current)
-                        .data(media.coverImage?.extraLarge)
-                        .allowHardware(colorCalculationState.hasColor(id))
-                        .size(width = coilWidth, height = coilHeight)
-                        .build(),
-                    contentScale = ContentScale.Crop,
-                    onSuccess = {
-                        widthToHeightRatio = it.widthToHeightRatio()
-                        ComposeColorUtils.calculatePalette(
-                            id = id,
-                            success = it,
-                            colorCalculationState = colorCalculationState,
-                            heightStartThreshold = 3 / 4f,
-                            selectMaxPopulation = true,
-                        )
-                    },
-                    onError = { showTitle = true },
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(12.dp))
-                        .alpha(alpha)
-                        .size(width = width, height = height)
-                        .animateContentSize()
-                )
-
-                if (showTitle) {
-                    AutoResizeHeightText(
-                        text = media.title?.primaryTitle().orEmpty(),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = ComposeColorUtils.bestTextColor(containerColor)
-                            ?: Color.Unspecified,
+        SharedElement(
+            key = "anime_media_${media.id}_image",
+            screenKey = SCREEN_KEY,
+        ) {
+            card {
+                Box {
+                    val alpha by animateFloatAsState(
+                        if (widthToHeightRatio == null) 0f else 1f,
+                        label = "Cover image alpha",
+                    )
+                    var showTitle by remember(media) { mutableStateOf(false) }
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(media.coverImage?.extraLarge)
+                            .allowHardware(colorCalculationState.hasColor(id))
+                            .size(width = coilWidth, height = coilHeight)
+                            .build(),
+                        contentScale = ContentScale.Crop,
+                        contentDescription = stringResource(R.string.anime_media_cover_image_content_description),
+                        onSuccess = {
+                            widthToHeightRatio = it.widthToHeightRatio()
+                            ComposeColorUtils.calculatePalette(
+                                id = id,
+                                success = it,
+                                colorCalculationState = colorCalculationState,
+                                heightStartThreshold = 3 / 4f,
+                                selectMaxPopulation = true,
+                            )
+                        },
+                        onError = { showTitle = true },
                         modifier = Modifier
+                            .clip(RoundedCornerShape(12.dp))
+                            .alpha(alpha)
                             .size(width = width, height = height)
-                            .padding(start = 8.dp, end = 8.dp, top = 8.dp, bottom = 40.dp)
+                            .animateContentSize()
+                            .blurForScreenshotMode()
                     )
-                }
 
-                if (viewer != null) {
-                    MediaListQuickEditIconButton(
-                        viewer = viewer,
-                        mediaType = media.type,
-                        media = mediaStatusAware,
-                        maxProgress = MediaUtils.maxProgress(media),
-                        maxProgressVolumes = media.volumes,
-                        onClick = { onClickListEdit(media) },
-                        modifier = Modifier.align(Alignment.BottomStart)
-                    )
+                    if (showTitle) {
+                        AutoResizeHeightText(
+                            text = media.title?.primaryTitle().orEmpty(),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = ComposeColorUtils.bestTextColor(containerColor)
+                                ?: Color.Unspecified,
+                            modifier = Modifier
+                                .size(width = width, height = height)
+                                .padding(start = 8.dp, end = 8.dp, top = 8.dp, bottom = 40.dp)
+                        )
+                    }
+
+                    if (viewer != null) {
+                        MediaListQuickEditIconButton(
+                            viewer = viewer,
+                            mediaType = media.type,
+                            media = mediaStatusAware,
+                            maxProgress = MediaUtils.maxProgress(media),
+                            maxProgressVolumes = media.volumes,
+                            onClick = { onClickListEdit(media) },
+                            modifier = Modifier.align(Alignment.BottomStart)
+                        )
+                    }
                 }
             }
         }

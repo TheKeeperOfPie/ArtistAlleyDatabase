@@ -60,8 +60,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaRatingIconsSec
 import com.thekeeperofpie.artistalleydatabase.anime.ui.CoverAndBannerHeader
 import com.thekeeperofpie.artistalleydatabase.anime.ui.FavoriteIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.AutoResizeHeightText
-import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
+import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
@@ -78,7 +78,6 @@ fun MediaHeader(
     progress: Float,
     headerValues: MediaHeaderValues,
     onFavoriteChanged: (Boolean) -> Unit,
-    colorCalculationState: ColorCalculationState,
     onImageWidthToHeightRatioAvailable: (Float) -> Unit = {},
     enableCoverImageSharedElement: Boolean = true,
     onCoverImageSharedElementFractionChanged: ((Float) -> Unit)? = null,
@@ -94,6 +93,7 @@ fun MediaHeader(
         key = "anime_media_${mediaId}_header",
         screenKey = screenKey,
     ) {
+        val colorCalculationState = LocalColorCalculationState.current
         CoverAndBannerHeader(
             screenKey = screenKey,
             upIconOption = upIconOption,

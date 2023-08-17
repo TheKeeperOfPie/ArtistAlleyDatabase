@@ -4,11 +4,9 @@ import android.app.Application
 import android.os.SystemClock
 import android.util.Log
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
-import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
@@ -17,7 +15,6 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import androidx.paging.map
 import com.anilist.MediaActivityPageQuery
 import com.anilist.type.MediaType
 import com.anilist.type.RecommendationRating
@@ -60,6 +57,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.songs.AnimeSongEntry
 import com.thekeeperofpie.artistalleydatabase.anime.songs.AnimeSongsProvider
 import com.thekeeperofpie.artistalleydatabase.anime.staff.DetailsStaff
 import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIds
+import com.thekeeperofpie.artistalleydatabase.anime.utils.mapOnIO
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDao
 import com.thekeeperofpie.artistalleydatabase.cds.grid.CdEntryGridModel
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -110,8 +108,6 @@ class AnimeMediaDetailsViewModel @Inject constructor(
 
     val screenKey = "${AnimeNavDestinations.MEDIA_DETAILS.id}-${UUID.randomUUID()}"
     val viewer = aniListApi.authedUser
-    val colorMap = mutableStateMapOf<String, Pair<Color, Color>>()
-
     lateinit var mediaId: String
 
     val favoritesToggleHelper =
@@ -354,7 +350,7 @@ class AnimeMediaDetailsViewModel @Inject constructor(
                         }
                     }.flow
                 }
-                .mapLatest { it.map(CharacterUtils::toDetailsCharacter) }
+                .mapLatest { it.mapOnIO(CharacterUtils::toDetailsCharacter) }
                 .enforceUniqueIds { it.id }
                 .cachedIn(viewModelScope)
                 .collectLatest(charactersDeferred::emit)

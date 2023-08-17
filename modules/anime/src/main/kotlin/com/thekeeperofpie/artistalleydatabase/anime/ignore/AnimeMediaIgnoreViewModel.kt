@@ -2,19 +2,15 @@ package com.thekeeperofpie.artistalleydatabase.anime.ignore
 
 import android.os.SystemClock
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
-import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import androidx.paging.filter
-import androidx.paging.map
 import com.anilist.MediaByIdsQuery
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
@@ -31,6 +27,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaLicensorsC
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaTagsController
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
+import com.thekeeperofpie.artistalleydatabase.anime.utils.filterOnIO
+import com.thekeeperofpie.artistalleydatabase.anime.utils.mapOnIO
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -63,7 +61,6 @@ class AnimeMediaIgnoreViewModel @Inject constructor(
     val viewer = aniListApi.authedUser
     var query by mutableStateOf("")
     var content = MutableStateFlow(PagingData.empty<MediaEntry>())
-    val colorMap = mutableStateMapOf<String, Pair<Color, Color>>()
 
     private var initialized = false
     private lateinit var mediaType: MediaType
@@ -108,7 +105,7 @@ class AnimeMediaIgnoreViewModel @Inject constructor(
                         AnimeMediaIgnorePagingSource(aniListApi, it)
                     }.flow
                 }
-                .map { it.map { MediaEntry(it) } }
+                .map { it.mapOnIO { MediaEntry(it) } }
                 .cachedIn(viewModelScope)
                 .applyMediaStatusChanges(
                     statusController = statusController,
@@ -146,7 +143,7 @@ class AnimeMediaIgnoreViewModel @Inject constructor(
                             .filter { it.state == FilterIncludeExcludeState.EXCLUDE }
                             .map { it.value }
                         pagingData
-                            .filter {
+                            .filterOnIO {
                                 MediaUtils.filterEntries(
                                     filterParams = filterParams,
                                     entries = listOf(it),
@@ -154,15 +151,15 @@ class AnimeMediaIgnoreViewModel @Inject constructor(
                                     forceShowIgnored = true,
                                 ).isNotEmpty()
                             }
-                            .filter {
+                            .filterOnIO {
                                 val listStatus = it.mediaListStatus
                                 if (excludes.isNotEmpty() && excludes.contains(listStatus)) {
-                                    return@filter false
+                                    return@filterOnIO false
                                 }
 
                                 includes.isEmpty() || includes.contains(listStatus)
                             }
-                            .filter {
+                            .filterOnIO {
                                 listOfNotNull(
                                     it.media.title?.romaji,
                                     it.media.title?.english,

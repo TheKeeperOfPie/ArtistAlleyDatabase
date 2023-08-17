@@ -20,15 +20,12 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ImageNotSupported
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -36,7 +33,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import coil.size.Dimension
 import com.anilist.UserSearchQuery.Data.Page.User
@@ -56,6 +52,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHa
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
+import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -64,7 +61,7 @@ object UserListRow {
     @Composable
     operator fun invoke(
         screenKey: String,
-        entry: Entry,
+        entry: Entry?,
         colorCalculationState: ColorCalculationState = ColorCalculationState(),
     ) {
         var imageWidthToHeightRatio by remember { MutableSingle(1f) }
@@ -76,10 +73,12 @@ object UserListRow {
                 .clickable(
                     enabled = true, // TODO: placeholder,
                     onClick = {
-                        navigationCallback.onUserClick(
-                            entry.user,
-                            imageWidthToHeightRatio,
-                        )
+                        if (entry != null) {
+                            navigationCallback.onUserClick(
+                                entry.user,
+                                imageWidthToHeightRatio,
+                            )
+                        }
                     },
                 )
         ) {
@@ -88,12 +87,13 @@ object UserListRow {
                     screenKey = screenKey,
                     entry = entry,
                     onClick = {
-                        navigationCallback.onUserClick(
-                            entry.user,
-                            imageWidthToHeightRatio,
-                        )
+                        if (entry != null) {
+                            navigationCallback.onUserClick(
+                                entry.user,
+                                imageWidthToHeightRatio,
+                            )
+                        }
                     },
-                    colorCalculationState = colorCalculationState,
                     onRatioAvailable = { imageWidthToHeightRatio = it }
                 )
 
@@ -124,19 +124,19 @@ object UserListRow {
     @Composable
     private fun UserImage(
         screenKey: String,
-        entry: Entry,
+        entry: Entry?,
         onClick: () -> Unit,
-        colorCalculationState: ColorCalculationState,
         onRatioAvailable: (Float) -> Unit,
     ) {
         val fullscreenImageHandler = LocalFullscreenImageHandler.current
+        val colorCalculationState = LocalColorCalculationState.current
         UserAvatarImage(
             screenKey = screenKey,
-            userId = entry.user.id.toString(),
+            userId = entry?.user?.id.toString(),
             image = ImageRequest.Builder(LocalContext.current)
-                .data(entry.user.avatar?.large)
+                .data(entry?.user?.avatar?.large)
                 .crossfade(true)
-                .allowHardware(colorCalculationState.hasColor(entry.user.id.toString()))
+                .allowHardware(colorCalculationState.hasColor(entry?.user?.id?.toString()))
                 .size(
                     width = Dimension.Pixels(LocalDensity.current.run { 130.dp.roundToPx() }),
                     height = Dimension.Undefined
@@ -145,11 +145,13 @@ object UserListRow {
             contentScale = ContentScale.Crop,
             onSuccess = {
                 onRatioAvailable(it.widthToHeightRatio())
-                ComposeColorUtils.calculatePalette(
-                    entry.user.id.toString(),
-                    it,
-                    colorCalculationState,
-                )
+                if (entry != null) {
+                    ComposeColorUtils.calculatePalette(
+                        entry.user.id.toString(),
+                        it,
+                        colorCalculationState,
+                    )
+                }
             },
             modifier = Modifier
                 .background(MaterialTheme.colorScheme.surfaceVariant)
@@ -163,7 +165,7 @@ object UserListRow {
                 .combinedClickable(
                     onClick = onClick,
                     onLongClick = {
-                        entry.user.avatar?.large?.let(fullscreenImageHandler::openImage)
+                        entry?.user?.avatar?.large?.let(fullscreenImageHandler::openImage)
                     },
                     onLongClickLabel = stringResource(
                         R.string.anime_user_image_long_press_preview
@@ -173,9 +175,9 @@ object UserListRow {
     }
 
     @Composable
-    private fun NameText(entry: Entry, modifier: Modifier = Modifier) {
+    private fun NameText(entry: Entry?, modifier: Modifier = Modifier) {
         AutoHeightText(
-            text = entry.user.name,
+            text = entry?.user?.name ?: "Username",
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Black,
             modifier = modifier
@@ -190,10 +192,10 @@ object UserListRow {
     @Composable
     private fun MediaRow(
         screenKey: String,
-        entry: Entry,
+        entry: Entry?,
         onMediaClick: (MediaNavigationData, imageWidthToHeightRatio: Float) -> Unit,
     ) {
-        val media = entry.media.takeIf { it.isNotEmpty() } ?: return
+        val media = entry?.media?.takeIf { it.isNotEmpty() } ?: return
         val context = LocalContext.current
         val density = LocalDensity.current
         LazyRow(

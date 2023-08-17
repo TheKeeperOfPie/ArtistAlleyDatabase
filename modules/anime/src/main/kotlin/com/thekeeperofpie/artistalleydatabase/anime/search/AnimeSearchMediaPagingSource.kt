@@ -114,6 +114,7 @@ class AnimeSearchMediaPagingSource(
                 .filter { it.state == FilterIncludeExcludeState.INCLUDE }
                 .mapNotNull { it.value.siteId },
             minimumTagRank = filterParams.tagRank,
+            includeDescription = refreshParams.includeDescription,
         )
         val pageInfo = result.page.pageInfo
         val itemsAfter = if (pageInfo.hasNextPage != true) {
@@ -140,6 +141,7 @@ class AnimeSearchMediaPagingSource(
 
     data class RefreshParams(
         val query: String,
+        val includeDescription: Boolean,
         val requestMillis: Long,
         val filterParams: MediaSortFilterController.FilterParams<MediaSortOption>,
         val seasonYearOverride: Pair<MediaSeason, Int>? = null,

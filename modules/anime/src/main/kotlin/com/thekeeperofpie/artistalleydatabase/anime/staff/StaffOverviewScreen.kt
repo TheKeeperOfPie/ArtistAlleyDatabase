@@ -18,8 +18,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.charactersSection
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.ui.descriptionSection
-import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.DetailsSectionHeader
+import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.expandableListInfoText
 import com.thekeeperofpie.artistalleydatabase.compose.twoColumnInfoText
 
@@ -30,10 +30,10 @@ object StaffOverviewScreen {
         viewModel: StaffDetailsViewModel,
         entry: StaffDetailsScreen.Entry,
         staffImageWidthToHeightRatio: () -> Float,
-        colorCalculationState: ColorCalculationState,
         expandedState: StaffDetailsScreen.ExpandedState,
     ) {
         val characters = viewModel.characters.collectAsLazyPagingItems()
+        val colorCalculationState = LocalColorCalculationState.current
         LazyColumn(
             contentPadding = PaddingValues(bottom = 16.dp),
             modifier = Modifier.fillMaxSize()
@@ -57,7 +57,6 @@ object StaffOverviewScreen {
                     )
                 },
                 viewAllContentDescriptionTextRes = R.string.anime_staff_details_view_all_content_description,
-                colorCalculationState = colorCalculationState,
             )
 
             infoSection(entry = entry)

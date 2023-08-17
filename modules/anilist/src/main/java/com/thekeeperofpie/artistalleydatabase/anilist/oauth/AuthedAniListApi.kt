@@ -256,6 +256,7 @@ open class AuthedAniListApi(
         sourcesIn: List<MediaSource>?,
         minimumTagRank: Int?,
         licensedByIdIn: List<Int>?,
+        includeDescription: Boolean,
     ): MediaAdvancedSearchQuery.Data {
         val sortParam =
             if (query.isEmpty() && sort?.size == 1 && sort.contains(MediaSort.SEARCH_MATCH)) {
@@ -297,6 +298,7 @@ open class AuthedAniListApi(
                 sourceIn = Optional.presentIfNotNull(sourcesIn?.ifEmpty { null }),
                 minimumTagRank = Optional.presentIfNotNull(minimumTagRank),
                 licensedByIdIn = Optional.presentIfNotNull(licensedByIdIn?.ifEmpty { null }),
+                includeDescription = includeDescription,
             )
         )
     }

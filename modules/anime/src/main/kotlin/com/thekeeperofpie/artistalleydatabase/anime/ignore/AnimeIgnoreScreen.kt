@@ -41,7 +41,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.compose.StaticSearchBar
-import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 object AnimeIgnoreScreen {
@@ -53,12 +52,10 @@ object AnimeIgnoreScreen {
         viewModel: AnimeMediaIgnoreViewModel = hiltViewModel(),
     ) {
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
-        val colorCalculationState = rememberColorCalculationState(viewModel.colorMap)
         val editViewModel = hiltViewModel<MediaEditViewModel>()
         MediaEditBottomSheetScaffold(
             screenKey = AnimeNavDestinations.IGNORED.id,
             viewModel = editViewModel,
-            colorCalculationState = colorCalculationState,
         ) {
             val sortFilterController = viewModel.sortFilterController
             SortFilterBottomScaffold(
@@ -97,26 +94,15 @@ object AnimeIgnoreScreen {
                                         key = content.itemKey { it.media.id },
                                         contentType = content.itemContentType { "media" },
                                     ) { index ->
-                                        when (val item = content[index]) {
-                                            is AnimeMediaListRow.Entry -> AnimeMediaListRow(
-                                                screenKey = AnimeNavDestinations.IGNORED.id,
-                                                entry = item,
-                                                viewer = viewer,
-                                                onClickListEdit = {
-                                                    editViewModel.initialize(it.media)
-                                                },
-                                                onLongClick = viewModel::onMediaLongClick,
-                                                colorCalculationState = colorCalculationState,
-                                            )
-                                            null -> AnimeMediaListRow(
-                                                screenKey = AnimeNavDestinations.IGNORED.id,
-                                                entry = null,
-                                                viewer = null,
-                                                onClickListEdit = {},
-                                                onLongClick = {},
-                                                colorCalculationState = colorCalculationState,
-                                            )
-                                        }
+                                        AnimeMediaListRow(
+                                            screenKey = AnimeNavDestinations.IGNORED.id,
+                                            entry = content[index],
+                                            viewer = viewer,
+                                            onClickListEdit = {
+                                                editViewModel.initialize(it.media)
+                                            },
+                                            onLongClick = viewModel::onMediaLongClick,
+                                        )
                                     }
 
                                     when (content.loadState.append) {

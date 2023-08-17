@@ -19,7 +19,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.FavoriteIconButton
 import com.thekeeperofpie.artistalleydatabase.anime.utils.HeaderAndMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
-import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
 
 // TODO: Use the same year segmented view as staff screen
 @OptIn(ExperimentalMaterial3Api::class)
@@ -34,7 +33,6 @@ object StudioMediasScreen {
         name: () -> String,
         favorite: () -> Boolean?,
     ) {
-        val colorCalculationState = rememberColorCalculationState(viewModel.colorMap)
         val viewer by viewModel.viewer.collectAsState()
 
         val editViewModel = hiltViewModel<MediaEditViewModel>()
@@ -70,7 +68,6 @@ object StudioMediasScreen {
                     viewer = viewer,
                     onClickListEdit = { editViewModel.initialize(it.media) },
                     onLongClick = viewModel::onMediaLongClick,
-                    colorCalculationState = colorCalculationState,
                     modifier = Modifier.padding(
                         start = 16.dp,
                         end = 16.dp,
@@ -78,7 +75,6 @@ object StudioMediasScreen {
                     )
                 )
             },
-            colorCalculationState = colorCalculationState
         )
     }
 

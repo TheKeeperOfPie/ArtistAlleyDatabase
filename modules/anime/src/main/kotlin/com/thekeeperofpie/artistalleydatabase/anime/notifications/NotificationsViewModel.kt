@@ -1,14 +1,11 @@
 package com.thekeeperofpie.artistalleydatabase.anime.notifications
 
-import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import androidx.paging.filter
 import com.anilist.NotificationMediaAndActivityQuery
 import com.anilist.NotificationsQuery
 import com.anilist.fragment.ActivityItem.Companion.asListActivity
@@ -28,6 +25,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaCompactWithTagsEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIds
+import com.thekeeperofpie.artistalleydatabase.anime.utils.filterOnIO
 import com.thekeeperofpie.artistalleydatabase.anime.utils.mapNotNull
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -54,7 +52,6 @@ class NotificationsViewModel @Inject constructor(
     notificationsController: NotificationsController,
 ) : ViewModel() {
 
-    val colorMap = mutableStateMapOf<String, Pair<Color, Color>>()
     val viewer = aniListApi.authedUser
 
     val activityToggleHelper =
@@ -156,7 +153,7 @@ class NotificationsViewModel @Inject constructor(
                         }
                     }
                 }.flow
-                    .map { it.filter { showAdult || it.mediaEntry?.media?.isAdult != true } }
+                    .map { it.filterOnIO { showAdult || it.mediaEntry?.media?.isAdult != true } }
             }
                 .enforceUniqueIds { it.notificationId.scopedId }
                 .cachedIn(viewModelScope)

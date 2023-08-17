@@ -15,8 +15,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ImageNotSupported
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.MaterialTheme
@@ -26,7 +24,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -39,14 +36,12 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
-import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import coil.size.Dimension
 import com.anilist.fragment.UserNavigationData
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.material.placeholder
 import com.google.accompanist.placeholder.material.shimmer
-import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
 import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
 import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
@@ -54,9 +49,9 @@ import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.ui.UserAvatarImage
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
-import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.DetailsSectionHeader
+import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
 
 object UserSocialScreen {
@@ -67,7 +62,6 @@ object UserSocialScreen {
     operator fun invoke(
         screenKey: String,
         userId: String?,
-        colorCalculationState: ColorCalculationState,
         bottomNavigationState: BottomNavigationState?,
     ) {
         val followingViewModel = hiltViewModel<UserSocialViewModel.Following>()
@@ -106,7 +100,6 @@ object UserSocialScreen {
                 data = following,
                 titleRes = R.string.anime_user_social_following,
                 emptyTextRes = R.string.anime_user_social_not_following_anyone,
-                colorCalculationState = colorCalculationState,
             )
 
             if (followers.itemCount > 0) {
@@ -116,7 +109,6 @@ object UserSocialScreen {
                     data = followers,
                     titleRes = R.string.anime_user_social_followers,
                     emptyTextRes = null,
-                    colorCalculationState = colorCalculationState,
                 )
             }
         }
@@ -128,7 +120,6 @@ object UserSocialScreen {
         data: LazyPagingItems<out UserNavigationData>,
         @StringRes titleRes: Int,
         @StringRes emptyTextRes: Int?,
-        colorCalculationState: ColorCalculationState,
     ) {
         item("header_$key") {
             DetailsSectionHeader(text = stringResource(titleRes))
@@ -162,7 +153,6 @@ object UserSocialScreen {
                         UserPreview(
                             screenKey = screenKey,
                             user = data[it],
-                            colorCalculationState = colorCalculationState,
                         )
                     }
                 }
@@ -174,7 +164,6 @@ object UserSocialScreen {
     private fun UserPreview(
         screenKey: String,
         user: UserNavigationData?,
-        colorCalculationState: ColorCalculationState,
     ) {
         var imageWidthToHeightRatio by remember { MutableSingle(1f) }
         val navigationCallback = LocalNavigationCallback.current
@@ -191,6 +180,7 @@ object UserSocialScreen {
             Box {
                 val dimension =
                     Dimension.Pixels(LocalDensity.current.run { USER_IMAGE_SIZE.roundToPx() })
+                val colorCalculationState = LocalColorCalculationState.current
                 UserAvatarImage(
                     screenKey = screenKey,
                     userId = user?.id?.toString(),

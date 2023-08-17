@@ -194,6 +194,30 @@ fun Flow<PagingData<MediaPreviewEntry>>.applyMediaStatusChanges(
     }
 )
 
+fun Flow<PagingData<MediaPreviewWithDescriptionEntry>>.applyMediaStatusChanges2(
+    statusController: MediaListStatusController,
+    ignoreList: AnimeMediaIgnoreList,
+    settings: AnimeSettings,
+    forceShowIgnored: Boolean = false,
+) = applyMediaStatusChanges(
+    statusController = statusController,
+    ignoreList = ignoreList,
+    settings = settings,
+    media = { it.media },
+    forceShowIgnored = forceShowIgnored,
+    copy = { mediaListStatus, progress, progressVolumes, scoreRaw, ignored, showLessImportantTags, showSpoilerTags ->
+        copy(
+            mediaListStatus = mediaListStatus,
+            progress = progress,
+            progressVolumes = progressVolumes,
+            scoreRaw = scoreRaw,
+            ignored = ignored,
+            showLessImportantTags = showLessImportantTags,
+            showSpoilerTags = showSpoilerTags
+        )
+    }
+)
+
 fun <T : MediaStatusAware> Flow<PagingData<T>>.applyMediaStatusChanges(
     statusController: MediaListStatusController,
     ignoreList: AnimeMediaIgnoreList,

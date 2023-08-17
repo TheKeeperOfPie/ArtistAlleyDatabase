@@ -1,11 +1,9 @@
 package com.thekeeperofpie.artistalleydatabase.anime.review.details
 
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
-import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.anilist.type.ReviewRating
@@ -41,7 +39,6 @@ class ReviewDetailsViewModel @Inject constructor(
     var loading by mutableStateOf(true)
         private set
 
-    val colorMap = mutableStateMapOf<String, Pair<Color, Color>>()
 
     var entry by mutableStateOf<ReviewDetailsScreen.Entry?>(null)
 

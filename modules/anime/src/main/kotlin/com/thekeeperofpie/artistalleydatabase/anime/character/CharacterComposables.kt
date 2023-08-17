@@ -1,10 +1,9 @@
-@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@file:OptIn(ExperimentalMaterial3Api::class)
 
 package com.thekeeperofpie.artistalleydatabase.anime.character
 
 import androidx.annotation.StringRes
 import androidx.compose.animation.core.animateIntAsState
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -40,6 +39,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.isUnspecified
 import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
@@ -74,9 +74,9 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.StaffCoverImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.blurForScreenshotMode
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.AutoSizeText
-import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.DetailsSectionHeader
+import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.optionalClickable
 import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
@@ -86,7 +86,6 @@ fun CharacterSmallCard(
     screenKey: String,
     id: EntryId,
     image: String?,
-    colorCalculationState: ColorCalculationState,
     onClick: () -> Unit,
     innerImage: String? = null,
     innerImageKey: String = "invalid_key",
@@ -97,15 +96,16 @@ fun CharacterSmallCard(
     content: @Composable (textColor: Color) -> Unit,
 ) {
     val defaultTextColor = MaterialTheme.typography.bodyMedium.color
-    val colors = colorCalculationState.colorMap[id.scopedId]
+    val colorCalculationState = LocalColorCalculationState.current
+    val colors = colorCalculationState.getColors(id.scopedId)
 
     val animationProgress by animateIntAsState(
-        if (colors == null) 0 else 255,
+        if (colors.first.isUnspecified) 0 else 255,
         label = "Character card color fade in",
     )
 
     val containerColor = when {
-        colors == null || animationProgress == 0 ->
+        colors.first.isUnspecified || animationProgress == 0 ->
             MaterialTheme.colorScheme.surface
         animationProgress == 255 -> colors.first
         else -> Color(
@@ -120,7 +120,7 @@ fun CharacterSmallCard(
     }
 
     val textColor = when {
-        colors == null || animationProgress == 0 -> defaultTextColor
+        colors.second.isUnspecified || animationProgress == 0 -> defaultTextColor
         animationProgress == 255 -> colors.second
         else -> Color(
             ColorUtils.compositeColors(
@@ -230,7 +230,6 @@ fun LazyListScope.charactersSection(
     characters: LazyPagingItems<DetailsCharacter>,
     onClickViewAll: ((AnimeNavigator.NavigationCallback) -> Unit)? = null,
     @StringRes viewAllContentDescriptionTextRes: Int? = null,
-    colorCalculationState: ColorCalculationState,
 ) {
     if (characters.itemCount == 0) return
     item("charactersHeader-$titleRes") {
@@ -259,11 +258,11 @@ fun LazyListScope.charactersSection(
                     ?: character?.languageToVoiceActor?.values?.firstOrNull())
 
                 val navigationCallback = LocalNavigationCallback.current
+                val colorCalculationState = LocalColorCalculationState.current
                 CharacterSmallCard(
                     screenKey = screenKey,
                     id = EntryId("anime_character", character?.id.orEmpty()),
                     image = character?.image,
-                    colorCalculationState = colorCalculationState,
                     onClick = {
                         character?.character?.let {
                             navigationCallback.onCharacterClick(
@@ -319,10 +318,10 @@ fun CharacterCard(
     imageWidth: Dp,
     minHeight: Dp,
     character: DetailsCharacter?,
-    colorCalculationState: ColorCalculationState,
 ) {
     var imageWidthToHeightRatio by remember { MutableSingle(1f) }
     val navigationCallback = LocalNavigationCallback.current
+    val colorCalculationState = LocalColorCalculationState.current
     ElevatedCard(
         onClick = {
             character?.character?.let {

@@ -45,6 +45,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.FavoriteIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.AutoResizeHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
+import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
@@ -57,9 +58,9 @@ fun StaffHeader(
     progress: Float,
     headerValues: StaffHeaderValues,
     onFavoriteChanged: (Boolean) -> Unit,
-    colorCalculationState: ColorCalculationState,
     onImageWidthToHeightRatioAvailable: (Float) -> Unit = {},
 ) {
+    val colorCalculationState = LocalColorCalculationState.current
     CoverAndBannerHeader(
         screenKey = AnimeNavDestinations.STAFF_DETAILS.id,
         upIconOption = upIconOption,

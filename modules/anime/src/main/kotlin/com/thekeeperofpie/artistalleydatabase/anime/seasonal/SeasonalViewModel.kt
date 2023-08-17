@@ -5,8 +5,10 @@ package com.thekeeperofpie.artistalleydatabase.anime.seasonal
 import android.os.SystemClock
 import androidx.collection.LruCache
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.ui.graphics.Color
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
@@ -15,7 +17,6 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
-import androidx.paging.map
 import com.anilist.type.MediaSeason
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
@@ -25,16 +26,18 @@ import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewEntry
-import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaStatusChanges
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewWithDescriptionEntry
+import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaStatusChanges2
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeSortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaGenresController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaLicensorsController
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaTagsController
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOption
 import com.thekeeperofpie.artistalleydatabase.anime.search.AnimeSearchMediaPagingSource
 import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIntIds
+import com.thekeeperofpie.artistalleydatabase.anime.utils.mapOnIO
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -44,9 +47,9 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.transformWhile
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -56,7 +59,7 @@ import kotlin.time.Duration.Companion.milliseconds
 class SeasonalViewModel @Inject constructor(
     private val aniListApi: AuthedAniListApi,
     private val settings: AnimeSettings,
-    private val ignoreList: AnimeMediaIgnoreList,
+    val ignoreList: AnimeMediaIgnoreList,
     private val statusController: MediaListStatusController,
     mediaTagsController: MediaTagsController,
     mediaGenresController: MediaGenresController,
@@ -65,13 +68,13 @@ class SeasonalViewModel @Inject constructor(
 ) : ViewModel() {
 
     val viewer = aniListApi.authedUser
+    var mediaViewOption by mutableStateOf(settings.mediaViewOption.value)
 
     // TODO: Does this actually evict old pages from memory?
     private val pages = LruCache<Int, Page>(10)
     private val currentSeasonYear = AniListUtils.getCurrentSeasonYear()
 
     var initialPage = 0
-    val colorMap = mutableStateMapOf<String, Pair<Color, Color>>()
 
     val sortFilterController = AnimeSortFilterController(
         sortTypeEnumClass = MediaSortOption::class,
@@ -106,7 +109,7 @@ class SeasonalViewModel @Inject constructor(
     fun onRefresh() = refreshUptimeMillis.update { SystemClock.uptimeMillis() }
 
     @Composable
-    fun items(page: Int): LazyPagingItems<MediaPreviewEntry> {
+    fun items(page: Int): LazyPagingItems<MediaPreviewWithDescriptionEntry> {
         var pageData = pages.get(page)
         if (pageData == null) {
             val seasonYear = AniListUtils.calculateSeasonYearWithOffset(
@@ -130,17 +133,26 @@ class SeasonalViewModel @Inject constructor(
     }
 
     inner class Page(seasonYear: Pair<MediaSeason, Int>) {
-        var content = MutableStateFlow(PagingData.empty<MediaPreviewEntry>())
+        var content = MutableStateFlow(PagingData.empty<MediaPreviewWithDescriptionEntry>())
 
         init {
             viewModelScope.launch(CustomDispatchers.Main) {
                 combine(
-                    flowOf(""),
+                    snapshotFlow { mediaViewOption }
+                        .map { it == MediaViewOption.LARGE_CARD }
+                        .transformWhile {
+                            // Take until description is ever requested,
+                            // then always request to prevent unnecessary refreshes
+                            emit(it)
+                            !it
+                        }
+                        .distinctUntilChanged(),
                     refreshUptimeMillis,
                     sortFilterController.filterParams(),
-                ) { query, requestMillis, filterParams ->
+                ) { includeDescription, requestMillis, filterParams ->
                     AnimeSearchMediaPagingSource.RefreshParams(
-                        query = query,
+                        query = "",
+                        includeDescription = includeDescription,
                         requestMillis = requestMillis,
                         filterParams = filterParams,
                         seasonYearOverride = seasonYear,
@@ -154,9 +166,9 @@ class SeasonalViewModel @Inject constructor(
                         }.flow
                     }
                     .enforceUniqueIntIds { it.id }
-                    .map { it.map { MediaPreviewEntry(it) } }
+                    .map { it.mapOnIO { MediaPreviewWithDescriptionEntry(it) } }
                     .cachedIn(viewModelScope)
-                    .applyMediaStatusChanges(
+                    .applyMediaStatusChanges2(
                         statusController = statusController,
                         ignoreList = ignoreList,
                         settings = settings,

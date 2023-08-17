@@ -4,18 +4,15 @@ import android.os.SystemClock
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
-import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import androidx.paging.map
 import com.anilist.MediaTitlesAndImagesQuery
 import com.anilist.ToggleFollowMutation
 import com.anilist.fragment.PaginationInfo
@@ -39,6 +36,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaGridCard
 import com.thekeeperofpie.artistalleydatabase.anime.staff.DetailsStaff
 import com.thekeeperofpie.artistalleydatabase.anime.studio.StudioListRow
 import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIds
+import com.thekeeperofpie.artistalleydatabase.anime.utils.mapOnIO
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -77,7 +75,6 @@ class AniListUserViewModel @Inject constructor(
     var entry by mutableStateOf<AniListUserScreen.Entry?>(null)
     val viewer = aniListApi.authedUser
     var errorResource by mutableStateOf<Pair<Int, Exception?>?>(null)
-    val colorMap = mutableStateMapOf<String, Pair<Color, Color>>()
 
     val anime = MutableStateFlow(PagingData.empty<MediaEntry>())
     val manga = MutableStateFlow(PagingData.empty<MediaEntry>())
@@ -303,7 +300,7 @@ class AniListUserViewModel @Inject constructor(
                         AniListPagingSource { request(entry, it) }
                     }.flow
                 }
-                .mapLatest { it.map(map) }
+                .mapLatest { it.mapOnIO(map) }
                 .enforceUniqueIds(id)
                 .cachedIn(viewModelScope)
                 .run {

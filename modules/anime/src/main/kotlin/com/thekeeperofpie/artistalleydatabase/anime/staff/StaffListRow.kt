@@ -21,8 +21,6 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ImageNotSupported
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
@@ -33,7 +31,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.takeOrElse
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -41,7 +38,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import coil.size.Dimension
 import com.anilist.StaffSearchQuery.Data.Page.Staff
@@ -62,6 +58,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.StaffCoverImage
 import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
+import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -99,7 +96,6 @@ object StaffListRow {
                     screenKey = screenKey,
                     entry = entry,
                     onClick = onClick,
-                    colorCalculationState = colorCalculationState,
                     onRatioAvailable = { imageWidthToHeightRatio = it }
                 )
 
@@ -125,7 +121,6 @@ object StaffListRow {
                     CharactersAndMediaRow(
                         screenKey = screenKey,
                         entry = entry,
-                        colorCalculationState = colorCalculationState,
                     )
                 }
             }
@@ -137,10 +132,10 @@ object StaffListRow {
         screenKey: String,
         entry: Entry?,
         onClick: () -> Unit,
-        colorCalculationState: ColorCalculationState,
         onRatioAvailable: (Float) -> Unit,
     ) {
         val fullscreenImageHandler = LocalFullscreenImageHandler.current
+        val colorCalculationState = LocalColorCalculationState.current
         StaffCoverImage(
             screenKey = screenKey,
             staffId = entry?.staff?.id?.toString(),
@@ -226,13 +221,13 @@ object StaffListRow {
     private fun CharactersAndMediaRow(
         screenKey: String,
         entry: Entry?,
-        colorCalculationState: ColorCalculationState,
     ) {
         val media = entry?.media.orEmpty()
         val characters = entry?.characters.orEmpty()
         if (media.isEmpty() && characters.isEmpty()) return
         val context = LocalContext.current
         val density = LocalDensity.current
+        val colorCalculationState = LocalColorCalculationState.current
         LazyRow(
             contentPadding = PaddingValues(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp),

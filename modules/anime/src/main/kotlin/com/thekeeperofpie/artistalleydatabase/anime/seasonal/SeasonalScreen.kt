@@ -8,17 +8,21 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
@@ -37,37 +41,35 @@ import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
-import com.anilist.fragment.MediaPreview
 import com.anilist.type.MediaSeason
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaCompactWithTagsEntry
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewEntry
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewWithDescriptionEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.SortFilterBottomScaffold
-import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
-import com.thekeeperofpie.artistalleydatabase.compose.AppBar
-import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOption
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOptionRow
 import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBarHeightChange
+import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.bottomBorder
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
-import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 object SeasonalScreen {
+
+    private val SCREEN_KEY = AnimeNavDestinations.SEASONAL.id
 
     @Composable
     operator fun invoke(
         viewModel: SeasonalViewModel = hiltViewModel<SeasonalViewModel>(),
         upIconOption: UpIconOption? = null,
     ) {
-        val colorCalculationState = rememberColorCalculationState(viewModel.colorMap)
         val pagerState = rememberPagerState(
             initialPage = viewModel.initialPage,
             pageCount = { Int.MAX_VALUE },
@@ -76,9 +78,8 @@ object SeasonalScreen {
         val currentSeasonYear = remember { AniListUtils.getCurrentSeasonYear() }
         val editViewModel = hiltViewModel<MediaEditViewModel>()
         MediaEditBottomSheetScaffold(
-            screenKey = AnimeNavDestinations.SEASONAL.id,
+            screenKey = SCREEN_KEY,
             viewModel = editViewModel,
-            colorCalculationState = colorCalculationState,
         ) {
             val scrollBehavior =
                 TopAppBarDefaults.enterAlwaysScrollBehavior(snapAnimationSpec = null)
@@ -87,7 +88,15 @@ object SeasonalScreen {
 
             SortFilterBottomScaffold(
                 sortFilterController = sortFilterController,
-                topBar = { TopBar(upIconOption, pagerState, currentSeasonYear, scrollBehavior) },
+                topBar = {
+                    TopBar(
+                        upIconOption = upIconOption,
+                        viewModel = viewModel,
+                        pagerState = pagerState,
+                        currentSeasonYear = currentSeasonYear,
+                        scrollBehavior = scrollBehavior
+                    )
+                },
                 modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
             ) { scaffoldPadding ->
                 HorizontalPager(
@@ -100,7 +109,6 @@ object SeasonalScreen {
                         editViewModel = editViewModel,
                         content = data,
                         scaffoldPadding = scaffoldPadding,
-                        colorCalculationState = colorCalculationState,
                     )
                 }
             }
@@ -110,15 +118,35 @@ object SeasonalScreen {
     @Composable
     private fun TopBar(
         upIconOption: UpIconOption?,
+        viewModel: SeasonalViewModel,
         pagerState: PagerState,
         currentSeasonYear: Pair<MediaSeason, Int>,
         scrollBehavior: TopAppBarScrollBehavior,
     ) {
         EnterAlwaysTopAppBarHeightChange(scrollBehavior = scrollBehavior) {
             Column {
-                AppBar(
-                    text = stringResource(R.string.anime_seasonal_title),
-                    upIconOption = upIconOption,
+                TopAppBar(
+                    title = { Text(text = stringResource(R.string.anime_seasonal_title)) },
+                    navigationIcon = {
+                        if (upIconOption != null) {
+                            UpIconButton(option = upIconOption)
+                        }
+                    },
+                    actions = {
+                        val mediaViewOption = viewModel.mediaViewOption
+                        val nextMediaViewOption = MediaViewOption.values()
+                            .let { it[(it.indexOf(mediaViewOption) + 1) % it.size] }
+                        IconButton(onClick = {
+                            viewModel.mediaViewOption = nextMediaViewOption
+                        }) {
+                            Icon(
+                                imageVector = nextMediaViewOption.icon,
+                                contentDescription = stringResource(
+                                    R.string.anime_media_view_option_icon_content_description
+                                ),
+                            )
+                        }
+                    }
                 )
 
                 val state =
@@ -190,9 +218,8 @@ object SeasonalScreen {
     private fun ListContent(
         viewModel: SeasonalViewModel,
         editViewModel: MediaEditViewModel,
-        content: LazyPagingItems<MediaPreviewEntry>,
+        content: LazyPagingItems<MediaPreviewWithDescriptionEntry>,
         scaffoldPadding: PaddingValues,
-        colorCalculationState: ColorCalculationState,
     ) {
         val refreshing = content.loadState.refresh is LoadState.Loading
         val viewer by viewModel.viewer.collectAsState()
@@ -208,36 +235,38 @@ object SeasonalScreen {
                     if (content.itemCount == 0) {
                         AnimeMediaListScreen.NoResults()
                     } else {
-                        LazyColumn(
-                            contentPadding = PaddingValues(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(16.dp),
+                        val columns = when (viewModel.mediaViewOption) {
+                            MediaViewOption.SMALL_CARD,
+                            MediaViewOption.LARGE_CARD,
+                            MediaViewOption.COMPACT,
+                            -> GridCells.Adaptive(300.dp)
+                            MediaViewOption.GRID -> GridCells.Adaptive(120.dp)
+                        }
+                        LazyVerticalGrid(
+                            columns = columns,
+                            contentPadding = PaddingValues(
+                                start = 16.dp,
+                                end = 16.dp,
+                                top = 16.dp,
+                                bottom = 16.dp,
+                            ),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
                         ) {
                             items(
                                 count = content.itemCount,
                                 key = content.itemKey { it.media.id },
                                 contentType = content.itemContentType { "media" }
                             ) { index ->
-
                                 val item = content[index]
-                                if (item == null) {
-                                    AnimeMediaListRow(
-                                        screenKey = AnimeNavDestinations.SEASONAL.id,
-                                        viewer = null,
-                                        entry = null,
-                                        onClickListEdit = {},
-                                        onLongClick = {},
-                                        colorCalculationState = colorCalculationState,
-                                    )
-                                } else {
-                                    AnimeMediaListRow(
-                                        screenKey = AnimeNavDestinations.SEASONAL.id,
-                                        viewer = viewer,
-                                        entry = item,
-                                        onClickListEdit = { editViewModel.initialize(it.media) },
-                                        onLongClick = viewModel::onMediaLongClick,
-                                        colorCalculationState = colorCalculationState,
-                                    )
-                                }
+                                MediaViewOptionRow(
+                                    screenKey = SCREEN_KEY,
+                                    mediaViewOption = viewModel.mediaViewOption,
+                                    viewer = viewer,
+                                    editViewModel = editViewModel,
+                                    entry = item,
+                                    onLongClick = viewModel.ignoreList::toggle,
+                                )
                             }
 
                             when (content.loadState.append) {

@@ -162,11 +162,11 @@ import com.thekeeperofpie.artistalleydatabase.compose.AssistChip
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.BarChart
 import com.thekeeperofpie.artistalleydatabase.compose.CollapsingToolbar
-import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.compose.DetailsSubsectionHeader
 import com.thekeeperofpie.artistalleydatabase.compose.InfoText
+import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.PieChart
 import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
@@ -175,7 +175,6 @@ import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.compose.expandableListInfoText
 import com.thekeeperofpie.artistalleydatabase.compose.multiplyCoerceSaturation
 import com.thekeeperofpie.artistalleydatabase.compose.optionalClickable
-import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.showFloatingActionButtonOnVerticalScroll
 import com.thekeeperofpie.artistalleydatabase.compose.twoColumnInfoText
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
@@ -233,7 +232,6 @@ object AnimeMediaDetailsScreen {
         )
         val lazyListState = rememberLazyListState()
         val scope = rememberCoroutineScope()
-        val colorCalculationState = rememberColorCalculationState(viewModel.colorMap)
 
         var coverImageWidthToHeightRatio by remember {
             mutableFloatStateOf(headerValues.coverImageWidthToHeightRatio)
@@ -278,7 +276,6 @@ object AnimeMediaDetailsScreen {
             MediaEditBottomSheetScaffold(
                 screenKey = viewModel.screenKey,
                 viewModel = editViewModel,
-                colorCalculationState = colorCalculationState,
                 topBar = {
                     CollapsingToolbar(
                         maxHeight = 356.dp,
@@ -302,7 +299,6 @@ object AnimeMediaDetailsScreen {
                                     it,
                                 )
                             },
-                            colorCalculationState = colorCalculationState,
                             onImageWidthToHeightRatioAvailable = {
                                 coverImageWidthToHeightRatio = it
                             },
@@ -479,7 +475,6 @@ object AnimeMediaDetailsScreen {
                                     onCharacterLongClick = onCharacterLongClick,
                                     onStaffLongClick = onStaffLongClick,
                                     expandedState = expandedState,
-                                    colorCalculationState = colorCalculationState,
                                     coverImageWidthToHeightRatio = { coverImageWidthToHeightRatio },
                                 )
                             }
@@ -507,7 +502,6 @@ object AnimeMediaDetailsScreen {
         onCharacterLongClick: (String) -> Unit,
         onStaffLongClick: (String) -> Unit,
         expandedState: ExpandedState,
-        colorCalculationState: ColorCalculationState,
         coverImageWidthToHeightRatio: () -> Float,
     ) {
         val screenKey = viewModel.screenKey
@@ -531,7 +525,6 @@ object AnimeMediaDetailsScreen {
                 )
             },
             viewAllContentDescriptionTextRes = R.string.anime_media_details_view_all_content_description,
-            colorCalculationState = colorCalculationState,
         )
 
         relationsSection(
@@ -540,7 +533,6 @@ object AnimeMediaDetailsScreen {
             entry = entry,
             relationsExpanded = expandedState::relations,
             onRelationsExpandedChange = { expandedState.relations = it },
-            colorCalculationState = colorCalculationState,
             onClickListEdit = onClickListEdit,
             onLongClick = viewModel::onMediaLongClick,
         )
@@ -563,15 +555,11 @@ object AnimeMediaDetailsScreen {
             screenKey = screenKey,
             titleRes = R.string.anime_media_details_staff_label,
             staffList = staff,
-            colorCalculationState = colorCalculationState,
         )
 
         statsSection(entry)
 
-        tagsSection(
-            entry = entry,
-            colorCalculationState = colorCalculationState,
-        )
+        tagsSection(entry)
 
         trailerSection(
             entry = entry,
@@ -599,7 +587,6 @@ object AnimeMediaDetailsScreen {
             coverImageWidthToHeightRatio = coverImageWidthToHeightRatio,
             expanded = expandedState::recommendations,
             onExpandedChange = { expandedState.recommendations = it },
-            colorCalculationState = colorCalculationState,
             onClickListEdit = onClickListEdit,
             onLongClick = viewModel::onMediaLongClick,
         )
@@ -618,7 +605,6 @@ object AnimeMediaDetailsScreen {
                     coverImageWidthToHeightRatio()
                 )
             },
-            colorCalculationState = colorCalculationState,
         )
 
         forumThreadsSection(
@@ -686,7 +672,6 @@ object AnimeMediaDetailsScreen {
         onRelationsExpandedChange: (Boolean) -> Unit,
         onClickListEdit: (AnimeMediaListRow.Entry) -> Unit,
         onLongClick: (AnimeMediaListRow.Entry) -> Unit,
-        colorCalculationState: ColorCalculationState,
     ) {
         mediaListSection(
             screenKey = screenKey,
@@ -698,7 +683,6 @@ object AnimeMediaDetailsScreen {
             hasMoreValues = entry.relationsHasMore,
             expanded = relationsExpanded,
             onExpandedChange = onRelationsExpandedChange,
-            colorCalculationState = colorCalculationState,
             onClickListEdit = onClickListEdit,
             onLongClick = onLongClick,
             label = { RelationLabel(it.relation) },
@@ -1316,7 +1300,6 @@ object AnimeMediaDetailsScreen {
         expanded: () -> Boolean,
         onExpandedChange: (Boolean) -> Unit,
         onClickListEdit: (AnimeMediaListRow.Entry) -> Unit,
-        colorCalculationState: ColorCalculationState,
         onLongClick: (AnimeMediaListRow.Entry) -> Unit,
     ) {
         listSection(
@@ -1343,7 +1326,6 @@ object AnimeMediaDetailsScreen {
                 viewer = viewer,
                 onClickListEdit = onClickListEdit,
                 onLongClick = onLongClick,
-                colorCalculationState = colorCalculationState,
                 recommendation = item.data,
                 onUserRecommendationRating = viewModel.recommendationToggleHelper::toggle,
                 modifier = modifier.padding(start = 16.dp, end = 16.dp, bottom = paddingBottom)
@@ -1473,10 +1455,7 @@ object AnimeMediaDetailsScreen {
         }
     }
 
-    private fun LazyListScope.tagsSection(
-        entry: Entry,
-        colorCalculationState: ColorCalculationState,
-    ) {
+    private fun LazyListScope.tagsSection(entry: Entry) {
         if (entry.tags.isNotEmpty()) {
             item("tagsHeader") {
                 DetailsSectionHeader(
@@ -1487,6 +1466,7 @@ object AnimeMediaDetailsScreen {
 
             item("tagsSection") {
                 val navigationCallback = LocalNavigationCallback.current
+                val colorCalculationState = LocalColorCalculationState.current
                 FlowRow(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier
@@ -1778,7 +1758,6 @@ object AnimeMediaDetailsScreen {
         expanded: () -> Boolean,
         onExpandedChange: (Boolean) -> Unit,
         onClickViewAll: (AnimeNavigator.NavigationCallback) -> Unit,
-        colorCalculationState: ColorCalculationState,
     ) {
         listSection(
             titleRes = R.string.anime_media_details_activities_label,
@@ -1798,7 +1777,6 @@ object AnimeMediaDetailsScreen {
                 entry = item,
                 onActivityStatusUpdate = viewModel.activityToggleHelper::toggle,
                 onClickListEdit = { editViewModel.initialize(it.media) },
-                colorCalculationState = colorCalculationState,
                 clickable = true,
                 modifier = modifier
                     .fillMaxWidth()

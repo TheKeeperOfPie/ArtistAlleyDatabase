@@ -42,7 +42,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.studio.StudioListRow
 import com.thekeeperofpie.artistalleydatabase.anime.ui.descriptionSection
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
-import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.DetailsSectionHeader
 
 @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
@@ -56,7 +55,6 @@ object UserOverviewScreen {
         viewer: AniListViewer?,
         isFollowing: @Composable () -> Boolean,
         onFollowingClick: () -> Unit,
-        colorCalculationState: ColorCalculationState,
         modifier: Modifier = Modifier,
         bottomNavigationState: BottomNavigationState? = null,
     ) {
@@ -94,7 +92,6 @@ object UserOverviewScreen {
                 viewer = viewer,
                 titleRes = R.string.anime_user_favorite_anime_label,
                 entries = anime,
-                colorCalculationState = colorCalculationState,
                 forceListEditIcon = true,
             )
 
@@ -104,7 +101,6 @@ object UserOverviewScreen {
                 viewer = viewer,
                 titleRes = R.string.anime_user_favorite_manga_label,
                 entries = manga,
-                colorCalculationState = colorCalculationState,
                 forceListEditIcon = true,
             )
 
@@ -112,14 +108,12 @@ object UserOverviewScreen {
                 screenKey = viewModel.screenKey,
                 titleRes = R.string.anime_user_favorite_characters_label,
                 characters = characters,
-                colorCalculationState = colorCalculationState,
             )
 
             staffSection(
                 screenKey = viewModel.screenKey,
                 titleRes = R.string.anime_user_favorite_staff_label,
                 staffList = staff,
-                colorCalculationState = colorCalculationState,
             )
 
             favoriteStudiosSection(

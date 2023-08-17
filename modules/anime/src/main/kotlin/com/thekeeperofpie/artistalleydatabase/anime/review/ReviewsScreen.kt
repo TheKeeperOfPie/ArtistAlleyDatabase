@@ -16,7 +16,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderValues
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toFavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.utils.HeaderAndListScreen
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
-import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
 
 object ReviewsScreen {
 
@@ -28,7 +27,6 @@ object ReviewsScreen {
         upIconOption: UpIconOption,
         headerValues: MediaHeaderValues,
     ) {
-        val colorCalculationState = rememberColorCalculationState(viewModel.colorMap)
         val entry = viewModel.entry
         val media = entry?.media
         var coverImageWidthToHeightRatio by remember {
@@ -56,7 +54,6 @@ object ReviewsScreen {
                             it,
                         )
                     },
-                    colorCalculationState = colorCalculationState,
                     enableCoverImageSharedElement = false,
                     onImageWidthToHeightRatioAvailable = {
                         coverImageWidthToHeightRatio = it

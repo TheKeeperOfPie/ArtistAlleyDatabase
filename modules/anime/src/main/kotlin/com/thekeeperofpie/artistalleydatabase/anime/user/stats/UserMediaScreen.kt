@@ -2,7 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.anime.user.stats
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
@@ -20,7 +20,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserScreen
 import com.thekeeperofpie.artistalleydatabase.anime.user.AniListUserViewModel
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
-import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
+import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 
 object UserMediaScreen {
 
@@ -31,7 +31,6 @@ object UserMediaScreen {
         user: () -> UserByIdQuery.Data.User?,
         statistics: @Composable () -> AniListUserScreen.Entry.Statistics?,
         state: AniListUserViewModel.States,
-        colorCalculationState: ColorCalculationState,
         bottomNavigationState: BottomNavigationState? = null,
     ) {
         val isAnime = state is AniListUserViewModel.States.Anime
@@ -54,9 +53,10 @@ object UserMediaScreen {
                 }
             }
 
-            Divider()
+            HorizontalDivider()
 
             val navigationCallback = LocalNavigationCallback.current
+            val colorCalculationState = LocalColorCalculationState.current
             when (values[selectedTabIndex]) {
                 UserStatsTab.STATS -> UserStatsBasicScreen(
                     user = user,

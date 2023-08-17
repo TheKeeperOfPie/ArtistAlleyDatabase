@@ -23,8 +23,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterSmallCard
 import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffUtils.primaryName
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
-import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.DetailsSectionHeader
+import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 
@@ -32,7 +32,6 @@ fun LazyListScope.staffSection(
     screenKey: String,
     @StringRes titleRes: Int,
     staffList: LazyPagingItems<DetailsStaff>,
-    colorCalculationState: ColorCalculationState,
     roleLines: Int = 1,
 ) {
     if (staffList.itemCount == 0) return
@@ -53,11 +52,11 @@ fun LazyListScope.staffSection(
             ) {
                 val staff = staffList[it]
                 var imageWidthToHeightRatio by remember { MutableSingle(1f) }
+                val colorCalculationState = LocalColorCalculationState.current
                 CharacterSmallCard(
                     screenKey = screenKey,
                     id = EntryId("anime_staff", staff?.id.orEmpty()),
                     image = staff?.image,
-                    colorCalculationState = colorCalculationState,
                     onClick = {
                         if (staff != null) {
                             navigationCallback.onStaffClick(

@@ -3,7 +3,6 @@ package com.thekeeperofpie.artistalleydatabase.anime.media.activity
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
-import androidx.paging.map
 import com.anilist.fragment.ListActivityWithoutMedia
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.transformIf
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
@@ -16,6 +15,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoritesController
 import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoritesToggleHelper
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toFavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.utils.HeaderAndListViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.utils.mapOnIO
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -93,7 +93,7 @@ class MediaActivitiesViewModel @Inject constructor(
     override fun Flow<PagingData<Entry>>.transformFlow() = flatMapLatest { pagingData ->
         activityStatusController.allChanges()
             .mapLatest { updates ->
-                pagingData.map {
+                pagingData.mapOnIO {
                     val liked = updates[it.activityId]?.liked ?: it.liked
                     val subscribed = updates[it.activityId]?.subscribed ?: it.subscribed
                     it.transformIf(liked != it.liked || subscribed != it.subscribed) {

@@ -1,8 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.schedule
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.LoadState
@@ -13,7 +11,6 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
-import androidx.paging.map
 import com.anilist.AiringScheduleQuery
 import com.anilist.type.AiringSort
 import com.anilist.type.MediaListStatus
@@ -28,6 +25,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaStatusAware
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaStatusChanges
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
+import com.thekeeperofpie.artistalleydatabase.anime.utils.mapOnIO
 import com.thekeeperofpie.artistalleydatabase.compose.filter.selectedOption
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -59,7 +57,6 @@ class AiringScheduleViewModel @Inject constructor(
     val viewer = aniListApi.authedUser
     var sortFilterController = AiringScheduleSortFilterController(settings, featureOverrideProvider)
     var refresh = MutableStateFlow(-1)
-    val colorMap = mutableStateMapOf<String, Pair<Color, Color>>()
 
     private val startDay = LocalDate.now().let {
         it.minusDays(it.dayOfWeek.value.toLong() - 1)
@@ -81,7 +78,7 @@ class AiringScheduleViewModel @Inject constructor(
                 ::Pair
             )
                 .flatMapLatest { (_, filterParams) -> buildPagingData(index, filterParams) }
-                .map { it.map { Entry(data = it) } }
+                .map { it.mapOnIO { Entry(data = it) } }
                 .cachedIn(viewModelScope)
                 .applyMediaStatusChanges(
                     statusController = statusController,

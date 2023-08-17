@@ -1,15 +1,11 @@
 package com.thekeeperofpie.artistalleydatabase.anime.activity
 
-import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import androidx.paging.filter
-import androidx.paging.map
 import com.anilist.UserSocialActivityQuery
 import com.anilist.UserSocialActivityQuery.Data.Page.ListActivityActivity
 import com.anilist.UserSocialActivityQuery.Data.Page.MessageActivityActivity
@@ -29,7 +25,9 @@ import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaCompactWithTagsEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIntIds
+import com.thekeeperofpie.artistalleydatabase.anime.utils.filterOnIO
 import com.thekeeperofpie.artistalleydatabase.anime.utils.mapNotNull
+import com.thekeeperofpie.artistalleydatabase.anime.utils.mapOnIO
 import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
 import com.thekeeperofpie.artistalleydatabase.compose.filter.selectedOption
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
@@ -60,7 +58,6 @@ class AnimeActivityViewModel @Inject constructor(
     featureOverrideProvider: FeatureOverrideProvider,
 ) : ViewModel() {
 
-    val colorMap = mutableStateMapOf<String, Pair<Color, Color>>()
     val viewer = aniListApi.authedUser
 
     val activityToggleHelper =
@@ -156,7 +153,7 @@ class AnimeActivityViewModel @Inject constructor(
                     }
                 }
                     .flow
-                    .map { it.filter { showAdult || !it.isAdult() } }
+                    .map { it.filterOnIO { showAdult || !it.isAdult() } }
             }
         }
             .enforceUniqueIntIds {
@@ -167,7 +164,7 @@ class AnimeActivityViewModel @Inject constructor(
                     is OtherActivity -> null
                 }
             }
-            .mapLatest { it.map(::ActivityEntry) }
+            .mapLatest { it.mapOnIO(::ActivityEntry) }
             .cachedIn(viewModelScope)
             .flatMapLatest { pagingData ->
                 combine(

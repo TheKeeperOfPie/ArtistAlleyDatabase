@@ -6,7 +6,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
@@ -57,7 +56,6 @@ class MediaHistoryViewModel @Inject constructor(
 
     var mediaViewOption by mutableStateOf(settings.mediaViewOption.value)
     val viewer = aniListApi.authedUser
-    val colorMap = mutableStateMapOf<String, Pair<Color, Color>>()
     var query by mutableStateOf("")
     val content = MutableStateFlow(PagingData.empty<MediaPreviewWithDescriptionEntry>())
 

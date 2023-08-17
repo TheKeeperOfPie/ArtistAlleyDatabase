@@ -46,6 +46,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.FavoriteIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.AutoResizeHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
+import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
@@ -58,7 +59,6 @@ fun CharacterHeader(
     progress: Float,
     headerValues: CharacterHeaderValues,
     onFavoriteChanged: (Boolean) -> Unit,
-    colorCalculationState: ColorCalculationState,
     onImageWidthToHeightRatioAvailable: (Float) -> Unit = {},
     onCoverImageSharedElementFractionChanged: ((Float) -> Unit)? = null,
 ) {
@@ -66,6 +66,7 @@ fun CharacterHeader(
         key = "anime_character_${characterId}_header",
         screenKey = screenKey,
     ) {
+        val colorCalculationState = LocalColorCalculationState.current
         CoverAndBannerHeader(
             screenKey = AnimeNavDestinations.CHARACTER_DETAILS.id,
             upIconOption = upIconOption,

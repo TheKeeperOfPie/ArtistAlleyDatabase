@@ -2,17 +2,14 @@ package com.thekeeperofpie.artistalleydatabase.anime.activity.details
 
 import android.os.SystemClock
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import androidx.paging.map
 import com.anilist.ActivityDetailsQuery
 import com.anilist.ActivityDetailsRepliesQuery
 import com.hoc081098.flowext.flowFromSuspend
@@ -33,6 +30,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaCompactWithTagsEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIntIds
+import com.thekeeperofpie.artistalleydatabase.anime.utils.mapOnIO
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -61,7 +59,6 @@ class ActivityDetailsViewModel @Inject constructor(
     lateinit var activityId: String
 
     val viewer = aniListApi.authedUser
-    val colorMap = mutableStateMapOf<String, Pair<Color, Color>>()
     val refresh = MutableStateFlow(-1L)
     var entry by mutableStateOf<LoadingResult<Entry>>(LoadingResult.loading())
     var replies = MutableStateFlow(PagingData.empty<Entry.ReplyEntry>())
@@ -154,7 +151,7 @@ class ActivityDetailsViewModel @Inject constructor(
                 .flatMapLatest { pagingData ->
                     replyStatusController.allChanges()
                         .mapLatest { updates ->
-                            pagingData.map {
+                            pagingData.mapOnIO {
                                 val liked = updates[it.id.toString()]?.liked ?: it.isLiked ?: false
                                 Entry.ReplyEntry(reply = it, liked = liked)
                             }

@@ -2,9 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.compose
 
 import android.graphics.drawable.BitmapDrawable
 import androidx.annotation.FloatRange
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.isSpecified
 import androidx.compose.ui.graphics.toArgb
 import androidx.core.graphics.ColorUtils
 import androidx.palette.graphics.Palette
@@ -44,7 +42,7 @@ object ComposeColorUtils {
         widthEndThreshold: Float = 1f,
         selectMaxPopulation: Boolean = false,
     ) {
-        if (!colorCalculationState.colorMap.containsKey(id)) {
+        if (!colorCalculationState.hasColor(id)) {
             (success.result.drawable as? BitmapDrawable)?.bitmap?.let {
                 colorCalculationState.scope.launch(CustomDispatchers.IO) {
                     try {
@@ -71,13 +69,16 @@ object ComposeColorUtils {
                         } ?: palette.swatches.firstOrNull()
                         if (swatch != null) {
                             withContext(CustomDispatchers.Main) {
-                                colorCalculationState.colorMap[id] =
-                                    Color(swatch.rgb) to Color(
+                                colorCalculationState.setColor(
+                                    id = id,
+                                    containerColor = Color(swatch.rgb),
+                                    textColor = Color(
                                         ColorUtils.setAlphaComponent(
                                             swatch.bodyTextColor,
                                             0xFF
                                         )
                                     )
+                                )
                             }
                         }
                     } catch (ignored: Exception) {

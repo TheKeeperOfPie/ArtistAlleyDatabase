@@ -53,7 +53,6 @@ import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.compose.CollapsingToolbar
 import com.thekeeperofpie.artistalleydatabase.compose.NestedScrollSplitter
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
-import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.entry.EntryStringR
 import kotlinx.coroutines.launch
 
@@ -75,7 +74,6 @@ object AniListUserScreen {
         val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
             snapAnimationSpec = spring(stiffness = Spring.StiffnessMedium)
         )
-        val colorCalculationState = rememberColorCalculationState(viewModel.colorMap)
         val editViewModel = hiltViewModel<MediaEditViewModel>()
         MediaEditBottomSheetScaffold(
             screenKey = viewModel.screenKey,
@@ -143,7 +141,6 @@ object AniListUserScreen {
                     }
                 }
             },
-            colorCalculationState = colorCalculationState,
             bottomNavigationState = bottomNavigationState,
         ) { scaffoldPadding ->
             Column(modifier = Modifier.padding(scaffoldPadding)) {
@@ -218,27 +215,23 @@ object AniListUserScreen {
                                     viewer = viewModel.viewer.collectAsState(null).value,
                                     isFollowing = { viewModel.isFollowing },
                                     onFollowingClick = viewModel::toggleFollow,
-                                    colorCalculationState = colorCalculationState,
                                     bottomNavigationState = bottomNavigationState,
                                 )
                                 UserTab.ANIME_STATS -> UserMediaScreen(
                                     user = { user },
                                     statistics = { viewModel.entry?.statisticsAnime },
                                     state = viewModel.animeStats,
-                                    colorCalculationState = colorCalculationState,
                                     bottomNavigationState = bottomNavigationState,
                                 )
                                 UserTab.MANGA_STATS -> UserMediaScreen(
                                     user = { user },
                                     statistics = { viewModel.entry?.statisticsManga },
                                     state = viewModel.mangaStats,
-                                    colorCalculationState = colorCalculationState,
                                     bottomNavigationState = bottomNavigationState,
                                 )
                                 UserTab.SOCIAL -> UserSocialScreen(
                                     screenKey = viewModel.screenKey,
                                     userId = viewModel.userId,
-                                    colorCalculationState = colorCalculationState,
                                     bottomNavigationState = bottomNavigationState,
                                 )
                             }

@@ -67,6 +67,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.CustomHtmlText
 import com.thekeeperofpie.artistalleydatabase.compose.LocalAppTheme
+import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -105,7 +106,6 @@ object AnimeMediaLargeCard {
                 BannerImage(
                     screenKey = screenKey,
                     entry = entry,
-                    colorCalculationState = colorCalculationState,
                 )
 
                 Column(
@@ -193,7 +193,6 @@ object AnimeMediaLargeCard {
     private fun BannerImage(
         screenKey: String,
         entry: Entry?,
-        colorCalculationState: ColorCalculationState,
     ) {
         SharedElement(
             key = "${entry?.id?.scopedId}_banner_image",
@@ -208,6 +207,7 @@ object AnimeMediaLargeCard {
             val appTheme = LocalAppTheme.current
             val isLightTheme = appTheme == AppThemeSetting.LIGHT
                     || (appTheme == AppThemeSetting.AUTO && !isSystemInDarkTheme())
+            val colorCalculationState = LocalColorCalculationState.current
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
                     .data(entry?.imageBanner ?: entry?.image)

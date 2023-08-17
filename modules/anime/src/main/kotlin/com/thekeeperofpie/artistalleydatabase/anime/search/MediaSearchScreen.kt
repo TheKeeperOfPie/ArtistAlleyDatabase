@@ -49,7 +49,6 @@ import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBarHeight
 import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
-import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
 
 @OptIn(ExperimentalMaterial3Api::class)
 object MediaSearchScreen {
@@ -66,13 +65,11 @@ object MediaSearchScreen {
         scrollStateSaver: ScrollStateSaver,
     ) {
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(snapAnimationSpec = null)
-        val colorCalculationState = rememberColorCalculationState(viewModel.colorMap)
 
         val editViewModel = hiltViewModel<MediaEditViewModel>()
         MediaEditBottomSheetScaffold(
             screenKey = SCREEN_KEY,
             viewModel = editViewModel,
-            colorCalculationState = colorCalculationState,
         ) {
             val sortFilterController = when (viewModel.selectedType) {
                 AnimeSearchViewModel.SearchType.ANIME -> viewModel.animeSortFilterController
@@ -141,17 +138,14 @@ object MediaSearchScreen {
                                                     viewModel.ignoreList
                                                         .toggle(item.media.id.toString())
                                                 },
-                                                colorCalculationState = colorCalculationState,
                                             )
 
-                                            // TODO: Separated placeholder types
                                             else -> AnimeMediaListRow(
                                                 screenKey = SCREEN_KEY,
                                                 viewer = null,
                                                 entry = null,
                                                 onClickListEdit = {},
                                                 onLongClick = {},
-                                                colorCalculationState = colorCalculationState,
                                             )
                                         }
                                     }

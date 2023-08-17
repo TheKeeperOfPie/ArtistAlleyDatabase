@@ -66,7 +66,6 @@ import com.thekeeperofpie.artistalleydatabase.compose.StaticSearchBar
 import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
-import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
 import kotlinx.coroutines.launch
 
 @OptIn(
@@ -86,14 +85,12 @@ object AnimeUserListScreen {
         bottomNavigationState: BottomNavigationState? = null,
     ) {
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
-        val colorCalculationState = rememberColorCalculationState(viewModel.colorMap)
         val editViewModel = hiltViewModel<MediaEditViewModel>()
         val snackbarHostState = remember { SnackbarHostState() }
         val scope = rememberCoroutineScope()
         MediaEditBottomSheetScaffold(
             screenKey = AnimeNavDestinations.USER_LIST.id,
             viewModel = editViewModel,
-            colorCalculationState = colorCalculationState,
             bottomNavigationState = bottomNavigationState,
             snackbarHostState = snackbarHostState,
         ) {
@@ -215,7 +212,6 @@ object AnimeUserListScreen {
                                                         viewer = viewer,
                                                         viewModel = viewModel,
                                                         editViewModel = editViewModel,
-                                                        colorCalculationState = colorCalculationState,
                                                         modifier = Modifier
                                                             .animateItemPlacement(),
                                                     )
@@ -352,7 +348,6 @@ object AnimeUserListScreen {
                 entry = entry,
                 onClickListEdit = { editViewModel.initialize(it.media) },
                 onLongClick = { viewModel.ignoreList.toggle(entry.media.id.toString()) },
-                colorCalculationState = colorCalculationState,
                 modifier = modifier,
             )
             MediaViewOption.LARGE_CARD -> AnimeMediaLargeCard(
@@ -370,7 +365,6 @@ object AnimeUserListScreen {
                 entry = entry,
                 onLongClick = { viewModel.ignoreList.toggle(entry.media.id.toString()) },
                 onClickListEdit = { editViewModel.initialize(it.media) },
-                colorCalculationState = colorCalculationState,
                 modifier = modifier,
             )
             MediaViewOption.GRID -> MediaGridCard(
@@ -379,7 +373,6 @@ object AnimeUserListScreen {
                 viewer = viewer,
                 onClickListEdit = { editViewModel.initialize(it.media) },
                 onLongClick = { viewModel.ignoreList.toggle(entry.media.id.toString()) },
-                colorCalculationState = colorCalculationState,
                 modifier = modifier,
             )
         }

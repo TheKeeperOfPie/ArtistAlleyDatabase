@@ -3,11 +3,9 @@ package com.thekeeperofpie.artistalleydatabase.anime.forum.thread.comment
 import android.os.SystemClock
 import android.text.Spanned
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
-import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -55,7 +53,6 @@ class ForumThreadCommentTreeViewModel @Inject constructor(
     settings: AnimeSettings,
 ) : ViewModel() {
 
-    val colorMap = mutableStateMapOf<String, Pair<Color, Color>>()
     val threadId = savedStateHandle.get<String>("threadId")!!
     val commentId = savedStateHandle.get<String>("commentId")!!
     val viewer = aniListApi.authedUser

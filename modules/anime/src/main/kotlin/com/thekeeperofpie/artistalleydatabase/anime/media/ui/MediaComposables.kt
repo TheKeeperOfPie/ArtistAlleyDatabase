@@ -59,6 +59,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaTagEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaGenre
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewWithDescriptionEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaStatusAware
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toStatusIcon
@@ -79,7 +80,6 @@ fun <T> LazyListScope.mediaListSection(
     hasMoreValues: Boolean,
     expanded: () -> Boolean = { false },
     onExpandedChange: (Boolean) -> Unit = {},
-    colorCalculationState: ColorCalculationState,
     onClickListEdit: (AnimeMediaListRow.Entry) -> Unit,
     onLongClick: (AnimeMediaListRow.Entry) -> Unit,
     label: (@Composable (T) -> Unit)? = null,
@@ -106,7 +106,6 @@ fun <T> LazyListScope.mediaListSection(
         },
         onClickListEdit = onClickListEdit,
         onLongClick = onLongClick,
-        colorCalculationState = colorCalculationState,
         modifier = modifier.padding(start = 16.dp, end = 16.dp, bottom = paddingBottom)
     )
 }
@@ -117,7 +116,6 @@ fun LazyListScope.mediaHorizontalRow(
     editViewModel: MediaEditViewModel,
     @StringRes titleRes: Int,
     entries: LazyPagingItems<out MediaGridCard.Entry>,
-    colorCalculationState: ColorCalculationState,
     sectionTitle: @Composable () -> Unit = {
         DetailsSectionHeader(stringResource(titleRes))
     },
@@ -143,7 +141,6 @@ fun LazyListScope.mediaHorizontalRow(
                     viewer = viewer,
                     onClickListEdit = { editViewModel.initialize(it.media) },
                     onLongClick = {/* TODO: Ignored */ },
-                    colorCalculationState = colorCalculationState,
                     forceListEditIcon = forceListEditIcon,
                     modifier = Modifier.width(120.dp)
                 )
@@ -471,4 +468,63 @@ fun MediaGenrePreview(
             }
         }
     )
+}
+
+@Composable
+fun MediaViewOptionRow(
+    screenKey: String,
+    mediaViewOption: MediaViewOption,
+    viewer: AniListViewer?,
+    editViewModel: MediaEditViewModel,
+    entry: MediaPreviewWithDescriptionEntry?,
+    onLongClick: (mediaId: String) -> Unit,
+    colorCalculationState: ColorCalculationState = ColorCalculationState(),
+) {
+    when (mediaViewOption) {
+        MediaViewOption.SMALL_CARD -> AnimeMediaListRow(
+            screenKey = screenKey,
+            viewer = viewer,
+            entry = entry,
+            onClickListEdit = { editViewModel.initialize(it.media) },
+            onLongClick = {
+                if (entry != null) {
+                    onLongClick(entry.media.id.toString())
+                }
+            },
+        )
+        MediaViewOption.LARGE_CARD -> AnimeMediaLargeCard(
+            screenKey = screenKey,
+            viewer = viewer,
+            entry = entry,
+            onLongClick = {
+                if (entry != null) {
+                    onLongClick(entry.media.id.toString())
+                }
+            },
+            onClickListEdit = { editViewModel.initialize(it.media) },
+            colorCalculationState = colorCalculationState,
+        )
+        MediaViewOption.COMPACT -> AnimeMediaCompactListRow(
+            screenKey = screenKey,
+            viewer = viewer,
+            entry = entry,
+            onLongClick = {
+                if (entry != null) {
+                    onLongClick(entry.media.id.toString())
+                }
+            },
+            onClickListEdit = { editViewModel.initialize(it.media) },
+        )
+        MediaViewOption.GRID -> MediaGridCard(
+            screenKey = screenKey,
+            entry = entry,
+            viewer = viewer,
+            onClickListEdit = { editViewModel.initialize(it.media) },
+            onLongClick = {
+                if (entry != null) {
+                    onLongClick(entry.media.id.toString())
+                }
+            },
+        )
+    }
 }

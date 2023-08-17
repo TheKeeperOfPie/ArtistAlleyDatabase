@@ -123,7 +123,6 @@ fun ActivityMentionNotificationCard(
     mediaEntry: AnimeMediaCompactListRow.Entry?,
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
     onClickListEdit: (AnimeMediaCompactListRow.Entry) -> Unit,
-    colorCalculationState: ColorCalculationState,
 ) {
     ElevatedCard {
         ContextHeader(
@@ -140,7 +139,6 @@ fun ActivityMentionNotificationCard(
             mediaEntry = mediaEntry,
             onActivityStatusUpdate = onActivityStatusUpdate,
             onClickListEdit = onClickListEdit,
-            colorCalculationState = colorCalculationState,
         )
     }
 }
@@ -153,7 +151,6 @@ fun ActivityMessageNotificationCard(
     activityEntry: NotificationsViewModel.NotificationEntry.ActivityEntry?,
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
     onClickListEdit: (AnimeMediaCompactListRow.Entry) -> Unit,
-    colorCalculationState: ColorCalculationState,
 ) {
     ElevatedCard {
         ContextHeader(
@@ -170,7 +167,6 @@ fun ActivityMessageNotificationCard(
             mediaEntry = null,
             onActivityStatusUpdate = onActivityStatusUpdate,
             onClickListEdit = onClickListEdit,
-            colorCalculationState = colorCalculationState,
         )
     }
 }
@@ -184,7 +180,6 @@ fun ActivityReplyNotificationCard(
     mediaEntry: AnimeMediaCompactListRow.Entry?,
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
     onClickListEdit: (AnimeMediaCompactListRow.Entry) -> Unit,
-    colorCalculationState: ColorCalculationState,
 ) {
     ElevatedCard {
         ContextHeader(
@@ -201,7 +196,6 @@ fun ActivityReplyNotificationCard(
             mediaEntry = mediaEntry,
             onActivityStatusUpdate = onActivityStatusUpdate,
             onClickListEdit = onClickListEdit,
-            colorCalculationState = colorCalculationState,
         )
     }
 }
@@ -215,7 +209,6 @@ fun ActivityReplySubscribedNotificationCard(
     mediaEntry: AnimeMediaCompactListRow.Entry?,
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
     onClickListEdit: (AnimeMediaCompactListRow.Entry) -> Unit,
-    colorCalculationState: ColorCalculationState,
 ) {
     ElevatedCard {
         ContextHeader(
@@ -232,7 +225,6 @@ fun ActivityReplySubscribedNotificationCard(
             mediaEntry = mediaEntry,
             onActivityStatusUpdate = onActivityStatusUpdate,
             onClickListEdit = onClickListEdit,
-            colorCalculationState = colorCalculationState,
         )
     }
 }
@@ -246,7 +238,6 @@ fun ActivityLikedNotificationCard(
     mediaEntry: AnimeMediaCompactListRow.Entry?,
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
     onClickListEdit: (AnimeMediaCompactListRow.Entry) -> Unit,
-    colorCalculationState: ColorCalculationState,
 ) {
     ElevatedCard {
         ContextHeader(
@@ -263,7 +254,6 @@ fun ActivityLikedNotificationCard(
             mediaEntry = mediaEntry,
             onActivityStatusUpdate = onActivityStatusUpdate,
             onClickListEdit = onClickListEdit,
-            colorCalculationState = colorCalculationState,
         )
     }
 }
@@ -277,7 +267,6 @@ fun ActivityReplyLikedNotificationCard(
     mediaEntry: AnimeMediaCompactListRow.Entry?,
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
     onClickListEdit: (AnimeMediaCompactListRow.Entry) -> Unit,
-    colorCalculationState: ColorCalculationState,
 ) {
     ElevatedCard {
         ContextHeader(
@@ -294,7 +283,6 @@ fun ActivityReplyLikedNotificationCard(
             mediaEntry = mediaEntry,
             onActivityStatusUpdate = onActivityStatusUpdate,
             onClickListEdit = onClickListEdit,
-            colorCalculationState = colorCalculationState,
         )
     }
 }
@@ -306,7 +294,6 @@ fun AiringNotificationCard(
     notification: NotificationsQuery.Data.Page.AiringNotificationNotification,
     mediaEntry: AnimeMediaCompactListRow.Entry?,
     onClickListEdit: (AnimeMediaCompactListRow.Entry) -> Unit,
-    colorCalculationState: ColorCalculationState,
 ) {
     ElevatedCard {
         Row(
@@ -330,7 +317,6 @@ fun AiringNotificationCard(
                 entry = mediaEntry,
                 onLongClick = { /* TODO */ },
                 onClickListEdit = onClickListEdit,
-                colorCalculationState = colorCalculationState,
                 modifier = Modifier.padding(8.dp)
             )
         }
@@ -364,7 +350,6 @@ fun RelatedMediaAdditionNotificationCard(
     notification: NotificationsQuery.Data.Page.RelatedMediaAdditionNotificationNotification,
     mediaEntry: AnimeMediaCompactListRow.Entry?,
     onClickListEdit: (AnimeMediaCompactListRow.Entry) -> Unit,
-    colorCalculationState: ColorCalculationState,
 ) {
     ElevatedCard {
         Row(
@@ -384,7 +369,6 @@ fun RelatedMediaAdditionNotificationCard(
                 entry = mediaEntry,
                 onLongClick = { /* TODO */ },
                 onClickListEdit = onClickListEdit,
-                colorCalculationState = colorCalculationState,
                 modifier = Modifier.padding(8.dp)
             )
         }
@@ -398,7 +382,6 @@ fun MediaDataChangeNotificationCard(
     notification: NotificationsQuery.Data.Page.MediaDataChangeNotificationNotification,
     mediaEntry: AnimeMediaCompactListRow.Entry?,
     onClickListEdit: (AnimeMediaCompactListRow.Entry) -> Unit,
-    colorCalculationState: ColorCalculationState,
 ) {
     ElevatedCard {
         Row(
@@ -428,7 +411,6 @@ fun MediaDataChangeNotificationCard(
                 entry = mediaEntry,
                 onLongClick = { /* TODO */ },
                 onClickListEdit = onClickListEdit,
-                colorCalculationState = colorCalculationState,
                 modifier = Modifier.padding(8.dp)
             )
         }
@@ -442,7 +424,6 @@ fun MediaDeletionNotificationCard(
     notification: NotificationsQuery.Data.Page.MediaDeletionNotificationNotification,
     mediaEntry: AnimeMediaCompactListRow.Entry?,
     onClickListEdit: (AnimeMediaCompactListRow.Entry) -> Unit,
-    colorCalculationState: ColorCalculationState,
 ) {
     ElevatedCard {
         Row(
@@ -475,7 +456,6 @@ fun MediaDeletionNotificationCard(
                 entry = mediaEntry,
                 onLongClick = { /* TODO */ },
                 onClickListEdit = onClickListEdit,
-                colorCalculationState = colorCalculationState,
                 modifier = Modifier.padding(8.dp)
             )
         }
@@ -489,7 +469,6 @@ fun MediaMergeNotificationCard(
     notification: NotificationsQuery.Data.Page.MediaMergeNotificationNotification,
     mediaEntry: AnimeMediaCompactListRow.Entry?,
     onClickListEdit: (AnimeMediaCompactListRow.Entry) -> Unit,
-    colorCalculationState: ColorCalculationState,
 ) {
     ElevatedCard {
         Row(
@@ -519,7 +498,6 @@ fun MediaMergeNotificationCard(
                 entry = mediaEntry,
                 onLongClick = { /* TODO */ },
                 onClickListEdit = onClickListEdit,
-                colorCalculationState = colorCalculationState,
                 modifier = Modifier.padding(8.dp)
             )
         }
@@ -779,7 +757,6 @@ private fun ActivityCard(
     mediaEntry: AnimeMediaCompactListRow.Entry?,
     onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
     onClickListEdit: (AnimeMediaCompactListRow.Entry) -> Unit,
-    colorCalculationState: ColorCalculationState,
 ) {
     val navigationCallback = LocalNavigationCallback.current
     OutlinedCard(
@@ -799,7 +776,6 @@ private fun ActivityCard(
                 subscribed = activityEntry.subscribed,
                 onActivityStatusUpdate = onActivityStatusUpdate,
                 onClickListEdit = onClickListEdit,
-                colorCalculationState = colorCalculationState,
             )
             is NotificationMediaAndActivityQuery.Data.Activity.MessageActivityActivity -> MessageActivityCardContent(
                 screenKey = screenKey,

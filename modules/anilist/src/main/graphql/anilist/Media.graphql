@@ -120,7 +120,7 @@ query MediaAdvancedSearch(
     $sourceIn: [MediaSource],
     $minimumTagRank: Int,
     $licensedByIdIn: [Int],
-    $includeDescription: Boolean = true,
+    $includeDescription: Boolean!,
 ) {
     Page(page: $page, perPage: $perPage) @nonnull {
         pageInfo @nonnull {

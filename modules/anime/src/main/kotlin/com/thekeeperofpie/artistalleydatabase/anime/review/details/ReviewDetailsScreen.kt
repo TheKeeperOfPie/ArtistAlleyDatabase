@@ -43,7 +43,6 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
 import com.anilist.ReviewDetailsQuery
 import com.anilist.type.ReviewRating
 import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
@@ -65,7 +64,6 @@ import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.ImageHtmlText
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
-import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -79,7 +77,6 @@ object ReviewDetailsScreen {
         upIconOption: UpIconOption,
         headerValues: MediaHeaderValues,
     ) {
-        val colorCalculationState = rememberColorCalculationState(viewModel.colorMap)
         val entry = viewModel.entry
         val media = entry?.review?.media
         val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
@@ -109,7 +106,6 @@ object ReviewDetailsScreen {
                                 it,
                             )
                         },
-                        colorCalculationState = colorCalculationState,
                         enableCoverImageSharedElement = false,
                     )
                 }

@@ -2,11 +2,9 @@ package com.thekeeperofpie.artistalleydatabase.anime.list
 
 import android.os.SystemClock
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
-import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.anilist.type.MediaType
@@ -63,8 +61,6 @@ class AnimeUserListViewModel @Inject constructor(
     val viewer = aniListApi.authedUser
     var query by mutableStateOf("")
     var content by mutableStateOf<LoadingResult<List<ListEntry>>>(LoadingResult.loading())
-    val colorMap = mutableStateMapOf<String, Pair<Color, Color>>()
-
     var userName by mutableStateOf<String?>(null)
         private set
 

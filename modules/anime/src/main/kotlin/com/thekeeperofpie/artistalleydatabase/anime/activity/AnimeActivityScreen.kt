@@ -47,10 +47,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSh
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.SortFilterBottomScaffold
 import com.thekeeperofpie.artistalleydatabase.compose.AppBar
-import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
-import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
 import kotlinx.coroutines.launch
 
 @OptIn(
@@ -66,8 +64,6 @@ object AnimeActivityScreen {
     operator fun invoke(
         viewModel: AnimeActivityViewModel = hiltViewModel<AnimeActivityViewModel>(),
     ) {
-        val colorCalculationState = rememberColorCalculationState(viewModel.colorMap)
-
         val viewer by viewModel.viewer.collectAsState()
         val pagerState = rememberPagerState(
             initialPage = if (viewer == null) 0 else 1,
@@ -77,7 +73,6 @@ object AnimeActivityScreen {
         MediaEditBottomSheetScaffold(
             screenKey = SCREEN_KEY,
             viewModel = editViewModel,
-            colorCalculationState = colorCalculationState,
         ) {
             val scrollBehavior =
                 TopAppBarDefaults.enterAlwaysScrollBehavior(snapAnimationSpec = null)
@@ -157,7 +152,6 @@ object AnimeActivityScreen {
                         viewer = viewer,
                         activities = activities,
                         onActivityStatusUpdate = viewModel.activityToggleHelper::toggle,
-                        colorCalculationState = colorCalculationState,
                     )
                 }
             }
@@ -170,7 +164,6 @@ object AnimeActivityScreen {
         viewer: AniListViewer?,
         activities: LazyPagingItems<AnimeActivityViewModel.ActivityEntry>,
         onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
-        colorCalculationState: ColorCalculationState,
     ) {
         when (val refreshState = activities.loadState.refresh) {
             is LoadState.Error -> AnimeMediaListScreen.Error(
@@ -222,7 +215,6 @@ object AnimeActivityScreen {
                                         entry = entry,
                                         onActivityStatusUpdate = onActivityStatusUpdate,
                                         onClickListEdit = { editViewModel.initialize(it.media) },
-                                        colorCalculationState = colorCalculationState,
                                         clickable = true,
                                         modifier = Modifier.fillMaxWidth()
                                     )

@@ -22,7 +22,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.compose.ClickableBottomSheetDragHandle
-import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -34,7 +33,6 @@ object MediaEditBottomSheetScaffold {
         viewModel: MediaEditViewModel = hiltViewModel(),
         modifier: Modifier = Modifier,
         topBar: @Composable (() -> Unit)? = null,
-        colorCalculationState: ColorCalculationState,
         bottomNavigationState: BottomNavigationState? = null,
         sheetState: androidx.compose.material3.SheetState = androidx.compose.material3.rememberStandardBottomSheetState(
             initialValue = SheetValue.Hidden,
@@ -102,7 +100,6 @@ object MediaEditBottomSheetScaffold {
                 AnimeMediaEditBottomSheet(
                     screenKey = screenKey,
                     viewModel,
-                    colorCalculationState = colorCalculationState,
                     onDismiss = {
                         scope.launch { sheetState.hide() }
                             .invokeOnCompletion {

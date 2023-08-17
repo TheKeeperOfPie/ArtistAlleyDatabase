@@ -52,6 +52,7 @@ import androidx.compose.ui.text.toUpperCase
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -94,7 +95,10 @@ import com.thekeeperofpie.artistalleydatabase.art.ArtNavDestinations
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseScreen
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseViewModel
 import com.thekeeperofpie.artistalleydatabase.cds.CdEntryNavigator
+import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
+import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
+import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.update.AppUpdateChecker
 import com.thekeeperofpie.artistalleydatabase.compose.update.LocalAppUpdateChecker
 import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils.navToEntryDetails
@@ -216,6 +220,7 @@ class MainActivity : ComponentActivity() {
                 }
 
             ArtistAlleyDatabaseTheme(settings = settings, navHostController = navHostController) {
+                val colorCalculationState = rememberColorCalculationState()
                 CompositionLocalProvider(
                     LocalMonetizationProvider provides monetizationProvider,
                     LocalSubscriptionProvider provides subscriptionProvider,
@@ -229,6 +234,7 @@ class MainActivity : ComponentActivity() {
                     LocalFullscreenImageHandler provides fullScreenImageHandler,
                     LocalMarkwon provides markwon,
                     LocalAnimeComposeSettings provides settings.composeSettingsData(),
+                    LocalColorCalculationState provides colorCalculationState,
                 ) {
                     // TODO: Draw inside insets for applicable screens
                     Surface(modifier = Modifier.safeDrawingPadding()) {

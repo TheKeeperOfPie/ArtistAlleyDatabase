@@ -31,7 +31,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterSmallCard
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.primaryName
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.compose.AutoHeightText
-import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
+import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
 
@@ -42,7 +42,6 @@ object StaffMediaScreen {
     operator fun invoke(
         mediaTimeline: StaffDetailsViewModel.MediaTimeline,
         onRequestYear: (Int?) -> Unit,
-        colorCalculationState: ColorCalculationState,
     ) {
         LazyColumn(
             contentPadding = PaddingValues(bottom = 16.dp),
@@ -70,11 +69,11 @@ object StaffMediaScreen {
                         items(entries, { it.id }) {
                             var imageWidthToHeightRatio by remember { MutableSingle(1f) }
                             var innerImageWidthToHeightRatio by remember { MutableSingle(1f) }
+                            val colorCalculationState = LocalColorCalculationState.current
                             CharacterSmallCard(
                                 screenKey = AnimeNavDestinations.STAFF_DETAILS.id,
                                 id = EntryId("anime_character", it.character.id.toString()),
                                 image = it.character.image?.large,
-                                colorCalculationState = colorCalculationState,
                                 innerImage = it.media?.coverImage?.extraLarge,
                                 innerImageKey = "anime_media_${it.media?.id}_image",
                                 onImageSuccess = {

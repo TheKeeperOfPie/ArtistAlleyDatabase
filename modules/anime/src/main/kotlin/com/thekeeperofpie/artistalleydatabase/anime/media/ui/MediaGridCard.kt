@@ -26,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.isUnspecified
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -52,8 +53,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitl
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toIcon
 import com.thekeeperofpie.artistalleydatabase.anime.ui.MediaCoverImage
 import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
-import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
+import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -66,22 +67,22 @@ object MediaGridCard {
         viewer: AniListViewer?,
         onClickListEdit: (Entry) -> Unit,
         onLongClick: (MediaNavigationData) -> Unit,
-        colorCalculationState: ColorCalculationState,
         modifier: Modifier = Modifier,
         forceListEditIcon: Boolean = false,
         showQuickEdit: Boolean = true,
         showTypeIcon: Boolean = false,
         label: @Composable ColumnScope.(textColor: Color) -> Unit = {},
     ) {
-        val colors = colorCalculationState.colorMap[entry?.media?.id?.toString()]
+        val colorCalculationState = LocalColorCalculationState.current
+        val colors = colorCalculationState.getColors(entry?.media?.id?.toString())
         val animationProgress by animateIntAsState(
-            if (colors == null) 0 else 255,
+            if (colors.first.isUnspecified) 0 else 255,
             label = "Media grid card color fade in",
         )
 
         val surfaceColor = entry?.color ?: MaterialTheme.colorScheme.surface
         val containerColor = when {
-            colors == null || animationProgress == 0 -> surfaceColor
+            colors.first.isUnspecified || animationProgress == 0 -> surfaceColor
             animationProgress == 255 -> colors.first
             else -> Color(
                 ColorUtils.compositeColors(
@@ -128,7 +129,6 @@ object MediaGridCard {
                                 }
                             },
                             onClickListEdit = onClickListEdit,
-                            colorCalculationState = colorCalculationState,
                             onRatioAvailable = { imageWidthToHeightRatio = it },
                             forceListEditIcon = forceListEditIcon,
                             showQuickEdit = showQuickEdit,
@@ -196,13 +196,13 @@ object MediaGridCard {
         viewer: AniListViewer?,
         onClick: (Entry) -> Unit = {},
         onClickListEdit: (Entry) -> Unit,
-        colorCalculationState: ColorCalculationState,
         onRatioAvailable: (Float) -> Unit,
         forceListEditIcon: Boolean,
         showQuickEdit: Boolean,
     ) {
         Box {
             val fullscreenImageHandler = LocalFullscreenImageHandler.current
+            val colorCalculationState = LocalColorCalculationState.current
             MediaCoverImage(
                 screenKey = screenKey,
                 mediaId = entry?.media?.id.toString(),

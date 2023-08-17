@@ -10,7 +10,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderValues
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toFavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.utils.HeaderAndListScreen
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
-import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
 
 object CharactersScreen {
 
@@ -24,7 +23,6 @@ object CharactersScreen {
         upIconOption: UpIconOption,
         headerValues: MediaHeaderValues,
     ) {
-        val colorCalculationState = rememberColorCalculationState(viewModel.colorMap)
         val entry = viewModel.entry
         val media = entry?.media
 
@@ -49,7 +47,6 @@ object CharactersScreen {
                             it,
                         )
                     },
-                    colorCalculationState = colorCalculationState,
                     enableCoverImageSharedElement = false,
                 )
             },
@@ -60,7 +57,6 @@ object CharactersScreen {
                     character = it,
                     imageWidth = IMAGE_WIDTH,
                     minHeight = MIN_IMAGE_HEIGHT,
-                    colorCalculationState = colorCalculationState,
                 )
             },
         )

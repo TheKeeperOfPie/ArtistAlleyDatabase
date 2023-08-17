@@ -20,7 +20,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewMode
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.utils.HeaderAndMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
-import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
 
 object CharacterMediasScreen {
 
@@ -32,7 +31,6 @@ object CharacterMediasScreen {
         upIconOption: UpIconOption,
         headerValues: CharacterHeaderValues,
     ) {
-        val colorCalculationState = rememberColorCalculationState(viewModel.colorMap)
         var characterImageWidthToHeightRatio by remember {
             mutableFloatStateOf(headerValues.imageWidthToHeightRatio)
         }
@@ -56,7 +54,6 @@ object CharacterMediasScreen {
                         viewModel.favoritesToggleHelper
                             .set(FavoriteType.CHARACTER, viewModel.headerId, it)
                     },
-                    colorCalculationState = colorCalculationState,
                     onImageWidthToHeightRatioAvailable = {
                         characterImageWidthToHeightRatio = it
                     }
@@ -70,7 +67,6 @@ object CharacterMediasScreen {
                     viewer = viewer,
                     onClickListEdit = { editViewModel.initialize(it.media) },
                     onLongClick = viewModel::onMediaLongClick,
-                    colorCalculationState = colorCalculationState,
                     modifier = Modifier.padding(
                         start = 16.dp,
                         end = 16.dp,
@@ -78,7 +74,6 @@ object CharacterMediasScreen {
                     )
                 )
             },
-            colorCalculationState = colorCalculationState
         )
     }
 

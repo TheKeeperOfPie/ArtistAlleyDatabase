@@ -89,7 +89,6 @@ import com.thekeeperofpie.artistalleydatabase.compose.AppBar
 import com.thekeeperofpie.artistalleydatabase.compose.ImageHtmlText
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
-import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
 import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.ZoneOffset
@@ -107,7 +106,6 @@ object ActivityDetailsScreen {
         upIconOption: UpIconOption.Back,
         viewModel: ActivityDetailsViewModel,
     ) {
-        val colorCalculationState = rememberColorCalculationState(viewModel.colorMap)
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
         val snackbarHostState = remember { SnackbarHostState() }
@@ -131,7 +129,6 @@ object ActivityDetailsScreen {
         MediaEditBottomSheetScaffold(
             screenKey = SCREEN_KEY,
             viewModel = editViewModel,
-            colorCalculationState = colorCalculationState,
         ) {
             val refresh by viewModel.refresh.collectAsState()
             val sheetState = rememberStandardBottomSheetState(
@@ -205,7 +202,6 @@ object ActivityDetailsScreen {
                                             onClickListEdit = {
                                                 editViewModel.initialize(it.media)
                                             },
-                                            colorCalculationState = colorCalculationState,
                                         )
                                     }
                                     is ActivityDetailsQuery.Data.TextActivityActivity -> {
