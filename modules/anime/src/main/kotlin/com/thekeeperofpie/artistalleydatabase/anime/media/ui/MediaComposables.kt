@@ -66,7 +66,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toStatusIco
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.TagSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.listSection
-import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.DetailsSectionHeader
 import com.thekeeperofpie.artistalleydatabase.compose.fadingEdgeEnd
 
@@ -478,7 +477,6 @@ fun MediaViewOptionRow(
     editViewModel: MediaEditViewModel,
     entry: MediaPreviewWithDescriptionEntry?,
     onLongClick: (mediaId: String) -> Unit,
-    colorCalculationState: ColorCalculationState = ColorCalculationState(),
 ) {
     when (mediaViewOption) {
         MediaViewOption.SMALL_CARD -> AnimeMediaListRow(
@@ -502,7 +500,6 @@ fun MediaViewOptionRow(
                 }
             },
             onClickListEdit = { editViewModel.initialize(it.media) },
-            colorCalculationState = colorCalculationState,
         )
         MediaViewOption.COMPACT -> AnimeMediaCompactListRow(
             screenKey = screenKey,

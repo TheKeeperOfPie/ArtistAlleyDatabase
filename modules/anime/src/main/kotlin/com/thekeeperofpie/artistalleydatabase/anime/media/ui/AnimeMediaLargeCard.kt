@@ -63,7 +63,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.ui.blurForScreenshotMode
 import com.thekeeperofpie.artistalleydatabase.compose.AppThemeSetting
-import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.CustomHtmlText
 import com.thekeeperofpie.artistalleydatabase.compose.LocalAppTheme
@@ -85,7 +84,6 @@ object AnimeMediaLargeCard {
         onLongClick: (MediaNavigationData) -> Unit = {},
         onClickListEdit: (Entry) -> Unit,
         showQuickEdit: Boolean = true,
-        colorCalculationState: ColorCalculationState = ColorCalculationState(),
     ) {
         ElevatedCard(
             modifier = modifier
@@ -150,6 +148,7 @@ object AnimeMediaLargeCard {
                     Row(verticalAlignment = Alignment.Bottom) {
                         Column(modifier = Modifier.weight(1f)) {
                             entry?.nextAiringEpisode?.let { MediaNextAiringSection(it) }
+                            val colorCalculationState = LocalColorCalculationState.current
                             val (containerColor, textColor) =
                                 colorCalculationState.getColors(entry?.id?.valueId)
 

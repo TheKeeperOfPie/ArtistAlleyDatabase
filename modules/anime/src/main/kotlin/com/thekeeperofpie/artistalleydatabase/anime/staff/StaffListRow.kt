@@ -56,7 +56,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.ListRowFavoritesSection
 import com.thekeeperofpie.artistalleydatabase.anime.ui.ListRowSmallImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.StaffCoverImage
 import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
-import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
@@ -68,10 +67,10 @@ object StaffListRow {
     operator fun invoke(
         screenKey: String,
         entry: Entry?,
-        colorCalculationState: ColorCalculationState = ColorCalculationState(),
     ) {
         var imageWidthToHeightRatio by remember { MutableSingle(1f) }
         val navigationCallback = LocalNavigationCallback.current
+        val colorCalculationState = LocalColorCalculationState.current
         val onClick = {
             if (entry != null) {
                 navigationCallback.onStaffClick(

@@ -57,6 +57,7 @@ import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
 import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
 import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.primaryName
@@ -284,6 +285,7 @@ object CharacterListRow {
         val density = LocalDensity.current
         val navigationCallback = LocalNavigationCallback.current
         val colorCalculationState = LocalColorCalculationState.current
+        val voiceActor = entry?.voiceActor()
         LazyRow(
             contentPadding = PaddingValues(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -292,24 +294,23 @@ object CharacterListRow {
                 // The parent will clamp the actual width so all content still fits on screen.
                 .size(width = LocalConfiguration.current.screenWidthDp.dp, height = 96.dp)
         ) {
-            if (entry?.voiceActor?.image?.large != null) {
-                val staffId = entry.voiceActor.id
+            if (voiceActor?.image?.large != null) {
+                val staffId = voiceActor.id
                 item(staffId) {
                     SharedElement(key = "anime_staff_${staffId}_image", screenKey = screenKey) {
                         ListRowSmallImage(
                             context = context,
                             density = density,
                             ignored = false,
-                            image = entry.voiceActor.image?.large,
+                            image = voiceActor.image?.large,
                             contentDescriptionTextRes = R.string.anime_staff_image_content_description,
                             onClick = { ratio ->
                                 navigationCallback.onStaffClick(
-                                    entry.voiceActor,
-                                    null,
-                                    ratio,
-                                    colorCalculationState.getColors(
-                                        staffId.toString()
-                                    ).first
+                                    staff = voiceActor,
+                                    favorite = null,
+                                    imageWidthToHeightRatio = ratio,
+                                    color = colorCalculationState
+                                        .getContainerColor(staffId.toString())
                                 )
                             },
                         )
@@ -344,19 +345,17 @@ object CharacterListRow {
         val role: CharacterRole?,
         val media: List<MediaEntry>,
         val favorites: Int?,
-        val voiceActor: StaffNavigationData?,
+        private val voiceActors: Map<String?, List<StaffNavigationData>>,
     ) {
         constructor(character: Character, media: List<MediaEntry>) : this(
             character = character,
             role = null,
             media = media,
             favorites = character.favourites,
-            voiceActor = character.media?.edges?.filterNotNull()
+            voiceActors = character.media?.edges?.filterNotNull()
                 ?.flatMap { it.voiceActors?.filterNotNull().orEmpty() }
                 ?.groupBy { it.languageV2 }
-                ?.let {
-                    it["Japanese"]?.firstOrNull() ?: it.entries.firstOrNull()?.value?.firstOrNull()
-                }
+                .orEmpty()
         )
 
         constructor(character: CharacterWithRoleAndFavorites) : this(
@@ -365,12 +364,12 @@ object CharacterListRow {
             media = character.node.media?.nodes?.filterNotNull().orEmpty().distinctBy { it.id }
                 .map { MediaEntry(media = it, isAdult = it.isAdult) },
             favorites = character.node.favourites,
-            voiceActor = character.voiceActors?.filterNotNull().orEmpty()
+            voiceActors = character.voiceActors?.filterNotNull().orEmpty()
                 .groupBy { it.languageV2 }
-                .let {
-                    it["Japanese"]?.firstOrNull() ?: it.entries.firstOrNull()?.value?.firstOrNull()
-                }
         )
+
+        @Composable
+        fun voiceActor() = AniListUtils.selectVoiceActor(voiceActors)?.firstOrNull()
 
         data class MediaEntry(
             val media: MediaNavigationData,

@@ -66,7 +66,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.staff.StaffListRow
 import com.thekeeperofpie.artistalleydatabase.anime.studio.StudioListRow
 import com.thekeeperofpie.artistalleydatabase.anime.user.UserListRow
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
-import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
 import com.thekeeperofpie.artistalleydatabase.compose.StaticSearchBar
@@ -300,7 +299,6 @@ object AnimeSearchScreen {
         viewModel: AnimeSearchViewModel,
         editViewModel: MediaEditViewModel,
         entry: AnimeSearchEntry.Media?,
-        colorCalculationState: ColorCalculationState = ColorCalculationState(),
     ) {
         when (viewModel.mediaViewOption) {
             MediaViewOption.SMALL_CARD -> AnimeMediaListRow(
@@ -324,7 +322,6 @@ object AnimeSearchScreen {
                     }
                 },
                 onClickListEdit = { editViewModel.initialize(it.media) },
-                colorCalculationState = colorCalculationState,
             )
             MediaViewOption.COMPACT -> AnimeMediaCompactListRow(
                 screenKey = SCREEN_KEY,

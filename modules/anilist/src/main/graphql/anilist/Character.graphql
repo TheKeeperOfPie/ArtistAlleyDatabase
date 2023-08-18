@@ -147,7 +147,7 @@ query CharacterDetails($id: Int!) {
 fragment CharacterDetailsVoiceActorEdge on MediaEdge {
     characterName
     characterRole
-    voiceActorRoles {
+    voiceActorRoles(sort: [RELEVANCE]) {
         voiceActor {
             ...StaffNavigationData
             name {

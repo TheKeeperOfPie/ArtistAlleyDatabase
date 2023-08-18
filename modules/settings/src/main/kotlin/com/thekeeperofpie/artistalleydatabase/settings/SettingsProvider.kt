@@ -17,6 +17,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvi
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListSettings
+import com.thekeeperofpie.artistalleydatabase.anilist.VoiceActorLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeRootNavDestination
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
@@ -132,6 +133,10 @@ class SettingsProvider(
         MutableStateFlow(deserialize("languageOptionCharacters") ?: AniListLanguageOption.DEFAULT)
     override val languageOptionStaff =
         MutableStateFlow(deserialize("languageOptionStaff") ?: AniListLanguageOption.DEFAULT)
+    override val languageOptionVoiceActor =
+        MutableStateFlow(deserialize("languageOptionVoiceActor") ?: VoiceActorLanguageOption.JAPANESE)
+    override val showFallbackVoiceActor =
+        MutableStateFlow(deserialize("showFallbackVoiceActor") ?: false)
 
     override val mediaHistoryEnabled = MutableStateFlow(deserialize("mediaHistoryEnabled") ?: false)
     override val mediaHistoryMaxEntries = MutableStateFlow(deserialize("mediaHistoryMaxEntries") ?: 200)
@@ -195,6 +200,8 @@ class SettingsProvider(
             languageOptionMedia = languageOptionMedia.value,
             languageOptionCharacters = languageOptionCharacters.value,
             languageOptionStaff = languageOptionStaff.value,
+            languageOptionVoiceActor = languageOptionVoiceActor.value,
+            showFallbackVoiceActor = showFallbackVoiceActor.value,
             mediaHistoryEnabled = mediaHistoryEnabled.value,
             mediaHistoryMaxEntries = mediaHistoryMaxEntries.value,
         )
@@ -228,6 +235,8 @@ class SettingsProvider(
         subscribeProperty(scope, ::languageOptionMedia)
         subscribeProperty(scope, ::languageOptionCharacters)
         subscribeProperty(scope, ::languageOptionStaff)
+        subscribeProperty(scope, ::languageOptionVoiceActor)
+        subscribeProperty(scope, ::showFallbackVoiceActor)
         subscribeProperty(scope, ::mediaHistoryEnabled)
         subscribeProperty(scope, ::mediaHistoryMaxEntries)
 
@@ -329,6 +338,8 @@ class SettingsProvider(
         languageOptionMedia.emit(data.languageOptionMedia)
         languageOptionCharacters.emit(data.languageOptionCharacters)
         languageOptionStaff.emit(data.languageOptionStaff)
+        languageOptionVoiceActor.emit(data.languageOptionVoiceActor)
+        showFallbackVoiceActor.emit(data.showFallbackVoiceActor)
         mediaHistoryEnabled.emit(data.mediaHistoryEnabled)
         mediaHistoryMaxEntries.emit(data.mediaHistoryMaxEntries)
     }

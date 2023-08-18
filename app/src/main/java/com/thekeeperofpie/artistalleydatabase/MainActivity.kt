@@ -75,6 +75,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionCharacters
 import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionMedia
 import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionStaff
+import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionVoiceActor
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListOAuthStore
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
@@ -95,7 +96,6 @@ import com.thekeeperofpie.artistalleydatabase.art.ArtNavDestinations
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseScreen
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseViewModel
 import com.thekeeperofpie.artistalleydatabase.cds.CdEntryNavigator
-import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.LocalColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.rememberColorCalculationState
@@ -207,6 +207,8 @@ class MainActivity : ComponentActivity() {
             val languageOptionMedia by settings.languageOptionMedia.collectAsState()
             val languageOptionCharacters by settings.languageOptionCharacters.collectAsState()
             val languageOptionStaff by settings.languageOptionStaff.collectAsState()
+            val languageOptionVoiceActor by settings.languageOptionVoiceActor.collectAsState()
+            val showFallbackVoiceActor by settings.showFallbackVoiceActor.collectAsState()
 
             val navigationCallback =
                 remember(languageOptionMedia, languageOptionCharacters, languageOptionStaff) {
@@ -230,6 +232,8 @@ class MainActivity : ComponentActivity() {
                     LocalLanguageOptionMedia provides languageOptionMedia,
                     LocalLanguageOptionCharacters provides languageOptionCharacters,
                     LocalLanguageOptionStaff provides languageOptionStaff,
+                    LocalLanguageOptionVoiceActor provides
+                            (languageOptionVoiceActor to showFallbackVoiceActor),
                     LocalNavigationCallback provides navigationCallback,
                     LocalFullscreenImageHandler provides fullScreenImageHandler,
                     LocalMarkwon provides markwon,

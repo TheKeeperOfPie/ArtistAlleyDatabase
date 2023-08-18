@@ -41,7 +41,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaLargeCard
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaGridCard
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOption
-import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
@@ -157,7 +156,6 @@ object MediaHistoryScreen {
         viewModel: MediaHistoryViewModel,
         editViewModel: MediaEditViewModel,
         entry: MediaPreviewWithDescriptionEntry?,
-        colorCalculationState: ColorCalculationState = ColorCalculationState(),
         showQuickEdit: Boolean = false,
         modifier: Modifier = Modifier,
     ) {
@@ -185,7 +183,6 @@ object MediaHistoryScreen {
                     }
                 },
                 onClickListEdit = { editViewModel.initialize(it.media) },
-                colorCalculationState = colorCalculationState,
                 showQuickEdit = showQuickEdit,
                 modifier = modifier,
             )

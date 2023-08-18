@@ -43,6 +43,8 @@
     <string name="settings_subsection_behavior_language_option_media_label">Media title language</string>
     <string name="settings_subsection_behavior_language_option_characters_label">Character name language</string>
     <string name="settings_subsection_behavior_language_option_staff_label">Staff name language</string>
+    <string name="settings_subsection_behavior_language_option_voice_actor_label">Voice actor language</string>
+    <string name="settings_subsection_behavior_language_option_voice_actor_show_fallback_label">Show fallback voice actor</string>
 
     <string name="settings_subsection_history_label">History</string>
     <string name="settings_media_history_toggle">Track viewed media history</string>

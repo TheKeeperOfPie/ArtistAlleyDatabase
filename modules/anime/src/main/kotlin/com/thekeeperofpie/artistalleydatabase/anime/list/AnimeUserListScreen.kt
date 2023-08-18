@@ -62,7 +62,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaGridCard
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOption
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
-import com.thekeeperofpie.artistalleydatabase.compose.ColorCalculationState
 import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBar
 import com.thekeeperofpie.artistalleydatabase.compose.NestedScrollSplitter
 import com.thekeeperofpie.artistalleydatabase.compose.ScrollStateSaver
@@ -363,7 +362,6 @@ object AnimeUserListScreen {
         viewModel: AnimeUserListViewModel,
         editViewModel: MediaEditViewModel,
         entry: MediaPreviewWithDescriptionEntry,
-        colorCalculationState: ColorCalculationState = ColorCalculationState(),
         modifier: Modifier = Modifier,
     ) {
         when (viewModel.mediaViewOption) {
@@ -381,7 +379,6 @@ object AnimeUserListScreen {
                 entry = entry,
                 onLongClick = { viewModel.ignoreList.toggle(entry.media.id.toString()) },
                 onClickListEdit = { editViewModel.initialize(it.media) },
-                colorCalculationState = colorCalculationState,
                 modifier = modifier,
             )
             MediaViewOption.COMPACT -> AnimeMediaCompactListRow(

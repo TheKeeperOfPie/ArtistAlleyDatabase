@@ -871,4 +871,5 @@
     <!-- TODO: Move this elsewhere -->
     <string name="last_crash_notification">App crash detected</string>
     <string name="last_crash_notification_button">Show</string>
+    <string name="anime_characters_menu_voice_actor_language">Language</string>
 </resources>

@@ -65,6 +65,9 @@ import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
 import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
 import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
+import com.thekeeperofpie.artistalleydatabase.anilist.LocalLanguageOptionVoiceActor
+import com.thekeeperofpie.artistalleydatabase.anilist.VoiceActorLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
@@ -254,8 +257,7 @@ fun LazyListScope.charactersSection(
                 val character = characters[it]
                 var imageWidthToHeightRatio by remember { MutableSingle(1f) }
                 var innerImageWidthToHeightRatio by remember { MutableSingle(1f) }
-                val voiceActor = (character?.languageToVoiceActor?.get("Japanese")
-                    ?: character?.languageToVoiceActor?.values?.firstOrNull())
+                val voiceActor = AniListUtils.selectVoiceActor(character?.languageToVoiceActor)
 
                 val navigationCallback = LocalNavigationCallback.current
                 val colorCalculationState = LocalColorCalculationState.current
@@ -318,6 +320,7 @@ fun CharacterCard(
     imageWidth: Dp,
     minHeight: Dp,
     character: DetailsCharacter?,
+    voiceActorLanguage: VoiceActorLanguageOption = LocalLanguageOptionVoiceActor.current.first,
 ) {
     var imageWidthToHeightRatio by remember { MutableSingle(1f) }
     val navigationCallback = LocalNavigationCallback.current
@@ -366,8 +369,10 @@ fun CharacterCard(
                     )
             )
 
-            val voiceActor = (character?.languageToVoiceActor?.get("Japanese")
-                ?: character?.languageToVoiceActor?.values?.firstOrNull())
+            val voiceActor = AniListUtils.selectVoiceActor(
+                map = character?.languageToVoiceActor,
+                voiceActorLanguage = voiceActorLanguage
+            )
 
             Column(
                 modifier = Modifier

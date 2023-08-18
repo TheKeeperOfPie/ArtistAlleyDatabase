@@ -2,6 +2,7 @@ package com.thekeeperofpie.artistalleydatabase.anilist
 
 import android.text.format.DateUtils
 import android.util.Log
+import androidx.compose.runtime.Composable
 import com.anilist.fragment.AniListCharacter
 import com.anilist.fragment.AniListMedia
 import com.anilist.type.MediaSeason
@@ -152,6 +153,17 @@ object AniListUtils {
         0,
         DateUtils.FORMAT_ABBREV_ALL,
     )
+
+    @Composable
+    fun <T : Any> selectVoiceActor(
+        map: Map<out String?, T>?,
+        voiceActorLanguage: VoiceActorLanguageOption = LocalLanguageOptionVoiceActor.current.first,
+    ): T? {
+        map ?: return null
+        val (_, showFallback) = LocalLanguageOptionVoiceActor.current
+        return map[voiceActorLanguage.apiValue]
+            ?: (if (showFallback) map.entries.firstOrNull()?.value else null)
+    }
 }
 
 fun ApolloClient.Builder.addLoggingInterceptors(

@@ -21,6 +21,9 @@ class ColorCalculationState @OptIn(DelicateCoroutinesApi::class) constructor(
         ?.let { it.containerColor to it.textColor }
         ?: (Color.Unspecified to Color.Unspecified)
 
+    fun getContainerColor(id: String?) = (if (id.isNullOrEmpty()) null else colors[id])
+        ?.containerColor ?: Color.Unspecified
+
     fun hasColor(id: String?) = if (id == null) false else colors[id] != null
 
     fun setColor(id: String, containerColor: Color, textColor: Color) {

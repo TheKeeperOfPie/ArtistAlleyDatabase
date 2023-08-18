@@ -4,6 +4,7 @@ import android.net.Uri
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.android_utils.Converters
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
+import com.thekeeperofpie.artistalleydatabase.anilist.VoiceActorLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeRootNavDestination
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.FilterData
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOption
@@ -46,6 +47,8 @@ data class SettingsData(
     val languageOptionMedia: AniListLanguageOption = AniListLanguageOption.DEFAULT,
     val languageOptionCharacters: AniListLanguageOption = AniListLanguageOption.DEFAULT,
     val languageOptionStaff: AniListLanguageOption = AniListLanguageOption.DEFAULT,
+    val languageOptionVoiceActor: VoiceActorLanguageOption = VoiceActorLanguageOption.JAPANESE,
+    val showFallbackVoiceActor: Boolean = true,
     val mediaHistoryEnabled: Boolean = false,
     val mediaHistoryMaxEntries: Int = 200,
 )

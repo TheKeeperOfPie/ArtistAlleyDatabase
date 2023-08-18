@@ -32,6 +32,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.AppMetadataProvider
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListLanguageOption
+import com.thekeeperofpie.artistalleydatabase.anilist.VoiceActorLanguageOption
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterEntryDao
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaEntryDao
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListOAuthStore
@@ -153,6 +154,16 @@ class SettingsViewModel @Inject constructor(
                 ),
                 optionToText = { stringResource(it.textRes) },
                 property = settings.languageOptionStaff,
+            ),
+            SettingsSection.Dropdown(
+                labelTextRes = R.string.settings_subsection_behavior_language_option_voice_actor_label,
+                options = VoiceActorLanguageOption.values().toList(),
+                optionToText = { stringResource(it.textRes) },
+                property = settings.languageOptionVoiceActor,
+            ),
+            SettingsSection.Switch(
+                labelTextRes = R.string.settings_subsection_behavior_language_option_voice_actor_show_fallback_label,
+                property = settings.showFallbackVoiceActor,
             ),
         )
     )

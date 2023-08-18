@@ -113,6 +113,7 @@ class AnimeCharacterDetailsViewModel @Inject constructor(
                 .flowOn(CustomDispatchers.Main)
                 .flatMapLatest { character ->
                     Pager(config = PagingConfig(10)) {
+                        // TODO: Possible to hook up LocalVoiceActorLanguageOption?
                         AniListPagingSource {
                             if (it == 1) {
                                 character.media?.pageInfo to character.media?.edges?.filterNotNull()

@@ -114,6 +114,7 @@ object CharacterUtils {
     ): CharacterEntry.VoiceActor? {
         val voiceActors = parseVoiceActors(character)
 
+        // TODO: Hook up LocalVoiceActorLanguageOption
         // Find by exact media ID and exact language
         var voiceActor = media?.let {
             voiceActors[it.id.toString()]?.find { it.language == "Japanese" }
