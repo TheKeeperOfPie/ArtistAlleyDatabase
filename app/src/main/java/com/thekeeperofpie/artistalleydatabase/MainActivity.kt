@@ -646,6 +646,7 @@ class MainActivity : ComponentActivity() {
                             SideEffect { settings.lastCrashShown.value = true }
                             CrashScreen(
                                 settings = settings,
+                                appMetadataProvider = appMetadataProvider,
                                 onClickBack = { navHostController.navigateUp() },
                             )
                         }

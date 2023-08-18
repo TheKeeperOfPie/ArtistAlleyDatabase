@@ -4,10 +4,13 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.padding
@@ -67,6 +70,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.StaticSearchBar
 import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
+import com.thekeeperofpie.artistalleydatabase.compose.VerticalScrollbar
 import kotlinx.coroutines.launch
 
 @OptIn(
@@ -170,58 +174,73 @@ object AnimeUserListScreen {
                                     -> GridCells.Adaptive(300.dp)
                                     MediaViewOption.GRID -> GridCells.Adaptive(120.dp)
                                 }
-                                LazyVerticalGrid(
-                                    columns = columns,
-                                    state = scrollStateSaver.lazyGridState(),
-                                    contentPadding = PaddingValues(
-                                        top = 16.dp + (scrollBehavior.state.heightOffsetLimit
-                                            .takeUnless { it == -Float.MAX_VALUE }
-                                            ?.let { LocalDensity.current.run { -it.toDp() } }
-                                            ?: 0.dp),
-                                        start = 16.dp,
-                                        end = 16.dp,
-                                        bottom = 88.dp + scaffoldPadding.calculateBottomPadding()
-                                    ),
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                                ) {
-                                    content.result?.forEach {
-                                        if (it.entries.isNotEmpty()) {
-                                            val expanded = expandedState[it.name] ?: true
-                                            if (viewModel.mediaListStatus == null) {
-                                                item(
-                                                    "header-${it.name}",
-                                                    span = { GridItemSpan(maxLineSpan) },
-                                                ) {
-                                                    Header(
-                                                        name = it.name,
-                                                        expanded = expanded,
-                                                        onClick = {
-                                                            expandedState[it.name] = !expanded
-                                                        },
-                                                        modifier = Modifier.animateItemPlacement(),
-                                                    )
+                                Box(modifier = Modifier.fillMaxSize()) {
+                                    val gridState = scrollStateSaver.lazyGridState()
+                                    LazyVerticalGrid(
+                                        columns = columns,
+                                        state = gridState,
+                                        contentPadding = PaddingValues(
+                                            top = 16.dp + (scrollBehavior.state.heightOffsetLimit
+                                                .takeUnless { it == -Float.MAX_VALUE }
+                                                ?.let { LocalDensity.current.run { -it.toDp() } }
+                                                ?: 0.dp),
+                                            start = 16.dp,
+                                            end = 16.dp,
+                                            bottom = 88.dp + scaffoldPadding.calculateBottomPadding()
+                                        ),
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                                        modifier = Modifier.fillMaxSize()
+                                    ) {
+                                        content.result?.forEach {
+                                            if (it.entries.isNotEmpty()) {
+                                                val expanded = expandedState[it.name] ?: true
+                                                if (viewModel.mediaListStatus == null) {
+                                                    item(
+                                                        "header-${it.name}",
+                                                        span = { GridItemSpan(maxLineSpan) },
+                                                    ) {
+                                                        Header(
+                                                            name = it.name,
+                                                            expanded = expanded,
+                                                            onClick = {
+                                                                expandedState[it.name] = !expanded
+                                                            },
+                                                            modifier = Modifier.animateItemPlacement(),
+                                                        )
+                                                    }
                                                 }
-                                            }
 
-                                            if (expanded) {
-                                                items(
-                                                    items = it.entries,
-                                                    key = { "media_${it.media.id}" },
-                                                    contentType = { "media" },
-                                                ) {
-                                                    MediaRow(
-                                                        entry = it,
-                                                        viewer = viewer,
-                                                        viewModel = viewModel,
-                                                        editViewModel = editViewModel,
-                                                        modifier = Modifier
-                                                            .animateItemPlacement(),
-                                                    )
+                                                if (expanded) {
+                                                    items(
+                                                        items = it.entries,
+                                                        key = { "media_${it.media.id}" },
+                                                        contentType = { "media" },
+                                                    ) {
+                                                        MediaRow(
+                                                            entry = it,
+                                                            viewer = viewer,
+                                                            viewModel = viewModel,
+                                                            editViewModel = editViewModel,
+                                                            modifier = Modifier
+                                                                .animateItemPlacement(),
+                                                        )
+                                                    }
                                                 }
                                             }
                                         }
                                     }
+
+                                    VerticalScrollbar(
+                                        state = gridState,
+                                        modifier = Modifier
+                                            .align(Alignment.CenterEnd)
+                                            .fillMaxHeight()
+                                            .padding(
+                                                bottom = 56.dp + (bottomNavigationState?.bottomOffsetPadding()
+                                                    ?: 0.dp)
+                                            )
+                                    )
                                 }
                             }
                         }

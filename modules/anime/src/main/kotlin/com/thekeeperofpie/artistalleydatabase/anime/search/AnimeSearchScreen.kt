@@ -210,6 +210,7 @@ object AnimeSearchScreen {
                                         ),
                                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                                         verticalArrangement = Arrangement.spacedBy(8.dp),
+                                        modifier = Modifier.fillMaxSize()
                                     ) {
                                         items(
                                             count = content.itemCount,

@@ -3,6 +3,7 @@
 ### Next (8)
 - Add full current media screen
 - Add language setting to search filters
+- Add scroll bars to user list
 
 ### 0.42 (7)
 - Add unread notification badge

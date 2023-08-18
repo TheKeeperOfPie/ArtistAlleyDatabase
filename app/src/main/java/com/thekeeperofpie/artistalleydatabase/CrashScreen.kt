@@ -30,6 +30,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.thekeeperofpie.anichive.BuildConfig
 import com.thekeeperofpie.anichive.R
+import com.thekeeperofpie.artistalleydatabase.android_utils.AppMetadataProvider
 import com.thekeeperofpie.artistalleydatabase.compose.ArrowBackIconButton
 import com.thekeeperofpie.artistalleydatabase.settings.SettingsProvider
 
@@ -39,6 +40,7 @@ object CrashScreen {
     @Composable
     operator fun invoke(
         settings: SettingsProvider,
+        appMetadataProvider: AppMetadataProvider,
         onClickBack: () -> Unit,
     ) {
         val crash by settings.lastCrash.collectAsState()
@@ -54,7 +56,10 @@ object CrashScreen {
                         val shareIntent = remember(shareTitle) {
                             val intent = Intent().apply {
                                 action = Intent.ACTION_SEND
-                                putExtra(Intent.EXTRA_TEXT, crash)
+                                putExtra(
+                                    Intent.EXTRA_TEXT,
+                                    "Version ${appMetadataProvider.versionCode}:\n$crash"
+                                )
                                 type = "text/plain"
                             }
                             Intent.createChooser(intent, shareTitle)
