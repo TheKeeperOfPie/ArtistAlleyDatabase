@@ -27,19 +27,19 @@ dependencyResolutionManagement {
 
     versionCatalogs {
         create("kaptProcessors") {
-            prefix("androidx") { library("androidx.hilt:hilt-compiler:1.0.0") }
+            prefix("androidx") { library("androidx.hilt:hilt-compiler:1.1.0-alpha01") }
             prefix("dagger") { library("com.google.dagger:hilt-compiler:2.47") }
         }
 
         create("kspProcessors") {
-            library("androidx.room:room-compiler:2.6.0-alpha02")
+            library("androidx.room:room-compiler:2.6.0-alpha03")
             library("com.squareup.moshi:moshi-kotlin-codegen:1.15.0")
         }
 
         create("libs") {
             fun plugin(id: String) = plugin(id, id)
-            plugin("com.apollographql.apollo3.external").version("4.0.0-alpha.2")
-            plugin("com.autonomousapps.dependency-analysis").version("1.20.0")
+            plugin("com.apollographql.apollo3.external").version("4.0.0-alpha.3")
+            plugin("com.autonomousapps.dependency-analysis").version("1.21.0")
             plugin("com.github.ben-manes.versions").version("0.47.0")
             plugin("com.google.dagger.hilt.android").version("2.47")
             plugin("com.jaredsburrows.license").version("0.9.3")
@@ -54,36 +54,36 @@ dependencyResolutionManagement {
             library("androidx.constraintlayout:constraintlayout-compose:1.1.0-alpha11")
             library("androidx.core:core-ktx:1.12.0-beta01")
             library("androidx.hilt:hilt-navigation-compose:1.1.0-alpha01")
-            library("androidx.hilt:hilt-work:1.0.0")
+            library("androidx.hilt:hilt-work:1.1.0-alpha01")
             library("androidx.lifecycle:lifecycle-livedata-ktx:2.7.0-alpha01")
             library("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0-alpha01")
             library("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0-alpha01")
             library("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0-alpha01")
-            library("androidx.media3:media3-datasource-cronet:1.1.0-beta01")
-            library("androidx.media3:media3-exoplayer:1.1.0-beta01")
-            library("androidx.media3:media3-exoplayer-dash:1.1.0-beta01")
-            library("androidx.media3:media3-exoplayer-hls:1.1.0-beta01")
-            library("androidx.media3:media3-exoplayer-rtsp:1.1.0-beta01")
-            library("androidx.media3:media3-ui:1.1.0-beta01")
+            library("androidx.media3:media3-datasource-cronet:1.1.1")
+            library("androidx.media3:media3-exoplayer:1.1.1")
+            library("androidx.media3:media3-exoplayer-dash:1.1.1")
+            library("androidx.media3:media3-exoplayer-hls:1.1.1")
+            library("androidx.media3:media3-exoplayer-rtsp:1.1.1")
+            library("androidx.media3:media3-ui:1.1.1")
 
             // Upgrading past 2.6.0 will break shared element transitions
             library("androidx.navigation:navigation-compose:2.6.0")
             library("androidx.paging:paging-compose:3.2.0")
             library("androidx.paging:paging-runtime-ktx:3.2.0")
             library("androidx.palette:palette-ktx:1.0.0")
-            library("androidx.room:room-compiler:2.6.0-alpha02")
-            library("androidx.room:room-ktx:2.6.0-alpha02")
-            library("androidx.room:room-paging:2.6.0-alpha02")
-            library("androidx.room:room-runtime:2.6.0-alpha02")
-            library("androidx.room:room-testing:2.6.0-alpha02")
+            library("androidx.room:room-compiler:2.6.0-alpha03")
+            library("androidx.room:room-ktx:2.6.0-alpha03")
+            library("androidx.room:room-paging:2.6.0-alpha03")
+            library("androidx.room:room-runtime:2.6.0-alpha03")
+            library("androidx.room:room-testing:2.6.0-alpha03")
             library("androidx.test.ext:junit:1.2.0-alpha01", alias = "androidx.junit.test")
             library("androidx.test:runner:1.6.0-alpha03", alias = "androidx.test.runner")
             library("androidx.work:work-runtime-ktx:2.9.0-alpha02")
             library("androidx.work:work-runtime:2.9.0-alpha02")
             library("com.android.billingclient:billing-ktx:6.0.1")
-            library("com.apollographql.apollo3:apollo-runtime:4.0.0-alpha.2")
-            library("com.apollographql.apollo3:apollo-normalized-cache:4.0.0-alpha.2")
-            library("com.apollographql.apollo3:apollo-normalized-cache-sqlite:4.0.0-alpha.2")
+            library("com.apollographql.apollo3:apollo-runtime:4.0.0-alpha.3")
+            library("com.apollographql.apollo3:apollo-normalized-cache:4.0.0-alpha.3")
+            library("com.apollographql.apollo3:apollo-normalized-cache-sqlite:4.0.0-alpha.3")
             library("com.google.accompanist:accompanist-flowlayout:0.31.6-rc")
             library("com.google.accompanist:accompanist-placeholder-material:0.31.6-rc")
             library("com.google.accompanist:accompanist-navigation-animation:0.31.6-rc")
@@ -126,7 +126,7 @@ dependencyResolutionManagement {
             library("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0-RC")
             library("org.junit.jupiter:junit-jupiter-api:5.10.0")
             library("org.junit.jupiter:junit-jupiter-engine:5.10.0")
-            library("org.mockito.kotlin:mockito-kotlin:5.0.0")
+            library("org.mockito.kotlin:mockito-kotlin:5.1.0")
             library("org.mockito:mockito-android:5.4.0")
             library("org.mockito:mockito-core:5.4.0")
 
