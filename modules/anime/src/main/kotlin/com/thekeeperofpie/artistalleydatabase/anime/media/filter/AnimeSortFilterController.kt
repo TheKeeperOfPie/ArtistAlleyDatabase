@@ -176,7 +176,7 @@ class AnimeSortFilterController<SortType : SortOption>(
                             children = listOfNotNull(
                                 showAdultSection,
                                 collapseOnCloseSection,
-                                showIgnoredSection.takeIf { initialParams.showIgnoredEnabled },
+                                hideIgnoredSection.takeIf { initialParams.showIgnoredEnabled },
                                 showLessImportantTagsSection,
                                 showSpoilerTagsSection,
                             )

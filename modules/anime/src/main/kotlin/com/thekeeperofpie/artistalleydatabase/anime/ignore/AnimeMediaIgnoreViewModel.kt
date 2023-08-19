@@ -1,7 +1,10 @@
+@file:OptIn(ExperimentalCoroutinesApi::class)
+
 package com.thekeeperofpie.artistalleydatabase.anime.ignore
 
 import android.os.SystemClock
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
@@ -11,105 +14,92 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import com.anilist.MediaByIdsQuery
-import com.anilist.type.MediaListStatus
+import com.anilist.fragment.MediaPreview
+import com.anilist.fragment.MediaPreviewWithDescription
 import com.anilist.type.MediaType
-import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewWithDescriptionEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaStatusChanges
-import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeSortFilterController
-import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaGenresController
-import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaLicensorsController
-import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaTagsController
-import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow
-import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
-import com.thekeeperofpie.artistalleydatabase.anime.utils.filterOnIO
-import com.thekeeperofpie.artistalleydatabase.anime.utils.mapOnIO
-import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
-import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterIncludeExcludeState
+import com.thekeeperofpie.artistalleydatabase.anime.utils.RequestBatcher
+import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIds
+import com.thekeeperofpie.artistalleydatabase.anime.utils.mapNotNull
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.lang.ref.WeakReference
+import java.util.Optional
 import javax.inject.Inject
-import kotlin.time.Duration.Companion.milliseconds
+import kotlin.jvm.optionals.getOrNull
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class AnimeMediaIgnoreViewModel @Inject constructor(
     private val aniListApi: AuthedAniListApi,
     private val settings: AnimeSettings,
-    private val ignoreList: AnimeMediaIgnoreList,
     private val statusController: MediaListStatusController,
-    mediaTagsController: MediaTagsController,
-    mediaGenresController: MediaGenresController,
-    mediaLicensorsController: MediaLicensorsController,
-    featureOverrideProvider: FeatureOverrideProvider,
+    private val ignoreController: IgnoreController,
+    private val ignoreDao: AnimeIgnoreDao,
 ) : ViewModel() {
 
+    var selectedType by mutableStateOf(settings.preferredMediaType.value)
+    var mediaViewOption by mutableStateOf(settings.mediaViewOption.value)
     val viewer = aniListApi.authedUser
     var query by mutableStateOf("")
-    var content = MutableStateFlow(PagingData.empty<MediaEntry>())
+    val content = MutableStateFlow(PagingData.empty<MediaPreviewWithDescriptionEntry>())
 
-    private var initialized = false
-    private lateinit var mediaType: MediaType
+    private val localContentAnime =
+        mutableStateMapOf<Int, Optional<WeakReference<MediaPreviewWithDescriptionEntry>>>()
 
-    val sortFilterController = AnimeSortFilterController(
-        sortTypeEnumClass = MediaIgnoreSortOption::class,
-        aniListApi = aniListApi,
-        settings = settings,
-        featureOverrideProvider = featureOverrideProvider,
-        mediaTagsController = mediaTagsController,
-        mediaGenresController = mediaGenresController,
-        mediaLicensorsController = mediaLicensorsController,
-    )
+    private val localContentManga =
+        mutableStateMapOf<Int, Optional<WeakReference<MediaPreviewWithDescriptionEntry>>>()
 
     private val refreshUptimeMillis = MutableStateFlow(-1L)
 
-    fun initialize(mediaType: MediaType) {
-        if (initialized) return
-        initialized = true
-        this.mediaType = mediaType
-        sortFilterController.initialize(
-            viewModel = this,
-            refreshUptimeMillis = refreshUptimeMillis,
-            initialParams = AnimeSortFilterController.InitialParams(
-                defaultSort = MediaIgnoreSortOption.ID,
-                showIgnoredEnabled = false,
-                lockSort = false,
-            ),
-        )
-
-        viewModelScope.launch(CustomDispatchers.Main) {
-            @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
-            combine(
-                refreshUptimeMillis,
-                settings.ignoredAniListMediaIds,
-                sortFilterController.filterParams(),
-                AnimeMediaIgnorePagingSource::RefreshParams,
+    private val mediaRequestBatcher = RequestBatcher(
+        scope = viewModelScope,
+        apiCall = {
+            aniListApi.mediaByIds(
+                it.map { it.toInt() },
+                includeDescription = true
             )
-                .debounce(100.milliseconds)
-                .flatMapLatest {
+        },
+        resultToId = { it.id.toString() },
+    )
+
+    init {
+        viewModelScope.launch(CustomDispatchers.Main) {
+            combine(
+                snapshotFlow { selectedType },
+                refreshUptimeMillis,
+                ignoreController.updates(),
+                ::Triple,
+            )
+                .flatMapLatest { (mediaType) ->
                     Pager(PagingConfig(pageSize = 10, enablePlaceholders = true)) {
-                        AnimeMediaIgnorePagingSource(aniListApi, it)
+                        MediaIgnorePagingSource(ignoreDao, mediaType)
                     }.flow
                 }
-                .map { it.mapOnIO { MediaEntry(it) } }
+                .map {
+                    it.mapNotNull {
+                        mediaRequestBatcher.fetch(it.id)?.let(::MediaPreviewWithDescriptionEntry)
+                    }
+                }
+                .enforceUniqueIds { it.id.valueId }
                 .cachedIn(viewModelScope)
                 .applyMediaStatusChanges(
                     statusController = statusController,
-                    ignoreList = ignoreList,
+                    ignoreController = ignoreController,
                     settings = settings,
                     media = { it.media },
                     forceShowIgnored = true,
@@ -126,49 +116,6 @@ class AnimeMediaIgnoreViewModel @Inject constructor(
                         )
                     },
                 )
-                .flowOn(CustomDispatchers.IO)
-                .cachedIn(viewModelScope)
-                .flatMapLatest { pagingData ->
-                    combine(
-                        snapshotFlow { query }.debounce(500.milliseconds)
-                            .flowOn(CustomDispatchers.Main),
-                        sortFilterController.filterParams(),
-                        ::Pair,
-                    ).map { paramsPair ->
-                        val (query, filterParams) = paramsPair
-                        val includes = filterParams.listStatuses
-                            .filter { it.state == FilterIncludeExcludeState.INCLUDE }
-                            .map { it.value }
-                        val excludes = filterParams.listStatuses
-                            .filter { it.state == FilterIncludeExcludeState.EXCLUDE }
-                            .map { it.value }
-                        pagingData
-                            .filterOnIO {
-                                MediaUtils.filterEntries(
-                                    filterParams = filterParams,
-                                    entries = listOf(it),
-                                    media = { it.media },
-                                    forceShowIgnored = true,
-                                ).isNotEmpty()
-                            }
-                            .filterOnIO {
-                                val listStatus = it.mediaListStatus
-                                if (excludes.isNotEmpty() && excludes.contains(listStatus)) {
-                                    return@filterOnIO false
-                                }
-
-                                includes.isEmpty() || includes.contains(listStatus)
-                            }
-                            .filterOnIO {
-                                listOfNotNull(
-                                    it.media.title?.romaji,
-                                    it.media.title?.english,
-                                    it.media.title?.native,
-                                ).plus(it.media.synonyms?.filterNotNull().orEmpty())
-                                    .any { it.contains(query, ignoreCase = true) }
-                            }
-                    }
-                }
                 .cachedIn(viewModelScope)
                 .flowOn(CustomDispatchers.IO)
                 .collectLatest(content::emit)
@@ -177,20 +124,80 @@ class AnimeMediaIgnoreViewModel @Inject constructor(
 
     fun onRefresh() = refreshUptimeMillis.update { SystemClock.uptimeMillis() }
 
-    fun onMediaLongClick(entry: AnimeMediaListRow.Entry) =
-        ignoreList.toggle(entry.media.id.toString())
+    fun onMediaLongClick(media: MediaPreview) = ignoreController.toggle(media)
 
-    data class MediaEntry(
-        override val media: MediaByIdsQuery.Data.Page.Medium,
-        override val mediaListStatus: MediaListStatus? = media.mediaListEntry?.status,
-        override val progress: Int? = media.mediaListEntry?.progress,
-        override val progressVolumes: Int? = media.mediaListEntry?.progressVolumes,
-        override val scoreRaw: Double? = media.mediaListEntry?.score,
-        override val ignored: Boolean = false,
-        override val showLessImportantTags: Boolean = false,
-        override val showSpoilerTags: Boolean = false,
-    ) : AnimeMediaListRow.Entry, AnimeMediaCompactListRow.Entry {
-        override val color = media.coverImage?.color?.let(ComposeColorUtils::hexToColor)
-        override val tags = MediaUtils.buildTags(media, showLessImportantTags, showSpoilerTags)
+    fun placeholder(index: Int, mediaType: MediaType): MediaPreviewWithDescriptionEntry? {
+        val localContent = if (mediaType == MediaType.ANIME) {
+            localContentAnime
+        } else {
+            localContentManga
+        }
+
+        val optional = localContent[index]
+        if (optional != null) {
+            // Check if still loading
+            if (!optional.isPresent) return null
+            optional.getOrNull()?.get()?.let { return it }
+        }
+        localContent[index] = Optional.empty()
+        viewModelScope.launch(CustomDispatchers.IO) {
+            val entry = try {
+                ignoreDao.getEntryAtIndex(index, mediaType)
+            } catch (ignored: Throwable) {
+                return@launch
+            } ?: return@launch
+
+            val result = Optional.of(
+                WeakReference(MediaPreviewWithDescriptionEntry(PlaceholderMediaEntry(entry)))
+            )
+            withContext(CustomDispatchers.Main) {
+                localContent[index] = result
+            }
+        }
+        return null
+    }
+
+    data class PlaceholderMediaEntry(
+        private val entry: AnimeMediaIgnoreEntry,
+    ) : MediaPreviewWithDescription {
+        override val __typename = "Default"
+        override val id = entry.id.toInt()
+        override val title = object : MediaPreviewWithDescription.Title {
+            override val __typename = "Default"
+
+            // TODO: User preferred title language
+            override val userPreferred = entry.title.romaji
+            override val romaji = entry.title.romaji
+            override val english = entry.title.english
+            override val native = entry.title.native
+
+        }
+        override val coverImage =
+            object : MediaPreviewWithDescription.CoverImage {
+                override val extraLarge = entry.coverImage
+                override val color = null
+
+            }
+        override val type = entry.type
+        override val isAdult = entry.isAdult
+        override val bannerImage = entry.bannerImage
+        override val format = null
+        override val status = null
+        override val season = null
+        override val seasonYear = null
+        override val averageScore = null
+        override val popularity = null
+        override val nextAiringEpisode = null
+        override val isFavourite = false
+        override val mediaListEntry = null
+        override val tags = null
+        override val episodes = null
+        override val chapters = null
+        override val volumes = null
+        override val genres = null
+        override val source = null
+        override val startDate = null
+        override val externalLinks = null
+        override val description = null
     }
 }

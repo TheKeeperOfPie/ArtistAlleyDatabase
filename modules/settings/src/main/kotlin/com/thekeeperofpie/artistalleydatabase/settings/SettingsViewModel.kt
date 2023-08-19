@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AppSettingsAlt
+import androidx.compose.material.icons.filled.Block
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.ColorLens
 import androidx.compose.material.icons.filled.History
@@ -39,6 +40,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListOAuthStore
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeRootNavDestination
 import com.thekeeperofpie.artistalleydatabase.anime.history.HistoryController
+import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOption
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntry
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDao
@@ -74,6 +76,7 @@ class SettingsViewModel @Inject constructor(
     appMetadataProvider: AppMetadataProvider,
     private val aniListApi: AuthedAniListApi,
     historyController: HistoryController,
+    ignoreController: IgnoreController,
 ) : ViewModel() {
 
     companion object {
@@ -191,6 +194,27 @@ class SettingsViewModel @Inject constructor(
                 onClick = historyController::clear,
             ),
             SettingsSection.Placeholder("viewMediaHistory"),
+        ),
+    )
+
+    private val ignoreSection = SettingsSection.Subsection(
+        icon = Icons.Filled.Block,
+        labelTextRes = R.string.settings_subsection_ignore_label,
+        children = listOf(
+            SettingsSection.Switch(
+                labelTextRes = R.string.settings_media_ignore_toggle,
+                property = settings.mediaIgnoreEnabled,
+            ),
+            SettingsSection.Switch(
+                labelTextRes = R.string.settings_media_hide_ignored,
+                property = settings.mediaIgnoreHide,
+            ),
+            SettingsSection.Button(
+                labelTextRes = R.string.settings_media_ignore_clear,
+                buttonTextRes = R.string.settings_clear,
+                onClick = ignoreController::clear,
+            ),
+            SettingsSection.Placeholder("viewMediaIgnore"),
         ),
     )
 
@@ -350,6 +374,7 @@ class SettingsViewModel @Inject constructor(
         themeSection,
         behaviorSection,
         historySection,
+        ignoreSection,
         SettingsSection.Placeholder(id = "featureTiers"),
         aboutSection,
         debugSection.takeIf { !featureOverrideProvider.isReleaseBuild },

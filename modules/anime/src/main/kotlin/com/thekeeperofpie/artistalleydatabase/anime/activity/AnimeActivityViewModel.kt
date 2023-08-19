@@ -21,7 +21,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityUtils.entry
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityUtils.isAdult
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityUtils.liked
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityUtils.subscribed
-import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
+import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaCompactWithTagsEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIntIds
@@ -54,7 +54,7 @@ class AnimeActivityViewModel @Inject constructor(
     private val settings: AnimeSettings,
     private val activityStatusController: ActivityStatusController,
     private val mediaListStatusController: MediaListStatusController,
-    private val ignoreList: AnimeMediaIgnoreList,
+    private val ignoreController: IgnoreController,
     featureOverrideProvider: FeatureOverrideProvider,
 ) : ViewModel() {
 
@@ -170,7 +170,7 @@ class AnimeActivityViewModel @Inject constructor(
                 combine(
                     mediaListStatusController.allChanges(),
                     activityStatusController.allChanges(),
-                    ignoreList.updates,
+                    ignoreController.updates(),
                     settings.showAdult,
                     settings.showIgnored,
                     settings.showLessImportantTags,
@@ -180,7 +180,7 @@ class AnimeActivityViewModel @Inject constructor(
                         applyActivityFiltering(
                             mediaListStatuses = mediaListStatuses,
                             activityStatuses = activityStatuses,
-                            ignoredIds = ignoredIds,
+                            ignoreController = ignoreController,
                             showAdult = showAdult,
                             showIgnored = showIgnored,
                             showLessImportantTags = showLessImportantTags,

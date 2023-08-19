@@ -21,7 +21,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.activity.applyActivityFilter
 import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.ForumThreadCommentStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.ForumThreadCommentToggleHelper
 import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.comment.ForumCommentEntry
-import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
+import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaCompactWithTagsEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIds
@@ -47,7 +47,7 @@ class NotificationsViewModel @Inject constructor(
     private val activityStatusController: ActivityStatusController,
     private val mediaListStatusController: MediaListStatusController,
     commentStatusController: ForumThreadCommentStatusController,
-    private val ignoreList: AnimeMediaIgnoreList,
+    private val ignoreController: IgnoreController,
     markwon: Markwon,
     notificationsController: NotificationsController,
 ) : ViewModel() {
@@ -162,17 +162,17 @@ class NotificationsViewModel @Inject constructor(
                         mediaListStatusController.allChanges(),
                         activityStatusController.allChanges(),
                         commentStatusController.allChanges(),
-                        ignoreList.updates,
+                        ignoreController.updates(),
                         settings.showAdult,
                         settings.showIgnored,
                         settings.showLessImportantTags,
                         settings.showSpoilerTags,
-                    ) { mediaListStatuses, activityStatuses, commentUpdates, ignoredIds, showAdult, showIgnored, showLessImportantTags, showSpoilerTags ->
+                    ) { mediaListStatuses, activityStatuses, commentUpdates, _, showAdult, showIgnored, showLessImportantTags, showSpoilerTags ->
                         pagingData.mapNotNull { entry ->
                             applyActivityFiltering(
                                 mediaListStatuses = mediaListStatuses,
                                 activityStatuses = activityStatuses,
-                                ignoredIds = ignoredIds,
+                                ignoreController = ignoreController,
                                 showAdult = showAdult,
                                 showIgnored = showIgnored,
                                 showLessImportantTags = showLessImportantTags,
@@ -204,7 +204,7 @@ class NotificationsViewModel @Inject constructor(
                                 }
                             )?.let {
                                 val commentId = it.commentEntry?.comment?.id?.toString()
-                                if (commentId == null) return@let it
+                                    ?: return@let it
                                 val liked = commentUpdates[commentId]?.liked
                                     ?: it.commentEntry.comment.isLiked
                                     ?: false

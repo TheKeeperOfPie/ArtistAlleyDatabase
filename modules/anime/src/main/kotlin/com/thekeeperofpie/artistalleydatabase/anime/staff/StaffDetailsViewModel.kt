@@ -26,7 +26,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.character.DetailsCharacter
 import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoritesController
 import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoritesToggleHelper
-import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
+import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaFiltering
@@ -56,7 +56,7 @@ class StaffDetailsViewModel @Inject constructor(
     private val settings: AnimeSettings,
     favoritesController: FavoritesController,
     private val mediaListStatusController: MediaListStatusController,
-    val ignoreList: AnimeMediaIgnoreList,
+    val ignoreController: IgnoreController,
 ) : ViewModel() {
 
     val viewer = aniListApi.authedUser
@@ -247,18 +247,18 @@ class StaffDetailsViewModel @Inject constructor(
                 .flatMapLatest { (timeline, newResults) ->
                     combine(
                         mediaListStatusUpdates,
-                        ignoreList.updates,
+                        ignoreController.updates(),
                         settings.showIgnored,
                         settings.showAdult,
                         settings.showLessImportantTags,
                         settings.showSpoilerTags,
-                    ) { updates, ignoredIds, showIgnored, showAdult, showLessImportantTags, showSpoilerTags ->
+                    ) { updates, _, showIgnored, showAdult, showLessImportantTags, showSpoilerTags ->
                         timeline.copy(
                             yearsToMedia = timeline.yearsToMedia.map { (year, media) ->
                                 year to media.mapNotNull {
                                     applyMediaFiltering(
                                         statuses = updates,
-                                        ignoredIds = ignoredIds,
+                                        ignoreController = ignoreController,
                                         showAdult = showAdult,
                                         showIgnored = showIgnored,
                                         showLessImportantTags = showLessImportantTags,

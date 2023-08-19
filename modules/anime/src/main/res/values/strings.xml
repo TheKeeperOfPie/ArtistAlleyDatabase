@@ -217,6 +217,8 @@
     <string name="anime_media_filter_show_spoiler_tags">Show spoiler tags</string>
     <string name="anime_media_filter_setting_title_language">Title language</string>
 
+    <string name="anime_media_filter_hide_ignored">Hide ignored</string>
+
     <string name="anime_media_cover_image_long_press_preview">Preview cover image</string>
     <string name="anime_media_banner_image_long_press_preview">Preview banner image</string>
     <string name="anime_media_tag_long_click_content_description">Preview tag</string>
@@ -486,8 +488,9 @@
     <string name="anime_user_list_manga_search">Search manga list…</string>
     <string name="anime_user_list_header_expand_content_description">Expand list</string>
 
-    <string name="anime_media_ignore_title_anime">Ignored anime</string>
-    <string name="anime_media_ignore_title_manga">Ignored manga</string>
+    <string name="anime_media_ignore_header">Ignored</string>
+    <string name="anime_media_ignore_tab_anime">Anime</string>
+    <string name="anime_media_ignore_tab_manga">Manga</string>
     <string name="anime_media_ignore_search_anime">Search anime…</string>
     <string name="anime_media_ignore_search_manga">Search manga…</string>
 
@@ -740,7 +743,6 @@
     <string name="anime_generic_filter_show_adult_content">Show adult content</string>
     <string name="anime_generic_view_all_content_description">View all</string>
     <string name="anime_generic_filter_collapse_on_close">Collapse sections on close</string>
-    <string name="anime_generic_filter_show_ignored">Show ignored</string>
     <string name="anime_generic_favorites_icon_content_description">Favorites</string>
     <string name="anime_generic_filter_advanced_group">Advanced</string>
     <string name="anime_generic_filter_advanced_group_expand_content_description">Advanced group expand</string>
@@ -867,6 +869,8 @@
     <string name="anime_media_genre_description_attribution">Description provided by AniList</string>
     <string name="anime_media_history_header">Media history</string>
     <string name="anime_media_history_error_loading">Error loading history</string>
+    <string name="anime_media_history_anime">Anime</string>
+    <string name="anime_media_history_manga">Manga</string>
 
     <!-- TODO: Move this elsewhere -->
     <string name="last_crash_notification">App crash detected</string>

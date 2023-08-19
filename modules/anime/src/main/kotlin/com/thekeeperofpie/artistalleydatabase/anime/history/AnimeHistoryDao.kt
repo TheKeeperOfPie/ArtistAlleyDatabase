@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
+import com.anilist.type.MediaType
 
 @Dao
 interface AnimeHistoryDao {
@@ -13,8 +14,11 @@ interface AnimeHistoryDao {
     @Query("""SELECT * FROM anime_media_history ORDER BY viewedAt DESC""")
     fun getEntries(): PagingSource<Int, AnimeMediaHistoryEntry>
 
-    @Query("""SELECT * FROM anime_media_history ORDER BY viewedAt DESC LIMIT :limit OFFSET :offset""")
-    suspend fun getEntries(limit: Int, offset: Int): List<AnimeMediaHistoryEntry>
+    @Query("""
+        SELECT * FROM anime_media_history WHERE type = :type
+        ORDER BY viewedAt DESC LIMIT :limit OFFSET :offset
+        """)
+    suspend fun getEntries(limit: Int, offset: Int, type: MediaType): List<AnimeMediaHistoryEntry>
 
     @Deprecated(message = "Use [insertEntry] instead", replaceWith = ReplaceWith("insertEntry"))
     @Insert(onConflict = OnConflictStrategy.REPLACE)

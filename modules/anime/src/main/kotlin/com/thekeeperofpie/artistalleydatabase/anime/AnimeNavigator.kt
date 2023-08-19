@@ -44,7 +44,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.ForumThreadScre
 import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.comment.ForumThreadCommentTreeScreen
 import com.thekeeperofpie.artistalleydatabase.anime.history.MediaHistoryScreen
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeIgnoreScreen
-import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.list.AnimeUserListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.list.AnimeUserListViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaHeaderValues
@@ -407,30 +406,9 @@ object AnimeNavigator {
         }
 
         navGraphBuilder.composable(
-            route = AnimeNavDestinations.IGNORED.id
-                    + "?mediaType={mediaType}",
-            arguments = listOf(
-                navArgument("mediaType") {
-                    type = NavType.StringType
-                    nullable = true
-                },
-            ),
+            route = AnimeNavDestinations.IGNORED.id,
         ) {
-            // TODO: Ignored list not actually split by anime and manga
-            val mediaType = it.arguments?.getString("mediaType")
-                ?.let { MediaType.safeValueOf(it).takeUnless { it == MediaType.UNKNOWN__ } }
-                ?: MediaType.ANIME
-            val viewModel = hiltViewModel<AnimeMediaIgnoreViewModel>()
-                .apply { initialize(mediaType) }
-            AnimeIgnoreScreen(
-                onClickBack = { navHostController.navigateUp() },
-                titleRes = if (mediaType == MediaType.ANIME) {
-                    R.string.anime_media_ignore_title_anime
-                } else {
-                    R.string.anime_media_ignore_title_manga
-                },
-                viewModel = viewModel,
-            )
+            AnimeIgnoreScreen(UpIconOption.Back(navHostController))
         }
 
         navGraphBuilder.composable(route = AnimeNavDestinations.AIRING_SCHEDULE.id) {
@@ -1325,8 +1303,8 @@ object AnimeNavigator {
             navHostController?.let { onGenreClick(it, mediaType, genre) }
         }
 
-        fun onIgnoreListOpen(mediaType: MediaType?) {
-            navHostController?.navigate(AnimeNavDestinations.IGNORED.id + "?mediaType=${mediaType?.rawValue}")
+        fun onClickViewIgnored() {
+            navHostController?.navigate(AnimeNavDestinations.IGNORED.id)
         }
 
         fun onCdEntryClick(model: CdEntryGridModel, imageCornerDp: Dp?) {

@@ -187,7 +187,7 @@ class MangaSortFilterController<SortType : SortOption>(
                             children = listOfNotNull(
                                 showAdultSection,
                                 collapseOnCloseSection,
-                                showIgnoredSection.takeIf { initialParams.showIgnoredEnabled },
+                                hideIgnoredSection.takeIf { initialParams.hideIgnoredEnabled },
                                 showLessImportantTagsSection,
                                 showSpoilerTagsSection,
                             )
@@ -273,7 +273,7 @@ class MangaSortFilterController<SortType : SortOption>(
         override val genre: String? = null,
         val airingDateEnabled: Boolean = true,
         val onListEnabled: Boolean = true,
-        val showIgnoredEnabled: Boolean = true,
+        val hideIgnoredEnabled: Boolean = true,
         val defaultSort: SortType?,
         val lockSort: Boolean,
         val mediaListStatus: MediaListStatus? = null,

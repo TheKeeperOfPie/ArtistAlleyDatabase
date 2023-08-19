@@ -5,6 +5,7 @@
 - Add language setting to search filters
 - Add scroll bars to user list
 - Add voice actor language option
+- Add media ignore gesture (long press, disabled by default, accessed in settings)
 
 ### 0.42 (7)
 - Add unread notification badge

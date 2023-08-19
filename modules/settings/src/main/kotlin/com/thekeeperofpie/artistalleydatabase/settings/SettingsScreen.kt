@@ -53,6 +53,7 @@ object SettingsScreen {
         onClickShowLicenses: () -> Unit,
         onClickFeatureTiers: () -> Unit,
         onClickViewMediaHistory: () -> Unit,
+        onClickViewMediaIgnore: () -> Unit,
     ) {
         var currentSubsectionId by rememberSaveable { mutableStateOf<String?>(null) }
         val currentSubsection = remember(currentSubsectionId) {
@@ -104,6 +105,11 @@ object SettingsScreen {
                                 labelTextRes = R.string.settings_media_history_view,
                                 buttonTextRes = UtilsStringR.open,
                                 onClick = onClickViewMediaHistory,
+                            )
+                            "viewMediaIgnore" -> ButtonRow(
+                                labelTextRes = R.string.settings_media_view_ignored,
+                                buttonTextRes = UtilsStringR.open,
+                                onClick = onClickViewMediaIgnore,
                             )
                             "featureTiers" -> {
                                 Row(

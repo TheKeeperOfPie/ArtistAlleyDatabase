@@ -265,7 +265,7 @@ object SeasonalScreen {
                                     viewer = viewer,
                                     editViewModel = editViewModel,
                                     entry = item,
-                                    onLongClick = viewModel.ignoreList::toggle,
+                                    onLongClick = viewModel.ignoreController::toggle,
                                 )
                             }
 

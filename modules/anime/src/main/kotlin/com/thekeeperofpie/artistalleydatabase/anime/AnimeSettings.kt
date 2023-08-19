@@ -8,6 +8,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaViewOption
 import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsNetworkCategory
 import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsNetworkRegion
 import com.thekeeperofpie.artistalleydatabase.anime.news.CrunchyrollNewsCategory
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 
 interface AnimeSettings {
@@ -15,12 +16,8 @@ interface AnimeSettings {
     val savedAnimeFilters: MutableStateFlow<Map<String, FilterData>>
     val showAdult: MutableStateFlow<Boolean>
     val collapseAnimeFiltersOnClose: MutableStateFlow<Boolean>
-    val showIgnored: MutableStateFlow<Boolean>
     val showLessImportantTags: MutableStateFlow<Boolean>
     val showSpoilerTags: MutableStateFlow<Boolean>
-
-    // TODO: Better database to store ignored IDs
-    val ignoredAniListMediaIds: MutableStateFlow<Set<Int>>
 
     val animeNewsNetworkRegion: MutableStateFlow<AnimeNewsNetworkRegion>
 
@@ -35,6 +32,12 @@ interface AnimeSettings {
 
     val mediaHistoryEnabled: MutableStateFlow<Boolean>
     val mediaHistoryMaxEntries: MutableStateFlow<Int>
+
+    val mediaIgnoreEnabled: MutableStateFlow<Boolean>
+    val mediaIgnoreHide: MutableStateFlow<Boolean>
+
+    // Invert boolean and remove this
+    val showIgnored: Flow<Boolean>
 
     val languageOptionMedia: MutableStateFlow<AniListLanguageOption>
     val languageOptionCharacters: MutableStateFlow<AniListLanguageOption>

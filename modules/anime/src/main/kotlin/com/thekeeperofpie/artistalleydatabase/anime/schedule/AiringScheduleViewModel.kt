@@ -19,7 +19,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatc
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListPagingSource
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
-import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
+import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaStatusAware
@@ -49,8 +49,8 @@ import kotlin.time.Duration.Companion.milliseconds
 class AiringScheduleViewModel @Inject constructor(
     private val aniListApi: AuthedAniListApi,
     private val settings: AnimeSettings,
-    private val ignoreList: AnimeMediaIgnoreList,
     private val statusController: MediaListStatusController,
+    private val ignoreController: IgnoreController,
     featureOverrideProvider: FeatureOverrideProvider,
 ) : ViewModel() {
 
@@ -82,7 +82,7 @@ class AiringScheduleViewModel @Inject constructor(
                 .cachedIn(viewModelScope)
                 .applyMediaStatusChanges(
                     statusController = statusController,
-                    ignoreList = ignoreList,
+                    ignoreController = ignoreController,
                     settings = settings,
                     media = { it.data.media },
                     copy = { mediaListStatus, progress, progressVolumes, scoreRaw, ignored, showLessImportantTags, showSpoilerTags ->
@@ -187,8 +187,7 @@ class AiringScheduleViewModel @Inject constructor(
         return dayFlows[index].collectAsLazyPagingItems()
     }
 
-    fun onLongClickEntry(entry: AnimeMediaListRow.Entry) =
-        ignoreList.toggle(entry.media.id.toString())
+    fun onLongClickEntry(entry: AnimeMediaListRow.Entry) = ignoreController.toggle(entry.media)
 
     data class Entry(
         val data: AiringScheduleQuery.Data.Page.AiringSchedule,

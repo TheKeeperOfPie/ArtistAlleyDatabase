@@ -476,7 +476,7 @@ fun MediaViewOptionRow(
     viewer: AniListViewer?,
     editViewModel: MediaEditViewModel,
     entry: MediaPreviewWithDescriptionEntry?,
-    onLongClick: (mediaId: String) -> Unit,
+    onLongClick: (MediaPreview) -> Unit,
 ) {
     when (mediaViewOption) {
         MediaViewOption.SMALL_CARD -> AnimeMediaListRow(
@@ -484,32 +484,20 @@ fun MediaViewOptionRow(
             viewer = viewer,
             entry = entry,
             onClickListEdit = { editViewModel.initialize(it.media) },
-            onLongClick = {
-                if (entry != null) {
-                    onLongClick(entry.media.id.toString())
-                }
-            },
+            onLongClick = { entry?.media?.let(onLongClick) },
         )
         MediaViewOption.LARGE_CARD -> AnimeMediaLargeCard(
             screenKey = screenKey,
             viewer = viewer,
             entry = entry,
-            onLongClick = {
-                if (entry != null) {
-                    onLongClick(entry.media.id.toString())
-                }
-            },
+            onLongClick = { entry?.media?.let(onLongClick) },
             onClickListEdit = { editViewModel.initialize(it.media) },
         )
         MediaViewOption.COMPACT -> AnimeMediaCompactListRow(
             screenKey = screenKey,
             viewer = viewer,
             entry = entry,
-            onLongClick = {
-                if (entry != null) {
-                    onLongClick(entry.media.id.toString())
-                }
-            },
+            onLongClick = { entry?.media?.let(onLongClick) },
             onClickListEdit = { editViewModel.initialize(it.media) },
         )
         MediaViewOption.GRID -> MediaGridCard(
@@ -517,11 +505,7 @@ fun MediaViewOptionRow(
             entry = entry,
             viewer = viewer,
             onClickListEdit = { editViewModel.initialize(it.media) },
-            onLongClick = {
-                if (entry != null) {
-                    onLongClick(entry.media.id.toString())
-                }
-            },
+            onLongClick = { entry?.media?.let(onLongClick) },
         )
     }
 }

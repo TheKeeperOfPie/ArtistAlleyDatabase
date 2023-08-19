@@ -26,7 +26,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityReplyToggle
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityStatusAware
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityToggleHelper
-import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
+import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaCompactWithTagsEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIntIds
@@ -52,7 +52,7 @@ class ActivityDetailsViewModel @Inject constructor(
     private val statusController: ActivityStatusController,
     private val mediaListStatusController: MediaListStatusController,
     private val replyStatusController: ActivityReplyStatusController,
-    private val ignoreList: AnimeMediaIgnoreList,
+    private val ignoreController: IgnoreController,
     private val settings: AnimeSettings,
 ) : ViewModel() {
 
@@ -89,7 +89,7 @@ class ActivityDetailsViewModel @Inject constructor(
                         } else {
                             flowOf(null)
                         },
-                        ignoreList.updates,
+                        ignoreController.updates(),
                         settings.showLessImportantTags,
                         settings.showSpoilerTags,
                     ) { activityUpdates, mediaListUpdate, ignoredIds, showLessImportantTags, showSpoilerTags ->
@@ -114,14 +114,14 @@ class ActivityDetailsViewModel @Inject constructor(
                                     if (mediaListUpdate == null) {
                                         MediaCompactWithTagsEntry(
                                             media = it,
-                                            ignored = ignoredIds.contains(it.id),
+                                            ignored = ignoreController.isIgnored(it.id.toString()),
                                             showLessImportantTags = showLessImportantTags,
                                             showSpoilerTags = showSpoilerTags,
                                         )
                                     } else {
                                         MediaCompactWithTagsEntry(
                                             media = it,
-                                            ignored = ignoredIds.contains(it.id),
+                                            ignored = ignoreController.isIgnored(it.id.toString()),
                                             showLessImportantTags = showLessImportantTags,
                                             showSpoilerTags = showSpoilerTags,
                                         )

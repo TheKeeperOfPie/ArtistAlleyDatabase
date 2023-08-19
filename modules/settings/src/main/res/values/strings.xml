@@ -70,4 +70,10 @@
 
     <string name="settings_force_crash">Force crash</string>
     <string name="settings_force_crash_button">Crash</string>
+
+    <string name="settings_subsection_ignore_label">Ignore</string>
+    <string name="settings_media_ignore_toggle">Enable ignore media (long press)</string>
+    <string name="settings_media_hide_ignored">Hide ignored media</string>
+    <string name="settings_media_ignore_clear">Clear media history</string>
+    <string name="settings_media_view_ignored">View ignored media</string>
 </resources>

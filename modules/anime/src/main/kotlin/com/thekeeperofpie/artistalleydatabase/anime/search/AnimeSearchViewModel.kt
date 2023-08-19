@@ -25,7 +25,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterListRow
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterSortFilterController
-import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
+import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaStatusChanges
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AnimeSortFilterController
@@ -69,8 +69,8 @@ import kotlin.time.Duration.Companion.milliseconds
 class AnimeSearchViewModel @Inject constructor(
     aniListApi: AuthedAniListApi,
     settings: AnimeSettings,
-    val ignoreList: AnimeMediaIgnoreList,
     private val statusController: MediaListStatusController,
+    val ignoreController: IgnoreController,
     mediaTagsController: MediaTagsController,
     mediaGenresController: MediaGenresController,
     mediaLicensorsController: MediaLicensorsController,
@@ -182,7 +182,7 @@ class AnimeSearchViewModel @Inject constructor(
             finalTransform = {
                 applyMediaStatusChanges(
                     statusController = statusController,
-                    ignoreList = ignoreList,
+                    ignoreController = ignoreController,
                     settings = settings,
                     media = { it.media },
                     copy = { mediaListStatus, progress, progressVolumes, scoreRaw, ignored, showLessImportantTags, showSpoilerTags ->
@@ -219,7 +219,7 @@ class AnimeSearchViewModel @Inject constructor(
             finalTransform = {
                 applyMediaStatusChanges(
                     statusController = statusController,
-                    ignoreList = ignoreList,
+                    ignoreController = ignoreController,
                     settings = settings,
                     media = { it.media },
                     copy = { mediaListStatus, progress, progressVolumes, scoreRaw, ignored, showLessImportantTags, showSpoilerTags ->
@@ -268,15 +268,21 @@ class AnimeSearchViewModel @Inject constructor(
             finalTransform = {
                 flatMapLatest { pagingData ->
                     combine(
-                        ignoreList.updates,
+                        ignoreController.updates(),
                         settings.showIgnored,
                         settings.showAdult,
-                    ) { ignoredIds, showIgnored, showAdult ->
+                    ) { _, showIgnored, showAdult ->
                         pagingData.mapOnIO {
                             it.copy(entry = it.entry.copy(
                                 media = it.entry.media
                                     .filter { showAdult || it.isAdult == false }
-                                    .map { it.copy(ignored = ignoredIds.contains(it.media.id)) }
+                                    .map {
+                                        it.copy(
+                                            ignored = ignoreController.isIgnored(
+                                                it.media.id.toString()
+                                            )
+                                        )
+                                    }
                                     .filter { showIgnored || !it.ignored }
                             ))
                         }
@@ -310,15 +316,21 @@ class AnimeSearchViewModel @Inject constructor(
             finalTransform = {
                 flatMapLatest { pagingData ->
                     combine(
-                        ignoreList.updates,
+                        ignoreController.updates(),
                         settings.showIgnored,
                         settings.showAdult,
-                    ) { ignoredIds, showIgnored, showAdult ->
+                    ) { _, showIgnored, showAdult ->
                         pagingData.mapOnIO {
                             it.copy(entry = it.entry.copy(
                                 media = it.entry.media
                                     .filter { showAdult || it.isAdult == false }
-                                    .map { it.copy(ignored = ignoredIds.contains(it.media.id)) }
+                                    .map {
+                                        it.copy(
+                                            ignored = ignoreController.isIgnored(
+                                                it.media.id.toString()
+                                            )
+                                        )
+                                    }
                                     .filter { showIgnored || !it.ignored }
                             ))
                         }
@@ -370,15 +382,21 @@ class AnimeSearchViewModel @Inject constructor(
             finalTransform = {
                 flatMapLatest { pagingData ->
                     combine(
-                        ignoreList.updates,
+                        ignoreController.updates(),
                         settings.showIgnored,
                         settings.showAdult,
-                    ) { ignoredIds, showIgnored, showAdult ->
+                    ) { _, showIgnored, showAdult ->
                         pagingData.mapOnIO {
                             it.copy(entry = it.entry.copy(
                                 media = it.entry.media
                                     .filter { showAdult || it.isAdult == false }
-                                    .map { it.copy(ignored = ignoredIds.contains(it.media.id)) }
+                                    .map {
+                                        it.copy(
+                                            ignored = ignoreController.isIgnored(
+                                                it.media.id.toString()
+                                            )
+                                        )
+                                    }
                                     .filter { showIgnored || !it.ignored }
                             ))
                         }
@@ -423,15 +441,21 @@ class AnimeSearchViewModel @Inject constructor(
             finalTransform = {
                 flatMapLatest { pagingData ->
                     combine(
-                        ignoreList.updates,
+                        ignoreController.updates(),
                         settings.showIgnored,
                         settings.showAdult,
-                    ) { ignoredIds, showIgnored, showAdult ->
+                    ) { _, showIgnored, showAdult ->
                         pagingData.mapOnIO {
                             it.copy(entry = it.entry.copy(
                                 media = it.entry.media
                                     .filter { showAdult || it.isAdult == false }
-                                    .map { it.copy(ignored = ignoredIds.contains(it.media.id)) }
+                                    .map {
+                                        it.copy(
+                                            ignored = ignoreController.isIgnored(
+                                                it.media.id.toString()
+                                            )
+                                        )
+                                    }
                                     .filter { showIgnored || !it.ignored }
                             ))
                         }

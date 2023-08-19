@@ -12,7 +12,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterSortOptio
 import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoritesController
 import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoritesToggleHelper
-import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
+import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.utils.HeaderAndListViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.utils.mapOnIO
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -26,7 +26,7 @@ import javax.inject.Inject
 @HiltViewModel
 class StaffCharactersViewModel @Inject constructor(
     aniListApi: AuthedAniListApi,
-    private val ignoreList: AnimeMediaIgnoreList,
+    private val ignoreController: IgnoreController,
     private val settings: AnimeSettings,
     favoritesController: FavoritesController,
 ) : HeaderAndListViewModel<StaffCharactersScreen.Entry, CharacterWithRoleAndFavorites, CharacterListRow.Entry, CharacterSortOption>(
@@ -81,15 +81,15 @@ class StaffCharactersViewModel @Inject constructor(
     override fun Flow<PagingData<CharacterListRow.Entry>>.transformFlow() =
         flatMapLatest { pagingData ->
             combine(
-                ignoreList.updates,
+                ignoreController.updates(),
                 settings.showIgnored,
                 settings.showAdult,
-            ) { ignoredIds, showIgnored, showAdult ->
+            ) { _, showIgnored, showAdult ->
                 pagingData.mapOnIO {
                     it.copy(
                         media = it.media
                             .filter { showAdult || it.isAdult == false }
-                            .filter { showIgnored || !ignoredIds.contains(it.media.id) }
+                            .filter { showIgnored || !ignoreController.isIgnored(it.media.id.toString()) }
                     )
                 }
             }

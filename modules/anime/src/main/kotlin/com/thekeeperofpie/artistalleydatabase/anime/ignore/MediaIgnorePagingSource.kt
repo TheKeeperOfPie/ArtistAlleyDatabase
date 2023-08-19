@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.anime.history
+package com.thekeeperofpie.artistalleydatabase.anime.ignore
 
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
@@ -6,20 +6,20 @@ import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import kotlinx.coroutines.withContext
 
-class MediaHistoryPagingSource(
-    private val historyDao: AnimeHistoryDao,
+class MediaIgnorePagingSource(
+    private val ignoreDao: AnimeIgnoreDao,
     private val mediaType: MediaType,
-) : PagingSource<Int, AnimeMediaHistoryEntry>() {
+) : PagingSource<Int, AnimeMediaIgnoreEntry>() {
 
     override val jumpingSupported = true
 
-    override fun getRefreshKey(state: PagingState<Int, AnimeMediaHistoryEntry>) =
+    override fun getRefreshKey(state: PagingState<Int, AnimeMediaIgnoreEntry>) =
         state.anchorPosition?.let { (it / 10) + 1 }
 
     override suspend fun load(params: LoadParams<Int>) = withContext(CustomDispatchers.IO) {
-        val entryCount = historyDao.getEntryCount()
+        val entryCount = ignoreDao.getEntryCount()
         val page = params.key ?: return@withContext LoadResult.Page(
-            data = emptyList<AnimeMediaHistoryEntry>(),
+            data = emptyList<AnimeMediaIgnoreEntry>(),
             prevKey = null,
             nextKey = 0,
             itemsBefore = 0,
@@ -27,7 +27,7 @@ class MediaHistoryPagingSource(
         )
 
         val itemsAfter = (entryCount - page * 10).coerceAtLeast(0)
-        val entries = historyDao.getEntries(limit = 10, offset = page * 10, type = mediaType)
+        val entries = ignoreDao.getEntries(limit = 10, offset = page * 10, type = mediaType)
         LoadResult.Page(
             data = entries,
             prevKey = (page - 1).takeIf { page > 0 },

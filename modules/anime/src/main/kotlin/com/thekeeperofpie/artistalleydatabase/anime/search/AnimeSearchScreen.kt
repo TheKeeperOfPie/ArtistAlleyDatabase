@@ -308,7 +308,7 @@ object AnimeSearchScreen {
                 onClickListEdit = { editViewModel.initialize(it.media) },
                 onLongClick = {
                     if (entry != null) {
-                        viewModel.ignoreList.toggle(entry.media.id.toString())
+                        viewModel.ignoreController.toggle(entry.media)
                     }
                 },
             )
@@ -318,7 +318,7 @@ object AnimeSearchScreen {
                 entry = entry,
                 onLongClick = {
                     if (entry != null) {
-                        viewModel.ignoreList.toggle(entry.media.id.toString())
+                        viewModel.ignoreController.toggle(entry.media)
                     }
                 },
                 onClickListEdit = { editViewModel.initialize(it.media) },
@@ -329,7 +329,7 @@ object AnimeSearchScreen {
                 entry = entry,
                 onLongClick = {
                     if (entry != null) {
-                        viewModel.ignoreList.toggle(entry.media.id.toString())
+                        viewModel.ignoreController.toggle(entry.media)
                     }
                 },
                 onClickListEdit = { editViewModel.initialize(it.media) },
@@ -341,7 +341,7 @@ object AnimeSearchScreen {
                 onClickListEdit = { editViewModel.initialize(it.media) },
                 onLongClick = {
                     if (entry != null) {
-                        viewModel.ignoreList.toggle(entry.media.id.toString())
+                        viewModel.ignoreController.toggle(entry.media)
                     }
                 },
             )

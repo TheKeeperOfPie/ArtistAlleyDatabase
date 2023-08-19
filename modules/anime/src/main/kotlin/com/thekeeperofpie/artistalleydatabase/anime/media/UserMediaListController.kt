@@ -11,7 +11,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatc
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.transformIf
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
-import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
+import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -36,7 +36,7 @@ import kotlinx.coroutines.flow.shareIn
 class UserMediaListController(
     private val scopedApplication: ScopedApplication,
     private val aniListApi: AuthedAniListApi,
-    private val ignoreList: AnimeMediaIgnoreList,
+    private val ignoreController: IgnoreController,
     private val statusController: MediaListStatusController,
     private val settings: AnimeSettings,
 ) {
@@ -81,17 +81,16 @@ class UserMediaListController(
             .flatMapLatest { entry ->
                 combine(
                     statusController.allChanges(),
-                    ignoreList.updates,
+                    ignoreController.updates(),
                     settings.showAdult,
                     settings.showIgnored,
                     settings.showLessImportantTags,
                     settings.showSpoilerTags,
-                ) { statuses, ignoredIds, showAdult, showIgnored, showLessImportantTags, showSpoilerTags ->
+                ) { statuses, _, showAdult, showIgnored, showLessImportantTags, showSpoilerTags ->
                     applyStatus(
                         statuses = statuses,
                         showAdult = showAdult,
                         showIgnored = showIgnored,
-                        ignoredIds = ignoredIds,
                         showLessImportantTags = showLessImportantTags,
                         showSpoilerTags = showSpoilerTags,
                         result = entry,
@@ -101,11 +100,10 @@ class UserMediaListController(
             .flowOn(CustomDispatchers.IO)
             .shareIn(scopedApplication.scope, SharingStarted.Lazily, replay = 1)
 
-    private fun applyStatus(
+    private suspend fun applyStatus(
         statuses: Map<String, MediaListStatusController.Update>,
         showAdult: Boolean,
         showIgnored: Boolean,
-        ignoredIds: Set<Int>,
         showLessImportantTags: Boolean,
         showSpoilerTags: Boolean,
         result: LoadingResult<List<ListEntry>>,
@@ -114,7 +112,7 @@ class UserMediaListController(
             it.copy(entries = it.entries.mapNotNull {
                 applyMediaFiltering(
                     statuses = statuses,
-                    ignoredIds = ignoredIds,
+                    ignoreController = ignoreController,
                     showAdult = showAdult,
                     showIgnored = showIgnored,
                     showLessImportantTags = showLessImportantTags,

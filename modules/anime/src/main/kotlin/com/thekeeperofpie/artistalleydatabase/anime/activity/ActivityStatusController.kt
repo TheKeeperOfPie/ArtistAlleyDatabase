@@ -3,6 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.anime.activity
 import com.anilist.fragment.MediaWithListStatus
 import com.anilist.type.MediaListStatus
 import com.hoc081098.flowext.startWith
+import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaStatusAware
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -41,10 +42,10 @@ class ActivityStatusController {
     )
 }
 
-fun <ActivityEntry> applyActivityFiltering(
+suspend fun <ActivityEntry> applyActivityFiltering(
     mediaListStatuses: Map<String, MediaListStatusController.Update>,
     activityStatuses: Map<String, ActivityStatusController.Update>,
-    ignoredIds: Set<Int>,
+    ignoreController: IgnoreController,
     showAdult: Boolean,
     showIgnored: Boolean,
     showLessImportantTags: Boolean,
@@ -60,7 +61,7 @@ fun <ActivityEntry> applyActivityFiltering(
     if (!showAdult && media?.isAdult == true) return null
     var copiedEntry = entry
     if (media != null && mediaStatusAware != null) {
-        val ignored = ignoredIds.contains(media.id)
+        val ignored = ignoreController.isIgnored(media.id.toString())
         if (!showIgnored && ignored) return null
 
         val status: MediaListStatus?

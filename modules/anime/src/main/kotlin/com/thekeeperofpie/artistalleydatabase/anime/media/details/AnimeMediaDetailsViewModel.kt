@@ -44,7 +44,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.ForumThreadEntr
 import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.ForumThreadStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.ForumThreadToggleHelper
 import com.thekeeperofpie.artistalleydatabase.anime.history.HistoryController
-import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
+import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toFavoriteType
@@ -94,7 +94,7 @@ class AnimeMediaDetailsViewModel @Inject constructor(
     oAuthStore: AniListOAuthStore,
     val mediaListStatusController: MediaListStatusController,
     val recommendationStatusController: RecommendationStatusController,
-    val ignoreList: AnimeMediaIgnoreList,
+    val ignoreController: IgnoreController,
     val settings: AnimeSettings,
     favoritesController: FavoritesController,
     private val activityStatusController: ActivityStatusController,
@@ -227,7 +227,7 @@ class AnimeMediaDetailsViewModel @Inject constructor(
                                     mediaId,
                                     recommendationMediaIds,
                                 ),
-                                ignoreList.updates,
+                                ignoreController.updates(),
                                 settings.showAdult,
                                 settings.showLessImportantTags,
                                 settings.showSpoilerTags,
@@ -239,7 +239,7 @@ class AnimeMediaDetailsViewModel @Inject constructor(
                                         relations = relations.mapNotNull {
                                             applyMediaFiltering(
                                                 statuses = mediaListUpdates,
-                                                ignoredIds = ignoredIds,
+                                                ignoreController = ignoreController,
                                                 showAdult = showAdult,
                                                 showIgnored = true,
                                                 showLessImportantTags = showLessImportantTags,
@@ -265,7 +265,7 @@ class AnimeMediaDetailsViewModel @Inject constructor(
                                         recommendations = recommendations.mapNotNull {
                                             applyMediaFiltering(
                                                 statuses = mediaListUpdates,
-                                                ignoredIds = ignoredIds,
+                                                ignoreController = ignoreController,
                                                 showAdult = showAdult,
                                                 showIgnored = true,
                                                 showLessImportantTags = showLessImportantTags,
@@ -558,8 +558,7 @@ class AnimeMediaDetailsViewModel @Inject constructor(
         mediaPlayer.pause(null)
     }
 
-    fun onMediaLongClick(entry: AnimeMediaListRow.Entry) =
-        ignoreList.toggle(entry.media.id.toString())
+    fun onMediaLongClick(entry: AnimeMediaListRow.Entry) = ignoreController.toggle(entry.media)
 
     data class AnimeSongs(
         val entries: List<AnimeSongEntry>,

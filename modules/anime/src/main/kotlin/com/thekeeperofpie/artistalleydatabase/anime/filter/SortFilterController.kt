@@ -25,17 +25,17 @@ abstract class SortFilterController(
         property = { it.collapseAnimeFiltersOnClose },
     )
 
-    protected val showIgnoredSection = SortFilterSection.SwitchBySetting(
-        titleRes = R.string.anime_generic_filter_show_ignored,
+    protected val hideIgnoredSection = SortFilterSection.SwitchBySetting(
+        titleRes = R.string.anime_media_filter_hide_ignored,
         settings = settings,
-        property = { it.showIgnored },
-    ).takeUnless { featureOverrideProvider.isReleaseBuild }
+        property = { it.mediaIgnoreHide },
+    )
 
     // TODO: Actually de-dupe advanced section across controllers
     protected val advancedSection = SortFilterSection.Group<SortFilterSection>(
         titleRes = R.string.anime_generic_filter_advanced_group,
         titleDropdownContentDescriptionRes = R.string.anime_generic_filter_advanced_group_expand_content_description,
-        children = listOfNotNull(showAdultSection, collapseOnCloseSection, showIgnoredSection)
+        children = listOfNotNull(showAdultSection, collapseOnCloseSection, hideIgnoredSection)
     )
 
     @Composable

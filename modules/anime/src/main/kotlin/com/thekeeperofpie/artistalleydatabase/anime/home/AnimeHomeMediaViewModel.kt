@@ -8,6 +8,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.anilist.fragment.MediaNavigationData
+import com.anilist.fragment.MediaPreview
 import com.anilist.fragment.MediaPreviewWithDescription
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
@@ -21,7 +22,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
-import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
+import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.UserMediaListController
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaFiltering
@@ -44,7 +45,7 @@ import javax.inject.Inject
 abstract class AnimeHomeMediaViewModel(
     protected val aniListApi: AuthedAniListApi,
     protected val settings: AnimeSettings,
-    private val ignoreList: AnimeMediaIgnoreList,
+    private val ignoreController: IgnoreController,
     protected val userMediaListController: UserMediaListController,
     private val statusController: MediaListStatusController,
     @StringRes val currentHeaderTextRes: Int,
@@ -90,7 +91,7 @@ abstract class AnimeHomeMediaViewModel(
         }
     }
 
-    fun onLongClickEntry(media: MediaNavigationData) = ignoreList.toggle(media.id.toString())
+    fun onLongClickEntry(media: MediaPreview) = ignoreController.toggle(media)
 
     fun refresh() {
         val refresh = SystemClock.uptimeMillis()
@@ -104,17 +105,17 @@ abstract class AnimeHomeMediaViewModel(
                 .flatMapLatest { current ->
                     combine(
                         statusController.allChanges(),
-                        ignoreList.updates,
+                        ignoreController.updates(),
                         settings.showAdult,
                         settings.showIgnored,
                         settings.showLessImportantTags,
                         settings.showSpoilerTags,
-                    ) { mediaStatusUpdates, ignoredIds, showAdult, showIgnored, showLessImportantTags, showSpoilerTags ->
+                    ) { mediaStatusUpdates, _, showAdult, showIgnored, showLessImportantTags, showSpoilerTags ->
                         current.copy(
                             result = current.result?.mapNotNull {
                                 applyMediaFiltering(
                                     statuses = mediaStatusUpdates,
-                                    ignoredIds = ignoredIds,
+                                    ignoreController = ignoreController,
                                     showAdult = showAdult,
                                     showIgnored = showIgnored,
                                     showLessImportantTags = showLessImportantTags,
@@ -151,12 +152,12 @@ abstract class AnimeHomeMediaViewModel(
                 .flatMapLatest { mediaResult ->
                     combine(
                         statusController.allChanges(),
-                        ignoreList.updates,
+                        ignoreController.updates(),
                         settings.showAdult,
                         settings.showIgnored,
                         settings.showLessImportantTags,
                         settings.showSpoilerTags,
-                    ) { mediaStatusUpdates, ignoredIds, showAdult, showIgnored, showLessImportantTags, showSpoilerTags ->
+                    ) { mediaStatusUpdates, _, showAdult, showIgnored, showLessImportantTags, showSpoilerTags ->
                         mediaResult.transformResult { rows ->
                             AnimeHomeDataEntry(
                                 lists = rows.map {
@@ -169,7 +170,7 @@ abstract class AnimeHomeMediaViewModel(
                                             .mapNotNull {
                                                 applyMediaFiltering(
                                                     statuses = mediaStatusUpdates,
-                                                    ignoredIds = ignoredIds,
+                                                    ignoreController = ignoreController,
                                                     showAdult = showAdult,
                                                     showIgnored = showIgnored,
                                                     showLessImportantTags = showLessImportantTags,
@@ -206,13 +207,13 @@ abstract class AnimeHomeMediaViewModel(
     class Anime @Inject constructor(
         aniListApi: AuthedAniListApi,
         settings: AnimeSettings,
-        ignoreList: AnimeMediaIgnoreList,
+        ignoreController: IgnoreController,
         userMediaListController: UserMediaListController,
         statusController: MediaListStatusController,
     ) : AnimeHomeMediaViewModel(
         aniListApi = aniListApi,
         settings = settings,
-        ignoreList = ignoreList,
+        ignoreController = ignoreController,
         userMediaListController = userMediaListController,
         statusController = statusController,
         currentHeaderTextRes = R.string.anime_home_anime_current_header,
@@ -297,13 +298,13 @@ abstract class AnimeHomeMediaViewModel(
     class Manga @Inject constructor(
         aniListApi: AuthedAniListApi,
         settings: AnimeSettings,
-        ignoreList: AnimeMediaIgnoreList,
+        ignoreController: IgnoreController,
         userMediaListController: UserMediaListController,
         statusController: MediaListStatusController,
     ) : AnimeHomeMediaViewModel(
         aniListApi = aniListApi,
         settings = settings,
-        ignoreList = ignoreList,
+        ignoreController = ignoreController,
         userMediaListController = userMediaListController,
         statusController = statusController,
         currentHeaderTextRes = R.string.anime_home_manga_current_header,

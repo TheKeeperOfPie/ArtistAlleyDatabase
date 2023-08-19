@@ -11,6 +11,7 @@ import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterEntryFt
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaEntry
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeDatabase
 import com.thekeeperofpie.artistalleydatabase.anime.history.AnimeMediaHistoryEntry
+import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreEntry
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntry
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryDatabase
 import com.thekeeperofpie.artistalleydatabase.art.data.ArtEntryFts
@@ -36,14 +37,16 @@ import com.thekeeperofpie.artistalleydatabase.vgmdb.artist.VgmdbArtist
         VgmdbArtist::class,
         MusicalArtist::class,
         AnimeMediaHistoryEntry::class,
+        AnimeMediaIgnoreEntry::class,
     ],
     exportSchema = true,
-    version = 5,
+    version = 6,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3),
         AutoMigration(from = 3, to = 4),
         AutoMigration(from = 4, to = 5),
+        AutoMigration(from = 5, to = 6),
     ]
 )
 @TypeConverters(

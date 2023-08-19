@@ -3,7 +3,6 @@ package com.thekeeperofpie.artistalleydatabase.settings
 import android.app.Application
 import android.content.SharedPreferences
 import android.net.Uri
-import android.os.Looper
 import androidx.annotation.VisibleForTesting
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -39,6 +38,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.serializer
@@ -82,9 +82,6 @@ class SettingsProvider(
     override var collapseAnimeFiltersOnClose = MutableStateFlow(
         deserialize("collapseAnimeFiltersOnClose") ?: true
     )
-    override var showIgnored = MutableStateFlow(deserialize("showIgnored") ?: true)
-    override var ignoredAniListMediaIds =
-        MutableStateFlow(deserialize("ignoredAniListMediaIds") ?: emptySet<Int>())
 
     override var showLessImportantTags =
         MutableStateFlow(deserialize("showLessImportantTags") ?: false)
@@ -141,6 +138,10 @@ class SettingsProvider(
     override val mediaHistoryEnabled = MutableStateFlow(deserialize("mediaHistoryEnabled") ?: false)
     override val mediaHistoryMaxEntries = MutableStateFlow(deserialize("mediaHistoryMaxEntries") ?: 200)
 
+    override val mediaIgnoreEnabled = MutableStateFlow(deserialize("mediaIgnoreEnabled") ?: false)
+    override val mediaIgnoreHide = MutableStateFlow(deserialize("mediaIgnoreHide") ?: false)
+    override val showIgnored = mediaIgnoreHide.map(Boolean::not)
+
     // Not exported
     override val aniListViewer = MutableStateFlow<AniListViewer?>(deserialize("aniListViewer"))
     override val lastCrash = MutableStateFlow(deserialize("lastCrash") ?: "")
@@ -148,21 +149,6 @@ class SettingsProvider(
     val screenshotMode = MutableStateFlow(deserialize("screenshotMode") ?: false)
 
     override var unlockAllFeatures = ignoreOnRelease("unlockAllFeatures", false)
-
-    init {
-        val mainThreadId = Looper.getMainLooper().thread.id
-        val existingExceptionHandler = Thread.getDefaultUncaughtExceptionHandler()
-        Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
-            if (thread.id == mainThreadId) {
-                val stackString = throwable.stackTraceToString()
-                lastCrash.value = stackString
-                lastCrashShown.value = false
-                serializeWithoutApply("lastCrash", stackString).commit()
-                serializeWithoutApply("lastCrashShown", false).commit()
-            }
-            existingExceptionHandler?.uncaughtException(thread, throwable)
-        }
-    }
 
     private fun deserializeAnimeFilters(): Map<String, FilterData> {
         val stringValue = sharedPreferences.getString("savedAnimeFilters", "")
@@ -180,8 +166,6 @@ class SettingsProvider(
             collapseAnimeFiltersOnClose = collapseAnimeFiltersOnClose.value,
             savedAnimeFilters = savedAnimeFilters.value,
             showAdult = showAdult.value,
-            showIgnored = showIgnored.value,
-            ignoredAniListMediaIds = ignoredAniListMediaIds.value,
             showLessImportantTags = showLessImportantTags.value,
             showSpoilerTags = showSpoilerTags.value,
             animeNewsNetworkRegion = animeNewsNetworkRegion.value,
@@ -204,6 +188,8 @@ class SettingsProvider(
             showFallbackVoiceActor = showFallbackVoiceActor.value,
             mediaHistoryEnabled = mediaHistoryEnabled.value,
             mediaHistoryMaxEntries = mediaHistoryMaxEntries.value,
+            mediaIgnoreEnabled = mediaIgnoreEnabled.value,
+            mediaIgnoreHide = mediaIgnoreHide.value,
         )
 
     // Initialization separated into its own method so that tests can cancel the StateFlow job
@@ -215,7 +201,6 @@ class SettingsProvider(
         subscribeProperty(scope, ::searchQuery)
         subscribeProperty(scope, ::collapseAnimeFiltersOnClose)
         subscribeProperty(scope, ::showAdult)
-        subscribeProperty(scope, ::showIgnored)
         subscribeProperty(scope, ::navDrawerStartDestination)
         subscribeProperty(scope, ::hideStatusBar)
         subscribeProperty(scope, ::aniListViewer)
@@ -239,15 +224,9 @@ class SettingsProvider(
         subscribeProperty(scope, ::showFallbackVoiceActor)
         subscribeProperty(scope, ::mediaHistoryEnabled)
         subscribeProperty(scope, ::mediaHistoryMaxEntries)
+        subscribeProperty(scope, ::mediaIgnoreEnabled)
+        subscribeProperty(scope, ::mediaIgnoreHide)
 
-        scope.launch(CustomDispatchers.IO) {
-            ignoredAniListMediaIds.drop(1).collectLatest {
-                val stringValue = appJson.json.run { encodeToString(it) }
-                sharedPreferences.edit()
-                    .putString("ignoredAniListMediaIds", stringValue)
-                    .apply()
-            }
-        }
         scope.launch(CustomDispatchers.IO) {
             savedAnimeFilters.drop(1).collectLatest {
                 val stringValue = appJson.json.run { encodeToString(it) }
@@ -290,6 +269,14 @@ class SettingsProvider(
         }
     }
 
+    fun writeLastCrash(throwable: Throwable) {
+        val stackString = throwable.stackTraceToString()
+        lastCrash.value = stackString
+        lastCrashShown.value = false
+        serializeWithoutApply("lastCrash", stackString).commit()
+        serializeWithoutApply("lastCrashShown", false).commit()
+    }
+
     private inline fun <reified T> subscribeProperty(
         scope: CoroutineScope,
         property: KProperty0<MutableStateFlow<T>>,
@@ -318,8 +305,6 @@ class SettingsProvider(
         savedAnimeFilters.emit(data.savedAnimeFilters)
         collapseAnimeFiltersOnClose.emit(data.collapseAnimeFiltersOnClose)
         showAdult.emit(data.showAdult)
-        showIgnored.emit(data.showIgnored)
-        ignoredAniListMediaIds.emit(data.ignoredAniListMediaIds)
         showLessImportantTags.emit(data.showLessImportantTags)
         showSpoilerTags.emit(data.showSpoilerTags)
         animeNewsNetworkRegion.emit(data.animeNewsNetworkRegion)
@@ -342,6 +327,8 @@ class SettingsProvider(
         showFallbackVoiceActor.emit(data.showFallbackVoiceActor)
         mediaHistoryEnabled.emit(data.mediaHistoryEnabled)
         mediaHistoryMaxEntries.emit(data.mediaHistoryMaxEntries)
+        mediaIgnoreEnabled.emit(data.mediaIgnoreEnabled)
+        mediaIgnoreHide.emit(data.mediaIgnoreHide)
     }
 
     private inline fun <reified T> deserialize(name: String): T? {

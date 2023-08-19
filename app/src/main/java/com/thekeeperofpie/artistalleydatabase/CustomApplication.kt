@@ -4,6 +4,7 @@ import android.app.Application
 import android.media.AudioManager
 import android.media.AudioManagerIgnoreFocus
 import android.os.StrictMode
+import android.util.Log
 import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.hilt.work.HiltWorkerFactory
@@ -12,11 +13,13 @@ import coil.ImageLoader
 import coil.ImageLoaderFactory
 import coil.disk.DiskCache
 import coil.memory.MemoryCache
+import com.thekeeperofpie.anichive.BuildConfig
 import com.thekeeperofpie.anichive.R
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.android_utils.notification.NotificationChannels
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListOAuthStore
 import com.thekeeperofpie.artistalleydatabase.settings.SettingsProvider
+import dagger.Lazy
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.MainScope
 import okhttp3.OkHttpClient
@@ -40,7 +43,7 @@ class CustomApplication : Application(), Configuration.Provider, ScopedApplicati
     lateinit var workerFactory: HiltWorkerFactory
 
     @Inject
-    lateinit var settings: SettingsProvider
+    lateinit var settings: Lazy<SettingsProvider>
 
     private lateinit var audioManager: AudioManager
 
@@ -52,6 +55,18 @@ class CustomApplication : Application(), Configuration.Provider, ScopedApplicati
 
     override fun onCreate() {
         super.onCreate()
+
+        val existingExceptionHandler = Thread.getDefaultUncaughtExceptionHandler()
+        Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
+            try {
+                settings.get().writeLastCrash(throwable)
+            } catch (t: Throwable) {
+                if (BuildConfig.DEBUG) {
+                    Log.e(TAG, "Error writing last crash", t)
+                }
+            }
+            existingExceptionHandler?.uncaughtException(thread, throwable)
+        }
 
         filesDir.resolve("art_entry_images").mkdirs()
         filesDir.resolve("cd_entry_images").mkdirs()

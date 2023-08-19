@@ -124,6 +124,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.GenericViewAllCard
 import com.thekeeperofpie.artistalleydatabase.anime.ui.MediaCoverImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.NavigationHeader
 import com.thekeeperofpie.artistalleydatabase.anime.ui.blurForScreenshotMode
+import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.compose.AutoResizeHeightText
 import com.thekeeperofpie.artistalleydatabase.compose.BottomNavigationState
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
@@ -521,7 +522,7 @@ object AnimeHomeScreen {
         data: AnimeHomeDataEntry.RowData,
         viewer: AniListViewer?,
         onClickListEdit: (MediaCompactWithTags) -> Unit,
-        onLongClickEntry: (MediaNavigationData) -> Unit,
+        onLongClickEntry: (MediaPreview) -> Unit,
         selectedItemTracker: SelectedItemTracker,
     ) {
         val (rowKey, titleRes, entries, viewAllRoute) = data
@@ -595,7 +596,6 @@ object AnimeHomeScreen {
                         coilHeight = coilHeight,
                         selected = selectedItemTracker.keyToPosition[rowKey]?.second == index,
                         onClickListEdit = onClickListEdit,
-                        onLongClickEntry = onLongClickEntry,
                         modifier = Modifier.animateItemPlacement(),
                     )
                 }
@@ -771,7 +771,6 @@ object AnimeHomeScreen {
         coilHeight: coil.size.Dimension,
         selected: Boolean,
         onClickListEdit: (MediaPreview) -> Unit,
-        onLongClickEntry: (MediaNavigationData) -> Unit,
         modifier: Modifier = Modifier,
     ) {
         val id = media.id.toString()
@@ -804,13 +803,16 @@ object AnimeHomeScreen {
             navigationCallback.onMediaClick(media, widthToHeightRatio ?: 1f)
         }
 
+        val fullscreenImageHandler = LocalFullscreenImageHandler.current
         val baseModifier = modifier
             .height(height)
             .widthIn(min = width)
             .clip(RoundedCornerShape(12.dp))
             .combinedClickable(
                 onClick = onClick,
-                onLongClick = { onLongClickEntry(media) },
+                onLongClick = {
+                    media.coverImage?.extraLarge?.let(fullscreenImageHandler::openImage)
+                },
             )
             .alpha(if (ignored) 0.38f else 1f)
             .padding(2.dp)

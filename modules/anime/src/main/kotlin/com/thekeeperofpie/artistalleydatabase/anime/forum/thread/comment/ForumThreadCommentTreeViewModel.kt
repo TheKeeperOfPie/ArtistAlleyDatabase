@@ -23,7 +23,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.ForumThreadComm
 import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.ForumThreadEntry
 import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.ForumThreadStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.ForumThreadToggleHelper
-import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
+import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaCompactWithTagsEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaFiltering
@@ -49,7 +49,7 @@ class ForumThreadCommentTreeViewModel @Inject constructor(
     mediaListStatusController: MediaListStatusController,
     threadStatusController: ForumThreadStatusController,
     commentStatusController: ForumThreadCommentStatusController,
-    val ignoreList: AnimeMediaIgnoreList,
+    val ignoreController: IgnoreController,
     settings: AnimeSettings,
 ) : ViewModel() {
 
@@ -119,15 +119,15 @@ class ForumThreadCommentTreeViewModel @Inject constructor(
                     combine(
                         mediaListStatusController.allChanges(media.map { it.media.id.toString() }
                             .toSet()),
-                        ignoreList.updates,
+                        ignoreController.updates(),
                         settings.showAdult,
                         settings.showLessImportantTags,
                         settings.showSpoilerTags,
                     ) { updates, ignoredIds, showAdult, showLessImportantTags, showSpoilerTags ->
                         media.mapNotNull {
                             applyMediaFiltering(
-                                updates,
-                                ignoredIds = ignoredIds,
+                                statuses = updates,
+                                ignoreController = ignoreController,
                                 showAdult = showAdult,
                                 showIgnored = true,
                                 showLessImportantTags = showLessImportantTags,

@@ -62,17 +62,17 @@ object StaffStaffScreen {
                         contentPadding = PaddingValues(horizontal = 16.dp),
                         horizontalArrangement = Arrangement.spacedBy(16.dp),
                     ) {
-                        items(entries, { it.id }) {
+                        items(entries, { it.id }) { entry ->
                             MediaGridCard(
                                 screenKey = screenKey,
-                                entry = it,
+                                entry = entry,
                                 viewer = viewer,
                                 onClickListEdit = { editViewModel.initialize(it.media) },
-                                onLongClick = { viewModel.ignoreList.toggle(it.id.toString()) },
+                                onLongClick = { viewModel.ignoreController.toggle(entry.media) },
                                 showTypeIcon = true,
                                 modifier = Modifier.width(120.dp),
                             ) { textColor ->
-                                it.role?.let {
+                                entry.role?.let {
                                     AutoHeightText(
                                         text = it,
                                         color = textColor,

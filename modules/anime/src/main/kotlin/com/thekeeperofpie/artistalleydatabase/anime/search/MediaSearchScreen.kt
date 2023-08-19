@@ -135,8 +135,7 @@ object MediaSearchScreen {
                                                     editViewModel.initialize(it.media)
                                                 },
                                                 onLongClick = {
-                                                    viewModel.ignoreList
-                                                        .toggle(item.media.id.toString())
+                                                    viewModel.ignoreController.toggle(item.media)
                                                 },
                                             )
 

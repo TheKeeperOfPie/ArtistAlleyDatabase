@@ -38,6 +38,7 @@ import androidx.core.graphics.ColorUtils
 import coil.request.ImageRequest
 import coil.size.Dimension
 import com.anilist.fragment.MediaNavigationData
+import com.anilist.fragment.MediaPreview
 import com.anilist.type.MediaType
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.material.placeholder

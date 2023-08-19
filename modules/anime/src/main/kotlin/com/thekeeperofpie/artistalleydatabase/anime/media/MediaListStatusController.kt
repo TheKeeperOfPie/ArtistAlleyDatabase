@@ -9,14 +9,13 @@ import com.anilist.type.MediaListStatus
 import com.hoc081098.flowext.combine
 import com.hoc081098.flowext.startWith
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
-import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
+import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.utils.mapNotNull
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.runningFold
 
@@ -52,9 +51,9 @@ class MediaListStatusController {
     )
 }
 
-fun applyMediaFiltering(
+suspend fun applyMediaFiltering(
     statuses: Map<String, MediaListStatusController.Update>,
-    ignoredIds: Set<Int>,
+    ignoreController: IgnoreController,
     showAdult: Boolean,
     showIgnored: Boolean,
     showLessImportantTags: Boolean,
@@ -62,7 +61,7 @@ fun applyMediaFiltering(
     entry: MediaCompactWithTagsEntry,
 ) = applyMediaFiltering(
     statuses = statuses,
-    ignoredIds = ignoredIds,
+    ignoreController = ignoreController,
     showAdult = showAdult,
     showIgnored = showIgnored,
     showLessImportantTags = showLessImportantTags,
@@ -83,9 +82,9 @@ fun applyMediaFiltering(
     }
 )
 
-fun applyMediaFiltering(
+suspend fun applyMediaFiltering(
     statuses: Map<String, MediaListStatusController.Update>,
-    ignoredIds: Set<Int>,
+    ignoreController: IgnoreController,
     showAdult: Boolean,
     showIgnored: Boolean,
     showLessImportantTags: Boolean,
@@ -93,7 +92,7 @@ fun applyMediaFiltering(
     entry: MediaPreviewEntry,
 ) = applyMediaFiltering(
     statuses = statuses,
-    ignoredIds = ignoredIds,
+    ignoreController = ignoreController,
     showAdult = showAdult,
     showIgnored = showIgnored,
     showLessImportantTags = showLessImportantTags,
@@ -114,9 +113,9 @@ fun applyMediaFiltering(
     }
 )
 
-fun <Input> applyMediaFiltering(
+suspend fun <Input> applyMediaFiltering(
     statuses: Map<String, MediaListStatusController.Update>,
-    ignoredIds: Set<Int>,
+    ignoreController: IgnoreController,
     showAdult: Boolean,
     showIgnored: Boolean,
     showLessImportantTags: Boolean,
@@ -124,6 +123,7 @@ fun <Input> applyMediaFiltering(
     entry: Input,
     transform: (Input) -> MediaStatusAware,
     media: MediaWithListStatus?,
+    forceShowIgnored: Boolean = false,
     copy: Input.(MediaListStatus?, progress: Int?, progressVolumes: Int?, scoreRaw: Double?, ignored: Boolean, showLessImportantTags: Boolean, showSpoilerTags: Boolean) -> Input,
 ): Input? {
     if (!showAdult && media?.isAdult != false) return null
@@ -145,7 +145,12 @@ fun <Input> applyMediaFiltering(
         scoreRaw = update?.score
     }
 
-    val ignored = ignoredIds.contains(mediaId)
+    val ignored = if (forceShowIgnored) {
+        false
+    } else {
+        mediaId?.toString()?.let { ignoreController.isIgnored(it) } ?: false
+    }
+
     if (!showIgnored && ignored) return null
     val mediaStatusAware = transform(entry)
     return if (status == mediaStatusAware.mediaListStatus
@@ -172,12 +177,12 @@ fun <Input> applyMediaFiltering(
 
 fun Flow<PagingData<MediaPreviewEntry>>.applyMediaStatusChanges(
     statusController: MediaListStatusController,
-    ignoreList: AnimeMediaIgnoreList,
+    ignoreController: IgnoreController,
     settings: AnimeSettings,
     forceShowIgnored: Boolean = false,
 ) = applyMediaStatusChanges(
     statusController = statusController,
-    ignoreList = ignoreList,
+    ignoreController = ignoreController,
     settings = settings,
     media = { it.media },
     forceShowIgnored = forceShowIgnored,
@@ -196,12 +201,12 @@ fun Flow<PagingData<MediaPreviewEntry>>.applyMediaStatusChanges(
 
 fun Flow<PagingData<MediaPreviewWithDescriptionEntry>>.applyMediaStatusChanges2(
     statusController: MediaListStatusController,
-    ignoreList: AnimeMediaIgnoreList,
+    ignoreController: IgnoreController,
     settings: AnimeSettings,
     forceShowIgnored: Boolean = false,
 ) = applyMediaStatusChanges(
     statusController = statusController,
-    ignoreList = ignoreList,
+    ignoreController = ignoreController,
     settings = settings,
     media = { it.media },
     forceShowIgnored = forceShowIgnored,
@@ -220,7 +225,7 @@ fun Flow<PagingData<MediaPreviewWithDescriptionEntry>>.applyMediaStatusChanges2(
 
 fun <T : MediaStatusAware> Flow<PagingData<T>>.applyMediaStatusChanges(
     statusController: MediaListStatusController,
-    ignoreList: AnimeMediaIgnoreList,
+    ignoreController: IgnoreController,
     settings: AnimeSettings,
     media: (T) -> MediaWithListStatus?,
     forceShowIgnored: Boolean = false,
@@ -228,19 +233,19 @@ fun <T : MediaStatusAware> Flow<PagingData<T>>.applyMediaStatusChanges(
 ) = flatMapLatest { pagingData ->
     combine(
         statusController.allChanges(),
-        if (forceShowIgnored) flowOf(emptySet()) else ignoreList.updates,
+        ignoreController.updates(),
         settings.showIgnored,
         settings.showAdult,
         settings.showLessImportantTags,
         settings.showSpoilerTags,
         ::MediaStatusParams,
     ).mapLatest {
-        val (statuses, ignoredIds, showIgnored, showAdult, showLessImportantTags, showSpoilerTags) = it
+        val (statuses, _, showIgnored, showAdult, showLessImportantTags, showSpoilerTags) = it
         pagingData.mapNotNull {
             val mediaPreview = media(it)
             applyMediaFiltering(
                 statuses = statuses,
-                ignoredIds = ignoredIds,
+                ignoreController = ignoreController,
                 showAdult = showAdult,
                 showIgnored = showIgnored,
                 showLessImportantTags = showLessImportantTags,
@@ -248,6 +253,7 @@ fun <T : MediaStatusAware> Flow<PagingData<T>>.applyMediaStatusChanges(
                 entry = it,
                 transform = { it },
                 media = mediaPreview,
+                forceShowIgnored = forceShowIgnored,
                 copy = copy,
             )
         }
@@ -256,7 +262,7 @@ fun <T : MediaStatusAware> Flow<PagingData<T>>.applyMediaStatusChanges(
 
 private data class MediaStatusParams(
     val statuses: Map<String, MediaListStatusController.Update>,
-    val ignoredIds: Set<Int>,
+    val ignoredCount: Int,
     val showIgnored: Boolean,
     val showAdult: Boolean,
     val showLessImportantTags: Boolean,

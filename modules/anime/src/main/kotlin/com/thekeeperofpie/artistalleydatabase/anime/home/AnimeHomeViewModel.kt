@@ -22,7 +22,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityUtils.entry
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityUtils.liked
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityUtils.subscribed
 import com.thekeeperofpie.artistalleydatabase.anime.activity.AnimeActivityViewModel
-import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
+import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaCompactWithTagsEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaFiltering
@@ -45,7 +45,7 @@ class AnimeHomeViewModel @Inject constructor(
     val newsController: AnimeNewsController,
     private val aniListApi: AuthedAniListApi,
     mediaListStatusController: MediaListStatusController,
-    ignoreList: AnimeMediaIgnoreList,
+    ignoreController: IgnoreController,
     activityStatusController: ActivityStatusController,
     settings: AnimeSettings,
     monetizationController: MonetizationController,
@@ -82,7 +82,7 @@ class AnimeHomeViewModel @Inject constructor(
                 .flatMapLatest { pagingData ->
                     combine(
                         mediaListStatusController.allChanges(),
-                        ignoreList.updates,
+                        ignoreController.updates(),
                         settings.showIgnored,
                         settings.showAdult,
                         settings.showLessImportantTags,
@@ -98,14 +98,14 @@ class AnimeHomeViewModel @Inject constructor(
                                     ?.media?.let {
                                         MediaCompactWithTagsEntry(
                                             media = it,
-                                            ignored = ignoredIds.contains(it.id),
+                                            ignored = ignoreController.isIgnored(it.id.toString()),
                                             showLessImportantTags = showLessImportantTags,
                                             showSpoilerTags = showSpoilerTags,
                                         )
                                     }?.let {
                                         applyMediaFiltering(
                                             statuses = mediaUpdates,
-                                            ignoredIds = ignoredIds,
+                                            ignoreController = ignoreController,
                                             showAdult = showAdult,
                                             showIgnored = showIgnored,
                                             showLessImportantTags = showLessImportantTags,

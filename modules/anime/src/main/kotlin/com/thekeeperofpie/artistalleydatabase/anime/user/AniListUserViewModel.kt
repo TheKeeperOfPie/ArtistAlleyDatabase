@@ -28,7 +28,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils
 import com.thekeeperofpie.artistalleydatabase.anime.character.DetailsCharacter
-import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
+import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaStatusChanges
@@ -64,7 +64,7 @@ import javax.inject.Inject
 class AniListUserViewModel @Inject constructor(
     private val aniListApi: AuthedAniListApi,
     private val statusController: MediaListStatusController,
-    private val ignoreList: AnimeMediaIgnoreList,
+    private val ignoreController: IgnoreController,
     private val settings: AnimeSettings,
 ) : ViewModel() {
 
@@ -109,7 +109,7 @@ class AniListUserViewModel @Inject constructor(
                         entry = null
                     }
                     try {
-                        val userOrViewerId = userId ?: viewer?.id?.toString()
+                        val userOrViewerId = userId ?: viewer?.id
                         if (userOrViewerId == null) {
                             withContext(CustomDispatchers.Main) {
                                 errorResource = R.string.anime_media_list_error_loading to null
@@ -146,7 +146,7 @@ class AniListUserViewModel @Inject constructor(
             transformFlow = {
                 applyMediaStatusChanges(
                     statusController = statusController,
-                    ignoreList = ignoreList,
+                    ignoreController = ignoreController,
                     settings = settings,
                     media = { it.media },
                     copy = { mediaListStatus, progress, progressVolumes, scoreRaw, ignored, showLessImportantTags, showSpoilerTags ->
@@ -183,7 +183,7 @@ class AniListUserViewModel @Inject constructor(
             transformFlow = {
                 applyMediaStatusChanges(
                     statusController = statusController,
-                    ignoreList = ignoreList,
+                    ignoreController = ignoreController,
                     settings = settings,
                     media = { it.media },
                     copy = { mediaListStatus, progress, progressVolumes, scoreRaw, ignored, showLessImportantTags, showSpoilerTags ->

@@ -52,7 +52,6 @@ import androidx.compose.ui.text.toUpperCase
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -632,6 +631,9 @@ class MainActivity : ComponentActivity() {
                                     navigationCallback.navigate(
                                         AnimeNavDestinations.MEDIA_HISTORY.id
                                     )
+                                },
+                                onClickViewMediaIgnore = {
+                                    navigationCallback.onClickViewIgnored()
                                 },
                             )
                         }

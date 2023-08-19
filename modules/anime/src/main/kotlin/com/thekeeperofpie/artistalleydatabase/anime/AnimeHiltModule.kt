@@ -1,7 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime
 
 import android.app.Application
-import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityReplyStatusController
@@ -11,7 +10,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.ForumThreadComm
 import com.thekeeperofpie.artistalleydatabase.anime.forum.thread.ForumThreadStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.history.AnimeHistoryDao
 import com.thekeeperofpie.artistalleydatabase.anime.history.HistoryController
-import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
+import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeIgnoreDao
+import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.markdown.AniListSpoilerPlugin
 import com.thekeeperofpie.artistalleydatabase.anime.markdown.AniListTempPlugin
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaGenreDialogController
@@ -55,10 +55,11 @@ object AnimeHiltModule {
 
     @Singleton
     @Provides
-    fun provideAnimeMediaIgnoreList(
-        animeSettings: AnimeSettings,
-        featureOverrideProvider: FeatureOverrideProvider,
-    ) = AnimeMediaIgnoreList(animeSettings, featureOverrideProvider)
+    fun provideIgnoreController(
+        scopedApplication: ScopedApplication,
+        ignoreDao: AnimeIgnoreDao,
+        settings: AnimeSettings,
+    ) = IgnoreController(scopedApplication, ignoreDao, settings)
 
     @Singleton
     @Provides
@@ -91,13 +92,13 @@ object AnimeHiltModule {
     fun provideUserMediaListController(
         scopedApplication: ScopedApplication,
         aniListApi: AuthedAniListApi,
-        ignoreList: AnimeMediaIgnoreList,
+        ignoreController: IgnoreController,
         statusController: MediaListStatusController,
         settings: AnimeSettings,
     ) = UserMediaListController(
         scopedApplication = scopedApplication,
         aniListApi = aniListApi,
-        ignoreList = ignoreList,
+        ignoreController = ignoreController,
         statusController = statusController,
         settings = settings,
     )
@@ -171,6 +172,10 @@ object AnimeHiltModule {
     @Singleton
     @Provides
     fun provideAnimeHistoryDao(database: AnimeDatabase) = database.animeHistoryDao()
+
+    @Singleton
+    @Provides
+    fun provideAnimeIgnoreDao(database: AnimeDatabase) = database.animeIgnoreDao()
 
     @Singleton
     @Provides

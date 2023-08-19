@@ -27,8 +27,6 @@ data class SettingsData(
     val collapseAnimeFiltersOnClose: Boolean = true,
     val savedAnimeFilters: Map<String, FilterData> = emptyMap(),
     val showAdult: Boolean = false,
-    val showIgnored: Boolean = false,
-    val ignoredAniListMediaIds: Set<Int> = emptySet(),
     val showLessImportantTags: Boolean = false,
     val showSpoilerTags: Boolean = false,
     val animeNewsNetworkRegion: AnimeNewsNetworkRegion = AnimeNewsNetworkRegion.USA_CANADA,
@@ -51,4 +49,6 @@ data class SettingsData(
     val showFallbackVoiceActor: Boolean = true,
     val mediaHistoryEnabled: Boolean = false,
     val mediaHistoryMaxEntries: Int = 200,
+    val mediaIgnoreEnabled: Boolean = false,
+    val mediaIgnoreHide: Boolean = false,
 )

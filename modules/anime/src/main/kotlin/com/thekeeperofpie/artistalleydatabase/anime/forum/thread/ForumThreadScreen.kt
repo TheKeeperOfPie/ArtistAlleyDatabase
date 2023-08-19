@@ -219,7 +219,7 @@ object ForumThreadScreen {
                                     viewer = viewer,
                                     entry = item,
                                     onLongClick = {
-                                        viewModel.ignoreList.toggle(it.media.id.toString())
+                                        viewModel.ignoreController.toggle(it.media)
                                     },
                                     onClickListEdit = { editViewModel.initialize(it.media) },
                                     modifier = Modifier.padding(

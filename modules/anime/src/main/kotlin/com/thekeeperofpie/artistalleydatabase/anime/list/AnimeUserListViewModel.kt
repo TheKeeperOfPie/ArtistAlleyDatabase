@@ -14,7 +14,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
-import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
+import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewWithDescriptionEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
@@ -52,7 +52,7 @@ import kotlin.time.Duration.Companion.milliseconds
 class AnimeUserListViewModel @Inject constructor(
     private val aniListApi: AuthedAniListApi,
     private val settings: AnimeSettings,
-    val ignoreList: AnimeMediaIgnoreList,
+    val ignoreController: IgnoreController,
     private val mediaTagsController: MediaTagsController,
     private val mediaGenresController: MediaGenresController,
     private val mediaLicensorsController: MediaLicensorsController,
@@ -202,11 +202,11 @@ class AnimeUserListViewModel @Inject constructor(
                 ::FilterParams
             ).flatMapLatest { (lists, mediaUpdates, query, filterParams) ->
                 combine(
-                    ignoreList.updates,
+                    ignoreController.updates(),
                     settings.showAdult,
                     settings.showLessImportantTags,
                     settings.showSpoilerTags,
-                ) { ignoredIds, showAdult, showLessImportantTags, showSpoilerTags ->
+                ) { _, showAdult, showLessImportantTags, showSpoilerTags ->
                     lists.transformResult {
                         it.filter {
                             val listStatuses = filterParams.listStatuses
@@ -223,7 +223,7 @@ class AnimeUserListViewModel @Inject constructor(
                                     entries = it.entries.mapNotNull {
                                         applyMediaFiltering(
                                             statuses = mediaUpdates,
-                                            ignoredIds = ignoredIds,
+                                            ignoreController = ignoreController,
                                             showAdult = showAdult,
                                             showIgnored = true,
                                             showLessImportantTags = showLessImportantTags,
@@ -265,8 +265,7 @@ class AnimeUserListViewModel @Inject constructor(
         }
     }
 
-    fun onMediaLongClick(entry: AnimeMediaListRow.Entry) =
-        ignoreList.toggle(entry.media.id.toString())
+    fun onMediaLongClick(entry: AnimeMediaListRow.Entry) = ignoreController.toggle(entry.media)
 
     private fun toFilteredEntries(
         query: String,

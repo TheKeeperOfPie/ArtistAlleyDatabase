@@ -21,7 +21,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoritesController
 import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoritesToggleHelper
-import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
+import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaFiltering
@@ -47,7 +47,7 @@ class AnimeCharacterDetailsViewModel @Inject constructor(
     private val aniListApi: AuthedAniListApi,
     private val statusController: MediaListStatusController,
     favoritesController: FavoritesController,
-    private val ignoreList: AnimeMediaIgnoreList,
+    private val ignoreController: IgnoreController,
     private val settings: AnimeSettings,
 ) : ViewModel() {
 
@@ -79,18 +79,18 @@ class AnimeCharacterDetailsViewModel @Inject constructor(
                         .orEmpty()
                     combine(
                         statusController.allChanges(media.map { it.media.id.toString() }.toSet()),
-                        ignoreList.updates,
+                        ignoreController.updates(),
                         settings.showAdult,
                         settings.showLessImportantTags,
                         settings.showSpoilerTags,
-                    ) { statuses, ignoredIds, showAdult, showLessImportantTags, showSpoilerTags ->
+                    ) { statuses, _, showAdult, showLessImportantTags, showSpoilerTags ->
                         result.transformResult { character ->
                             CharacterDetailsScreen.Entry(
                                 character.character!!,
                                 media = media.mapNotNull {
                                     applyMediaFiltering(
                                         statuses = statuses,
-                                        ignoredIds = ignoredIds,
+                                        ignoreController = ignoreController,
                                         showAdult = showAdult,
                                         showIgnored = true,
                                         showLessImportantTags = showLessImportantTags,
@@ -164,5 +164,5 @@ class AnimeCharacterDetailsViewModel @Inject constructor(
     }
 
     fun onMediaLongClick(entry: AnimeMediaListRow.Entry) =
-        ignoreList.toggle(entry.media.id.toString())
+        ignoreController.toggle(entry.media)
 }

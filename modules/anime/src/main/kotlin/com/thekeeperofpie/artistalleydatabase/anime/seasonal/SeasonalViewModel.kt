@@ -24,7 +24,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatc
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListUtils
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
-import com.thekeeperofpie.artistalleydatabase.anime.ignore.AnimeMediaIgnoreList
+import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewWithDescriptionEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaStatusChanges2
@@ -59,7 +59,7 @@ import kotlin.time.Duration.Companion.milliseconds
 class SeasonalViewModel @Inject constructor(
     private val aniListApi: AuthedAniListApi,
     private val settings: AnimeSettings,
-    val ignoreList: AnimeMediaIgnoreList,
+    val ignoreController: IgnoreController,
     private val statusController: MediaListStatusController,
     mediaTagsController: MediaTagsController,
     mediaGenresController: MediaGenresController,
@@ -123,8 +123,7 @@ class SeasonalViewModel @Inject constructor(
         return pageData.content.collectAsLazyPagingItems()
     }
 
-    fun onMediaLongClick(entry: AnimeMediaListRow.Entry) =
-        ignoreList.toggle(entry.media.id.toString())
+    fun onMediaLongClick(entry: AnimeMediaListRow.Entry) = ignoreController.toggle(entry.media)
 
     enum class Type {
         LAST,
@@ -170,7 +169,7 @@ class SeasonalViewModel @Inject constructor(
                     .cachedIn(viewModelScope)
                     .applyMediaStatusChanges2(
                         statusController = statusController,
-                        ignoreList = ignoreList,
+                        ignoreController = ignoreController,
                         settings = settings,
                     )
                     .flatMapLatest { sortFilterController.filterMedia(it) { it.media } }
