@@ -35,6 +35,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIds
 import com.thekeeperofpie.artistalleydatabase.anime.utils.mapOnIO
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
+import io.noties.markwon.Markwon
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -57,6 +58,7 @@ class StaffDetailsViewModel @Inject constructor(
     favoritesController: FavoritesController,
     private val mediaListStatusController: MediaListStatusController,
     val ignoreController: IgnoreController,
+    private val markwon: Markwon,
 ) : ViewModel() {
 
     val viewer = aniListApi.authedUser
@@ -89,11 +91,10 @@ class StaffDetailsViewModel @Inject constructor(
         viewModelScope.launch(CustomDispatchers.IO) {
             try {
                 val staff = aniListApi.staffDetails(staffId)
-                showAdult.collectLatest {
-                    val entry = StaffDetailsScreen.Entry(staff, it)
-                    withContext(CustomDispatchers.Main) {
-                        this@StaffDetailsViewModel.entry = entry
-                    }
+                val description = staff.description?.let(markwon::toMarkdown)
+                val entry = StaffDetailsScreen.Entry(staff, description)
+                withContext(CustomDispatchers.Main) {
+                    this@StaffDetailsViewModel.entry = entry
                 }
             } catch (exception: Exception) {
                 withContext(CustomDispatchers.Main) {

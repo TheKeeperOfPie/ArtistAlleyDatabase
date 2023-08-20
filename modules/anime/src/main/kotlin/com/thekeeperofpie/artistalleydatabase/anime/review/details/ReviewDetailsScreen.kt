@@ -95,6 +95,8 @@ object ReviewDetailsScreen {
                         mediaId = entry?.review?.media?.id?.toString(),
                         mediaType = viewModel.entry?.review?.media?.type,
                         titles = entry?.titlesUnique,
+                        episodes = media?.episodes,
+                        format = media?.format,
                         averageScore = media?.averageScore,
                         popularity = media?.popularity,
                         progress = it,

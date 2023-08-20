@@ -39,6 +39,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIds
 import com.thekeeperofpie.artistalleydatabase.anime.utils.mapOnIO
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
+import io.noties.markwon.Markwon
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -66,6 +67,7 @@ class AniListUserViewModel @Inject constructor(
     private val statusController: MediaListStatusController,
     private val ignoreController: IgnoreController,
     private val settings: AnimeSettings,
+    private val markwon: Markwon,
 ) : ViewModel() {
 
     val screenKey = "${AnimeNavDestinations.USER.id}-${UUID.randomUUID()}"
@@ -116,7 +118,10 @@ class AniListUserViewModel @Inject constructor(
                             }
                         } else {
                             entry = aniListApi.user(userOrViewerId)
-                                ?.let(AniListUserScreen::Entry)
+                                ?.let {
+                                    val about = it.about?.let(markwon::toMarkdown)
+                                    AniListUserScreen.Entry(it, about)
+                                }
                         }
                     } catch (e: Exception) {
                         withContext(CustomDispatchers.Main) {

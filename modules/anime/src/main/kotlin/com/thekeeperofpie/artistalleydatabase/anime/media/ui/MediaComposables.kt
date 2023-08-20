@@ -39,7 +39,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.Dp
@@ -48,6 +47,7 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
 import com.anilist.fragment.MediaPreview
+import com.anilist.type.MediaFormat
 import com.anilist.type.MediaListStatus
 import com.anilist.type.MediaType
 import com.google.accompanist.placeholder.PlaceholderHighlight
@@ -227,34 +227,20 @@ fun MediaRatingIconsSection(
 @Composable
 fun MediaNextAiringSection(
     nextAiringEpisode: MediaPreview.NextAiringEpisode,
+    episodes: Int?,
+    format: MediaFormat?,
     showDate: Boolean = true,
 ) {
-    val context = LocalContext.current
-    val airingAt = remember(nextAiringEpisode) {
-        MediaUtils.formatAiringAt(context, nextAiringEpisode.airingAt * 1000L, showDate = showDate)
-    }
-
-    // TODO: De-dupe airingAt and remainingTime if both show a specific date
-    //  (airing > 7 days away)
-    val remainingTime = remember(nextAiringEpisode) {
-        MediaUtils.formatRemainingTime(nextAiringEpisode.airingAt * 1000L)
-    }
+    val text = MediaUtils.nextAiringSectionText(
+        airingAtAniListTimestamp = nextAiringEpisode.airingAt,
+        episode = nextAiringEpisode.episode,
+        episodes = episodes,
+        format = format,
+        showDate = showDate,
+    )
 
     Text(
-        text = if (airingAt.contains(remainingTime)) {
-            stringResource(
-                R.string.anime_media_next_airing_episode,
-                nextAiringEpisode.episode,
-                airingAt,
-            )
-        } else {
-            stringResource(
-                R.string.anime_media_next_airing_episode_with_relative,
-                nextAiringEpisode.episode,
-                airingAt,
-                remainingTime,
-            )
-        },
+        text = text,
         style = MaterialTheme.typography.labelSmall,
         color = MaterialTheme.typography.labelSmall.color
             .takeOrElse { LocalContentColor.current }
@@ -476,6 +462,7 @@ fun MediaViewOptionRow(
     viewer: AniListViewer?,
     editViewModel: MediaEditViewModel,
     entry: MediaPreviewWithDescriptionEntry?,
+    showQuickEdit: Boolean = true,
     onLongClick: (MediaPreview) -> Unit,
 ) {
     when (mediaViewOption) {
@@ -484,6 +471,7 @@ fun MediaViewOptionRow(
             viewer = viewer,
             entry = entry,
             onClickListEdit = { editViewModel.initialize(it.media) },
+            showQuickEdit = showQuickEdit,
             onLongClick = { entry?.media?.let(onLongClick) },
         )
         MediaViewOption.LARGE_CARD -> AnimeMediaLargeCard(
@@ -491,6 +479,7 @@ fun MediaViewOptionRow(
             viewer = viewer,
             entry = entry,
             onLongClick = { entry?.media?.let(onLongClick) },
+            showQuickEdit = showQuickEdit,
             onClickListEdit = { editViewModel.initialize(it.media) },
         )
         MediaViewOption.COMPACT -> AnimeMediaCompactListRow(
@@ -498,6 +487,7 @@ fun MediaViewOptionRow(
             viewer = viewer,
             entry = entry,
             onLongClick = { entry?.media?.let(onLongClick) },
+            showQuickEdit = showQuickEdit,
             onClickListEdit = { editViewModel.initialize(it.media) },
         )
         MediaViewOption.GRID -> MediaGridCard(
@@ -505,6 +495,7 @@ fun MediaViewOptionRow(
             entry = entry,
             viewer = viewer,
             onClickListEdit = { editViewModel.initialize(it.media) },
+            showQuickEdit = showQuickEdit,
             onLongClick = { entry?.media?.let(onLongClick) },
         )
     }

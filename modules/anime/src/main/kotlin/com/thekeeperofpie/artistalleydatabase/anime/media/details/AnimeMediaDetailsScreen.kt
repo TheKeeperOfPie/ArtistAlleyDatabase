@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.media.details
 
+import android.text.Spanned
 import android.view.View
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
@@ -288,6 +289,8 @@ object AnimeMediaDetailsScreen {
                             mediaId = viewModel.mediaId,
                             mediaType = viewModel.entry.result?.media?.type,
                             titles = entry.result?.titlesUnique,
+                            episodes = entry.result?.media?.episodes,
+                            format = entry.result?.media?.format,
                             averageScore = entry.result?.media?.averageScore,
                             popularity = entry.result?.media?.popularity,
                             progress = it,
@@ -508,7 +511,7 @@ object AnimeMediaDetailsScreen {
         genreSection(entry = entry)
 
         descriptionSection(
-            markdownText = entry.media.description,
+            markdownText = entry.description,
             expanded = expandedState::description,
             onExpandedChange = { expandedState.description = it },
         )
@@ -1863,6 +1866,7 @@ object AnimeMediaDetailsScreen {
         val media: Media,
         val relations: List<Relation>,
         val recommendations: List<Recommendation>,
+        val description: Spanned?,
     ) {
         val charactersInitial = MutableStateFlow(
             PagingData.from(

@@ -30,6 +30,10 @@ dependencies {
     implementation(libs.coil.compose)
     implementation(libs.material.icons.extended)
     implementation(libs.hilt.navigation.compose)
+    implementation(libs.compose.ui)
+    implementation(libs.compose.ui.tooling.preview)
+    implementation(libs.material3)
+    implementation(libs.paging.compose)
 
     runtimeOnly(libs.room.runtime)
     ksp(kspProcessors.room.compiler)

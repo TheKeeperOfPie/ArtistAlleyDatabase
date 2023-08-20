@@ -201,10 +201,11 @@ fragment MediaNavigationData on Media {
     isAdult
 }
 
-query MediaDetails($mediaId: Int!, $includeDescription: Boolean = true) {
+query MediaDetails($mediaId: Int!) {
     Media(id: $mediaId) {
         ...MediaHeaderData
-        ...MediaPreviewWithDescription
+        ...MediaPreview
+        description
         bannerImage
         coverImage {
             color
@@ -595,6 +596,7 @@ fragment MediaHeaderData on Media {
     status
     season
     seasonYear
+    episodes
     averageScore
     popularity
     nextAiringEpisode {

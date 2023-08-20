@@ -21,11 +21,17 @@ class AniListPagingSource<T : Any>(
             val page = params.key ?: 1
 
             val (pageInfo, result) = apiCall(page)
+
+            // Sometimes the API returns 500 even if there aren't that many results
+            var pageTotal = pageInfo?.total?.takeIf { it != 500 }
+            if (pageInfo?.hasNextPage != true && page == 1 && pageTotal != result.size) {
+                pageTotal = result.size
+            }
             val itemsAfter = if (pageInfo?.hasNextPage != true) {
                 0
             } else {
                 // TODO: Pass perPage in so it can be customized
-                pageInfo.total?.let { (it - (page * 10)) }?.takeIf { it > 0 }
+                pageTotal?.let { (it - (page * 10)) }?.takeIf { it > 0 }
             }
             LoadResult.Page(
                 data = result,

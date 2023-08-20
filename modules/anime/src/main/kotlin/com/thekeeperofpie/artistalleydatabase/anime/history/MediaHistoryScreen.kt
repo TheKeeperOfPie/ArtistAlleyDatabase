@@ -176,6 +176,7 @@ object MediaHistoryScreen {
                                 viewer = viewer,
                                 editViewModel = editViewModel,
                                 entry = entry,
+                                showQuickEdit = showQuickEdit,
                                 onLongClick = viewModel::onMediaLongClick,
                             )
                         }

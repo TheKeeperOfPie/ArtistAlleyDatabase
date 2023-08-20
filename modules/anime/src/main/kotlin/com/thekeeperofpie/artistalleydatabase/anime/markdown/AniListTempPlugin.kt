@@ -11,9 +11,11 @@ import io.noties.markwon.html.tag.SimpleTagHandler
 
 object AniListTempPlugin : AbstractMarkwonPlugin() {
 
-    private val webLinkRegex = Regex("""
+    private val webLinkRegex = Regex(
+        """
         \s(https?://(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.\S{2,}|https?://(?:www\.|(?!www))[a-zA-Z0-9]+\.\S{2,}|www\.[a-zA-Z0-9]+\.\S{2,})
-    """.trimIndent())
+    """.trimIndent()
+    )
 
     @Suppress("RestrictedApi")
     override fun processMarkdown(markdown: String) =
@@ -30,19 +32,19 @@ object AniListTempPlugin : AbstractMarkwonPlugin() {
             }
             // Markwon doesn't support parsing Markdown syntax inside of HTML tags, so manually
             // convert the common syntax into HTML equivalents
-            .replace(Regex("""([^\\*])\*\*([^*][\S\s]*?[^\\*])\*\*([^_])""")) {
+            .replace(Regex("""([^\\*]|^)\*\*([^*][\S\s]*?[^\\*])\*\*([^_])""")) {
                 "${it.groups[1]?.value}<b>${it.groups[2]?.value}</b>${it.groups[3]?.value}"
             }
-            .replace(Regex("""([^\\_])__([^_][\S\s]*?[^\\_])__([^_])""")) {
+            .replace(Regex("""([^\\_]|^)__([^_][\S\s]*?[^\\_])__([^_])""")) {
                 "${it.groups[1]?.value}<b>${it.groups[2]?.value}</b>${it.groups[3]?.value}"
             }
-            .replace(Regex("""([^\\_])_([^_][\S\s]*?[^\\_])_([^_])""")) {
+            .replace(Regex("""([^\\_]|^)_([^_][\S\s]*?[^\\_])_([^_])""")) {
                 "${it.groups[1]?.value}<i>${it.groups[2]?.value}</i>${it.groups[3]?.value}"
             }
-            .replace(Regex("""([^\\])~~~([\S\s]*?[^\\])~~~""")) {
+            .replace(Regex("""([^\\]|^)~~~([\S\s]*?[^\\])~~~""")) {
                 "${it.groups[1]?.value}<center>${it.groups[2]?.value}</center>"
             }
-            .replace(Regex("""([^\\])\+\+\+([\S\s]*?[^\\])\+\+\+""")) {
+            .replace(Regex("""([^\\]|^)\+\+\+([\S\s]*?[^\\])\+\+\+""")) {
                 "${it.groups[1]?.value}<center>${it.groups[2]?.value}</center>"
             }
             .replace(Regex("""\[(.*?)]\((.*?)\)""")) {

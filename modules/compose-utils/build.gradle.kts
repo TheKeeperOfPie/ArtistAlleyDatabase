@@ -25,7 +25,6 @@ dependencies {
     implementation(libs.navigation.compose)
     implementation(libs.material.icons.extended)
 
-    api(libs.paging.compose)
     api(libs.coil.compose)
     implementation(libs.palette.ktx)
     implementation(libs.html.text)

@@ -43,7 +43,6 @@ import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBar
-import com.thekeeperofpie.artistalleydatabase.compose.LazyStaggeredGrid
 import com.thekeeperofpie.artistalleydatabase.compose.NavMenuIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.NestedScrollSplitter
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
@@ -74,7 +73,6 @@ object EntryHomeScreen {
         onClickClear: () -> Unit = {},
         onClickEdit: () -> Unit = {},
         onConfirmDelete: () -> Unit = {},
-        lazyStaggeredGridState: LazyStaggeredGrid.LazyStaggeredGridState,
     ) {
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
         Chrome(
@@ -114,7 +112,6 @@ object EntryHomeScreen {
                 onClickClear = onClickClear,
                 onClickEdit = onClickEdit,
                 onConfirmDelete = onConfirmDelete,
-                lazyStaggeredGridState = lazyStaggeredGridState,
                 contentPadding = topBarPadding,
                 topOffset = topOffset,
             )

@@ -39,7 +39,7 @@ object StaffOverviewScreen {
             modifier = Modifier.fillMaxSize()
         ) {
             descriptionSection(
-                markdownText = entry.staff.description,
+                markdownText = entry.description,
                 expanded = expandedState::description,
                 onExpandedChange = { expandedState.description = it },
             )

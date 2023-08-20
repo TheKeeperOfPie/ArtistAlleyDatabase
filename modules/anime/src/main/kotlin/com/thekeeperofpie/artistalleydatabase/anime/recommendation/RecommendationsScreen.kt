@@ -51,6 +51,8 @@ object RecommendationsScreen {
                     mediaId = viewModel.headerId,
                     mediaType = viewModel.entry?.media?.type,
                     titles = entry?.titlesUnique,
+                    episodes = media?.episodes,
+                    format = media?.format,
                     averageScore = media?.averageScore,
                     popularity = media?.popularity,
                     progress = it,

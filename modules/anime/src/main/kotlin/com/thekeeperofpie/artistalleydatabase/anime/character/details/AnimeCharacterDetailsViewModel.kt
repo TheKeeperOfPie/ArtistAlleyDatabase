@@ -29,6 +29,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.staff.DetailsStaff
 import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIds
 import dagger.hilt.android.lifecycle.HiltViewModel
+import io.noties.markwon.Markwon
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
@@ -49,6 +50,7 @@ class AnimeCharacterDetailsViewModel @Inject constructor(
     favoritesController: FavoritesController,
     private val ignoreController: IgnoreController,
     private val settings: AnimeSettings,
+    private val markwon: Markwon,
 ) : ViewModel() {
 
     val viewer = aniListApi.authedUser
@@ -86,7 +88,7 @@ class AnimeCharacterDetailsViewModel @Inject constructor(
                     ) { statuses, _, showAdult, showLessImportantTags, showSpoilerTags ->
                         result.transformResult { character ->
                             CharacterDetailsScreen.Entry(
-                                character.character!!,
+                                character = character.character!!,
                                 media = media.mapNotNull {
                                     applyMediaFiltering(
                                         statuses = statuses,
@@ -98,6 +100,8 @@ class AnimeCharacterDetailsViewModel @Inject constructor(
                                         entry = it,
                                     )
                                 },
+                                description = character.character?.description
+                                    ?.let(markwon::toMarkdown),
                             )
                         }
                     }

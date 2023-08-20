@@ -149,7 +149,14 @@ object AnimeMediaListRow {
 
                     Spacer(Modifier.weight(1f))
 
-                    nextAiringEpisode?.let { MediaNextAiringSection(it, showDate = showDate) }
+                    nextAiringEpisode?.let {
+                        MediaNextAiringSection(
+                            nextAiringEpisode = nextAiringEpisode,
+                            episodes = entry?.media?.episodes,
+                            format = entry?.media?.format,
+                            showDate = showDate,
+                        )
+                    }
 
                     val colorCalculationState = LocalColorCalculationState.current
                     val (containerColor, textColor) =

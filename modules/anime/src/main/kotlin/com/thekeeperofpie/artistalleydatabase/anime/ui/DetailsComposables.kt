@@ -6,16 +6,19 @@
 
 package com.thekeeperofpie.artistalleydatabase.anime.ui
 
+import android.text.Spanned
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -25,18 +28,26 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.IconButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ImageNotSupported
+import androidx.compose.material.icons.filled.UnfoldLess
+import androidx.compose.material.icons.filled.UnfoldMore
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -56,7 +67,6 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.coerceAtMost
 import androidx.compose.ui.unit.dp
@@ -68,11 +78,10 @@ import coil.size.Dimension
 import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.android_utils.AnimationUtils
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.markdown.MarkdownText
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.compose.AccelerateEasing
-import com.thekeeperofpie.artistalleydatabase.compose.CustomHtmlText
-import com.thekeeperofpie.artistalleydatabase.compose.ImageHtmlText
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
@@ -330,52 +339,68 @@ internal fun LazyListScope.detailsLoadingOrError(
 }
 
 internal fun LazyListScope.descriptionSection(
-    markdownText: String?,
+    markdownText: Spanned?,
     expanded: () -> Boolean,
     onExpandedChange: (Boolean) -> Unit,
-    imagesSupported: Boolean = false,
 ) {
-    markdownText?.takeUnless(String::isEmpty) ?: return
+    if (markdownText.isNullOrEmpty()) return
     item("descriptionSection") {
+        val expanded = expanded()
         ElevatedCard(
-            onClick = { onExpandedChange(!expanded()) },
             modifier = Modifier
                 .animateContentSize()
                 .padding(start = 16.dp, end = 16.dp, top = 10.dp, bottom = 2.dp)
                 .fillMaxWidth()
         ) {
             val style = MaterialTheme.typography.bodyMedium
-            val expanded = expanded()
 
-            if (imagesSupported) {
-                ImageHtmlText(
-                    text = markdownText.replaceSpoilers(),
+            var showExpandButton by rememberSaveable { mutableStateOf(false) }
+
+            Box {
+                MarkdownText(
+                    text = markdownText,
+                    textColor = style.color.takeOrElse { LocalContentColor.current },
                     maxLines = if (expanded) Int.MAX_VALUE else 4,
-                    color = style.color.takeOrElse { LocalContentColor.current },
+                    onOverflowChange = { showExpandButton = it },
                     modifier = Modifier
-                        .padding(horizontal = 16.dp, vertical = 10.dp)
+                        .padding(
+                            start = 16.dp,
+                            end = 16.dp,
+                            top = 10.dp,
+                            bottom = if (expanded) 64.dp else 10.dp,
+                        )
+                        .fillMaxWidth()
                         .wrapContentHeight()
                 )
-            } else {
-                CustomHtmlText(
-                    text = markdownText.replaceSpoilers(),
-                    maxLines = if (expanded) Int.MAX_VALUE else 4,
-                    style = style,
-                    color = style.color.takeOrElse { LocalContentColor.current },
-                    overflow = TextOverflow.Ellipsis,
-                    onFallbackClick = { onExpandedChange(!expanded()) },
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp, vertical = 10.dp)
-                        .wrapContentHeight()
-                )
+
+                if (showExpandButton || expanded) {
+                    IconButton(
+                        onClick = { onExpandedChange(!expanded) },
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .background(
+                                color = MaterialTheme.colorScheme.surfaceContainerHigh
+                                    .copy(alpha = 0.8f),
+                                shape = RoundedCornerShape(topStart = 12.dp),
+                            )
+                    ) {
+                        Icon(
+                            imageVector = if (expanded) {
+                                Icons.Filled.UnfoldLess
+                            } else {
+                                Icons.Filled.UnfoldMore
+                            },
+                            contentDescription = stringResource(
+                                if (expanded) {
+                                    R.string.anime_unfold_less_text
+                                } else {
+                                    R.string.anime_unfold_more_text
+                                }
+                            )
+                        )
+                    }
+                }
             }
         }
     }
-}
-
-// TODO: Find a way to show spoilers on click
-@Composable
-private fun String.replaceSpoilers(): String {
-    val spoilerRegex = Regex("(?<=<span class='markdown_spoiler'><span>).+?(?=</span></span>)")
-    return replace(spoilerRegex, stringResource(R.string.anime_description_spoiler))
 }

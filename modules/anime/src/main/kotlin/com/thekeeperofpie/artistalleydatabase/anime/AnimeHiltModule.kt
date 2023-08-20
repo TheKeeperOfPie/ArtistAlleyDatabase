@@ -29,7 +29,6 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import io.noties.markwon.Markwon
-import io.noties.markwon.PrecomputedTextSetterCompat
 import io.noties.markwon.SoftBreakAddsNewLinePlugin
 import io.noties.markwon.core.CorePlugin
 import io.noties.markwon.ext.strikethrough.StrikethroughPlugin
@@ -41,7 +40,6 @@ import io.noties.markwon.linkify.LinkifyPlugin
 import io.noties.markwon.movement.MovementMethodPlugin
 import okhttp3.OkHttpClient
 import org.chromium.net.CronetEngine
-import java.util.concurrent.Executors
 import javax.inject.Singleton
 
 @Module
@@ -166,7 +164,6 @@ object AnimeHiltModule {
         .usePlugin(AniListTempPlugin)
         .usePlugin(AniListSpoilerPlugin)
         .usePlugin(CoilImagesPlugin.create(application))
-        .textSetter(PrecomputedTextSetterCompat.create(Executors.newCachedThreadPool()))
         .build()
 
     @Singleton

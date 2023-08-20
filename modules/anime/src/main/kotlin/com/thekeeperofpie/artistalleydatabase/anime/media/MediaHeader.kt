@@ -36,7 +36,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.LineBreak
@@ -47,6 +46,7 @@ import androidx.lifecycle.ViewModel
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import com.anilist.fragment.MediaHeaderData
+import com.anilist.type.MediaFormat
 import com.anilist.type.MediaSeason
 import com.anilist.type.MediaType
 import com.mxalbert.sharedelements.SharedElement
@@ -73,6 +73,8 @@ fun MediaHeader(
     mediaId: String?,
     mediaType: MediaType?,
     titles: List<String>?,
+    episodes: Int?,
+    format: MediaFormat?,
     averageScore: Int?,
     popularity: Int?,
     progress: Float,
@@ -190,25 +192,15 @@ fun MediaHeader(
                             label = "Media details nextEpisodeAiringAt text"
                         ) {
                             if (nextEpisodeAiringAt != null && nextEpisode != null) {
-                                val context = LocalContext.current
-                                val airingAt = remember {
-                                    MediaUtils.formatAiringAt(
-                                        context,
-                                        nextEpisodeAiringAt * 1000L
-                                    )
-                                }
-
-                                val remainingTime = remember {
-                                    MediaUtils.formatRemainingTime(nextEpisodeAiringAt * 1000L)
-                                }
+                                val nextAiringAtText = MediaUtils.nextAiringSectionText(
+                                    airingAtAniListTimestamp = nextEpisodeAiringAt,
+                                    episode = nextEpisode,
+                                    episodes = episodes,
+                                    format = format,
+                                )
 
                                 Text(
-                                    text = stringResource(
-                                        R.string.anime_media_next_airing_episode,
-                                        nextEpisode,
-                                        airingAt,
-                                        remainingTime,
-                                    ),
+                                    text = nextAiringAtText,
                                     style = MaterialTheme.typography.labelMedium,
                                     color = MaterialTheme.colorScheme.surfaceTint,
                                     modifier = Modifier

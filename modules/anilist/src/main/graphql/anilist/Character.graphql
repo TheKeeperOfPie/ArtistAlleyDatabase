@@ -119,7 +119,7 @@ fragment CharacterHeaderData on Character {
 query CharacterDetails($id: Int!) {
     Character(id: $id) {
         ...CharacterHeaderData
-        description(asHtml: true)
+        description
         age
         dateOfBirth {
             year

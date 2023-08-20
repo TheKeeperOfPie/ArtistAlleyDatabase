@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.character.details
 
+import android.text.Spanned
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
@@ -211,7 +212,7 @@ object CharacterDetailsScreen {
         colorCalculationState: ColorCalculationState,
     ) {
         descriptionSection(
-            markdownText = entry.character.description,
+            markdownText = entry.description,
             expanded = expandedState::description,
             onExpandedChange = { expandedState.description = it },
         )
@@ -435,6 +436,7 @@ object CharacterDetailsScreen {
     data class Entry(
         val character: Character,
         val media: List<MediaPreviewEntry>,
+        val description: Spanned?,
     ) {
         val voiceActorsInitial = MutableStateFlow(
             PagingData.from(

@@ -35,6 +35,7 @@ dependencies {
     implementation(libs.accompanist.placeholder.material)
 
     implementation(libs.hilt.navigation.compose)
+    api(libs.paging.compose)
 
     implementation(libs.nv.i18n)
     implementation(libs.constraintlayout.compose)

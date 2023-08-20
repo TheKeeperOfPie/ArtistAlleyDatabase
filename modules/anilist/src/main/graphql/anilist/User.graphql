@@ -40,7 +40,7 @@ query UserById($id: Int!) {
         ...UserNavigationData
         id
         name
-        about(asHtml: true)
+        about
         avatar {
             large
         }

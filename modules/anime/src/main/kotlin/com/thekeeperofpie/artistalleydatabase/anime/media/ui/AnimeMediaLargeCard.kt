@@ -147,7 +147,13 @@ object AnimeMediaLargeCard {
 
                     Row(verticalAlignment = Alignment.Bottom) {
                         Column(modifier = Modifier.weight(1f)) {
-                            entry?.nextAiringEpisode?.let { MediaNextAiringSection(it) }
+                            entry?.nextAiringEpisode?.let {
+                                MediaNextAiringSection(
+                                    nextAiringEpisode = it,
+                                    episodes = entry.media.episodes,
+                                    format = entry.media.format,
+                                )
+                            }
                             val colorCalculationState = LocalColorCalculationState.current
                             val (containerColor, textColor) =
                                 colorCalculationState.getColors(entry?.id?.valueId)
@@ -169,8 +175,10 @@ object AnimeMediaLargeCard {
                         }
 
                         if (viewer != null && entry != null && showQuickEdit) {
-                            Box(modifier = Modifier.padding(end = 4.dp, bottom = 4.dp)
-                                .clip(RoundedCornerShape(12.dp))
+                            Box(
+                                modifier = Modifier
+                                    .padding(end = 4.dp, bottom = 4.dp)
+                                    .clip(RoundedCornerShape(12.dp))
                             ) {
                                 MediaListQuickEditIconButton(
                                     viewer = viewer,

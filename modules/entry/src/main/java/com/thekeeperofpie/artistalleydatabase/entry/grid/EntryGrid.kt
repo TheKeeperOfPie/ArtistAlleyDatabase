@@ -17,6 +17,10 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
+import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
@@ -28,6 +32,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -44,6 +49,8 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.itemContentType
+import androidx.paging.compose.itemKey
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import coil.size.Dimension
@@ -53,11 +60,12 @@ import com.mxalbert.sharedelements.SharedElement
 import com.mxalbert.sharedelements.SharedElementsTransitionSpec
 import com.thekeeperofpie.artistalleydatabase.android_utils.UtilsStringR
 import com.thekeeperofpie.artistalleydatabase.compose.ButtonFooter
-import com.thekeeperofpie.artistalleydatabase.compose.LazyStaggeredGrid
 import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import com.thekeeperofpie.artistalleydatabase.entry.EntryUtils
 import com.thekeeperofpie.artistalleydatabase.entry.R
+import kotlinx.coroutines.launch
 
+@Suppress("NAME_SHADOWING")
 object EntryGrid {
 
     @Composable
@@ -74,10 +82,10 @@ object EntryGrid {
         onClickClear: () -> Unit = {},
         onClickEdit: () -> Unit = {},
         onConfirmDelete: () -> Unit = {},
-        lazyStaggeredGridState: LazyStaggeredGrid.LazyStaggeredGridState,
     ) {
         var showDeleteDialog by rememberSaveable { mutableStateOf(false) }
 
+        val gridState = rememberLazyStaggeredGridState()
         Box(
             modifier = Modifier
                 .conditionally(paddingValues != null) {
@@ -91,7 +99,7 @@ object EntryGrid {
                     selectedItems = selectedItems,
                     onClickEntry = onClickEntry,
                     onLongClickEntry = onLongClickEntry,
-                    lazyStaggeredGridState = lazyStaggeredGridState,
+                    gridState = gridState,
                     contentPadding = contentPadding,
                     modifier = Modifier
                         .weight(1f, true)
@@ -107,6 +115,7 @@ object EntryGrid {
             }
 
             entriesSize()?.let { size ->
+                val scope = rememberCoroutineScope()
                 val stringRes = when (size) {
                     0 -> R.string.entry_results_zero
                     1 -> R.string.entry_results_one
@@ -129,7 +138,9 @@ object EntryGrid {
                             MaterialTheme.colorScheme.secondaryContainer,
                             RoundedCornerShape(8.dp)
                         )
-                        .clickable { lazyStaggeredGridState.scrollToTop() }
+                        .clickable {
+                            scope.launch { gridState.animateScrollToItem(0, 0) }
+                        }
                         .padding(8.dp)
                 )
             }
@@ -152,25 +163,33 @@ object EntryGrid {
         selectedItems: () -> Collection<Int> = { emptyList() },
         onClickEntry: (index: Int, entry: T) -> Unit = { _, _ -> },
         onLongClickEntry: (index: Int, entry: T) -> Unit = { _, _ -> },
-        lazyStaggeredGridState: LazyStaggeredGrid.LazyStaggeredGridState,
+        gridState: LazyStaggeredGridState = rememberLazyStaggeredGridState(),
     ) {
         val expectedWidth = LocalDensity.current.run {
             // TODO: Find a better way to calculate the optimal image size
-            LocalConfiguration.current.screenWidthDp.dp.roundToPx() /
-                    lazyStaggeredGridState.columnCount
+            val screenWidth = LocalConfiguration.current.screenWidthDp.dp
+            val columns = (screenWidth / 160.dp).toInt()
+            screenWidth.roundToPx() / columns
         }.let(::Dimension)
 
-        LazyStaggeredGrid<T>(
-            state = lazyStaggeredGridState,
+        val entries = entries()
+        val columns = StaggeredGridCells.Adaptive(160.dp)
+        LazyVerticalStaggeredGrid(
+            state = gridState,
+            columns = columns,
+            contentPadding = contentPadding ?: PaddingValues(0.dp),
             modifier = modifier,
-            contentPadding = contentPadding,
         ) {
-            items(entries(), key = { it.id.scopedId }) { index, item ->
+            items(
+                count = entries.itemCount,
+                key = entries.itemKey { it.id.scopedId },
+                contentType = entries.itemContentType { "entry" }
+            ) {
                 Entry(
                     imageScreenKey,
                     expectedWidth,
-                    index,
-                    item,
+                    it,
+                    entries[it],
                     selectedItems,
                     onClickEntry,
                     onLongClickEntry
@@ -297,7 +316,7 @@ object EntryGrid {
     @Composable
     fun DeleteDialog(
         onDismiss: () -> Unit,
-        onConfirmDelete: () -> Unit
+        onConfirmDelete: () -> Unit,
     ) {
         AlertDialog(
             onDismissRequest = onDismiss,

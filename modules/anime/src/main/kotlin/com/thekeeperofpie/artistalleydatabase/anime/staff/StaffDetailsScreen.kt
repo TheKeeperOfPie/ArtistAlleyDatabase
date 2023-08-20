@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.staff
 
+import android.text.Spanned
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -170,7 +171,10 @@ object StaffDetailsScreen {
         }
     }
 
-    data class Entry(val staff: Staff, val showAdult: Boolean)
+    data class Entry(
+        val staff: Staff,
+        val description: Spanned?,
+    )
 
     @Composable
     private fun rememberExpandedState() = rememberSaveable(saver = listSaver(

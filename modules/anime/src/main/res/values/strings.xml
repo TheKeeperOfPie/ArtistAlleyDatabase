@@ -147,8 +147,10 @@
     <string name="anime_media_tag_spoiler">Spoiler</string>
     <string name="anime_media_tag_search_placeholder">Search tag…</string>
 
-    <string name="anime_media_next_airing_episode">Ep. %1$s: %2$s</string>
-    <string name="anime_media_next_airing_episode_with_relative">Ep. %1$s: %2$s (%3$s)</string>
+    <string name="anime_media_next_airing_episode_without_episode">%1$s</string>
+    <string name="anime_media_next_airing_episode_without_episode_with_relative">%1$s (%2$s)</string>
+    <string name="anime_media_next_airing_episode_with_episode">Ep. %1$s: %2$s</string>
+    <string name="anime_media_next_airing_episode_with_episode_with_relative">Ep. %1$s: %2$s (%3$s)</string>
     <string name="anime_media_rating_icon_content_description">Rating</string>
     <string name="anime_media_rating_population_icon_content_description">Users</string>
 
@@ -545,6 +547,7 @@
 
     <string name="anime_characters_error_loading">Error loading characters</string>
     <string name="anime_characters_header">Characters</string>
+    <string name="anime_characters_menu_voice_actor_language">Language</string>
 
     <string name="anime_staff_overview_label">Overview</string>
     <string name="anime_staff_media_label">Media</string>
@@ -875,5 +878,7 @@
     <!-- TODO: Move this elsewhere -->
     <string name="last_crash_notification">App crash detected</string>
     <string name="last_crash_notification_button">Show</string>
-    <string name="anime_characters_menu_voice_actor_language">Language</string>
+
+    <string name="anime_unfold_more_text">Expand</string>
+    <string name="anime_unfold_less_text">Collapse</string>
 </resources>

@@ -18,7 +18,6 @@ import com.thekeeperofpie.artistalleydatabase.browse.BrowseEntryModel
 import com.thekeeperofpie.artistalleydatabase.browse.BrowseSelectionNavigator
 import com.thekeeperofpie.artistalleydatabase.compose.AddBackPressInvokeFirst
 import com.thekeeperofpie.artistalleydatabase.compose.BackPressStageHandler
-import com.thekeeperofpie.artistalleydatabase.compose.LazyStaggeredGrid
 import com.thekeeperofpie.artistalleydatabase.entry.EntryDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.entry.EntryHomeScreen
 import com.thekeeperofpie.artistalleydatabase.entry.EntryId
@@ -34,8 +33,6 @@ class ArtEntryNavigator : BrowseSelectionNavigator {
     ) {
         navGraphBuilder.composable(ArtNavDestinations.HOME.id) {
             val viewModel = hiltViewModel<ArtSearchViewModel>()
-            val lazyStaggeredGridState =
-                LazyStaggeredGrid.rememberLazyStaggeredGridState(columnCount = 2)
             EntryHomeScreen(
                 screenKey = ArtNavDestinations.HOME.id,
                 onClickNav = onClickNav,
@@ -71,7 +68,6 @@ class ArtEntryNavigator : BrowseSelectionNavigator {
                     )
                 },
                 onConfirmDelete = viewModel::deleteSelected,
-                lazyStaggeredGridState = lazyStaggeredGridState,
             )
         }
 

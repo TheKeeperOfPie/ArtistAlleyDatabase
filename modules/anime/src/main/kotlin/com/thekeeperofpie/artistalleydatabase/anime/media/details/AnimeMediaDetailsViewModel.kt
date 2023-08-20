@@ -61,6 +61,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.utils.mapOnIO
 import com.thekeeperofpie.artistalleydatabase.cds.data.CdEntryDao
 import com.thekeeperofpie.artistalleydatabase.cds.grid.CdEntryGridModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import io.noties.markwon.Markwon
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
@@ -100,6 +101,7 @@ class AnimeMediaDetailsViewModel @Inject constructor(
     private val activityStatusController: ActivityStatusController,
     private val threadStatusController: ForumThreadStatusController,
     private val historyController: HistoryController,
+    private val markwon: Markwon,
 ) : ViewModel(), DefaultLifecycleObserver {
 
     companion object {
@@ -221,6 +223,9 @@ class AnimeMediaDetailsViewModel @Inject constructor(
 
                             val recommendationMediaIds =
                                 recommendations.map { it.data.recommendationMediaId }.toSet()
+
+                            val description = media.description?.let(markwon::toMarkdown)
+
                             combine(
                                 mediaListStatusController.allChanges(mediaIds),
                                 recommendationStatusController.allChanges(
@@ -300,7 +305,8 @@ class AnimeMediaDetailsViewModel @Inject constructor(
                                                     )
                                                 }
                                             }
-                                        }
+                                        },
+                                        description = description,
                                     )
                                 }
                             }

@@ -79,10 +79,9 @@ object UserOverviewScreen {
             )
 
             descriptionSection(
-                markdownText = user.about?.trim(),
+                markdownText = entry.about,
                 expanded = { descriptionExpanded },
                 onExpandedChange = { descriptionExpanded = it },
-                imagesSupported = true,
             )
 
             // TODO: mediaListEntry doesn't load properly for these, figure out a way to show status

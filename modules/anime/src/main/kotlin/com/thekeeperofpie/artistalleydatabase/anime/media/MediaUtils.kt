@@ -16,7 +16,9 @@ import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.filled.WatchLater
 import androidx.compose.material.icons.twotone._18UpRating
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import com.anilist.MediaDetailsQuery
 import com.anilist.MediaListEntryQuery
@@ -784,5 +786,55 @@ object MediaUtils {
         Icons.Filled.Monitor
     } else {
         Icons.Filled.MenuBook
+    }
+
+    @Composable
+    fun nextAiringSectionText(
+        airingAtAniListTimestamp: Int,
+        episode: Int,
+        episodes: Int?,
+        format: MediaFormat?,
+        showDate: Boolean = true,
+    ): String {
+        val context = LocalContext.current
+        val airingAt = remember {
+            formatAiringAt(context, airingAtAniListTimestamp * 1000L, showDate = showDate)
+        }
+
+        // TODO: De-dupe airingAt and remainingTime if both show a specific date
+        //  (airing > 7 days away)
+        val remainingTime = remember {
+            formatRemainingTime(airingAtAniListTimestamp * 1000L)
+        }
+
+        return if (episodes == 1 || (episodes == null && format == MediaFormat.MOVIE)) {
+            if (airingAt.contains(remainingTime)) {
+                stringResource(
+                    R.string.anime_media_next_airing_episode_without_episode,
+                    airingAt,
+                )
+            } else {
+                stringResource(
+                    R.string.anime_media_next_airing_episode_without_episode_with_relative,
+                    airingAt,
+                    remainingTime,
+                )
+            }
+        } else {
+            if (airingAt.contains(remainingTime)) {
+                stringResource(
+                    R.string.anime_media_next_airing_episode_with_episode,
+                    episode,
+                    airingAt,
+                )
+            } else {
+                stringResource(
+                    R.string.anime_media_next_airing_episode_with_episode_with_relative,
+                    episode,
+                    airingAt,
+                    remainingTime,
+                )
+            }
+        }
     }
 }

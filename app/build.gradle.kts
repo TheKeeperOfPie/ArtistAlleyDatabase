@@ -225,6 +225,7 @@ dependencies {
     runtimeOnly(libs.kotlinx.coroutines.android)
 
     implementation(libs.navigation.compose)
+    implementation(libs.paging.compose)
 
     implementation(libs.hilt.android)
     kapt(kaptProcessors.dagger.hilt.compiler)

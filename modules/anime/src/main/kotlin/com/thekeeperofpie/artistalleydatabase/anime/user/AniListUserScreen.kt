@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.user
 
+import android.text.Spanned
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -251,6 +252,7 @@ object AniListUserScreen {
     // TODO: Filter out isAdult
     data class Entry(
         val user: User,
+        val about: Spanned?,
     ) {
         val statisticsAnime = user.statistics?.anime?.let(::Statistics)
         val statisticsManga = user.statistics?.manga?.let(::Statistics)

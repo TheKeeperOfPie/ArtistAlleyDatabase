@@ -51,6 +51,8 @@ object MediaActivitiesScreen {
                     mediaId = viewModel.headerId,
                     mediaType = viewModel.entry?.data?.media?.type,
                     titles = entry?.titlesUnique,
+                    episodes = media?.episodes,
+                    format = media?.format,
                     averageScore = media?.averageScore,
                     popularity = media?.popularity,
                     progress = it,

@@ -38,7 +38,6 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import com.thekeeperofpie.anichive.R
 import com.thekeeperofpie.artistalleydatabase.art.grid.ArtEntryGridModel
 import com.thekeeperofpie.artistalleydatabase.compose.ButtonFooter
-import com.thekeeperofpie.artistalleydatabase.compose.LazyStaggeredGrid.rememberLazyStaggeredGridState
 import com.thekeeperofpie.artistalleydatabase.compose.bottomBorder
 import com.thekeeperofpie.artistalleydatabase.entry.EntryStringR
 import com.thekeeperofpie.artistalleydatabase.entry.grid.EntryGrid
@@ -50,7 +49,6 @@ object ChooserScreen {
 
     @Composable
     operator fun invoke(
-        columnCount: Int = 2,
         query: @Composable () -> String = { "" },
         entriesSize: () -> Int,
         onQueryChange: (String) -> Unit = {},
@@ -78,7 +76,6 @@ object ChooserScreen {
                     selectedItems = selectedItems,
                     onClickEntry = onClickEntry,
                     onLongClickEntry = onLongClickEntry,
-                    lazyStaggeredGridState = rememberLazyStaggeredGridState(columnCount),
                     modifier = Modifier
                         .padding(paddingValues)
                         .weight(1f, true)

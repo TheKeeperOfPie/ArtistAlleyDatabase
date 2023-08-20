@@ -61,6 +61,8 @@ object CharactersScreen {
                     mediaId = mediaId,
                     mediaType = mediaType,
                     titles = entry?.titlesUnique,
+                    episodes = media?.episodes,
+                    format = media?.format,
                     averageScore = media?.averageScore,
                     popularity = media?.popularity,
                     progress = it,

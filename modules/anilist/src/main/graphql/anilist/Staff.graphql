@@ -20,7 +20,7 @@ fragment StaffNavigationData on Staff {
 query StaffDetails($id: Int!) {
     Staff(id: $id) {
         ...StaffHeaderData
-        description(asHtml: true)
+        description
         languageV2
         primaryOccupations
         age
