@@ -26,6 +26,7 @@ import com.anilist.HomeAnime2Query
 import com.anilist.HomeAnimeQuery
 import com.anilist.HomeManga2Query
 import com.anilist.HomeMangaQuery
+import com.anilist.HomeReviewsQuery
 import com.anilist.LicensorsQuery
 import com.anilist.MediaActivityPageQuery
 import com.anilist.MediaActivityQuery
@@ -47,6 +48,7 @@ import com.anilist.NotificationMediaAndActivityQuery
 import com.anilist.NotificationsQuery
 import com.anilist.RateReviewMutation
 import com.anilist.ReviewDetailsQuery
+import com.anilist.ReviewSearchQuery
 import com.anilist.SaveActivityReplyMutation
 import com.anilist.SaveForumThreadCommentMutation
 import com.anilist.SaveMediaListEntryMutation
@@ -676,25 +678,25 @@ open class AuthedAniListApi(
 
     open suspend fun mediaAndReviews(
         mediaId: String,
-        sort: ReviewSort,
+        sort: List<ReviewSort>,
         reviewsPerPage: Int = 10,
     ) = query(
         MediaAndReviewsQuery(
             mediaId = mediaId.toInt(),
-            sort = listOf(sort),
+            sort = sort,
             reviewsPerPage = reviewsPerPage,
         )
     ).media
 
     open suspend fun mediaAndReviewsPage(
         mediaId: String,
-        sort: ReviewSort,
+        sort: List<ReviewSort>,
         page: Int,
         reviewsPerPage: Int = 10,
     ) = query(
         MediaAndReviewsPaginationQuery(
             mediaId = mediaId.toInt(),
-            sort = listOf(sort),
+            sort = sort,
             page = page,
             reviewsPerPage = reviewsPerPage,
         )
@@ -1038,6 +1040,24 @@ open class AuthedAniListApi(
             rating = rating,
         )
     ).saveRecommendation.userRating
+
+    open suspend fun homeReviews(mediaType: MediaType, page: Int, perPage: Int = 10) =
+        query(HomeReviewsQuery(mediaType = mediaType, page = page, perPage = perPage))
+
+    open suspend fun reviewSearch(
+        sort: List<ReviewSort>,
+        mediaType: MediaType,
+        page: Int,
+        perPage: Int = 10,
+    ) =
+        query(
+            ReviewSearchQuery(
+                sort = Optional.presentIfNotNull(sort.ifEmpty { null }),
+                mediaType = mediaType,
+                page = page,
+                perPage = perPage
+            )
+        )
 
     // TODO: Use queryCacheAndNetwork for everything
     private suspend fun <D : Query.Data> query(query: Query<D>) =

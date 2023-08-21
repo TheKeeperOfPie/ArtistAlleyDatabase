@@ -1,5 +1,6 @@
 package com.thekeeperofpie.artistalleydatabase.anime.ignore
 
+import androidx.compose.runtime.staticCompositionLocalOf
 import com.anilist.fragment.MediaCompactWithTags
 import com.anilist.fragment.MediaPreview
 import com.anilist.fragment.StaffDetailsStaffMediaPage
@@ -98,3 +99,5 @@ class IgnoreController(
         }
     }
 }
+
+val LocalIgnoreController = staticCompositionLocalOf<IgnoreController> { throw IllegalStateException() }

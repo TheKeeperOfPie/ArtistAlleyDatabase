@@ -5,7 +5,7 @@ import com.anilist.type.ReviewSort
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortOption
 
-enum class ReviewsSortOption(@StringRes override val textRes: Int) : SortOption {
+enum class ReviewSortOption(@StringRes override val textRes: Int) : SortOption {
 
     ID(R.string.anime_reviews_sort_id),
     SCORE(R.string.anime_reviews_sort_score),
@@ -20,5 +20,5 @@ enum class ReviewsSortOption(@StringRes override val textRes: Int) : SortOption 
         RATING -> if (ascending) ReviewSort.RATING else ReviewSort.RATING_DESC
         CREATED_AT -> if (ascending) ReviewSort.CREATED_AT else ReviewSort.CREATED_AT_DESC
         UPDATED_AT -> if (ascending) ReviewSort.UPDATED_AT else ReviewSort.UPDATED_AT_DESC
-    }
+    }.let(::listOf)
 }

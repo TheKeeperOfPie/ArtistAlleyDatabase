@@ -312,7 +312,6 @@ query MediaDetails($mediaId: Int!) {
             }
         }
 
-        # TODO: Handle pagination
         reviews(sort: [RATING_DESC], perPage: 3) {
             pageInfo {
                 hasNextPage
@@ -616,6 +615,7 @@ fragment MediaAndReviewsReview on Review {
     score
     summary
     updatedAt
+    createdAt
 }
 
 query MediaAndReviews(

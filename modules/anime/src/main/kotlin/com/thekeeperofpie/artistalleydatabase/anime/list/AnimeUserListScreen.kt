@@ -385,7 +385,6 @@ object AnimeUserListScreen {
                 screenKey = SCREEN_KEY,
                 viewer = viewer,
                 entry = entry,
-                onLongClick = { viewModel.ignoreController.toggle(entry.media) },
                 onClickListEdit = { editViewModel.initialize(it.media) },
                 modifier = modifier,
             )

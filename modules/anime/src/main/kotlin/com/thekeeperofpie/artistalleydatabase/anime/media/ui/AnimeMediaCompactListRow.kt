@@ -49,6 +49,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.ignore.LocalIgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaTagEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaStatusAware
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
@@ -71,7 +72,6 @@ object AnimeMediaCompactListRow {
         viewer: AniListViewer?,
         entry: Entry?,
         modifier: Modifier = Modifier,
-        onLongClick: (Entry) -> Unit,
         onClickListEdit: (Entry) -> Unit,
         showQuickEdit: Boolean = true,
     ) {
@@ -84,6 +84,7 @@ object AnimeMediaCompactListRow {
                     .alpha(if (entry?.ignored == true) 0.38f else 1f)
             ) {
                 val navigationCallback = LocalNavigationCallback.current
+                val ignoreController = LocalIgnoreController.current
                 Row(modifier = Modifier
                     .height(IntrinsicSize.Min)
                     .combinedClickable(
@@ -96,7 +97,11 @@ object AnimeMediaCompactListRow {
                                 )
                             }
                         },
-                        onLongClick = { if (entry != null) onLongClick(entry) }
+                        onLongClick = {
+                            if (entry != null) {
+                                ignoreController.toggle(entry.media)
+                            }
+                        },
                     )
                 ) {
                     CoverImage(
@@ -235,7 +240,8 @@ object AnimeMediaCompactListRow {
                     maxProgressVolumes = entry.media.volumes,
                     onClick = { onClickListEdit(entry) },
                     padding = 6.dp,
-                    modifier = Modifier.align(Alignment.BottomStart)
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
                         .widthIn(max = DEFAULT_IMAGE_WIDTH)
                 )
             }

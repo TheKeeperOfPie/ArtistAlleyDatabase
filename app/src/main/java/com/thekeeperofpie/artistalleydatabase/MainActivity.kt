@@ -80,6 +80,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.LocalAnimeComposeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
+import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
+import com.thekeeperofpie.artistalleydatabase.anime.ignore.LocalIgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.markdown.LocalMarkwon
 import com.thekeeperofpie.artistalleydatabase.anime.media.LocalMediaGenreDialogController
 import com.thekeeperofpie.artistalleydatabase.anime.media.LocalMediaTagDialogController
@@ -179,6 +181,9 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var notificationsController: NotificationsController
 
+    @Inject
+    lateinit var ignoreController: IgnoreController
+
     private val fullScreenImageHandler = FullscreenImageHandler()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -238,6 +243,7 @@ class MainActivity : ComponentActivity() {
                     LocalMarkwon provides markwon,
                     LocalAnimeComposeSettings provides settings.composeSettingsData(),
                     LocalColorCalculationState provides colorCalculationState,
+                    LocalIgnoreController provides ignoreController,
                 ) {
                     // TODO: Draw inside insets for applicable screens
                     Surface(modifier = Modifier.safeDrawingPadding()) {

@@ -1,8 +1,12 @@
 package com.thekeeperofpie.artistalleydatabase.anime.review
 
+import android.text.format.DateUtils
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -31,17 +35,25 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.anilist.fragment.MediaAndReviewsReview
+import com.google.accompanist.placeholder.PlaceholderHighlight
+import com.google.accompanist.placeholder.material.placeholder
+import com.google.accompanist.placeholder.material.shimmer
 import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
 import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
 import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
+import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavigator
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaCompactListRow
 import com.thekeeperofpie.artistalleydatabase.anime.ui.UserAvatarImage
 import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
+import java.time.Instant
+import java.time.ZoneOffset
 
 @Composable
 fun ReviewSmallCard(
@@ -58,58 +70,120 @@ fun ReviewSmallCard(
                 onClick = { onClick(navigationCallback) },
             ),
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
+        ReviewSmallCardContent(screenKey, review)
+    }
+}
+
+@Suppress("UnusedReceiverParameter")
+@Composable
+private fun ColumnScope.ReviewSmallCardContent(
+    screenKey: String,
+    review: MediaAndReviewsReview?,
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
+    ) {
+        var imageWidthToHeightRatio by remember { MutableSingle(1f) }
+        val shape = RoundedCornerShape(12.dp)
+        val navigationCallback = LocalNavigationCallback.current
+        UserAvatarImage(
+            screenKey = screenKey,
+            userId = review?.user?.id?.toString(),
+            image = review?.user?.avatar?.large,
+            contentScale = ContentScale.FillHeight,
+            contentDescriptionTextRes = R.string.anime_media_details_reviews_user_avatar_content_description,
+            onSuccess = { imageWidthToHeightRatio = it.widthToHeightRatio() },
             modifier = Modifier
-                .padding(start = 16.dp)
-                .height(IntrinsicSize.Min)
-                .heightIn(min = 72.dp)
+                .size(40.dp)
+                .clip(shape)
+                .border(width = Dp.Hairline, MaterialTheme.colorScheme.primary, shape)
+                .clickable {
+                    review?.user?.let {
+                        navigationCallback.onUserClick(it, imageWidthToHeightRatio)
+                    }
+                },
+        )
+
+        Column(
+            Modifier
+                .weight(1f)
+                .padding(horizontal = 16.dp, vertical = 10.dp)
         ) {
-            var imageWidthToHeightRatio by remember { MutableSingle(1f) }
-            UserAvatarImage(
-                screenKey = screenKey,
-                userId = review?.user?.id?.toString(),
-                image = review?.user?.avatar?.large,
-                contentScale = ContentScale.FillHeight,
-                contentDescriptionTextRes = R.string.anime_media_details_reviews_user_avatar_content_description,
-                onSuccess = { imageWidthToHeightRatio = it.widthToHeightRatio() },
-                modifier = Modifier
-                    .heightIn(min = 64.dp)
-                    .padding(vertical = 10.dp)
-                    .clip(RoundedCornerShape(4.dp))
-                    .clickable {
-                        review?.user?.let {
-                            navigationCallback.onUserClick(it, imageWidthToHeightRatio)
-                        }
-                    },
+            Text(
+                text = review?.user?.name.orEmpty() ?: "Username",
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.placeholder(
+                    visible = review == null,
+                    highlight = PlaceholderHighlight.shimmer(),
+                )
             )
 
-            Box(
-                Modifier
-                    .weight(1f)
-                    .fillMaxHeight()
-            ) {
-                Text(
-                    text = review?.user?.name.orEmpty(),
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp, vertical = 10.dp)
-                        .align(Alignment.CenterStart)
-                )
+            val timestamp = remember(review) {
+                review?.let {
+                    DateUtils.getRelativeTimeSpanString(
+                        it.createdAt * 1000L,
+                        Instant.now().atOffset(ZoneOffset.UTC).toEpochSecond() * 1000,
+                        0,
+                        DateUtils.FORMAT_ABBREV_ALL,
+                    )
+                }
             }
 
-            ReviewRatingIconsSection(
-                score = review?.score,
-                rating = review?.rating,
-                ratingAmount = review?.ratingAmount,
-                modifier = Modifier.align(Alignment.Top)
-            )
+            if (review == null || timestamp != null) {
+                Text(
+                    text = timestamp.toString(),
+                    style = MaterialTheme.typography.labelMedium,
+                    modifier = Modifier.placeholder(
+                        visible = review == null,
+                        highlight = PlaceholderHighlight.shimmer(),
+                    )
+                )
+            }
         }
 
-        Text(
-            text = review?.summary.orEmpty(),
-            style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier
-                .padding(horizontal = 16.dp, vertical = 10.dp)
+        ReviewRatingIconsSection(
+            score = review?.score,
+            rating = review?.rating,
+            ratingAmount = review?.ratingAmount,
+        )
+    }
+
+    Text(
+        text = review?.summary.orEmpty(),
+        style = MaterialTheme.typography.bodyMedium,
+        modifier = Modifier
+            .padding(start = 12.dp, end = 12.dp, bottom = 8.dp)
+    )
+}
+
+@Composable
+fun ReviewCard(
+    screenKey: String,
+    viewer: AniListViewer?,
+    review: MediaAndReviewsReview?,
+    media: AnimeMediaCompactListRow.Entry?,
+    onClick: (AnimeNavigator.NavigationCallback) -> Unit,
+    onClickListEdit: (AnimeMediaCompactListRow.Entry) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val navigationCallback = LocalNavigationCallback.current
+    ElevatedCard(
+        modifier = modifier
+            .clickable(
+                enabled = review?.id != null,
+                onClick = { onClick(navigationCallback) },
+            ),
+    ) {
+        ReviewSmallCardContent(screenKey, review)
+
+        AnimeMediaCompactListRow(
+            screenKey = screenKey,
+            viewer = viewer,
+            entry = media,
+            onClickListEdit = onClickListEdit,
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
         )
     }
 }
@@ -119,61 +193,74 @@ fun ReviewRatingIconsSection(
     score: Int?,
     rating: Int?,
     ratingAmount: Int?,
-    modifier: Modifier = Modifier,
-    showDownvotes: Boolean = false,
 ) {
     @Suppress("NAME_SHADOWING")
     val ratingAmount = ratingAmount ?: 0
 
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier
-            .padding(horizontal = 8.dp, vertical = 8.dp)
-            .height(24.dp),
+    Column(
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+        horizontalAlignment = Alignment.End,
+        modifier = Modifier.padding(end = 4.dp)
     ) {
-        if (score != null) {
-            Text(
-                text = score.toString(),
-                style = MaterialTheme.typography.labelLarge,
-            )
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            if (score != null) {
+                Text(
+                    text = score.toString(),
+                    style = MaterialTheme.typography.labelLarge,
+                )
 
-            val iconTint = remember(score) {
-                when {
-                    score > 80 -> Color.Green
-                    score > 70 -> Color.Yellow
-                    score > 50 -> Color(0xFFFF9000) // Orange
-                    else -> Color.Red
+                val iconTint = remember(score) {
+                    when {
+                        score > 80 -> Color.Green
+                        score > 70 -> Color.Yellow
+                        score > 50 -> Color(0xFFFF9000) // Orange
+                        else -> Color.Red
+                    }
                 }
-            }
-            Icon(
-                imageVector = Icons.Filled.BarChart,
-                contentDescription = stringResource(
-                    R.string.anime_media_rating_icon_content_description
-                ),
-                tint = iconTint,
-                modifier = Modifier.size(20.dp)
-            )
-        }
-
-        if (rating != null) {
-            Text(
-                text = rating.toString(),
-                style = MaterialTheme.typography.labelLarge,
-                modifier = Modifier.padding(start = 12.dp),
-            )
-
-            // If showing downvotes, just show a green upvote counter
-            if (showDownvotes) {
                 Icon(
-                    imageVector = Icons.Filled.ThumbUpAlt,
+                    imageVector = Icons.Filled.BarChart,
                     contentDescription = stringResource(
-                        R.string.anime_media_details_reviews_rating_upvote_content_description
+                        R.string.anime_media_rating_icon_content_description
                     ),
-                    tint = Color.Green,
+                    tint = iconTint,
                     modifier = Modifier.size(20.dp)
                 )
-            } else {
+            }
+
+            if (ratingAmount > 0) {
+                Text(
+                    text = ratingAmount.toString(),
+                    style = MaterialTheme.typography.labelLarge,
+                )
+
+                Icon(
+                    imageVector = when {
+                        ratingAmount > 100 -> Icons.Filled.PeopleAlt
+                        ratingAmount > 50 -> Icons.Outlined.PeopleAlt
+                        ratingAmount > 10 -> Icons.Filled.Person
+                        else -> Icons.Filled.PersonOutline
+                    },
+                    contentDescription = stringResource(
+                        R.string.anime_media_details_reviews_rating_amount_content_description
+                    ),
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+        }
+
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            if (rating != null) {
+                Text(
+                    text = rating.toString(),
+                    style = MaterialTheme.typography.labelLarge,
+                )
+
                 val ratio = rating / ratingAmount.toFloat()
                 val iconTint = when {
                     ratio > 0.6f -> Color.Green
@@ -194,45 +281,23 @@ fun ReviewRatingIconsSection(
                     modifier = Modifier.size(20.dp)
                 )
             }
-        }
 
-        if (rating != null && showDownvotes && ratingAmount > 0) {
-            val downvotes = ratingAmount - rating
-            Text(
-                text = downvotes.toString(),
-                style = MaterialTheme.typography.labelLarge,
-                modifier = Modifier.padding(start = 12.dp),
-            )
+            if (rating != null && ratingAmount > 0) {
+                val downvotes = ratingAmount - rating
+                Text(
+                    text = downvotes.toString(),
+                    style = MaterialTheme.typography.labelLarge,
+                )
 
-            Icon(
-                imageVector = Icons.Filled.ThumbDownAlt,
-                contentDescription = stringResource(
-                    R.string.anime_media_details_reviews_rating_downvote_content_description
-                ),
-                tint = Color.Red,
-                modifier = Modifier.size(20.dp)
-            )
-        }
-
-        if (ratingAmount > 0) {
-            Text(
-                text = ratingAmount.toString(),
-                style = MaterialTheme.typography.labelLarge,
-                modifier = Modifier.padding(start = 12.dp),
-            )
-
-            Icon(
-                imageVector = when {
-                    ratingAmount > 100 -> Icons.Filled.PeopleAlt
-                    ratingAmount > 50 -> Icons.Outlined.PeopleAlt
-                    ratingAmount > 10 -> Icons.Filled.Person
-                    else -> Icons.Filled.PersonOutline
-                },
-                contentDescription = stringResource(
-                    R.string.anime_media_details_reviews_rating_amount_content_description
-                ),
-                modifier = Modifier.size(20.dp)
-            )
+                Icon(
+                    imageVector = Icons.Filled.ThumbDownAlt,
+                    contentDescription = stringResource(
+                        R.string.anime_media_details_reviews_rating_downvote_content_description
+                    ),
+                    tint = Color.Red,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
         }
     }
 }

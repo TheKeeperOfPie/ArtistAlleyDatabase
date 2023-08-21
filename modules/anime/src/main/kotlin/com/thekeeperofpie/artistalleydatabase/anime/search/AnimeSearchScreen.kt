@@ -327,11 +327,6 @@ object AnimeSearchScreen {
                 screenKey = SCREEN_KEY,
                 viewer = viewer,
                 entry = entry,
-                onLongClick = {
-                    if (entry != null) {
-                        viewModel.ignoreController.toggle(entry.media)
-                    }
-                },
                 onClickListEdit = { editViewModel.initialize(it.media) },
             )
             MediaViewOption.GRID -> MediaGridCard(

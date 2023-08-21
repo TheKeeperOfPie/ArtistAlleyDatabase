@@ -7,13 +7,14 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatc
 import kotlinx.coroutines.withContext
 
 class AniListPagingSource<T : Any>(
+    private val perPage: Int = 10,
     private val apiCall: suspend (page: Int) -> Pair<PaginationInfo?, List<T>>,
 ) : PagingSource<Int, T>() {
 
     override val jumpingSupported = true
 
     override fun getRefreshKey(state: PagingState<Int, T>) =
-        state.anchorPosition?.let { (it / 10) + 1 }
+        state.anchorPosition?.let { (it / perPage) + 1 }
 
     override suspend fun load(params: LoadParams<Int>) = withContext(CustomDispatchers.IO) {
         try {
@@ -31,7 +32,7 @@ class AniListPagingSource<T : Any>(
                 0
             } else {
                 // TODO: Pass perPage in so it can be customized
-                pageTotal?.let { (it - (page * 10)) }?.takeIf { it > 0 }
+                pageTotal?.let { (it - (page * perPage)) }?.takeIf { it > 0 }
             }
             LoadResult.Page(
                 data = result,

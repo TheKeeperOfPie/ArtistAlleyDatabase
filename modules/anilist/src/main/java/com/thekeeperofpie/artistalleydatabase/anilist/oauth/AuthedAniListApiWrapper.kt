@@ -462,7 +462,7 @@ class AuthedAniListApiWrapper(
 
     override suspend fun mediaAndReviews(
         mediaId: String,
-        sort: ReviewSort,
+        sort: List<ReviewSort>,
         reviewsPerPage: Int,
     ) = super.mediaAndReviews(mediaId, sort, reviewsPerPage).also {
         if (it.isAdult != false) throw IOException("Cannot load media")
@@ -470,7 +470,7 @@ class AuthedAniListApiWrapper(
 
     override suspend fun mediaAndReviewsPage(
         mediaId: String,
-        sort: ReviewSort,
+        sort: List<ReviewSort>,
         page: Int,
         reviewsPerPage: Int,
     ) = super.mediaAndReviewsPage(mediaId, sort, page, reviewsPerPage).also {
@@ -739,4 +739,21 @@ class AuthedAniListApiWrapper(
         recommendationMediaId: String,
         rating: RecommendationRating,
     ) = super.saveRecommendationRating(mediaId, recommendationMediaId, rating)
+
+    override suspend fun homeReviews(
+        mediaType: MediaType,
+        page: Int,
+        perPage: Int,
+    ) = super.homeReviews(mediaType, page, perPage).let {
+        it.copy(page = it.page.copy(reviews = it.page.reviews.filter { it?.media?.isAdult == false }))
+    }
+
+    override suspend fun reviewSearch(
+        sort: List<ReviewSort>,
+        mediaType: MediaType,
+        page: Int,
+        perPage: Int,
+    ) = super.reviewSearch(sort, mediaType, page, perPage).let {
+        it.copy(page = it.page.copy(reviews = it.page.reviews.filter { it?.media?.isAdult == false }))
+    }
 }

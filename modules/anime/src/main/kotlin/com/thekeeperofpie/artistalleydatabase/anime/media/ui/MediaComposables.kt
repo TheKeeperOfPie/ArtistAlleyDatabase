@@ -486,7 +486,6 @@ fun MediaViewOptionRow(
             screenKey = screenKey,
             viewer = viewer,
             entry = entry,
-            onLongClick = { entry?.media?.let(onLongClick) },
             showQuickEdit = showQuickEdit,
             onClickListEdit = { editViewModel.initialize(it.media) },
         )

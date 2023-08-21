@@ -131,6 +131,8 @@ fun ColumnScope.TextActivityCardContent(
         Column(Modifier.weight(1f)) {
             Text(
                 text = user?.name ?: "USERNAME",
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.placeholder(
                     visible = activity == null,
                     highlight = PlaceholderHighlight.shimmer(),
@@ -273,10 +275,13 @@ fun ColumnScope.MessageActivityCardContent(
             if (messengerName != null) {
                 Text(
                     text = messengerName,
-                    modifier = Modifier.placeholder(
-                        visible = activity == null,
-                        highlight = PlaceholderHighlight.shimmer(),
-                    )
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier
+                        .placeholder(
+                            visible = activity == null,
+                            highlight = PlaceholderHighlight.shimmer(),
+                        )
                 )
             }
 
@@ -593,9 +598,6 @@ fun ColumnScope.ListActivityCardContent(
             screenKey = screenKey,
             viewer = viewer,
             entry = entry,
-            onLongClick = {
-                // TODO: Ignored
-            },
             onClickListEdit = onClickListEdit,
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
         )

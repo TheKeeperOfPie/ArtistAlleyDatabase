@@ -59,9 +59,10 @@ import com.thekeeperofpie.artistalleydatabase.anime.notifications.NotificationsS
 import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.review.ReviewsScreen
-import com.thekeeperofpie.artistalleydatabase.anime.review.ReviewsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.review.details.ReviewDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.review.details.ReviewDetailsViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.review.media.MediaReviewsScreen
+import com.thekeeperofpie.artistalleydatabase.anime.review.media.MediaReviewsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.schedule.AiringScheduleScreen
 import com.thekeeperofpie.artistalleydatabase.anime.search.AnimeSearchViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.search.MediaSearchScreen
@@ -498,7 +499,7 @@ object AnimeNavigator {
             val arguments = it.arguments!!
             val mediaId = arguments.getString("mediaId")!!
 
-            val viewModel = hiltViewModel<ReviewsViewModel>()
+            val viewModel = hiltViewModel<MediaReviewsViewModel>()
                 .apply { initialize(mediaId) }
             val headerValues = MediaHeaderValues(
                 arguments = arguments,
@@ -506,10 +507,16 @@ object AnimeNavigator {
                 favoriteUpdate = { viewModel.favoritesToggleHelper.favorite },
             )
 
-            ReviewsScreen(
+            MediaReviewsScreen(
                 viewModel = viewModel,
                 upIconOption = UpIconOption.Back(navHostController),
                 headerValues = headerValues,
+            )
+        }
+
+        navGraphBuilder.composable(route = AnimeNavDestinations.REVIEWS.id) {
+            ReviewsScreen(
+                upIconOption = UpIconOption.Back(navHostController),
             )
         }
 

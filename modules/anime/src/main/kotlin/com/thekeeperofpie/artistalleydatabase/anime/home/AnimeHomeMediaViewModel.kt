@@ -7,6 +7,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import androidx.paging.cachedIn
+import androidx.paging.map
+import com.anilist.fragment.MediaAndReviewsReview
 import com.anilist.fragment.MediaNavigationData
 import com.anilist.fragment.MediaPreview
 import com.anilist.fragment.MediaPreviewWithDescription
@@ -18,16 +24,21 @@ import com.hoc081098.flowext.startWith
 import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.android_utils.flowForRefreshableContent
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.anilist.AniListPagingSource
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaCompactWithTagsEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.UserMediaListController
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaFiltering
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortOption
+import com.thekeeperofpie.artistalleydatabase.anime.review.ReviewEntry
 import com.thekeeperofpie.artistalleydatabase.anime.seasonal.SeasonalViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.utils.mapNotNull
+import com.thekeeperofpie.artistalleydatabase.anime.utils.mapOnIO
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -38,6 +49,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -57,12 +69,14 @@ abstract class AnimeHomeMediaViewModel(
     var current by mutableStateOf<LoadingResult<List<UserMediaListController.MediaEntry>>>(
         LoadingResult.loading()
     )
+    val reviews = MutableStateFlow(PagingData.empty<ReviewEntry>())
 
     private val refresh = MutableStateFlow(-1L)
 
     init {
         collectCurrent()
         collectMedia()
+        collectReviews()
     }
 
     protected abstract suspend fun rows(): Flow<List<RowInput>>
@@ -203,6 +217,66 @@ abstract class AnimeHomeMediaViewModel(
         }
     }
 
+    private fun collectReviews() {
+        viewModelScope.launch(CustomDispatchers.Main) {
+            refresh.flatMapLatest {
+                Pager(config = PagingConfig(0)) {
+                    AniListPagingSource(perPage = 5) {
+                        val result =
+                            aniListApi.homeReviews(mediaType = mediaType, page = it, perPage = 5)
+                        result.page.pageInfo to result.page.reviews.filterNotNull()
+                    }
+                }.flow
+            }
+                .mapLatest {
+                    it.mapOnIO {
+                        ReviewEntry(it, MediaCompactWithTagsEntry(it.media))
+                    }
+                }
+                .cachedIn(viewModelScope)
+                .flatMapLatest { pagingData ->
+                    combine(
+                        statusController.allChanges(),
+                        ignoreController.updates(),
+                        settings.showAdult,
+                        settings.showIgnored,
+                        settings.showLessImportantTags,
+                        settings.showSpoilerTags,
+                    ) { mediaStatusUpdates, _, showAdult, showIgnored, showLessImportantTags, showSpoilerTags ->
+                        pagingData.mapNotNull {
+                            applyMediaFiltering(
+                                statuses = mediaStatusUpdates,
+                                ignoreController = ignoreController,
+                                showAdult = showAdult,
+                                showIgnored = showIgnored,
+                                showLessImportantTags = showLessImportantTags,
+                                showSpoilerTags = showSpoilerTags,
+                                entry = it,
+                                transform = { it.media },
+                                media = it.media.media,
+                                copy = { mediaListStatus, progress, progressVolumes, scoreRaw, ignored, showLessImportantTags, showSpoilerTags ->
+                                    copy(
+                                        media = media.copy(
+                                            mediaListStatus = mediaListStatus,
+                                            progress = progress,
+                                            progressVolumes = progressVolumes,
+                                            scoreRaw = scoreRaw,
+                                            ignored = ignored,
+                                            showLessImportantTags = showLessImportantTags,
+                                            showSpoilerTags = showSpoilerTags,
+                                        )
+                                    )
+                                }
+                            )
+                        }
+                    }
+                }
+                .cachedIn(viewModelScope)
+                .flowOn(CustomDispatchers.IO)
+                .collectLatest(reviews::emit)
+        }
+    }
+
     @HiltViewModel
     class Anime @Inject constructor(
         aniListApi: AuthedAniListApi,
@@ -290,7 +364,6 @@ abstract class AnimeHomeMediaViewModel(
                 pageTwo,
                 List<RowInput>::plus
             )
-
         }
     }
 

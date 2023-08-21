@@ -49,6 +49,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.ignore.LocalIgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaStatusAware
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toIcon
@@ -104,6 +105,7 @@ object MediaGridCard {
         ) {
             var imageWidthToHeightRatio by remember { MutableSingle(1f) }
             val navigationCallback = LocalNavigationCallback.current
+            val ignoreController = LocalIgnoreController.current
             Box(
                 modifier = Modifier.combinedClickable(
                     enabled = entry != null,

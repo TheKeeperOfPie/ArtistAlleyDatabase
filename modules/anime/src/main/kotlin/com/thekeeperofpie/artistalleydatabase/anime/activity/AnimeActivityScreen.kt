@@ -175,6 +175,7 @@ object AnimeActivityScreen {
                 ) {
                     AnimeMediaListScreen.NoResults()
                 } else {
+                    // TODO: Move this up a level
                     val refreshing = activities.loadState.refresh is LoadState.Loading
                     val pullRefreshState = rememberPullRefreshState(
                         refreshing = refreshing,

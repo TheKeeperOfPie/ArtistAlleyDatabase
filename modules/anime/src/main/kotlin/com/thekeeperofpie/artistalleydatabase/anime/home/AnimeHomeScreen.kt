@@ -120,6 +120,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaLargeCard
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaListQuickEditIconButton
 import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsArticleEntry
 import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsSmallCard
+import com.thekeeperofpie.artistalleydatabase.anime.review.ReviewCard
+import com.thekeeperofpie.artistalleydatabase.anime.review.ReviewEntry
 import com.thekeeperofpie.artistalleydatabase.anime.ui.GenericViewAllCard
 import com.thekeeperofpie.artistalleydatabase.anime.ui.MediaCoverImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.NavigationHeader
@@ -167,7 +169,9 @@ object AnimeHomeScreen {
         }
 
         val activity = viewModel.activity.collectAsLazyPagingItems()
+        val reviews = mediaViewModel.reviews.collectAsLazyPagingItems()
         val refreshing = activity.loadState.refresh == LoadState.Loading
+                || reviews.loadState.refresh == LoadState.Loading
                 || mediaViewModel.entry.loading
                 || mediaViewModel.current.loading
         val pullRefreshState = rememberPullRefreshState(
@@ -304,6 +308,12 @@ object AnimeHomeScreen {
                         onClickListEdit = { editViewModel.initialize(it) },
                         onClickIncrementProgress = { editViewModel.incrementProgress(it) },
                         selectedItemTracker = selectedItemTracker,
+                    )
+
+                    reviews(
+                        editViewModel = editViewModel,
+                        viewer = viewer,
+                        reviews = reviews,
                     )
                 }
 
@@ -903,6 +913,53 @@ object AnimeHomeScreen {
                         )
                     }
                 }
+            }
+        }
+    }
+
+    private fun LazyListScope.reviews(
+        editViewModel: MediaEditViewModel,
+        viewer: AniListViewer?,
+        reviews: LazyPagingItems<ReviewEntry>,
+    ) {
+        rowHeader(
+            titleRes = R.string.anime_reviews_home_title,
+            viewAllRoute = AnimeNavDestinations.REVIEWS.id,
+        )
+
+        if (reviews.itemCount == 0) return
+        item("reviewsRow") {
+            val pagerState = rememberPagerState(pageCount = { reviews.itemCount })
+            val targetWidth = 350.coerceAtLeast(LocalConfiguration.current.screenWidthDp - 72).dp
+            HorizontalPager(
+                state = pagerState,
+                contentPadding = PaddingValues(start = 16.dp, end = 16.dp),
+                pageSpacing = 16.dp,
+                pageSize = PageSize.Fixed(targetWidth),
+                verticalAlignment = Alignment.Top,
+            ) {
+                val entry = reviews[it]
+                ReviewCard(
+                    screenKey = SCREEN_KEY,
+                    viewer = viewer,
+                    review = entry?.review,
+                    media = entry?.media,
+                    onClick = {
+                        if (entry != null) {
+                            it.onReviewClick(
+                                reviewId = entry.review.id.toString(),
+                                media = null,
+                                favorite = null,
+                                imageWidthToHeightRatio = 1f,
+                            )
+                        }
+                    },
+                    onClickListEdit = {
+                        if (entry != null) {
+                            editViewModel.initialize(entry.media.media)
+                        }
+                    },
+                )
             }
         }
     }

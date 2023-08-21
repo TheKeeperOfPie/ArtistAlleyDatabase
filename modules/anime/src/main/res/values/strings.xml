@@ -732,6 +732,11 @@
     <string name="anime_review_details_score">Score: %1$s/100</string>
     <string name="anime_review_details_error_rating">Failed to rate review</string>
 
+    <string name="anime_reviews_home_title">REVIEWS</string>
+    <string name="anime_reviews_tab_anime">Anime</string>
+    <string name="anime_reviews_tab_manga">Manga</string>
+    <string name="anime_review_filter_sort_label">Sort</string>
+
     <string name="anime_recommendations_sort_id">Last added</string>
     <string name="anime_recommendations_sort_rating">Rating</string>
     <string name="anime_recommendations_header">Recommendations</string>

@@ -83,6 +83,7 @@ fun MediaHeader(
     onImageWidthToHeightRatioAvailable: (Float) -> Unit = {},
     enableCoverImageSharedElement: Boolean = true,
     onCoverImageSharedElementFractionChanged: ((Float) -> Unit)? = null,
+    onCoverImageClick: (() -> Unit)? = null,
     menuContent: (@Composable () -> Unit)? = null,
 ) {
     val defaultTitle = headerValues.title()
@@ -121,6 +122,7 @@ fun MediaHeader(
                 }
             },
             onCoverImageSharedElementFractionChanged = onCoverImageSharedElementFractionChanged,
+            onCoverImageClick = onCoverImageClick,
             menuContent = {
                 FavoriteIconButton(
                     favorite = headerValues.favorite,

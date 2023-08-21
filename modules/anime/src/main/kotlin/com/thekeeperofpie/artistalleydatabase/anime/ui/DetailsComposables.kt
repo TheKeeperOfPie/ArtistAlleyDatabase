@@ -107,6 +107,7 @@ internal fun CoverAndBannerHeader(
     fadeOutMenu: Boolean = true,
     reserveMenuWidth: Boolean = !fadeOutMenu,
     onCoverImageSharedElementFractionChanged: ((Float) -> Unit)? = null,
+    onCoverImageClick: (() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val elevation = lerp(0.dp, 16.dp, AccelerateEasing.transform(progress))
@@ -260,7 +261,7 @@ internal fun CoverAndBannerHeader(
                                     }
                                     .widthIn(max = maxWidth)
                                     .combinedClickable(
-                                        onClick = {},
+                                        onClick = { onCoverImageClick?.invoke()},
                                         onLongClick = {
                                             coverImage?.let(fullscreenImageHandler::openImage)
                                         }

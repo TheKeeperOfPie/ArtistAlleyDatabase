@@ -1,7 +1,9 @@
 package com.thekeeperofpie.artistalleydatabase.anime.review.details
 
+import android.text.format.DateUtils
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -13,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -33,7 +36,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -42,9 +48,13 @@ import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.anilist.ReviewDetailsQuery
 import com.anilist.type.ReviewRating
+import com.google.accompanist.placeholder.PlaceholderHighlight
+import com.google.accompanist.placeholder.material.placeholder
+import com.google.accompanist.placeholder.material.shimmer
 import com.thekeeperofpie.artistalleydatabase.android_utils.MutableSingle
 import com.thekeeperofpie.artistalleydatabase.android_utils.getValue
 import com.thekeeperofpie.artistalleydatabase.android_utils.setValue
@@ -65,6 +75,8 @@ import com.thekeeperofpie.artistalleydatabase.compose.ImageHtmlText
 import com.thekeeperofpie.artistalleydatabase.compose.SnackbarErrorText
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 import com.thekeeperofpie.artistalleydatabase.compose.widthToHeightRatio
+import java.time.Instant
+import java.time.ZoneOffset
 
 @OptIn(ExperimentalMaterial3Api::class)
 object ReviewDetailsScreen {
@@ -89,6 +101,8 @@ object ReviewDetailsScreen {
                     pinnedHeight = 120.dp,
                     scrollBehavior = scrollBehavior,
                 ) {
+                    val navigationCallback = LocalNavigationCallback.current
+                    var coverImageWidthToHeightRatio by remember { mutableFloatStateOf(1f) }
                     MediaHeader(
                         screenKey = SCREEN_KEY,
                         upIconOption = upIconOption,
@@ -109,6 +123,14 @@ object ReviewDetailsScreen {
                             )
                         },
                         enableCoverImageSharedElement = false,
+                        onImageWidthToHeightRatioAvailable = {
+                            coverImageWidthToHeightRatio = it
+                        },
+                        onCoverImageClick = {
+                            entry?.review?.media?.let {
+                                navigationCallback.onMediaClick(it, coverImageWidthToHeightRatio)
+                            }
+                        }
                     )
                 }
             },
@@ -139,10 +161,11 @@ object ReviewDetailsScreen {
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
                             .height(IntrinsicSize.Min)
-                            .padding(horizontal = 16.dp)
+                            .padding(horizontal = 16.dp, vertical = 8.dp)
                     ) {
                         var userImageWidthToHeightRatio by remember { MutableSingle(1f) }
                         val navigationCallback = LocalNavigationCallback.current
+                        val shape = RoundedCornerShape(12.dp)
                         UserAvatarImage(
                             screenKey = SCREEN_KEY,
                             userId = review.user?.id?.toString(),
@@ -151,9 +174,9 @@ object ReviewDetailsScreen {
                             contentDescriptionTextRes = R.string.anime_media_details_reviews_user_avatar_content_description,
                             onSuccess = { userImageWidthToHeightRatio = it.widthToHeightRatio() },
                             modifier = Modifier
-                                .heightIn(min = 64.dp)
-                                .padding(vertical = 10.dp)
-                                .clip(RoundedCornerShape(4.dp))
+                                .size(64.dp)
+                                .clip(shape)
+                                .border(width = Dp.Hairline, MaterialTheme.colorScheme.primary, shape)
                                 .clickable {
                                     review.user?.let {
                                         navigationCallback.onUserClick(
@@ -164,21 +187,33 @@ object ReviewDetailsScreen {
                                 },
                         )
 
-
                         AutoSizeText(
                             text = review.user?.name.orEmpty(),
                             style = MaterialTheme.typography.headlineSmall,
                             modifier = Modifier
-                                .fillMaxWidth()
+                                .weight(1f)
                                 .padding(horizontal = 16.dp, vertical = 10.dp)
+                        )
+
+                        ReviewRatingIconsSection(
+                            score = review.score,
+                            rating = review.rating,
+                            ratingAmount = review.ratingAmount,
                         )
                     }
 
-                    ReviewRatingIconsSection(
-                        score = review.score,
-                        rating = review.rating,
-                        ratingAmount = review.ratingAmount,
-                        showDownvotes = true,
+                    val timestamp = remember(review) {
+                        DateUtils.getRelativeTimeSpanString(
+                            review.createdAt * 1000L,
+                            Instant.now().atOffset(ZoneOffset.UTC).toEpochSecond() * 1000,
+                            0,
+                            DateUtils.FORMAT_ABBREV_ALL,
+                        )
+                    }
+
+                    Text(
+                        text = timestamp.toString(),
+                        style = MaterialTheme.typography.labelMedium,
                         modifier = Modifier.padding(horizontal = 16.dp)
                     )
 

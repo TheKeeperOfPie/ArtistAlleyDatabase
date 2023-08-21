@@ -214,9 +214,6 @@ object ForumThreadCommentTreeScreen {
                                     screenKey = SCREEN_KEY,
                                     viewer = viewer,
                                     entry = item,
-                                    onLongClick = {
-                                        viewModel.ignoreController.toggle(it.media)
-                                    },
                                     onClickListEdit = { editViewModel.initialize(it.media) },
                                     modifier = Modifier.padding(
                                         start = 16.dp,

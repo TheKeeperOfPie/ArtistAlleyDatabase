@@ -315,7 +315,6 @@ fun AiringNotificationCard(
                 screenKey = screenKey,
                 viewer = viewer,
                 entry = mediaEntry,
-                onLongClick = { /* TODO */ },
                 onClickListEdit = onClickListEdit,
                 modifier = Modifier.padding(8.dp)
             )
@@ -367,7 +366,6 @@ fun RelatedMediaAdditionNotificationCard(
                 screenKey = screenKey,
                 viewer = viewer,
                 entry = mediaEntry,
-                onLongClick = { /* TODO */ },
                 onClickListEdit = onClickListEdit,
                 modifier = Modifier.padding(8.dp)
             )
@@ -409,7 +407,6 @@ fun MediaDataChangeNotificationCard(
                 screenKey = screenKey,
                 viewer = viewer,
                 entry = mediaEntry,
-                onLongClick = { /* TODO */ },
                 onClickListEdit = onClickListEdit,
                 modifier = Modifier.padding(8.dp)
             )
@@ -454,7 +451,6 @@ fun MediaDeletionNotificationCard(
                 screenKey = screenKey,
                 viewer = viewer,
                 entry = mediaEntry,
-                onLongClick = { /* TODO */ },
                 onClickListEdit = onClickListEdit,
                 modifier = Modifier.padding(8.dp)
             )
@@ -496,7 +492,6 @@ fun MediaMergeNotificationCard(
                 screenKey = screenKey,
                 viewer = viewer,
                 entry = mediaEntry,
-                onLongClick = { /* TODO */ },
                 onClickListEdit = onClickListEdit,
                 modifier = Modifier.padding(8.dp)
             )

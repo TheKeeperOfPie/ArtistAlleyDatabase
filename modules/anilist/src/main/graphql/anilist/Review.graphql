@@ -1,0 +1,27 @@
+query HomeReviews($mediaType: MediaType!, $page: Int!, $perPage: Int!) {
+    Page(page: $page, perPage: $perPage) @nonnull {
+        pageInfo {
+            ...PaginationInfo
+        }
+        reviews(mediaType: $mediaType, sort: [CREATED_AT_DESC]) @nonnull {
+            ...MediaAndReviewsReview
+            media @nonnull {
+                ...MediaCompactWithTags
+            }
+        }
+    }
+}
+
+query ReviewSearch($sort: [ReviewSort], $mediaType: MediaType!, $mediaId: Int, $page: Int!, $perPage: Int!) {
+    Page(page: $page, perPage: $perPage) @nonnull {
+        pageInfo {
+            ...PaginationInfo
+        }
+        reviews(sort: $sort, mediaType: $mediaType, mediaId: $mediaId) @nonnull {
+            ...MediaAndReviewsReview
+            media @nonnull {
+                ...MediaCompactWithTags
+            }
+        }
+    }
+}
