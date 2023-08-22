@@ -3,7 +3,6 @@ package com.thekeeperofpie.artistalleydatabase.anime.review
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
@@ -15,11 +14,11 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvi
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListPagingSource
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaCompactWithTagsEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
-import com.thekeeperofpie.artistalleydatabase.anime.media.UserMediaListController
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaFiltering
 import com.thekeeperofpie.artistalleydatabase.anime.utils.mapNotNull
 import com.thekeeperofpie.artistalleydatabase.anime.utils.mapOnIO
@@ -28,7 +27,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
@@ -53,14 +51,45 @@ class ReviewsViewModel @Inject constructor(
     val anime = MutableStateFlow(PagingData.empty<ReviewEntry>())
     val manga = MutableStateFlow(PagingData.empty<ReviewEntry>())
 
-    val sortFilterController = ReviewSortFilterController(settings, featureOverrideProvider)
+    // Shares the sort option between the tabs
+    val sortSection = ReviewSortFilterController.sortSection()
+
+    private val sortFilterControllerAnime = ReviewSortFilterController(
+        screenKey = AnimeNavDestinations.REVIEWS.id,
+        scope = viewModelScope,
+        aniListApi = aniListApi,
+        settings,
+        featureOverrideProvider,
+        mediaType = MediaType.ANIME,
+        sortSection = sortSection,
+    )
+
+    private val sortFilterControllerManga = ReviewSortFilterController(
+        screenKey = AnimeNavDestinations.REVIEWS.id,
+        scope = viewModelScope,
+        aniListApi = aniListApi,
+        settings,
+        featureOverrideProvider,
+        mediaType = MediaType.MANGA,
+        sortSection = sortSection,
+    )
 
     init {
-        collectReviews(MediaType.ANIME, anime)
-        collectReviews(MediaType.MANGA, manga)
+        collectReviews(MediaType.ANIME, anime, sortFilterControllerAnime)
+        collectReviews(MediaType.MANGA, manga, sortFilterControllerManga)
     }
 
-    fun collectReviews(type: MediaType, reviews: MutableStateFlow<PagingData<ReviewEntry>>) {
+    fun sortFilterController() = if (selectedType == MediaType.ANIME) {
+        sortFilterControllerAnime
+    } else {
+        sortFilterControllerManga
+    }
+
+    private fun collectReviews(
+        type: MediaType,
+        reviews: MutableStateFlow<PagingData<ReviewEntry>>,
+        sortFilterController: ReviewSortFilterController,
+    ) {
         viewModelScope.launch(CustomDispatchers.Main) {
             sortFilterController.filterParams()
                 .flatMapLatest { filterParams ->
@@ -71,6 +100,7 @@ class ReviewsViewModel @Inject constructor(
                                     .selectedOption(ReviewSortOption.CREATED_AT)
                                     .toApiValue(filterParams.sortAscending),
                                 mediaType = type,
+                                mediaId = filterParams.mediaId,
                                 page = it,
                             )
 

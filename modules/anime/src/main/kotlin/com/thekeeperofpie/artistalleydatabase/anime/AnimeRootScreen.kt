@@ -122,8 +122,6 @@ object AnimeRootScreen {
                                             AnimeRootNavDestination.UNLOCK,
                                             -> Unit
                                         }
-                                        if (destination == AnimeRootNavDestination.ANIME) {
-                                        }
                                     } else {
                                         selectedScreen = destination
                                     }

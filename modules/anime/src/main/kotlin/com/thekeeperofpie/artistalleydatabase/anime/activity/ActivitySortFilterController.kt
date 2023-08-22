@@ -13,9 +13,11 @@ import androidx.compose.ui.unit.dp
 import com.anilist.type.ActivityType
 import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityUtils.toTextRes
+import com.thekeeperofpie.artistalleydatabase.anime.filter.MediaSearchSortFilterSection
 import com.thekeeperofpie.artistalleydatabase.anime.filter.SortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.filter.SortFilterSection
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.AiringDate
@@ -24,6 +26,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.ui.StartEndDateDialog
 import com.thekeeperofpie.artistalleydatabase.compose.filter.CustomFilterSection
 import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterEntry
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortEntry
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flowOn
@@ -33,6 +36,9 @@ import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(FlowPreview::class)
 class ActivitySortFilterController(
+    screenKey: String,
+    scope: CoroutineScope,
+    aniListApi: AuthedAniListApi,
     settings: AnimeSettings,
     featureOverrideProvider: FeatureOverrideProvider,
 ) : SortFilterController(settings, featureOverrideProvider) {
@@ -102,6 +108,16 @@ class ActivitySortFilterController(
         }
     }
 
+    private val mediaSection = MediaSearchSortFilterSection(
+        screenKey = screenKey,
+        titleTextRes = R.string.anime_activity_filter_media_label,
+        titleDropdownContentDescriptionRes = R.string.anime_activity_filter_media_expand_content_description,
+        scope = scope,
+        aniListApi = aniListApi,
+        settings = settings,
+        mediaType = null,
+    )
+
     fun onReleaseDateChange(start: Boolean, selectedMillis: Long?) {
         // Selected value is in UTC
         val selectedDate = selectedMillis?.let {
@@ -135,15 +151,19 @@ class ActivitySortFilterController(
             type = typeSection.filterOptions,
             hasReplies = hasRepliesSection.enabled,
             date = date,
+            mediaId = mediaSection.selectedMedia?.id?.toString(),
         )
     }.flowOn(CustomDispatchers.Main)
         .debounce(500.milliseconds)
+
+    fun selectedMedia() = mediaSection.selectedMedia
 
     override val sections = listOf(
         sortSection,
         typeSection,
         hasRepliesSection,
         dateSection,
+        mediaSection,
         SortFilterSection.Spacer(height = 32.dp),
     )
 
@@ -152,5 +172,6 @@ class ActivitySortFilterController(
         val type: List<FilterEntry.FilterEntryImpl<ActivityType>>,
         val hasReplies: Boolean,
         val date: AiringDate.Advanced,
+        val mediaId: String?,
     )
 }

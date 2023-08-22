@@ -377,6 +377,7 @@ query UserSocialActivity(
     $hasReplies: Boolean,
     $createdAtGreater: Int,
     $createdAtLesser: Int,
+    $mediaId: Int,
 ) {
     Page(perPage: $perPage, page: $page) {
         pageInfo @nonnull {
@@ -391,7 +392,8 @@ query UserSocialActivity(
             type_not_in: $typeNotIn,
             hasReplies: $hasReplies,
             createdAt_greater: $createdAtGreater,
-            createdAt_lesser: $createdAtLesser
+            createdAt_lesser: $createdAtLesser,
+            mediaId: $mediaId,
         ) {
             ...ActivityItem
         }

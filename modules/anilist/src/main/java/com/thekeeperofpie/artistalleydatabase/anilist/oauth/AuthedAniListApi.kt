@@ -37,6 +37,7 @@ import com.anilist.MediaAndRecommendationsPaginationQuery
 import com.anilist.MediaAndRecommendationsQuery
 import com.anilist.MediaAndReviewsPaginationQuery
 import com.anilist.MediaAndReviewsQuery
+import com.anilist.MediaAutocompleteQuery
 import com.anilist.MediaByIdsQuery
 import com.anilist.MediaDetailsCharactersPageQuery
 import com.anilist.MediaDetailsQuery
@@ -641,6 +642,7 @@ open class AuthedAniListApi(
         hasReplies: Boolean? = null,
         createdAtGreater: Int? = null,
         createdAtLesser: Int? = null,
+        mediaId: String? = null,
     ) = query(
         UserSocialActivityQuery(
             isFollowing = isFollowing,
@@ -654,6 +656,7 @@ open class AuthedAniListApi(
             hasReplies = Optional.presentIfNotNull(hasReplies),
             createdAtGreater = Optional.presentIfNotNull(createdAtGreater),
             createdAtLesser = Optional.presentIfNotNull(createdAtLesser),
+            mediaId = Optional.presentIfNotNull(mediaId?.toIntOrNull()),
         )
     )
 
@@ -1047,6 +1050,7 @@ open class AuthedAniListApi(
     open suspend fun reviewSearch(
         sort: List<ReviewSort>,
         mediaType: MediaType,
+        mediaId: String?,
         page: Int,
         perPage: Int = 10,
     ) =
@@ -1054,8 +1058,20 @@ open class AuthedAniListApi(
             ReviewSearchQuery(
                 sort = Optional.presentIfNotNull(sort.ifEmpty { null }),
                 mediaType = mediaType,
+                mediaId = Optional.presentIfNotNull(mediaId?.toIntOrNull()),
                 page = page,
                 perPage = perPage
+            )
+        )
+
+    open suspend fun mediaAutocomplete(query: String, isAdult: Boolean?, mediaType: MediaType?) =
+        query(
+            MediaAutocompleteQuery(
+                search = query,
+                mediaType = Optional.presentIfNotNull(mediaType),
+                isAdult = Optional.presentIfNotNull(isAdult),
+                page = 1,
+                perPage = 10,
             )
         )
 

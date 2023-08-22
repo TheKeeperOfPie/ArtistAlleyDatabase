@@ -52,6 +52,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.ignore.LocalIgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaStatusAware
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toIcon
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toIconContentDescription
 import com.thekeeperofpie.artistalleydatabase.anime.ui.MediaCoverImage
 import com.thekeeperofpie.artistalleydatabase.anime.utils.LocalFullscreenImageHandler
 import com.thekeeperofpie.artistalleydatabase.compose.ComposeColorUtils
@@ -142,13 +143,7 @@ object MediaGridCard {
                         if (showTypeIcon) {
                             Icon(
                                 imageVector = entry?.type.toIcon(),
-                                contentDescription = stringResource(
-                                    if (entry?.type == MediaType.ANIME) {
-                                        R.string.anime_media_type_anime_icon_content_description
-                                    } else {
-                                        R.string.anime_media_type_manga_icon_content_description
-                                    }
-                                ),
+                                contentDescription = entry?.type.toIconContentDescription(),
                                 modifier = Modifier
                                     .align(Alignment.TopStart)
                                     .clip(RoundedCornerShape(bottomEnd = 6.dp))

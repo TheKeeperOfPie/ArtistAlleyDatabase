@@ -7,12 +7,15 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.res.stringResource
 import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
+import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.filter.MediaSearchSortFilterSection
 import com.thekeeperofpie.artistalleydatabase.anime.filter.SortFilterController
 import com.thekeeperofpie.artistalleydatabase.anime.filter.SortFilterSection
 import com.thekeeperofpie.artistalleydatabase.compose.filter.FilterEntry
 import com.thekeeperofpie.artistalleydatabase.compose.filter.SortEntry
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flowOn
@@ -20,6 +23,9 @@ import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(FlowPreview::class)
 class ForumSubsectionSortFilterController(
+    screenKey: String,
+    scope: CoroutineScope,
+    aniListApi: AuthedAniListApi,
     settings: AnimeSettings,
     featureOverrideProvider: FeatureOverrideProvider,
 ) : SortFilterController(settings, featureOverrideProvider) {
@@ -42,6 +48,16 @@ class ForumSubsectionSortFilterController(
         values = ForumCategoryOption.values().toList(),
         valueToText = { stringResource(it.value.textRes) },
         selectionMethod = SortFilterSection.Filter.SelectionMethod.SINGLE_EXCLUSIVE,
+    )
+
+    private val mediaSection = MediaSearchSortFilterSection(
+        screenKey = screenKey,
+        titleTextRes = R.string.anime_forum_filter_media_label,
+        titleDropdownContentDescriptionRes = R.string.anime_forum_filter_media_expand_content_description,
+        scope = scope,
+        aniListApi = aniListApi,
+        settings = settings,
+        mediaType = null,
     )
 
     override var sections by mutableStateOf(emptyList<SortFilterSection>())
@@ -70,6 +86,7 @@ class ForumSubsectionSortFilterController(
                     }
                 }
             },
+            mediaSection.takeIf { initialParams.mediaCategoryId == null },
         )
     }
 
@@ -79,8 +96,8 @@ class ForumSubsectionSortFilterController(
             sortAscending = sortSection.sortAscending,
             subscribed = subscribedSection.enabled,
             categories = categorySection.filterOptions,
-            // TODO: Real media filtering
-            mediaCategoryId = initialParams.mediaCategoryId,
+            mediaCategoryId = initialParams.mediaCategoryId
+                ?: mediaSection.selectedMedia?.id?.toString(),
         )
     }.flowOn(CustomDispatchers.Main)
         .debounce(500.milliseconds)

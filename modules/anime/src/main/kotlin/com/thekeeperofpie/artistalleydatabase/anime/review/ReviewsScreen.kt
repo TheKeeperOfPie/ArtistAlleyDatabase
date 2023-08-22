@@ -30,6 +30,7 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
+import com.anilist.fragment.MediaNavigationData
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
@@ -37,6 +38,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSh
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.SortFilterBottomScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.compose.AppBar
 import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBarHeightChange
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
@@ -59,9 +61,11 @@ object ReviewsScreen {
         ) {
             val scrollBehavior =
                 TopAppBarDefaults.enterAlwaysScrollBehavior(snapAnimationSpec = null)
+            val sortFilterController = viewModel.sortFilterController()
+            val selectedMedia = sortFilterController.selectedMedia()
             SortFilterBottomScaffold(
-                sortFilterController = viewModel.sortFilterController,
-                topBar = { TopBar(viewModel, upIconOption, scrollBehavior) },
+                sortFilterController = viewModel.sortFilterController(),
+                topBar = { TopBar(viewModel, upIconOption, scrollBehavior, selectedMedia) },
                 modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
             ) {
                 val viewer by viewModel.viewer.collectAsState()
@@ -73,6 +77,7 @@ object ReviewsScreen {
                     viewer = viewer,
                     reviews = reviews,
                     editViewModel = editViewModel,
+                    showMedia = selectedMedia == null,
                 )
             }
         }
@@ -83,11 +88,17 @@ object ReviewsScreen {
         viewModel: ReviewsViewModel,
         upIconOption: UpIconOption?,
         scrollBehavior: TopAppBarScrollBehavior,
+        selectedMedia: MediaNavigationData?,
     ) {
         EnterAlwaysTopAppBarHeightChange(scrollBehavior = scrollBehavior) {
             Column {
+                val mediaTitle = selectedMedia?.title?.primaryTitle()
                 AppBar(
-                    text = stringResource(R.string.anime_reviews_header),
+                    text = if (mediaTitle == null) {
+                        stringResource(R.string.anime_reviews_header)
+                    } else {
+                        stringResource(R.string.anime_reviews_header_with_media, mediaTitle)
+                    },
                     upIconOption = upIconOption,
                 )
 
@@ -119,6 +130,7 @@ object ReviewsScreen {
         viewer: AniListViewer?,
         reviews: LazyPagingItems<ReviewEntry>,
         editViewModel: MediaEditViewModel,
+        showMedia: Boolean,
     ) {
         val refreshing = reviews.loadState.refresh is LoadState.Loading
         val pullRefreshState = rememberPullRefreshState(
@@ -150,6 +162,7 @@ object ReviewsScreen {
                         viewer = viewer,
                         review = entry?.review,
                         media = entry?.media,
+                        showMedia = showMedia,
                         onClick = {
                             if (entry != null) {
                                 it.onReviewClick(

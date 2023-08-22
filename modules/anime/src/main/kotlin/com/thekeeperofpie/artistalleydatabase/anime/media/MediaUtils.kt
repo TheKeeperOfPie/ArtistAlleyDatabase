@@ -789,6 +789,15 @@ object MediaUtils {
     }
 
     @Composable
+    fun MediaType?.toIconContentDescription() = stringResource(
+        if (this == MediaType.ANIME) {
+            R.string.anime_media_type_anime_icon_content_description
+        } else {
+            R.string.anime_media_type_manga_icon_content_description
+        }
+    )
+
+    @Composable
     fun nextAiringSectionText(
         airingAtAniListTimestamp: Int,
         episode: Int,

@@ -305,9 +305,9 @@ private fun MultiTextSection(section: EntrySection.MultiText) {
                 },
                 lockState = { section.lockState },
                 modifier = Modifier
-                    .focusable(section.lockState?.editable != false)
-                    .onFocusChanged { focused = it.isFocused }
                     .focusRequester(focusRequester)
+                    .onFocusChanged { focused = it.isFocused }
+                    .focusable(section.lockState?.editable != false)
                     .bringIntoViewRequester(bringIntoViewRequester)
             )
 
@@ -712,7 +712,6 @@ fun EntryImage(
     }
 }
 
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun OpenSectionField(
     value: () -> String,

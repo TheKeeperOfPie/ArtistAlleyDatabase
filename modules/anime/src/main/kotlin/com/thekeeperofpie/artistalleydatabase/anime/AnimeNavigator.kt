@@ -1134,7 +1134,7 @@ object AnimeNavigator {
             }
         }
 
-        fun onMediaClick(media: MediaNavigationData, imageWidthToHeightRatio: Float) {
+        fun onMediaClick(media: MediaNavigationData, imageWidthToHeightRatio: Float? = null) {
             navHostController?.let {
                 onMediaClick(
                     navHostController = it,

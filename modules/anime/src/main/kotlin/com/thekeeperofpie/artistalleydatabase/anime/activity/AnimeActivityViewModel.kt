@@ -16,6 +16,7 @@ import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvi
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListPagingSource
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityUtils.entryId
 import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityUtils.isAdult
@@ -63,7 +64,13 @@ class AnimeActivityViewModel @Inject constructor(
     val activityToggleHelper =
         ActivityToggleHelper(aniListApi, activityStatusController, viewModelScope)
 
-    val sortFilterController = ActivitySortFilterController(settings, featureOverrideProvider)
+    val sortFilterController = ActivitySortFilterController(
+        screenKey = AnimeNavDestinations.ACTIVITY.id,
+        scope = viewModelScope,
+        aniListApi = aniListApi,
+        settings = settings,
+        featureOverrideProvider = featureOverrideProvider,
+    )
 
     private val refreshUptimeMillis = MutableStateFlow(-1L)
 
@@ -147,6 +154,7 @@ class AnimeActivityViewModel @Inject constructor(
                                 ?.atStartOfDay()
                                 ?.toEpochSecond(offset)
                                 ?.toInt(),
+                            mediaId = filterParams.mediaId,
                         )
                         result.page?.pageInfo to
                                 result.page?.activities?.filterNotNull().orEmpty()

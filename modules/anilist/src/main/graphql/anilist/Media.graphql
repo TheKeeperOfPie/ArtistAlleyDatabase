@@ -1,6 +1,5 @@
 fragment AniListMedia on Media {
     id
-    description
     title {
         english
         romaji
@@ -772,5 +771,23 @@ mutation SaveRecommendationRating(
         rating: $rating,
     ) @nonnull {
         userRating @nonnull
+    }
+}
+
+query MediaAutocomplete(
+    $search: String!,
+    $mediaType: MediaType,
+    $isAdult: Boolean,
+    $page: Int!,
+    $perPage: Int!,
+) {
+    Page(page: $page, perPage: $perPage) {
+        media(search: $search, sort: [SEARCH_MATCH], isAdult: $isAdult, type: $mediaType) {
+            ...MediaNavigationData
+            coverImage {
+                color
+                medium
+            }
+        }
     }
 }

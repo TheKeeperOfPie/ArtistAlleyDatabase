@@ -43,6 +43,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
+import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.primaryTitle
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.media.filter.SortFilterBottomScaffold
@@ -76,13 +77,22 @@ object AnimeActivityScreen {
         ) {
             val scrollBehavior =
                 TopAppBarDefaults.enterAlwaysScrollBehavior(snapAnimationSpec = null)
+            val sortFilterController = viewModel.sortFilterController
+            val selectedMedia = sortFilterController.selectedMedia()
             SortFilterBottomScaffold(
-                sortFilterController = viewModel.sortFilterController,
+                sortFilterController = sortFilterController,
                 topBar = {
                     val navigationCallback = LocalNavigationCallback.current
+                    val mediaTitle = selectedMedia?.title?.primaryTitle()
+                    val title = if (mediaTitle == null) {
+                        stringResource(R.string.anime_activity_title)
+                    } else {
+                        stringResource(R.string.anime_activity_title_with_media, mediaTitle)
+                    }
+
                     if (viewer == null) {
                         AppBar(
-                            text = stringResource(R.string.anime_activity_global_title),
+                            text = title,
                             upIconOption = UpIconOption.Back { navigationCallback.navigateUp() },
                             scrollBehavior = scrollBehavior,
                         )
@@ -90,7 +100,7 @@ object AnimeActivityScreen {
                         EnterAlwaysTopAppBarHeightChange(scrollBehavior = scrollBehavior) {
                             Column {
                                 AppBar(
-                                    text = stringResource(R.string.anime_activity_title),
+                                    text = title,
                                     upIconOption = UpIconOption.Back {
                                         navigationCallback.navigateUp()
                                     },
@@ -152,6 +162,7 @@ object AnimeActivityScreen {
                         viewer = viewer,
                         activities = activities,
                         onActivityStatusUpdate = viewModel.activityToggleHelper::toggle,
+                        showMedia = selectedMedia == null,
                     )
                 }
             }
@@ -164,6 +175,7 @@ object AnimeActivityScreen {
         viewer: AniListViewer?,
         activities: LazyPagingItems<AnimeActivityViewModel.ActivityEntry>,
         onActivityStatusUpdate: (ActivityToggleUpdate) -> Unit,
+        showMedia: Boolean,
     ) {
         when (val refreshState = activities.loadState.refresh) {
             is LoadState.Error -> AnimeMediaListScreen.Error(
@@ -213,6 +225,7 @@ object AnimeActivityScreen {
                                         viewer = viewer,
                                         activity = activity,
                                         mediaEntry = entry.media,
+                                        showMedia = showMedia,
                                         entry = entry,
                                         onActivityStatusUpdate = onActivityStatusUpdate,
                                         onClickListEdit = { editViewModel.initialize(it.media) },

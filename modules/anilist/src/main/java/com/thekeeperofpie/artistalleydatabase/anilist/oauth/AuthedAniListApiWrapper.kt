@@ -1,6 +1,7 @@
 package com.thekeeperofpie.artistalleydatabase.anilist.oauth
 
 import com.anilist.ActivityDetailsQuery
+import com.anilist.MediaAutocompleteQuery
 import com.anilist.NotificationMediaAndActivityQuery
 import com.anilist.UserSocialActivityQuery
 import com.anilist.type.ActivitySort
@@ -421,6 +422,7 @@ class AuthedAniListApiWrapper(
         hasReplies: Boolean?,
         createdAtGreater: Int?,
         createdAtLesser: Int?,
+        mediaId: String?,
     ) = super.userSocialActivity(
         isFollowing,
         page,
@@ -432,7 +434,8 @@ class AuthedAniListApiWrapper(
         typeNotIn,
         hasReplies,
         createdAtGreater,
-        createdAtLesser
+        createdAtLesser,
+        mediaId,
     ).let {
         it.copy(page = it.page?.copy(activities = it.page.activities?.filter {
             when (it) {
@@ -751,9 +754,18 @@ class AuthedAniListApiWrapper(
     override suspend fun reviewSearch(
         sort: List<ReviewSort>,
         mediaType: MediaType,
+        mediaId: String?,
         page: Int,
         perPage: Int,
-    ) = super.reviewSearch(sort, mediaType, page, perPage).let {
+    ) = super.reviewSearch(sort, mediaType, mediaId, page, perPage).let {
         it.copy(page = it.page.copy(reviews = it.page.reviews.filter { it?.media?.isAdult == false }))
+    }
+
+    override suspend fun mediaAutocomplete(
+        query: String,
+        isAdult: Boolean?,
+        mediaType: MediaType?,
+    ) = super.mediaAutocomplete(query, isAdult = false, mediaType).let {
+        it.copy(page = it.page?.copy(media = it.page.media?.filter { it?.isAdult == false }))
     }
 }

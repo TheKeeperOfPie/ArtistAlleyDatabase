@@ -2,12 +2,9 @@ package com.thekeeperofpie.artistalleydatabase.anilist
 
 import android.util.Log
 import androidx.annotation.WorkerThread
-import com.apollographql.apollo3.api.ApolloResponse
-import com.apollographql.apollo3.api.Operation
 import com.hoc081098.flowext.startWith
 import com.thekeeperofpie.artistalleydatabase.android_utils.Either
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.split
-import com.thekeeperofpie.artistalleydatabase.android_utils.nullable
 import com.thekeeperofpie.artistalleydatabase.anilist.character.CharacterRepository
 import com.thekeeperofpie.artistalleydatabase.anilist.media.MediaRepository
 import com.thekeeperofpie.artistalleydatabase.entry.EntrySection
@@ -42,17 +39,6 @@ class AniListAutocompleter @Inject constructor(
     companion object {
         private const val TAG = "AniListAutocompleter"
     }
-
-    private fun <DataType : Operation.Data, ResponseType : ApolloResponse<DataType>> aniListCall(
-        apiCall: () -> Flow<ResponseType>,
-        transform: suspend (DataType) -> List<Entry?>,
-    ) = apiCall()
-        .nullable()
-        .catch { Log.e(TAG, "Failed to search", it); emit(null) }
-        .mapNotNull { it?.data }
-        .map(transform)
-        .map { it.filterNotNull() }
-        .startWith(item = emptyList())
 
     suspend fun querySeriesLocal(
         query: String,

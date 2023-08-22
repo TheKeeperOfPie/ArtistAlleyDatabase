@@ -220,6 +220,10 @@
     <string name="anime_media_filter_setting_title_language">Title language</string>
 
     <string name="anime_media_filter_hide_ignored">Hide ignored</string>
+    <string name="anime_media_filter_clear_media">Clear media</string>
+    <string name="anime_media_filter_search_media_placeholder_anime">Search anime…</string>
+    <string name="anime_media_filter_search_media_placeholder_manga">Search manga…</string>
+    <string name="anime_media_filter_search_media_placeholder_media">Search media…</string>
 
     <string name="anime_media_cover_image_long_press_preview">Preview cover image</string>
     <string name="anime_media_banner_image_long_press_preview">Preview banner image</string>
@@ -680,7 +684,7 @@
     <string name="anime_activity_tab_following">Following</string>
     <string name="anime_activity_tab_global">Global</string>
     <string name="anime_activity_title">Activity</string>
-    <string name="anime_activity_global_title">Global activity</string>
+    <string name="anime_activity_title_with_media">Activity for %1$s</string>
     <string name="anime_activity_sort_newest">Newest</string>
     <string name="anime_activity_sort_oldest">Oldest</string>
     <string name="anime_activity_sort_pinned">Pinned</string>
@@ -695,6 +699,8 @@
     <string name="anime_activity_filter_has_replies_label">Has replies</string>
     <string name="anime_activity_filter_date">Date</string>
     <string name="anime_activity_filter_date_content_description">Date expand</string>
+    <string name="anime_activity_filter_media_label">Media</string>
+    <string name="anime_activity_filter_media_expand_content_description">Media expand</string>
 
     <string name="anime_activity_type_text">Text</string>
     <string name="anime_activity_type_anime_list">Anime</string>
@@ -727,6 +733,7 @@
     <string name="anime_reviews_error_loading">Error loading reviews</string>
     <string name="anime_reviews_error_loading_details">Error loading review</string>
     <string name="anime_reviews_header">Reviews</string>
+    <string name="anime_reviews_header_with_media">Reviews for %1$s</string>
     <string name="anime_review_details_upvote_content_description">Upvote review</string>
     <string name="anime_review_details_downvote_content_description">Downvote review</string>
     <string name="anime_review_details_score">Score: %1$s/100</string>
@@ -735,7 +742,10 @@
     <string name="anime_reviews_home_title">REVIEWS</string>
     <string name="anime_reviews_tab_anime">Anime</string>
     <string name="anime_reviews_tab_manga">Manga</string>
+
     <string name="anime_review_filter_sort_label">Sort</string>
+    <string name="anime_review_filter_media_label">Media</string>
+    <string name="anime_review_filter_media_expand_content_description">Media expand</string>
 
     <string name="anime_recommendations_sort_id">Last added</string>
     <string name="anime_recommendations_sort_rating">Rating</string>
@@ -810,6 +820,9 @@
     <string name="anime_forum_filter_category_label">Category</string>
     <string name="anime_forum_filter_category_dropdown_content_description">Category section expand</string>
     <string name="anime_forum_filter_category_chip_state_content_description">Category chip state</string>
+    <string name="anime_forum_filter_media_label">Media</string>
+    <string name="anime_forum_filter_media_expand_content_description">Media expand</string>
+
     <string name="anime_forum_thread_sort_search_match">Search match</string>
     <string name="anime_forum_thread_sort_title">Title</string>
     <string name="anime_forum_thread_sort_created_at">New</string>

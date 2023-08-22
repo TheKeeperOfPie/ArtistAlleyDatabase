@@ -7,6 +7,7 @@
 - Add voice actor language option
 - Add media ignore gesture (long press, disabled by default, accessed in settings)
 - Add reviews to home screen
+- Add media filter to forum, activity, and reviews
 
 ### 0.42 (7)
 - Add unread notification badge

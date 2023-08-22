@@ -25,6 +25,7 @@ import androidx.compose.material.icons.filled.ThumbUpAlt
 import androidx.compose.material.icons.outlined.PeopleAlt
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -33,10 +34,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.compositeOver
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.core.graphics.ColorUtils
 import coil.compose.AsyncImage
 import com.anilist.fragment.MediaAndReviewsReview
 import com.google.accompanist.placeholder.PlaceholderHighlight
@@ -166,6 +170,7 @@ fun ReviewCard(
     media: AnimeMediaCompactListRow.Entry?,
     onClick: (AnimeNavigator.NavigationCallback) -> Unit,
     onClickListEdit: (AnimeMediaCompactListRow.Entry) -> Unit,
+    showMedia: Boolean = true,
     modifier: Modifier = Modifier,
 ) {
     val navigationCallback = LocalNavigationCallback.current
@@ -178,13 +183,15 @@ fun ReviewCard(
     ) {
         ReviewSmallCardContent(screenKey, review)
 
-        AnimeMediaCompactListRow(
-            screenKey = screenKey,
-            viewer = viewer,
-            entry = media,
-            onClickListEdit = onClickListEdit,
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
-        )
+        if (showMedia) {
+            AnimeMediaCompactListRow(
+                screenKey = screenKey,
+                viewer = viewer,
+                entry = media,
+                onClickListEdit = onClickListEdit,
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
+            )
+        }
     }
 }
 
@@ -262,12 +269,14 @@ fun ReviewRatingIconsSection(
                 )
 
                 val alpha = (rating / ratingAmount.toFloat()).coerceIn(0f, 1f)
+                val tint = Color.Green.copy(alpha = alpha)
+                    .compositeOver(LocalContentColor.current)
                 Icon(
                     imageVector = Icons.Filled.ThumbUpAlt,
                     contentDescription = stringResource(
                         R.string.anime_media_details_reviews_rating_upvote_content_description
                     ),
-                    tint = Color.Green.copy(alpha = alpha),
+                    tint = tint,
                     modifier = Modifier.size(20.dp)
                 )
             }
@@ -280,12 +289,14 @@ fun ReviewRatingIconsSection(
                 )
 
                 val alpha = (downvotes / ratingAmount.toFloat()).coerceIn(0f, 1f)
+                val tint = Color.Red.copy(alpha = alpha)
+                    .compositeOver(LocalContentColor.current)
                 Icon(
                     imageVector = Icons.Filled.ThumbDownAlt,
                     contentDescription = stringResource(
                         R.string.anime_media_details_reviews_rating_downvote_content_description
                     ),
-                    tint = Color.Red.copy(alpha = alpha),
+                    tint = tint,
                     modifier = Modifier.size(20.dp)
                 )
             }
