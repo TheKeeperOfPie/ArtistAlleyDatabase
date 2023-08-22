@@ -537,7 +537,6 @@ object AnimeMediaDetailsScreen {
             relationsExpanded = expandedState::relations,
             onRelationsExpandedChange = { expandedState.relations = it },
             onClickListEdit = onClickListEdit,
-            onLongClick = viewModel::onMediaLongClick,
         )
 
         infoSection(entry)
@@ -591,7 +590,6 @@ object AnimeMediaDetailsScreen {
             expanded = expandedState::recommendations,
             onExpandedChange = { expandedState.recommendations = it },
             onClickListEdit = onClickListEdit,
-            onLongClick = viewModel::onMediaLongClick,
         )
 
         activitiesSection(
@@ -674,7 +672,6 @@ object AnimeMediaDetailsScreen {
         relationsExpanded: () -> Boolean,
         onRelationsExpandedChange: (Boolean) -> Unit,
         onClickListEdit: (AnimeMediaListRow.Entry) -> Unit,
-        onLongClick: (AnimeMediaListRow.Entry) -> Unit,
     ) {
         mediaListSection(
             screenKey = screenKey,
@@ -687,7 +684,6 @@ object AnimeMediaDetailsScreen {
             expanded = relationsExpanded,
             onExpandedChange = onRelationsExpandedChange,
             onClickListEdit = onClickListEdit,
-            onLongClick = onLongClick,
             label = { RelationLabel(it.relation) },
         )
     }
@@ -1303,7 +1299,6 @@ object AnimeMediaDetailsScreen {
         expanded: () -> Boolean,
         onExpandedChange: (Boolean) -> Unit,
         onClickListEdit: (AnimeMediaListRow.Entry) -> Unit,
-        onLongClick: (AnimeMediaListRow.Entry) -> Unit,
     ) {
         listSection(
             titleRes = R.string.anime_media_details_recommendations_label,
@@ -1328,7 +1323,6 @@ object AnimeMediaDetailsScreen {
                 entry = entry,
                 viewer = viewer,
                 onClickListEdit = onClickListEdit,
-                onLongClick = onLongClick,
                 recommendation = item.data,
                 onUserRecommendationRating = viewModel.recommendationToggleHelper::toggle,
                 modifier = modifier.padding(start = 16.dp, end = 16.dp, bottom = paddingBottom)

@@ -347,7 +347,6 @@ object AnimeHomeScreen {
                 data = it,
                 viewer = viewer,
                 onClickListEdit = onClickListEdit,
-                onLongClickEntry = mediaViewModel::onLongClickEntry,
                 selectedItemTracker = selectedItemTracker,
             )
         }
@@ -532,7 +531,6 @@ object AnimeHomeScreen {
         data: AnimeHomeDataEntry.RowData,
         viewer: AniListViewer?,
         onClickListEdit: (MediaCompactWithTags) -> Unit,
-        onLongClickEntry: (MediaPreview) -> Unit,
         selectedItemTracker: SelectedItemTracker,
     ) {
         val (rowKey, titleRes, entries, viewAllRoute) = data
@@ -558,7 +556,6 @@ object AnimeHomeScreen {
                     screenKey = SCREEN_KEY,
                     viewer = viewer,
                     entry = entry,
-                    onLongClick = { onLongClickEntry(entry.media) },
                     onClickListEdit = { onClickListEdit(it.media) },
                 )
             }
@@ -817,7 +814,6 @@ object AnimeHomeScreen {
         val baseModifier = modifier
             .height(height)
             .widthIn(min = width)
-            .clip(RoundedCornerShape(12.dp))
             .combinedClickable(
                 onClick = onClick,
                 onLongClick = {
@@ -857,14 +853,11 @@ object AnimeHomeScreen {
         ) {
             card {
                 Box {
-                    val alpha by animateFloatAsState(
-                        if (widthToHeightRatio == null) 0f else 1f,
-                        label = "Cover image alpha",
-                    )
                     var showTitle by remember(media) { mutableStateOf(false) }
                     AsyncImage(
                         model = ImageRequest.Builder(LocalContext.current)
                             .data(media.coverImage?.extraLarge)
+                            .crossfade(true)
                             .allowHardware(colorCalculationState.hasColor(id))
                             .size(width = coilWidth, height = coilHeight)
                             .build(),
@@ -882,10 +875,7 @@ object AnimeHomeScreen {
                         },
                         onError = { showTitle = true },
                         modifier = Modifier
-                            .clip(RoundedCornerShape(12.dp))
-                            .alpha(alpha)
                             .size(width = width, height = height)
-                            .animateContentSize()
                             .blurForScreenshotMode()
                     )
 

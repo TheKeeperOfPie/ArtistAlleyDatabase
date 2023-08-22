@@ -42,7 +42,7 @@ import com.thekeeperofpie.artistalleydatabase.compose.EnterAlwaysTopAppBarHeight
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconButton
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 object AnimeIgnoreScreen {
 
     private val SCREEN_KEY = AnimeNavDestinations.IGNORED.id
@@ -112,7 +112,6 @@ object AnimeIgnoreScreen {
                                         editViewModel = editViewModel,
                                         entry = entry,
                                         showQuickEdit = showQuickEdit,
-                                        onLongClick = viewModel::onMediaLongClick,
                                     )
                                 }
 

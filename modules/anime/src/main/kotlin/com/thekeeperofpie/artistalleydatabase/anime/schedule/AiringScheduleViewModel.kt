@@ -24,7 +24,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusControl
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaStatusAware
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaStatusChanges
-import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.utils.mapOnIO
 import com.thekeeperofpie.artistalleydatabase.compose.filter.selectedOption
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -186,8 +185,6 @@ class AiringScheduleViewModel @Inject constructor(
         }
         return dayFlows[index].collectAsLazyPagingItems()
     }
-
-    fun onLongClickEntry(entry: AnimeMediaListRow.Entry) = ignoreController.toggle(entry.media)
 
     data class Entry(
         val data: AiringScheduleQuery.Data.Page.AiringSchedule,

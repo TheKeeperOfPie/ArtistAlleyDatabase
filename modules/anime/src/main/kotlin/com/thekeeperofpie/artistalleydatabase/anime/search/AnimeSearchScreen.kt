@@ -306,21 +306,11 @@ object AnimeSearchScreen {
                 viewer = viewer,
                 entry = entry,
                 onClickListEdit = { editViewModel.initialize(it.media) },
-                onLongClick = {
-                    if (entry != null) {
-                        viewModel.ignoreController.toggle(entry.media)
-                    }
-                },
             )
             MediaViewOption.LARGE_CARD -> AnimeMediaLargeCard(
                 screenKey = SCREEN_KEY,
                 viewer = viewer,
                 entry = entry,
-                onLongClick = {
-                    if (entry != null) {
-                        viewModel.ignoreController.toggle(entry.media)
-                    }
-                },
                 onClickListEdit = { editViewModel.initialize(it.media) },
             )
             MediaViewOption.COMPACT -> AnimeMediaCompactListRow(
@@ -334,11 +324,6 @@ object AnimeSearchScreen {
                 entry = entry,
                 viewer = viewer,
                 onClickListEdit = { editViewModel.initialize(it.media) },
-                onLongClick = {
-                    if (entry != null) {
-                        viewModel.ignoreController.toggle(entry.media)
-                    }
-                },
             )
         }
     }

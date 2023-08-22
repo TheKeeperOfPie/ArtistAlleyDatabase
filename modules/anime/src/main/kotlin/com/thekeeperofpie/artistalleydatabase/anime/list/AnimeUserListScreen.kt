@@ -370,14 +370,12 @@ object AnimeUserListScreen {
                 viewer = viewer,
                 entry = entry,
                 onClickListEdit = { editViewModel.initialize(it.media) },
-                onLongClick = { viewModel.ignoreController.toggle(entry.media) },
                 modifier = modifier,
             )
             MediaViewOption.LARGE_CARD -> AnimeMediaLargeCard(
                 screenKey = SCREEN_KEY,
                 viewer = viewer,
                 entry = entry,
-                onLongClick = { viewModel.ignoreController.toggle(entry.media) },
                 onClickListEdit = { editViewModel.initialize(it.media) },
                 modifier = modifier,
             )
@@ -393,7 +391,6 @@ object AnimeUserListScreen {
                 entry = entry,
                 viewer = viewer,
                 onClickListEdit = { editViewModel.initialize(it.media) },
-                onLongClick = { viewModel.ignoreController.toggle(entry.media) },
                 modifier = modifier,
             )
         }

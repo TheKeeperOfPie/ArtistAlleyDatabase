@@ -564,8 +564,6 @@ class AnimeMediaDetailsViewModel @Inject constructor(
         mediaPlayer.pause(null)
     }
 
-    fun onMediaLongClick(entry: AnimeMediaListRow.Entry) = ignoreController.toggle(entry.media)
-
     data class AnimeSongs(
         val entries: List<AnimeSongEntry>,
     )

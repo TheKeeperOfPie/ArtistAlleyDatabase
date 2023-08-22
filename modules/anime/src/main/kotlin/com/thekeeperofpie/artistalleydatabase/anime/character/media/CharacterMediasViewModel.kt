@@ -86,6 +86,4 @@ class CharacterMediasViewModel @Inject constructor(
             ignoreController = ignoreController,
             settings = settings,
         )
-
-    fun onMediaLongClick(entry: AnimeMediaListRow.Entry) = ignoreController.toggle(entry.media)
 }

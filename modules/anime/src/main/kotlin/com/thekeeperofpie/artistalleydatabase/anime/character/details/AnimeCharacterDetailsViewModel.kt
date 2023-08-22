@@ -166,7 +166,4 @@ class AnimeCharacterDetailsViewModel @Inject constructor(
     fun refresh() {
         refresh.value = SystemClock.uptimeMillis()
     }
-
-    fun onMediaLongClick(entry: AnimeMediaListRow.Entry) =
-        ignoreController.toggle(entry.media)
 }

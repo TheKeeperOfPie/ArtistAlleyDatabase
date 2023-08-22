@@ -134,9 +134,6 @@ object MediaSearchScreen {
                                                 onClickListEdit = {
                                                     editViewModel.initialize(it.media)
                                                 },
-                                                onLongClick = {
-                                                    viewModel.ignoreController.toggle(item.media)
-                                                },
                                             )
 
                                             else -> AnimeMediaListRow(
@@ -144,7 +141,6 @@ object MediaSearchScreen {
                                                 viewer = null,
                                                 entry = null,
                                                 onClickListEdit = {},
-                                                onLongClick = {},
                                             )
                                         }
                                     }

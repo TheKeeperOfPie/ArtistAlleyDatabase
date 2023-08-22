@@ -130,7 +130,6 @@ query CharacterDetails($id: Int!) {
         bloodType
         favourites
 
-        # TODO: Pagination
         media(sort: [POPULARITY_DESC], page: 1, perPage: 5) {
             pageInfo {
                 ...PaginationInfo
@@ -139,8 +138,6 @@ query CharacterDetails($id: Int!) {
                 ...CharacterDetailsMediaEdge
             }
         }
-
-        # TODO: Favorite
     }
 }
 

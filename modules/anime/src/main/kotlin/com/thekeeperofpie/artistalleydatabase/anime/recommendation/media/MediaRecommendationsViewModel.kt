@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.anime.recommendation
+package com.thekeeperofpie.artistalleydatabase.anime.recommendation.media
 
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.viewModelScope
@@ -16,6 +16,10 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusControl
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toFavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaFiltering
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
+import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationEntry
+import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationStatusController
+import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationToggleHelper
+import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationsSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.utils.HeaderAndListViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.utils.mapNotNull
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -26,14 +30,14 @@ import javax.inject.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
-class RecommendationsViewModel @Inject constructor(
+class MediaRecommendationsViewModel @Inject constructor(
     aniListApi: AuthedAniListApi,
     private val mediaListStatusController: MediaListStatusController,
     private val recommendationStatusController: RecommendationStatusController,
     private val ignoreController: IgnoreController,
     private val settings: AnimeSettings,
     favoritesController: FavoritesController,
-) : HeaderAndListViewModel<RecommendationsScreen.Entry, MediaAndRecommendationsRecommendation,
+) : HeaderAndListViewModel<MediaRecommendationsScreen.Entry, MediaAndRecommendationsRecommendation,
         RecommendationEntry, RecommendationsSortOption>(
     aniListApi = aniListApi,
     sortOptionEnum = RecommendationsSortOption::class,
@@ -66,7 +70,7 @@ class RecommendationsViewModel @Inject constructor(
         headerId: String,
         sortOption: RecommendationsSortOption,
         sortAscending: Boolean,
-    ) = RecommendationsScreen.Entry(
+    ) = MediaRecommendationsScreen.Entry(
         aniListApi.mediaAndRecommendations(
             mediaId = headerId,
             sort = sortOption.toApiValue(sortAscending)
@@ -74,7 +78,7 @@ class RecommendationsViewModel @Inject constructor(
     )
 
     override suspend fun pagedRequest(
-        entry: RecommendationsScreen.Entry,
+        entry: MediaRecommendationsScreen.Entry,
         page: Int,
         sortOption: RecommendationsSortOption,
         sortAscending: Boolean,
@@ -135,6 +139,4 @@ class RecommendationsViewModel @Inject constructor(
                 }
             }
         }
-
-    fun onMediaLongClick(entry: AnimeMediaListRow.Entry) = ignoreController.toggle(entry.media)
 }

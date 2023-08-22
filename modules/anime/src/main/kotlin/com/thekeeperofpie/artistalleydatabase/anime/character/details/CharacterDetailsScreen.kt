@@ -233,7 +233,6 @@ object CharacterDetailsScreen {
             onExpandedChange = { expandedState.media = it },
             colorCalculationState = colorCalculationState,
             onClickListEdit = { editViewModel.initialize(it.media) },
-            onLongClick = viewModel::onMediaLongClick,
         )
 
         infoSection(entry = entry)
@@ -407,7 +406,6 @@ object CharacterDetailsScreen {
         onExpandedChange: (Boolean) -> Unit,
         colorCalculationState: ColorCalculationState,
         onClickListEdit: (AnimeMediaListRow.Entry) -> Unit,
-        onLongClick: (AnimeMediaListRow.Entry) -> Unit,
     ) {
         mediaListSection(
             screenKey = AnimeNavDestinations.CHARACTER_DETAILS.id,
@@ -420,7 +418,6 @@ object CharacterDetailsScreen {
             expanded = expanded,
             onExpandedChange = onExpandedChange,
             onClickListEdit = onClickListEdit,
-            onLongClick = onLongClick,
             onClickViewAll = {
                 it.onCharacterMediasClick(
                     character = entry.character,

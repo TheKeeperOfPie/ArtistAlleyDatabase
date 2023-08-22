@@ -3,7 +3,7 @@ package com.thekeeperofpie.artistalleydatabase.anime.ignore
 import androidx.compose.runtime.staticCompositionLocalOf
 import com.anilist.fragment.MediaCompactWithTags
 import com.anilist.fragment.MediaPreview
-import com.anilist.fragment.StaffDetailsStaffMediaPage
+import com.anilist.fragment.MediaWithListStatus
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.android_utils.ScopedApplication
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
@@ -21,7 +21,7 @@ class IgnoreController(
 
     fun updates(): Flow<Int> = ignoreDao.entryCountFlow()
 
-    fun toggle(
+    private fun toggle(
         mediaId: String,
         type: MediaType?,
         isAdult: Boolean?,
@@ -81,7 +81,7 @@ class IgnoreController(
         titleNative = media.title?.native,
     )
 
-    fun toggle(media: StaffDetailsStaffMediaPage.Edge.Node) = toggle(
+    fun toggle(media: MediaWithListStatus) = toggle(
         mediaId = media.id.toString(),
         type = media.type,
         isAdult = media.isAdult,

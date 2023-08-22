@@ -99,6 +99,7 @@ object AnimeRootScreen {
                     scrollBehavior = scrollBehavior,
                     modifier = Modifier.height(56.dp)
                 ) {
+                    val navigationCallback = LocalNavigationCallback.current
                     val unlocked by viewModel.unlocked.collectAsState(initial = false)
                     AnimeRootNavDestination.values()
                         .filter { !it.requiresAuth || !needsAuth }
@@ -109,13 +110,20 @@ object AnimeRootScreen {
                                 icon = { Icon(destination.icon, contentDescription = null) },
                                 selected = selectedScreen == destination,
                                 onClick = {
-                                    if (selectedScreen == destination &&
-                                        destination == AnimeRootNavDestination.ANIME
-                                    ) {
-                                        // TODO: Support manga only lists, need to store ignored IDs
-                                        //  in separate settings field
-                                        // TODO: Re-enable ignore
-//                                        navigationCallback.onIgnoreListOpen(MediaType.ANIME)
+                                    if (selectedScreen == destination) {
+                                        when (destination) {
+                                            AnimeRootNavDestination.ANIME -> navigationCallback
+                                                .onClickViewIgnored(MediaType.ANIME)
+                                            AnimeRootNavDestination.MANGA -> navigationCallback
+                                                .onClickViewIgnored(MediaType.MANGA)
+                                            AnimeRootNavDestination.HOME,
+                                            AnimeRootNavDestination.SEARCH,
+                                            AnimeRootNavDestination.PROFILE,
+                                            AnimeRootNavDestination.UNLOCK,
+                                            -> Unit
+                                        }
+                                        if (destination == AnimeRootNavDestination.ANIME) {
+                                        }
                                     } else {
                                         selectedScreen = destination
                                     }

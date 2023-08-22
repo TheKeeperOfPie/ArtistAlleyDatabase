@@ -261,23 +261,13 @@ fun ReviewRatingIconsSection(
                     style = MaterialTheme.typography.labelLarge,
                 )
 
-                val ratio = rating / ratingAmount.toFloat()
-                val iconTint = when {
-                    ratio > 0.6f -> Color.Green
-                    ratio > 0.4f -> Color.Yellow
-                    ratio > 0.2f -> Color(0xFFFF9000) // Orange
-                    else -> Color.Red
-                }
+                val alpha = (rating / ratingAmount.toFloat()).coerceIn(0f, 1f)
                 Icon(
-                    imageVector = if (ratio > 0.4f) {
-                        Icons.Filled.ThumbUpAlt
-                    } else {
-                        Icons.Filled.ThumbDownAlt
-                    },
+                    imageVector = Icons.Filled.ThumbUpAlt,
                     contentDescription = stringResource(
                         R.string.anime_media_details_reviews_rating_upvote_content_description
                     ),
-                    tint = iconTint,
+                    tint = Color.Green.copy(alpha = alpha),
                     modifier = Modifier.size(20.dp)
                 )
             }
@@ -289,12 +279,13 @@ fun ReviewRatingIconsSection(
                     style = MaterialTheme.typography.labelLarge,
                 )
 
+                val alpha = (downvotes / ratingAmount.toFloat()).coerceIn(0f, 1f)
                 Icon(
                     imageVector = Icons.Filled.ThumbDownAlt,
                     contentDescription = stringResource(
                         R.string.anime_media_details_reviews_rating_downvote_content_description
                     ),
-                    tint = Color.Red,
+                    tint = Color.Red.copy(alpha = alpha),
                     modifier = Modifier.size(20.dp)
                 )
             }

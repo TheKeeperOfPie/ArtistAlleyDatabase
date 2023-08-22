@@ -47,7 +47,6 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import coil.size.Dimension
-import com.anilist.fragment.MediaNavigationData
 import com.anilist.fragment.MediaPreviewWithDescription
 import com.anilist.type.MediaType
 import com.google.accompanist.placeholder.PlaceholderHighlight
@@ -57,6 +56,7 @@ import com.mxalbert.sharedelements.SharedElement
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AniListViewer
 import com.thekeeperofpie.artistalleydatabase.anime.LocalNavigationCallback
 import com.thekeeperofpie.artistalleydatabase.anime.R
+import com.thekeeperofpie.artistalleydatabase.anime.ignore.LocalIgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaTagEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaStatusAware
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
@@ -81,7 +81,6 @@ object AnimeMediaLargeCard {
         entry: Entry?,
         modifier: Modifier = Modifier,
         label: (@Composable () -> Unit)? = null,
-        onLongClick: (MediaNavigationData) -> Unit = {},
         onClickListEdit: (Entry) -> Unit,
         showQuickEdit: Boolean = true,
     ) {
@@ -92,13 +91,18 @@ object AnimeMediaLargeCard {
                 .alpha(if (entry?.ignored == true) 0.38f else 1f)
         ) {
             val navigationCallback = LocalNavigationCallback.current
+            val ignoreController = LocalIgnoreController.current
             Box(
                 modifier = Modifier.combinedClickable(
                     enabled = entry != null,
                     onClick = {
                         if (entry != null) navigationCallback.onMediaClick(entry.media)
                     },
-                    onLongClick = { if (entry?.media != null) onLongClick(entry.media) }
+                    onLongClick = {
+                        if (entry?.media != null) {
+                            ignoreController.toggle(entry.media)
+                        }
+                    }
                 )
             ) {
                 BannerImage(

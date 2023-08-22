@@ -220,7 +220,6 @@ object AiringScheduleScreen {
                                                 viewer = viewer,
                                                 entry = schedule?.entry,
                                                 onClickListEdit = { editViewModel.initialize(it.media) },
-                                                onLongClick = viewModel::onLongClickEntry,
                                                 nextAiringEpisode = schedule?.data?.let {
                                                     NextAiringEpisode(
                                                         episode = it.episode,

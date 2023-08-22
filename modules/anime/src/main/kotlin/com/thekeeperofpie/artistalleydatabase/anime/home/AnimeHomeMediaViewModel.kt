@@ -105,8 +105,6 @@ abstract class AnimeHomeMediaViewModel(
         }
     }
 
-    fun onLongClickEntry(media: MediaPreview) = ignoreController.toggle(media)
-
     fun refresh() {
         val refresh = SystemClock.uptimeMillis()
         userMediaListController.refresh(mediaType)

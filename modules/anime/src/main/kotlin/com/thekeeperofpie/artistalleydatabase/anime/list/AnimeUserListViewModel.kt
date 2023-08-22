@@ -265,8 +265,6 @@ class AnimeUserListViewModel @Inject constructor(
         }
     }
 
-    fun onMediaLongClick(entry: AnimeMediaListRow.Entry) = ignoreController.toggle(entry.media)
-
     private fun toFilteredEntries(
         query: String,
         filterParams: MediaSortFilterController.FilterParams<MediaListSortOption>,

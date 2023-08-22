@@ -8,6 +8,7 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
@@ -50,9 +51,12 @@ class AnimeMediaIgnoreViewModel @Inject constructor(
     private val statusController: MediaListStatusController,
     private val ignoreController: IgnoreController,
     private val ignoreDao: AnimeIgnoreDao,
+    savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
-    var selectedType by mutableStateOf(settings.preferredMediaType.value)
+    var selectedType by mutableStateOf(savedStateHandle.get<String?>("mediaType")
+        ?.let { MediaType.safeValueOf(it).takeUnless { it == MediaType.UNKNOWN__ } }
+        ?: settings.preferredMediaType.value)
     var mediaViewOption by mutableStateOf(settings.mediaViewOption.value)
     val viewer = aniListApi.authedUser
     var query by mutableStateOf("")
@@ -123,8 +127,6 @@ class AnimeMediaIgnoreViewModel @Inject constructor(
     }
 
     fun onRefresh() = refreshUptimeMillis.update { SystemClock.uptimeMillis() }
-
-    fun onMediaLongClick(media: MediaPreview) = ignoreController.toggle(media)
 
     fun placeholder(index: Int, mediaType: MediaType): MediaPreviewWithDescriptionEntry? {
         val localContent = if (mediaType == MediaType.ANIME) {

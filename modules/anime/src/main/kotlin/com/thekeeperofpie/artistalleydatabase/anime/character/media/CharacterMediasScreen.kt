@@ -66,7 +66,6 @@ object CharacterMediasScreen {
                     entry = it,
                     viewer = viewer,
                     onClickListEdit = { editViewModel.initialize(it.media) },
-                    onLongClick = viewModel::onMediaLongClick,
                     modifier = Modifier.padding(
                         start = 16.dp,
                         end = 16.dp,

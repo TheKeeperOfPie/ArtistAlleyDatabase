@@ -37,8 +37,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.graphics.ColorUtils
 import coil.request.ImageRequest
 import coil.size.Dimension
-import com.anilist.fragment.MediaNavigationData
-import com.anilist.fragment.MediaPreview
+import com.anilist.fragment.MediaWithListStatus
 import com.anilist.type.MediaType
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.material.placeholder
@@ -68,7 +67,6 @@ object MediaGridCard {
         entry: Entry?,
         viewer: AniListViewer?,
         onClickListEdit: (Entry) -> Unit,
-        onLongClick: (MediaNavigationData) -> Unit,
         modifier: Modifier = Modifier,
         forceListEditIcon: Boolean = false,
         showQuickEdit: Boolean = true,
@@ -114,7 +112,11 @@ object MediaGridCard {
                             navigationCallback.onMediaClick(entry.media, imageWidthToHeightRatio)
                         }
                     },
-                    onLongClick = { if (entry?.media != null) onLongClick(entry.media) }
+                    onLongClick = {
+                        if (entry?.media != null) {
+                            ignoreController.toggle(entry.media)
+                        }
+                    }
                 )
             ) {
                 Column {
@@ -267,7 +269,7 @@ object MediaGridCard {
     }
 
     interface Entry : MediaStatusAware {
-        val media: MediaNavigationData
+        val media: MediaWithListStatus
         val type: MediaType?
         val color: Color?
         val maxProgress: Int?

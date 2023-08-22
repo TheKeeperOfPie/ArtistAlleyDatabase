@@ -1,4 +1,4 @@
-package com.thekeeperofpie.artistalleydatabase.anime.recommendation
+package com.thekeeperofpie.artistalleydatabase.anime.recommendation.media
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
@@ -21,13 +21,13 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.utils.HeaderAndMediaListScreen
 import com.thekeeperofpie.artistalleydatabase.compose.UpIconOption
 
-object RecommendationsScreen {
+object MediaRecommendationsScreen {
 
     private val SCREEN_KEY = AnimeNavDestinations.MEDIA_RECOMMENDATIONS.id
 
     @Composable
     operator fun invoke(
-        viewModel: RecommendationsViewModel,
+        viewModel: MediaRecommendationsViewModel,
         upIconOption: UpIconOption,
         headerValues: MediaHeaderValues,
     ) {
@@ -77,7 +77,6 @@ object RecommendationsScreen {
                     entry = it?.entry,
                     viewer = viewer,
                     onClickListEdit = { editViewModel.initialize(it.media) },
-                    onLongClick = viewModel::onMediaLongClick,
                     recommendation = it?.recommendationData,
                     onUserRecommendationRating = viewModel.recommendationToggleHelper::toggle,
                     modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)

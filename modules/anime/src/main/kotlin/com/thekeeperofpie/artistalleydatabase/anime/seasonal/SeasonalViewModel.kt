@@ -123,8 +123,6 @@ class SeasonalViewModel @Inject constructor(
         return pageData.content.collectAsLazyPagingItems()
     }
 
-    fun onMediaLongClick(entry: AnimeMediaListRow.Entry) = ignoreController.toggle(entry.media)
-
     enum class Type {
         LAST,
         THIS,

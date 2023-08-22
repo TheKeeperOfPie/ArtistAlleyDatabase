@@ -13,7 +13,6 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import com.anilist.fragment.MediaPreview
 import com.anilist.fragment.MediaPreviewWithDescription
 import com.anilist.type.MediaType
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
@@ -106,8 +105,6 @@ class MediaHistoryViewModel @Inject constructor(
                 .collectLatest(content::emit)
         }
     }
-
-    fun onMediaLongClick(media: MediaPreview) = ignoreController.toggle(media)
 
     fun placeholder(index: Int, mediaType: MediaType): MediaPreviewWithDescriptionEntry? {
         val localContent = if (mediaType == MediaType.ANIME) {

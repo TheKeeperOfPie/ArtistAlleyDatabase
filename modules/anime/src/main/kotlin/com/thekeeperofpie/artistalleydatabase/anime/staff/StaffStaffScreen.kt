@@ -68,7 +68,6 @@ object StaffStaffScreen {
                                 entry = entry,
                                 viewer = viewer,
                                 onClickListEdit = { editViewModel.initialize(it.media) },
-                                onLongClick = { viewModel.ignoreController.toggle(entry.media) },
                                 showTypeIcon = true,
                                 modifier = Modifier.width(120.dp),
                             ) { textColor ->

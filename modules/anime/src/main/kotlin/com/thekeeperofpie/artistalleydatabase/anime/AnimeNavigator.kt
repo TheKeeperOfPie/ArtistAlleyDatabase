@@ -56,8 +56,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.notifications.NotificationsScreen
-import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationsScreen
-import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationsViewModel
+import com.thekeeperofpie.artistalleydatabase.anime.recommendation.media.MediaRecommendationsScreen
+import com.thekeeperofpie.artistalleydatabase.anime.recommendation.media.MediaRecommendationsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.review.ReviewsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.review.details.ReviewDetailsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.review.details.ReviewDetailsViewModel
@@ -407,7 +407,13 @@ object AnimeNavigator {
         }
 
         navGraphBuilder.composable(
-            route = AnimeNavDestinations.IGNORED.id,
+            route = AnimeNavDestinations.IGNORED.id + "?mediaType={mediaType}",
+            arguments = listOf(
+                navArgument("mediaType") {
+                    type = NavType.StringType
+                    nullable = true
+                }
+            )
         ) {
             AnimeIgnoreScreen(UpIconOption.Back(navHostController))
         }
@@ -533,7 +539,7 @@ object AnimeNavigator {
             val arguments = it.arguments!!
             val mediaId = arguments.getString("mediaId")!!
 
-            val viewModel = hiltViewModel<RecommendationsViewModel>()
+            val viewModel = hiltViewModel<MediaRecommendationsViewModel>()
                 .apply { initialize(mediaId) }
             val headerValues = MediaHeaderValues(
                 arguments = arguments,
@@ -541,7 +547,7 @@ object AnimeNavigator {
                 favoriteUpdate = { viewModel.favoritesToggleHelper.favorite },
             )
 
-            RecommendationsScreen(
+            MediaRecommendationsScreen(
                 viewModel = viewModel,
                 upIconOption = UpIconOption.Back(navHostController),
                 headerValues = headerValues,
@@ -1310,8 +1316,9 @@ object AnimeNavigator {
             navHostController?.let { onGenreClick(it, mediaType, genre) }
         }
 
-        fun onClickViewIgnored() {
-            navHostController?.navigate(AnimeNavDestinations.IGNORED.id)
+        fun onClickViewIgnored(mediaType: MediaType? = null) {
+            navHostController?.navigate(AnimeNavDestinations.IGNORED.id
+                    + "?mediaType=${mediaType?.rawValue}")
         }
 
         fun onCdEntryClick(model: CdEntryGridModel, imageCornerDp: Dp?) {

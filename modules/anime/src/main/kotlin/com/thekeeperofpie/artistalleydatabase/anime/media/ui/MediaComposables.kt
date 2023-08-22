@@ -80,7 +80,6 @@ fun <T> LazyListScope.mediaListSection(
     expanded: () -> Boolean = { false },
     onExpandedChange: (Boolean) -> Unit = {},
     onClickListEdit: (AnimeMediaListRow.Entry) -> Unit,
-    onLongClick: (AnimeMediaListRow.Entry) -> Unit,
     label: (@Composable (T) -> Unit)? = null,
     onClickViewAll: ((AnimeNavigator.NavigationCallback) -> Unit)? = null,
     @StringRes viewAllContentDescriptionTextRes: Int? = null,
@@ -104,7 +103,6 @@ fun <T> LazyListScope.mediaListSection(
             { label(item) }
         },
         onClickListEdit = onClickListEdit,
-        onLongClick = onLongClick,
         modifier = modifier.padding(start = 16.dp, end = 16.dp, bottom = paddingBottom)
     )
 }
@@ -139,7 +137,6 @@ fun LazyListScope.mediaHorizontalRow(
                     entry = entry,
                     viewer = viewer,
                     onClickListEdit = { editViewModel.initialize(it.media) },
-                    onLongClick = {/* TODO: Ignored */ },
                     forceListEditIcon = forceListEditIcon,
                     modifier = Modifier.width(120.dp)
                 )
@@ -463,7 +460,6 @@ fun MediaViewOptionRow(
     editViewModel: MediaEditViewModel,
     entry: MediaPreviewWithDescriptionEntry?,
     showQuickEdit: Boolean = true,
-    onLongClick: (MediaPreview) -> Unit,
 ) {
     when (mediaViewOption) {
         MediaViewOption.SMALL_CARD -> AnimeMediaListRow(
@@ -472,13 +468,11 @@ fun MediaViewOptionRow(
             entry = entry,
             onClickListEdit = { editViewModel.initialize(it.media) },
             showQuickEdit = showQuickEdit,
-            onLongClick = { entry?.media?.let(onLongClick) },
         )
         MediaViewOption.LARGE_CARD -> AnimeMediaLargeCard(
             screenKey = screenKey,
             viewer = viewer,
             entry = entry,
-            onLongClick = { entry?.media?.let(onLongClick) },
             showQuickEdit = showQuickEdit,
             onClickListEdit = { editViewModel.initialize(it.media) },
         )
@@ -495,7 +489,6 @@ fun MediaViewOptionRow(
             viewer = viewer,
             onClickListEdit = { editViewModel.initialize(it.media) },
             showQuickEdit = showQuickEdit,
-            onLongClick = { entry?.media?.let(onLongClick) },
         )
     }
 }
