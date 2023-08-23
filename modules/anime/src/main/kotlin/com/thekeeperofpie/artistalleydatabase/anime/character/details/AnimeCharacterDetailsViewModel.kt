@@ -12,6 +12,7 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.flatMap
+import com.anilist.type.CharacterRole
 import com.thekeeperofpie.artistalleydatabase.android_utils.LoadingResult
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListPagingSource
@@ -25,7 +26,6 @@ import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaFiltering
-import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.staff.DetailsStaff
 import com.thekeeperofpie.artistalleydatabase.anime.utils.enforceUniqueIds
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -77,10 +77,19 @@ class AnimeCharacterDetailsViewModel @Inject constructor(
                 .flatMapLatest { result ->
                     val media = result.result?.character?.media?.edges
                         ?.distinctBy { it?.node?.id }
-                        ?.mapNotNull { it?.node?.let(::MediaPreviewEntry) }
+                        ?.mapNotNull {
+                            it?.node?.let { node ->
+                                MediaEntry(
+                                    mediaPreviewEntry = MediaPreviewEntry(node),
+                                    characterRole = it.characterRole
+                                )
+                            }
+                        }
                         .orEmpty()
                     combine(
-                        statusController.allChanges(media.map { it.media.id.toString() }.toSet()),
+                        statusController
+                            .allChanges(media.map { it.mediaPreviewEntry.media.id.toString() }
+                                .toSet()),
                         ignoreController.updates(),
                         settings.showAdult,
                         settings.showLessImportantTags,
@@ -98,6 +107,22 @@ class AnimeCharacterDetailsViewModel @Inject constructor(
                                         showLessImportantTags = showLessImportantTags,
                                         showSpoilerTags = showSpoilerTags,
                                         entry = it,
+                                        transform = { it.mediaPreviewEntry },
+                                        media = it.mediaPreviewEntry.media,
+                                        copy = { mediaListStatus, progress, progressVolumes, scoreRaw, ignored, showLessImportantTags, showSpoilerTags ->
+                                            copy(
+                                                mediaPreviewEntry = mediaPreviewEntry.copy(
+                                                    mediaListStatus = mediaListStatus,
+                                                    progress = progress,
+                                                    progressVolumes = progressVolumes,
+                                                    scoreRaw = scoreRaw,
+                                                    ignored = ignored,
+                                                    showLessImportantTags = showLessImportantTags,
+                                                    showSpoilerTags = showSpoilerTags,
+                                                )
+                                            )
+
+                                        }
                                     )
                                 },
                                 description = character.character?.description
@@ -166,4 +191,9 @@ class AnimeCharacterDetailsViewModel @Inject constructor(
     fun refresh() {
         refresh.value = SystemClock.uptimeMillis()
     }
+
+    data class MediaEntry(
+        val mediaPreviewEntry: MediaPreviewEntry,
+        val characterRole: CharacterRole?,
+    )
 }

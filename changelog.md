@@ -1,7 +1,7 @@
 # Changelog
 
 ### Next (9)
--
+- Add role in media to character details
 
 ### 0.43 (8)
 - Add full current media screen

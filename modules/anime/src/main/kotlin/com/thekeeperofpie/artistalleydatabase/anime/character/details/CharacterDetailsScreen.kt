@@ -58,9 +58,9 @@ import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.R
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterHeader
 import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterHeaderValues
+import com.thekeeperofpie.artistalleydatabase.anime.character.CharacterUtils.toTextRes
 import com.thekeeperofpie.artistalleydatabase.anime.favorite.FavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.media.AnimeMediaListScreen
-import com.thekeeperofpie.artistalleydatabase.anime.media.MediaPreviewEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditBottomSheetScaffold
 import com.thekeeperofpie.artistalleydatabase.anime.media.edit.MediaEditViewModel
@@ -177,7 +177,6 @@ object CharacterDetailsScreen {
                                 .padding(scaffoldPadding)
                         ) {
                             content(
-                                viewModel = viewModel,
                                 editViewModel = editViewModel,
                                 headerValues = headerValues,
                                 entry = entry.result!!,
@@ -201,7 +200,6 @@ object CharacterDetailsScreen {
     }
 
     private fun LazyListScope.content(
-        viewModel: AnimeCharacterDetailsViewModel,
         editViewModel: MediaEditViewModel,
         headerValues: CharacterHeaderValues,
         entry: Entry,
@@ -412,7 +410,7 @@ object CharacterDetailsScreen {
             viewer = viewer,
             titleRes = R.string.anime_character_details_media_label,
             values = entry.media,
-            valueToEntry = { it },
+            valueToEntry = { it.mediaPreviewEntry },
             aboveFold = MEDIA_ABOVE_FOLD,
             hasMoreValues = entry.mediaHasMore,
             expanded = expanded,
@@ -427,12 +425,28 @@ object CharacterDetailsScreen {
                 )
             },
             viewAllContentDescriptionTextRes = R.string.anime_character_details_view_all_content_description,
+            label = {
+                it.characterRole?.let {
+                    Text(
+                        text = stringResource(it.toTextRes()),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.surfaceTint,
+                        modifier = Modifier
+                            .wrapContentHeight()
+                            .padding(
+                                start = 12.dp,
+                                top = 10.dp,
+                                end = 16.dp,
+                            )
+                    )
+                }
+            }
         )
     }
 
     data class Entry(
         val character: Character,
-        val media: List<MediaPreviewEntry>,
+        val media: List<AnimeCharacterDetailsViewModel.MediaEntry>,
         val description: Spanned?,
     ) {
         val voiceActorsInitial = MutableStateFlow(
