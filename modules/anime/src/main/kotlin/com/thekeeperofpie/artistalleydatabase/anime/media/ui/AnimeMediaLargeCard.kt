@@ -145,7 +145,7 @@ object AnimeMediaLargeCard {
                             modifier = Modifier
                                 .weight(1f)
                                 .fillMaxWidth()
-                                .padding(horizontal = 10.dp, vertical = 8.dp)
+                                .padding(horizontal = 12.dp, vertical = 8.dp)
                         )
                     }
 

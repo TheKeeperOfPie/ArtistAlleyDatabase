@@ -94,7 +94,7 @@ class AnimeMediaDetailsViewModel @Inject constructor(
     val mediaPlayer: AppMediaPlayer,
     oAuthStore: AniListOAuthStore,
     val mediaListStatusController: MediaListStatusController,
-    val recommendationStatusController: RecommendationStatusController,
+    private val recommendationStatusController: RecommendationStatusController,
     val ignoreController: IgnoreController,
     val settings: AnimeSettings,
     favoritesController: FavoritesController,

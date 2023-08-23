@@ -56,6 +56,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.filter.MediaSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
 import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.notifications.NotificationsScreen
+import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.recommendation.media.MediaRecommendationsScreen
 import com.thekeeperofpie.artistalleydatabase.anime.recommendation.media.MediaRecommendationsViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.review.ReviewsScreen
@@ -526,6 +527,12 @@ object AnimeNavigator {
 
         navGraphBuilder.composable(route = AnimeNavDestinations.REVIEWS.id) {
             ReviewsScreen(
+                upIconOption = UpIconOption.Back(navHostController),
+            )
+        }
+
+        navGraphBuilder.composable(route = AnimeNavDestinations.RECOMMENDATIONS.id) {
+            RecommendationsScreen(
                 upIconOption = UpIconOption.Back(navHostController),
             )
         }

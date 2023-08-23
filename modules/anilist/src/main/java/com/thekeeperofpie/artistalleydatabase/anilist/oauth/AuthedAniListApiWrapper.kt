@@ -474,7 +474,7 @@ class AuthedAniListApiWrapper(
 
     override suspend fun mediaAndRecommendations(
         mediaId: String,
-        sort: RecommendationSort,
+        sort: List<RecommendationSort>,
         recommendationsPerPage: Int,
     ) = super.mediaAndRecommendations(mediaId, sort, recommendationsPerPage).let {
         if (it.isAdult != false) throw IOException("Cannot load media")
@@ -483,7 +483,7 @@ class AuthedAniListApiWrapper(
 
     override suspend fun mediaAndRecommendationsPage(
         mediaId: String,
-        sort: RecommendationSort,
+        sort: List<RecommendationSort>,
         page: Int,
         recommendationsPerPage: Int,
     ) = super.mediaAndRecommendationsPage(mediaId, sort, page, recommendationsPerPage).let {
@@ -736,6 +736,16 @@ class AuthedAniListApiWrapper(
         it.copy(page = it.page.copy(reviews = it.page.reviews.filter { it?.media?.isAdult == false }))
     }
 
+    override suspend fun homeRecommendations(
+        onList: Boolean?,
+        page: Int,
+        perPage: Int,
+    ) = super.homeRecommendations(onList, page, perPage).let {
+        it.copy(page = it.page.copy(recommendations = it.page.recommendations.filter {
+            it?.media?.isAdult == false && it.mediaRecommendation.isAdult == false
+        }))
+    }
+
     override suspend fun reviewSearch(
         sort: List<ReviewSort>,
         mediaType: MediaType,
@@ -752,5 +762,29 @@ class AuthedAniListApiWrapper(
         mediaType: MediaType?,
     ) = super.mediaAutocomplete(query, isAdult = false, mediaType).let {
         it.copy(page = it.page?.copy(media = it.page.media?.filter { it?.isAdult == false }))
+    }
+
+    override suspend fun recommendationSearch(
+        sort: List<RecommendationSort>,
+        sourceMediaId: String?,
+        targetMediaId: String?,
+        ratingGreater: Int?,
+        ratingLesser: Int?,
+        onList: Boolean,
+        page: Int,
+        perPage: Int,
+    ) = super.recommendationSearch(
+        sort,
+        sourceMediaId,
+        targetMediaId,
+        ratingGreater,
+        ratingLesser,
+        onList,
+        page,
+        perPage,
+    ).let {
+        it.copy(page = it.page.copy(recommendations = it.page.recommendations.filter {
+            it?.media?.isAdult == false && it.mediaRecommendation.isAdult == false
+        }))
     }
 }

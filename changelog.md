@@ -9,6 +9,7 @@
 - Add reviews to home screen
 - Add media filter to forum, activity, and reviews
 - Reorganize home
+- Add recommendations to home
 
 ### 0.42 (7)
 - Add unread notification badge

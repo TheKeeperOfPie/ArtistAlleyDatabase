@@ -35,4 +35,5 @@ enum class AnimeNavDestinations(val id: String) {
     MEDIA_HISTORY("anime_media_history"),
 
     REVIEWS("anime_reviews"),
+    RECOMMENDATIONS("anime_recommendations"),
 }

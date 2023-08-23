@@ -121,6 +121,8 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaLargeCard
 import com.thekeeperofpie.artistalleydatabase.anime.media.ui.MediaListQuickEditIconButton
 import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsArticleEntry
 import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsSmallCard
+import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationCard
+import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationEntry
 import com.thekeeperofpie.artistalleydatabase.anime.review.ReviewCard
 import com.thekeeperofpie.artistalleydatabase.anime.review.ReviewEntry
 import com.thekeeperofpie.artistalleydatabase.anime.ui.GenericViewAllCard
@@ -170,8 +172,10 @@ object AnimeHomeScreen {
         }
 
         val activity = viewModel.activity.collectAsLazyPagingItems()
+        val recommendations = viewModel.recommendations.collectAsLazyPagingItems()
         val reviews = mediaViewModel.reviews.collectAsLazyPagingItems()
         val refreshing = activity.loadState.refresh == LoadState.Loading
+                || recommendations.loadState.refresh == LoadState.Loading
                 || reviews.loadState.refresh == LoadState.Loading
                 || mediaViewModel.entry.loading
                 || mediaViewModel.current.loading
@@ -303,11 +307,24 @@ object AnimeHomeScreen {
                         onActivityStatusUpdate = viewModel.activityToggleHelper::toggle,
                     )
 
-                    mediaList(
+                    currentMediaRow(
                         mediaViewModel = mediaViewModel,
                         viewer = viewer,
                         onClickListEdit = { editViewModel.initialize(it) },
                         onClickIncrementProgress = { editViewModel.incrementProgress(it) },
+                    )
+
+                    recommendations(
+                        viewModel = viewModel,
+                        editViewModel = editViewModel,
+                        viewer = viewer,
+                        recommendations = recommendations,
+                    )
+
+                    mediaList(
+                        mediaViewModel = mediaViewModel,
+                        viewer = viewer,
+                        onClickListEdit = { editViewModel.initialize(it) },
                         selectedItemTracker = selectedItemTracker,
                     )
 
@@ -336,17 +353,9 @@ object AnimeHomeScreen {
         mediaViewModel: AnimeHomeMediaViewModel,
         viewer: AniListViewer?,
         onClickListEdit: (MediaCompactWithTags) -> Unit,
-        onClickIncrementProgress: (UserMediaListController.MediaEntry) -> Unit,
         selectedItemTracker: SelectedItemTracker,
     ) {
         val entry = mediaViewModel.entry
-        currentMediaRow(
-            mediaViewModel = mediaViewModel,
-            viewer = viewer,
-            onClickListEdit = onClickListEdit,
-            onClickIncrementProgress = onClickIncrementProgress,
-        )
-
         entry.result?.lists?.forEach {
             mediaRow(
                 data = it,
@@ -369,7 +378,7 @@ object AnimeHomeScreen {
         item("newsRow") {
             val pagerState = rememberPagerState(pageCount = { data.size })
             val uriHandler = LocalUriHandler.current
-            val targetWidth = 350.coerceAtLeast(LocalConfiguration.current.screenWidthDp - 72).dp
+            val targetWidth = targetPageWidth()
             HorizontalPager(
                 state = pagerState,
                 contentPadding = PaddingValues(start = 16.dp, end = 16.dp),
@@ -399,7 +408,7 @@ object AnimeHomeScreen {
         if (data.itemCount == 0) return
         item("activityRow") {
             val pagerState = rememberPagerState(pageCount = { data.itemCount })
-            val targetWidth = 350.coerceAtLeast(LocalConfiguration.current.screenWidthDp - 72).dp
+            val targetWidth = targetPageWidth()
             HorizontalPager(
                 state = pagerState,
                 contentPadding = PaddingValues(start = 16.dp, end = 16.dp),
@@ -912,6 +921,47 @@ object AnimeHomeScreen {
         }
     }
 
+    private fun LazyListScope.recommendations(
+        viewModel: AnimeHomeViewModel,
+        editViewModel: MediaEditViewModel,
+        viewer: AniListViewer?,
+        recommendations: LazyPagingItems<RecommendationEntry>,
+    ) {
+        rowHeader(
+            titleRes = R.string.anime_recommendations_home_title,
+            viewAllRoute = AnimeNavDestinations.RECOMMENDATIONS.id,
+        )
+
+        if (recommendations.itemCount == 0) return
+        item("recommendationsRow") {
+            val pagerState = rememberPagerState(pageCount = { recommendations.itemCount })
+            val targetWidth = targetPageWidth()
+            HorizontalPager(
+                state = pagerState,
+                contentPadding = PaddingValues(start = 16.dp, end = 16.dp),
+                pageSpacing = 16.dp,
+                pageSize = PageSize.Fixed(targetWidth),
+                verticalAlignment = Alignment.Top,
+            ) {
+                val entry = recommendations[it]
+                RecommendationCard(
+                    screenKey = SCREEN_KEY,
+                    viewer = viewer,
+                    user = entry?.user,
+                    media = entry?.media,
+                    mediaRecommendation = entry?.mediaRecommendation,
+                    recommendation = entry?.data,
+                    onUserRecommendationRating = viewModel.recommendationToggleHelper::toggle,
+                    onClickListEdit = {
+                        if (entry != null) {
+                            editViewModel.initialize(entry.media.media)
+                        }
+                    },
+                )
+            }
+        }
+    }
+
     private fun LazyListScope.reviews(
         editViewModel: MediaEditViewModel,
         viewer: AniListViewer?,
@@ -925,7 +975,7 @@ object AnimeHomeScreen {
         if (reviews.itemCount == 0) return
         item("reviewsRow") {
             val pagerState = rememberPagerState(pageCount = { reviews.itemCount })
-            val targetWidth = 350.coerceAtLeast(LocalConfiguration.current.screenWidthDp - 72).dp
+            val targetWidth = targetPageWidth()
             HorizontalPager(
                 state = pagerState,
                 contentPadding = PaddingValues(start = 16.dp, end = 16.dp),
@@ -985,6 +1035,9 @@ object AnimeHomeScreen {
             }
         }
     }
+
+    @Composable
+    private fun targetPageWidth() = 420.coerceAtMost(LocalConfiguration.current.screenWidthDp - 32).dp
 
     @SuppressLint("ComposableNaming")
     class SelectedItemTracker {

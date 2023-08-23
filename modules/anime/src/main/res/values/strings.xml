@@ -756,6 +756,18 @@
     <string name="anime_recommendations_header">Recommendations</string>
     <string name="anime_recommendations_error_loading">Error loading recommendations</string>
 
+    <string name="anime_recommendation_user_avatar_content_description">Recommendation author avatar</string>
+    <string name="anime_recommendations_home_title">RECOMMENDATIONS</string>
+
+    <string name="anime_recommendation_filter_sort_label">Sort</string>
+    <string name="anime_recommendation_filter_source_media_label">Source media</string>
+    <string name="anime_recommendation_filter_source_media_expand_content_description">Source media expand</string>
+    <string name="anime_recommendation_filter_target_media_label">Target media</string>
+    <string name="anime_recommendation_filter_target_media_expand_content_description">Target media expand</string>
+    <string name="anime_recommendation_filter_rating_label">Rating</string>
+    <string name="anime_recommendation_filter_rating_expand_content_description">Rating expand</string>
+    <string name="anime_recommendation_filter_on_list_label">On list</string>
+
     <string name="anime_character_medias_error_loading">Error loading media</string>
     <string name="anime_character_medias_header">Media</string>
 

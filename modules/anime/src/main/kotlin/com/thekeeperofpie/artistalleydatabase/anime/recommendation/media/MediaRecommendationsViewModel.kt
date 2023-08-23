@@ -15,11 +15,9 @@ import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toFavoriteType
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaFiltering
-import com.thekeeperofpie.artistalleydatabase.anime.media.ui.AnimeMediaListRow
-import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationEntry
 import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationToggleHelper
-import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationsSortOption
+import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationSortOption
 import com.thekeeperofpie.artistalleydatabase.anime.utils.HeaderAndListViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.utils.mapNotNull
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -38,10 +36,10 @@ class MediaRecommendationsViewModel @Inject constructor(
     private val settings: AnimeSettings,
     favoritesController: FavoritesController,
 ) : HeaderAndListViewModel<MediaRecommendationsScreen.Entry, MediaAndRecommendationsRecommendation,
-        RecommendationEntry, RecommendationsSortOption>(
+        MediaRecommendationEntry, RecommendationSortOption>(
     aniListApi = aniListApi,
-    sortOptionEnum = RecommendationsSortOption::class,
-    sortOptionEnumDefault = RecommendationsSortOption.RATING,
+    sortOptionEnum = RecommendationSortOption::class,
+    sortOptionEnumDefault = RecommendationSortOption.RATING,
     loadingErrorTextRes = R.string.anime_recommendations_error_loading
 ) {
     val favoritesToggleHelper =
@@ -62,13 +60,13 @@ class MediaRecommendationsViewModel @Inject constructor(
     }
 
     override fun makeEntry(item: MediaAndRecommendationsRecommendation) =
-        RecommendationEntry(mediaId = headerId, recommendation = item)
+        MediaRecommendationEntry(mediaId = headerId, recommendation = item)
 
-    override fun entryId(entry: RecommendationEntry) = entry.recommendation.id.toString()
+    override fun entryId(entry: MediaRecommendationEntry) = entry.recommendation.id.toString()
 
     override suspend fun initialRequest(
         headerId: String,
-        sortOption: RecommendationsSortOption,
+        sortOption: RecommendationSortOption,
         sortAscending: Boolean,
     ) = MediaRecommendationsScreen.Entry(
         aniListApi.mediaAndRecommendations(
@@ -80,7 +78,7 @@ class MediaRecommendationsViewModel @Inject constructor(
     override suspend fun pagedRequest(
         entry: MediaRecommendationsScreen.Entry,
         page: Int,
-        sortOption: RecommendationsSortOption,
+        sortOption: RecommendationSortOption,
         sortAscending: Boolean,
     ) = if (page == 1) {
         val result = entry.media.recommendations
@@ -94,7 +92,7 @@ class MediaRecommendationsViewModel @Inject constructor(
         result?.pageInfo to result?.nodes?.filterNotNull().orEmpty()
     }
 
-    override fun Flow<PagingData<RecommendationEntry>>.transformFlow() =
+    override fun Flow<PagingData<MediaRecommendationEntry>>.transformFlow() =
         flatMapLatest { pagingData ->
             combine(
                 mediaListStatusController.allChanges(),

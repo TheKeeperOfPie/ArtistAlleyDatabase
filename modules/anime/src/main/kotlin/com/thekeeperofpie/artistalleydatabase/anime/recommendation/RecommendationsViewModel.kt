@@ -1,6 +1,4 @@
-@file:OptIn(ExperimentalCoroutinesApi::class)
-
-package com.thekeeperofpie.artistalleydatabase.anime.home
+package com.thekeeperofpie.artistalleydatabase.anime.recommendation
 
 import android.os.SystemClock
 import androidx.lifecycle.ViewModel
@@ -9,161 +7,81 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import com.anilist.UserSocialActivityQuery
 import com.anilist.type.RecommendationRating
 import com.hoc081098.flowext.combine
+import com.thekeeperofpie.artistalleydatabase.android_utils.FeatureOverrideProvider
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.CustomDispatchers
 import com.thekeeperofpie.artistalleydatabase.android_utils.kotlin.transformIf
 import com.thekeeperofpie.artistalleydatabase.anilist.AniListPagingSource
 import com.thekeeperofpie.artistalleydatabase.anilist.oauth.AuthedAniListApi
+import com.thekeeperofpie.artistalleydatabase.anime.AnimeNavDestinations
 import com.thekeeperofpie.artistalleydatabase.anime.AnimeSettings
-import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityStatusController
-import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityToggleHelper
-import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityUtils.entryId
-import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityUtils.liked
-import com.thekeeperofpie.artistalleydatabase.anime.activity.ActivityUtils.subscribed
-import com.thekeeperofpie.artistalleydatabase.anime.activity.AnimeActivityViewModel
 import com.thekeeperofpie.artistalleydatabase.anime.ignore.IgnoreController
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaCompactWithTagsEntry
 import com.thekeeperofpie.artistalleydatabase.anime.media.MediaListStatusController
 import com.thekeeperofpie.artistalleydatabase.anime.media.applyMediaFiltering
-import com.thekeeperofpie.artistalleydatabase.anime.news.AnimeNewsController
-import com.thekeeperofpie.artistalleydatabase.anime.notifications.NotificationsController
-import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationData
-import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationEntry
-import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationStatusController
-import com.thekeeperofpie.artistalleydatabase.anime.recommendation.RecommendationToggleHelper
 import com.thekeeperofpie.artistalleydatabase.anime.utils.mapNotNull
 import com.thekeeperofpie.artistalleydatabase.anime.utils.mapOnIO
-import com.thekeeperofpie.artistalleydatabase.monetization.MonetizationController
+import com.thekeeperofpie.artistalleydatabase.compose.filter.selectedOption
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
-class AnimeHomeViewModel @Inject constructor(
-    val newsController: AnimeNewsController,
+class RecommendationsViewModel @Inject constructor(
     private val aniListApi: AuthedAniListApi,
-    private val mediaListStatusController: MediaListStatusController,
-    private val ignoreController: IgnoreController,
-    private val recommendationStatusController: RecommendationStatusController,
-    private val activityStatusController: ActivityStatusController,
     private val settings: AnimeSettings,
-    monetizationController: MonetizationController,
-    val notificationsController: NotificationsController,
+    featureOverrideProvider: FeatureOverrideProvider,
+    private val mediaListStatusController: MediaListStatusController,
+    private val recommendationStatusController: RecommendationStatusController,
+    private val ignoreController: IgnoreController,
 ) : ViewModel() {
 
-    val unlocked = monetizationController.unlocked
-    val preferredMediaType = settings.preferredMediaType.value
     val viewer = aniListApi.authedUser
 
-    val activityToggleHelper =
-        ActivityToggleHelper(aniListApi, activityStatusController, viewModelScope)
+    val sortFilterController = RecommendationSortFilterController(
+        screenKey = AnimeNavDestinations.RECOMMENDATIONS.id,
+        scope = viewModelScope,
+        aniListApi = aniListApi,
+        settings,
+        featureOverrideProvider,
+    )
 
-    private val refresh = MutableStateFlow(-1L)
-    val activity = MutableStateFlow(PagingData.empty<AnimeActivityViewModel.ActivityEntry>())
     val recommendations = MutableStateFlow(PagingData.empty<RecommendationEntry>())
-
     val recommendationToggleHelper =
         RecommendationToggleHelper(aniListApi, recommendationStatusController, viewModelScope)
 
+    private val refresh = MutableStateFlow(-1L)
+
     init {
-        collectRecommendations()
-        collectActivity()
-    }
-
-    private fun collectActivity() {
-        viewModelScope.launch(CustomDispatchers.IO) {
-            combine(refresh, aniListApi.authedUser, ::Pair)
-                .flatMapLatest { (_, viewer) ->
-                    Pager(config = PagingConfig(3)) {
-                        AniListPagingSource {
-                            val result = aniListApi.userSocialActivity(
-                                isFollowing = viewer != null,
-                                page = it,
-                                perPage = 3,
-                                userIdNot = viewer?.id,
-                            )
-                            result.page?.pageInfo to
-                                    result.page?.activities?.filterNotNull().orEmpty()
-                        }
-                    }.flow.cachedIn(viewModelScope)
-                }
-                .flatMapLatest { pagingData ->
-                    combine(
-                        mediaListStatusController.allChanges(),
-                        ignoreController.updates(),
-                        settings.showIgnored,
-                        settings.showAdult,
-                        settings.showLessImportantTags,
-                        settings.showSpoilerTags,
-                    ) { mediaUpdates, ignoredIds, showIgnored, showAdult, showLessImportantTags, showSpoilerTags ->
-                        pagingData.mapOnIO {
-                            AnimeActivityViewModel.ActivityEntry(
-                                it.entryId,
-                                it,
-                                it.liked,
-                                it.subscribed,
-                                (it as? UserSocialActivityQuery.Data.Page.ListActivityActivity)
-                                    ?.media?.let {
-                                        MediaCompactWithTagsEntry(
-                                            media = it,
-                                            ignored = ignoreController.isIgnored(it.id.toString()),
-                                            showLessImportantTags = showLessImportantTags,
-                                            showSpoilerTags = showSpoilerTags,
-                                        )
-                                    }?.let {
-                                        applyMediaFiltering(
-                                            statuses = mediaUpdates,
-                                            ignoreController = ignoreController,
-                                            showAdult = showAdult,
-                                            showIgnored = showIgnored,
-                                            showLessImportantTags = showLessImportantTags,
-                                            showSpoilerTags = showSpoilerTags,
-                                            entry = it,
-                                        )
-                                    },
-                            )
-                        }
-                    }
-                }
-                .cachedIn(viewModelScope)
-                .flatMapLatest { pagingData ->
-                    activityStatusController.allChanges()
-                        .mapLatest { updates ->
-                            pagingData.mapOnIO {
-                                val liked = updates[it.activityId.valueId]?.liked ?: it.liked
-                                val subscribed =
-                                    updates[it.activityId.valueId]?.subscribed ?: it.subscribed
-                                it.transformIf(liked != it.liked || subscribed != it.subscribed) {
-                                    it.copy(liked = liked, subscribed = subscribed)
-                                }
-                            }
-                        }
-                }
-                .cachedIn(viewModelScope)
-                .collectLatest(activity::emit)
-        }
-    }
-
-    private fun collectRecommendations() {
         viewModelScope.launch(CustomDispatchers.Main) {
-            refresh.flatMapLatest {
-                Pager(config = PagingConfig(5)) {
-                    AniListPagingSource(perPage = 5) {
-                        val result =
-                            aniListApi.homeRecommendations(onList = true, page = it, perPage = 5)
-                        result.page.pageInfo to result.page.recommendations.filterNotNull()
-                    }
-                }.flow
-            }
+            sortFilterController.filterParams()
+                .flatMapLatest { filterParams ->
+                    Pager(config = PagingConfig(10)) {
+                        AniListPagingSource {
+                            val result = aniListApi.recommendationSearch(
+                                sort = filterParams.sort
+                                    .selectedOption(RecommendationSortOption.ID)
+                                    .toApiValue(filterParams.sortAscending),
+                                sourceMediaId = filterParams.sourceMediaId,
+                                targetMediaId = filterParams.targetMediaId,
+                                ratingGreater = filterParams.ratingRange.apiStart,
+                                ratingLesser = filterParams.ratingRange.apiEnd,
+                                onList = filterParams.onList,
+                                page = it,
+                            )
+
+                            result.page.pageInfo to result.page.recommendations.filterNotNull()
+                        }
+                    }.flow
+                }
                 .mapLatest {
                     it.mapOnIO {
                         RecommendationEntry(
@@ -263,8 +181,6 @@ class AnimeHomeViewModel @Inject constructor(
     }
 
     fun refresh() {
-        newsController.refresh()
         refresh.value = SystemClock.uptimeMillis()
-        notificationsController.forceRefresh()
     }
 }

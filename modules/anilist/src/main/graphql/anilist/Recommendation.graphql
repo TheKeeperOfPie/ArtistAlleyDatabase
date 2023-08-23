@@ -1,0 +1,59 @@
+query HomeRecommendations($onList: Boolean, $page: Int!, $perPage: Int!) {
+    Page(page: $page, perPage: $perPage) @nonnull {
+        pageInfo {
+            ...PaginationInfo
+        }
+        recommendations(sort: [ID_DESC], onList: $onList) @nonnull {
+            id
+            user {
+                ...UserNavigationData
+            }
+            rating
+            media @nonnull {
+                ...MediaCompactWithTags
+            }
+            mediaRecommendation @nonnull {
+                ...MediaCompactWithTags
+            }
+            userRating
+        }
+    }
+}
+
+query RecommendationSearch(
+    $sort: [RecommendationSort]!,
+    $sourceMediaId: Int,
+    $targetMediaId: Int,
+    $ratingGreater: Int,
+    $ratingLesser: Int,
+    $onList: Boolean,
+    $page: Int!,
+    $perPage: Int!,
+) {
+    Page(page: $page, perPage: $perPage) @nonnull {
+        pageInfo {
+            ...PaginationInfo
+        }
+        recommendations(
+            sort: $sort,
+            mediaId: $sourceMediaId,
+            mediaRecommendationId: $targetMediaId,
+            rating_greater: $ratingGreater,
+            rating_lesser: $ratingLesser,
+            onList: $onList,
+        ) @nonnull {
+            id
+            user {
+                ...UserNavigationData
+            }
+            rating
+            media @nonnull {
+                ...MediaCompactWithTags
+            }
+            mediaRecommendation @nonnull {
+                ...MediaCompactWithTags
+            }
+            userRating
+        }
+    }
+}

@@ -88,7 +88,6 @@ private fun ColumnScope.ReviewSmallCardContent(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
     ) {
-        var imageWidthToHeightRatio by remember { MutableSingle(1f) }
         val shape = RoundedCornerShape(12.dp)
         val navigationCallback = LocalNavigationCallback.current
         UserAvatarImage(
@@ -97,16 +96,19 @@ private fun ColumnScope.ReviewSmallCardContent(
             image = review?.user?.avatar?.large,
             contentScale = ContentScale.FillHeight,
             contentDescriptionTextRes = R.string.anime_media_details_reviews_user_avatar_content_description,
-            onSuccess = { imageWidthToHeightRatio = it.widthToHeightRatio() },
             modifier = Modifier
                 .size(40.dp)
                 .clip(shape)
                 .border(width = Dp.Hairline, MaterialTheme.colorScheme.primary, shape)
                 .clickable {
                     review?.user?.let {
-                        navigationCallback.onUserClick(it, imageWidthToHeightRatio)
+                        navigationCallback.onUserClick(it, 1f)
                     }
-                },
+                }
+                .placeholder(
+                    visible = review == null,
+                    highlight = PlaceholderHighlight.shimmer(),
+                )
         )
 
         Column(
@@ -115,7 +117,7 @@ private fun ColumnScope.ReviewSmallCardContent(
                 .padding(horizontal = 16.dp, vertical = 10.dp)
         ) {
             Text(
-                text = review?.user?.name.orEmpty() ?: "Username",
+                text = review?.user?.name ?: "Username",
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.placeholder(

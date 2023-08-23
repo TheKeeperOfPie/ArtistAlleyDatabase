@@ -24,6 +24,7 @@ import com.anilist.ForumThread_CommentsQuery
 import com.anilist.GenresQuery
 import com.anilist.HomeAnimeQuery
 import com.anilist.HomeMangaQuery
+import com.anilist.HomeRecommendationsQuery
 import com.anilist.HomeReviewsQuery
 import com.anilist.LicensorsQuery
 import com.anilist.MediaActivityPageQuery
@@ -46,6 +47,7 @@ import com.anilist.MediaTitlesAndImagesQuery
 import com.anilist.NotificationMediaAndActivityQuery
 import com.anilist.NotificationsQuery
 import com.anilist.RateReviewMutation
+import com.anilist.RecommendationSearchQuery
 import com.anilist.ReviewDetailsQuery
 import com.anilist.ReviewSearchQuery
 import com.anilist.SaveActivityReplyMutation
@@ -712,25 +714,25 @@ open class AuthedAniListApi(
 
     open suspend fun mediaAndRecommendations(
         mediaId: String,
-        sort: RecommendationSort,
+        sort: List<RecommendationSort>,
         recommendationsPerPage: Int = 10,
     ) = query(
         MediaAndRecommendationsQuery(
             mediaId = mediaId.toInt(),
-            sort = listOf(sort),
+            sort = sort,
             recommendationsPerPage = recommendationsPerPage,
         )
     ).media
 
     open suspend fun mediaAndRecommendationsPage(
         mediaId: String,
-        sort: RecommendationSort,
+        sort: List<RecommendationSort>,
         page: Int,
         recommendationsPerPage: Int = 10,
     ) = query(
         MediaAndRecommendationsPaginationQuery(
             mediaId = mediaId.toInt(),
-            sort = listOf(sort),
+            sort = sort,
             page = page,
             recommendationsPerPage = recommendationsPerPage,
         )
@@ -1046,6 +1048,15 @@ open class AuthedAniListApi(
     open suspend fun homeReviews(mediaType: MediaType, page: Int, perPage: Int = 10) =
         query(HomeReviewsQuery(mediaType = mediaType, page = page, perPage = perPage))
 
+    open suspend fun homeRecommendations(onList: Boolean?, page: Int, perPage: Int) =
+        query(
+            HomeRecommendationsQuery(
+                onList = Optional.presentIfNotNull(onList),
+                page = page,
+                perPage = perPage,
+            )
+        )
+
     open suspend fun reviewSearch(
         sort: List<ReviewSort>,
         mediaType: MediaType,
@@ -1073,6 +1084,28 @@ open class AuthedAniListApi(
                 perPage = 10,
             )
         )
+
+    open suspend fun recommendationSearch(
+        sort: List<RecommendationSort>,
+        sourceMediaId: String?,
+        targetMediaId: String?,
+        ratingGreater: Int?,
+        ratingLesser: Int?,
+        onList: Boolean,
+        page: Int,
+        perPage: Int = 10,
+    ) = query(
+        RecommendationSearchQuery(
+            sort = sort,
+            sourceMediaId = Optional.presentIfNotNull(sourceMediaId?.toIntOrNull()),
+            targetMediaId = Optional.presentIfNotNull(targetMediaId?.toIntOrNull()),
+            ratingGreater = Optional.presentIfNotNull(ratingGreater),
+            ratingLesser = Optional.presentIfNotNull(ratingLesser),
+            onList = Optional.presentIfNotNull(onList.takeIf { it }),
+            page = page,
+            perPage = perPage,
+        )
+    )
 
     // TODO: Use queryCacheAndNetwork for everything
     private suspend fun <D : Query.Data> query(query: Query<D>) =

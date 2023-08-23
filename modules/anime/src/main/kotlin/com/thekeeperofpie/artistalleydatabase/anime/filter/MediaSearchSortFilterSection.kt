@@ -58,6 +58,7 @@ import com.thekeeperofpie.artistalleydatabase.anime.media.MediaUtils.toIconConte
 import com.thekeeperofpie.artistalleydatabase.anime.ui.MediaCoverImage
 import com.thekeeperofpie.artistalleydatabase.anime.ui.MediaCoverImageNoSharedElement
 import com.thekeeperofpie.artistalleydatabase.compose.TrailingDropdownIconButton
+import com.thekeeperofpie.artistalleydatabase.compose.conditionally
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
@@ -211,6 +212,7 @@ class MediaSearchSortFilterSection(
                         MediaContent(
                             media = selectedMedia,
                             sharedElement = true,
+                            clipImage = true,
                             modifier = Modifier.weight(1f)
                         )
                         IconButton(
@@ -250,6 +252,7 @@ class MediaSearchSortFilterSection(
     private fun MediaContent(
         media: Medium,
         modifier: Modifier = Modifier,
+        clipImage: Boolean = false,
         sharedElement: Boolean = false,
     ) {
         Row(
@@ -258,7 +261,9 @@ class MediaSearchSortFilterSection(
         ) {
             val imageModifier = Modifier
                 .fillMaxHeight()
-                .clip(RoundedCornerShape(topStart = 12.dp, bottomStart = 12.dp))
+                .conditionally(clipImage) {
+                    clip(RoundedCornerShape(topStart = 12.dp, bottomStart = 12.dp))
+                }
                 .heightIn(min = 54.dp)
                 .width(42.dp)
             if (sharedElement) {

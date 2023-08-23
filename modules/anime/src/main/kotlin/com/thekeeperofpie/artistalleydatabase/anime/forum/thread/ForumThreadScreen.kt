@@ -195,6 +195,7 @@ object ForumThreadScreen {
                         var pageString by rememberSaveable { mutableStateOf("1") }
                         LazyColumn(
                             state = lazyListState,
+                            contentPadding = PaddingValues(bottom = 100.dp),
                             modifier = Modifier.fillMaxSize()
                         ) {
                             val threadEntry = entry.result
