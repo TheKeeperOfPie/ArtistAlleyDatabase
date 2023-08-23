@@ -1,6 +1,9 @@
 # Changelog
 
-### Next (8)
+### Next (9)
+-
+
+### 0.43 (8)
 - Add full current media screen
 - Add language setting to search filters
 - Add scroll bars to user list
